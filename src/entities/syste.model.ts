@@ -1,5 +1,5 @@
 
-export const COMMANDS = {
+export const EESSP_COMMANDS = {
     RESET: {
         code: 1,
         encrypted: false,
@@ -478,18 +478,18 @@ export interface IReqModel {
     ip: string;
     token: string;
 }
-export enum ESerialCommand {
+export enum EM102_COMMAND {
     release = 'release',
     halt = 'halt',
     temperature = 'temperature'
 }
-export enum ESYS_STAT {
+export enum EMODBUS_SYS_STAT {
     STAT_IDLE = 0, //idle
     STAT_BUSY, //busy, shipping now
     STAT_SALE_OK, //Sale success
     STAT_SALE_EER, //failure, shipping failure
 }
-export enum EMODBUS_ERROR{
+export enum EMODBUS_ERROR_CODE{
     '01'='Illegal function code. The slave receives a function code that cannot be executed. After issuing a query command, this code indicates that no program function is available.',
     '02'='Illegal data address. The received data address, which is not allowed by the slave.',
     '03' ='Illegal data. The value of the query data area is a value that is not allowed from the machine.',
@@ -498,7 +498,7 @@ export enum EMODBUS_ERROR{
     '07' ='Slave equipment failure. A non-recoverable error occurred when the slave executed the action requested by the host.',
     '08' ='Confirmation. The slave has received the requested data, but it takes a long time to process it and sends this acknowledgement to avoid a timeout error on the host. The host then sends a "query completion" to determine if the slave has completed processing.'
 }
-export enum EError {
+export enum EMODBUS_ERROR {
     ERR_NO_ERR = 0x00,//:No error
     ERR_SLOT_NUM_INVALID = 0x01,//:invalid lane number
     ERR_MOTOR_DRIVER_BREAK = 0x02,//:Motor not rotating, no current through (plug not plugged in or disconnected) 
@@ -522,6 +522,35 @@ export enum EError {
     ERR_HOR_MOTOR_SHORT = 0x1B,//:Horizontal motor short circuit (overload, line short circuit or motor burnout) 
     ERR_HOR_ENCODE_BREAK = 0x1C,//:Horizontal motor encoder failure (check motor feedback line)
 
+}
+export enum EMODBUS_COMMAND {
+    hwversion = 'hwversion',
+    swversion = 'swversion',
+    status = 'status',
+    hutemp = 'hutemp',
+    statusgrid = 'statusgrid',
+    positionhoraxis = 'positionhoraxis',
+    dropdetectstatus = 'dropdetectstatus',
+    arrayoutputstatus = 'arrayoutputstatus',
+    arrayinputstatus = 'arrayinputstatus',
+    yaxiselevatorstatus = 'yaxiselevatorstatus',
+    xaxiselevatorstatus = 'xaxiselevatorstatus',
+    yaxisliftmotor = 'yaxisliftmotor',
+    xaxisliftmotor = 'xaxisliftmotor',
+    relaycommand = 'relaycommand',
+    lifterreset = 'lifterreset',
+    manualspeedmode = 'manualspeedmode',
+    motortimeout = 'motortimeout',
+    setyaxisposition = 'setyaxisposition',
+    setxaxisposition = 'setxaxisposition',
+    setyaxismotor = 'setyaxismotor',
+    setxaxismotor = 'setxaxismotor',
+    shippingcontrol = 'shippingcontrol',
+    yaxisliftmotorissue = 'yaxisliftmotorissue',
+    xaxisliftmotorissue = 'xaxisliftmotorissue',
+    arrayoutput = 'arrayoutput',
+    liftoutput = 'liftoutput',
+    positionliftmotor = "positionliftmotor"
 }
 export enum EMessage {
     loginfailed = 'login failed',

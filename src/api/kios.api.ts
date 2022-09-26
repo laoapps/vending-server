@@ -1,15 +1,15 @@
 import axios from 'axios';
 import express, { Router } from 'express';
-import { EMessage, IReqModel, IResModel } from '../entities/syste.model';
+import { EMessage, EESSP_COMMANDS, IReqModel, IResModel } from '../entities/syste.model';
 const sspLib = require('encrypted-smiley-secure-protocol');
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from "ws-heartbeat/server";
-import { PrintError, PrintSucceeded } from '../sevices/service';
+import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../sevices/service';
 export class KiosServer {
     wss: WebSocketServer.Server;
     constructor(router: Router,wss: WebSocketServer.Server) {
         
-        this.initWs(wss);
+        initWs(wss);
         this.wss = wss;
         let eSSP = new sspLib({
             id: 0x00,
@@ -20,7 +20,7 @@ export class KiosServer {
         router.post('/command', async (req, res) => {
             const command = req.query['command']+'';
             try {
-                
+                if(!Object.keys(EESSP_COMMANDS).includes(command))throw new Error(EMessage.commandnotfound)
                 eSSP.command(command)
                     .then(result => {
                         console.log('Serial number:', result.info.serial_number)
@@ -35,9 +35,7 @@ export class KiosServer {
 
        
 
-        eSSP.on('READ_NOTE', result => {
-            console.log(result)
-        })
+
 
         eSSP.on('OPEN', () => {
             console.log('open');
@@ -65,104 +63,39 @@ export class KiosServer {
             eSSP.command('LAST_REJECT_CODE')
             .then(result => {
                 console.log(result)
-                this.wsSendToClient(wss, EMessage.all, result, true);
+                wsSendToClient(wss, EMessage.all,'LAST_REJECT_CODE', result, true);
             })
         })
         eSSP.on('READ_NOTE', result => {
             console.log(result)
-            this.wsSendToClient(wss, EMessage.all, result, true);
+            wsSendToClient(wss, EMessage.all,'READ_NOTE', result, true);
         })
 
         eSSP.on('EMPTIED', result => {
             console.log(result)
-            this.wsSendToClient(wss, EMessage.all, result, true);
+            wsSendToClient(wss, EMessage.all,'EMPTIED', result, true);
         })
         eSSP.on('DISPENSING', result => {
             console.log(result)
-            this.wsSendToClient(wss, EMessage.all, result, true);
+            wsSendToClient(wss, EMessage.all,'DISPENSING', result, true);
         })
         eSSP.on('CASHBOX_REPLACED', result => {
             console.log(result)
-             this.wsSendToClient(wss, EMessage.all, result, true);
+             wsSendToClient(wss, EMessage.all,'CASHBOX_REPLACED', result, true);
         })
-        
-        eSSP.open('COM1');
+        eSSP.command('SET_BAUD_RATE', {
+            baudrate: 9600, // 9600|38400|115200
+            reset_to_default_on_reset: true
+        })
+        eSSP.open('/dev/ttyS0')
+        // eSSP.open('COM1');
 
     }
 
 
 
-    initWs(wss: WebSocketServer.Server) {
-        setWsHeartbeat(wss, (ws, data, binary) => {
-            if (data === '{"kind":"ping"}') { // send pong if recieved a ping.
-                ws.send('{"kind":"pong"}');
-            }
-        }, 30000);
+   
 
-        wss.on('connection', (ws: WebSocket) => {
-            console.log('new connection ', ws.url);
-
-            console.log('current connection is alive', ws['isAlive']);
-            const that = this;
-
-
-            ws.onopen = (ev: Event) => {
-                console.log('open', ev);
-                // ws['isAlive'] = true;
-            }
-            ws.onclose = (ev: CloseEvent) => {
-                
-            }
-            ws.onerror = (ev: Event) => {
-                console.log('error', ev);
-            }
-
-            //connection is up, let's add a simple simple event
-            ws.onmessage = async (ev: MessageEvent) => {
-                let d: IReqModel = {} as IReqModel;
-                // ws['isAlive'] = true;
-                try {
-                    console.log('comming', ev.data);
-
-                    d = JSON.parse(ev.data) as IReqModel;
-                   
-                } catch (error) {
-                    console.log('message', error);
-                    ws.send(JSON.stringify(d));
-                }
-            }
-        });
-    }
-
-    broadCast(wss: WebSocketServer.WebSocketServer, r: any,delay: boolean = false) {
-        const d = {} as IResModel;
-        d.data = r;
-        console.log('send ws to client ', d);
-        this.wsSendToClient(wss, EMessage.all, d, delay);
-    }
-
-    wsSendToClient(wss: WebSocketServer.Server, uuid: string, d: any, delay: boolean = false) {
-        setTimeout(() => {
-            wss.clients.forEach(ws => {
-                if (ws) {
-                    if (ws.readyState === 1) {
-                        if (ws['ownerUuid'] + '' == uuid || uuid == EMessage.all) {
-                            //d.data = x;
-                            console.log('sending to ', uuid);
-
-                            ws.send(JSON.stringify(d));
-                            return;
-                        }
-                    }
-                    else {
-                        console.log('client ', ws['ownerUuid'], ws.readyState);
-
-                    }
-                }
-
-            });
-        }, delay ? 1000 : 0);
-
-    }
+    
 
 }
