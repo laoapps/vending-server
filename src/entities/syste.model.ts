@@ -480,8 +480,14 @@ export interface IReqModel {
 }
 export enum EM102_COMMAND {
     release = 'release',
-    halt = 'halt',
-    temperature = 'temperature'
+    DO = 'DO',
+    temperature = 'temperature',
+    getid = "getid",
+    readtemperature = "readtemperature",
+    getresult = "getresult",
+    modify = "modify",
+    DI = "DI",
+    scan = "scan"
 }
 export enum EMODBUS_SYS_STAT {
     STAT_IDLE = 0, //idle
@@ -523,6 +529,10 @@ export enum EMODBUS_ERROR {
     ERR_HOR_ENCODE_BREAK = 0x1C,//:Horizontal motor encoder failure (check motor feedback line)
 
 }
+
+
+
+
 export enum EMODBUS_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
@@ -692,6 +702,7 @@ export enum EMessage {
     foundPhonenumber = "foundPhonenumber",
     tokenNotFound = "tokenNotFound",
     showallonlineconnection = "showallonlineconnection",
-    SubmittedCoinIsZeroValue = "SubmittedCoinIsZeroValue"
+    SubmittedCoinIsZeroValue = "SubmittedCoinIsZeroValue",
+    commandsucceeded = "commandsucceeded"
 }
 

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@types/buffer-xor": "^2.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/cors": "^2.8.12",
     "@types/elliptic": "^6.4.14",
@@ -11,6 +12,7 @@
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "axios": "^0.27.2",
+    "buffer-xor": "^2.0.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -22,6 +24,7 @@
     "jstoxml": "^3.2.3",
     "modbus-serial": "^8.0.5",
     "moment": "^2.29.4",
+    "node-crc16": "^2.0.7",
     "pg": "^8.7.3",
     "redis": "^4.2.0",
     "request-ip": "^3.3.0",

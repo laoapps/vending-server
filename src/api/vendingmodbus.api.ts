@@ -5,7 +5,7 @@ import ModbusRTU from 'modbus-serial';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from "ws-heartbeat/server";
 import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../sevices/service';
-
+import crc16 from 'node-crc16';
 export class VendingServer {
     wss: WebSocketServer.Server;
     client = new ModbusRTU();
@@ -168,7 +168,7 @@ export class VendingServer {
             // Driver board return (example): 01 06 10 08 13 88 01 9E Note: This command is valid for two-axis systems only.
             case  EMODBUS_COMMAND.shippingcontrol:
                 buff = [0x10, 0x20, 0x01, 0x00, 0x02, 0x04, 0x00, 0X01, 0X01, 0X00, 0xFB, 0xF2];
-            //                 Packet byte 1 lane number, 00 - lane number for the first layer of the first column of motors
+            // Packet byte 1 lane number, 00 - lane number for the first layer of the first column of motors
             // Data packet byte 2 cargo channel type, 01 - cargo channel type is spring motor
             // Packet byte 3 turn on drop detection, 01 - turn on drop detection
             // Byte 4 of the packet turns on the lift system, 00 - does not enable the lift
