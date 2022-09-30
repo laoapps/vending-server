@@ -7,8 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import * as WebSocket from 'ws';
-import { KiosServer } from './api/kios.api';
-import { PrintSucceeded } from './services/service';
+
 
 const app = express();
 const router = express.Router();
@@ -19,13 +18,8 @@ app.use(cookieParser());
 app.disable('x-powered-by');
 app.use(helmet.hidePoweredBy());
 
-
-
-
-
 const server =http.createServer(app)
-server.listen(process.env.PORT || 9000, async function () {
-    console.log('HTTP listening on port ' + process.env.PORT || 9000);
+server.listen(process.env.PORT || 9009, async function () {
+    console.log('HTTP listening on port ' + process.env.PORT || 9009);
   });
   const wss = new WebSocket.Server({ server });
-new KiosServer(router,wss)

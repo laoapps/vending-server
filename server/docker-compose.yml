@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+etl-service:
+    build: . 
+    restart: always
+    container_name: etl-service
+    # image: touyara/orderbillingapi:v1
+    # command: npm start
+    environment:
+      - DATABASE_HOST=host.docker.internal
+      - DATABASE_USER=dbetlserviceadmin
+      - DATABASE_DB=dbetlservice
+      - DATABASE_PASSWORD=2Grg7Dith14P
+      - PORT=34214
+    ports:
+      - 34214:34214
+    secrets:
+      - db-password
+    volumes:
+      - .:/app
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - back-notused:/opt/app/node_modules
+    networks:
+      - etlservicebackend
+    depends_on:
+      - etl-topup-service
+      #- postgresql
+      #- redis
+
+  
+volumes:
+  back-notused:
+networks:
+  etlservicebackend:

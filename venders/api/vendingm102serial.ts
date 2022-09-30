@@ -5,7 +5,7 @@ import { EM102_COMMAND, EMessage, IReqModel, IResModel } from '../entities/syste
 import ModbusRTU from 'modbus-serial';
 import { SerialPort } from 'serialport'
 import * as WebSocketServer from 'ws';
-import { broadCast, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../sevices/service';
+import { broadCast, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import crc16, { checkSum } from 'node-crc16';
 
 export class VendingM102Server {

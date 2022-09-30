@@ -4,7 +4,7 @@ import { EMessage, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/sys
 import ModbusRTU from 'modbus-serial';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from "ws-heartbeat/server";
-import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../sevices/service';
+import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import crc16 from 'node-crc16';
 export class VendingServer {
     wss: WebSocketServer.Server;

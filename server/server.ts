@@ -7,8 +7,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import * as WebSocket from 'ws';
-import { KiosServer } from './api/kios.api';
-import { PrintSucceeded } from './services/service';
 
 const app = express();
 const router = express.Router();
@@ -28,4 +26,3 @@ server.listen(process.env.PORT || 9000, async function () {
     console.log('HTTP listening on port ' + process.env.PORT || 9000);
   });
   const wss = new WebSocket.Server({ server });
-new KiosServer(router,wss)

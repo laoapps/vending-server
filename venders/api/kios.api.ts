@@ -4,7 +4,7 @@ import { EMessage, EESSP_COMMANDS, IReqModel, IResModel } from '../entities/syst
 const sspLib = require('encrypted-smiley-secure-protocol');
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from "ws-heartbeat/server";
-import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../sevices/service';
+import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 export class KiosServer {
     wss: WebSocketServer.Server;
     constructor(router: Router,wss: WebSocketServer.Server) {

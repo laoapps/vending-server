@@ -6,7 +6,7 @@ import ModbusRTU from 'modbus-serial';
 import { SerialPort } from 'serialport'
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from "ws-heartbeat/server";
-import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient, xORChecksum } from '../sevices/service';
+import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient, xORChecksum } from '../services/service';
 import xor from 'buffer-xor'
 
 export class VendingM102Server {
