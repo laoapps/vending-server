@@ -4,7 +4,7 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 import net from 'net';
 import { broadCast, initWs, PrintError, PrintSucceeded } from '../services/service';
-import { EMessage, IMachineClient, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
+import { EMessage, IMachineClientID, IMachineID, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
 import { chineseteacan, imagecokecan, imagpepsican, oishitea, tigerheadwater } from '../services/demo';
 import { SocketServer } from '../services/socketServer';
 
@@ -12,56 +12,84 @@ export class InventoryServer {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
-    ssocket:SocketServer ={} as SocketServer;
+    ssocket: SocketServer = {} as SocketServer;
 
     stock = new Array<IStock>();
     vendingOnSale = new Array<IVendingMachineSale>();
     vendingBill = new Array<IVendingMachineBill>();
 
-    clients = new Array<IMachineClient>();
-    tokens = new Array<string>();
+    clients = new Array<IMachineID>();
 
-    constructor(router: Router, wss: WebSocketServer.Server,socket:SocketServer) {
-        this.ssocket=socket;
+
+    constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServer) {
+        this.ssocket = socket;
         initWs(wss);
         this.wss = wss;
-        
+
         router.post('/', async (req, res) => {
-            const { limit, skip, data, command,token } = req.body;
+            const { limit, skip, data, command } = req.body;
             try {
-                if(command=='login'){ // using login token
-                    //
-                    this.tokens.push()
+                const clientId = data.clientId;
+                let loggedin = false;
+                this.wss.clients.forEach(v => {
+                    loggedin = v['clientId'] == clientId;
+                })
+
+
+                if (!loggedin) throw new Error(EMessage.notloggedinyet);
+                if(command =='confirm'){
+                    this.callBackConfirm(data.uuid,data.ids,data.value,data.machineId,data.ref,data.others).then(r=>{
+                        res.send(PrintSucceeded(command, {uuid: data.uuid,ids:data.ids,value:data.value,machineId:data.machineId,ref:data.ref,others:data.others}, EMessage.succeeded));
+                    }).catch(e=>{
+                        res.send(PrintError(command, e, EMessage.error));
+                    })
                 }
                 else if (command == 'list') {
-
                     res.send(PrintSucceeded(command, this.vendingOnSale, EMessage.succeeded));
-                } else if (command == 'buy') {
-
-                    const ids = data.ids as Array<string>;
+                } else if (command == 'buyMMoney') {
+                    const ids = data.ids as Array<string>; // item id
+                    const machineId = data.machineId;
                     const value = this.vendingOnSale.filter(v => ids.includes(v.stock.id + '')).reduce((a, b) => {
                         return a + b.stock.price;
                     }, 0);
-                    const { uuid, qr } = await this.generateBill(ids, value);
-                    this.vendingBill.push({ ids, value, qr, uuid });
+                    const { uuid, qr } = await this.generateBillMMoney(ids, value, machineId);
+
+                    this.vendingBill.push({
+                        uuid,
+                        clientId,
+                        machineId,
+                        hashM: '',
+                        hashP: '',
+                        paymentmethod: command,
+                        paymentref: '',
+                        paymentstatus: 'pending',
+                        paymenttime: new Date(),
+                        requestpaymenttime: new Date(),
+                        totalvalue: value,
+                        vendingsales:ids.map(v=>{
+                            const stock =this.vendingOnSale.find(x=>x.id+''==v)?.stock|| {} as IStock;
+                            const position =this.vendingOnSale.find(x=>ids.includes(x.id+''))?.position||{}as -1;
+                            return {stock,position} as IVendingMachineSale;
+                        })
+                    });
                     res.send(PrintSucceeded(command, { qr, ids, value, uuid }, EMessage.succeeded));
                 } else {
-                    res.send(PrintSucceeded(command, [], EMessage.succeeded));
+                    res.send(PrintError(command, [], EMessage.notsupport));
                 }
             } catch (error) {
                 console.log(error);
                 res.send(PrintError(command, error, EMessage.error));
             }
         });
-        router.post('/confirm', async (req, res) => {
-            try {
-                const { uuid, value, ids } = req.body;
-                broadCast(this.wss,'confirm',{uuid,value,ids})
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError('confirm', error, EMessage.error));
-            }
-        })
+        // router.post('/confirm', async (req, res) => {
+        //     try {
+        //         const { uuid, value, ids } = req.body;
+        //         broadCast(this.wss, 'confirm', { uuid, value, ids })
+        //     } catch (error) {
+        //         console.log(error);
+        //         res.send(PrintError('confirm', error, EMessage.error));
+        //     }
+        // })
 
 
         /// 0. init for demo 
@@ -77,8 +105,8 @@ export class InventoryServer {
                     ,
                     price: 9000,
                     qtty: 1000,
-                    hashP:'',
-                    hashM:''
+                    hashP: '',
+                    hashM: ''
                 }, {
                     id: 1,
                     name: 'Pepsi can 330ml',
@@ -86,8 +114,8 @@ export class InventoryServer {
                     ,
                     price: 9000,
                     qtty: 1000,
-                    hashP:'',
-                    hashM:''
+                    hashP: '',
+                    hashM: ''
 
                 }, {
                     id: 2,
@@ -96,8 +124,8 @@ export class InventoryServer {
                     ,
                     price: 12000,
                     qtty: 1000,
-                    hashP:'',
-                    hashM:''
+                    hashP: '',
+                    hashM: ''
                 }
                     , {
                     id: 3,
@@ -105,8 +133,8 @@ export class InventoryServer {
                     image: chineseteacan,
                     price: 8000,
                     qtty: 100,
-                    hashP:'',
-                    hashM:''
+                    hashP: '',
+                    hashM: ''
 
                 }
                     , {
@@ -115,15 +143,17 @@ export class InventoryServer {
                     image: tigerheadwater,
                     price: 9000,
                     qtty: 100,
-                    hashP:'',
-                    hashM:''
+                    hashP: '',
+                    hashM: ''
                 }]
                 )
                 new Array(60).fill(0).forEach((v, i) => {
                     const c = Math.floor(Math.random() * this.stock.length);
-                    this.vendingOnSale.push({ stock: this.stock[c], position: i ,
-                        hashP:'',
-                        hashM:''})
+                    this.vendingOnSale.push({
+                        stock: this.stock[c], position: i,
+                        hashP: '',
+                        hashM: ''
+                    })
                 })
 
                 res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
@@ -140,33 +170,68 @@ export class InventoryServer {
     }
 
 
-    process() {
-
-    }
-    generateBill(ids: Array<string>, value: number) {
+    generateBillMMoney(ids: Array<string>, value: number, machineId: string) {
         return new Promise<any>((resolve, reject) => {
             const uuid = randomUUID();
             // generate QR from MMoney
-            axios.post('https://', { ids, value }).then(r => {
+            axios.post('https://', { ids, value, machineId }).then(r => {
                 console.log(r);
-                resolve({ uuid, qr: r.data.qr });
+                resolve({ uuid, qr: r.data.qr, machineId });
             }).catch(e => {
                 reject(e)
             })
         })
+    }
+    callBackConfirm(uuid:string,ids: Array<string>, value: number, machineId: string,ref:string, others: any) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                const c = this.checkMachineId(machineId);
+                if (!c) throw new Error(EMessage.MachineIdNotFound);
+                this.ssocket.processOrder(machineId, ids);
+                // this.wss.
+                const x = this.vendingBill.find(v=>{
+                    v.uuid==uuid
+                });
+                if(!x)throw new Error(EMessage.billnotfound)
+                x.paymentstatus='paid';
+                x.paymentref = ref;
+                x.paymenttime = new Date();
+                
+                const y = this.vendingBill.find(v=>v.uuid==uuid);
+                this.wss.clients.forEach(v=>{
+                    const x = v['clientId'] as string;
+                    if (x) {
+                         if(x == y?.clientId){
+                            const res = {} as IResModel;
+                            res.command ='confirm';
+                            res.message = EMessage.confirmsucceeded;
+                            res.status=1;
+                            res.data=y;
+                            v.send(JSON.stringify(res));
+                         }
+                    }
+                })
+            resolve(true);
+            } catch (error) {
+                console.log(error);
+                reject(error);
+            }
+
+        })
 
     }
-    getClientIDFromToken(token:string){
-        return new Promise<any>((resolve,reject)=>{
-            axios.post('http://',{token}).then(r=>{
-                resolve(token);
-            }).catch(e=>{
-                reject(e)
-            })
-        })
-    }
-    checkToken(){
-        
+
+    checkMachineId(machineId: string): IMachineClientID | null {
+        const x = this.ssocket.clients.find(v => {
+            const x = v['clientId'] as IMachineClientID;
+            if (x) {
+                return x.machineId == machineId;
+            }
+            return false;
+        });
+        if (x) x['clientId'] as IMachineClientID;
+        return null;
+
     }
 
 

@@ -6,12 +6,12 @@ import ModbusRTU from 'modbus-serial';
 import { SerialPort } from 'serialport'
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from "ws-heartbeat/server";
-import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient, xORChecksum } from '../services/service';
+import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import xor from 'buffer-xor'
 
 export class VendingM102Server {
     wss: WebSocketServer.Server;
-    port = new SerialPort({ path: '/dev/tty-usbserial1', baudRate: 57600 }, function (err) {
+    port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
         if (err) {
             return console.log('Error: ', err.message)
         }

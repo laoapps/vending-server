@@ -467,13 +467,14 @@ export const EESSP_COMMANDS = {
 
 
 export interface IResModel {
-    command: EMACHINE_COMMAND;
+    command: any;
     data: any;
     message: string;
     status: number;
 }
 export interface IReqModel {
     command: EMACHINE_COMMAND;
+    data:any;
     time: string;
     ip: string;
     token: string;
@@ -703,7 +704,14 @@ export enum EMessage {
     tokenNotFound = "tokenNotFound",
     showallonlineconnection = "showallonlineconnection",
     SubmittedCoinIsZeroValue = "SubmittedCoinIsZeroValue",
-    commandsucceeded = "commandsucceeded"
+    commandsucceeded = "commandsucceeded",
+    MachineIdNotFound = "MachineIdNotFound",
+    processingorder = "processingorder",
+    loginok = "loginok",
+    notloggedinyet = "notloggedinyet",
+    notsupport = "notsupport",
+    billnotfound = "billnotfound",
+    confirmsucceeded = "confirmsucceeded"
 }
 export interface IBase{
     id?:number;
@@ -736,9 +744,11 @@ export interface IVendingMachineBill extends IBase, IBC{
     paymentref:string;
     paymenttime:Date;
     requestpaymenttime:Date;
+    machineId:string;
+    clientId:string;
 }
 
-export interface IMachineClient extends IBase,IBC {
+export interface IMachineID extends IBase,IBC {
     machineId:string;
     machineIp:string;
     machineCommands:string;
@@ -747,4 +757,9 @@ export interface IMachineClient extends IBase,IBC {
 
 export enum EMACHINE_COMMAND{
     login='login'
+}
+
+export interface IMachineClientID{
+    otp:string;
+    machineId:string;
 }

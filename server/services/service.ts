@@ -4,7 +4,7 @@ import { v4 as uuid4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import { EMessage, IReqModel, IResModel } from '../entities/syste.model';
+import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
@@ -90,6 +90,22 @@ export function initWs(wss: WebSocketServer.Server) {
                 console.log('comming', ev.data);
 
                 d = JSON.parse(ev.data) as IReqModel;
+                
+                const res ={} as IResModel
+                if(d.command==EMACHINE_COMMAND.login){
+                    res.command=d.command;
+                    res.message = EMessage.loginok;
+                    res.status = 1;
+                  
+                    if(d.data){
+                        const x = d.data as string;
+                        ws['machineId'] = x;
+                       
+                    }else throw new Error(EMessage.MachineIdNotFound)
+                    ws['clientId'] = uuid4();
+                    res.data= {machineid:d.data,clientId:ws['clientId']};
+                }
+               
                 ws.send(JSON.stringify(PrintSucceeded('', d, EMessage.succeeded)));
 
             } catch (error) {

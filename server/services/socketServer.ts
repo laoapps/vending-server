@@ -1,10 +1,12 @@
 import net from 'net';
-import { EMACHINE_COMMAND, IReqModel } from '../entities/syste.model';
+import { EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
+import cryptojs from 'crypto-js'
 export class SocketServer {
     server = net.createServer();
     clients = Array<net.Socket>();
 
-    token= Array<string>();
+
+    private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }];
 
     constructor() {
         //creates the server
@@ -73,9 +75,12 @@ export class SocketServer {
                 console.log('Bytes written : ' + bwrite);
                 console.log('Data sent to server : ' + data);
 
-                const d  =JSON.parse( data.toString()) as IReqModel;
-                if(d.command==EMACHINE_COMMAND.login){
-
+                const d = JSON.parse(data.toString()) as IReqModel;
+                if (d.command == EMACHINE_COMMAND.login) {
+                    const id = d.token;
+                    const x = that.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(CryptoJS.enc.Hex) == id);
+                    socket['machineId'] = x;
+                    that.clients.push(socket);
                 }
                 //echo data
                 // var is_kernel_buffer_full = socket.write('Data ::' + data);
@@ -94,12 +99,16 @@ export class SocketServer {
 
             socket.on('error', function (error) {
                 console.log('Error : ' + error);
+                if (!socket.closed)
+                    socket.end();
             });
 
             socket.on('timeout', function () {
                 console.log('Socket timed out !');
                 socket.end('Timed out!');
                 // can call socket.destroy() here too.
+                if (!socket.closed)
+                    socket.end();
             });
 
             socket.on('end', function (data) {
@@ -127,7 +136,7 @@ export class SocketServer {
         });
 
         // emits when any error occurs -> calls closed event immediately after this.
-        this. server.on('error', function (error) {
+        this.server.on('error', function (error) {
             console.log('Error: ' + error);
         });
 
@@ -143,8 +152,8 @@ export class SocketServer {
 
 
         // for dyanmic port allocation
-        this. server.listen(function () {
-            var address =  that.server.address() as net.AddressInfo;
+        this.server.listen(function () {
+            var address = that.server.address() as net.AddressInfo;
             var port = address.port;
             var family = address.family;
             var ipaddr = address.address;
@@ -155,12 +164,34 @@ export class SocketServer {
 
 
 
-        var islistening =  this.server.listening;
+        var islistening = this.server.listening;
 
         if (islistening) {
             console.log('Server is listening');
         } else {
             console.log('Server is not listening');
+        }
+    }
+
+    processOrder(machineId: string, ids: Array<string> = []) {
+        const x = this.clients.find(v => {
+            const x = v['machineId'] as IMachineClientID;
+            if (x) {
+                return x.machineId == machineId;
+            }
+            return false;
+        });
+        if (x && ids.length) {
+            const res = {} as IResModel;
+            res.command = EMODBUS_COMMAND.shippingcontrol
+            res.message = EMessage.processingorder;
+            res.status = 1;
+            res.data = ids;
+
+            return x.write(JSON.stringify(res))
+        } else {
+            console.log('client id socket not found');
+
         }
     }
 

@@ -10,11 +10,12 @@ import crc16, { checkSum } from 'node-crc16';
 
 export class VendingM102Server {
     wss: WebSocketServer.Server;
-    port = new SerialPort({ path: '/dev/tty-usbserial1', baudRate: 9600 }, function (err) {
+    port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (err) {
         if (err) {
             return console.log('Error: ', err.message)
         }
     })
+    ch
     constructor(router: Router, wss: WebSocketServer.Server) {
 
         initWs(wss);
@@ -60,6 +61,9 @@ export class VendingM102Server {
             }
         })
     }
+    getCheckSum(s:string){
+        return ['0x'+s.substring(0,1),'0x'+s.substring(2,3)]
+    }
     command(command: EM102_COMMAND, param: number, res: Response) {
         let buffer = Array<any>();
         let check = '';
@@ -75,33 +79,33 @@ export class VendingM102Server {
             case EM102_COMMAND.scan:
                 buffer = [0x01, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
                 check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum', check);
-                buffer.push(check);
+                console.log('checksum',this.getCheckSum(check) );
+                buffer.push(...this.getCheckSum(check));
                 break;
             case EM102_COMMAND.release:
                 buffer = [0x01, 0x05, 0x00, param, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
                 check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum', check);
-                buffer.push(check);
+                console.log('checksum',this.getCheckSum(check) );
+                buffer.push(...this.getCheckSum(check));
                 break;
 
             case EM102_COMMAND.readtemperature:
                 buffer = [0x01, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x92, 0x29]
                 check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum', check);
-                buffer.push(check);
+                console.log('checksum',this.getCheckSum(check) );
+                buffer.push(...this.getCheckSum(check));
                 break;
             case EM102_COMMAND.DO:
                 buffer = [0x01, 0x08, param, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
                 check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum', check);
-                buffer.push(check);
+                console.log('checksum',this.getCheckSum(check) );
+                buffer.push(...this.getCheckSum(check));
                 break;
             case EM102_COMMAND.DI:
                 buffer = [0x01, 0x09, param, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
                 check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum', check);
-                buffer.push(check);
+                console.log('checksum',this.getCheckSum(check) );
+                buffer.push(...this.getCheckSum(check));
                 break;
             case EM102_COMMAND.modify:
                 buffer = [0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x50]
