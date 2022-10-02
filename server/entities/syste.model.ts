@@ -467,13 +467,13 @@ export const EESSP_COMMANDS = {
 
 
 export interface IResModel {
-    command: string;
+    command: EMACHINE_COMMAND;
     data: any;
     message: string;
     status: number;
 }
 export interface IReqModel {
-    command: string;
+    command: EMACHINE_COMMAND;
     time: string;
     ip: string;
     token: string;
@@ -705,4 +705,46 @@ export enum EMessage {
     SubmittedCoinIsZeroValue = "SubmittedCoinIsZeroValue",
     commandsucceeded = "commandsucceeded"
 }
+export interface IBase{
+    id?:number;
+    uuid?:string;
+    isActive?:boolean;
+    createdAt?:Date;
+    updatedAt?:Date;
+    // deletedAt?:Date;
+}
+export interface IBC {
+    hashP: string;
+    hashM: string;
+   
+}
+export interface IStock extends IBase, IBC{
+    name: string;
+    image: string;
+    price: number;
+    qtty: number;
+}
+export interface IVendingMachineSale extends IBase,IBC{
+    stock:IStock;
+    position:number;
+}
+export interface IVendingMachineBill extends IBase, IBC{
+    vendingsales:Array<IVendingMachineSale>;
+    totalvalue:number;
+    paymentmethod:string;
+    paymentstatus:string;
+    paymentref:string;
+    paymenttime:Date;
+    requestpaymenttime:Date;
+}
 
+export interface IMachineClient extends IBase,IBC {
+    machineId:string;
+    machineIp:string;
+    machineCommands:string;
+    logintoken:string;
+}
+
+export enum EMACHINE_COMMAND{
+    login='login'
+}

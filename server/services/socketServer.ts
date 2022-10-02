@@ -1,7 +1,11 @@
 import net from 'net';
+import { EMACHINE_COMMAND, IReqModel } from '../entities/syste.model';
 export class SocketServer {
     server = net.createServer();
     clients = Array<net.Socket>();
+
+    token= Array<string>();
+
     constructor() {
         //creates the server
 
@@ -69,9 +73,10 @@ export class SocketServer {
                 console.log('Bytes written : ' + bwrite);
                 console.log('Data sent to server : ' + data);
 
-                const {method,d} =JSON.parse( data.toString());
-                method;
-                d;
+                const d  =JSON.parse( data.toString()) as IReqModel;
+                if(d.command==EMACHINE_COMMAND.login){
+
+                }
                 //echo data
                 // var is_kernel_buffer_full = socket.write('Data ::' + data);
                 // if (is_kernel_buffer_full) {
@@ -113,11 +118,11 @@ export class SocketServer {
                 }
             });
 
-            setTimeout(function () {
-                var isdestroyed = socket.destroyed;
-                console.log('Socket destroyed:' + isdestroyed);
-                socket.destroy();
-            }, 1200000);
+            // setTimeout(function () {
+            //     var isdestroyed = socket.destroyed;
+            //     console.log('Socket destroyed:' + isdestroyed);
+            //     socket.destroy();
+            // }, 1200000);
 
         });
 

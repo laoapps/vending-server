@@ -4,21 +4,23 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 import net from 'net';
 import { broadCast, initWs, PrintError, PrintSucceeded } from '../services/service';
-import { EMessage } from '../entities/syste.model';
+import { EMessage, IMachineClient, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
 import { chineseteacan, imagecokecan, imagpepsican, oishitea, tigerheadwater } from '../services/demo';
 import { SocketServer } from '../services/socketServer';
 
 export class InventoryServer {
-
+    // websocket server for vending controller only
     wss: WebSocketServer.Server;
-
+    // socket server for vending controller only
     ssocket:SocketServer ={} as SocketServer;
 
     stock = new Array<IStock>();
-    vendingOnSale = new Array<{ stock: IStock, position: number }>();
-    vendingBill = new Array<{ ids: Array<string>, value: number, qr: string, uuid: string }>();
+    vendingOnSale = new Array<IVendingMachineSale>();
+    vendingBill = new Array<IVendingMachineBill>();
 
-    
+    clients = new Array<IMachineClient>();
+    tokens = new Array<string>();
+
     constructor(router: Router, wss: WebSocketServer.Server,socket:SocketServer) {
         this.ssocket=socket;
         initWs(wss);
@@ -27,7 +29,11 @@ export class InventoryServer {
         router.post('/', async (req, res) => {
             const { limit, skip, data, command,token } = req.body;
             try {
-                if (command == 'list') {
+                if(command=='login'){ // using login token
+                    //
+                    this.tokens.push()
+                }
+                else if (command == 'list') {
 
                     res.send(PrintSucceeded(command, this.vendingOnSale, EMessage.succeeded));
                 } else if (command == 'buy') {
@@ -56,6 +62,10 @@ export class InventoryServer {
                 res.send(PrintError('confirm', error, EMessage.error));
             }
         })
+
+
+        /// 0. init for demo 
+
         router.post('/init', async (req, res) => {
             this.stock = [];
             this.vendingOnSale = [];
@@ -66,14 +76,18 @@ export class InventoryServer {
                     image: imagecokecan
                     ,
                     price: 9000,
-                    qtty: 1000
+                    qtty: 1000,
+                    hashP:'',
+                    hashM:''
                 }, {
                     id: 1,
                     name: 'Pepsi can 330ml',
                     image: imagpepsican
                     ,
                     price: 9000,
-                    qtty: 1000
+                    qtty: 1000,
+                    hashP:'',
+                    hashM:''
 
                 }, {
                     id: 2,
@@ -81,14 +95,18 @@ export class InventoryServer {
                     image: oishitea
                     ,
                     price: 12000,
-                    qtty: 1000
+                    qtty: 1000,
+                    hashP:'',
+                    hashM:''
                 }
                     , {
                     id: 3,
                     name: 'Chinese tea 330ml',
                     image: chineseteacan,
                     price: 8000,
-                    qtty: 100
+                    qtty: 100,
+                    hashP:'',
+                    hashM:''
 
                 }
                     , {
@@ -96,12 +114,16 @@ export class InventoryServer {
                     name: 'Water tiger head 380ml',
                     image: tigerheadwater,
                     price: 9000,
-                    qtty: 100
+                    qtty: 100,
+                    hashP:'',
+                    hashM:''
                 }]
                 )
                 new Array(60).fill(0).forEach((v, i) => {
                     const c = Math.floor(Math.random() * this.stock.length);
-                    this.vendingOnSale.push({ stock: this.stock[c], position: i })
+                    this.vendingOnSale.push({ stock: this.stock[c], position: i ,
+                        hashP:'',
+                        hashM:''})
                 })
 
                 res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
@@ -143,15 +165,11 @@ export class InventoryServer {
             })
         })
     }
-
+    checkToken(){
+        
+    }
 
 
 }
-export interface IStock {
-    id: number;
-    name: string;
-    image: string;
-    price: number;
-    qtty: number;
-}
+
 
