@@ -1,6 +1,9 @@
 import net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import { EM102_COMMAND, EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
+import { Router } from 'express';
+import { PrintError } from '../services/service';
+import { VendingM102Server } from './vendingm102serial';
 export class SocketClientM102 {
     //---------------------client----------------------
 
@@ -12,17 +15,21 @@ export class SocketClientM102 {
     otp = '111111';
     token = '';
     t:any;
-    constructor() {
-        this.init();
+    m102Vending:VendingM102Server;
+    constructor(router: Router) {
+        this.m102Vending = new VendingM102Server(this);
+        this.init(router);
         this.token = cryptojs.SHA256(this.machineid + this.otp).toString(CryptoJS.enc.Hex)
     }
-    init() {
+    init(router:Router) {
         const that = this;
         this.client.connect({
             port: this.port,
             host: this.host
         });
-        if(this.t)this.t=null;
+        if(this.t){
+            clearInterval(this.t);
+            this.t=null;}
         this.client.on('connect', function () {
             // console.log('Client: connection established with server');
 
@@ -65,11 +72,11 @@ export class SocketClientM102 {
         this.client.on('error', function (data) {
             console.log('Data from server:' + data);
             that.client.end();
-            that.init();
+            that.init(router);
         });
         this.client.on('end', function (data) {
             console.log('Data from server:' + data);
-            that.init();
+            that.init(router);
         });
 
        this.t= setInterval(function () {
@@ -80,6 +87,16 @@ export class SocketClientM102 {
             that.client.write(JSON.stringify(req));
         }, 60000 * 5);
 
+        router.post('/command', async (req, res) => {
+            const command = req.query['command'] + '';
+            const param = req.body ;
+            try {
+                this.m102Vending.command(command as any,param,res)
+            } catch (error) {
+                console.log(error);
+                res.send(PrintError(command, error, EMessage.error));
+            }
+        })
     }
     send(data: any) {
         const req = {} as IReqModel;
@@ -88,6 +105,10 @@ export class SocketClientM102 {
         req.token = this.token;
         req.data = data;
         this.client.write(JSON.stringify(req));
+    }
+    close(){
+        this.close();
+        this.m102Vending.close();
     }
 
 }

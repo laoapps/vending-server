@@ -9,7 +9,7 @@ import crc16 from 'node-crc16';
 export class VendingServer {
 
     client = new ModbusRTU();
-    constructor(router: Router, wss: WebSocketServer.Server) {
+    constructor(router: Router) {
 
 
 

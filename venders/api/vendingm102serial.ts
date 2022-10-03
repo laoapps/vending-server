@@ -113,10 +113,10 @@ export class VendingM102Server {
 
         })
     }
-
-
-
-
-
-
+    close(){
+        this.port.close((e)=>{
+            console.log('closing',e);
+            
+        })
+    }
 }

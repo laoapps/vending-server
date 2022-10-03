@@ -7,6 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import * as WebSocket from 'ws';
+import { SocketClientM102 } from './api/socketClient.m102';
 
 
 const app = express();
@@ -22,4 +23,11 @@ const server =http.createServer(app)
 server.listen(process.env.PORT || 9009, async function () {
     console.log('HTTP listening on port ' + process.env.PORT || 9009);
   });
-  const wss = new WebSocket.Server({ server });
+const sClient = new SocketClientM102 (app);
+
+  process.on('exit', (code:number)=>{
+    console.log('exit code',code);
+    
+    sClient.close();
+  });
+
