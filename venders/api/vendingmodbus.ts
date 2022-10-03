@@ -7,12 +7,11 @@ import { setWsHeartbeat } from "ws-heartbeat/server";
 import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import crc16 from 'node-crc16';
 export class VendingServer {
-    wss: WebSocketServer.Server;
+
     client = new ModbusRTU();
     constructor(router: Router, wss: WebSocketServer.Server) {
 
-        initWs(wss);
-        this.wss = wss;
+
 
         this.client.connectRTUBuffered("/dev/ttyUSB0", { baudRate: 9600 }, this.write);
 
@@ -246,7 +245,7 @@ export class VendingServer {
         }).then(()=>{
             this.client.readHoldingRegisters(1, buff.length).then(r=>{
                 console.log('read',r);
-                wsSendToClient(this.wss,EMessage.all,command,r.buffer)
+               
             })
         })
        

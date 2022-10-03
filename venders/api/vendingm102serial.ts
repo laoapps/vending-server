@@ -7,19 +7,17 @@ import { SerialPort } from 'serialport'
 import * as WebSocketServer from 'ws';
 import { broadCast, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import crc16, { checkSum } from 'node-crc16';
+import { SocketClientM102 } from './socketClient.m102';
 
 export class VendingM102Server {
-    wss: WebSocketServer.Server;
+
     port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (err) {
         if (err) {
             return console.log('Error: ', err.message)
         }
     })
-    ch
-    constructor(router: Router, wss: WebSocketServer.Server) {
+    constructor(sock:SocketClientM102) {
 
-        initWs(wss);
-        this.wss = wss;
         // Read data that is available but keep the stream in "paused mode"
         // this.port.on('readable', function () {
         //     console.log('Data:', this.port.read())
@@ -39,27 +37,10 @@ export class VendingM102Server {
                 buffer += new String(data);
                 console.log('buffer', buffer);
                 var lines = buffer.split("\n");
-                while (lines.length > 1)
-                    wsSendToClient(that.wss, 'data', EMessage.all, lines.shift());
-                buffer = lines.join("\n");
-
+                sock.send(lines)
             });
         });
 
-        // Pipe the data into another stream (like a parser or standard out)
-        // const lineStream = this.port.pipe(new Readline())
-        router.post('/command', async (req, res) => {
-            const command = req.query['command'] as EM102_COMMAND;
-            const { param } = req.body;
-            try {
-                if (!Object.keys(EM102_COMMAND).find(v => v == command)) throw new Error(EMessage.commandnotfound);
-
-                this.command(command, param, res)
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError(command, error, EMessage.error));
-            }
-        })
     }
     getCheckSum(s:string){
         return ['0x'+s.substring(0,1),'0x'+s.substring(2,3)]

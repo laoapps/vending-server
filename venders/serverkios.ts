@@ -7,7 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import * as WebSocket from 'ws';
-import { KiosServer } from './api/kios.api';
+import { KiosServer } from './api/kios';
 import { PrintSucceeded } from './services/service';
 
 const app = express();

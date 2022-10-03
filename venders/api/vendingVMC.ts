@@ -10,16 +10,13 @@ import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient 
 import xor from 'buffer-xor'
 
 export class VendingM102Server {
-    wss: WebSocketServer.Server;
+
     port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
         if (err) {
             return console.log('Error: ', err.message)
         }
     })
     constructor(router: Router, wss: WebSocketServer.Server) {
-
-        initWs(wss);
-        this.wss = wss;
     
 
         // Read data that is available but keep the stream in "paused mode"
@@ -43,9 +40,7 @@ export class VendingM102Server {
                 console.log('buffer',buffer);
                 
                 var lines = buffer.split("\n");
-                while ( lines.length > 1 )
-                  wsSendToClient(that.wss,'data',EMessage.all, lines.shift() );
-                buffer = lines.join("\n");
+             
           
             });  
           });  

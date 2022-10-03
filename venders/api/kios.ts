@@ -6,11 +6,8 @@ import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from "ws-heartbeat/server";
 import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 export class KiosServer {
-    wss: WebSocketServer.Server;
     constructor(router: Router,wss: WebSocketServer.Server) {
         
-        initWs(wss);
-        this.wss = wss;
         let eSSP = new sspLib({
             id: 0x00,
             debug: false,

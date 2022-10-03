@@ -4,7 +4,7 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 import net from 'net';
 import { broadCast, initWs, PrintError, PrintSucceeded } from '../services/service';
-import { EMessage, IMachineClientID, IMachineID, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
+import { EMessage, EMODBUS_COMMAND, IMachineClientID, IMachineID, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
 import { chineseteacan, imagecokecan, imagpepsican, oishitea, tigerheadwater } from '../services/demo';
 import { SocketServer } from '../services/socketServer';
 
@@ -203,7 +203,7 @@ export class InventoryServer {
                     if (x) {
                          if(x == y?.clientId){
                             const res = {} as IResModel;
-                            res.command ='confirm';
+                            res.command =EMODBUS_COMMAND.shippingcontrol;
                             res.message = EMessage.confirmsucceeded;
                             res.status=1;
                             res.data=y;

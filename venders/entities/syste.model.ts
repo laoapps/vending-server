@@ -465,7 +465,9 @@ export const EESSP_COMMANDS = {
     }
 }
 
-
+export enum EMACHINE_COMMAND{
+    login='login'
+}
 export interface IResModel {
     command: string;
     data: any;
@@ -474,6 +476,7 @@ export interface IResModel {
 }
 export interface IReqModel {
     command: string;
+    data:any;
     time: string;
     ip: string;
     token: string;

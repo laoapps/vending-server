@@ -79,8 +79,16 @@ export class SocketServer {
                 if (d.command == EMACHINE_COMMAND.login) {
                     const id = d.token;
                     const x = that.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(CryptoJS.enc.Hex) == id);
-                    socket['machineId'] = x;
+                   if(!x){
+                    socket['machineId'] ;
                     that.clients.push(socket);
+                   }else{
+                    console.log(' exist machine id , have to check if there are 2 or more connections per 1 machineId');
+                    
+                    // socket['machineId'] = x.machineId;
+                    // that.clients.push(socket);
+                   }
+                    
                 }
                 //echo data
                 // var is_kernel_buffer_full = socket.write('Data ::' + data);
