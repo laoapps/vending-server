@@ -1,8 +1,6 @@
 import net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
-import { Router } from 'express';
-import { PrintError } from '../services/service';
 import { VendingM102Server } from './vendingm102serial';
 export class SocketClientM102 {
     //---------------------client----------------------

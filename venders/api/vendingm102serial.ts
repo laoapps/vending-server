@@ -1,6 +1,4 @@
-import axios from 'axios';
-import { Response } from 'express'
-import express, { Router } from 'express';
+
 import { EM102_COMMAND, EMessage, IReqModel, IResModel } from '../entities/syste.model';
 import ModbusRTU from 'modbus-serial';
 import { SerialPort } from 'serialport'

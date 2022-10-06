@@ -11,7 +11,7 @@ import { setWsHeartbeat } from 'ws-heartbeat/server';
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
-export const redisClient = redis.createClient({ url: process.env.DATABASE_HOST + '' || '0.0.0.0' });
+
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
