@@ -129,7 +129,19 @@ const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (
     if (err) {
         return console.log('Error: ', err.message)
     }
+    console.log('port /dev/ttyUSB0 accessed');
+    
 })
+var b = '';
+port.on('data', function (data: any) {
+    console.log('data', data);
+    b += new String(data);
+    console.log('buffer', buffer);
+    if (buffer.length == 4) {
+        b = '';
+    }
+
+});
 function int2hex(i: number) {
     const str = Number(i).toString(16);
     return str.length === 1 ? '0' + str : str;
@@ -145,5 +157,4 @@ port.write(Buffer.from(x, 'hex'), (e) => {
         console.log('run succeeded');
 
     }
-
 })
