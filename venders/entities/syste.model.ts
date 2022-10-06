@@ -482,6 +482,7 @@ export interface IReqModel {
     token: string;
 }
 export enum EM102_COMMAND {
+    status='status',
     release = 'release',
     DO = 'DO',
     temperature = 'temperature',

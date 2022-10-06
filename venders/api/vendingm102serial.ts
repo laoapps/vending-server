@@ -8,6 +8,7 @@ import * as WebSocketServer from 'ws';
 import { broadCast, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import crc16, { checkSum } from 'node-crc16';
 import { SocketClientM102 } from './socketClient.m102';
+import { resolve } from 'path';
 
 export class VendingM102Server {
 
@@ -16,7 +17,7 @@ export class VendingM102Server {
             return console.log('Error: ', err.message)
         }
     })
-    constructor(sock:SocketClientM102) {
+    constructor(sock: SocketClientM102) {
 
         // Read data that is available but keep the stream in "paused mode"
         // this.port.on('readable', function () {
@@ -36,87 +37,113 @@ export class VendingM102Server {
                 console.log('data', data);
                 buffer += new String(data);
                 console.log('buffer', buffer);
-                var lines = buffer.split("\n");
-                sock.send(lines)
+                if (buffer.length == 4) {
+                    buffer = '';
+                    sock.send(buffer)
+                }
+
             });
         });
 
     }
-    getCheckSum(s:string){
-        return ['0x'+s.substring(0,1),'0x'+s.substring(2,3)]
+
+    int2hex(i: number) {
+        const str = Number(i).toString(16);
+        return str.length === 1 ? '0' + str : str;
     }
-    command(command: EM102_COMMAND, param: number, res: Response) {
-        let buffer = Array<any>();
-        let check = '';
-        switch (command) {
-            case EM102_COMMAND.getid:
-                buffer = [0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x71, 0x88];
+    command(command: EM102_COMMAND, param: any) {
+        return new Promise<IResModel>((resolve, reject) => {
+            let buffer = Array<any>();
+            let check = '';
+            switch (command) {
+                case EM102_COMMAND.getid:
+                    buffer = ['01', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '71', '88'];
 
-                break;
-            case EM102_COMMAND.getresult:
-                buffer = [0x01, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0, 0xE8];
+                    break;
+                case EM102_COMMAND.getresult:
+                    buffer = ['01', '03', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', 'D0', 'E8'];
 
-                break;
-            case EM102_COMMAND.scan:
-                buffer = [0x01, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-                check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum',this.getCheckSum(check) );
-                buffer.push(...this.getCheckSum(check));
-                break;
-            case EM102_COMMAND.release:
-                buffer = [0x01, 0x05, 0x00, param, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-                check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum',this.getCheckSum(check) );
-                buffer.push(...this.getCheckSum(check));
-                break;
+                    break;
+                case EM102_COMMAND.scan:
+                    buffer = ['01', '04', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+                    check = crc16.checkSum(buffer.join(''))
+                    break;
+                case EM102_COMMAND.release:
+                    buffer = ['01', '05', this.int2hex(param.slot), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+                    check = crc16.checkSum(buffer.join(''))
+                    break;
 
-            case EM102_COMMAND.readtemperature:
-                buffer = [0x01, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x92, 0x29]
-                check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum',this.getCheckSum(check) );
-                buffer.push(...this.getCheckSum(check));
-                break;
-            case EM102_COMMAND.DO:
-                buffer = [0x01, 0x08, param, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-                check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum',this.getCheckSum(check) );
-                buffer.push(...this.getCheckSum(check));
-                break;
-            case EM102_COMMAND.DI:
-                buffer = [0x01, 0x09, param, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-                check = checkSum(Buffer.from(buffer), { retType: 'hex' });
-                console.log('checksum',this.getCheckSum(check) );
-                buffer.push(...this.getCheckSum(check));
-                break;
-            case EM102_COMMAND.modify:
-                buffer = [0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x50]
-                // buffer=[0xFF,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xD0,0xA0]
-                // buffer=[0xFF,0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x81,0x30]
-                // buffer=[0xFF,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x33,0x01]
-                // buffer=[0xFF,0x05,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x62,0x91]
-                // buffer=[0xFF,0x06,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x92,0x61]
-                // buffer=[0xFF,0x07,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xC3,0xF1]
-                // buffer=[0xFF,0x08,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xF6,0x02]
-                break;
+                case EM102_COMMAND.readtemperature:
+                    buffer = ['01', '07', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '92', '29']
+                    check = crc16.checkSum(buffer.join(''))
+                    break;
+                case EM102_COMMAND.DO:
+                    buffer = ['01', '08', param, '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00']
+                    check = crc16.checkSum(buffer.join(''))
+                    break;
+                case EM102_COMMAND.DI:
+                    buffer = ['01', '09', param, '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00']
+                    check = crc16.checkSum(buffer.join(''))
+                    break;
+                case EM102_COMMAND.modify:
+                    buffer = ['FF', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '20', '50']
+                    // buffer=[FF,02,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',D0,A0]
+                    // buffer=[FF,03,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',81,30]
+                    // buffer=[FF,04,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',33,01]
+                    // buffer=[FF,05,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',62,91]
+                    // buffer=[FF,06,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',92,61]
+                    // buffer=[FF,07,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',C3,F1]
+                    // buffer=[FF,08,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',F6,02]
+                    break;
 
-            default:
+                default:
 
-                break;
-        }
-        this.port.write(buffer, 'hex', (e) => {
-            if (e) {
-                res.send(PrintError(command, param, e.message));
-                return console.log('Error: ', e.message)
-            } else {
-                res.send(PrintSucceeded(command, param, EMessage.commandsucceeded));
+                    break;
             }
+            const x = buffer.join('') + check;
+            this.port.write(Buffer.from(x, 'hex'), (e) => {
+                if (e) {
+                    reject(PrintError(command, param, e.message));
+                    return console.log('Error: ', e.message)
+                } else {
+                    resolve(PrintSucceeded(command, param, EMessage.commandsucceeded));
+                }
 
+            })
         })
+
     }
-    close(){
-        this.port.close((e)=>{
-            console.log('closing',e);
-            
+    close() {
+        this.port.close((e) => {
+            console.log('closing', e);
         })
     }
 }
+
+
+
+
+/// demo 
+
+const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (err) {
+    if (err) {
+        return console.log('Error: ', err.message)
+    }
+})
+function int2hex(i: number) {
+    const str = Number(i).toString(16);
+    return str.length === 1 ? '0' + str : str;
+}
+const param = { slot: 48 }
+const buffer = ['01', '05', int2hex(param.slot), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+const check = crc16.checkSum(buffer.join(''));
+const x = buffer.join('') + check;
+port.write(Buffer.from(x, 'hex'), (e) => {
+    if (e) {
+        return console.log('Error: ', e.message)
+    } else {
+        console.log('run succeeded');
+
+    }
+
+})

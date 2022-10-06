@@ -14,22 +14,23 @@ export class SocketClientM102 {
     machineid = '123456';
     otp = '111111';
     token = '';
-    t:any;
-    m102Vending:VendingM102Server;
-    constructor(router: Router) {
+    t: any;
+    m102Vending: VendingM102Server;
+    constructor() {
         this.m102Vending = new VendingM102Server(this);
-        this.init(router);
+        this.init();
         this.token = cryptojs.SHA256(this.machineid + this.otp).toString(CryptoJS.enc.Hex)
     }
-    init(router:Router) {
+    init() {
         const that = this;
         this.client.connect({
             port: this.port,
             host: this.host
         });
-        if(this.t){
+        if (this.t) {
             clearInterval(this.t);
-            this.t=null;}
+            this.t = null;
+        }
         this.client.on('connect', function () {
             // console.log('Client: connection established with server');
 
@@ -50,63 +51,54 @@ export class SocketClientM102 {
 
         this.client.setEncoding('utf8');
 
-        this.client.on('data', function (data) {
+        this.client.on('data', async (data)=> {
             console.log('Data from server:' + data);
             const d = JSON.parse(data.toString()) as IResModel;
 
-            const req = {} as IReqModel;
             if (d.command == 'ping') {
-                req.command = 'ping';
-                req.token = that.token;
-                req.time = new Date().getTime() + '';
-            } else if (d.command == EMODBUS_COMMAND.shippingcontrol || d.command == EM102_COMMAND.release) {
-
-            } else if (d.command == EMODBUS_COMMAND.status || d.command == EM102_COMMAND.readtemperature) {
-
-            } else if (d.command == EMODBUS_COMMAND.statusgrid || d.command == EM102_COMMAND.scan) {
-
+                this.send([],d.command as any);
+            } 
+             else  {
+                const param = d.data;
+              const c = await that.m102Vending.command(d.command as any, param)
+                this.send(c,d.command as any);
             }
             console.log(d.command, d);
-
         });
         this.client.on('error', function (data) {
             console.log('Data from server:' + data);
-            that.client.end();
-            that.init(router);
+            that.client.end(()=>{
+                setTimeout(() => {
+                    that.init();
+                }, 1000);
+                
+            });
+           
         });
         this.client.on('end', function (data) {
             console.log('Data from server:' + data);
-            that.init(router);
+            setTimeout(() => {
+                that.init();
+            }, 1000);
         });
 
-       this.t= setInterval(function () {
+        this.t = setInterval(function () {
             // this.client.end('Bye bye server');
             const req = {} as IReqModel;
             req.token = that.token;
             req.time = new Date().getTime() + '';
             that.client.write(JSON.stringify(req));
-        }, 60000 * 5);
-
-        router.post('/command', async (req, res) => {
-            const command = req.query['command'] + '';
-            const param = req.body ;
-            try {
-                this.m102Vending.command(command as any,param,res)
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError(command, error, EMessage.error));
-            }
-        })
+        }, 10000 );
     }
-    send(data: any) {
+    send(data: any, command=EM102_COMMAND.status) {
         const req = {} as IReqModel;
-        req.command = EMODBUS_COMMAND.status;
+        req.command = command;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
         this.client.write(JSON.stringify(req));
     }
-    close(){
+    close() {
         this.close();
         this.m102Vending.close();
     }

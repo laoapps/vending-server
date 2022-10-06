@@ -1,7 +1,7 @@
 import net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
-export class SocketClient {
+export class SocketKiosClient {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
