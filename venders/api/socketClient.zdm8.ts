@@ -1,4 +1,4 @@
-import net from 'net';
+import * as net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 import { VendingZDM8 } from './vendingZDM8';
