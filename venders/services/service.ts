@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import { EMessage, IReqModel, IResModel } from '../entities/syste.model';
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
-import { setWsHeartbeat } from 'ws-heartbeat/server';
+
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
@@ -57,12 +57,12 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
 
 }
 export function initWs(wss: WebSocketServer.Server) {
-    setWsHeartbeat(wss, (ws, data, binary) => {
-        if (data === '{"kind":"ping"}') { // send pong if recieved a ping.
-            ws.send(JSON.stringify(PrintSucceeded('pong', { kind: 'ping' }, EMessage.succeeded)));
+    // setWsHeartbeat(wss, (ws, data, binary) => {
+    //     if (data === '{"kind":"ping"}') { // send pong if recieved a ping.
+    //         ws.send(JSON.stringify(PrintSucceeded('pong', { kind: 'ping' }, EMessage.succeeded)));
 
-        }
-    }, 30000);
+    //     }
+    // }, 30000);
 
     wss.on('connection', (ws: WebSocket) => {
         console.log('new connection ', ws.url);

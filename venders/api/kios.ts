@@ -3,7 +3,6 @@ import express, { Router } from 'express';
 import { EMessage, EESSP_COMMANDS, IReqModel, IResModel } from '../entities/syste.model';
 const sspLib = require('encrypted-smiley-secure-protocol');
 import * as WebSocketServer from 'ws';
-import { setWsHeartbeat } from "ws-heartbeat/server";
 import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 export class KiosServer {
     constructor(router: Router,wss: WebSocketServer.Server) {

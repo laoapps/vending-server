@@ -5,7 +5,7 @@ import { EMessage, IReqModel, IResModel } from '../entities/syste.model';
 import ModbusRTU from 'modbus-serial';
 import { SerialPort } from 'serialport'
 import * as WebSocketServer from 'ws';
-import { setWsHeartbeat } from "ws-heartbeat/server";
+
 import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import xor from 'buffer-xor'
 
