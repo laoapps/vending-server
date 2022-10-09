@@ -230,7 +230,7 @@ export class SocketServerZDM8 {
         });
         return x;
     }
-    processOrder(machineId: string, position: number) {
+    processOrder(machineId: string, position: number,transactionID:number) {
         try {
             const x = this.sclients.find(v => {
                 const x = v['machineId'] as IMachineClientID;
@@ -245,6 +245,7 @@ export class SocketServerZDM8 {
                 const res = {} as IResModel;
                 res.command = EZDM8_COMMAND.shippingcontrol
                 res.message = EMessage.processingorder;
+                res.transactionID = transactionID;
                 res.status = 1;
                 res.data = { slot: position };
                 console.log('writing...', x['machineId']);

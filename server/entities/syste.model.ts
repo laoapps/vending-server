@@ -472,12 +472,14 @@ export enum EPaymentProvider{
     laab = 'laab'
 }
 export interface IResModel {
+    transactionID:number;
     command: any;
     data: any;
     message: string;
     status: number;
 }
 export interface IReqModel {
+    transactionID:number;
     command: any;
     data:any;
     time: string;

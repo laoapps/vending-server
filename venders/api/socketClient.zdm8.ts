@@ -68,7 +68,7 @@ export class SocketClientZDM8 {
             const param = d.data;
 
             const c = await that.m.command(d.command as any, param)
-            this.send(c, d.command as any);
+            this.send(c,d.transactionID, d.command as any);
             console.log('response',d.command, d);
         });
         this.client.on('error', function (data) {
@@ -99,12 +99,13 @@ export class SocketClientZDM8 {
             that.client.write(JSON.stringify(req));
         }, 5000);
     }
-    send(data: any, command = EMACHINE_COMMAND.status) {
+    send(data: any,transactionID:number, command = EMACHINE_COMMAND.status) {
         const req = {} as IReqModel;
         req.command = command;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
+        req.transactionID=transactionID
         this.client.write(JSON.stringify(req));
     }
     close() {

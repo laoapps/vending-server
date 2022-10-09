@@ -471,13 +471,15 @@ export enum EMACHINE_COMMAND{
     status = 'status'
 }
 export interface IResModel {
-    command: string;
+    transactionID:number;
+    command: any;
     data: any;
     message: string;
     status: number;
 }
 export interface IReqModel {
-    command: string;
+    transactionID:number;
+    command: any;
     data:any;
     time: string;
     ip: string;

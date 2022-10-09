@@ -40,7 +40,7 @@ export class InventoryZDM8 {
 
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
                 if (command == EClientCommand.confirmMMoney) {
-                    this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId, data.ref, data.others).then(r => {
+                    this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId,data.transactionID, data.ref, data.others).then(r => {
                         res.send(PrintSucceeded(command, { uuid: data.uuid, ids: data.ids, value: data.value, machineId: data.machineId, ref: data.ref, others: data.others }, EMessage.succeeded));
                     }).catch(e => {
                         res.send(PrintError(command, e, EMessage.error));
@@ -142,7 +142,7 @@ export class InventoryZDM8 {
                 const position = Number(req.query['position'])? Number(req.query['position']):0;
                 console.log('submit command');
                 
-                res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId,position), EMessage.succeeded));
+                res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId,position,new Date().getTime()), EMessage.succeeded));
             } catch (error) {
                 console.log(error);
                 res.send(PrintError('init', error, EMessage.error));
@@ -230,7 +230,7 @@ export class InventoryZDM8 {
             // })
         })
     }
-    callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string, ref: string, others: any) {
+    callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string,transactionID:number, ref: string, others: any) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const c = this.checkMachineId(machineId);
@@ -240,7 +240,7 @@ export class InventoryZDM8 {
                 if (!sale) throw new Error(EMessage.billnotfound);
                 sale.vendingsales.map(v=>v.position).forEach((p,i)=>{
                     setTimeout(() => {
-                        const position =this.ssocket.processOrder(machineId,p);
+                        const position =this.ssocket.processOrder(machineId,p,transactionID);
                         this.wss.clients.forEach(v => {
                             const x = v['clientId'] as string;
                             if (x) {
