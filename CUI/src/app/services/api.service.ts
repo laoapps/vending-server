@@ -24,7 +24,7 @@ export class ApiService {
     return headers;
   }
   initDemo(){
-    return this.http.get<IResModel>(this.url+'/init',{headers:this.headerBase()});
+    return this.http.get<IResModel>(this.url+'/init?machineId=12345678',{headers:this.headerBase()});
   }
   loadOnlineMachine(){
     return this.http.get<IResModel>(this.url+'/getOnlineMachines',{headers:this.headerBase()});
@@ -53,7 +53,7 @@ export class ApiService {
     req.ip;
     req.time = new Date().toString();
     req.token;
-    return this.http.post<IResModel>(this.url,{},{headers:this.headerBase()});
+    return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
 
 }

@@ -2,7 +2,7 @@ import axios from 'axios';
 import express, { Router } from 'express';
 import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
-import net from 'net';
+
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
 import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
 
