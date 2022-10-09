@@ -2,13 +2,13 @@ import net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 import { VendingZDM8 } from './vendingZDM8';
-export class SocketZDM8Client {
+export class SocketClientZDM8 {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
     port = 22222;
-    host = 'laoapps.com';
+    host = '192.168.2.102';
     machineid = '123456';
     otp = '111111';
     token = '';

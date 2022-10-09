@@ -1,6 +1,6 @@
 
 import { SocketClientM102 } from './api/socketClient.m102';
-import { SocketZDM8Client } from './api/socketClient.zdm8';
+import { SocketClientZDM8 } from './api/socketClient.zdm8';
 
 
 // const app = express();
@@ -17,8 +17,8 @@ import { SocketZDM8Client } from './api/socketClient.zdm8';
 //     console.log('HTTP listening on port ' + process.env.PORT || 9009);
 //   });
 const clients =[
-  new SocketClientM102 (),
-  new SocketZDM8Client()];
+
+  new SocketClientM102()];
 
   process.on('exit', (code:number)=>{
     console.log('exit code',code);

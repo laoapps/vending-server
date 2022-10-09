@@ -3,7 +3,7 @@ import { EMessage, EZDM8_COMMAND, IResModel } from '../entities/syste.model';
 
 import { PrintError, PrintSucceeded } from '../services/service';
 import { SerialPort } from 'serialport';
-import { SocketZDM8Client } from './socketClient.zdm8';
+import { SocketClientZDM8 } from './socketClient.zdm8';
 import crc from 'crc';
 export class VendingZDM8 {
     port = new SerialPort({ path: '/dev/ttyS1', baudRate: 9600 }, function (err) {
@@ -12,8 +12,8 @@ export class VendingZDM8 {
         }
         console.log(`port '/dev/ttyS1' accessed`);
     });
-    sock: SocketZDM8Client;
-    constructor(sock: SocketZDM8Client) {
+    sock: SocketClientZDM8;
+    constructor(sock: SocketClientZDM8) {
 
         this.sock = sock;
     }
