@@ -6,13 +6,15 @@ import { IReqModel, IResModel } from './syste.model';
 })
 export class WsapiService {
   wsurl = 'ws://localhost:9009';
-  webSocket = new WebSocket(this.wsurl);
+  webSocket:WebSocket;
   retries =1;
   constructor() { 
 
     
   }
-  connect(){
+  connect(url:string){
+    this.wsurl = url;
+    this.webSocket = new WebSocket(this.wsurl);
     setWsHeartbeat(this.webSocket, '{"kind":"ping"}', { pingInterval: 10000, pingTimeout: 30000 });
     this.webSocket.onopen = (ev) => {
       this.retries = 0;
@@ -76,7 +78,7 @@ export class WsapiService {
             console.log('create a new connection');
 
             // that.webSocket.close();
-            that.connect();
+            that.connect(that.wsurl);
             that.retries = 0;
           } else {
             console.log("waiting for the connection...")

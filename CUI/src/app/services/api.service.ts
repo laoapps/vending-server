@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EClientCommand, EPaymentProvider, IMachineId, IReqModel, IResModel } from './syste.model';
+import { WsapiService } from './wsapi.service';
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  url = 'http://localhost:9009';
-  wsurl = 'ws://localhost:9009';
+  url = 'http://laoapps.com:9009';
+  wsurl = 'ws://laoapps.com:9009';
   currentPaymentProvider=EPaymentProvider.laab;
   machineId={} as IMachineId;
-  constructor(public http:HttpClient) { 
+  constructor(public http:HttpClient,public wsapi:WsapiService) { 
 
+    this.wsapi.connect(this.wsurl);
   }
   private headerBase(): any {
     const token = localStorage.getItem('token');
