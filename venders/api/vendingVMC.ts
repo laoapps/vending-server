@@ -1,13 +1,13 @@
 import axios from 'axios';
-import {Response} from 'express'
-import express, { Router } from 'express';
-import { EMessage, IReqModel, IResModel } from '../entities/syste.model';
-import ModbusRTU from 'modbus-serial';
+
+import { EMessage, EVMC_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+
 import { SerialPort } from 'serialport'
-import * as WebSocketServer from 'ws';
+
 
 import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 import xor from 'buffer-xor'
+import { SocketClientVMC } from './socketClient.vmc';
 
 export class VendingM102Server {
 
@@ -16,8 +16,7 @@ export class VendingM102Server {
             return console.log('Error: ', err.message)
         }
     })
-    constructor(router: Router, wss: WebSocketServer.Server) {
-    
+    constructor(sock: SocketClientVMC) {
 
         // Read data that is available but keep the stream in "paused mode"
         // this.port.on('readable', function () {
@@ -28,150 +27,143 @@ export class VendingM102Server {
         // this.port.on('data', function (data) {
         //     console.log('Data:', data)
         // })
-        let buffer ='';
+        let buffer = '';
         const that = this;
         this.port.on("open", function () {
             console.log('open serial communication');
-                  // Listens to incoming data
-              that.port.on('data', function(data:any) {
-                console.log('data',data);
-                
+            // Listens to incoming data
+            that.port.on('data', function (data: any) {
+                console.log('data', data);
                 buffer += new String(data);
-                console.log('buffer',buffer);
-                
-                var lines = buffer.split("\n");
-             
-          
-            });  
-          });  
+                console.log('buffer', buffer);
+                if (buffer.length == 4) {
+                    buffer = '';
+                    sock.send(buffer)
+                }
 
-        // Pipe the data into another stream (like a parser or standard out)
-        // const lineStream = this.port.pipe(new Readline())
-        router.post('/command', async (req, res) => {
-            
-            const command = req.query['command'] + '';
-            const params = req.query['params'] as unknown as Array<number>;
-            const series = Number(req.query['series']);
-            try {
-                this.command(Number(command),series,params,res)
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError(command, error, EMessage.error));
-            }
-        })
-
-
-
+            });
+        });
 
     }
-    command(command: number,series:number,params:Array<number>,res:Response) {
-        //STX
-        //Command
-        // Length
-        // PackNO+Text
-        //XOR
-        const p =[0xfa,0xfb];
-        // POLL command
-        if(command==0x41){ 
-            p.push(command);
-            p.push(0x00);
-            // p.push(parseInt(p.length+'', 16));
-            p.push(chk8xor(p))
-        }
-        // Upper computer selects to buy
-        else if(command==0x03){ 
-            p.push(command);
-            p.push(0x03);//length
-            // p.push(parseInt(p.length+'', 16));
-            p.push(series);// default communication number
-            p.push(...params);// slot 
-            p.push(chk8xor(p))
-        }
-        /// dispensing
-        else if(command==0x06){ 
-            p.push(command);
-            p.push(0x05);//length
-            // p.push(parseInt(p.length+'', 16));
-            p.push(series);// default communication number
-            p.push(0x01);// text communication number 
-            p.push(0x01) // enable drop sensor
-            p.push(0x00) // disable elavator
-            p.push(...params) ;// select slot
-            p.push(chk8xor(p))
-        }
-        // check drop sensor
-        else if(command==0x24){ 
-            p.push(command);
-            p.push(0x05);//length
-            // p.push(parseInt(p.length+'', 16));
-            p.push(series);// default communication number
-            p.push(0x00);// read drop sensor
-            p.push(...params) // enable drop sensor
-            p.push(chk8xor(p))
-        }
-        /// set drop sensor
-        else if(command==0x24){ 
-            p.push(command);
-            p.push(0x05);//length
-            // p.push(parseInt(p.length+'', 16));
-            p.push(series);// default communication number
-            p.push(0x01);// read drop sensor
-            p.push(...params) // enable drop sensor [0x00,0x00,0x01] 
-            // disable drop sensor [0x00,0x00,0x00] 
-            p.push(chk8xor(p))
-        }
-        //temperature
-        else if(command==0x28){ 
-            p.push(command);
-            p.push(0x02);//length
-            // p.push(parseInt(p.length+'', 16));
-            p.push(series);// default communication number
-            p.push(0x01);// read drop sensor
-            p.push(...params) 
-            // enable drop sensor [0x00,0x00,0x01] 
-            // disable drop sensor [0x00,0x00,0x00] 
-            p.push(chk8xor(p))
-        }
-        //temperature
-        else if(command==0x51){ // 0x36
-            p.push(command);
-            p.push(0x01);//length
-            p.push(series);// default communication number
-            // enable drop sensor [0x00,0x00,0x01] 
-            // disable drop sensor [0x00,0x00,0x00] 
-            p.push(chk8xor(p))
-        }
-                // else if(command==0x21){ 
-        //     p.push(command);
-        //     p.push(0x06);//length
-        //     // p.push(parseInt(p.length+'', 16));
-        //     p.push(series);// default communication number
-        //     p.push(0x01);// default mode : 01 bill
-        //     p.push(...[0x00,0x01]) // amount 1
-        //     p.push(chk8xor(p))
-        // }
-        // else if(command==0x24){ 
-        //     p.push(command);
-        //     p.push(0x13);//length
-        //     // p.push(parseInt(p.length+'', 16));
-        //     p.push(series);// default communication number
-        //     p.push(0x01);// default mode : 01 bill
-        //     p.push(...[0x00,0x01]) // amount 1
-        //     p.push(chk8xor(p))
-        // }
-       
-        this.port.write(p, 'hex', (e) => {
-            if (e) {
-                return console.log('Error: ', e.message)
-            }
-            res.send(PrintSucceeded(p+'',p,EMessage.succeeded));
 
+    command(command: EVMC_COMMAND, params: any) {
+        return new Promise<IResModel>((resolve, reject) => {
+            const series = params.series;
+            //STX
+            //Command
+            // Length
+            // PackNO+Text
+            //XOR
+            const buff = [0xfa, 0xfb];
+            // POLL command
+            if (command == 0x41) {
+                buff.push(command);
+                buff.push(0x00);
+                // p.push(parseInt(p.length+'', 16));
+                buff.push(chk8xor(buff))
+            }
+            // Upper computer selects to buy
+            else if (command == 0x03) {
+                buff.push(command);
+                buff.push(0x03);//length
+                // p.push(parseInt(p.length+'', 16));
+                buff.push(series);// default communication number
+                buff.push(...params);// slot 
+                buff.push(chk8xor(buff))
+            }
+            /// dispensing
+            else if (command == 0x06) {
+                buff.push(command);
+                buff.push(0x05);//length
+                // p.push(parseInt(p.length+'', 16));
+                buff.push(series);// default communication number
+                buff.push(0x01);// text communication number 
+                buff.push(0x01) // enable drop sensor
+                buff.push(0x00) // disable elavator
+                buff.push(...params);// select slot
+                buff.push(chk8xor(buff))
+            }
+            // check drop sensor
+            else if (command == 0x24) {
+                buff.push(command);
+                buff.push(0x05);//length
+                // p.push(parseInt(p.length+'', 16));
+                buff.push(series);// default communication number
+                buff.push(0x00);// read drop sensor
+                buff.push(...params) // enable drop sensor
+                buff.push(chk8xor(buff))
+            }
+            /// set drop sensor
+            else if (command == 0x24) {
+                buff.push(command);
+                buff.push(0x05);//length
+                // p.push(parseInt(p.length+'', 16));
+                buff.push(series);// default communication number
+                buff.push(0x01);// read drop sensor
+                buff.push(...params) // enable drop sensor [0x00,0x00,0x01] 
+                // disable drop sensor [0x00,0x00,0x00] 
+                buff.push(chk8xor(buff))
+            }
+            //temperature
+            else if (command == 0x28) {
+                buff.push(command);
+                buff.push(0x02);//length
+                // p.push(parseInt(p.length+'', 16));
+                buff.push(series);// default communication number
+                buff.push(0x01);// read drop sensor
+                buff.push(...params)
+                // enable drop sensor [0x00,0x00,0x01] 
+                // disable drop sensor [0x00,0x00,0x00] 
+                buff.push(chk8xor(buff))
+            }
+            //temperature
+            else if (command == 0x51) { // 0x36
+                buff.push(command);
+                buff.push(0x01);//length
+                buff.push(series);// default communication number
+                // enable drop sensor [0x00,0x00,0x01] 
+                // disable drop sensor [0x00,0x00,0x00] 
+                buff.push(chk8xor(buff))
+            }
+            // else if(command==0x21){ 
+            //     p.push(command);
+            //     p.push(0x06);//length
+            //     // p.push(parseInt(p.length+'', 16));
+            //     p.push(series);// default communication number
+            //     p.push(0x01);// default mode : 01 bill
+            //     p.push(...[0x00,0x01]) // amount 1
+            //     p.push(chk8xor(p))
+            // }
+            // else if(command==0x24){ 
+            //     p.push(command);
+            //     p.push(0x13);//length
+            //     // p.push(parseInt(p.length+'', 16));
+            //     p.push(series);// default communication number
+            //     p.push(0x01);// default mode : 01 bill
+            //     p.push(...[0x00,0x01]) // amount 1
+            //     p.push(chk8xor(p))
+            // }
+            const x = buff.join('')
+            this.port.write(Buffer.from(x, 'hex'), (e) => {
+                if (e) {
+                    reject(PrintError(command as any, params, e.message));
+                    return console.log('Error: ', e.message)
+                } else {
+                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                }
+            })
+        })
+
+    }
+    close() {
+        this.port.close((e) => {
+            console.log('closing', e);
         })
     }
 
 
 
 
-  
+
 
 }

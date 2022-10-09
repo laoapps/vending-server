@@ -1,7 +1,7 @@
 import net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
-export class SocketClient {
+export class SocketClientVMC {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
