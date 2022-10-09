@@ -1,5 +1,4 @@
 
-    import ModbusRTU from 'modbus-serial';
     import { SerialPort } from 'serialport';
 
     import crc from 'crc';

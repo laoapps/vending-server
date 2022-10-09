@@ -163,7 +163,9 @@ export class SocketServerM102 {
                     }
                     return false;
                 });
-                delete that.sclients[x];
+                console.log('delete x +',that.sclients.length);
+                that.sclients.splice(x,1);
+                console.log('delete x -',that.sclients.length);
 
             });
 

@@ -59,13 +59,13 @@ export class SocketServerZDM8 {
 
             socket.setEncoding('utf8');
 
-            // socket.setTimeout(30000, function () {
-            //     // called after timeout -> same as socket.on('timeout')
-            //     // it just tells that soket timed out => its ur job to end or destroy the socket.
-            //     // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
-            //     // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
-            //     console.log('Socket timed out');
-            // });
+            socket.setTimeout(30000, function () {
+                // called after timeout -> same as socket.on('timeout')
+                // it just tells that soket timed out => its ur job to end or destroy the socket.
+                // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
+                // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
+                console.log('Socket timed out');
+            });
 
 
             socket.on('data', function (data) {
@@ -163,8 +163,10 @@ export class SocketServerZDM8 {
                     }
                     return false;
                 });
-                delete that.sclients[x];
-
+                console.log('delete x +',that.sclients.length);
+                that.sclients.splice(x,1);
+                console.log('delete x -',that.sclients.length);
+                
             });
 
             // setTimeout(function () {

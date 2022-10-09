@@ -22,7 +22,7 @@ export class VendingZDM8 {
             const x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
             console.log(x);
             console.log(x.substring(2) + x.substring(0, 2));
-
+            
             return x.substring(2) + x.substring(0, 2);
         }
         catch (e) {
