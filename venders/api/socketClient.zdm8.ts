@@ -7,7 +7,7 @@ export class SocketClientZDM8 {
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
-    port = 22222;
+    port = 2222;
     host = '192.168.2.102';
     machineid = '123456';
     otp = '111111';
