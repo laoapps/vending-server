@@ -344,12 +344,12 @@ export class InventoryZDM8 {
                             res.command = d.command;
                             res.message = EMessage.loginok;
                             res.status = 1;
-                            if (d.data) {
-                                const x = d.data as string;
+                            if (d.token) {
+                                const x = d.token as string;
                                 ws['machineId'] = x;
                                 console.log('online machine', this.ssocket.listOnlineMachine());
 
-                                if (!this.ssocket.findOnlneMachine(x)) throw new Error('machine is not online');
+                                if (!this.ssocket.findMachineIdToken(x)) throw new Error('machine is not online');
 
                             } else throw new Error(EMessage.MachineIdNotFound)
                             ws['clientId'] = uuid4();

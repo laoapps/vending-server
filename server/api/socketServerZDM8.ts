@@ -80,7 +80,7 @@ export class SocketServerZDM8 {
                     const d = JSON.parse(data.toString()) as IReqModel;
                     if (d.command == EMACHINE_COMMAND.login) {
                         const id = d.token;
-                        const x = that.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == id);
+                        const x = that.findMachineIdToken(id);
                         if (x) {
                             console.log('found machine id');
 
@@ -211,6 +211,9 @@ export class SocketServerZDM8 {
     }
     findMachineId(machineId: string) {
         return this.machineIds.find(v => v.machineId == machineId);
+    }
+    findMachineIdToken(token:string){
+        return this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
     }
     listOnlineMachine() {
         console.log('count online machine', this.sclients.length);
