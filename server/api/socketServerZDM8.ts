@@ -243,6 +243,7 @@ export class SocketServerZDM8 {
                     res.message = EMessage.processingorder;
                     res.status = 1;
                     res.data = position;
+                    console.log('writing...');
                     return {position,status:x.write(JSON.stringify(res))};
             } else {
                 console.log('client id socket not found');
