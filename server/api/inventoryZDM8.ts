@@ -159,7 +159,7 @@ export class InventoryZDM8 {
                 image: 'cokecan.jpg'
                 ,
                 price: 9000,
-                qtty: 1000,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
             }, {
@@ -168,7 +168,7 @@ export class InventoryZDM8 {
                 image: 'pepsican.jpeg'
                 ,
                 price: 9000,
-                qtty: 1000,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
 
@@ -178,7 +178,7 @@ export class InventoryZDM8 {
                 image: 'oishiteabottle.png'
                 ,
                 price: 12000,
-                qtty: 1000,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
             }
@@ -187,7 +187,7 @@ export class InventoryZDM8 {
                 name: 'Chinese tea 330ml',
                 image: 'chineseteacan.jpg',
                 price: 8000,
-                qtty: 100,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
 
@@ -197,7 +197,7 @@ export class InventoryZDM8 {
                 name: 'Water tiger head 380ml',
                 image: 'tigerheadbottle.png',
                 price: 9000,
-                qtty: 100,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
             }]
