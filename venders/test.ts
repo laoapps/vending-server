@@ -1,7 +1,7 @@
 
     import ModbusRTU from 'modbus-serial';
     import { SerialPort } from 'serialport';
-    //import crc16, { checkSum } from 'node-crc16';
+
     import crc from 'crc';
 
     function checkSum(buff: any) {

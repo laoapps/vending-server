@@ -27,7 +27,7 @@
     "jstoxml": "^3.2.3",
     "modbus-serial": "^8.0.5",
     "moment": "^2.29.4",
-    "node-crc16": "^2.0.7",
+
     "pg": "^8.7.3",
     "redis": "^4.2.0",
     "request-ip": "^3.3.0",
@@ -40,6 +40,7 @@
     "xml2json": "^0.12.0"
   },
   "devDependencies": {
+    "@types/node": "^18.8.3",
     "@types/xml2json": "^0.11.4"
   }
 }
