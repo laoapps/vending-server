@@ -23,7 +23,7 @@ app.disable('x-powered-by');
 app.use(helmet.hidePoweredBy());
 app.use('/public', express.static(path.join(__dirname, 'public')))
 const server = http.createServer(app)
-server.listen(process.env.PORT || 9009,'0.0.0.0', async function () {
+server.listen(process.env.PORT || 9009, async function () {
   console.log('HTTP listening on port ' + process.env.PORT || 9009);
 });
 const wss = new WebSocket.Server({ server });
