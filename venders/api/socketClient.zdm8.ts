@@ -69,7 +69,7 @@ export class SocketClientZDM8 {
 
             const c = await that.m.command(d.command as any, param)
             this.send(c, d.command as any);
-            console.log(d.command, d);
+            console.log('response',d.command, d);
         });
         this.client.on('error', function (data) {
             console.log('Data from server:' + data);
@@ -95,11 +95,11 @@ export class SocketClientZDM8 {
             const req = {} as IReqModel;
             req.token = that.token;
             req.time = new Date().getTime() + '';
-            req.command = EM102_COMMAND.ping;
+            req.command = EMACHINE_COMMAND.ping;
             that.client.write(JSON.stringify(req));
         }, 5000);
     }
-    send(data: any, command = EM102_COMMAND.status) {
+    send(data: any, command = EMACHINE_COMMAND.status) {
         const req = {} as IReqModel;
         req.command = command;
         req.time = new Date().toString();

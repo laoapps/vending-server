@@ -466,7 +466,9 @@ export const EESSP_COMMANDS = {
 }
 
 export enum EMACHINE_COMMAND{
-    login='login'
+    login='login',
+    ping ='ping',
+    status = 'status'
 }
 export interface IResModel {
     command: string;

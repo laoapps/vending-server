@@ -163,10 +163,10 @@ export class SocketServerZDM8 {
                     }
                     return false;
                 });
-                console.log('delete x +',that.sclients.length);
-                that.sclients.splice(x,1);
-                console.log('delete x -',that.sclients.length);
-                
+                console.log('delete x +', that.sclients.length);
+                that.sclients.splice(x, 1);
+                console.log('delete x -', that.sclients.length);
+
             });
 
             // setTimeout(function () {
@@ -230,7 +230,7 @@ export class SocketServerZDM8 {
         });
         return x;
     }
-    processOrder(machineId: string,position:number) {
+    processOrder(machineId: string, position: number) {
         try {
             const x = this.sclients.find(v => {
                 const x = v['machineId'] as IMachineClientID;
@@ -239,23 +239,25 @@ export class SocketServerZDM8 {
                 }
                 return false;
             });
-            if (x ) {
-                    const res = {} as IResModel;
-                    res.command = EZDM8_COMMAND.shippingcontrol
-                    res.message = EMessage.processingorder;
-                    res.status = 1;
-                    res.data = {slot:position};
-                    console.log('writing...',x['machineId']);
-                    return {position,status:x.write(JSON.stringify(res))};
+            if(position<0||position>99||!Number(position))
+                return { position, status: false };
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EZDM8_COMMAND.shippingcontrol
+                res.message = EMessage.processingorder;
+                res.status = 1;
+                res.data = { slot: position };
+                console.log('writing...', x['machineId']);
+                return { position, status: x.write(JSON.stringify(res)) };
             } else {
                 console.log('client id socket not found');
-                return {position,status:false};
+                return { position, status: false };
             }
         } catch (error) {
             console.log('client id socket not found');
-            return {position,status:false};
+            return { position, status: false };
         }
-       
+
     }
 
 

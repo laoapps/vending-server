@@ -270,8 +270,9 @@ export class VendingZDM8 {
                 this.port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
                         reject(PrintError(command, param, e.message));
-                        console.log('Error: ', e.message)
+                        console.log('command with Error: ', e.message)
                     } else {
+                        console.log('command succeeded')
                         resolve(PrintSucceeded(command, param, EMessage.commandsucceeded));
                     }
                 })
