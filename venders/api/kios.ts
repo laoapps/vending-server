@@ -1,11 +1,11 @@
 import axios from 'axios';
-import express, { Router } from 'express';
+
 import { EMessage, EESSP_COMMANDS, IReqModel, IResModel } from '../entities/syste.model';
 const sspLib = require('encrypted-smiley-secure-protocol');
 import * as WebSocketServer from 'ws';
 import { initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
 export class KiosServer {
-    constructor(router: Router,wss: WebSocketServer.Server) {
+    constructor(wss: WebSocketServer.Server) {
         
         let eSSP = new sspLib({
             id: 0x00,
@@ -13,20 +13,7 @@ export class KiosServer {
             timeout: 3000,
             fixedKey: '0123456701234567'
         });
-        router.post('/command', async (req, res) => {
-            const command = req.query['command']+'';
-            try {
-                if(!Object.keys(EESSP_COMMANDS).includes(command))throw new Error(EMessage.commandnotfound)
-                eSSP.command(command)
-                    .then(result => {
-                        console.log('Serial number:', result.info.serial_number)
-                        res.send(PrintSucceeded(command,result,EMessage.succeeded));
-                    });
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError(command,error,EMessage.error));
-            }
-        })
+
 
         eSSP.on('OPEN', () => {
             console.log('open');
