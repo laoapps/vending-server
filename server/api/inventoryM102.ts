@@ -4,11 +4,11 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 import net from 'net';
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EM102_COMMAND, EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
+import { EClientCommand, EM102_COMMAND, EMACHINE_COMMAND, EMessage, EZDM8_COMMAND, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
 import { SocketServerM102 } from './socketServerM102';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
-export class InventoryServer {
+export class InventoryM102 {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -132,6 +132,20 @@ export class InventoryServer {
                 res.send(PrintError('init', error, EMessage.error));
             }
         });
+
+
+        router.get('/submit_command', async (req, res) => {
+            try {
+                const machineId = req.query['machineId']+'';
+                const position = Number(req.query['position'])? Number(req.query['position']):0;
+                console.log('submit command');
+                
+                res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId,position), EMessage.succeeded));
+            } catch (error) {
+                console.log(error);
+                res.send(PrintError('init', error, EMessage.error));
+            }
+        });
     }
     init(machineId:string) {
         this.stock = [];
@@ -240,7 +254,7 @@ export class InventoryServer {
                                 }
                             }
                         })
-                    }, 2000*i);
+                    }, 3000*i);
                    
                 })
                 // this.wss.

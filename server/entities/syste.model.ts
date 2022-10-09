@@ -539,7 +539,7 @@ export enum EMODBUS_ERROR {
 
 
 
-export enum EMODBUS_COMMAND {
+export enum EZDM8_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
     status = 'status',

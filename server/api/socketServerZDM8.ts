@@ -1,8 +1,8 @@
 import net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, EMessage, EZDM8_COMMAND, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
+import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
-export class SocketServerM102 {
+export class SocketServerZDM8 {
     server = net.createServer();
     sclients = Array<net.Socket>();
     ports = 2222;
@@ -239,7 +239,7 @@ export class SocketServerM102 {
             });
             if (x ) {
                     const res = {} as IResModel;
-                    res.command = EM102_COMMAND.release
+                    res.command = EZDM8_COMMAND.shippingcontrol
                     res.message = EMessage.processingorder;
                     res.status = 1;
                     res.data = position;
@@ -252,6 +252,7 @@ export class SocketServerM102 {
             console.log('client id socket not found');
             return {position,status:false};
         }
+       
     }
 
 

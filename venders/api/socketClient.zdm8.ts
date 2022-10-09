@@ -1,8 +1,8 @@
 import net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import { EM102_COMMAND, EMACHINE_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
-import { VendingModBus } from './vendingmodbus';
-export class SocketModBusClient {
+import { VendingZDM8 } from './vendingZDM8';
+export class SocketZDM8Client {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
@@ -13,9 +13,9 @@ export class SocketModBusClient {
     otp = '111111';
     token = '';
     t: any;
-    m: VendingModBus;
+    m: VendingZDM8;
     constructor() {
-        this.m = new VendingModBus(this);
+        this.m = new VendingZDM8(this);
         this.init();
         this.token = cryptojs.SHA256(this.machineid + this.otp).toString(cryptojs.enc.Hex)
     }
@@ -25,7 +25,10 @@ export class SocketModBusClient {
             port: this.port,
             host: this.host
         });
-        if(this.t)this.t=null;
+        if (this.t) {
+            clearInterval(this.t);
+            this.t = null;
+        }
         this.client.on('connect', function () {
             // console.log('Client: connection established with server');
 
@@ -36,6 +39,7 @@ export class SocketModBusClient {
             // var ipaddr = address.address;
             // console.log('Client is listening at port' + port);
             // console.log('Client ip :' + ipaddr);
+
             // console.log('Client is IP4/IP6 : ' + family);
 
 
@@ -46,47 +50,56 @@ export class SocketModBusClient {
 
         this.client.setEncoding('utf8');
 
-        this.client.on('data', async (data)=> {
+        this.client.on('data', async (data) => {
+
+
+            // if (d.command == 'ping') {
+            //     that.send([], d.command as any);
+            // }
+            // else {
+            //     const param = d.data;
+            //     const c = await that.m.command(d.command as any, param)
+            //     this.send(c, d.command as any);
+            // }
+            // console.log(d.command, d);
             console.log('Data from server:' + data);
             const d = JSON.parse(data.toString()) as IResModel;
 
-            if (d.command == 'ping') {
-                that.send([],d.command as any);
-            } 
-             else  {
-                const param = d.data;
-              const c = await that.m.command(d.command as any, param)
-                this.send(c,d.command as any);
-            }
-            console.log(d.command, d);
+            const param = d.data;
 
+            const c = await that.m.command(d.command as any, param)
+            this.send(c, d.command as any);
+            console.log(d.command, d);
         });
         this.client.on('error', function (data) {
             console.log('Data from server:' + data);
-            that.client.end(()=>{
-                setTimeout(() => {
-                    that.init();
-                }, 1000);
-                
-            });
-           
         });
-        this.client.on('end', function (data) {
-            console.log('Data from server:' + data);
+        // this.client.on('end', function (data) {
+        //     console.log('Data from server:' + data);
+        //     setTimeout(() => {
+        //         that.init();
+        //     }, 3000);
+        // });
+        this.client.on('close', function (data) {
+            console.log('on close:' + data);
             setTimeout(() => {
+                that.client.destroy();
+                that.client = new net.Socket();
                 that.init();
-            }, 1000);
+            }, 3000);
         });
+
 
         this.t = setInterval(function () {
             // this.client.end('Bye bye server');
             const req = {} as IReqModel;
             req.token = that.token;
             req.time = new Date().getTime() + '';
+            req.command = EM102_COMMAND.ping;
             that.client.write(JSON.stringify(req));
-        }, 10000 );
+        }, 5000);
     }
-    send(data: any, command=EM102_COMMAND.status) {
+    send(data: any, command = EM102_COMMAND.status) {
         const req = {} as IReqModel;
         req.command = command;
         req.time = new Date().toString();

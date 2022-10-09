@@ -7,7 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import * as WebSocket from 'ws';
-import { InventoryServer } from './api/inventory';
+import { InventoryM102 } from './api/inventoryM102';
 import { SocketServerM102 } from './api/socketServerM102';
 
 
@@ -20,10 +20,10 @@ app.use(cookieParser());
 app.disable('x-powered-by');
 app.use(helmet.hidePoweredBy());
 app.use('/public', express.static(path.join(__dirname, 'public')))
-const server =http.createServer(app)
+const server = http.createServer(app)
 server.listen(process.env.PORT || 9009, async function () {
-    console.log('HTTP listening on port ' + process.env.PORT || 9009);
-  });
-  const wss = new WebSocket.Server({ server });
-  const ss = new SocketServerM102();
-new InventoryServer(app,wss,ss)
+  console.log('HTTP listening on port ' + process.env.PORT || 9009);
+});
+const wss = new WebSocket.Server({ server });
+const ss = new SocketServerM102();
+new InventoryM102(app, wss, ss);

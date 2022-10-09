@@ -1,7 +1,7 @@
 import net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import { EM102_COMMAND, EMACHINE_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
-import { VendingM102Server } from './VendingM102Server';
+import { VendingM102 } from './VendingM102';
 export class SocketClientM102 {
     //---------------------client----------------------
 
@@ -13,9 +13,9 @@ export class SocketClientM102 {
     otp = '111111';
     token = '';
     t: any;
-    vender: VendingM102Server;
+    m: VendingM102;
     constructor() {
-        this.vender = new VendingM102Server(this);
+        this.m = new VendingM102(this);
         this.init();
         this.token = cryptojs.SHA256(this.machineid + this.otp).toString(cryptojs.enc.Hex)
     }
@@ -54,7 +54,7 @@ export class SocketClientM102 {
 
             const param = d.data;
 
-            const c = await that.vender.command(d.command as any, param)
+            const c = await that.m.command(d.command as any, param)
             this.send(c, d.command as any);
             console.log(d.command, d);
         });
@@ -74,7 +74,7 @@ export class SocketClientM102 {
             console.log('on close:' + data);
             setTimeout(() => {
                 that.client.destroy();
-               that. client = new net.Socket();
+                that.client = new net.Socket();
                 that.init();
             }, 3000);
         });
@@ -86,7 +86,7 @@ export class SocketClientM102 {
             req.time = new Date().getTime() + '';
             req.command = EM102_COMMAND.ping;
             that.client.write(JSON.stringify(req));
-        }, 10000);
+        }, 5000);
     }
     send(data: any, command = EM102_COMMAND.status) {
         const req = {} as IReqModel;
@@ -98,7 +98,7 @@ export class SocketClientM102 {
     }
     close() {
         this.client.end();
-        this.vender.close();
+        this.m.close();
     }
 
 }

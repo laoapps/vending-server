@@ -1,14 +1,11 @@
 
-import { EM102_COMMAND, EMessage, IReqModel, IResModel } from '../entities/syste.model';
-import ModbusRTU from 'modbus-serial';
-import { SerialPort } from 'serialport'
-import * as WebSocketServer from 'ws';
-import { broadCast, initWs, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
-import crc16, { checkSum } from 'node-crc16';
+import { EM102_COMMAND, EMessage, IResModel } from '../entities/syste.model';
+import { SerialPort } from 'serialport';
+import {PrintError, PrintSucceeded } from '../services/service';
 import { SocketClientM102 } from './socketClient.m102';
-import { resolve } from 'path';
+import crc from 'crc';
 
-export class VendingM102Server {
+export class VendingM102 {
 
     port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (err) {
         if (err) {
@@ -44,47 +41,58 @@ export class VendingM102Server {
         });
 
     }
-
+     checkSum(buff: any) {
+        try {
+            const x = crc.crc16modbus(Buffer.from(buff as any, 'hex')).toString(16);
+            console.log(x);
+    
+            return x.substring(2) + x.substring(0, 2);
+        }
+        catch (e) {
+            console.log('error', e);
+            return '';
+        }
+    }
     int2hex(i: number) {
         const str = Number(i).toString(16);
         return str.length === 1 ? '0' + str : str;
     }
     command(command: EM102_COMMAND, param: any) {
         return new Promise<IResModel>((resolve, reject) => {
-            let buffer = Array<any>();
+            let buff = Array<any>();
             let check = '';
             switch (command) {
                 case EM102_COMMAND.getid:
-                    buffer = ['01', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '71', '88'];
+                    buff = ['01', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '71', '88'];
 
                     break;
                 case EM102_COMMAND.getresult:
-                    buffer = ['01', '03', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', 'D0', 'E8'];
+                    buff = ['01', '03', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', 'D0', 'E8'];
 
                     break;
                 case EM102_COMMAND.scan:
-                    buffer = ['01', '04', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
-                    check = crc16.checkSum(buffer.join(''))
+                    buff = ['01', '04', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+                  
                     break;
                 case EM102_COMMAND.release:
-                    buffer = ['01', '05', this.int2hex(param), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
-                    check = crc16.checkSum(buffer.join(''))
+                    buff = ['01', '05', this.int2hex(param), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+                    check =this.checkSum(buff.join(''))
                     break;
 
                 case EM102_COMMAND.readtemperature:
-                    buffer = ['01', '07', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '92', '29']
-                    check = crc16.checkSum(buffer.join(''))
+                    buff = ['01', '07', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '92', '29']
+                   
                     break;
                 case EM102_COMMAND.DO:
-                    buffer = ['01', '08', param, '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00']
-                    check = crc16.checkSum(buffer.join(''))
+                    buff = ['01', '08', param, '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00']
+               
                     break;
                 case EM102_COMMAND.DI:
-                    buffer = ['01', '09', param, '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00']
-                    check = crc16.checkSum(buffer.join(''))
+                    buff = ['01', '09', param, '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00']
+                   
                     break;
                 case EM102_COMMAND.modify:
-                    buffer = ['FF', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '20', '50']
+                    buff = ['FF', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '20', '50']
                     // buffer=[FF,02,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',D0,A0]
                     // buffer=[FF,03,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',81,30]
                     // buffer=[FF,04,'00','00','00','00','00','00','00','00','00','00','00','00','00','00','00','00',33,01]
@@ -98,7 +106,7 @@ export class VendingM102Server {
 
                     break;
             }
-            const x = buffer.join('') + check;
+            const x = buff.join('') + check;
             this.port.write(Buffer.from(x, 'hex'), (e) => {
                 if (e) {
                     reject(PrintError(command, param, e.message));
@@ -106,7 +114,6 @@ export class VendingM102Server {
                 } else {
                     resolve(PrintSucceeded(command, param, EMessage.commandsucceeded));
                 }
-
             })
         })
 
@@ -123,36 +130,36 @@ export class VendingM102Server {
 
 /// demo 
 
-const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (err) {
-    if (err) {
-        return console.log('Error: ', err.message)
-    }
-    console.log('port /dev/ttyUSB0 accessed');
+// const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (err) {
+//     if (err) {
+//         return console.log('Error: ', err.message)
+//     }
+//     console.log('port /dev/ttyUSB0 accessed');
     
-})
-var b = '';
-port.on('data', function (data: any) {
-    console.log('data', data);
-    b += new String(data);
-    console.log('buffer', buffer);
-    if (buffer.length == 4) {
-        b = '';
-    }
+// })
+// var b = '';
+// port.on('data', function (data: any) {
+//     console.log('data', data);
+//     b += new String(data);
+//     console.log('buffer', buffer);
+//     if (buffer.length == 4) {
+//         b = '';
+//     }
 
-});
-function int2hex(i: number) {
-    const str = Number(i).toString(16);
-    return str.length === 1 ? '0' + str : str;
-}
-const param = { slot: 48 }
-const buffer = ['01', '05', int2hex(param.slot), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
-const check = crc16.checkSum(buffer.join(''));
-const x = buffer.join('') + check;
-port.write(Buffer.from(x, 'hex'), (e) => {
-    if (e) {
-        return console.log('Error: ', e.message)
-    } else {
-        console.log('run succeeded');
+// });
+// function int2hex(i: number) {
+//     const str = Number(i).toString(16);
+//     return str.length === 1 ? '0' + str : str;
+// }
+// const param = { slot: 48 }
+// const buffer = ['01', '05', int2hex(param.slot), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+// const check = this.checkSum(buffer.join(''));
+// const x = buffer.join('') + check;
+// port.write(Buffer.from(x, 'hex'), (e) => {
+//     if (e) {
+//         return console.log('Error: ', e.message)
+//     } else {
+//         console.log('run succeeded');
 
-    }
-})
+//     }
+// })

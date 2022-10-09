@@ -1,6 +1,6 @@
 
 import { SocketClientM102 } from './api/socketClient.m102';
-import { SocketModBusClient } from './api/socketClient.modbus';
+import { SocketZDM8Client } from './api/socketClient.zdm8';
 
 
 // const app = express();
@@ -18,7 +18,7 @@ import { SocketModBusClient } from './api/socketClient.modbus';
 //   });
 const clients =[
   new SocketClientM102 (),
-  new SocketModBusClient()];
+  new SocketZDM8Client()];
 
   process.on('exit', (code:number)=>{
     console.log('exit code',code);

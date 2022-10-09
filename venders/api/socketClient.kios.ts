@@ -1,5 +1,5 @@
 import net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, EMODBUS_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 export class SocketKiosClient {
     //---------------------client----------------------
@@ -52,11 +52,11 @@ export class SocketKiosClient {
                 req.command = 'ping';
                 req.token = that.token;
                 req.time = new Date().getTime() + '';
-            } else if (d.command == EMODBUS_COMMAND.shippingcontrol || d.command == EM102_COMMAND.release) {
+            } else if (d.command == EZDM8_COMMAND.shippingcontrol || d.command == EM102_COMMAND.release) {
 
-            } else if (d.command == EMODBUS_COMMAND.status || d.command == EM102_COMMAND.readtemperature) {
+            } else if (d.command == EZDM8_COMMAND.status || d.command == EM102_COMMAND.readtemperature) {
 
-            } else if (d.command == EMODBUS_COMMAND.statusgrid || d.command == EM102_COMMAND.scan) {
+            } else if (d.command == EZDM8_COMMAND.statusgrid || d.command == EM102_COMMAND.scan) {
 
             }
             console.log(d.command, d);
@@ -83,7 +83,7 @@ export class SocketKiosClient {
     }
     send(data: any) {
         const req = {} as IReqModel;
-        req.command = EMODBUS_COMMAND.status;
+        req.command = EZDM8_COMMAND.status;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
