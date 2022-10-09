@@ -1,5 +1,5 @@
 import axios from 'axios';
-import  { Router } from 'express';
+import { Router } from 'express';
 import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
@@ -31,7 +31,7 @@ export class InventoryZDM8 {
         router.post('/', async (req, res) => {
             const { limit, skip, data, command } = req.body;
             try {
-               
+
                 if (command == EClientCommand.confirmMMoney) {
                     this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId, data.transactionID, data.ref, data.others).then(r => {
                         res.send(PrintSucceeded(command, { uuid: data.uuid, ids: data.ids, value: data.value, machineId: data.machineId, ref: data.ref, others: data.others }, EMessage.succeeded));
@@ -42,11 +42,13 @@ export class InventoryZDM8 {
 
                 const clientId = data.clientId;
                 let loggedin = false;
+                console.log('client length',this.wss.clients);
+                
                 this.wss.clients.forEach(v => {
                     loggedin = v['clientId'] == clientId;
                 })
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
-               
+
                 else if (command == EClientCommand.list) {
                     res.send(PrintSucceeded(command, this.vendingOnSale, EMessage.succeeded));
                 } else if (command == EClientCommand.buyMMoney) {
