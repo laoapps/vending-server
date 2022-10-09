@@ -465,7 +465,12 @@ export const EESSP_COMMANDS = {
     }
 }
 
-
+export enum EPaymentProvider{
+    mmoney='mmoney',
+    umoney='umoney',
+    bcelone='bcelone',
+    laab = 'laab'
+}
 export interface IResModel {
     command: any;
     data: any;
@@ -473,7 +478,7 @@ export interface IResModel {
     status: number;
 }
 export interface IReqModel {
-    command: EMACHINE_COMMAND;
+    command: any;
     data:any;
     time: string;
     ip: string;
@@ -711,7 +716,9 @@ export enum EMessage {
     notloggedinyet = "notloggedinyet",
     notsupport = "notsupport",
     billnotfound = "billnotfound",
-    confirmsucceeded = "confirmsucceeded"
+    confirmsucceeded = "confirmsucceeded",
+    MachineIsNotOnline = "MachineIsNotOnline",
+    OrderIsReady = "OrderIsReady"
 }
 export interface IBase{
     id?:number;
@@ -732,7 +739,19 @@ export interface IStock extends IBase, IBC{
     price: number;
     qtty: number;
 }
+export interface IMMoneyQRRes{
+    uuid:string;
+    qr:string;
+    ids:Array<string>;
+    value:number;
+}
+export enum EClientCommand {
+    list='list',
+    buyMMoney ='buyMMoney',
+    confirmMMoney = 'confirmMMoney'
+}
 export interface IVendingMachineSale extends IBase,IBC{
+    machineId:string;
     stock:IStock;
     position:number;
 }

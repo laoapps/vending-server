@@ -3,20 +3,19 @@ import express, { Router } from 'express';
 import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 import net from 'net';
-import { broadCast, initWs, PrintError, PrintSucceeded } from '../services/service';
+import { broadCast, PrintError, PrintSucceeded } from '../services/service';
 import { EMessage } from '../entities/syste.model';
-import { chineseteacan, imagecokecan, imagpepsican, oishitea, tigerheadwater } from '../services/demo';
-import { SocketServer } from '../services/socketServer';
+import { SocketServerM102 } from './socketServerM102';
 
 export class KiosServer {
     wss: WebSocketServer.Server;
-    ssocket:SocketServer ={} as SocketServer;
+    ssocket:SocketServerM102 ={} as SocketServerM102;
     stock = new Array<IStock>();
     vendingOnSale = new Array<{ stock: IStock, position: number }>();
     vendingBill = new Array<{ ids: Array<string>, value: number, qr: string, uuid: string }>();
-    constructor(router: Router, wss: WebSocketServer.Server,socket:SocketServer) {
+    constructor(router: Router, wss: WebSocketServer.Server,socket:SocketServerM102) {
         this.ssocket=socket;
-        initWs(wss);
+        // initWs(wss);
         this.wss = wss;
         
         router.post('/', async (req, res) => {
@@ -51,60 +50,7 @@ export class KiosServer {
                 res.send(PrintError('confirm', error, EMessage.error));
             }
         })
-        router.post('/init', async (req, res) => {
-            this.stock = [];
-            this.vendingOnSale = [];
-            try {
-                this.stock.push(...[{
-                    id: 0,
-                    name: 'Coke can 330ml',
-                    image: imagecokecan
-                    ,
-                    price: 9000,
-                    qtty: 1000
-                }, {
-                    id: 1,
-                    name: 'Pepsi can 330ml',
-                    image: imagpepsican
-                    ,
-                    price: 9000,
-                    qtty: 1000
 
-                }, {
-                    id: 2,
-                    name: 'Oishi green tea 450ml',
-                    image: oishitea
-                    ,
-                    price: 12000,
-                    qtty: 1000
-                }
-                    , {
-                    id: 3,
-                    name: 'Chinese tea 330ml',
-                    image: chineseteacan,
-                    price: 8000,
-                    qtty: 100
-
-                }
-                    , {
-                    id: 4,
-                    name: 'Water tiger head 380ml',
-                    image: tigerheadwater,
-                    price: 9000,
-                    qtty: 100
-                }]
-                )
-                new Array(60).fill(0).forEach((v, i) => {
-                    const c = Math.floor(Math.random() * this.stock.length);
-                    this.vendingOnSale.push({ stock: this.stock[c], position: i })
-                })
-
-                res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError('init', error, EMessage.error));
-            }
-        });
 
 
 

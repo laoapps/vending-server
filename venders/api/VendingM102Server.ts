@@ -67,7 +67,7 @@ export class VendingM102Server {
                     check = crc16.checkSum(buffer.join(''))
                     break;
                 case EM102_COMMAND.release:
-                    buffer = ['01', '05', this.int2hex(param.slot), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+                    buffer = ['01', '05', this.int2hex(param), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
                     check = crc16.checkSum(buffer.join(''))
                     break;
 

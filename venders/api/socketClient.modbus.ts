@@ -17,7 +17,7 @@ export class SocketModBusClient {
     constructor() {
         this.m = new VendingModBus(this);
         this.init();
-        this.token = cryptojs.SHA256(this.machineid + this.otp).toString(CryptoJS.enc.Hex)
+        this.token = cryptojs.SHA256(this.machineid + this.otp).toString(cryptojs.enc.Hex)
     }
     init() {
         const that = this;
@@ -95,7 +95,7 @@ export class SocketModBusClient {
         this.client.write(JSON.stringify(req));
     }
     close() {
-        this.close();
+        this.client.end();
         this.m.close();
     }
 

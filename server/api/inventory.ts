@@ -3,31 +3,32 @@ import express, { Router } from 'express';
 import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 import net from 'net';
-import { broadCast, initWs, PrintError, PrintSucceeded } from '../services/service';
-import { EMessage, EMODBUS_COMMAND, IMachineClientID, IMachineID, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
-import { chineseteacan, imagecokecan, imagpepsican, oishitea, tigerheadwater } from '../services/demo';
-import { SocketServer } from '../services/socketServer';
-
+import { broadCast, PrintError, PrintSucceeded } from '../services/service';
+import { EClientCommand, EM102_COMMAND, EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
+import { SocketServerM102 } from './socketServerM102';
+import { v4 as uuid4 } from 'uuid';
+import { setWsHeartbeat } from 'ws-heartbeat/server';
 export class InventoryServer {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
-    ssocket: SocketServer = {} as SocketServer;
+    ssocket: SocketServerM102 = {} as SocketServerM102;
 
     stock = new Array<IStock>();
     vendingOnSale = new Array<IVendingMachineSale>();
     vendingBill = new Array<IVendingMachineBill>();
-
+    vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
 
 
-    constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServer) {
+    constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerM102) {
         this.ssocket = socket;
-        initWs(wss);
         this.wss = wss;
+        this.initWs(wss);
+
 
         router.post('/', async (req, res) => {
-            const { limit, skip, data, command } = req.body;
+            const { limit, skip, data, command  } = req.body;
             try {
                 const clientId = data.clientId;
                 let loggedin = false;
@@ -37,16 +38,16 @@ export class InventoryServer {
 
 
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
-                if(command =='confirm'){
-                    this.callBackConfirm(data.uuid,data.ids,data.value,data.machineId,data.ref,data.others).then(r=>{
-                        res.send(PrintSucceeded(command, {uuid: data.uuid,ids:data.ids,value:data.value,machineId:data.machineId,ref:data.ref,others:data.others}, EMessage.succeeded));
-                    }).catch(e=>{
+                if (command == EClientCommand.confirmMMoney) {
+                    this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId, data.ref, data.others).then(r => {
+                        res.send(PrintSucceeded(command, { uuid: data.uuid, ids: data.ids, value: data.value, machineId: data.machineId, ref: data.ref, others: data.others }, EMessage.succeeded));
+                    }).catch(e => {
                         res.send(PrintError(command, e, EMessage.error));
                     })
                 }
-                else if (command == 'list') {
+                else if (command == EClientCommand.list) {
                     res.send(PrintSucceeded(command, this.vendingOnSale, EMessage.succeeded));
-                } else if (command == 'buyMMoney') {
+                } else if (command == EClientCommand.buyMMoney) {
                     const ids = data.ids as Array<string>; // item id
                     const machineId = data.machineId;
                     const value = this.vendingOnSale.filter(v => ids.includes(v.stock.id + '')).reduce((a, b) => {
@@ -66,13 +67,14 @@ export class InventoryServer {
                         paymenttime: new Date(),
                         requestpaymenttime: new Date(),
                         totalvalue: value,
-                        vendingsales:ids.map(v=>{
-                            const stock =this.vendingOnSale.find(x=>x.id+''==v)?.stock|| {} as IStock;
-                            const position =this.vendingOnSale.find(x=>ids.includes(x.id+''))?.position||{}as -1;
-                            return {stock,position} as IVendingMachineSale;
+                        vendingsales: ids.map(v => {
+                            const stock = this.vendingOnSale.find(x => x.id + '' == v)?.stock || {} as IStock;
+                            const position = this.vendingOnSale.find(x => ids.includes(x.id + ''))?.position || {} as -1;
+                            return { stock, position } as IVendingMachineSale;
                         })
                     });
-                    res.send(PrintSucceeded(command, { qr, ids, value, uuid }, EMessage.succeeded));
+                    const re = { ids,qr,value,uuid } as IMMoneyQRRes;
+                    res.send(PrintSucceeded(command,re, EMessage.succeeded));
                 } else {
                     res.send(PrintError(command, [], EMessage.notsupport));
                 }
@@ -94,124 +96,173 @@ export class InventoryServer {
 
         /// 0. init for demo 
 
-        router.post('/init', async (req, res) => {
-            this.stock = [];
-            this.vendingOnSale = [];
+        router.get('/init', async (req, res) => {
             try {
-                this.stock.push(...[{
-                    id: 0,
-                    name: 'Coke can 330ml',
-                    image: imagecokecan
-                    ,
-                    price: 9000,
-                    qtty: 1000,
-                    hashP: '',
-                    hashM: ''
-                }, {
-                    id: 1,
-                    name: 'Pepsi can 330ml',
-                    image: imagpepsican
-                    ,
-                    price: 9000,
-                    qtty: 1000,
-                    hashP: '',
-                    hashM: ''
-
-                }, {
-                    id: 2,
-                    name: 'Oishi green tea 450ml',
-                    image: oishitea
-                    ,
-                    price: 12000,
-                    qtty: 1000,
-                    hashP: '',
-                    hashM: ''
-                }
-                    , {
-                    id: 3,
-                    name: 'Chinese tea 330ml',
-                    image: chineseteacan,
-                    price: 8000,
-                    qtty: 100,
-                    hashP: '',
-                    hashM: ''
-
-                }
-                    , {
-                    id: 4,
-                    name: 'Water tiger head 380ml',
-                    image: tigerheadwater,
-                    price: 9000,
-                    qtty: 100,
-                    hashP: '',
-                    hashM: ''
-                }]
-                )
-                new Array(60).fill(0).forEach((v, i) => {
-                    const c = Math.floor(Math.random() * this.stock.length);
-                    this.vendingOnSale.push({
-                        stock: this.stock[c], position: i,
-                        hashP: '',
-                        hashM: ''
-                    })
-                })
-
+                const machineId = req.query['machineId'];
+                if(!this.ssocket.findOnlneMachine(machineId+'')) throw new Error(EMessage.MachineIsNotOnline)
+                this.init(machineId+'');
+                
                 res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
+            } catch (error:any) {
+                console.log(error);
+                res.send(PrintError('init', error, error.message));
+            }
+        });
+        router.get('/getPaidBills', async (req, res) => {
+            try {
+                res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
             } catch (error) {
                 console.log(error);
                 res.send(PrintError('init', error, EMessage.error));
             }
         });
-
-
-
-
-
+        router.get('/getBills', async (req, res) => {
+            try {
+                res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
+            } catch (error) {
+                console.log(error);
+                res.send(PrintError('init', error, EMessage.error));
+            }
+        });
+        router.get('/getOnlineMachines', async (req, res) => {
+            try {
+                res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
+            } catch (error) {
+                console.log(error);
+                res.send(PrintError('init', error, EMessage.error));
+            }
+        });
     }
+    init(machineId:string) {
+        this.stock = [];
+        this.vendingOnSale = [];
+        try {
+            this.stock.push(...[{
+                id: 0,
+                name: 'Coke can 330ml',
+                image: 'cokecan.jpg'
+                ,
+                price: 9000,
+                qtty: 1000,
+                hashP: '',
+                hashM: ''
+            }, {
+                id: 1,
+                name: 'Pepsi can 330ml',
+                image: 'pepsican.jpeg'
+                ,
+                price: 9000,
+                qtty: 1000,
+                hashP: '',
+                hashM: ''
 
+            }, {
+                id: 2,
+                name: 'Oishi green tea 450ml',
+                image: 'oishiteabottle.png'
+                ,
+                price: 12000,
+                qtty: 1000,
+                hashP: '',
+                hashM: ''
+            }
+                , {
+                id: 3,
+                name: 'Chinese tea 330ml',
+                image: 'chineseteacan.jpg',
+                price: 8000,
+                qtty: 100,
+                hashP: '',
+                hashM: ''
+
+            }
+                , {
+                id: 4,
+                name: 'Water tiger head 380ml',
+                image: 'tigerheadbottle.png',
+                price: 9000,
+                qtty: 100,
+                hashP: '',
+                hashM: ''
+            }]
+            )
+            new Array(60).fill(0).forEach((v, i) => {
+                const c = Math.floor(Math.random() * this.stock.length);
+                this.vendingOnSale.push({
+                    machineId,
+                    stock: this.stock[c],
+                     position: i,
+                    hashP: '',
+                    hashM: ''
+                })
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     generateBillMMoney(ids: Array<string>, value: number, machineId: string) {
         return new Promise<any>((resolve, reject) => {
             const uuid = randomUUID();
+            resolve({ uuid, qr: 'qr',value, machineId });
             // generate QR from MMoney
-            axios.post('https://', { ids, value, machineId }).then(r => {
-                console.log(r);
-                resolve({ uuid, qr: r.data.qr, machineId });
-            }).catch(e => {
-                reject(e)
-            })
+            // axios.post('https://', { ids, value, machineId }).then(r => {
+            //     console.log(r);
+            //     resolve({ uuid, qr: r.data.qr,value, machineId });
+            // }).catch(e => {
+            //     reject(e)
+            // })
         })
     }
-    callBackConfirm(uuid:string,ids: Array<string>, value: number, machineId: string,ref:string, others: any) {
+    callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string, ref: string, others: any) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const c = this.checkMachineId(machineId);
                 if (!c) throw new Error(EMessage.MachineIdNotFound);
-                this.ssocket.processOrder(machineId, ids);
+
+                const sale = this.vendingBill.find(v => v.uuid == uuid);
+                if (!sale) throw new Error(EMessage.billnotfound);
+                sale.vendingsales.map(v=>v.position).forEach((p,i)=>{
+                    setTimeout(() => {
+                        const position =this.ssocket.processOrder(machineId,p);
+                        this.wss.clients.forEach(v => {
+                            const x = v['clientId'] as string;
+                            if (x) {
+                                if (x == sale?.clientId) {
+                                    const res = {} as IResModel;
+                                    res.command = EM102_COMMAND.release;
+                                    res.message = EMessage.confirmsucceeded;
+                                    res.status = 1;
+                                    res.data = {sale,position};
+                                    const i =this.vendingBill.findIndex(i => i.uuid == uuid);
+                                    delete this.vendingBill[i];
+                                    v.send(JSON.stringify(res));
+                                }
+                            }
+                        })
+                    }, 2000*i);
+                   
+                })
                 // this.wss.
-                const x = this.vendingBill.find(v=>{
-                    v.uuid==uuid
-                });
-                if(!x)throw new Error(EMessage.billnotfound)
-                x.paymentstatus='paid';
-                x.paymentref = ref;
-                x.paymenttime = new Date();
-                
-                const y = this.vendingBill.find(v=>v.uuid==uuid);
-                this.wss.clients.forEach(v=>{
+                sale.paymentstatus = 'paid';
+                sale.paymentref = ref;
+                sale.paymenttime = new Date();
+                this.wss.clients.forEach(v => {
                     const x = v['clientId'] as string;
                     if (x) {
-                         if(x == y?.clientId){
+                        if (x == sale?.clientId) {
                             const res = {} as IResModel;
-                            res.command =EMODBUS_COMMAND.shippingcontrol;
+                            res.command = EM102_COMMAND.release;
                             res.message = EMessage.confirmsucceeded;
-                            res.status=1;
-                            res.data=y;
+                            res.status = 1;
+                            res.data = sale;
+                            const i =this.vendingBill.findIndex(v => v.uuid == uuid);
+                            this.vendingBillPaid.push(this.vendingBill.splice(i,1)[0]);
                             v.send(JSON.stringify(res));
-                         }
+                        }
                     }
                 })
-            resolve(true);
+                resolve(true);
             } catch (error) {
                 console.log(error);
                 reject(error);
@@ -222,18 +273,78 @@ export class InventoryServer {
     }
 
     checkMachineId(machineId: string): IMachineClientID | null {
-        const x = this.ssocket.clients.find(v => {
-            const x = v['clientId'] as IMachineClientID;
+        const x = this.ssocket.sclients.find(v => {
+            const x = v['machineId'] as IMachineClientID;
             if (x) {
                 return x.machineId == machineId;
             }
             return false;
         });
-        if (x) x['clientId'] as IMachineClientID;
+        if (x) return x['machineId'] as IMachineClientID;
         return null;
 
     }
+    initWs(wss: WebSocketServer.Server) {
+        setWsHeartbeat(wss, (ws, data, binary) => {
+            if (data === '{"kind":"ping"}') { // send pong if recieved a ping.
+                ws.send(JSON.stringify(PrintSucceeded('pong', { kind: 'ping' }, EMessage.succeeded)));
+            }
+        }, 15000);
 
+        wss.on('connection', (ws: WebSocket) => {
+            console.log('new connection ', ws.url);
+
+            console.log('current connection is alive', ws['isAlive']);
+
+
+
+            ws.onopen = (ev: Event) => {
+                console.log('open', ev);
+                // ws['isAlive'] = true;
+                ws.onclose = (ev: CloseEvent) => {
+
+                }
+                ws.onerror = (ev: Event) => {
+                    console.log('error', ev);
+                }
+
+                //connection is up, let's add a simple simple event
+                ws.onmessage = async (ev: MessageEvent) => {
+                    let d: IReqModel = {} as IReqModel;
+                    // ws['isAlive'] = true;
+                    try {
+                        console.log('comming', ev.data.toString());
+
+                        d = JSON.parse(ev.data.toString()) as IReqModel;
+
+                        const res = {} as IResModel
+                        if (d.command == EMACHINE_COMMAND.login) {
+                            res.command = d.command;
+                            res.message = EMessage.loginok;
+                            res.status = 1;
+                            if (d.data) {
+                                const x = d.data as string;
+                                ws['machineId'] = x;
+                                console.log('online machine', this.ssocket.listOnlineMachine());
+
+                                if (!this.ssocket.findOnlneMachine(x)) throw new Error('machine is not online');
+
+                            } else throw new Error(EMessage.MachineIdNotFound)
+                            ws['clientId'] = uuid4();
+                            res.data = { machineId: d.data, clientId: ws['clientId'] };
+                        }
+
+                        ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+
+                    } catch (error: any) {
+                        console.log('error', error);
+                        ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                    }
+                }
+            }
+
+        });
+    }
 
 }
 

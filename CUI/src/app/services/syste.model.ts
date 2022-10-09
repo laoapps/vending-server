@@ -465,25 +465,33 @@ export const EESSP_COMMANDS = {
     }
 }
 
-export enum EMACHINE_COMMAND{
-    login='login'
-}
+
 export interface IResModel {
-    command: string;
+    command: any;
     data: any;
     message: string;
     status: number;
 }
 export interface IReqModel {
-    command: string;
+    command: any;
     data:any;
     time: string;
     ip: string;
     token: string;
 }
+export enum EPaymentProvider{
+    mmoney='mmoney',
+    umoney='umoney',
+    bcelone='bcelone',
+    laab = 'laab'
+}
+export interface IMMoneyQRRes{
+    uuid:string;
+    qr:string;
+    ids:Array<string>;
+    value:number;
+}
 export enum EM102_COMMAND {
-    login = 'login',
-    status = 'status',
     release = 'release',
     DO = 'DO',
     temperature = 'temperature',
@@ -492,8 +500,7 @@ export enum EM102_COMMAND {
     getresult = "getresult",
     modify = "modify",
     DI = "DI",
-    scan = "scan",
-    ping = "ping"
+    scan = "scan"
 }
 export enum EMODBUS_SYS_STAT {
     STAT_IDLE = 0, //idle
@@ -709,7 +716,71 @@ export enum EMessage {
     tokenNotFound = "tokenNotFound",
     showallonlineconnection = "showallonlineconnection",
     SubmittedCoinIsZeroValue = "SubmittedCoinIsZeroValue",
-    commandsucceeded = "commandsucceeded"
+    commandsucceeded = "commandsucceeded",
+    MachineIdNotFound = "MachineIdNotFound",
+    processingorder = "processingorder",
+    loginok = "loginok",
+    notloggedinyet = "notloggedinyet",
+    notsupport = "notsupport",
+    billnotfound = "billnotfound",
+    confirmsucceeded = "confirmsucceeded"
+}
+export interface IBase{
+    id?:number;
+    uuid?:string;
+    isActive?:boolean;
+    createdAt?:Date;
+    updatedAt?:Date;
+    // deletedAt?:Date;
+}
+export interface IBC {
+    hashP: string;
+    hashM: string;
+   
+}
+export interface IStock extends IBase, IBC{
+    name: string;
+    image: string;
+    price: number;
+    qtty: number;
+}
+export interface IVendingMachineSale extends IBase,IBC{
+    stock:IStock;
+    position:number;
+    machineId:string;
+}
+export interface IVendingMachineBill extends IBase, IBC{
+    vendingsales:Array<IVendingMachineSale>;
+    totalvalue:number;
+    paymentmethod:string;
+    paymentstatus:string;
+    paymentref:string;
+    paymenttime:Date;
+    requestpaymenttime:Date;
+    machineId:string;
+    clientId:string;
 }
 
+export interface IMachineID extends IBase,IBC {
+    machineId:string;
+    machineIp:string;
+    machineCommands:string;
+    logintoken:string;
+}
 
+export enum EMACHINE_COMMAND{
+    login='login'
+}
+
+export interface IMachineClientID{
+    otp:string;
+    machineId:string;
+}
+export enum EClientCommand {
+    list='list',
+    buyMMoney ='buyMMoney',
+    confirmMMoney = 'confirmMMoney'
+}
+export interface IMachineId{
+    machineId:string;
+}

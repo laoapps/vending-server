@@ -1,5 +1,6 @@
 
 import { SocketClientM102 } from './api/socketClient.m102';
+import { SocketModBusClient } from './api/socketClient.modbus';
 
 
 // const app = express();
@@ -15,11 +16,15 @@ import { SocketClientM102 } from './api/socketClient.m102';
 // server.listen(process.env.PORT || 9009, async function () {
 //     console.log('HTTP listening on port ' + process.env.PORT || 9009);
 //   });
-const sClient = new SocketClientM102 ();
+const clients =[
+  new SocketClientM102 (),
+  new SocketModBusClient()];
 
   process.on('exit', (code:number)=>{
     console.log('exit code',code);
     
-    sClient.close();
+    clients.forEach(v=>{
+      v.close();
+    })
   });
 

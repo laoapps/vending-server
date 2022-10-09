@@ -1,10 +1,11 @@
 import net from 'net';
-import { EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
-import cryptojs from 'crypto-js'
-export class SocketServer {
+import { EM102_COMMAND, EMACHINE_COMMAND, EMessage, EMODBUS_COMMAND, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
+import cryptojs from 'crypto-js';
+// console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
+export class SocketServerM102 {
     server = net.createServer();
-    clients = Array<net.Socket>();
-
+    sclients = Array<net.Socket>();
+    ports = 2222;
 
     private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }];
 
@@ -20,7 +21,6 @@ export class SocketServer {
         // emitted when new client connects
         const that = this;
         this.server.on('connection', function (socket) {
-            that.clients.push(socket);
             //this property shows the number of characters currently buffered to be written. (Number of characters is approximately equal to the number of bytes to be written, but the buffer may contain strings, and the strings are lazily encoded, so the exact number of bytes is not known.)
             //Users who experience large or growing bufferSize should attempt to "throttle" the data flows in their program with pause() and resume().
 
@@ -59,45 +59,68 @@ export class SocketServer {
 
             socket.setEncoding('utf8');
 
-            socket.setTimeout(30000, function () {
-                // called after timeout -> same as socket.on('timeout')
-                // it just tells that soket timed out => its ur job to end or destroy the socket.
-                // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
-                // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
-                console.log('Socket timed out');
-            });
+            // socket.setTimeout(30000, function () {
+            //     // called after timeout -> same as socket.on('timeout')
+            //     // it just tells that soket timed out => its ur job to end or destroy the socket.
+            //     // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
+            //     // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
+            //     console.log('Socket timed out');
+            // });
 
 
             socket.on('data', function (data) {
-                var bread = socket.bytesRead;
-                var bwrite = socket.bytesWritten;
-                console.log('Bytes read : ' + bread);
-                console.log('Bytes written : ' + bwrite);
-                console.log('Data sent to server : ' + data);
+                try {
+                    var bread = socket.bytesRead;
+                    var bwrite = socket.bytesWritten;
+                    console.log('Bytes read : ' + bread);
+                    console.log('Bytes written : ' + bwrite);
+                    console.log('Data sent to server : ' + data);
+                    console.log('Data sent to server : ' + data.toString());
 
-                const d = JSON.parse(data.toString()) as IReqModel;
-                if (d.command == EMACHINE_COMMAND.login) {
-                    const id = d.token;
-                    const x = that.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(CryptoJS.enc.Hex) == id);
-                   if(!x){
-                    socket['machineId'] ;
-                    that.clients.push(socket);
-                   }else{
-                    console.log(' exist machine id , have to check if there are 2 or more connections per 1 machineId');
-                    
-                    // socket['machineId'] = x.machineId;
-                    // that.clients.push(socket);
-                   }
-                    
+                    const d = JSON.parse(data.toString()) as IReqModel;
+                    if (d.command == EMACHINE_COMMAND.login) {
+                        const id = d.token;
+                        const x = that.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == id);
+                        if (x) {
+                            console.log('found machine id');
+
+                            socket['machineId'] = x;
+                            const mx = that.sclients.find(v => {
+                                const m = v['machineId'] as IMachineClientID;
+                                if (m) {
+                                    if (m.machineId == x.machineId) return true;
+                                }
+
+                                return false;
+                            })
+                            if (!mx) {
+                                that.sclients.push(socket);
+                                console.log('machine exist and accepted');
+                            } else {
+                                mx.end();
+                                // allow new connection only
+                                console.log('terminate previous connection');
+                                that.sclients.push(socket);
+                                console.log('machine exist and accepted');
+                            }
+
+
+                        } else {
+                            console.log(' not exist machine id ');
+
+                        }
+
+                    }
+                    //echo data
+                    // var is_kernel_buffer_full = socket.write('Data ::' + data);
+                    // if (is_kernel_buffer_full) {
+                    //     console.log('Data was flushed successfully from kernel buffer i.e written successfully!');
+                    // } else {
+                    //     socket.pause();
+                    // }
+                } catch (e) {
+                    console.log('wrong data', data, e);
                 }
-                //echo data
-                // var is_kernel_buffer_full = socket.write('Data ::' + data);
-                // if (is_kernel_buffer_full) {
-                //     console.log('Data was flushed successfully from kernel buffer i.e written successfully!');
-                // } else {
-                //     socket.pause();
-                // }
-
             });
 
             socket.on('drain', function () {
@@ -133,6 +156,15 @@ export class SocketServer {
                 if (error) {
                     console.log('Socket was closed coz of transmission error');
                 }
+                const x = that.sclients.findIndex(v => {
+                    if (v) {
+                        const x = v['machineId'] as IMachineClientID;
+                        if (x.machineId == socket['machineId']) return true;
+                    }
+                    return false;
+                });
+                delete that.sclients[x];
+
             });
 
             // setTimeout(function () {
@@ -154,13 +186,8 @@ export class SocketServer {
         });
 
         // this. server.maxConnections = 10;
-
-        //static port allocation
-        this.server.listen(22222);
-
-
         // for dyanmic port allocation
-        this.server.listen(function () {
+        this.server.listen(this.ports, function () {
             var address = that.server.address() as net.AddressInfo;
             var port = address.port;
             var family = address.family;
@@ -180,26 +207,45 @@ export class SocketServer {
             console.log('Server is not listening');
         }
     }
+    findMachineId(machineId: string) {
+        return this.machineIds.find(v => v.machineId == machineId);
+    }
+    listOnlineMachine() {
+        console.log('count online machine', this.sclients.length);
 
-    processOrder(machineId: string, ids: Array<string> = []) {
-        const x = this.clients.find(v => {
+        return this.sclients.map(v => {
+            const x = v['machineId'] as IMachineClientID;
+            return x;
+        });
+    }
+    findOnlneMachine(machineId: string) {
+        const x = this.sclients.find(v => {
             const x = v['machineId'] as IMachineClientID;
             if (x) {
                 return x.machineId == machineId;
             }
             return false;
         });
-        if (x && ids.length) {
-            const res = {} as IResModel;
-            res.command = EMODBUS_COMMAND.shippingcontrol
-            res.message = EMessage.processingorder;
-            res.status = 1;
-            res.data = ids;
-
-            return x.write(JSON.stringify(res))
+        return x;
+    }
+    processOrder(machineId: string,position:number) {
+        const x = this.sclients.find(v => {
+            const x = v['machineId'] as IMachineClientID;
+            if (x) {
+                return x.machineId == machineId;
+            }
+            return false;
+        });
+        if (x ) {
+                const res = {} as IResModel;
+                res.command = EM102_COMMAND.release
+                res.message = EMessage.processingorder;
+                res.status = 1;
+                res.data = position;
+                return {position,status:x.write(JSON.stringify(res))};
         } else {
             console.log('client id socket not found');
-
+            return {position,status:false};
         }
     }
 
