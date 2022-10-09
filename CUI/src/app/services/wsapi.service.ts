@@ -15,7 +15,7 @@ export class WsapiService {
   connect(url:string){
     this.wsurl = url;
     this.webSocket = new WebSocket(this.wsurl);
-    setWsHeartbeat(this.webSocket, '{"kind":"ping"}', { pingInterval: 10000, pingTimeout: 30000 });
+    setWsHeartbeat(this.webSocket, '{"kind":"ping"}', { pingInterval: 10000, pingTimeout: 10000 });
     this.webSocket.onopen = (ev) => {
       this.retries = 0;
       console.log('connection has been opened', ev);

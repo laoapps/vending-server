@@ -107,8 +107,10 @@ export class Tab1Page {
     const x = new Array<Array<IVendingMachineSale>>();
     this.vendingOnSale.forEach((v,i)=>{
       const y = i+1;
-      if(y%2)x.push(this.vendingOnSale.slice(i-1,i))
+      if(!(y%3))x.push(this.vendingOnSale.slice(i-3,i))
     })
+    // console.log('x',x);
+    
     return x;
   }
 
