@@ -265,6 +265,8 @@ export class VendingZDM8 {
 
                 }
                 const x = buff.join('') + check;
+                console.log('x',x);
+                
                 this.port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
                         reject(PrintError(command, param, e.message));

@@ -242,8 +242,8 @@ export class SocketServerZDM8 {
                     res.command = EZDM8_COMMAND.shippingcontrol
                     res.message = EMessage.processingorder;
                     res.status = 1;
-                    res.data = position;
-                    console.log('writing...');
+                    res.data = {slot:position};
+                    console.log('writing...',x['machineId']);
                     return {position,status:x.write(JSON.stringify(res))};
             } else {
                 console.log('client id socket not found');
