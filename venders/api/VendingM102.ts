@@ -76,7 +76,7 @@ export class VendingM102 {
                     break;
                 case EM102_COMMAND.release:
                     buff = ['01', '05', this.int2hex(param), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
-                    check =this.checkSum(buff.join(''))
+                    check =this.checkSum(buff)
                     break;
 
                 case EM102_COMMAND.readtemperature:

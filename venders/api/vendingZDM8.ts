@@ -79,7 +79,7 @@ export class VendingZDM8 {
                         const dropdetect = '00';
                         const liftsystem = '00';
                         buff = ['01', '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
-                        check =this.checkSum(buff.join(''))
+                        check =this.checkSum(buff)
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
                         // ● 10: Function code
