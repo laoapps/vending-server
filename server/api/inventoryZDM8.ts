@@ -29,7 +29,7 @@ export class InventoryZDM8 {
 
 
         router.post('/', async (req, res) => {
-            const { limit, skip, data, command  } = req.body;
+            const { limit, skip, data, command } = req.body;
             try {
                 const clientId = data.clientId;
                 let loggedin = false;
@@ -40,7 +40,7 @@ export class InventoryZDM8 {
 
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
                 if (command == EClientCommand.confirmMMoney) {
-                    this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId,data.transactionID, data.ref, data.others).then(r => {
+                    this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId, data.transactionID, data.ref, data.others).then(r => {
                         res.send(PrintSucceeded(command, { uuid: data.uuid, ids: data.ids, value: data.value, machineId: data.machineId, ref: data.ref, others: data.others }, EMessage.succeeded));
                     }).catch(e => {
                         res.send(PrintError(command, e, EMessage.error));
@@ -74,8 +74,8 @@ export class InventoryZDM8 {
                             return { stock, position } as IVendingMachineSale;
                         })
                     });
-                    const re = { ids,qr,value,uuid } as IMMoneyQRRes;
-                    res.send(PrintSucceeded(command,re, EMessage.succeeded));
+                    const re = { ids, qr, value, uuid } as IMMoneyQRRes;
+                    res.send(PrintSucceeded(command, re, EMessage.succeeded));
                 } else {
                     res.send(PrintError(command, [], EMessage.notsupport));
                 }
@@ -100,11 +100,11 @@ export class InventoryZDM8 {
         router.get('/init', async (req, res) => {
             try {
                 const machineId = req.query['machineId'];
-                if(!this.ssocket.findOnlneMachine(machineId+'')) throw new Error(EMessage.MachineIsNotOnline)
-                this.init(machineId+'');
-                
+                if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline)
+                this.init(machineId + '');
+
                 res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
-            } catch (error:any) {
+            } catch (error: any) {
                 console.log(error);
                 res.send(PrintError('init', error, error.message));
             }
@@ -138,18 +138,18 @@ export class InventoryZDM8 {
 
         router.get('/submit_command', async (req, res) => {
             try {
-                const machineId = req.query['machineId']+'';
-                const position = Number(req.query['position'])? Number(req.query['position']):0;
+                const machineId = req.query['machineId'] + '';
+                const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
                 console.log('submit command');
-                
-                res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId,position,new Date().getTime()), EMessage.succeeded));
+
+                res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
             } catch (error) {
                 console.log(error);
                 res.send(PrintError('init', error, EMessage.error));
             }
         });
     }
-    init(machineId:string) {
+    init(machineId: string) {
         this.stock = [];
         this.vendingOnSale = [];
         try {
@@ -201,17 +201,20 @@ export class InventoryZDM8 {
                 hashP: '',
                 hashM: ''
             }]
-            )
+            );
+            let x = 5;
+            let y = 0;
             new Array(60).fill(0).forEach((v, i) => {
-                const c = Math.floor(Math.random() * this.stock.length);
+                const c = x > i ? i : (i - (x * y) - 1);
+                !(i % x) && i >= x ? y++ : '';
                 this.vendingOnSale.push({
                     machineId,
                     stock: this.stock[c],
-                     position: i,
+                    position: i,
                     hashP: '',
                     hashM: ''
                 })
-            })
+            });
         } catch (error) {
             console.log(error);
         }
@@ -220,7 +223,7 @@ export class InventoryZDM8 {
     generateBillMMoney(ids: Array<string>, value: number, machineId: string) {
         return new Promise<any>((resolve, reject) => {
             const uuid = randomUUID();
-            resolve({ uuid, qr: 'qr',value, machineId });
+            resolve({ uuid, qr: 'qr', value, machineId });
             // generate QR from MMoney
             // axios.post('https://', { ids, value, machineId }).then(r => {
             //     console.log(r);
@@ -230,7 +233,7 @@ export class InventoryZDM8 {
             // })
         })
     }
-    callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string,transactionID:number, ref: string, others: any) {
+    callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string, transactionID: number, ref: string, others: any) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const c = this.checkMachineId(machineId);
@@ -238,9 +241,9 @@ export class InventoryZDM8 {
 
                 const sale = this.vendingBill.find(v => v.uuid == uuid);
                 if (!sale) throw new Error(EMessage.billnotfound);
-                sale.vendingsales.map(v=>v.position).forEach((p,i)=>{
+                sale.vendingsales.map(v => v.position).forEach((p, i) => {
                     setTimeout(() => {
-                        const position =this.ssocket.processOrder(machineId,p,transactionID);
+                        const position = this.ssocket.processOrder(machineId, p, transactionID);
                         this.wss.clients.forEach(v => {
                             const x = v['clientId'] as string;
                             if (x) {
@@ -249,15 +252,15 @@ export class InventoryZDM8 {
                                     res.command = EZDM8_COMMAND.shippingcontrol;
                                     res.message = EMessage.confirmsucceeded;
                                     res.status = 1;
-                                    res.data = {sale,position};
-                                    const i =this.vendingBill.findIndex(i => i.uuid == uuid);
+                                    res.data = { sale, position };
+                                    const i = this.vendingBill.findIndex(i => i.uuid == uuid);
                                     delete this.vendingBill[i];
                                     v.send(JSON.stringify(res));
                                 }
                             }
                         })
-                    }, 3000*i);
-                   
+                    }, 3000 * i);
+
                 })
                 // this.wss.
                 sale.paymentstatus = 'paid';
@@ -272,8 +275,8 @@ export class InventoryZDM8 {
                             res.message = EMessage.confirmsucceeded;
                             res.status = 1;
                             res.data = sale;
-                            const i =this.vendingBill.findIndex(v => v.uuid == uuid);
-                            this.vendingBillPaid.push(this.vendingBill.splice(i,1)[0]);
+                            const i = this.vendingBill.findIndex(v => v.uuid == uuid);
+                            this.vendingBillPaid.push(this.vendingBill.splice(i, 1)[0]);
                             v.send(JSON.stringify(res));
                         }
                     }

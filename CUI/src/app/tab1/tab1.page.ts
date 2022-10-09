@@ -17,9 +17,11 @@ export class Tab1Page {
 
   machineId={} as IMachineId;
 
+  url = 'http://localhost:9009'
   orders =  new Array<IVendingMachineSale>();
   constructor(public apiService:ApiService) {
     this.machineId = this.apiService.machineId;
+    this.url = this.apiService.url
     // this.initDemo();
     this.loadSaleList();
   }
@@ -100,6 +102,14 @@ export class Tab1Page {
       else x.stock.qtty+=1
     })
     return o;
+  }
+  getSaleList(){
+    const x = new Array<Array<IVendingMachineSale>>();
+    this.vendingOnSale.forEach((v,i)=>{
+      const y = i+1;
+      if(y%2)x.push(this.vendingOnSale.slice(i-1,i))
+    })
+    return x;
   }
 
 }

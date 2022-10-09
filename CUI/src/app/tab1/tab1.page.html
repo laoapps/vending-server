@@ -1,64 +1,49 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <img src="../../assets/icon//mmoney.png" style="width: 128px;height:128px">
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Sale list</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
-  <ion-grid>
-    <ion-row *ngFor="let s of vendingOnSale; let index = index">
-      <ion-col>
-        <div>
-          <ion-item-divider>
-            <ion-label>{{s.machineId}}::{{s.position}}</ion-label>
-           
-          </ion-item-divider>
-          <ion-list>
-            <ion-list>
-              <ion-item>
-                <label>{{s.stock.name}}</label>
-              </ion-item>
-              <ion-item>
-                <img style="width: 160px;height:160px" [src]="'http://localhost:9009/public/'+s.stock.image">
-              </ion-item>
-              <ion-item>
-                <label>{{s.stock.price}}-{{s.stock.qtty}}</label>
-              </ion-item>
-              <ion-item>
-                <ion-button (click)="buyMMoney(s.id)">Buy</ion-button>
-                <ion-button (click)="addOrder(s.id)">AddOrder</ion-button>
-              </ion-item>
-            </ion-list>
-          </ion-list>
-         
-        </div>
+
+  <ion-grid fixed>
+    <ion-row *ngFor="let sl of getSaleList(); let i = index" >
+      <ion-col size-lg="6" size-md="6" size-sm="6" size="6"  *ngFor="let s of sl; let sl_i = index">
+        <ion-item-divider>
+          <ion-label>{{sl_i+i}}#. {{s.machineId}}::{{s.position}}</ion-label>
+        </ion-item-divider>
+        <ion-card>
+          <ion-item>
+            <label>{{s.stock.name}}</label>
+          </ion-item>
+          <ion-item>
+            <img style="width: 160px;height:160px" [src]="this.url+'/public/'+s.stock.image">
+          </ion-item>
+          <ion-item>
+            <label>{{s.stock.price}}-{{s.stock.qtty}}</label>
+          </ion-item>
+          <ion-item>
+            <ion-button (click)="buyMMoney(s.id)">Buy</ion-button>
+            <ion-button (click)="addOrder(s.id)">AddOrder</ion-button>
+          </ion-item>
+        </ion-card>
+
       </ion-col>
     </ion-row>
-   <ion-row>
-    <ion-col>
-
-    </ion-col>
-    <ion-col>
-        <ion-chip *ngFor="let o of summarizeOrder()" color="primary">{{o.stock.name}}/{{o.stock.qtty}}({{o.stock.qtty*o.stock.price}})</ion-chip>
-    </ion-col>
-    <ion-col>
-      <ion-button (click)="buyManyMMoney()">
-        Buy All
-      </ion-button>
-    </ion-col>
-    <ion-col>
-      <ion-button (click)="initDemo()">
-        init Demo
-      </ion-button>
-    </ion-col>
-   </ion-row>
+    <ion-row>
+      <ion-col size-lg="6" size-md="6" size-sm="6" size="6">
+        <ion-chip *ngFor="let o of summarizeOrder()" color="primary">
+          {{o.stock.name}}/{{o.stock.qtty}}({{o.stock.qtty*o.stock.price}})</ion-chip>
+      </ion-col>
+      <ion-col size-lg="6" size-md="6" size-sm="6" size="6">
+        <ion-button (click)="buyManyMMoney()">
+          Buy All
+        </ion-button>
+        <ion-button (click)="initDemo()">
+          init Demo
+        </ion-button>
+      </ion-col>
+    </ion-row>
   </ion-grid>
 </ion-content>
