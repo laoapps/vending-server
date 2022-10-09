@@ -1,7 +1,7 @@
 
 import { EM102_COMMAND, EMessage, IResModel } from '../entities/syste.model';
 import { SerialPort } from 'serialport';
-import {PrintError, PrintSucceeded } from '../services/service';
+import {int2hex, PrintError, PrintSucceeded } from '../services/service';
 import { SocketClientM102 } from './socketClient.m102';
 import crc from 'crc';
 
@@ -53,10 +53,7 @@ export class VendingM102 {
             return '';
         }
     }
-    int2hex(i: number) {
-        const str = Number(i).toString(16);
-        return str.length === 1 ? '0' + str : str;
-    }
+
     command(command: EM102_COMMAND, param: any) {
         return new Promise<IResModel>((resolve, reject) => {
             let buff = Array<any>();
@@ -75,7 +72,7 @@ export class VendingM102 {
                   
                     break;
                 case EM102_COMMAND.release:
-                    buff = ['01', '05', this.int2hex(param), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+                    buff = ['01', '05', int2hex(param), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
                     check =this.checkSum(buff)
                     break;
 

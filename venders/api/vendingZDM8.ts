@@ -1,7 +1,7 @@
 
 import { EMessage, EZDM8_COMMAND, IResModel } from '../entities/syste.model';
 
-import { PrintError, PrintSucceeded } from '../services/service';
+import { int2hex, PrintError, PrintSucceeded } from '../services/service';
 import { SerialPort } from 'serialport';
 import { SocketClientZDM8 } from './socketClient.zdm8';
 import crc from 'crc';
@@ -74,7 +74,7 @@ export class VendingZDM8 {
                         // Note: This instruction is based on the current protocol extension instruction and is non-standard.
                         break;
                     case EZDM8_COMMAND.shippingcontrol:
-                        const slot = param.slot;
+                        const slot =  int2hex(param.slot);
                         const isspring = '01';
                         const dropdetect = '00';
                         const liftsystem = '00';
@@ -297,3 +297,5 @@ export class VendingZDM8 {
 
 
 }
+
+

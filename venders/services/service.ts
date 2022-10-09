@@ -56,6 +56,10 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
     }, delay ? 1000 : 0);
 
 }
+export function int2hex(i: number) {
+    const str = Number(i).toString(16);
+    return str.length === 1 ? '0' + str : str;
+}
 export function initWs(wss: WebSocketServer.Server) {
     // setWsHeartbeat(wss, (ws, data, binary) => {
     //     if (data === '{"kind":"ping"}') { // send pong if recieved a ping.
