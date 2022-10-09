@@ -16,14 +16,14 @@ export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
 
-export function PrintSucceeded(command: string, data: any, message: string, code: string = '0'): IResModel {
+export function PrintSucceeded(command: string, data: any, message: string,transactionID:number=-1, code: string = '0'): IResModel {
     return {
-        command, data, message, code, status: 1
+        command, data, message, code, status: 1,transactionID
     } as IResModel;
 }
-export function PrintError(command: string, data: any, message: string, code: string = '0'): IResModel {
+export function PrintError(command: string, data: any, message: string,transactionID:number=-1, code: string = '0'): IResModel {
     return {
-        command, data: data, message, code, status: 0
+        command, data: data, message, code, status: 0,transactionID
     } as IResModel;
 }
 export function broadCast(wss: WebSocketServer.WebSocketServer, comm: string, r: any, delay: boolean = false) {
