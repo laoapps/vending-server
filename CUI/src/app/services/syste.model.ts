@@ -783,4 +783,5 @@ export enum EClientCommand {
 }
 export interface IMachineId{
     machineId:string;
+    otp:string;
 }

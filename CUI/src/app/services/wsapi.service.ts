@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
-import { IReqModel, IResModel } from './syste.model';
+import { EMACHINE_COMMAND, IReqModel, IResModel } from './syste.model';
+import * as cryptojs from 'crypto-js';
 @Injectable({
   providedIn: 'root'
 })
@@ -8,11 +9,13 @@ export class WsapiService {
   wsurl = 'ws://localhost:9009';
   webSocket:WebSocket;
   retries =1;
+  machineId:string;
+  otp:string;
   constructor() { 
 
     
   }
-  connect(url:string){
+  connect(url:string,machineId:string,otp:string){
     this.wsurl = url;
     this.webSocket = new WebSocket(this.wsurl);
     setWsHeartbeat(this.webSocket, '{"kind":"ping"}', { pingInterval: 10000, pingTimeout: 10000 });
@@ -22,9 +25,10 @@ export class WsapiService {
       // this.pingTimeout = setTimeout(() => {
       //   this.webSocket.close();
       // }, 30000 + 1000);
+      this.machineId = machineId;
+      this.otp = otp;
 
-
-
+      this.send({command:EMACHINE_COMMAND.login,data:'',ip:'',message:'',status:-1,time:new Date().toString(),token:cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)})
       this.webSocket.onclose = (ev): void => {
         // this.timerId = setInterval(() => {
         //   this.connect();
@@ -78,7 +82,7 @@ export class WsapiService {
             console.log('create a new connection');
 
             // that.webSocket.close();
-            that.connect(that.wsurl);
+            that.connect(that.wsurl,that.machineId,that.otp);
             that.retries = 0;
           } else {
             console.log("waiting for the connection...")
