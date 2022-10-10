@@ -151,7 +151,7 @@ export class SocketServerZDM8 {
                             const mx = that.sclients.filter(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
-                                    if (m.machineId == x.machineId) return true;
+                                    return m.machineId == x.machineId
                                 }
                                 return false;
                             });
