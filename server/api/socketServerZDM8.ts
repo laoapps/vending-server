@@ -106,7 +106,6 @@ export class SocketServerZDM8 {
                         } else {
                             console.log(' not exist machine id ');
                             socket.end();
-                            
                             return;
                         }
                    
@@ -128,13 +127,12 @@ export class SocketServerZDM8 {
                                 return false;
                             });
                             if (mx.length>1) {
+                                mx.forEach(v=>v.end());
                                 socket.end();
-                                
                                 console.log('duplicated !');
                                 return;
                             }else if(!mx.length){
                                 socket.end();
-                                
                                 console.log('re-login PLEASE!');
                                 return;
                             }
@@ -154,13 +152,12 @@ export class SocketServerZDM8 {
                                 return false;
                             });
                             if (mx.length>1) {
+                                mx.forEach(v=>v.end());
                                 socket.end();
-                                
                                 console.log('duplicated !');
                                 return;
                             }else if(!mx.length){
                                 socket.end();
-                                
                                 console.log('re-login PLEASE!');
                                 return;
                             }
