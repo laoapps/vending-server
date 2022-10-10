@@ -216,6 +216,8 @@ export class SocketServerZDM8 {
                 const x = that.sclients.findIndex(v => {
                     if (v) {
                         const x = v['machineId'] as IMachineClientID;
+                        console.log(' machineId', socket['machineId']);
+                        
                         if (x.machineId == socket['machineId']) return true;
                     }
                     return false;
