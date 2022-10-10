@@ -82,6 +82,7 @@ export class SocketServerZDM8 {
                     if (d.command == EMACHINE_COMMAND.login) {
                         const token = d.token;
                         const x = that.findMachineIdToken(token);
+                        console.log('total connection',that.sclients.length);
                         if (x) {
                             console.log('found machine id');
                             socket['machineId'] = x;
@@ -92,7 +93,7 @@ export class SocketServerZDM8 {
                                 }
                                 return false;
                             })
-                            console.log('total connection',that.sclients.length);
+                           
                             console.log('duplicated connection',mx.length);
                             
                             
