@@ -97,7 +97,6 @@ export class SocketServerZDM8 {
                                 console.log('machine exist and accepted');
                             } else {
                                 mx.end();
-                                mx.destroy();
                                 // allow new connection only
                                 console.log('terminate previous connection');
                                 that.sclients.push(socket);
