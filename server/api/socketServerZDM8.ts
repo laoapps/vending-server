@@ -290,7 +290,7 @@ export class SocketServerZDM8 {
                 }
                 return false;
             });
-            if(position<0||position>99||!Number(position))
+            if(position<0||position>99||Number(position)==NaN)
                 return { position, status: false };
             if (x) {
                 const res = {} as IResModel;
