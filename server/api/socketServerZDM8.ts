@@ -66,7 +66,6 @@ export class SocketServerZDM8 {
                 // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
                 console.log('Socket timed out');
                 socket.end();
-                socket.destroy();
             });
 
 
@@ -108,7 +107,7 @@ export class SocketServerZDM8 {
                         } else {
                             console.log(' not exist machine id ');
                             socket.end();
-                            socket.destroy();
+                            
                             return;
                         }
                    
@@ -119,7 +118,7 @@ export class SocketServerZDM8 {
                         if (!x) {
                             console.log('ping not found token');
                             socket.end();
-                            socket.destroy();
+                            
                         } else {
                             console.log('ping found token');
                             const mx = that.sclients.filter(v => {
@@ -131,12 +130,14 @@ export class SocketServerZDM8 {
                             });
                             if (mx.length>1) {
                                 socket.end();
-                                socket.destroy();
+                                
                                 console.log('duplicated !');
+                                return;
                             }else if(!mx.length){
                                 socket.end();
-                                socket.destroy();
+                                
                                 console.log('re-login PLEASE!');
+                                return;
                             }
                             return;
                         }
@@ -155,19 +156,21 @@ export class SocketServerZDM8 {
                             });
                             if (mx.length>1) {
                                 socket.end();
-                                socket.destroy();
+                                
                                 console.log('duplicated !');
+                                return;
                             }else if(!mx.length){
                                 socket.end();
-                                socket.destroy();
+                                
                                 console.log('re-login PLEASE!');
+                                return;
                             }
                             console.log(' Update status here ');
                             
                             return;
                         } else {
                             socket.end();
-                            socket.destroy();
+                            
                             console.log(' not exist machine id ');
                             return;
                         }
@@ -227,7 +230,7 @@ export class SocketServerZDM8 {
             // setTimeout(function () {
             //     var isdestroyed = socket.destroyed;
             //     console.log('Socket destroyed:' + isdestroyed);
-            //     socket.destroy();
+            //     
             // }, 1200000);
 
         });
