@@ -67,17 +67,6 @@ export class SocketServerZDM8 {
                 console.log('Socket timed out');
                 socket.end();
                 socket.destroy();
-                const x = that.sclients.findIndex(v => {
-                    if (v) {
-                        const x = v['machineId'] as IMachineClientID;
-                        if (x.machineId == socket['machineId']) return true;
-                    }
-                    return false;
-                });
-                console.log('delete x +', that.sclients.length);
-                if(x)
-                that.sclients.splice(x, 1);
-                console.log('delete x -', that.sclients.length);
             });
 
 
@@ -96,14 +85,12 @@ export class SocketServerZDM8 {
                         const x = that.findMachineIdToken(token);
                         if (x) {
                             console.log('found machine id');
-
                             socket['machineId'] = x;
                             const mx = that.sclients.find(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
                                     if (m.machineId == x.machineId) return true;
                                 }
-
                                 return false;
                             })
                             if (!mx) {
@@ -111,15 +98,17 @@ export class SocketServerZDM8 {
                                 console.log('machine exist and accepted');
                             } else {
                                 mx.end();
+                                mx.destroy();
                                 // allow new connection only
                                 console.log('terminate previous connection');
                                 that.sclients.push(socket);
                                 console.log('machine exist and accepted');
                             }
-
                             return;
                         } else {
                             console.log(' not exist machine id ');
+                            socket.end();
+                            socket.destroy();
                             return;
                         }
                    
@@ -127,6 +116,7 @@ export class SocketServerZDM8 {
                         const token = d.token;
                         const x = that.findMachineIdToken(token);
                         if (!x) {
+                            console.log('ping not found token');
                             socket.end();
                             socket.destroy();
                         } else {
@@ -135,15 +125,13 @@ export class SocketServerZDM8 {
                                 if (m) {
                                     if (m.machineId == x.machineId) return true;
                                 }
-
                                 return false;
-                            })
+                            });
                             if (!mx) {
                                 socket.end();
                                 socket.destroy();
                                 console.log('re-login PLEASE!');
                             } 
-
                             return;
                         }
                     }else if(d.command == EMACHINE_COMMAND.status){
@@ -152,29 +140,25 @@ export class SocketServerZDM8 {
                         const x = that.findMachineIdToken(token);
                         if (x) {
                             console.log('found machine id');
-
-                            socket['machineId'] = x;
                             const mx = that.sclients.find(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
                                     if (m.machineId == x.machineId) return true;
                                 }
-
                                 return false;
                             })
                             if (!mx) {
-                                that.sclients.push(socket);
-                                console.log('machine exist and accepted');
+                                socket.end();
+                                socket.destroy();
+                                console.log('re-login PLEASE!');
                             } else {
-                                mx.end();
-                                // allow new connection only
-                                console.log('terminate previous connection');
-                                that.sclients.push(socket);
-                                console.log('machine exist and accepted');
+                               console.log('Update status here');
+                               //......
                             }
-
                             return;
                         } else {
+                            socket.end();
+                            socket.destroy();
                             console.log(' not exist machine id ');
                             return;
                         }
@@ -213,17 +197,6 @@ export class SocketServerZDM8 {
             socket.on('end', function (data) {
                 console.log('Socket ended from other end!');
                 console.log('End data : ' + data);
-                // const x = that.sclients.findIndex(v => {
-                //     if (v) {
-                //         const x = v['machineId'] as IMachineClientID;
-                //         if (x.machineId == socket['machineId']) return true;
-                //     }
-                //     return false;
-                // });
-                // console.log('delete x +', that.sclients.length);
-                // if(x)
-                // that.sclients.splice(x, 1);
-                // console.log('delete x -', that.sclients.length);
             });
             
             socket.on('close', function (error) {
