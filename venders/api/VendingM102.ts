@@ -45,9 +45,11 @@ export class VendingM102 {
     }
      checkSum(buff: any) {
         try {
-            const x = crc.crc16modbus(Buffer.from(buff as any, 'hex')).toString(16);
+            let x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
+            x.length<4?x='0'+x:'';
             console.log(x);
-    
+            console.log(x.substring(2) + x.substring(0, 2));
+            
             return x.substring(2) + x.substring(0, 2);
         }
         catch (e) {

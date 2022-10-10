@@ -36,7 +36,8 @@ export class VendingZDM8 {
     }
     checkSum(buff: any) {
         try {
-            const x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
+            let x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
+            x.length<4?x='0'+x:'';
             console.log(x);
             console.log(x.substring(2) + x.substring(0, 2));
             
@@ -308,9 +309,7 @@ export class VendingZDM8 {
             console.log('closing', e);
         })
     }
-    getCheckSum(s: string) {
-        return [s.substring(0, 1), s.substring(2, 3)]
-    }
+
 
 
 

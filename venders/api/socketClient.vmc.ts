@@ -84,6 +84,7 @@ export class SocketClientVMC {
         }, 60000 * 5);
 
     }
+   
     send(data: any,transactionID:number,command=EMACHINE_COMMAND.status) {
         const req = {} as IReqModel;
         req.command = command;

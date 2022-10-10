@@ -5,7 +5,8 @@
 
     function checkSum(buff: any) {
         try {
-            const x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
+            let x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
+            x.length<4?x='0'+x:'';
             console.log(x);
             console.log(x.substring(2) + x.substring(0, 2));
             
@@ -24,23 +25,23 @@
     // /dev/tty      /dev/ttyS0  /dev/ttyS2  /dev/ttyS4    /dev/ttyUSB1  /dev/ttyUSB3
     // /dev/ttyFIQ0  /dev/ttyS1==> ok  /dev/ttyS3  /dev/ttyUSB0  /dev/ttyUSB2  /dev/ttyUSB4
     const path = '/dev/ttyS1';
-    const port = new SerialPort({ path: path, baudRate: 9600 }, function (err) {
-        if (err) {
-            return console.log('Error: ', err.message)
-        }
-        console.log(`port ${path} accessed`);
+    // const port = new SerialPort({ path: path, baudRate: 9600 }, function (err) {
+    //     if (err) {
+    //         return console.log('Error: ', err.message)
+    //     }
+    //     console.log(`port ${path} accessed`);
 
 
 
 
         var b = '';
-        port.on('data', function (data: any) {
-            console.log('data', data);
-            b += new String(data);
-            console.log('buffer', b);
+        // port.on('data', function (data: any) {
+        //     console.log('data', data);
+        //     b += new String(data);
+        //     console.log('buffer', b);
 
 
-        });
+        // });
         function int2hex(i: number) {
             const str = Number(i).toString(16);
             return str.length === 1 ? '0' + str : str;
@@ -73,25 +74,26 @@
         const isspring = '01';
         const dropdetect = '00';
         const liftsystem = '00';
-        new Array(60).fill(0).forEach((v,i)=>{
+        // new Array(60).fill(0).forEach((v,i)=>{
+        [8,29,45,56].forEach((v,i)=>{
             setTimeout(() => {
-                const slot =  int2hex(i);
-                console.log('position',slot,'i',i,'\n');
+                const slot =  int2hex(v);
+                console.log('position',slot,'i',i,'v',v,'\n');
                 
                 const buff = ['01', '10','20','01','00','02', '04',slot, isspring, dropdetect, liftsystem];
                 const x = buff.join('') + checkSum(buff);
                 console.log('write', x);
         
-                port.write(Buffer.from(x, 'hex'), (e) => {
-                    if (e) {
-                        console.log('Error: ', e.message)
-                    } else {
-                        console.log('write succeeded');
-                    }
-                })
+                // port.write(Buffer.from(x, 'hex'), (e) => {
+                //     if (e) {
+                //         console.log('Error: ', e.message)
+                //     } else {
+                //         console.log('write succeeded');
+                //     }
+                // })
             }, 3000*i);
            
-        })
+        // })
        
     })
 
@@ -113,7 +115,7 @@
 
 
     process.on('exit', (code: number) => {
-        port.close();
+        // port.close();
         // port.close(()=>{
         //     console.log('port closed');
 
