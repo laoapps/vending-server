@@ -143,7 +143,7 @@ export class InventoryZDM8 {
             try {
                 const machineId = req.query['machineId'] + '';
                 const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
-                console.log('submit command');
+                console.log('submit command',machineId,position);
 
                 res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
             } catch (error) {
