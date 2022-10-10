@@ -218,7 +218,7 @@ export class SocketServerZDM8 {
                         const x = v['machineId'] as IMachineClientID;
                         console.log(' machineId', socket['machineId'],x);
                         
-                        if (x.machineId == socket['machineId']) return true;
+                        if (x.machineId+'' == socket['machineId'].machineId+'') return true;
                     }
                     return false;
                 });
