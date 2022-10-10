@@ -58,13 +58,26 @@ export class SocketServerZDM8 {
             });
 
             socket.setEncoding('utf8');
-
+            socket.setKeepAlive(true);
             socket.setTimeout(30000, function () {
                 // called after timeout -> same as socket.on('timeout')
                 // it just tells that soket timed out => its ur job to end or destroy the socket.
                 // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
                 // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
                 console.log('Socket timed out');
+                socket.end();
+                socket.destroy();
+                const x = that.sclients.findIndex(v => {
+                    if (v) {
+                        const x = v['machineId'] as IMachineClientID;
+                        if (x.machineId == socket['machineId']) return true;
+                    }
+                    return false;
+                });
+                console.log('delete x +', that.sclients.length);
+                if(x)
+                that.sclients.splice(x, 1);
+                console.log('delete x -', that.sclients.length);
             });
 
 
@@ -78,9 +91,9 @@ export class SocketServerZDM8 {
                     console.log('Data sent to server : ' + data.toString());
 
                     const d = JSON.parse(data.toString()) as IReqModel;
-                    if (d.command == EMACHINE_COMMAND.login) {
-                        const id = d.token;
-                        const x = that.findMachineIdToken(id);
+                    if (d.command == EMACHINE_COMMAND.login||d.command ==EMACHINE_COMMAND.ping) {
+                        const token = d.token;
+                        const x = that.findMachineIdToken(token);
                         if (x) {
                             console.log('found machine id');
 
@@ -104,12 +117,44 @@ export class SocketServerZDM8 {
                                 console.log('machine exist and accepted');
                             }
 
-
+                            return;
                         } else {
                             console.log(' not exist machine id ');
-
+                            return;
                         }
 
+                    }else if(d.command == EMACHINE_COMMAND.status){
+                        console.log('show status here',d.command,d.token,d.data);
+                        const token = d.token;
+                        const x = that.findMachineIdToken(token);
+                        if (x) {
+                            console.log('found machine id');
+
+                            socket['machineId'] = x;
+                            const mx = that.sclients.find(v => {
+                                const m = v['machineId'] as IMachineClientID;
+                                if (m) {
+                                    if (m.machineId == x.machineId) return true;
+                                }
+
+                                return false;
+                            })
+                            if (!mx) {
+                                that.sclients.push(socket);
+                                console.log('machine exist and accepted');
+                            } else {
+                                mx.end();
+                                // allow new connection only
+                                console.log('terminate previous connection');
+                                that.sclients.push(socket);
+                                console.log('machine exist and accepted');
+                            }
+
+                            return;
+                        } else {
+                            console.log(' not exist machine id ');
+                            return;
+                        }
                     }
                     //echo data
                     // var is_kernel_buffer_full = socket.write('Data ::' + data);
@@ -134,19 +179,30 @@ export class SocketServerZDM8 {
                     socket.end();
             });
 
-            socket.on('timeout', function () {
-                console.log('Socket timed out !');
-                socket.end('Timed out!');
-                // can call socket.destroy() here too.
-                if (!socket.closed)
-                    socket.end();
-            });
+            // socket.on('timeout', function () {
+            //     console.log('Socket timed out !');
+            //     socket.end('Timed out!');
+            //     // can call socket.destroy() here too.
+            //     if (!socket.closed)
+            //         socket.end();
+            // });
 
             socket.on('end', function (data) {
                 console.log('Socket ended from other end!');
                 console.log('End data : ' + data);
+                const x = that.sclients.findIndex(v => {
+                    if (v) {
+                        const x = v['machineId'] as IMachineClientID;
+                        if (x.machineId == socket['machineId']) return true;
+                    }
+                    return false;
+                });
+                console.log('delete x +', that.sclients.length);
+                if(x)
+                that.sclients.splice(x, 1);
+                console.log('delete x -', that.sclients.length);
             });
-
+            
             socket.on('close', function (error) {
                 var bread = socket.bytesRead;
                 var bwrite = socket.bytesWritten;
@@ -164,6 +220,7 @@ export class SocketServerZDM8 {
                     return false;
                 });
                 console.log('delete x +', that.sclients.length);
+                if(x)
                 that.sclients.splice(x, 1);
                 console.log('delete x -', that.sclients.length);
 

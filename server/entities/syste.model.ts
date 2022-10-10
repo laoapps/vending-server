@@ -777,7 +777,9 @@ export interface IMachineID extends IBase,IBC {
 }
 
 export enum EMACHINE_COMMAND{
-    login='login'
+    login='login',
+    ping ='ping',
+    status ='status'
 }
 
 export interface IMachineClientID{
