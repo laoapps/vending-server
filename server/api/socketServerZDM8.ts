@@ -190,17 +190,17 @@ export class SocketServerZDM8 {
             socket.on('end', function (data) {
                 console.log('Socket ended from other end!');
                 console.log('End data : ' + data);
-                const x = that.sclients.findIndex(v => {
-                    if (v) {
-                        const x = v['machineId'] as IMachineClientID;
-                        if (x.machineId == socket['machineId']) return true;
-                    }
-                    return false;
-                });
-                console.log('delete x +', that.sclients.length);
-                if(x)
-                that.sclients.splice(x, 1);
-                console.log('delete x -', that.sclients.length);
+                // const x = that.sclients.findIndex(v => {
+                //     if (v) {
+                //         const x = v['machineId'] as IMachineClientID;
+                //         if (x.machineId == socket['machineId']) return true;
+                //     }
+                //     return false;
+                // });
+                // console.log('delete x +', that.sclients.length);
+                // if(x)
+                // that.sclients.splice(x, 1);
+                // console.log('delete x -', that.sclients.length);
             });
             
             socket.on('close', function (error) {
