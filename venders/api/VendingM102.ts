@@ -12,8 +12,9 @@ export class VendingM102 {
             return console.log('Error: ', err.message)
         }
     })
+    sock :SocketClientM102|null=null;
     constructor(sock: SocketClientM102) {
-
+        this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
         // this.port.on('readable', function () {
         //     console.log('Data:', this.port.read())
@@ -33,8 +34,9 @@ export class VendingM102 {
                 buffer += new String(data);
                 console.log('buffer', buffer);
                 if (buffer.length == 4) {
+                    sock.send(buffer,-1)
                     buffer = '';
-                    sock.send(buffer)
+                    
                 }
 
             });

@@ -16,6 +16,23 @@ export class VendingZDM8 {
     constructor(sock: SocketClientZDM8) {
 
         this.sock = sock;
+        let buffer = '';
+        const that = this;
+        this.port.on("open", function () {
+            console.log('open serial communication');
+            // Listens to incoming data
+            that.port.on('data', function (data: any) {
+                console.log('data', data);
+                buffer += new String(data);
+                console.log('buffer', buffer);
+                // if (buffer.length == 4) {
+                    sock.send(buffer,-1)
+                    buffer = '';
+                   
+                // }
+
+            });
+        });
     }
     checkSum(buff: any) {
         try {

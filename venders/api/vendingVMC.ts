@@ -9,15 +9,16 @@ import { broadCast, chk8xor, initWs, PrintError, PrintSucceeded, wsSendToClient 
 import xor from 'buffer-xor'
 import { SocketClientVMC } from './socketClient.vmc';
 
-export class VendingM102Server {
+export class VendingVMC {
 
     port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
         if (err) {
             return console.log('Error: ', err.message)
         }
-    })
+    });
+    sock: SocketClientVMC|null=null
     constructor(sock: SocketClientVMC) {
-
+        this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
         // this.port.on('readable', function () {
         //     console.log('Data:', this.port.read())
@@ -37,8 +38,9 @@ export class VendingM102Server {
                 buffer += new String(data);
                 console.log('buffer', buffer);
                 if (buffer.length == 4) {
+                    sock.send(buffer,-1)
                     buffer = '';
-                    sock.send(buffer)
+                   
                 }
 
             });

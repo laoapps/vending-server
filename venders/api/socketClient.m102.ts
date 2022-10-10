@@ -88,12 +88,13 @@ export class SocketClientM102 {
             that.client.write(JSON.stringify(req));
         }, 5000);
     }
-    send(data: any, command = EM102_COMMAND.status) {
+    send(data: any,transactionID:number, command = EMACHINE_COMMAND.status) {
         const req = {} as IReqModel;
         req.command = command;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
+        req.transactionID =transactionID;
         this.client.write(JSON.stringify(req));
     }
     close() {

@@ -1,6 +1,7 @@
 import net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
+import { VendingVMC } from './vendingVMC';
 export class SocketClientVMC {
     //---------------------client----------------------
 
@@ -12,7 +13,9 @@ export class SocketClientVMC {
     otp = '111111';
     token = '';
     t:any;
+    m: VendingVMC;
     constructor() {
+        this.m = new VendingVMC(this);
         this.init();
         this.token = cryptojs.SHA256(this.machineid + this.otp).toString(CryptoJS.enc.Hex)
     }
@@ -81,13 +84,18 @@ export class SocketClientVMC {
         }, 60000 * 5);
 
     }
-    send(data: any) {
+    send(data: any,transactionID:number,command=EMACHINE_COMMAND.status) {
         const req = {} as IReqModel;
-        req.command = EZDM8_COMMAND.status;
+        req.command = command;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
+        req.transactionID = transactionID;
         this.client.write(JSON.stringify(req));
+    }
+    close() {
+        this.client.end();
+        this.m.close();
     }
 
 }
