@@ -95,18 +95,16 @@ export class SocketServerZDM8 {
                                 return false;
                             })
                            
-                            console.log('duplicated connection',mx.length);
-                            
-                            
                             if (!mx.length) {
                                 that.sclients.push(socket);
                                 console.log('machine exist and accepted');
-                            } else {
+                            } else if(mx.length) {
+                                console.log('duplicated connection',mx.length);
                                 mx.forEach(v=>v.end())
                                 socket.end();
                                 // allow new connection only
                                 console.log('terminate all connection and restart');
-                               
+                               return;
                             }
                             return;
                         } else {
@@ -135,7 +133,7 @@ export class SocketServerZDM8 {
                             if (mx.length>1) {
                                 mx.forEach(v=>v.end());
                                 socket.end();
-                                console.log('duplicated !');
+                                console.log('ping duplicated !');
                                 return;
                             }else if(!mx.length){
                                 socket.end();
@@ -222,10 +220,12 @@ export class SocketServerZDM8 {
                     }
                     return false;
                 });
-                console.log('delete x +', that.sclients.length);
-                if(x>-1)
-                that.sclients.splice(x, 1);
-                console.log('delete x -', that.sclients.length);
+                console.log('delete x +',x, that.sclients.length);
+                if(x>-1){
+                    that.sclients.splice(x, 1);
+                }
+                
+                console.log('delete x -',x, that.sclients.length);
 
             });
 
