@@ -113,6 +113,7 @@ export class SocketServerZDM8 {
                         }
                    
                     } else if(d.command == EMACHINE_COMMAND.ping){
+                        console.log('command ping');
                         const token = d.token;
                         const x = that.findMachineIdToken(token);
                         if (!x) {
@@ -120,6 +121,7 @@ export class SocketServerZDM8 {
                             socket.end();
                             socket.destroy();
                         } else {
+                            console.log('ping found token');
                             const mx = that.sclients.find(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
@@ -139,7 +141,7 @@ export class SocketServerZDM8 {
                         const token = d.token;
                         const x = that.findMachineIdToken(token);
                         if (x) {
-                            console.log('found machine id');
+                            console.log('found token');
                             const mx = that.sclients.find(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
@@ -163,13 +165,7 @@ export class SocketServerZDM8 {
                             return;
                         }
                     }
-                    //echo data
-                    // var is_kernel_buffer_full = socket.write('Data ::' + data);
-                    // if (is_kernel_buffer_full) {
-                    //     console.log('Data was flushed successfully from kernel buffer i.e written successfully!');
-                    // } else {
-                    //     socket.pause();
-                    // }
+                    
                 } catch (e) {
                     console.log('wrong data', data, e);
                 }
@@ -195,7 +191,6 @@ export class SocketServerZDM8 {
             // });
 
             socket.on('end', function (data) {
-                console.log('Socket ended from other end!');
                 console.log('End data : ' + data);
             });
             
@@ -216,7 +211,7 @@ export class SocketServerZDM8 {
                     return false;
                 });
                 console.log('delete x +', that.sclients.length);
-                if(x)
+                if(x>-1)
                 that.sclients.splice(x, 1);
                 console.log('delete x -', that.sclients.length);
 
