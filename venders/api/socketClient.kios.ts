@@ -8,13 +8,13 @@ export class SocketKiosClient {
     client = new net.Socket();
     port = 2222;
     host = 'laoapps.com';
-    machineid = '12345678';
+    machineId = '12345678';
     otp = '111111';
     token = '';
     t:any;
     constructor() {
         this.init();
-        this.token = cryptojs.SHA256(this.machineid + this.otp).toString(CryptoJS.enc.Hex)
+        this.token = cryptojs.SHA256(this.machineId + this.otp).toString(CryptoJS.enc.Hex)
     }
     init() {
         const that = this;

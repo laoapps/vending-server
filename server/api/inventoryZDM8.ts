@@ -4,8 +4,8 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
-
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes } from '../entities/syste.model';
+import { parse, end, toSeconds, pattern } from "iso8601-duration";
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { SocketServerZDM8 } from './socketServerZDM8';
@@ -42,8 +42,8 @@ export class InventoryZDM8 {
 
                 const clientId = data.clientId;
                 let loggedin = false;
-                console.log('client length',this.wss.clients);
-                
+                console.log('client length', this.wss.clients);
+
                 this.wss.clients.forEach(v => {
                     loggedin = v['clientId'] == clientId;
                 })
@@ -53,16 +53,26 @@ export class InventoryZDM8 {
                     res.send(PrintSucceeded(command, this.vendingOnSale, EMessage.succeeded));
                 } else if (command == EClientCommand.buyMMoney) {
                     const ids = data.ids as Array<string>; // item id
-                    const machineId = data.machineId;
-                    const value = this.vendingOnSale.filter(v => ids.includes(v.stock.id + '')).reduce((a, b) => {
+                    const machineId = this.ssocket.findMachineIdToken(data.token);
+                    if (!machineId) throw new Error('Invalid token');
+                    if (!Array.isArray(ids)) throw new Error('Invalid array id');
+                    const checkIds = this.vendingOnSale.filter(v => ids.includes(v.stock.id + ''));
+                    if (checkIds.length != ids.length) throw new Error('some array id not exist');
+
+                    const value = checkIds.reduce((a, b) => {
                         return a + b.stock.price;
                     }, 0);
-                    const { uuid, qr } = await this.generateBillMMoney(ids, value, machineId);
+                    if (Number(data.value) != value) throw new Error('Invalid value' + data.value + ' ' + value);
 
-                    this.vendingBill.push({
-                        uuid,
+                    const transactionID = new Date().getTime();
+                    const qr = await this.generateBillMMoney(value, transactionID + '');
+                    if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
+                    const bill = {
+                        uuid: uuid4(),
                         clientId,
-                        machineId,
+                        qr: qr.qrCode,
+                        transactionID,
+                        machineId: machineId.machineId,
                         hashM: '',
                         hashP: '',
                         paymentmethod: command,
@@ -76,9 +86,10 @@ export class InventoryZDM8 {
                             const position = this.vendingOnSale.find(x => ids.includes(x.id + ''))?.position || {} as -1;
                             return { stock, position } as IVendingMachineSale;
                         })
-                    });
-                    const re = { ids, qr, value, uuid } as IMMoneyQRRes;
-                    res.send(PrintSucceeded(command, re, EMessage.succeeded));
+                    };
+                    this.vendingBill.push(bill);
+
+                    res.send(PrintSucceeded(command, bill, EMessage.succeeded));
                 } else {
                     res.send(PrintError(command, [], EMessage.notsupport));
                 }
@@ -143,7 +154,7 @@ export class InventoryZDM8 {
             try {
                 const machineId = req.query['machineId'] + '';
                 const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
-                console.log('submit command',machineId,position);
+                console.log('submit command', machineId, position);
 
                 res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
             } catch (error) {
@@ -223,67 +234,111 @@ export class InventoryZDM8 {
         }
     }
 
-    generateBillMMoney(ids: Array<string>, value: number, machineId: string) {
-        return new Promise<any>((resolve, reject) => {
+    generateBillMMoney(value: number, transactionID: string) {
+        return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
             const uuid = randomUUID();
-            resolve({ uuid, qr: 'qr', value, machineId });
+            // resolve({ uuid, qr: 'qr', value, machineId });
             // generate QR from MMoney
-            // axios.post('https://', { ids, value, machineId }).then(r => {
-            //     console.log(r);
-            //     resolve({ uuid, qr: r.data.qr,value, machineId });
-            // }).catch(e => {
-            //     reject(e)
-            // })
+            this.loginMmoney().then(r => {
+                if (r) {
+                    const qr = {
+                        amount: value,
+                        phonenumber: '2054445447',
+                        transactionID
+                    } as IMMoneyGenerateQR;
+
+                    axios.post('https://qr.mmoney.la/test/generateQR',
+                        qr,
+                        { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(r => {
+                            console.log(r);
+                            if (r.status) {
+                                resolve(r.data as IMMoneyGenerateQRRes);
+                            } else {
+                                reject(new Error(r.statusText));
+                            }
+
+                        }).catch(e => {
+                            reject(e)
+                        });
+                } else {
+                    reject(new Error(EMessage.loginfailed))
+                }
+
+            }).catch(e => {
+                console.log(e);
+                reject(e);
+            })
+
         })
     }
-    callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string, transactionID: number, ref: string, others: any) {
+    mMoneyLoginRes = {} as IMMoneyLogInRes;
+    loginMmoney() {
+        const username = 'test';
+        const password = '12345';
+        return new Promise<IMMoneyLogInRes>((resolve, reject) => {
+            if (this.mMoneyLoginRes.expiresIn) {
+                if (new Date(this.mMoneyLoginRes.expiresIn).getTime() > new Date().getTime()) {
+                    return resolve(this.mMoneyLoginRes);
+                }
+            }
+            axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
+                console.log(r);
+                if (r.status) {
+                    this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
+                    const t = new Date();
+                    t.setSeconds(t.getSeconds() + toSeconds(parse(this.mMoneyLoginRes.expiresIn))) + ''
+                    this.mMoneyLoginRes.expiresIn = t.getTime() + '';
+                    resolve(this.mMoneyLoginRes);
+                } else {
+                    reject(new Error(EMessage.loginfailed));
+                }
+
+            }).catch(e => {
+                reject(e)
+            });
+        })
+    }
+    callBackConfirm(qr: string) {
         return new Promise<any>((resolve, reject) => {
             try {
-                const c = this.checkMachineId(machineId);
-                if (!c) throw new Error(EMessage.MachineIdNotFound);
+                const bill = this.vendingBill.find(v => v.qr == qr);
+                if (!bill) throw new Error(EMessage.billnotfound);
+                bill.paymentstatus = 'paid';
+                bill.paymentref = '';
+                bill.paymenttime = new Date();
 
-                const sale = this.vendingBill.find(v => v.uuid == uuid);
-                if (!sale) throw new Error(EMessage.billnotfound);
-                sale.vendingsales.map(v => v.position).forEach((p, i) => {
-                    setTimeout(() => {
-                        const position = this.ssocket.processOrder(machineId, p, transactionID);
-                        this.wss.clients.forEach(v => {
-                            const x = v['clientId'] as string;
-                            if (x) {
-                                if (x == sale?.clientId) {
+                bill.vendingsales.map(v => v.position).forEach((p, i) => {
+                    this.wss.clients.forEach(v => {
+                        const x = v['clientId'] as string;
+                        if (x) {
+                            if (x == bill.clientId) {
+
+                                setTimeout(() => {
+                                    const position = this.ssocket.processOrder(bill.machineId, p, bill.transactionID);
                                     const res = {} as IResModel;
                                     res.command = EZDM8_COMMAND.shippingcontrol;
                                     res.message = EMessage.confirmsucceeded;
                                     res.status = 1;
-                                    res.data = { sale, position };
-                                    const i = this.vendingBill.findIndex(i => i.uuid == uuid);
-                                    delete this.vendingBill[i];
+                                   
+                                    const i = this.vendingBill.findIndex(i => i.uuid == bill.uuid);
+                                    this.vendingBill.splice(i, 1);
+                                    
+                                    const ids = bill.vendingsales.map(v=>v.id);
+                                    ids.forEach(v=>{
+                                        if(this.vendingOnSale.find(v=>v.stock.id==v.id)){
+                                            const x = this.vendingOnSale.find(v=>v.stock.id==v.id);
+                                            if(x)
+                                            x.stock.qtty--;
+                                        }
+                                    })
+                                    res.data = { bill: bill, position };
                                     v.send(JSON.stringify(res));
-                                }
+                                }, 3000 * i);
                             }
-                        })
-                    }, 3000 * i);
-
-                })
-                // this.wss.
-                sale.paymentstatus = 'paid';
-                sale.paymentref = ref;
-                sale.paymenttime = new Date();
-                this.wss.clients.forEach(v => {
-                    const x = v['clientId'] as string;
-                    if (x) {
-                        if (x == sale?.clientId) {
-                            const res = {} as IResModel;
-                            res.command = EZDM8_COMMAND.shippingcontrol;
-                            res.message = EMessage.confirmsucceeded;
-                            res.status = 1;
-                            res.data = sale;
-                            const i = this.vendingBill.findIndex(v => v.uuid == uuid);
-                            this.vendingBillPaid.push(this.vendingBill.splice(i, 1)[0]);
-                            v.send(JSON.stringify(res));
                         }
-                    }
+                    })
                 })
+              
                 resolve(true);
             } catch (error) {
                 console.log(error);

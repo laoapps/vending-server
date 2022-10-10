@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EClientCommand, EPaymentProvider, IMachineId, IReqModel, IResModel } from './syste.model';
 import { WsapiService } from './wsapi.service';
+import * as cryptojs from 'crypto-js';
 @Injectable({
   providedIn: 'root'
 })
@@ -13,8 +14,10 @@ export class ApiService {
   constructor(public http:HttpClient,public wsapi:WsapiService) { 
     this.machineId.machineId='12345678';
     this.machineId.otp = '111111';
+    
     this.wsapi.connect(this.wsurl,this.machineId.machineId,this.machineId.otp);
   }
+  
   private headerBase(): any {
     const token = localStorage.getItem('token');
     //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
@@ -50,12 +53,11 @@ export class ApiService {
     req.command = EClientCommand.buyMMoney;
     req.data={
       ids,
-      value,
-      machineId
+      value
     };
     req.ip;
     req.time = new Date().toString();
-    req.token;
+    req.token =cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(CryptoJS.enc.Hex);;
     return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
 

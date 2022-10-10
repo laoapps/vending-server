@@ -23,6 +23,7 @@
     "express": "^4.18.1",
     "helmet": "^5.1.0",
     "init": "^0.1.2",
+    "iso8601-duration": "^2.1.1",
     "jstoxml": "^3.2.3",
     "modbus-serial": "^8.0.5",
     "moment": "^2.29.4",

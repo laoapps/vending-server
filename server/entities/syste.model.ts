@@ -720,7 +720,9 @@ export enum EMessage {
     billnotfound = "billnotfound",
     confirmsucceeded = "confirmsucceeded",
     MachineIsNotOnline = "MachineIsNotOnline",
-    OrderIsReady = "OrderIsReady"
+    OrderIsReady = "OrderIsReady",
+    generateQRFailed = "generateQRFailed",
+    GenerateQRMMoneyFailed = "GenerateQRMMoneyFailed"
 }
 export interface IBase{
     id?:number;
@@ -767,6 +769,8 @@ export interface IVendingMachineBill extends IBase, IBC{
     requestpaymenttime:Date;
     machineId:string;
     clientId:string;
+    transactionID:number;
+    qr:string;
 }
 
 export interface IMachineID extends IBase,IBC {
@@ -785,4 +789,26 @@ export enum EMACHINE_COMMAND{
 export interface IMachineClientID{
     otp:string;
     machineId:string;
+}
+
+export interface IMMoneyLogInRes{
+    
+        token: string,
+        message: string,
+        expiresIn: string,// 2h
+    status: true
+      
+}
+export interface IMMoneyGenerateQR{
+    transactionID:string,
+    phonenumber : string,
+    amount : number
+}
+export interface IMMoneyGenerateQRRes{
+    
+        name: string,
+        resultCode:number,
+        resultDesc: string,
+        qrCode: string
+      
 }

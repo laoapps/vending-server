@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { IMachineClientID, IMachineId, IMMoneyQRRes, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
+import { Platform } from '@ionic/angular';
+import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 
 @Component({
   selector: 'app-tab1',
@@ -19,11 +21,22 @@ export class Tab1Page {
 
   url = 'http://localhost:9009'
   orders = new Array<IVendingMachineSale>();
-  constructor(public apiService: ApiService) {
+  swidth=0;
+  sheight=0;
+  smode = 2;
+  constructor(public apiService: ApiService,platform: Platform,private scanner: BarcodeScanner) {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url
-    // this.initDemo();
-    this.loadSaleList();
+    this.initDemo();
+    // this.loadSaleList();
+    platform.ready().then(() => {
+      console.log('Width: ' + (this.swidth=platform.width()));
+      console.log('Height: ' + (this.sheight=platform.height()));
+      console.log('screen width',this.swidth,'screen height', this.sheight);
+      if(this.swidth>550)this.smode =3;
+      else this.smode = 2;
+    });
+
   }
   initDemo() {
     this.apiService.initDemo().subscribe(r => {
@@ -66,13 +79,14 @@ export class Tab1Page {
     })
   }
   buyMMoney(id: number) {
-    const x = this.vendingOnSale.find(v => v.id == id);
+    const x = this.vendingOnSale.find(v => v.stock.id == id);
     if (!x) return alert('not found');
 
     this.apiService.buyMMoney([id], x.stock.price, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.mMoneyRes = r.data;
+        localStorage.setItem('order', JSON.stringify(this.mMoneyRes));
       }
     })
   }
@@ -83,21 +97,34 @@ export class Tab1Page {
       if (r.status) {
         this.mMoneyRes = r.data;
         localStorage.setItem('order', JSON.stringify(this.mMoneyRes));
+        this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.encodedData).then(
+          res => {
+            alert(res);
+            this.encodedData = res;
+          }, error => {
+            alert(error);
+          }
+      );
       }
     })
   }
 
   addOrder(id: number) {
-    const x = this.vendingOnSale.find(v => v.id == id);
+    console.log('ID',id);
+    
+    if(!id) return alert('add error')
+    const x = this.vendingOnSale.find(v => v.stock.id == id);
     if (!x) return alert('not found');
     const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
     y.stock.qtty = 1;
+    console.log('y',y,id);
+    
     this.orders.push(y);
   }
   summarizeOrder() {
     const o = new Array<IVendingMachineSale>();
     this.orders.forEach(v => {
-      const x = o.find(x => x.id == v.id);
+      const x = o.find(x => x.stock.id == v.stock.id);
       if (!x) o.push(JSON.parse(JSON.stringify(v)));
       else x.stock.qtty += 1
     })
@@ -107,11 +134,12 @@ export class Tab1Page {
     const x = new Array<Array<IVendingMachineSale>>();
     this.vendingOnSale.forEach((v, i) => {
       const y = i + 1;
-      if (!(y % 2)) x.push(this.vendingOnSale.slice(i - 2, i))
+      if (!(y % this.smode)) x.push(this.vendingOnSale.slice(i - this.smode, i))
     })
     // console.log('x',x);
 
     return x;
   }
+
 
 }

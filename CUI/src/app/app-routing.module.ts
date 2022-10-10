@@ -5,6 +5,10 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+  },
+  {
+    path: 'qrpay',
+    loadChildren: () => import('./qrpay/qrpay.module').then( m => m.QrpayPageModule)
   }
 ];
 @NgModule({
