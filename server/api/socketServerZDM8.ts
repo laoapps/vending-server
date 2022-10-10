@@ -91,7 +91,7 @@ export class SocketServerZDM8 {
                     console.log('Data sent to server : ' + data.toString());
 
                     const d = JSON.parse(data.toString()) as IReqModel;
-                    if (d.command == EMACHINE_COMMAND.login||d.command ==EMACHINE_COMMAND.ping) {
+                    if (d.command == EMACHINE_COMMAND.login) {
                         const token = d.token;
                         const x = that.findMachineIdToken(token);
                         if (x) {
@@ -122,7 +122,30 @@ export class SocketServerZDM8 {
                             console.log(' not exist machine id ');
                             return;
                         }
+                   
+                    } else if(d.command == EMACHINE_COMMAND.ping){
+                        const token = d.token;
+                        const x = that.findMachineIdToken(token);
+                        if (!x) {
+                            socket.end();
+                            socket.destroy();
+                        } else {
+                            const mx = that.sclients.find(v => {
+                                const m = v['machineId'] as IMachineClientID;
+                                if (m) {
+                                    if (m.machineId == x.machineId) return true;
+                                }
 
+                                return false;
+                            })
+                            if (!mx) {
+                                socket.end();
+                                socket.destroy();
+                                console.log('re-login PLEASE!');
+                            } 
+
+                            return;
+                        }
                     }else if(d.command == EMACHINE_COMMAND.status){
                         console.log('show status here',d.command,d.token,d.data);
                         const token = d.token;
