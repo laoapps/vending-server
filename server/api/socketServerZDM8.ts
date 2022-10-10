@@ -92,6 +92,10 @@ export class SocketServerZDM8 {
                                 }
                                 return false;
                             })
+                            console.log('total connection',that.sclients.length);
+                            console.log('duplicated connection',mx.length);
+                            
+                            
                             if (!mx.length) {
                                 that.sclients.push(socket);
                                 console.log('machine exist and accepted');
