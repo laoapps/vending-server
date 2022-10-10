@@ -122,18 +122,22 @@ export class SocketServerZDM8 {
                             socket.destroy();
                         } else {
                             console.log('ping found token');
-                            const mx = that.sclients.find(v => {
+                            const mx = that.sclients.filter(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
                                     if (m.machineId == x.machineId) return true;
                                 }
                                 return false;
                             });
-                            if (!mx) {
+                            if (mx.length>1) {
+                                socket.end();
+                                socket.destroy();
+                                console.log('duplicated !');
+                            }else if(!mx.length){
                                 socket.end();
                                 socket.destroy();
                                 console.log('re-login PLEASE!');
-                            } 
+                            }
                             return;
                         }
                     }else if(d.command == EMACHINE_COMMAND.status){
@@ -141,22 +145,25 @@ export class SocketServerZDM8 {
                         const token = d.token;
                         const x = that.findMachineIdToken(token);
                         if (x) {
-                            console.log('found token');
-                            const mx = that.sclients.find(v => {
+                            console.log('ping found token');
+                            const mx = that.sclients.filter(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
                                     if (m.machineId == x.machineId) return true;
                                 }
                                 return false;
-                            })
-                            if (!mx) {
+                            });
+                            if (mx.length>1) {
+                                socket.end();
+                                socket.destroy();
+                                console.log('duplicated !');
+                            }else if(!mx.length){
                                 socket.end();
                                 socket.destroy();
                                 console.log('re-login PLEASE!');
-                            } else {
-                               console.log('Update status here');
-                               //......
                             }
+                            console.log(' Update status here ');
+                            
                             return;
                         } else {
                             socket.end();
