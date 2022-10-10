@@ -85,22 +85,22 @@ export class SocketServerZDM8 {
                         if (x) {
                             console.log('found machine id');
                             socket['machineId'] = x;
-                            const mx = that.sclients.find(v => {
+                            const mx = that.sclients.filter(v => {
                                 const m = v['machineId'] as IMachineClientID;
                                 if (m) {
                                     if (m.machineId == x.machineId) return true;
                                 }
                                 return false;
                             })
-                            if (!mx) {
+                            if (!mx.length) {
                                 that.sclients.push(socket);
                                 console.log('machine exist and accepted');
                             } else {
-                                mx.end();
+                                mx.forEach(v=>v.end())
+                                socket.end();
                                 // allow new connection only
-                                console.log('terminate previous connection');
-                                that.sclients.push(socket);
-                                console.log('machine exist and accepted');
+                                console.log('terminate all connection and restart');
+                               
                             }
                             return;
                         } else {
