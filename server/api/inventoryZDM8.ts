@@ -42,7 +42,7 @@ export class InventoryZDM8 {
 
                 const clientId = data.clientId;
                 let loggedin = false;
-                console.log('client length', this.wss.clients);
+                console.log(' WS client length', this.wss.clients);
 
                 this.wss.clients.forEach(v => {
                     loggedin = v['clientId'] == clientId;
@@ -141,7 +141,7 @@ export class InventoryZDM8 {
         });
         router.get('/getOnlineMachines', async (req, res) => {
             try {
-                console.log('getOnlineMachines');
+                console.log(' WS getOnlineMachines');
                 res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
             } catch (error) {
                 console.log(error);
@@ -154,7 +154,7 @@ export class InventoryZDM8 {
             try {
                 const machineId = req.query['machineId'] + '';
                 const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
-                console.log('submit command', machineId, position);
+                console.log(' WS submit command', machineId, position);
 
                 res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
             } catch (error) {
@@ -369,56 +369,55 @@ export class InventoryZDM8 {
         }, 15000);
 
         wss.on('connection', (ws: WebSocket) => {
-            console.log('new connection ', ws.url);
+            console.log(' WS new connection ', ws.url);
 
-            console.log('current connection is alive', ws['isAlive']);
-
-
+            console.log(' WS current connection is alive', ws['isAlive'])
 
             ws.onopen = (ev: Event) => {
-                console.log('open', ev);
+                console.log(' WS open', ev);
+            }
+           
+            // ws['isAlive'] = true;
+            ws.onclose = (ev: CloseEvent) => {
+
+            }
+            ws.onerror = (ev: Event) => {
+                console.log(' WS error', ev);
+            }
+
+            //connection is up, let's add a simple simple event
+            ws.onmessage = async (ev: MessageEvent) => {
+                let d: IReqModel = {} as IReqModel;
                 // ws['isAlive'] = true;
-                ws.onclose = (ev: CloseEvent) => {
+                try {
+                    console.log(' WS comming', ev.data.toString());
 
-                }
-                ws.onerror = (ev: Event) => {
-                    console.log('error', ev);
-                }
+                    d = JSON.parse(ev.data.toString()) as IReqModel;
 
-                //connection is up, let's add a simple simple event
-                ws.onmessage = async (ev: MessageEvent) => {
-                    let d: IReqModel = {} as IReqModel;
-                    // ws['isAlive'] = true;
-                    try {
-                        console.log('comming', ev.data.toString());
+                    const res = {} as IResModel
+                    if (d.command == EMACHINE_COMMAND.login) {
+                        res.command = d.command;
+                        res.message = EMessage.loginok;
+                        res.status = 1;
+                        if (d.token) {
+                            const x = d.token as string;
+                            console.log(' WS online machine', this.ssocket.listOnlineMachine());
+                            let machineId =this.ssocket.findMachineIdToken(x)
 
-                        d = JSON.parse(ev.data.toString()) as IReqModel;
+                            if (!machineId) throw new Error('machine is not exit');
+                            ws['machineId'] = machineId.machineId;
+                            ws['clientId'] = uuid4();
+                            res.data = { clientId: ws['clientId'] };
 
-                        const res = {} as IResModel
-                        if (d.command == EMACHINE_COMMAND.login) {
-                            res.command = d.command;
-                            res.message = EMessage.loginok;
-                            res.status = 1;
-                            if (d.token) {
-                                const x = d.token as string;
-                                console.log('online machine', this.ssocket.listOnlineMachine());
-                                let machineId =this.ssocket.findMachineIdToken(x)
-
-                                if (!machineId) throw new Error('machine is not exit');
-                                ws['machineId'] = machineId.machineId;
-                                ws['clientId'] = uuid4();
-                                res.data = { clientId: ws['clientId'] };
-
-                            } else throw new Error(EMessage.MachineIdNotFound)
-                           
-                        }
-
-                        ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
-
-                    } catch (error: any) {
-                        console.log('error', error);
-                        ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                        } else throw new Error(EMessage.MachineIdNotFound)
+                       
                     }
+
+                    ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+
+                } catch (error: any) {
+                    console.log(' WS error', error);
+                    ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
                 }
             }
 

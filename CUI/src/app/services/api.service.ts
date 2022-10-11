@@ -12,11 +12,23 @@ export class ApiService {
   wsurl = environment.wsurl;
   currentPaymentProvider=EPaymentProvider.laab;
   machineId={} as IMachineId;
+
+  clientId = {clientId:''};
   constructor(public http:HttpClient,public wsapi:WsapiService) { 
     this.machineId.machineId='12345678';
     this.machineId.otp = '111111';
     
     this.wsapi.connect(this.wsurl,this.machineId.machineId,this.machineId.otp);
+
+    this.wsapi.loginSubscription.subscribe(r=>{
+      if(!r) return console.log()
+      console.log('ws subscription',r);
+      if(r.status){
+        this.clientId.clientId = r.data.clientId;
+      }else{
+
+      }
+    })
   }
   
   private headerBase(): any {

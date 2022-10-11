@@ -54,7 +54,8 @@ export class WsapiService {
 
             break;
           case 'login':
-          this.loginSubscription.next(data.data)
+            if (data.data)
+              this.loginSubscription.next(data.data)
             break;
           default:
             break;
@@ -64,7 +65,10 @@ export class WsapiService {
   }
   send(data: IReqModel | IResModel) {
     const that = this;
+    console.log('sending');
+    
     this.waitForSocketConnection(function () {
+      console.log('connection is ready to send',data);
       that.webSocket.send(JSON.stringify(data));
     });
   }
@@ -73,12 +77,16 @@ export class WsapiService {
   waitForSocketConnection(callback) {
     const socket = this.webSocket;
     const that = this;
+    console.log('waiting for sending');
+    
     setTimeout(
       function () {
+        console.log('wating count',socket.readyState,new Date().getTime());
+        
         // console.log('ws ready state', socket.readyState);
         if (socket.readyState === 1) {
-          // console.log("Connection is made")
-          if (callback != null) {
+          console.log("Connection is made")
+          if (callback) {
             callback();
             that.retries = 0;
           }
