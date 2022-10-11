@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
-import { EMACHINE_COMMAND, IReqModel, IResModel } from './syste.model';
+import { EMACHINE_COMMAND, IAlive, IReqModel, IResModel } from './syste.model';
 import * as cryptojs from 'crypto-js';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 @Injectable({
@@ -13,6 +13,7 @@ export class WsapiService {
   machineId: string;
   otp: string;
   public loginSubscription = new BehaviorSubject<IResModel>(null);
+  public aliveSubscription = new BehaviorSubject<IAlive>({} as IAlive);
   constructor() {
 
 
@@ -48,7 +49,8 @@ export class WsapiService {
         console.log('COMMING DATA', res);
         switch (res.command) {
           case 'ping':
-
+          console.log('Ping');
+          
             break;
           case 'confirm':
 

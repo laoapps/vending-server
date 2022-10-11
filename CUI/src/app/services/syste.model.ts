@@ -473,6 +473,7 @@ export interface IResModel {
     status: number;
 }
 export interface IReqModel {
+    transactionID:number;
     command: any;
     data:any;
     time: string;
@@ -738,6 +739,7 @@ export interface IBC {
     hashM: string;
    
 }
+
 export interface IStock extends IBase, IBC{
     name: string;
     image: string;
@@ -786,4 +788,8 @@ export enum EClientCommand {
 export interface IMachineId{
     machineId:string;
     otp:string;
+}
+
+export interface IAlive{
+    time:Date
 }

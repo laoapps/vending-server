@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IMachineId, IReqModel, IResModel } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IMachineId, IReqModel, IResModel } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
@@ -14,6 +14,8 @@ export class ApiService {
   machineId={} as IMachineId;
 
   clientId = {clientId:''};
+
+  wsAlive={}as IAlive;
   constructor(public http:HttpClient,public wsapi:WsapiService) { 
     this.machineId.machineId='12345678';
     this.machineId.otp = '111111';
@@ -21,13 +23,18 @@ export class ApiService {
     this.wsapi.connect(this.wsurl,this.machineId.machineId,this.machineId.otp);
 
     this.wsapi.loginSubscription.subscribe(r=>{
-      if(!r) return console.log()
-      console.log('ws subscription',r);
+      if(!r) return console.log('empty')
+      console.log('ws login subscription',r);
       if(r.status){
         this.clientId.clientId = r.data.clientId;
       }else{
 
       }
+    })
+    this.wsapi.aliveSubscription.subscribe(r=>{
+      if(!r) return console.log('empty');
+      console.log('ws alive subscription',r);
+      this.wsAlive.time=new Date();
     })
   }
   
@@ -70,7 +77,8 @@ export class ApiService {
     };
     req.ip;
     req.time = new Date().toString();
-    req.token =cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);;
+    req.token =cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
+    req.data.clientId = this.clientId.clientId;
     return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
 
