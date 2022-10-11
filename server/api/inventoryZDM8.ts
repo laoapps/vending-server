@@ -60,6 +60,8 @@ export class InventoryZDM8 {
                     if (!machineId) throw new Error('Invalid token');
                     if (!Array.isArray(ids)) throw new Error('Invalid array id');
                     const checkIds = this.vendingOnSale.filter(v => ids.includes(v.stock.id + ''));
+                    console.log('checkIds',checkIds,'ids',ids);
+                    
                     if (checkIds.length != ids.length) throw new Error('some array id not exist');
 
                     const value = checkIds.reduce((a, b) => {
