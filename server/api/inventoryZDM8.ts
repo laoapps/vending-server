@@ -33,7 +33,7 @@ export class InventoryZDM8 {
             try {
 
                 if (command == EClientCommand.confirmMMoney) {
-                    this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId, data.transactionID, data.ref, data.others).then(r => {
+                    this.callBackConfirm(data.qr).then(r => {
                         res.send(PrintSucceeded(command, { uuid: data.uuid, ids: data.ids, value: data.value, machineId: data.machineId, ref: data.ref, others: data.others }, EMessage.succeeded));
                     }).catch(e => {
                         res.send(PrintError(command, e, EMessage.error));
@@ -322,7 +322,7 @@ export class InventoryZDM8 {
                                    
                                     const i = this.vendingBill.findIndex(i => i.uuid == bill.uuid);
                                     this.vendingBill.splice(i, 1);
-                                    
+
                                     const ids = bill.vendingsales.map(v=>v.id);
                                     ids.forEach(v=>{
                                         if(this.vendingOnSale.find(v=>v.stock.id==v.id)){
