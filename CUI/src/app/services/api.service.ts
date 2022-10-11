@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IAlive, IMachineId, IReqModel, IResModel } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineId, IReqModel, IResModel } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
@@ -13,7 +13,7 @@ export class ApiService {
   currentPaymentProvider=EPaymentProvider.laab;
   machineId={} as IMachineId;
 
-  clientId = {clientId:''};
+  clientId = {} as IClientId;
 
   wsAlive={}as IAlive;
   constructor(public http:HttpClient,public wsapi:WsapiService) { 
@@ -25,11 +25,9 @@ export class ApiService {
     this.wsapi.loginSubscription.subscribe(r=>{
       if(!r) return console.log('empty')
       console.log('ws login subscription',r);
-      if(r.status){
-        this.clientId.clientId = r.data.clientId;
-      }else{
+   
+        this.clientId.clientId = r.clientId;
 
-      }
     })
     this.wsapi.aliveSubscription.subscribe(r=>{
       if(!r) return console.log('empty');

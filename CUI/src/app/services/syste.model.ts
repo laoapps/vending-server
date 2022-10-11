@@ -479,6 +479,8 @@ export interface IReqModel {
     time: string;
     ip: string;
     token: string;
+    limit:number;
+    skip:number;
 }
 export enum EPaymentProvider{
     mmoney='mmoney',
@@ -792,4 +794,8 @@ export interface IMachineId{
 
 export interface IAlive{
     time:Date
+}
+
+export interface IClientId{
+    clientId:string;
 }

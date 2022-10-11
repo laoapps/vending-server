@@ -485,6 +485,8 @@ export interface IReqModel {
     time: string;
     ip: string;
     token: string;
+    limit:number;
+    skip:number;
 }
 export enum EM102_COMMAND {
     release = 'release',

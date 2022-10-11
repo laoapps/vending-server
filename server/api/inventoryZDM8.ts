@@ -29,18 +29,18 @@ export class InventoryZDM8 {
 
 
         router.post('/', async (req, res) => {
-            const { limit, skip, data, command } = req.body;
+            const d = req.body as IReqModel ;
             try {
 
-                if (command == EClientCommand.confirmMMoney) {
-                    this.callBackConfirm(data.qr).then(r => {
-                        res.send(PrintSucceeded(command, { uuid: data.uuid, ids: data.ids, value: data.value, machineId: data.machineId, ref: data.ref, others: data.others }, EMessage.succeeded));
+                if (d.command == EClientCommand.confirmMMoney) {
+                    this.callBackConfirm(d.data.qr).then(r => {
+                        res.send(PrintSucceeded(d.command, {data:d,qr:r}, EMessage.succeeded));
                     }).catch(e => {
-                        res.send(PrintError(command, e, EMessage.error));
+                        res.send(PrintError(d.command, e, EMessage.error));
                     })
                 }
 
-                const clientId = data.clientId;
+                const clientId = d.data.clientId;
                 let loggedin = false;
                 // console.log(' WS client length', this.wss.clients);
                 
@@ -52,11 +52,11 @@ export class InventoryZDM8 {
                 })
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
 
-                else if (command == EClientCommand.list) {
-                    res.send(PrintSucceeded(command, this.vendingOnSale, EMessage.succeeded));
-                } else if (command == EClientCommand.buyMMoney) {
-                    const ids = data.ids as Array<string>; // item id
-                    const machineId = this.ssocket.findMachineIdToken(data.token);
+                else if (d.command == EClientCommand.list) {
+                    res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
+                } else if (d.command == EClientCommand.buyMMoney) {
+                    const ids = d.data.ids as Array<string>; // item id
+                    const machineId = this.ssocket.findMachineIdToken(d.token);
                     if (!machineId) throw new Error('Invalid token');
                     if (!Array.isArray(ids)) throw new Error('Invalid array id');
                     const checkIds = this.vendingOnSale.filter(v => ids.includes(v.stock.id + ''));
@@ -65,7 +65,7 @@ export class InventoryZDM8 {
                     const value = checkIds.reduce((a, b) => {
                         return a + b.stock.price;
                     }, 0);
-                    if (Number(data.value) != value) throw new Error('Invalid value' + data.value + ' ' + value);
+                    if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
 
                     const transactionID = new Date().getTime();
                     const qr = await this.generateBillMMoney(value, transactionID + '');
@@ -78,7 +78,7 @@ export class InventoryZDM8 {
                         machineId: machineId.machineId,
                         hashM: '',
                         hashP: '',
-                        paymentmethod: command,
+                        paymentmethod: d.command,
                         paymentref: '',
                         paymentstatus: 'pending',
                         paymenttime: new Date(),
@@ -92,13 +92,13 @@ export class InventoryZDM8 {
                     };
                     this.vendingBill.push(bill);
 
-                    res.send(PrintSucceeded(command, bill, EMessage.succeeded));
+                    res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
                 } else {
-                    res.send(PrintError(command, [], EMessage.notsupport));
+                    res.send(PrintError(d.command, [], EMessage.notsupport));
                 }
             } catch (error) {
                 console.log(error);
-                res.send(PrintError(command, error, EMessage.error));
+                res.send(PrintError(d.command, error, EMessage.error));
             }
         });
         // router.post('/confirm', async (req, res) => {
@@ -342,7 +342,7 @@ export class InventoryZDM8 {
                     })
                 })
               
-                resolve(true);
+                resolve(qr);
             } catch (error) {
                 console.log(error);
                 reject(error);
