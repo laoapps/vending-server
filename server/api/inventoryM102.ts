@@ -4,10 +4,11 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 import net from 'net';
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EM102_COMMAND, EMACHINE_COMMAND, EMessage, EZDM8_COMMAND, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
+import { EClientCommand, EM102_COMMAND, EMACHINE_COMMAND, EMessage, EZDM8_COMMAND, IMachineClientID, IMachineID, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyLogInRes, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
 import { SocketServerM102 } from './socketServerM102';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
+import { parse, toSeconds } from 'iso8601-duration';
 export class InventoryM102 {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
@@ -20,7 +21,33 @@ export class InventoryM102 {
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
 
+    mMoneyLoginRes = {} as IMMoneyLogInRes;
+    loginMmoney() {
+        const username = 'test';
+        const password = '12345';
+        return new Promise<IMMoneyLogInRes>((resolve, reject) => {
+            if (this.mMoneyLoginRes.expiresIn) {
+                if (new Date(this.mMoneyLoginRes.expiresIn).getTime() > new Date().getTime()) {
+                    return resolve(this.mMoneyLoginRes);
+                }
+            }
+            axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
+                console.log(r);
+                if (r.status) {
+                    this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
+                    const t = new Date();
+                    t.setSeconds(t.getSeconds() + toSeconds(parse(this.mMoneyLoginRes.expiresIn))) + ''
+                    this.mMoneyLoginRes.expiresIn = t.getTime() + '';
+                    resolve(this.mMoneyLoginRes);
+                } else {
+                    reject(new Error(EMessage.loginfailed));
+                }
 
+            }).catch(e => {
+                reject(e)
+            });
+        })
+    }
     constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerM102) {
         this.ssocket = socket;
         this.wss = wss;
@@ -53,12 +80,14 @@ export class InventoryM102 {
                     const value = this.vendingOnSale.filter(v => ids.includes(v.stock.id + '')).reduce((a, b) => {
                         return a + b.stock.price;
                     }, 0);
-                    const { uuid, qr } = await this.generateBillMMoney(ids, value, machineId);
-
-                    this.vendingBill.push({
-                        uuid,
+                    const transactionID = new Date().getTime();
+                    const qr = await this.generateBillMMoney(value, transactionID + '');
+                    const bill = {
+                        uuid: uuid4(),
                         clientId,
-                        machineId,
+                        qr: qr.qrCode,
+                        transactionID,
+                        machineId: machineId.machineId,
                         hashM: '',
                         hashP: '',
                         paymentmethod: command,
@@ -72,9 +101,9 @@ export class InventoryM102 {
                             const position = this.vendingOnSale.find(x => ids.includes(x.id + ''))?.position || {} as -1;
                             return { stock, position } as IVendingMachineSale;
                         })
-                    });
-                    const re = { ids,qr,value,uuid } as IMMoneyQRRes;
-                    res.send(PrintSucceeded(command,re, EMessage.succeeded));
+                    };
+                    this.vendingBill.push(bill);
+                    res.send(PrintSucceeded(command,bill, EMessage.succeeded));
                 } else {
                     res.send(PrintError(command, [], EMessage.notsupport));
                 }
@@ -215,17 +244,41 @@ export class InventoryM102 {
         }
     }
 
-    generateBillMMoney(ids: Array<string>, value: number, machineId: string) {
-        return new Promise<any>((resolve, reject) => {
+    generateBillMMoney(value: number, transactionID: string) {
+        return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
             const uuid = randomUUID();
-            resolve({ uuid, qr: 'qr',value, machineId });
+            // resolve({ uuid, qr: 'qr', value, machineId });
             // generate QR from MMoney
-            // axios.post('https://', { ids, value, machineId }).then(r => {
-            //     console.log(r);
-            //     resolve({ uuid, qr: r.data.qr,value, machineId });
-            // }).catch(e => {
-            //     reject(e)
-            // })
+            this.loginMmoney().then(r => {
+                if (r) {
+                    const qr = {
+                        amount: value,
+                        phonenumber: '2054445447',
+                        transactionID
+                    } as IMMoneyGenerateQR;
+
+                    axios.post('https://qr.mmoney.la/test/generateQR',
+                        qr,
+                        { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(r => {
+                            console.log(r);
+                            if (r.status) {
+                                resolve(r.data as IMMoneyGenerateQRRes);
+                            } else {
+                                reject(new Error(r.statusText));
+                            }
+
+                        }).catch(e => {
+                            reject(e)
+                        });
+                } else {
+                    reject(new Error(EMessage.loginfailed))
+                }
+
+            }).catch(e => {
+                console.log(e);
+                reject(e);
+            })
+
         })
     }
     callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string, ref: string, others: any) {
