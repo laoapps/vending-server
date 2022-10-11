@@ -2,20 +2,22 @@ import { Injectable } from '@angular/core';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
 import { EMACHINE_COMMAND, IReqModel, IResModel } from './syste.model';
 import * as cryptojs from 'crypto-js';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 @Injectable({
   providedIn: 'root'
 })
 export class WsapiService {
   wsurl = 'ws://localhost:9009';
-  webSocket:WebSocket;
-  retries =1;
-  machineId:string;
-  otp:string;
-  constructor() { 
+  webSocket: WebSocket;
+  retries = 1;
+  machineId: string;
+  otp: string;
+  public loginSubscription = new BehaviorSubject<IResModel>(null);
+  constructor() {
 
-    
+
   }
-  connect(url:string,machineId:string,otp:string){
+  connect(url: string, machineId: string, otp: string) {
     this.wsurl = url;
     this.webSocket = new WebSocket(this.wsurl);
     setWsHeartbeat(this.webSocket, '{"kind":"ping"}', { pingInterval: 10000, pingTimeout: 10000 });
@@ -28,7 +30,8 @@ export class WsapiService {
       this.machineId = machineId;
       this.otp = otp;
 
-      this.send({command:EMACHINE_COMMAND.login,data:'',ip:'',message:'',status:-1,time:new Date().toString(),token:cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)})
+      this.send({ command: EMACHINE_COMMAND.login, data: '', ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex) });
+
       this.webSocket.onclose = (ev): void => {
         // this.timerId = setInterval(() => {
         //   this.connect();
@@ -45,12 +48,14 @@ export class WsapiService {
         console.log('COMMING DATA', res);
         switch (res.command) {
           case 'ping':
-            
+
             break;
-            case 'confirm':
-            
-              break;
-        
+          case 'confirm':
+
+            break;
+          case 'login':
+          this.loginSubscription.next(data.data)
+            break;
           default:
             break;
         }
@@ -82,7 +87,7 @@ export class WsapiService {
             console.log('create a new connection');
 
             // that.webSocket.close();
-            that.connect(that.wsurl,that.machineId,that.otp);
+            that.connect(that.wsurl, that.machineId, that.otp);
             that.retries = 0;
           } else {
             console.log("waiting for the connection...")

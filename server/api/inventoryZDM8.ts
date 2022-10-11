@@ -401,14 +401,16 @@ export class InventoryZDM8 {
                             res.status = 1;
                             if (d.token) {
                                 const x = d.token as string;
-                                ws['machineId'] = x;
                                 console.log('online machine', this.ssocket.listOnlineMachine());
+                                let machineId =this.ssocket.findMachineIdToken(x)
 
-                                if (!this.ssocket.findMachineIdToken(x)) throw new Error('machine is not online');
+                                if (!machineId) throw new Error('machine is not exit');
+                                ws['machineId'] = machineId.machineId;
+                                ws['clientId'] = uuid4();
+                                res.data = { clientId: ws['clientId'] };
 
                             } else throw new Error(EMessage.MachineIdNotFound)
-                            ws['clientId'] = uuid4();
-                            res.data = { machineId: d.data, clientId: ws['clientId'] };
+                           
                         }
 
                         ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
