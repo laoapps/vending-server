@@ -353,7 +353,7 @@ export class InventoryM102 {
     }
     initWs(wss: WebSocketServer.Server) {
         setWsHeartbeat(wss, (ws, data, binary) => {
-            if (data === '{"kind":"ping"}') { // send pong if recieved a ping.
+            if (data === '{"command":"ping"}') { // send pong if recieved a ping.
                 ws.send(JSON.stringify(PrintSucceeded('pong', { kind: 'ping' }, EMessage.succeeded)));
             }
         }, 15000);
