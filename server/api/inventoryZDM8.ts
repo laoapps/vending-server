@@ -59,9 +59,11 @@ export class InventoryZDM8 {
                     const machineId = this.ssocket.findMachineIdToken(d.token);
                     if (!machineId) throw new Error('Invalid token');
                     if (!Array.isArray(ids)) throw new Error('Invalid array id');
+                    console.log('this.vendingOnSale',this.vendingOnSale);
+                    
                     const checkIds = this.vendingOnSale.filter(v => {
                         console.log('v.stock.id',v.stock.id);
-                        ids.includes(v.stock.id + '')
+                        return ids.includes(v.stock.id + '')
                     });
                     console.log('checkIds',checkIds,'ids',ids);
                     
