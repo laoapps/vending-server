@@ -45,8 +45,10 @@ export class InventoryZDM8 {
                 console.log(' WS client length', this.wss.clients);
                 
                 this.wss.clients.forEach(v => {
+                    console.log('WS CLIENT ID',v['clientId'],clientId);
+                    
                     if(v['clientId'] == clientId)
-                    loggedin = true;
+                     loggedin = true;
                 })
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
 
@@ -364,8 +366,8 @@ export class InventoryZDM8 {
     }
     initWs(wss: WebSocketServer.Server) {
         setWsHeartbeat(wss, (ws, data, binary) => {
-            if (data === '{"kind":"ping"}') { // send pong if recieved a ping.
-                ws.send(JSON.stringify(PrintSucceeded('pong', { kind: 'ping' }, EMessage.succeeded)));
+            if (data === '{"command":"ping"}') { // send pong if recieved a ping.
+                ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
             }
         }, 15000);
 

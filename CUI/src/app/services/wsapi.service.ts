@@ -21,7 +21,7 @@ export class WsapiService {
   connect(url: string, machineId: string, otp: string) {
     this.wsurl = url;
     this.webSocket = new WebSocket(this.wsurl);
-    setWsHeartbeat(this.webSocket, '{"kind":"ping"}', { pingInterval: 10000, pingTimeout: 10000 });
+    setWsHeartbeat(this.webSocket, '{"command":"ping"}', { pingInterval: 10000, pingTimeout: 10000 });
     this.webSocket.onopen = (ev) => {
       this.retries = 0;
       console.log('connection has been opened', ev);
@@ -38,7 +38,9 @@ export class WsapiService {
         //   this.connect();
         // }, 10000);
         console.log('connection has been closed', ev);
-
+        setTimeout(() => {
+          this.connect(url,machineId,otp);
+        }, 5000);
       };
     };
     this.webSocket.onmessage = (ev) => {
@@ -50,7 +52,7 @@ export class WsapiService {
         switch (res.command) {
           case 'ping':
           console.log('Ping');
-          
+          this.aliveSubscription.next({} as IAlive)
             break;
           case 'confirm':
 
