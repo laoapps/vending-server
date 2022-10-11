@@ -73,12 +73,13 @@ export class ApiService {
     req.command = EClientCommand.buyMMoney;
     req.data={
       ids,
-      value
+      value,
+      clientId:this.clientId.clientId
     };
     req.ip;
     req.time = new Date().toString();
     req.token =cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
-    req.data.clientId = this.clientId.clientId;
+    // req.data.clientId = this.clientId.clientId;
     return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
 

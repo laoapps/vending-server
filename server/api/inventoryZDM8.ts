@@ -42,10 +42,10 @@ export class InventoryZDM8 {
 
                 const clientId = data.clientId;
                 let loggedin = false;
-                console.log(' WS client length', this.wss.clients);
+                // console.log(' WS client length', this.wss.clients);
                 
                 this.wss.clients.forEach(v => {
-                    console.log('WS CLIENT ID',v['clientId'],clientId);
+                    console.log('WS CLIENT ID',v['clientId'],'==>'+clientId);
                     
                     if(v['clientId'] == clientId)
                      loggedin = true;
