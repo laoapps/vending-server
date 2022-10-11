@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { IMachineClientID, IMachineId, IMMoneyQRRes, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
-import { Platform } from '@ionic/angular';
+import { ModalController, Platform } from '@ionic/angular';
 import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
+import { QrpayPage } from '../qrpay/qrpay.page';
 
 @Component({
   selector: 'app-tab1',
@@ -15,25 +16,25 @@ export class Tab1Page {
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
 
-  mMoneyRes = {} as IMMoneyQRRes;
+  bills = {} as IVendingMachineBill;
 
   machineId = {} as IMachineId;
 
   url = 'http://localhost:9009'
   orders = new Array<IVendingMachineSale>();
-  swidth=0;
-  sheight=0;
+  swidth = 0;
+  sheight = 0;
   smode = 2;
-  constructor(public apiService: ApiService,platform: Platform,private scanner: BarcodeScanner) {
+  constructor(public apiService: ApiService, platform: Platform, private scanner: BarcodeScanner, public modal: ModalController) {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url
     this.initDemo();
     // this.loadSaleList();
     platform.ready().then(() => {
-      console.log('Width: ' + (this.swidth=platform.width()));
-      console.log('Height: ' + (this.sheight=platform.height()));
-      console.log('screen width',this.swidth,'screen height', this.sheight);
-      if(this.swidth>550)this.smode =3;
+      console.log('Width: ' + (this.swidth = platform.width()));
+      console.log('Height: ' + (this.sheight = platform.height()));
+      console.log('screen width', this.swidth, 'screen height', this.sheight);
+      if (this.swidth > 550) this.smode = 3;
       else this.smode = 2;
     });
 
@@ -81,44 +82,63 @@ export class Tab1Page {
   buyMMoney(id: number) {
     const x = this.vendingOnSale.find(v => v.stock.id == id);
     if (!x) return alert('not found');
-
-    this.apiService.buyMMoney([id], x.stock.price, this.machineId.machineId).subscribe(r => {
+    const amount =this.orders.map(v => v.stock.price).reduce((a, b) => a + b, 0);
+    this.apiService.buyMMoney([id], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.mMoneyRes = r.data;
-        localStorage.setItem('order', JSON.stringify(this.mMoneyRes));
+        this.bills = r.data as IVendingMachineBill;
+        localStorage.setItem('order', JSON.stringify(this.bills));
+        this.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount} }).then(r => {
+          r.present();
+        })
+        // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
+        //   res => {
+        //     console.log(res);
+        //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
+        //       r.present();
+        //     })
+        //   }, error => {
+        //     alert(error);
+        //   }
+        // );
       }
     })
   }
   buyManyMMoney() {
     if (!this.orders.length) alert('Please add any items first');
-    this.apiService.buyMMoney([...new Set(this.orders.map(v => v.id))], this.orders.map(v => v.stock.price).reduce((a, b) => a + b, 0), this.machineId.machineId).subscribe(r => {
+    const amount =this.orders.map(v => v.stock.price).reduce((a, b) => a + b, 0);
+    this.apiService.buyMMoney([...new Set(this.orders.map(v => v.id))], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.mMoneyRes = r.data;
-        localStorage.setItem('order', JSON.stringify(this.mMoneyRes));
-        this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.encodedData).then(
-          res => {
-            alert(res);
-            this.encodedData = res;
-          }, error => {
-            alert(error);
-          }
-      );
+        this.bills = r.data as IVendingMachineBill;
+        localStorage.setItem('order', JSON.stringify(this.bills));
+        this.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount } }).then(r => {
+          r.present();
+        })
+        // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
+        //   res => {
+        //     console.log(res);
+        //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
+        //       r.present();
+        //     })
+        //   }, error => {
+        //     alert(error);
+        //   }
+        // );
       }
     })
   }
 
   addOrder(id: number) {
-    console.log('ID',id);
-    
-    if(!id) return alert('add error')
+    console.log('ID', id);
+
+    if (!id) return alert('add error')
     const x = this.vendingOnSale.find(v => v.stock.id == id);
     if (!x) return alert('not found');
     const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
     y.stock.qtty = 1;
-    console.log('y',y,id);
-    
+    console.log('y', y, id);
+
     this.orders.push(y);
   }
   summarizeOrder() {

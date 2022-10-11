@@ -3,12 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EClientCommand, EPaymentProvider, IMachineId, IReqModel, IResModel } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
+import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  url = 'http://laoapps.com:9009';
-  wsurl = 'ws://laoapps.com:9009';
+  url = environment.url;
+  wsurl = environment.wsurl;
   currentPaymentProvider=EPaymentProvider.laab;
   machineId={} as IMachineId;
   constructor(public http:HttpClient,public wsapi:WsapiService) { 
@@ -57,7 +58,7 @@ export class ApiService {
     };
     req.ip;
     req.time = new Date().toString();
-    req.token =cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(CryptoJS.enc.Hex);;
+    req.token =cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);;
     return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
 

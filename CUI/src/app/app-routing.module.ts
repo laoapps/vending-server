@@ -9,6 +9,10 @@ const routes: Routes = [
   {
     path: 'qrpay',
     loadChildren: () => import('./qrpay/qrpay.module').then( m => m.QrpayPageModule)
+  },
+  {
+    path: 'paymentmethod',
+    loadChildren: () => import('./paymentmethod/paymentmethod.module').then( m => m.PaymentmethodPageModule)
   }
 ];
 @NgModule({

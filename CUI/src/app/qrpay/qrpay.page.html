@@ -6,7 +6,16 @@
 
 <ion-content>
   <ion-card>
-    <ion-input placeholder="Enter Input" [(ngModel)]="encodedData"></ion-input>
-    <ion-button (click)="close()">Close</ion-button>
+    <ion-item>
+      <qr-code [value]="encodedData" size="300" errorCorrectionLevel="M"></qr-code>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{amount|number}}</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-button (click)="close()">Close</ion-button>
+    </ion-item>
+    
 </ion-card>
+
 </ion-content>

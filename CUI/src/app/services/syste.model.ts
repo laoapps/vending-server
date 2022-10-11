@@ -759,6 +759,8 @@ export interface IVendingMachineBill extends IBase, IBC{
     requestpaymenttime:Date;
     machineId:string;
     clientId:string;
+    transactionID:number;
+    qr:string;
 }
 
 export interface IMachineID extends IBase,IBC {

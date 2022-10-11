@@ -4,19 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { QrpayPageRoutingModule } from './qrpay-routing.module';
+import { PaymentmethodPageRoutingModule } from './paymentmethod-routing.module';
 
-import { QrpayPage } from './qrpay.page';
-import { QrCodeModule } from 'ng-qrcode';
+import { PaymentmethodPage } from './paymentmethod.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    QrpayPageRoutingModule,
-    QrCodeModule
+    PaymentmethodPageRoutingModule
   ],
-  declarations: [QrpayPage]
+  declarations: [PaymentmethodPage]
 })
-export class QrpayPageModule {}
+export class PaymentmethodPageModule {}
