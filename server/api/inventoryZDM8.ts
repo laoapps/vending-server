@@ -40,7 +40,7 @@ export class InventoryZDM8 {
                     console.log('CB COMFIRM', d);
                     const c = d.data as IMMoneyConfirm;
                     // c.wallet_ids
-                    this.callBackConfirm(c.trandID,c.amount).then(r => {
+                    this.callBackConfirm(c.trandID, c.amount).then(r => {
                         return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.trandID }, EMessage.succeeded));
                     }).catch(e => {
                         return res.send(PrintError(d.command, e, EMessage.error));
@@ -83,16 +83,22 @@ export class InventoryZDM8 {
                     const checkIds = Array<IVendingMachineSale>();
                     ids.forEach(v => {
                         const x = this.vendingOnSale.find(vx => {
-                            if (vx.stock.qtty > 0 && checkIds.filter(vy => vy.stock.id + '' == v).reduce((a, b) => {
+                            if(!checkIds.length&&vx.stock.id+''==v){
+                                return true;
+                            }
+                            else if (vx.stock.qtty > 0 && checkIds.filter(vy => vy.stock.id + '' == v).reduce((a, b) => {
                                 return a + b.stock.qtty;
                             }, 0) <= vx.stock.qtty) {
                                 return true;
                             }
                             return false;
                         });
-                        const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-                        y.stock.qtty = 1;
-                        x ? checkIds.push(y) : '';
+                        if (x) {
+                            const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+                            y.stock.qtty = 1;
+                            checkIds.push(y);
+                        }
+
                         // return false;
                     })
 
@@ -148,7 +154,7 @@ export class InventoryZDM8 {
                 res.send(PrintError(d.command, error, EMessage.error));
             }
         });
-   
+
 
 
         /// 0. init for demo 
@@ -359,10 +365,10 @@ export class InventoryZDM8 {
             }
         })
     }
-    callBackConfirm(transactionID: string,amount:number) {
+    callBackConfirm(transactionID: string, amount: number) {
         return new Promise<IVendingMachineBill>((resolve, reject) => {
             try {
-                const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID&&v.totalvalue==amount);
+                const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID && v.totalvalue == amount);
                 if (!bill) throw new Error(EMessage.billnotfound);
                 bill.paymentstatus = 'paid';
                 bill.paymentref = '';
