@@ -279,7 +279,7 @@ export class InventoryZDM8 {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber: '2055220199',
+                        phonenumber:'2054445447',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
@@ -350,7 +350,7 @@ export class InventoryZDM8 {
                                 setTimeout(() => {
                                     const position = this.ssocket.processOrder(bill.machineId, p, bill.transactionID);
                                     const res = {} as IResModel;
-                                    res.command = EZDM8_COMMAND.shippingcontrol;
+                                    res.command = EMACHINE_COMMAND.confirm;
                                     res.message = EMessage.confirmsucceeded;
                                     res.status = 1;
 
@@ -358,13 +358,12 @@ export class InventoryZDM8 {
                                     this.vendingBill.splice(i, 1);
 
                                     const ids = bill.vendingsales.map(v => v.id);
-                                    ids.forEach(v => {
-                                        if (this.vendingOnSale.find(v => v.stock.id == v.id)) {
-                                            const x = this.vendingOnSale.find(v => v.stock.id == v.id);
+                                    ids.forEach(vid => {
+                                            const x = this.vendingOnSale.find(v => v.stock.id == vid);
                                             if (x)
                                                 x.stock.qtty--;
-                                        }
-                                    })
+                                        
+                                    });
                                     res.data = { bill: bill, position };
                                     v.send(JSON.stringify(res));
                                 }, 3000 * i);
