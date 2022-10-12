@@ -825,3 +825,7 @@ export interface IMMoneyConfirm {
     resultDescription: string,//'Operation'
     trandID: string // 
 }
+export interface IBillProcess{
+    bill:IVendingMachineBill,
+    position:number
+}

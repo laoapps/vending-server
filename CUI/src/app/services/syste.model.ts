@@ -799,3 +799,7 @@ export interface IAlive{
 export interface IClientId{
     clientId:string;
 }
+export interface IBillProcess{
+    bill:IVendingMachineBill,
+    position:number
+}

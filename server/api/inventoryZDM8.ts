@@ -4,7 +4,7 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm } from '../entities/syste.model';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess } from '../entities/syste.model';
 import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
@@ -31,18 +31,27 @@ export class InventoryZDM8 {
         router.post('/', async (req, res) => {
             const d = req.body as IReqModel;
             try {
-                console.log('POST Data',d);
-                
+                console.log('POST Data', d);
+
 
 
 
                 if (d.command == EClientCommand.confirmMMoney) {
-                    console.log('CB COMFIRM',d);
-                   const c = d.data as IMMoneyConfirm;
+                    console.log('CB COMFIRM', d);
+                    const c = d.data as IMMoneyConfirm;
                     this.callBackConfirm(c.trandID).then(r => {
-                        return res.send(PrintSucceeded(d.command, { bill:r,transactionID:c.trandID }, EMessage.succeeded));
+                        return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.trandID }, EMessage.succeeded));
                     }).catch(e => {
-                       return res.send(PrintError(d.command, e, EMessage.error));
+                        return res.send(PrintError(d.command, e, EMessage.error));
+                    })
+                }
+                if (d.command == 'test') {
+                    console.log('CB COMFIRM test', d);
+                    if (!d.data.p || !d.data.machineId) throw new Error('Test cofirm failed')
+                    this.callBackConfirmTest(d.data.p, d.data.machineId).then(r => {
+                        return res.send(PrintSucceeded(d.command, { bill: r, transactionID: 'test' }, EMessage.succeeded));
+                    }).catch(e => {
+                        return res.send(PrintError(d.command, e, EMessage.error));
                     })
                 }
 
@@ -78,24 +87,24 @@ export class InventoryZDM8 {
                             }
                             return false;
                         });
-                        const y= JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-                        y.stock.qtty=1;
+                        const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+                        y.stock.qtty = 1;
                         x ? checkIds.push(y) : '';
                         return false;
                     })
-                   
+
                     console.log('checkIds', checkIds, 'ids', ids);
 
                     if (checkIds.length < ids.length) throw new Error('some array id not exist or wrong qtty');
 
                     const value = checkIds.reduce((a, b) => {
-                        return a +( b.stock.price*b.stock.qtty);
+                        return a + (b.stock.price * b.stock.qtty);
                     }, 0);
-                    console.log('qtty',checkIds);
-                    console.log('ids',ids.length);
-                    
+                    console.log('qtty', checkIds);
+                    console.log('ids', ids.length);
+
                     console.log(' value' + d.data.value + ' ' + value);
-                    
+
                     if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
 
                     const transactionID = new Date().getTime();
@@ -121,15 +130,15 @@ export class InventoryZDM8 {
                             // console.log('{ stock, position }',{ stock, position },'v',v);
                             // console.log(this.vendingOnSale.find(x => x.id + '' == v),this.vendingOnSale.find(x => ids.includes(x.id + '')));
                             const stock = JSON.parse(JSON.stringify(s));
-                            stock.qtty=1;
+                            stock.qtty = 1;
                             return { stock, position } as IVendingMachineSale;
                         })
                     };
                     this.vendingBill.push(bill);
 
-                  return  res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
+                    return res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
                 } else {
-                   return res.send(PrintError(d.command, [], EMessage.notsupport));
+                    return res.send(PrintError(d.command, [], EMessage.notsupport));
                 }
             } catch (error) {
                 console.log(error);
@@ -279,7 +288,7 @@ export class InventoryZDM8 {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber:'2054445447',// '2055220199',
+                        phonenumber: '2054445447',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
@@ -321,7 +330,7 @@ export class InventoryZDM8 {
                 console.log(r);
                 if (r.status) {
                     this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
-                    this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT'+this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(),'milliseconds')+'';
+                    this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT' + this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(), 'milliseconds') + '';
                     resolve(this.mMoneyLoginRes);
                 } else {
                     reject(new Error(EMessage.loginfailed));
@@ -332,10 +341,33 @@ export class InventoryZDM8 {
             });
         })
     }
+    callBackConfirmTest(position: Array<number>, machineId: string) {
+        return new Promise<IVendingMachineBill>((resolve, reject) => {
+            try {
+                position.forEach((p, i) => {
+                    this.wss.clients.forEach(v => {
+                        setTimeout(() => {
+                            const position = this.ssocket.processOrder(machineId, p, -1);
+                            const res = {} as IResModel;
+                            res.command = EMACHINE_COMMAND.confirm;
+                            res.message = EMessage.confirmsucceeded;
+                            res.status = 1;
+                            res.data = { bill: {} as IVendingMachineBill, position } as unknown as IBillProcess;
+                            v.send(JSON.stringify(res));
+                        }, 3000 * i);
+                    })
+                })
+                resolve({} as IVendingMachineBill);
+            } catch (error) {
+                console.log(error);
+                reject(error);
+            }
+        })
+    }
     callBackConfirm(transactionID: string) {
         return new Promise<IVendingMachineBill>((resolve, reject) => {
             try {
-                const bill = this.vendingBill.find(v => v.transactionID+'' == transactionID);
+                const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID);
                 if (!bill) throw new Error(EMessage.billnotfound);
                 bill.paymentstatus = 'paid';
                 bill.paymentref = '';
@@ -359,12 +391,12 @@ export class InventoryZDM8 {
 
                                     const ids = bill.vendingsales.map(v => v.id);
                                     ids.forEach(vid => {
-                                            const x = this.vendingOnSale.find(v => v.stock.id == vid);
-                                            if (x)
-                                                x.stock.qtty--;
-                                        
+                                        const x = this.vendingOnSale.find(v => v.stock.id == vid);
+                                        if (x)
+                                            x.stock.qtty--;
+
                                     });
-                                    res.data = { bill: bill, position };
+                                    res.data = { bill, position } as unknown as IBillProcess;
                                     v.send(JSON.stringify(res));
                                 }, 3000 * i);
                             }
