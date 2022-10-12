@@ -29,12 +29,14 @@ export class InventoryZDM8 {
 
 
         router.post('/', async (req, res) => {
-            const d = req.body as IReqModel ;
+            const d = req.body as IReqModel;
             try {
 
                 if (d.command == EClientCommand.confirmMMoney) {
+                    console.log('CB COMFIRM',d);
+                    
                     this.callBackConfirm(d.data.qr).then(r => {
-                        res.send(PrintSucceeded(d.command, {data:d,qr:r}, EMessage.succeeded));
+                        res.send(PrintSucceeded(d.command, { data: d, qr: r }, EMessage.succeeded));
                     }).catch(e => {
                         res.send(PrintError(d.command, e, EMessage.error));
                     })
@@ -43,12 +45,12 @@ export class InventoryZDM8 {
                 const clientId = d.data.clientId;
                 let loggedin = false;
                 // console.log(' WS client length', this.wss.clients);
-                
+
                 this.wss.clients.forEach(v => {
-                    console.log('WS CLIENT ID',v['clientId'],'==>'+clientId);
-                    
-                    if(v['clientId'] == clientId)
-                     loggedin = true;
+                    console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
+
+                    if (v['clientId'] == clientId)
+                        loggedin = true;
                 })
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
 
@@ -59,18 +61,26 @@ export class InventoryZDM8 {
                     const machineId = this.ssocket.findMachineIdToken(d.token);
                     if (!machineId) throw new Error('Invalid token');
                     if (!Array.isArray(ids)) throw new Error('Invalid array id');
-                    console.log('this.vendingOnSale',this.vendingOnSale);
-                    
-                    const checkIds = this.vendingOnSale.filter(v => {
-                        console.log('v.stock.id',v.stock.id);
-                        return ids.includes(v.stock.id + '')
-                    });
-                    console.log('checkIds',checkIds,'ids',ids);
-                    
-                    if (checkIds.length != ids.length) throw new Error('some array id not exist');
+                    console.log('this.vendingOnSale', this.vendingOnSale);
+                    const checkIds = Array<IVendingMachineSale>();
+                    ids.forEach(v => {
+                        const x = this.vendingOnSale.find(vx => {
+                            if (vx.stock.qtty > 0 && checkIds.filter(vy => vy.stock.id + '' == v).reduce((a, b) => {
+                                return a + b.stock.qtty;
+                            }, 0) <= vx.stock.qtty) {
+                                return true;
+                            }
+                            return false;
+                        });
+                        x ? checkIds.push(x) : '';
+                    })
+                   
+                    console.log('checkIds', checkIds, 'ids', ids);
+
+                    if (checkIds.length < ids.length) throw new Error('some array id not exist or wrong qtty');
 
                     const value = checkIds.reduce((a, b) => {
-                        return a + b.stock.price;
+                        return a +( b.stock.price*b.stock.qtty);
                     }, 0);
                     if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
 
@@ -329,16 +339,16 @@ export class InventoryZDM8 {
                                     res.command = EZDM8_COMMAND.shippingcontrol;
                                     res.message = EMessage.confirmsucceeded;
                                     res.status = 1;
-                                   
+
                                     const i = this.vendingBill.findIndex(i => i.uuid == bill.uuid);
                                     this.vendingBill.splice(i, 1);
 
-                                    const ids = bill.vendingsales.map(v=>v.id);
-                                    ids.forEach(v=>{
-                                        if(this.vendingOnSale.find(v=>v.stock.id==v.id)){
-                                            const x = this.vendingOnSale.find(v=>v.stock.id==v.id);
-                                            if(x)
-                                            x.stock.qtty--;
+                                    const ids = bill.vendingsales.map(v => v.id);
+                                    ids.forEach(v => {
+                                        if (this.vendingOnSale.find(v => v.stock.id == v.id)) {
+                                            const x = this.vendingOnSale.find(v => v.stock.id == v.id);
+                                            if (x)
+                                                x.stock.qtty--;
                                         }
                                     })
                                     res.data = { bill: bill, position };
@@ -348,7 +358,7 @@ export class InventoryZDM8 {
                         }
                     })
                 })
-              
+
                 resolve(qr);
             } catch (error) {
                 console.log(error);
@@ -386,7 +396,7 @@ export class InventoryZDM8 {
             ws.onopen = (ev: Event) => {
                 console.log(' WS open', ev);
             }
-           
+
             // ws['isAlive'] = true;
             ws.onclose = (ev: CloseEvent) => {
 
@@ -412,7 +422,7 @@ export class InventoryZDM8 {
                         if (d.token) {
                             const x = d.token as string;
                             console.log(' WS online machine', this.ssocket.listOnlineMachine());
-                            let machineId =this.ssocket.findMachineIdToken(x)
+                            let machineId = this.ssocket.findMachineIdToken(x)
 
                             if (!machineId) throw new Error('machine is not exit');
                             ws['machineId'] = machineId.machineId;
@@ -420,7 +430,7 @@ export class InventoryZDM8 {
                             res.data = { clientId: ws['clientId'] };
 
                         } else throw new Error(EMessage.MachineIdNotFound)
-                       
+
                     }
 
                     ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));

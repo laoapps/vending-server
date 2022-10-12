@@ -79,11 +79,11 @@ export class Tab1Page {
       }
     })
   }
-  buyMMoney(id: number) {
-    const x = this.vendingOnSale.find(v => v.stock.id == id);
+  buyMMoney(id: string) {
+    const x = this.vendingOnSale.find(v => v.stock.id+'' == id+'');
     if (!x) return alert('not found');
     const amount =this.orders.map(v => v.stock.price).reduce((a, b) => a + b, 0);
-    this.apiService.buyMMoney([id], amount, this.machineId.machineId).subscribe(r => {
+    this.apiService.buyMMoney([id+''], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
@@ -107,7 +107,7 @@ export class Tab1Page {
   buyManyMMoney() {
     if (!this.orders.length) alert('Please add any items first');
     const amount =this.orders.map(v => v.stock.price).reduce((a, b) => a + b, 0);
-    this.apiService.buyMMoney([...new Set(this.orders.map(v => v.id))], amount, this.machineId.machineId).subscribe(r => {
+    this.apiService.buyMMoney([...new Set(this.orders.map(v => v.id+''))], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
@@ -129,11 +129,11 @@ export class Tab1Page {
     })
   }
 
-  addOrder(id: number) {
+  addOrder(id: string) {
     console.log('ID', id);
 
     if (!id) return alert('add error')
-    const x = this.vendingOnSale.find(v => v.stock.id == id);
+    const x = this.vendingOnSale.find(v => v.stock.id+'' == id+'');
     if (!x) return alert('not found');
     const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
     y.stock.qtty = 1;
