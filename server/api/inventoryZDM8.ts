@@ -33,15 +33,19 @@ export class InventoryZDM8 {
             try {
                 console.log('POST Data',d);
                 
+
+
+
                 if (d.command == EClientCommand.confirmMMoney) {
                     console.log('CB COMFIRM',d);
                    const c = d.data as IMMoneyConfirm;
                     this.callBackConfirm(c.trandID).then(r => {
-                        res.send(PrintSucceeded(d.command, { bill:r,transactionID:c.trandID }, EMessage.succeeded));
+                        return res.send(PrintSucceeded(d.command, { bill:r,transactionID:c.trandID }, EMessage.succeeded));
                     }).catch(e => {
-                        res.send(PrintError(d.command, e, EMessage.error));
+                       return res.send(PrintError(d.command, e, EMessage.error));
                     })
                 }
+
 
                 const clientId = d.data.clientId;
                 let loggedin = false;
@@ -56,13 +60,14 @@ export class InventoryZDM8 {
                 if (!loggedin) throw new Error(EMessage.notloggedinyet);
 
                 else if (d.command == EClientCommand.list) {
-                    res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
+                    return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
                 } else if (d.command == EClientCommand.buyMMoney) {
                     const ids = d.data.ids as Array<string>; // item id
                     const machineId = this.ssocket.findMachineIdToken(d.token);
+                    const position = d.data.position;
                     if (!machineId) throw new Error('Invalid token');
                     if (!Array.isArray(ids)) throw new Error('Invalid array id');
-                    console.log('this.vendingOnSale', this.vendingOnSale);
+                    // console.log('this.vendingOnSale', this.vendingOnSale);
                     const checkIds = Array<IVendingMachineSale>();
                     ids.forEach(v => {
                         const x = this.vendingOnSale.find(vx => {
@@ -122,9 +127,9 @@ export class InventoryZDM8 {
                     };
                     this.vendingBill.push(bill);
 
-                    res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
+                  return  res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
                 } else {
-                    res.send(PrintError(d.command, [], EMessage.notsupport));
+                   return res.send(PrintError(d.command, [], EMessage.notsupport));
                 }
             } catch (error) {
                 console.log(error);
