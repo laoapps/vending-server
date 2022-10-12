@@ -74,7 +74,7 @@ export class InventoryZDM8 {
                 else if (d.command == EClientCommand.list) {
                     return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
                 } else if (d.command == EClientCommand.buyMMoney) {
-                    const ids = d.data.ids as Array<string>; // item id
+                    const ids = d.data.ids as Array<IVendingMachineSale>; // item id
                     const machineId = this.ssocket.findMachineIdToken(d.token);
                     const position = d.data.position;
                     if (!machineId) throw new Error('Invalid token');
@@ -83,12 +83,10 @@ export class InventoryZDM8 {
                     const checkIds = Array<IVendingMachineSale>();
                     ids.forEach(v => {
                         const x = this.vendingOnSale.find(vx => {
- 
-                            
-                            if(!checkIds.length&&vx.stock.id+''==v){
+                            if(!checkIds.length&&vx.stock.id+''==v.stock.id+''){
                                 return true;
                             }
-                            else if (vx.stock.qtty > 0 && checkIds.filter(vy => vy.stock.id + '' == v).reduce((a, b) => {
+                            else if (vx.stock.qtty > 0 &&vx.position==v.position&& checkIds.filter(vy => vy.stock.id + '' == v.stock.id+'').reduce((a, b) => {
                                 return a + b.stock.qtty;
                             }, 0) <= vx.stock.qtty) {
                                 return true;
@@ -135,15 +133,7 @@ export class InventoryZDM8 {
                         paymenttime: new Date(),
                         requestpaymenttime: new Date(),
                         totalvalue: value,
-                        vendingsales: ids.map(v => {
-                            const s = this.vendingOnSale.find(x => x.stock.id + '' == v)?.stock || {} as IStock;
-                            const position = this.vendingOnSale.find(x => ids.includes(x.stock.id + ''))?.position || -1;
-                            // console.log('{ stock, position }',{ stock, position },'v',v);
-                            // console.log(this.vendingOnSale.find(x => x.id + '' == v),this.vendingOnSale.find(x => ids.includes(x.id + '')));
-                            const stock = JSON.parse(JSON.stringify(s));
-                            stock.qtty = 1;
-                            return { stock, position } as IVendingMachineSale;
-                        })
+                        vendingsales: ids
                     };
                     this.vendingBill.push(bill);
 

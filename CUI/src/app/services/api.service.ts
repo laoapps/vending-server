@@ -89,7 +89,7 @@ export class ApiService {
     return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
   
-  buyMMoney(ids:Array<string>,value:number,machineId:string){
+  buyMMoney(ids:Array<IVendingMachineSale>,value:number,machineId:string){
     this.currentPaymentProvider = EPaymentProvider.mmoney;
     const req = {} as IReqModel;
     req.command = EClientCommand.buyMMoney;

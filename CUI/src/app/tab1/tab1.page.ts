@@ -88,7 +88,7 @@ export class Tab1Page {
     const x = this.vendingOnSale.find(v => v.stock.id+'' == id+'');
     if (!x) return alert('not found');
     const amount =x.stock.price*1;
-    this.apiService.buyMMoney([id+''], amount, this.machineId.machineId).subscribe(r => {
+    this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
@@ -114,7 +114,7 @@ export class Tab1Page {
     const amount =this.orders.reduce((a, b) => a + b.stock.price*b.stock.qtty, 0);
     console.log('ids',this.orders.map(v => v.stock.id+''));
     
-    this.apiService.buyMMoney(this.orders.map(v => v.stock.id+''), amount, this.machineId.machineId).subscribe(r => {
+    this.apiService.buyMMoney(this.orders, amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
