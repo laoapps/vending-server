@@ -782,10 +782,12 @@ export interface IMachineID extends IBase, IBC {
     logintoken: string;
 }
 
+
 export enum EMACHINE_COMMAND {
     login = 'login',
     ping = 'ping',
-    status = 'status'
+    status = 'status',
+    confirm = "confirm"
 }
 
 export interface IMachineClientID {
