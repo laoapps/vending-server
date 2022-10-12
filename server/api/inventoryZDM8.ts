@@ -102,14 +102,14 @@ export class InventoryZDM8 {
                         // return false;
                     })
 
-                    console.log('checkIds', checkIds, 'ids', ids);
+                    // console.log('checkIds', checkIds, 'ids', ids);
 
                     if (checkIds.length < ids.length) throw new Error('some array id not exist or wrong qtty');
 
                     const value = checkIds.reduce((a, b) => {
                         return a + (b.stock.price * b.stock.qtty);
                     }, 0);
-                    console.log('qtty', checkIds);
+                    // console.log('qtty', checkIds);
                     console.log('ids', ids.length);
 
                     console.log(' value' + d.data.value + ' ' + value);
@@ -287,12 +287,12 @@ export class InventoryZDM8 {
 
                     axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
                         qr,
-                        { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(r => {
-                            console.log(r);
-                            if (r.status) {
-                                resolve(r.data as IMMoneyGenerateQRRes);
+                        { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(rx => {
+                            // console.log(r);
+                            if (rx.status) {
+                                resolve(rx.data as IMMoneyGenerateQRRes);
                             } else {
-                                reject(new Error(r.statusText));
+                                reject(new Error(rx.statusText));
                             }
 
                         }).catch(e => {
