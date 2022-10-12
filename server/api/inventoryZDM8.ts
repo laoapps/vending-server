@@ -315,7 +315,7 @@ export class InventoryZDM8 {
                 if (r.status) {
                     this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
                     const t = new Date();
-                    t.setSeconds(t.getSeconds() + toSeconds(parse(this.mMoneyLoginRes.expiresIn))) + ''
+                    t.setSeconds(t.getSeconds() + toSeconds(parse(this.mMoneyLoginRes.expiresIn.toUpperCase()))) + ''
                     this.mMoneyLoginRes.expiresIn = t.getTime() + '';
                     resolve(this.mMoneyLoginRes);
                 } else {
