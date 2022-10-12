@@ -73,7 +73,10 @@ export class InventoryZDM8 {
                             }
                             return false;
                         });
-                        x ? checkIds.push(x) : '';
+                        const y= JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+                        y.stock.qtty=1;
+                        x ? checkIds.push(y) : '';
+                        return false;
                     })
                    
                     console.log('checkIds', checkIds, 'ids', ids);
@@ -83,6 +86,11 @@ export class InventoryZDM8 {
                     const value = checkIds.reduce((a, b) => {
                         return a +( b.stock.price*b.stock.qtty);
                     }, 0);
+                    console.log('qtty',checkIds);
+                    console.log('ids',ids.length);
+                    
+                    console.log(' value' + d.data.value + ' ' + value);
+                    
                     if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
 
                     const transactionID = new Date().getTime();

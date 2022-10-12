@@ -82,7 +82,7 @@ export class Tab1Page {
   buyMMoney(id: string) {
     const x = this.vendingOnSale.find(v => v.stock.id+'' == id+'');
     if (!x) return alert('not found');
-    const amount =this.orders.map(v => v.stock.price).reduce((a, b) => a + b, 0);
+    const amount =x.stock.price*1;
     this.apiService.buyMMoney([id+''], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
