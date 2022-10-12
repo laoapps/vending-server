@@ -83,6 +83,10 @@ export class InventoryZDM8 {
                     const checkIds = Array<IVendingMachineSale>();
                     ids.forEach(v => {
                         const x = this.vendingOnSale.find(vx => {
+                            console.log('checkid',checkIds.filter(vy => vy.stock.id + '' == v).reduce((a, b) => {
+                                return a + b.stock.qtty;
+                            }, 0));
+                            
                             if(!checkIds.length&&vx.stock.id+''==v){
                                 return true;
                             }
