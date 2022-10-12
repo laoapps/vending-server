@@ -111,8 +111,10 @@ export class Tab1Page {
   }
   buyManyMMoney() {
     if (!this.orders.length) alert('Please add any items first');
-    const amount =this.orders.map(v => v.stock.price).reduce((a, b) => a + b, 0);
-    this.apiService.buyMMoney([...new Set(this.orders.map(v => v.id+''))], amount, this.machineId.machineId).subscribe(r => {
+    const amount =this.orders.reduce((a, b) => a + b.stock.price*b.stock.qtty, 0);
+    console.log('ids',this.orders.map(v => v.stock.id+''));
+    
+    this.apiService.buyMMoney(this.orders.map(v => v.stock.id+''), amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;

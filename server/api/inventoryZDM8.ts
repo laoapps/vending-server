@@ -83,9 +83,7 @@ export class InventoryZDM8 {
                     const checkIds = Array<IVendingMachineSale>();
                     ids.forEach(v => {
                         const x = this.vendingOnSale.find(vx => {
-                            console.log('checkid',checkIds.filter(vy => vy.stock.id + '' == v).reduce((a, b) => {
-                                return a + b.stock.qtty;
-                            }, 0));
+ 
                             
                             if(!checkIds.length&&vx.stock.id+''==v){
                                 return true;
@@ -394,7 +392,7 @@ export class InventoryZDM8 {
                                     const i = this.vendingBill.findIndex(i => i.uuid == bill.uuid);
                                     this.vendingBill.splice(i, 1);
 
-                                    const ids = bill.vendingsales.map(v => v.id);
+                                    const ids = bill.vendingsales.map(v => v.stock.id);
                                     ids.forEach(vid => {
                                         const x = this.vendingOnSale.find(v => v.stock.id == vid);
                                         if (x)
