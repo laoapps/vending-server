@@ -38,7 +38,7 @@ export class ApiService {
     this.wsapi.billProcessSubscription.subscribe(r=>{
       if(!r) return console.log('empty');
       console.log('ws process subscription',r);
-      this.toast.create({message:'processing slot '+r.position+' '+r.bill.vendingsales.find(v=>v.position==r.position)?.stock?.name,duration:2000}).then(r=>{
+      this.toast.create({message:'processing slot '+r.position.position+`${r.position.status}`+' '+r?.bill?.vendingsales.find(v=>v.position==r.position)?.stock?.name,duration:2000}).then(r=>{
         r.present();
       })
     });

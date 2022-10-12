@@ -827,5 +827,5 @@ export interface IMMoneyConfirm {
 }
 export interface IBillProcess{
     bill:IVendingMachineBill,
-    position:number
+    position:any
 }
