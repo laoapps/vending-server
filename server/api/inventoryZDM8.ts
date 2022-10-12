@@ -111,11 +111,12 @@ export class InventoryZDM8 {
                         requestpaymenttime: new Date(),
                         totalvalue: value,
                         vendingsales: ids.map(v => {
-                            const stock = this.vendingOnSale.find(x => x.stock.id + '' == v)?.stock || {} as IStock;
+                            const s = this.vendingOnSale.find(x => x.stock.id + '' == v)?.stock || {} as IStock;
                             const position = this.vendingOnSale.find(x => ids.includes(x.stock.id + ''))?.position || -1;
-                            console.log('{ stock, position }',{ stock, position },'v',v);
+                            // console.log('{ stock, position }',{ stock, position },'v',v);
                             // console.log(this.vendingOnSale.find(x => x.id + '' == v),this.vendingOnSale.find(x => ids.includes(x.id + '')));
-                            
+                            const stock = JSON.parse(JSON.stringify(s));
+                            stock.qtty=1;
                             return { stock, position } as IVendingMachineSale;
                         })
                     };
