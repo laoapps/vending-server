@@ -268,14 +268,12 @@ export class InventoryZDM8 {
 
     generateBillMMoney(value: number, transactionID: string) {
         return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
-            const uuid = randomUUID();
-            // resolve({ uuid, qr: 'qr', value, machineId });
             // generate QR from MMoney
             this.loginMmoney().then(r => {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber: '2054445447',
+                        phonenumber: '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 

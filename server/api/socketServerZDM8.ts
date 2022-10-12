@@ -75,7 +75,7 @@ export class SocketServerZDM8 {
                     var bwrite = socket.bytesWritten;
                     console.log('Bytes read : ' + bread);
                     console.log('Bytes written : ' + bwrite);
-                    console.log('Data sent to server : ' + data);
+                    // console.log('Data sent to server : ' + data);
                     console.log('Data sent to server : ' + data.toString());
 
                     const d = JSON.parse(data.toString()) as IReqModel;
