@@ -44,6 +44,7 @@ export class InventoryZDM8 {
                     }).catch(e => {
                         return res.send(PrintError(d.command, e, EMessage.error));
                     })
+                    return;
                 }
                 if (d.command == 'test') {
                     console.log('CB COMFIRM test', d);
@@ -53,6 +54,7 @@ export class InventoryZDM8 {
                     }).catch(e => {
                         return res.send(PrintError(d.command, e, EMessage.error));
                     })
+                    return;
                 }
 
 
@@ -145,15 +147,7 @@ export class InventoryZDM8 {
                 res.send(PrintError(d.command, error, EMessage.error));
             }
         });
-        // router.post('/confirm', async (req, res) => {
-        //     try {
-        //         const { uuid, value, ids } = req.body;
-        //         broadCast(this.wss, 'confirm', { uuid, value, ids })
-        //     } catch (error) {
-        //         console.log(error);
-        //         res.send(PrintError('confirm', error, EMessage.error));
-        //     }
-        // })
+   
 
 
         /// 0. init for demo 
