@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineId, IReqModel, IResModel } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineClientID, IMachineId, IReqModel, IResModel, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
 import { ModalController, ToastController } from '@ionic/angular';
+import { NotifierService } from 'angular-notifier';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,7 +19,12 @@ export class ApiService {
   clientId = {} as IClientId;
 
   wsAlive={}as IAlive;
-  constructor(public http:HttpClient,public wsapi:WsapiService,public toast:ToastController,public modal:ModalController) { 
+
+  vendingOnSale = new Array<IVendingMachineSale>();
+  vendingBill = new Array<IVendingMachineBill>();
+  vendingBillPaid = new Array<IVendingMachineBill>();
+  onlineMachines = new Array<IMachineClientID>();
+  constructor(public http:HttpClient,public wsapi:WsapiService,public toast:ToastController,public modal:ModalController,public notifyService:NotifierService) { 
     this.machineId.machineId='12345678';
     this.machineId.otp = '111111';
     
@@ -38,12 +45,19 @@ export class ApiService {
     this.wsapi.billProcessSubscription.subscribe(r=>{
       if(!r) return console.log('empty');
       console.log('ws process subscription',r);
-      this.toast.create({message:'processing slot '+r.position.position+`${r.position.status}`+' '+r?.bill?.vendingsales.find(v=>v.position==r.position)?.stock?.name,duration:2000}).then(r=>{
+      const message = 'processing slot '+r.position.position+`${r.position.status}`+' '+r?.bill?.vendingsales.find(v=>v.position==r.position)?.stock?.name;
+      this.toast.create({message,duration:2000}).then(r=>{
         r.present();
-        this.modal.dismiss()
+        this.notifyService.show({message,type:'success'});
+       this.dismissModal();
       })
     });
  
+  }
+  public dismissModal(){
+    this.modal.getTop().then(r=>{
+      r?this.modal.dismiss():null
+    })
   }
   
   private headerBase(): any {

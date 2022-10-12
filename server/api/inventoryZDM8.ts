@@ -93,7 +93,7 @@ export class InventoryZDM8 {
                         const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
                         y.stock.qtty = 1;
                         x ? checkIds.push(y) : '';
-                        return false;
+                        // return false;
                     })
 
                     console.log('checkIds', checkIds, 'ids', ids);
