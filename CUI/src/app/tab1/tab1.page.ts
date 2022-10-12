@@ -25,7 +25,7 @@ export class Tab1Page {
   swidth = 0;
   sheight = 0;
   smode = 2;
-  constructor(public apiService: ApiService, platform: Platform, private scanner: BarcodeScanner, public modal: ModalController) {
+  constructor(public apiService: ApiService, platform: Platform, private scanner: BarcodeScanner) {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url
     this.initDemo();
@@ -36,6 +36,11 @@ export class Tab1Page {
       console.log('screen width', this.swidth, 'screen height', this.sheight);
       if (this.swidth > 550) this.smode = 3;
       else this.smode = 2;
+
+
+
+
+      
     });
 
   }
@@ -88,7 +93,7 @@ export class Tab1Page {
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
         localStorage.setItem('order', JSON.stringify(this.bills));
-        this.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount} }).then(r => {
+        this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount} }).then(r => {
           r.present();
         })
         // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
@@ -112,7 +117,7 @@ export class Tab1Page {
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
         localStorage.setItem('order', JSON.stringify(this.bills));
-        this.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount } }).then(r => {
+        this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount } }).then(r => {
           r.present();
         })
         // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(

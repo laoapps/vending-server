@@ -39,7 +39,8 @@ export class InventoryZDM8 {
                 if (d.command == EClientCommand.confirmMMoney) {
                     console.log('CB COMFIRM', d);
                     const c = d.data as IMMoneyConfirm;
-                    this.callBackConfirm(c.trandID).then(r => {
+                    // c.wallet_ids
+                    this.callBackConfirm(c.trandID,c.amount).then(r => {
                         return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.trandID }, EMessage.succeeded));
                     }).catch(e => {
                         return res.send(PrintError(d.command, e, EMessage.error));
@@ -358,10 +359,10 @@ export class InventoryZDM8 {
             }
         })
     }
-    callBackConfirm(transactionID: string) {
+    callBackConfirm(transactionID: string,amount:number) {
         return new Promise<IVendingMachineBill>((resolve, reject) => {
             try {
-                const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID);
+                const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID&&v.totalvalue==amount);
                 if (!bill) throw new Error(EMessage.billnotfound);
                 bill.paymentstatus = 'paid';
                 bill.paymentref = '';

@@ -4,7 +4,7 @@ import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineId, IReqMo
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
-import { ToastController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 @Injectable({
   providedIn: 'root'
 })
@@ -17,7 +17,7 @@ export class ApiService {
   clientId = {} as IClientId;
 
   wsAlive={}as IAlive;
-  constructor(public http:HttpClient,public wsapi:WsapiService,public toast:ToastController) { 
+  constructor(public http:HttpClient,public wsapi:WsapiService,public toast:ToastController,public modal:ModalController) { 
     this.machineId.machineId='12345678';
     this.machineId.otp = '111111';
     
@@ -40,8 +40,10 @@ export class ApiService {
       console.log('ws process subscription',r);
       this.toast.create({message:'processing slot '+r.position.position+`${r.position.status}`+' '+r?.bill?.vendingsales.find(v=>v.position==r.position)?.stock?.name,duration:2000}).then(r=>{
         r.present();
+        this.modal.dismiss()
       })
     });
+ 
   }
   
   private headerBase(): any {
