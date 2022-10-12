@@ -128,7 +128,7 @@ export class InventoryZDM8 {
                         hashM: '',
                         hashP: '',
                         paymentmethod: d.command,
-                        paymentref: '',
+                        paymentref: qr.name,
                         paymentstatus: 'pending',
                         paymenttime: new Date(),
                         requestpaymenttime: new Date(),

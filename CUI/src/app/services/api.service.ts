@@ -86,6 +86,7 @@ export class ApiService {
   loadSaleList(){
     const req = {} as IReqModel;
     req.command = EClientCommand.list;
+    req.data={clientId:this.clientId.clientId};
     return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
   

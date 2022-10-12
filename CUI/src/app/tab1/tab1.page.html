@@ -10,6 +10,7 @@
   <ion-grid >
     <ion-row>
       <ion-col  size="6" style="overflow-x:auto; overflow-y:auto;">
+        QTT:{{getTotal().q|number}}:TT:{{getTotal().t|number}}
         <ion-chip *ngFor="let o of summarizeOrder()" color="primary">
           {{o.stock.name}}/{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})</ion-chip>
       </ion-col>

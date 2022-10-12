@@ -4,7 +4,7 @@ import { IMachineClientID, IMachineId, IMMoneyQRRes, IVendingMachineBill, IVendi
 import { ModalController, Platform } from '@ionic/angular';
 import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
-
+import qrlogo from 'qrcode-with-logos';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -28,19 +28,25 @@ export class Tab1Page {
   constructor(public apiService: ApiService, platform: Platform, private scanner: BarcodeScanner) {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url
-    this.initDemo();
-    this.loadSaleList();
+    // this.initDemo();
+    
     platform.ready().then(() => {
       console.log('Width: ' + (this.swidth = platform.width()));
       console.log('Height: ' + (this.sheight = platform.height()));
       console.log('screen width', this.swidth, 'screen height', this.sheight);
       if (this.swidth > 550) this.smode = 3;
       else this.smode = 2;
-
-
-
-
+      setTimeout(() => {
+        console.log('loading sale list');
+        
+        this.loadSaleList();
+      }, 2000);
       
+
+      this.vendingOnSale = this.apiService.vendingOnSale;
+      this.vendingBillPaid = this.apiService.vendingBillPaid;
+      this.vendingBill = this.apiService.vendingBill;
+      this.onlineMachines = this.apiService.onlineMachines;
     });
 
   }
@@ -48,7 +54,7 @@ export class Tab1Page {
     this.apiService.initDemo().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.vendingOnSale = r.data;
+        this.vendingOnSale.push(...r.data);
       }
     })
   }
@@ -56,7 +62,7 @@ export class Tab1Page {
     this.apiService.loadPaidBills().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.vendingBillPaid = r.data;
+        this.vendingBillPaid.push(...r.data);
       }
     })
   }
@@ -64,7 +70,7 @@ export class Tab1Page {
     this.apiService.loadBills().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.vendingBill = r.data;
+        this.vendingBill.push(...r.data);
       }
     })
   }
@@ -72,7 +78,7 @@ export class Tab1Page {
     this.apiService.loadOnlineMachine().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.onlineMachines = r.data;
+        this.onlineMachines.push(...r.data);
       }
     })
   }
@@ -80,7 +86,9 @@ export class Tab1Page {
     this.apiService.loadSaleList().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.vendingOnSale = r.data;
+        this.vendingOnSale.push(...r.data);
+        console.log('VENDING ON SALE',this.vendingOnSale);
+        
       }
     })
   }
@@ -93,9 +101,12 @@ export class Tab1Page {
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
         localStorage.setItem('order', JSON.stringify(this.bills));
-        this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount} }).then(r => {
+       new qrlogo({logo:'../../assets/icon/mmoney.png',content:this.bills.qr}).getCanvas().then(r=>{
+        this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(),amount,ref:this.bills.paymentref} }).then(r => {
           r.present();
         })
+       })
+        
         // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
         //   res => {
         //     console.log(res);
@@ -119,9 +130,11 @@ export class Tab1Page {
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
         localStorage.setItem('order', JSON.stringify(this.bills));
-        this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: this.bills.qr,amount } }).then(r => {
-          r.present();
-        })
+        new qrlogo({logo:'../../assets/icon/mmoney.png',content:this.bills.qr}).getCanvas().then(r=>{
+          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(),amount,ref:this.bills.paymentref} }).then(r => {
+            r.present();
+          })
+         })
         // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
         //   res => {
         //     console.log(res);
@@ -156,6 +169,12 @@ export class Tab1Page {
       else x.stock.qtty += 1
     })
     return o;
+  }
+  getTotal() {
+    const o = this.summarizeOrder();
+    const q=o.reduce((a,b)=>{return a+b.stock.qtty},0);
+    const t=o.reduce((a,b)=>{return a+b.stock.qtty*b.stock.price},0);
+    return {q,t};
   }
   getSaleList() {
     const x = new Array<Array<IVendingMachineSale>>();

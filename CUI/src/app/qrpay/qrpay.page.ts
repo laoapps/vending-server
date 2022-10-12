@@ -9,6 +9,7 @@ import { ModalController } from '@ionic/angular';
 export class QrpayPage implements OnInit {
   @Input() encodedData:string;
   @Input() amount:number;
+  @Input() ref:string;
   constructor(public modal:ModalController) { }
 
   ngOnInit() {

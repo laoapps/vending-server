@@ -7,7 +7,10 @@
 <ion-content>
   <ion-card>
     <ion-item>
-      <qr-code [value]="encodedData" size="300" errorCorrectionLevel="M"></qr-code>
+      <img [src]="encodedData" style="width:360px ;height:360px">
+    </ion-item>
+    <ion-item>
+      <ion-label>{{ref}}</ion-label>
     </ion-item>
     <ion-item>
       <ion-label>{{amount|number}}</ion-label>
