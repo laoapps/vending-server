@@ -1,0 +1,7 @@
+POST  https://qr.mmoney.la/test/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username":"test",
+    "password" : "12345"
+}

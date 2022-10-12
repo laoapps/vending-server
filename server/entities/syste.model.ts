@@ -465,28 +465,28 @@ export const EESSP_COMMANDS = {
     }
 }
 
-export enum EPaymentProvider{
-    mmoney='mmoney',
-    umoney='umoney',
-    bcelone='bcelone',
+export enum EPaymentProvider {
+    mmoney = 'mmoney',
+    umoney = 'umoney',
+    bcelone = 'bcelone',
     laab = 'laab'
 }
 export interface IResModel {
-    transactionID:number;
+    transactionID: number;
     command: any;
     data: any;
     message: string;
     status: number;
 }
 export interface IReqModel {
-    transactionID:number;
+    transactionID: number;
     command: any;
-    data:any;
+    data: any;
     time: string;
     ip: string;
     token: string;
-    limit:number;
-    skip:number;
+    limit: number;
+    skip: number;
 }
 export enum EM102_COMMAND {
     release = 'release',
@@ -505,14 +505,14 @@ export enum EMODBUS_SYS_STAT {
     STAT_SALE_OK, //Sale success
     STAT_SALE_EER, //failure, shipping failure
 }
-export enum EMODBUS_ERROR_CODE{
-    '01'='Illegal function code. The slave receives a function code that cannot be executed. After issuing a query command, this code indicates that no program function is available.',
-    '02'='Illegal data address. The received data address, which is not allowed by the slave.',
-    '03' ='Illegal data. The value of the query data area is a value that is not allowed from the machine.',
+export enum EMODBUS_ERROR_CODE {
+    '01' = 'Illegal function code. The slave receives a function code that cannot be executed. After issuing a query command, this code indicates that no program function is available.',
+    '02' = 'Illegal data address. The received data address, which is not allowed by the slave.',
+    '03' = 'Illegal data. The value of the query data area is a value that is not allowed from the machine.',
     '04' = 'Calibration error. The checksum is incorrect and the host resends the data request as requested by the slave.',
-    '06' ='Slave equipment busy. The slave is busy processing a long-time program command and requests the host to send the message when the slave is idle.',
-    '07' ='Slave equipment failure. A non-recoverable error occurred when the slave executed the action requested by the host.',
-    '08' ='Confirmation. The slave has received the requested data, but it takes a long time to process it and sends this acknowledgement to avoid a timeout error on the host. The host then sends a "query completion" to determine if the slave has completed processing.'
+    '06' = 'Slave equipment busy. The slave is busy processing a long-time program command and requests the host to send the message when the slave is idle.',
+    '07' = 'Slave equipment failure. A non-recoverable error occurred when the slave executed the action requested by the host.',
+    '08' = 'Confirmation. The slave has received the requested data, but it takes a long time to process it and sends this acknowledgement to avoid a timeout error on the host. The host then sends a "query completion" to determine if the slave has completed processing.'
 }
 export enum EMODBUS_ERROR {
     ERR_NO_ERR = 0x00,//:No error
@@ -726,91 +726,100 @@ export enum EMessage {
     generateQRFailed = "generateQRFailed",
     GenerateQRMMoneyFailed = "GenerateQRMMoneyFailed"
 }
-export interface IBase{
-    id?:number;
-    uuid?:string;
-    isActive?:boolean;
-    createdAt?:Date;
-    updatedAt?:Date;
+export interface IBase {
+    id?: number;
+    uuid?: string;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
     // deletedAt?:Date;
 }
 export interface IBC {
     hashP: string;
     hashM: string;
-   
+
 }
-export interface IStock extends IBase, IBC{
+export interface IStock extends IBase, IBC {
     name: string;
     image: string;
     price: number;
     qtty: number;
 }
-export interface IMMoneyQRRes{
-    uuid:string;
-    qr:string;
-    ids:Array<string>;
-    value:number;
+export interface IMMoneyQRRes {
+    uuid: string;
+    qr: string;
+    ids: Array<string>;
+    value: number;
 }
 export enum EClientCommand {
-    list='list',
-    buyMMoney ='buyMMoney',
+    list = 'list',
+    buyMMoney = 'buyMMoney',
     confirmMMoney = 'confirmMMoney'
 }
-export interface IVendingMachineSale extends IBase,IBC{
-    machineId:string;
-    stock:IStock;
-    position:number;
+export interface IVendingMachineSale extends IBase, IBC {
+    machineId: string;
+    stock: IStock;
+    position: number;
 }
-export interface IVendingMachineBill extends IBase, IBC{
-    vendingsales:Array<IVendingMachineSale>;
-    totalvalue:number;
-    paymentmethod:string;
-    paymentstatus:string;
-    paymentref:string;
-    paymenttime:Date;
-    requestpaymenttime:Date;
-    machineId:string;
-    clientId:string;
-    transactionID:number;
-    qr:string;
-}
-
-export interface IMachineID extends IBase,IBC {
-    machineId:string;
-    machineIp:string;
-    machineCommands:string;
-    logintoken:string;
+export interface IVendingMachineBill extends IBase, IBC {
+    vendingsales: Array<IVendingMachineSale>;
+    totalvalue: number;
+    paymentmethod: string;
+    paymentstatus: string;
+    paymentref: string;
+    paymenttime: Date;
+    requestpaymenttime: Date;
+    machineId: string;
+    clientId: string;
+    transactionID: number;
+    qr: string;
 }
 
-export enum EMACHINE_COMMAND{
-    login='login',
-    ping ='ping',
-    status ='status'
+export interface IMachineID extends IBase, IBC {
+    machineId: string;
+    machineIp: string;
+    machineCommands: string;
+    logintoken: string;
 }
 
-export interface IMachineClientID{
-    otp:string;
-    machineId:string;
+export enum EMACHINE_COMMAND {
+    login = 'login',
+    ping = 'ping',
+    status = 'status'
 }
 
-export interface IMMoneyLogInRes{
-    
-        token: string,
-        message: string,
-        expiresIn: string,// 2h
+export interface IMachineClientID {
+    otp: string;
+    machineId: string;
+}
+
+export interface IMMoneyLogInRes {
+
+    token: string,
+    message: string,
+    expiresIn: string,// 2h
     status: true
-      
+
 }
-export interface IMMoneyGenerateQR{
-    transactionID:string,
-    phonenumber : string,
-    amount : number
+export interface IMMoneyGenerateQR {
+    transactionID: string,
+    phonenumber: string,
+    amount: number
 }
-export interface IMMoneyGenerateQRRes{
-    
-        name: string,
-        resultCode:number,
-        resultDesc: string,
-        qrCode: string
-      
+export interface IMMoneyGenerateQRRes {
+
+    name: string,
+    resultCode: number,
+    resultDesc: string,
+    qrCode: string
+
+}
+export interface IMMoneyConfirm {
+    amount: number,
+    wallet_ids: string,
+    password: string,
+    channel: string,//POS
+    resultCode: string,//200
+    resultDescription: string,//'Operation'
+    trandID: string // 
 }

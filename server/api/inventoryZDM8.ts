@@ -4,8 +4,8 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes } from '../entities/syste.model';
-import { parse, end, toSeconds, pattern } from "iso8601-duration";
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm } from '../entities/syste.model';
+import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { SocketServerZDM8 } from './socketServerZDM8';
@@ -35,9 +35,9 @@ export class InventoryZDM8 {
                 
                 if (d.command == EClientCommand.confirmMMoney) {
                     console.log('CB COMFIRM',d);
-                    
-                    this.callBackConfirm(d.data.qr).then(r => {
-                        res.send(PrintSucceeded(d.command, { data: d, qr: r }, EMessage.succeeded));
+                   const c = d.data as IMMoneyConfirm;
+                    this.callBackConfirm(c.trandID).then(r => {
+                        res.send(PrintSucceeded(d.command, { bill:r,transactionID:c.trandID }, EMessage.succeeded));
                     }).catch(e => {
                         res.send(PrintError(d.command, e, EMessage.error));
                     })
@@ -276,7 +276,7 @@ export class InventoryZDM8 {
                         transactionID
                     } as IMMoneyGenerateQR;
 
-                    axios.post('https://qr.mmoney.la/test/generateQR',
+                    axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
                         qr,
                         { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(r => {
                             console.log(r);
@@ -314,9 +314,7 @@ export class InventoryZDM8 {
                 console.log(r);
                 if (r.status) {
                     this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
-                    const t = new Date();
-                    t.setSeconds(t.getSeconds() + toSeconds(parse(this.mMoneyLoginRes.expiresIn.toUpperCase()))) + ''
-                    this.mMoneyLoginRes.expiresIn = t.getTime() + '';
+                    this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT'+this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(),'milliseconds')+'';
                     resolve(this.mMoneyLoginRes);
                 } else {
                     reject(new Error(EMessage.loginfailed));
@@ -327,10 +325,10 @@ export class InventoryZDM8 {
             });
         })
     }
-    callBackConfirm(qr: string) {
-        return new Promise<any>((resolve, reject) => {
+    callBackConfirm(transactionID: string) {
+        return new Promise<IVendingMachineBill>((resolve, reject) => {
             try {
-                const bill = this.vendingBill.find(v => v.qr == qr);
+                const bill = this.vendingBill.find(v => v.transactionID+'' == transactionID);
                 if (!bill) throw new Error(EMessage.billnotfound);
                 bill.paymentstatus = 'paid';
                 bill.paymentref = '';
@@ -368,7 +366,7 @@ export class InventoryZDM8 {
                     })
                 })
 
-                resolve(qr);
+                resolve(bill);
             } catch (error) {
                 console.log(error);
                 reject(error);
