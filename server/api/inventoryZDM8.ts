@@ -346,7 +346,7 @@ export class InventoryZDM8 {
                             res.command = EMACHINE_COMMAND.confirm;
                             res.message = EMessage.confirmsucceeded;
                             res.status = 1;
-                            res.data = { bill: {} as IVendingMachineBill, position } as unknown as IBillProcess;
+                            res.data = { bill: null, position } as unknown as IBillProcess;
                             v.send(JSON.stringify(res));
                         }, 3000 * i);
                     })

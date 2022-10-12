@@ -56,7 +56,9 @@ export class WsapiService {
           this.aliveSubscription.next({} as IAlive)
             break;
           case 'confirm':
-          this.billProcessSubscription.next(data.data)
+            console.log('confirm', data);
+            
+          this.billProcessSubscription.next(data)
             break;
           case 'login':
             if (data.data)
