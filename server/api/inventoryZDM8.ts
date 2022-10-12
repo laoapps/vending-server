@@ -112,7 +112,9 @@ export class InventoryZDM8 {
                         totalvalue: value,
                         vendingsales: ids.map(v => {
                             const stock = this.vendingOnSale.find(x => x.id + '' == v)?.stock || {} as IStock;
-                            const position = this.vendingOnSale.find(x => ids.includes(x.id + ''))?.position || {} as -1;
+                            const position = this.vendingOnSale.find(x => ids.includes(x.id + ''))?.position || -1;
+                            console.log('{ stock, position }',{ stock, position });
+                            
                             return { stock, position } as IVendingMachineSale;
                         })
                     };
