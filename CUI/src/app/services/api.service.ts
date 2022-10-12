@@ -62,7 +62,7 @@ export class ApiService {
   loadSaleList(){
     const req = {} as IReqModel;
     req.command = EClientCommand.list;
-    return this.http.post<IResModel>(this.url,{},{headers:this.headerBase()});
+    return this.http.post<IResModel>(this.url,req,{headers:this.headerBase()});
   }
   
   buyMMoney(ids:Array<string>,value:number,machineId:string){

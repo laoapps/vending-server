@@ -29,7 +29,7 @@ export class Tab1Page {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url
     this.initDemo();
-    // this.loadSaleList();
+    this.loadSaleList();
     platform.ready().then(() => {
       console.log('Width: ' + (this.swidth = platform.width()));
       console.log('Height: ' + (this.sheight = platform.height()));

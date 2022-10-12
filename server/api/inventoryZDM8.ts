@@ -31,7 +31,7 @@ export class InventoryZDM8 {
         router.post('/', async (req, res) => {
             const d = req.body as IReqModel;
             try {
-                console.log('Data',d);
+                console.log('POST Data',d);
                 
                 if (d.command == EClientCommand.confirmMMoney) {
                     console.log('CB COMFIRM',d);
