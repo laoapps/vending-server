@@ -178,9 +178,14 @@ export class Tab1Page {
   }
   getSaleList() {
     const x = new Array<Array<IVendingMachineSale>>();
+    
     this.vendingOnSale.forEach((v, i) => {
-      const y = i + 1;
-      if (!(y % this.smode)) x.push(this.vendingOnSale.slice(i - this.smode, i))
+      if(i==this.smode){
+        x.push(this.vendingOnSale.slice(0, i));
+      }else{
+        if (!( i% this.smode)) x.push(this.vendingOnSale.slice(i - this.smode, i))
+      }
+     
     })
     // console.log('x',x);
 

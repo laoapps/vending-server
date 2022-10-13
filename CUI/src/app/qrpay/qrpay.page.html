@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>qrpay</ion-title>
+    <ion-title>QRPAY</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -10,10 +10,10 @@
       <img [src]="encodedData" style="width:360px ;height:360px">
     </ion-item>
     <ion-item>
-      <ion-label>{{ref}}</ion-label>
+      <ion-icon name="home-outline"></ion-icon><ion-label>{{ref}}</ion-label>
     </ion-item>
     <ion-item>
-      <ion-label>{{amount|number}}</ion-label>
+      <ion-icon name="wallet-outline"></ion-icon> <ion-label>{{amount|number}}</ion-label>
     </ion-item>
     <ion-item>
       <ion-button (click)="close()">Close</ion-button>

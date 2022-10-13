@@ -6,7 +6,7 @@ import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
 import { ModalController, ToastController } from '@ionic/angular';
 import { NotifierService } from 'angular-notifier';
-
+import * as moment from 'moment';
 @Injectable({
   providedIn: 'root'
 })
@@ -53,6 +53,13 @@ export class ApiService {
       })
     });
  
+  }
+  public checkOnlineStatus(){
+    if(this.wsAlive){
+    return ( moment().get('milliseconds')- moment(this.wsAlive.time).get('milliseconds'))<10*1000;
+    }else{
+      return false;
+    }
   }
   public dismissModal(){
     this.modal.getTop().then(r=>{

@@ -1,6 +1,10 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <img src="../../assets/icon//mmoney.png" style="width: 128px;height:128px">
+<ion-header style="height: 160px;">
+
+  <ion-toolbar mode="ios" >
+    <ion-title style="height: 160px">
+       <img src="../../assets/icon//mmoney.png" style="width: 128px;height:128px">
+    </ion-title>
+   
   </ion-toolbar>
 </ion-header>
 
@@ -10,7 +14,7 @@
   <ion-grid >
     <ion-row>
       <ion-col  size="6" style="overflow-x:auto; overflow-y:auto;">
-        QTT:{{getTotal().q|number}}:TT:{{getTotal().t|number}}
+        <ion-icon name="cart"></ion-icon>:{{getTotal().q|number}}:<ion-icon name="cash-outline"></ion-icon>:{{getTotal().t|number}}
         <ion-chip *ngFor="let o of summarizeOrder()" color="primary">
           {{o.stock.name}}/{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})</ion-chip>
       </ion-col>

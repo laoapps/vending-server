@@ -31,6 +31,7 @@
     "angular-notifier": "^12.0.0",
     "crypto-js": "^4.1.1",
     "ionicons": "^6.0.3",
+    "momment": "^0.0.1",
     "ng-qrcode": "^7.0.0",
     "qrcode-with-logos": "^1.0.3",
     "rxjs": "~6.6.0",
