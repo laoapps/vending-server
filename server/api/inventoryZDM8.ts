@@ -434,7 +434,13 @@ export class InventoryZDM8 {
     }
     initWs(wss: WebSocketServer.Server) {
         try {
-
+            setWsHeartbeat(wss, (ws, data, binary) => {
+                console.log('WS HEART BEAT');
+                
+                if (data === '{"command":"ping"}') { // send pong if recieved a ping.
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
+                }
+            }, 15000);
 
             wss.on('connection', (ws: WebSocket) => {
                 console.log(' WS new connection ', ws.url);
@@ -452,13 +458,7 @@ export class InventoryZDM8 {
                 ws.onerror = (ev: Event) => {
                     console.log(' WS error', ev);
                 }
-                setWsHeartbeat(wss, (wsx, data, binary) => {
-                    console.log('WS HEART BEAT');
 
-                    if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                        wsx.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
-                    }
-                }, 15000);
                 //connection is up, let's add a simple simple event
                 ws.onmessage = async (ev: MessageEvent) => {
                     let d: IReqModel = {} as IReqModel;
@@ -467,7 +467,6 @@ export class InventoryZDM8 {
                         console.log(' WS comming', ev.data.toString());
 
                         d = JSON.parse(ev.data.toString()) as IReqModel;
-
 
                         const res = {} as IResModel
                         if (d.command == EMACHINE_COMMAND.login) {
@@ -483,20 +482,22 @@ export class InventoryZDM8 {
                                 ws['machineId'] = machineId.machineId;
                                 ws['clientId'] = uuid4();
                                 res.data = { clientId: ws['clientId'] };
-                                return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+                                ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+
                             } else throw new Error(EMessage.MachineIdNotFound)
-                            
                         }else if(d.command=='ping'){
+                            console.log('WS PING');
+                            // ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
                             return;
                         }
                         console.log('WS CLOSE');
-                        
                         ws.close();
+                        
+
 
                     } catch (error: any) {
                         console.log(' WS error', error);
                         ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
-                        ws.close();
                     }
                 }
 
