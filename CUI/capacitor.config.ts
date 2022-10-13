@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'CUI',
+  appId: 'com.laoapps.vendingmachine',
+  appName: 'VENDING MACHINE PLATFORM',
   webDir: 'www',
   bundledWebRuntime: false
 };

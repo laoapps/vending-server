@@ -102,6 +102,7 @@ export class Tab1Page {
   buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
     const amount = x.stock.price * 1;
+    this.apiService.showLoading();
     this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
@@ -124,13 +125,14 @@ export class Tab1Page {
         //   }
         // );
       }
+      this.apiService.dismissLoading();
     })
   }
   buyManyMMoney() {
     if (!this.orders.length) alert('Please add any items first');
     const amount = this.orders.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
     console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
-
+    this.apiService.showLoading();
     this.apiService.buyMMoney(this.orders, amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
@@ -152,6 +154,7 @@ export class Tab1Page {
         //   }
         // );
       }
+      this.apiService.dismissLoading();
     })
   }
 
@@ -188,6 +191,10 @@ export class Tab1Page {
     const q = o.reduce((a, b) => { return a + b.stock.qtty }, 0);
     const t = o.reduce((a, b) => { return a + b.stock.qtty * b.stock.price }, 0);
     return { q, t };
+  }
+  clearOrder(){
+    this.orders.length=0;
+    this.getSummarizeOrder();
   }
 
 

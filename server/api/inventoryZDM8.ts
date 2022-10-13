@@ -49,16 +49,16 @@ export class InventoryZDM8 {
                         })
                         return;
                     }
-                    if (d.command == 'test') {
-                        console.log('CB COMFIRM test', d);
-                        if (!d.data.p || !d.data.machineId) throw new Error('Test cofirm failed')
-                        this.callBackConfirmTest(d.data.p, d.data.machineId).then(r => {
-                            return res.send(PrintSucceeded(d.command, { bill: r, transactionID: 'test' }, EMessage.succeeded));
-                        }).catch(e => {
-                            return res.send(PrintError(d.command, e, EMessage.error));
-                        })
-                        return;
-                    }
+                    // if (d.command == 'test') {
+                    //     console.log('CB COMFIRM test', d);
+                    //     if (!d.data.p || !d.data.machineId) throw new Error('Test cofirm failed')
+                    //     this.callBackConfirmTest(d.data.p, d.data.machineId).then(r => {
+                    //         return res.send(PrintSucceeded(d.command, { bill: r, transactionID: 'test' }, EMessage.succeeded));
+                    //     }).catch(e => {
+                    //         return res.send(PrintError(d.command, e, EMessage.error));
+                    //     })
+                    //     return;
+                    // }
 
 
                     const clientId = d.data.clientId;
@@ -76,14 +76,14 @@ export class InventoryZDM8 {
                     else if (d.command == EClientCommand.list) {
                         return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
                     } else if (d.command == EClientCommand.buyMMoney) {
-                        const ids = d.data.ids as Array<IVendingMachineSale>; // item id
+                        const sale = d.data.ids as Array<IVendingMachineSale>; // item id
                         const machineId = this.ssocket.findMachineIdToken(d.token);
                         const position = d.data.position;
                         if (!machineId) throw new Error('Invalid token');
-                        if (!Array.isArray(ids)) throw new Error('Invalid array id');
+                        if (!Array.isArray(sale)) throw new Error('Invalid array id');
                         // console.log('this.vendingOnSale', this.vendingOnSale);
                         const checkIds = Array<IVendingMachineSale>();
-                        ids.forEach(v => {
+                        sale.forEach(v => {
                             const x = this.vendingOnSale.find(vx => {
                                 if (!checkIds.length && vx.stock.id + '' == v.stock.id + '') {
                                     return true;
@@ -106,13 +106,13 @@ export class InventoryZDM8 {
 
                         // console.log('checkIds', checkIds, 'ids', ids);
 
-                        if (checkIds.length < ids.length) throw new Error('some array id not exist or wrong qtty');
+                        if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
 
                         const value = checkIds.reduce((a, b) => {
                             return a + (b.stock.price * b.stock.qtty);
                         }, 0);
                         // console.log('qtty', checkIds);
-                        console.log('ids', ids.length);
+                        console.log('ids', sale.length);
 
                         console.log(' value' + d.data.value + ' ' + value);
 
@@ -135,7 +135,7 @@ export class InventoryZDM8 {
                             paymenttime: new Date(),
                             requestpaymenttime: new Date(),
                             totalvalue: value,
-                            vendingsales: ids
+                            vendingsales: sale
                         };
                         this.vendingBill.push(bill);
 
@@ -347,29 +347,29 @@ export class InventoryZDM8 {
 
         })
     }
-    callBackConfirmTest(position: Array<number>, machineId: string) {
-        return new Promise<IVendingMachineBill>((resolve, reject) => {
-            try {
-                position.forEach((p, i) => {
-                    this.wss.clients.forEach(v => {
-                        setTimeout(() => {
-                            const position = this.ssocket.processOrder(machineId, p, -1);
-                            const res = {} as IResModel;
-                            res.command = EMACHINE_COMMAND.confirm;
-                            res.message = EMessage.confirmsucceeded;
-                            res.status = 1;
-                            res.data = { bill: null, position } as unknown as IBillProcess;
-                            v.send(JSON.stringify(res));
-                        }, 3000 * i);
-                    })
-                })
-                resolve({} as IVendingMachineBill);
-            } catch (error) {
-                console.log(error);
-                reject(error);
-            }
-        })
-    }
+    // callBackConfirmTest(position: Array<number>, machineId: string) {
+    //     return new Promise<IVendingMachineBill>((resolve, reject) => {
+    //         try {
+    //             position.forEach((p, i) => {
+    //                 this.wss.clients.forEach(v => {
+    //                     setTimeout(() => {
+    //                         const position = this.ssocket.processOrder(machineId, p, -1);
+    //                         const res = {} as IResModel;
+    //                         res.command = EMACHINE_COMMAND.confirm;
+    //                         res.message = EMessage.confirmsucceeded;
+    //                         res.status = 1;
+    //                         res.data = { bill: null, position } as unknown as IBillProcess;
+    //                         v.send(JSON.stringify(res));
+    //                     }, 3000 * i);
+    //                 })
+    //             })
+    //             resolve({} as IVendingMachineBill);
+    //         } catch (error) {
+    //             console.log(error);
+    //             reject(error);
+    //         }
+    //     })
+    // }
     callBackConfirm(transactionID: string, amount: number) {
         return new Promise<IVendingMachineBill>((resolve, reject) => {
             try {
@@ -384,7 +384,6 @@ export class InventoryZDM8 {
                         const x = v['clientId'] as string;
                         if (x) {
                             if (x == bill.clientId) {
-
                                 setTimeout(() => {
                                     const position = this.ssocket.processOrder(bill.machineId, p, bill.transactionID);
                                     const res = {} as IResModel;
@@ -392,24 +391,33 @@ export class InventoryZDM8 {
                                     res.message = EMessage.confirmsucceeded;
                                     res.status = 1;
 
-                                    const i = this.vendingBill.findIndex(i => i.uuid == bill.uuid);
-                                    this.vendingBill.splice(i, 1);
+                                   
 
-                                    const ids = bill.vendingsales.map(v => v.stock.id);
-                                    ids.forEach(vid => {
-                                        const x = this.vendingOnSale.find(v => v.stock.id == vid);
+                                    // const ids = bill.vendingsales.map(v => v.stock.id);
+                                    bill.vendingsales.forEach(v => {
+                                        const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
                                         if (x)
                                             x.stock.qtty--;
-
                                     });
                                     res.data = { bill, position } as unknown as IBillProcess;
-                                    v.send(JSON.stringify(res));
+                                    v.send(JSON.stringify(res),e=>{
+                                        if(e)console.log(e);
+                                        else{
+                                            if(i){
+                                                const x = this.vendingBill.findIndex(x => x.uuid == bill.uuid);
+                                                if(x!=-1){
+                                                    const y =this.vendingBill.splice(x, 1);
+                                                    this.vendingBillPaid.push(...y)
+                                                }
+                                                
+                                            }
+                                        }
+                                    });
                                 }, 3000 * i);
                             }
                         }
                     })
                 })
-
                 resolve(bill);
             } catch (error) {
                 console.log(error);
@@ -436,7 +444,7 @@ export class InventoryZDM8 {
         try {
             setWsHeartbeat(wss, (ws, data, binary) => {
                 console.log('WS HEART BEAT');
-                
+
                 if (data === '{"command":"ping"}') { // send pong if recieved a ping.
                     ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
                 }
@@ -485,14 +493,14 @@ export class InventoryZDM8 {
                                 return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
 
                             } else throw new Error(EMessage.MachineIdNotFound)
-                        }else if(d.command=='ping'){
+                        } else if (d.command == 'ping') {
                             console.log('WS PING');
                             return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
-                            
+
                         }
                         console.log('WS CLOSE');
                         ws.close();
-                        
+
 
 
                     } catch (error: any) {

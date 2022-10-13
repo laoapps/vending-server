@@ -67,7 +67,7 @@ export class SocketClientZDM8 {
 
             const param = d.data;
 
-            const c = await that.m.command(d.command as any, param)
+            const c = await that.m.command(d.command as any, param,d.transactionID)
             this.send(c,d.transactionID, d.command as any);
             console.log('response',d.command, d);
         });

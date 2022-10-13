@@ -13,6 +13,7 @@ export class VendingZDM8 {
         console.log(`port '/dev/ttyS1' accessed`);
     });
     sock: SocketClientZDM8;
+    transactionID = -1;
     constructor(sock: SocketClientZDM8) {
 
         this.sock = sock;
@@ -26,21 +27,44 @@ export class VendingZDM8 {
                 buffer += new String(data);
                 console.log('buffer', buffer);
                 // if (buffer.length == 4) {
-                    sock.send(buffer,-1)
-                    buffer = '';
-                   
-                // }
+                sock.send(buffer, that.transactionID);
+                that.transactionID = -1;
+                buffer = '';
 
+                // }
+                that.processCoolingSystemTask(buffer);
             });
         });
+        setInterval(() => {
+            this.coolingSystemTask();
+        }, 30000)
     }
+    coolingSystemTask() {
+        this.command('hutemp', null, -1);
+    }
+    processCoolingSystemTask(resBuffer = '', minTemp = 3, maxTemp = 10) {
+        const slot = '00'; // relay number;
+        let state = '00';// on 01 off
+        const temp = this.getTemp(resBuffer).t;
+        const hum = this.getTemp(resBuffer).h;
+        if (temp >= maxTemp)
+            state = '00';
+        else if (temp <= minTemp)
+            state = '01'
+        this.command('relaycommand', { slot, state }, -1)
+    }
+    getTemp(buff: string) {
+        return { t: 10, h: 0.5 }
+    }
+
+
     checkSum(buff: any) {
         try {
             let x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
-            x.length<4?x='0'+x:'';
+            x.length < 4 ? x = '0' + x : '';
             console.log(x);
             console.log(x.substring(2) + x.substring(0, 2));
-            
+
             return x.substring(2) + x.substring(0, 2);
         }
         catch (e) {
@@ -48,27 +72,29 @@ export class VendingZDM8 {
             return '';
         }
     }
-    command(command: string, param: any) {
+    command(command: string, param: any, transactionID: number) {
         // this.port.setID(1);
+        this.transactionID = transactionID;
         return new Promise<IResModel>((resolve, reject) => {
             let buff = Array<any>();
-            let check ='';
+            let check = '';
+            let pcbarray = '01';
             try {
                 switch (command) {
                     case EZDM8_COMMAND.hwversion:
-                        buff = ['03', '00', '01', '00', '02', '95', 'CB'];
+                        buff = [pcbarray, '03', '00', '01', '00', '02', '95', 'CB'];
                         //01 03 04 20 02 0A 0A D6 94
                         //Description: The 1st~2nd byte is the hardware version of the driver board, which is the BCD code, indicating the year and month
                         // For example: 20 02 means 20 years and 2 months
                         //The 3rd byte is the number of cargo lane layers 0A to decimal -10 layers The 4th byte is the number of cargo lane columns 0A to decimal-10 columns
                         break;
                     case EZDM8_COMMAND.swversion:
-                        buff = ['03', '00', '02', '00', '02', '65', 'CB'];
+                        buff = [pcbarray, '03', '00', '02', '00', '02', '65', 'CB'];
                         //                     01 03 04 20 20 02 20 F0 81 Description: 4 bytes are BCD code, which means: year, month and day respectively.
                         // For example: 20 20 02 20 means February 20, 2020
                         break;
                     case EZDM8_COMMAND.status:
-                        buff = ['03', '00', '03', '00', '01', '74', '0A'];
+                        buff = [pcbarray, '03', '00', '03', '00', '01', '74', '0A'];
                         // 01 03 02 '00' '00' B8 44
                         // Packet byte 1 running state '00'-idle state
                         // Packet 2 Byte Fault Code '00' - No Error
@@ -76,7 +102,7 @@ export class VendingZDM8 {
                         // Note: When the driver board into the "shipping success" or "shipping failure", Android read this state after the driver board will default into the idle state waiting for the next shipment. The fault code will not be cleared
                         break;
                     case EZDM8_COMMAND.hutemp:
-                        buff = ['03', '00', '04', '00', '02', '85', 'CA'];
+                        buff = [pcbarray, '03', '00', '04', '00', '02', '85', 'CA'];
                         // 01 03 04 '00' D2 02 26 DA B0
                         // Packet 1~2 byte temperature
                         // Data packet 3rd~4th byte humidity
@@ -84,7 +110,7 @@ export class VendingZDM8 {
                         // For example, read the temperature value: '00' D2 converted to decimal 210, then the actual temperature is 210/10 = 21.0 °C, the same humidity data to do this processing
                         break;
                     case EZDM8_COMMAND.statusgrid:
-                        buff = ['03', '00', '05', '00', '01', '94', '0B'];
+                        buff = [pcbarray, '03', '00', '05', '00', '01', '94', '0B'];
                         //                     01 03 02 2-byte data CRCL CRCH
                         // Return Example: 01 03 02 01 '00' B9 D4
                         // Packet byte 1 cabinet code 01-1 cabinet
@@ -92,12 +118,12 @@ export class VendingZDM8 {
                         // Note: This instruction is based on the current protocol extension instruction and is non-standard.
                         break;
                     case EZDM8_COMMAND.shippingcontrol:
-                        const slot =  int2hex(param.slot);
+                        const slot = int2hex(param.slot);
                         const isspring = '01';
                         const dropdetect = '00';
                         const liftsystem = '00';
-                        buff = ['01', '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
-                        check =this.checkSum(buff)
+                        buff = [pcbarray, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
+                        check = this.checkSum(buff)
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
                         // ● 10: Function code
@@ -132,7 +158,7 @@ export class VendingZDM8 {
                     // Return Example: 01 03 02 07 D0 BB E8
                     // Packet:7D0 corresponds to 2'00'0 in decimal, indicating the current position of the lift motor at 2'00'0 (with symbols to note the positive and negative) Note: This command is valid only for lift systems. 8.31
                     case EZDM8_COMMAND.dropdetectstatus:
-                        buff = ['03', '00', '08', '00', '01', '05', 'C8'];
+                        buff = [pcbarray, '03', '00', '08', '00', '01', '05', 'C8'];
                         // 01 03 02 2-byte data CRCL CRCH
                         // Return Example: 01 03 02 '00' '00' B8 44
                         // Packet word 1/2, '00''00'-drop detection not connected or blocked '00'01-drop detection normal alignment no blocking
@@ -144,22 +170,23 @@ export class VendingZDM8 {
                     // // Note: This command is valid only for two-axis systems. 8.31
 
 
-                    // case EZDM8_COMMAND.arrayoutputstatus:
-                    //     buff = ['03', '00', '09', '00', '02', '14', '09'];
-                    // //                 : 01 03 04 '00' '00' 04 01 39 33
-                    // // The return data is 32 bits long, where 1-10 bit indicates the negative 1-10 channel output status, 11-20 bit indicates the positive channel output status, and 21-32 bit is reserved. 1 means the output is valid and 0 means the output is invalid.
-                    // // If the return example: '00''00'0401 corresponds to binary '00''00' '00''00' '00''00' '00''00' '00''00' 01'00' '00''00' '00'01
-                    // // Indicates that 1 channel of the positive pole is active and 1 channel of the negative pole is active
-
-                    // case EZDM8_COMMAND.arrayinputstatus:
-                    //     buff = ['03', '00', '0A', '00', '01', 'A4', '08'];
-                    // // 01 03 02 04 '00' BA 84
-                    // // The data packet is a 16-bit length data, each bit indicates an IO input status, 0 - invalid, 1 - valid. For example: Return data 04'00' means the drop detection port is valid
-                    // // Bit0-Bit9: indicates the status of the spring motor feedback input 1~10 channels
-                    // // Bit10: Drop detection port status
-                    // // Bit11: Reserved input port status
-                    // // Bit12: Button Status
-                    // // Bit13~Bit15: Reserved
+                    case EZDM8_COMMAND.arrayoutputstatus:
+                        buff = [pcbarray, '03', '00', '09', '00', '02', '14', '09'];
+                        //                 : 01 03 04 '00' '00' 04 01 39 33
+                        // The return data is 32 bits long, where 1-10 bit indicates the negative 1-10 channel output status, 11-20 bit indicates the positive channel output status, and 21-32 bit is reserved. 1 means the output is valid and 0 means the output is invalid.
+                        // If the return example: '00''00'0401 corresponds to binary '00''00' '00''00' '00''00' '00''00' '00''00' 01'00' '00''00' '00'01
+                        // Indicates that 1 channel of the positive pole is active and 1 channel of the negative pole is active
+                        break;
+                    case EZDM8_COMMAND.arrayinputstatus:
+                        buff = [pcbarray, '03', '00', '0A', '00', '01', 'A4', '08'];
+                        // 01 03 02 04 '00' BA 84
+                        // The data packet is a 16-bit length data, each bit indicates an IO input status, 0 - invalid, 1 - valid. For example: Return data 04'00' means the drop detection port is valid
+                        // Bit0-Bit9: indicates the status of the spring motor feedback input 1~10 channels
+                        // Bit10: Drop detection port status
+                        // Bit11: Reserved input port status
+                        // Bit12: Button Status
+                        // Bit13~Bit15: Reserved
+                        break;
                     // case EZDM8_COMMAND.yaxiselevatorstatus:
                     //     buff = ['03', '00', '0B', '00', '02', 'F5', 'C8'];
                     // // 01 03 02 '00' 10 B9 88
@@ -183,11 +210,14 @@ export class VendingZDM8 {
                     // // Return Example: 01 03 02 '00' '00' B8 44
                     // // Packet 1 byte X-axis operation status '00'-idle 01-motor is addressing 02-motor finished addressing 03-fault
                     // // Packet byte 2 X-axis fault code '00' - no error (see Table 3.1 for detailed fault codes)
-                    // case EZDM8_COMMAND.relaycommand:
-                    //     buff = ['06', '10', '01', '01', '01', '01', '1C', '9A'];
-                    // //                 Sending packet description.
-                    // // Data packet byte 1 relay number: 01-1 relay
-                    // // Data packet byte 2 relay status: '00' - release relay, 01 - relay output Driver board return (example): 01 06 10 01 01 01 01 1C 9A
+                    case EZDM8_COMMAND.relaycommand:
+                        const r = param.slot;
+                        const rstate = param.state;
+                        buff = [pcbarray, '06', r, rstate, '01', '01', '01', '1C', '9A'];
+                        //                 Sending packet description.
+                        // Data packet byte 1 relay number: 01-10 relay
+                        // Data packet byte 2 relay status: '00' - release relay, 01 - relay output Driver board return (example): 01 06 10 01 01 01 01 1C 9A
+                        break;
                     // case EZDM8_COMMAND.lifterreset:
                     //     buff = ['06', '10', '02', '00', '01', 'ED', '0A'];
                     // //             Sending packet description.
@@ -283,8 +313,8 @@ export class VendingZDM8 {
 
                 }
                 const x = buff.join('') + check;
-                console.log('x',x);
-                
+                console.log('x', x);
+
                 this.port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
                         reject(PrintError(command, param, e.message));

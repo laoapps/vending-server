@@ -2,8 +2,9 @@
 
   <!-- <ion-toolbar mode="ios" > -->
     <!-- <ion-title style="height: 160px; "> -->
+      '../assets/icon//mmoney.png'
       <div class="box">
-        <img src="../../assets/icon//mmoney.png" >
+        <img src="../assets/icon//mmoney.png" >
       </div>
        
     <!-- </ion-title> -->
@@ -24,6 +25,9 @@
       <ion-col  size="6">
         <ion-button (click)="buyManyMMoney()">
           Buy All
+        </ion-button>
+        <ion-button (click)="clearOrder()">
+          Clear
         </ion-button>
         <ion-button (click)="initDemo()">
           init Demo
@@ -46,8 +50,8 @@
             <label>{{s.stock.price}}/{{s.stock.qtty}}</label>
           </ion-item>
           <ion-item>
-            <button (click)="buyMMoney(s)" type="button">Buy</button>
-            <button (click)="addOrder($event,s)" type="button">AddOrder</button>
+            <ion-button (click)="buyMMoney(s)" type="button">Buy</ion-button>
+            <ion-button (click)="addOrder($event,s)" type="button">Add</ion-button>
           </ion-item>
         </ion-card>
 

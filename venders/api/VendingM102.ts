@@ -13,6 +13,7 @@ export class VendingM102 {
         }
     })
     sock :SocketClientM102|null=null;
+    transactionID=-1;
     constructor(sock: SocketClientM102) {
         this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
@@ -34,8 +35,9 @@ export class VendingM102 {
                 buffer += new String(data);
                 console.log('buffer', buffer);
                 if (buffer.length == 4) {
-                    sock.send(buffer,-1)
+                    sock.send(buffer,that.transactionID)
                     buffer = '';
+                    that.transactionID=-1
                     
                 }
 
@@ -58,7 +60,8 @@ export class VendingM102 {
         }
     }
 
-    command(command: EM102_COMMAND, param: any) {
+    command(command: EM102_COMMAND, param: any,transactionID:number) {
+        this.transactionID=transactionID;
         return new Promise<IResModel>((resolve, reject) => {
             let buff = Array<any>();
             let check = '';

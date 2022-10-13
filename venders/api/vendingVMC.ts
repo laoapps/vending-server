@@ -17,6 +17,7 @@ export class VendingVMC {
         }
     });
     sock: SocketClientVMC|null=null
+    transactionID=-1;;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
@@ -37,18 +38,20 @@ export class VendingVMC {
                 console.log('data', data);
                 buffer += new String(data);
                 console.log('buffer', buffer);
-                if (buffer.length == 4) {
-                    sock.send(buffer,-1)
+                // if (buffer.length == 4) {
+                    sock.send(buffer,that.transactionID)
                     buffer = '';
+                    that.transactionID=-1;
                    
-                }
+                // }
 
             });
         });
 
     }
 
-    command(command: EVMC_COMMAND, params: any) {
+    command(command: EVMC_COMMAND, params: any,transactionID:number) {
+        this.transactionID=transactionID;
         return new Promise<IResModel>((resolve, reject) => {
             const series = params.series;
             //STX

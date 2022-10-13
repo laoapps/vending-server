@@ -1,9 +1,9 @@
 POST  https://qr.mmoney.la/test/generateQR HTTP/1.1
 Content-Type: application/json
-mmoney-token:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoidGVzdCIsImlhdCI6MTY2NTU1ODIxNywiZXhwIjoxNjY1NTY1NDE3fQ.DUK_zx3TJxR2ufTZsyysC9fRB2FhjHDjcqIsfSSGa6k
+mmoney-token:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoidGVzdCIsImlhdCI6MTY2NTU2MjY1NywiZXhwIjoxNjY1NTY5ODU3fQ.l7h-62i7utD_NtENmIjNjzXxneX8172CbIGvxPYKiTo
 
 {
     "transactionID":"202209061229011001",
     "phonenumber" : "2055220199",
-    "amount" : "50000"
+    "amount" : "10000"
 }

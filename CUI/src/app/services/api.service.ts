@@ -4,7 +4,7 @@ import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineClientID, 
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
-import { ModalController, ToastController } from '@ionic/angular';
+import { LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { NotifierService } from 'angular-notifier';
 import * as moment from 'moment';
 @Injectable({
@@ -24,7 +24,13 @@ export class ApiService {
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
-  constructor(public http: HttpClient, public wsapi: WsapiService, public toast: ToastController, public modal: ModalController, public notifyService: NotifierService, private readonly zone: NgZone) {
+  constructor(public http: HttpClient,
+     public wsapi: WsapiService,
+     public toast: ToastController,
+      public modal: ModalController,
+       public notifyService: NotifierService,
+        private readonly zone: NgZone,
+        public load:LoadingController) {
 
     // this.zone.runOutsideAngular(() => {
       this.machineId.machineId = '12345678';
@@ -116,4 +122,14 @@ export class ApiService {
     return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
   }
 
+  showLoading(message='loading...'){
+    this.load.create({message,duration:15000}).then(r=>{
+      r.present();
+    });
+  }
+  dismissLoading(){
+    this.load.getTop().then(v=>{
+      v ? this.load.dismiss() : null
+    })
+  }
 }
