@@ -823,7 +823,9 @@ export interface IMMoneyConfirm {
     channel: string,//POS
     resultCode: string,//200
     resultDescription: string,//'Operation'
-    trandID: string // 
+    trandID: string, // 
+    tranid_client:string,
+    PhoneNumber:string
 }
 export interface IBillProcess{
     bill:IVendingMachineBill,
