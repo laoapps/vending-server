@@ -24,7 +24,7 @@ export class VendingZDM8 {
             // Listens to incoming data
             that.port.on('data', function (data: any) {
                 console.log('data', data);
-                buffer += new String(data);
+                buffer += data.toString('hex');
                 console.log('buffer', buffer);
                 // if (buffer.length == 4) {
                 sock.send(buffer, that.transactionID);
