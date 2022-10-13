@@ -54,7 +54,13 @@ export class WsapiService {
     this.webSocket.onerror = (ev) => {
       console.log('ERROR', ev);
       // this.retry = setInterval(() => {
-        this.connect(url, machineId, otp);
+        setTimeout(() => {
+          // clearInterval(this.retries);
+          // this.retry = null;
+          this.connect(url, machineId, otp);
+
+        }, 5000);
+
       // }, 5000)
     }
     this.webSocket.onmessage = (ev) => {
