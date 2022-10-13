@@ -42,7 +42,10 @@ export class VendingZDM8 {
     coolingSystemTask() {
         this.command('hutemp', null, -1);
     }
-    processCoolingSystemTask(resBuffer = '', minTemp = 3, maxTemp = 10) {
+    processCoolingSystemTask(resBuffer:any, minTemp = 3, maxTemp = 10) {
+        console.log('CHECK BUFFER',resBuffer[0],resBuffer[1],resBuffer[1]=='03');
+        
+        if(resBuffer[1]!='03') return;
         const slot = '00'; // relay number;
         let state = '00';// on 01 off
         const temp = this.getTemp(resBuffer).t;
