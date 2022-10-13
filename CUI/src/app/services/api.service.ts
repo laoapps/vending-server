@@ -4,7 +4,7 @@ import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineClientID, 
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
-import { LoadingController, ModalController, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { NotifierService } from 'angular-notifier';
 import * as moment from 'moment';
 @Injectable({
@@ -25,39 +25,62 @@ export class ApiService {
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
   constructor(public http: HttpClient,
-     public wsapi: WsapiService,
-     public toast: ToastController,
-      public modal: ModalController,
-       public notifyService: NotifierService,
-        private readonly zone: NgZone,
-        public load:LoadingController) {
+    public wsapi: WsapiService,
+    public toast: ToastController,
+    public modal: ModalController,
+    public notifyService: NotifierService,
+    private readonly zone: NgZone,
+    public load: LoadingController,
+    public alert: AlertController) {
 
     // this.zone.runOutsideAngular(() => {
-      this.machineId.machineId = '12345678';
-      this.machineId.otp = '111111';
-      this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
+    this.machineId.machineId = '12345678';
+    this.machineId.otp = '111111';
+    this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
 
-      this.wsapi.loginSubscription.subscribe(r => {
-        if (!r) return console.log('empty')
-        console.log('ws login subscription', r);
+    this.wsapi.loginSubscription.subscribe(r => {
+      if (!r) return console.log('empty')
+      console.log('ws login subscription', r);
 
-        this.clientId.clientId = r.clientId;
+      this.clientId.clientId = r.clientId;
 
-      })
-      this.wsapi.aliveSubscription.subscribe(r => {
-        if (!r) return console.log('empty');
-        console.log('ws alive subscription', r);
-        this.wsAlive.time = new Date();
-      });
-      this.wsapi.billProcessSubscription.subscribe(r => {
-        if (!r) return console.log('empty');
-        console.log('ws process subscription', r);
-        const message = 'processing slot ' + r.position.position + `${r.position.status}` + ' ' + r?.bill?.vendingsales.find(v => v.position == r.position)?.stock?.name;
-        this.toast.create({ message, duration: 2000 }).then(r => {
-          r.present();
-          this.notifyService.show({ message, type: 'success' });
+    })
+    this.wsapi.aliveSubscription.subscribe(r => {
+      if (!r) return console.log('empty');
+      console.log('ws alive subscription', r);
+      this.wsAlive.time = new Date();
+    });
+    this.wsapi.billProcessSubscription.subscribe(r => {
+      if (!r) return console.log('empty');
+      console.log('ws process subscription', r);
+      const message = 'processing slot ' + r.position.position + `==>${r.position.status}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
+
+
+      r?.bill?.vendingsales?.forEach(v => {
+        const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position && r.position.position == v.position);
+        if (x && r.position.status) {
+          x.stock.qtty--;
+          // PLAY SOUNDS
+          this.toast.create({ message, duration: 2000 }).then(r => {
+            r.present();
+          })
+        } else {
+          // PLAY SOUNDS
+          this.alert.create({
+            header: 'Alert', message, buttons: [
+              {
+                text: 'OK',
+                role: 'confirm',
+                handler: () => {
+                },
+              },
+            ]
+          }).then(v => v.present());
           this.dismissModal();
-        })
+        }
+
+      });
+
       // });
     })
 
@@ -122,13 +145,13 @@ export class ApiService {
     return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
   }
 
-  showLoading(message='loading...'){
-    this.load.create({message,duration:15000}).then(r=>{
+  showLoading(message = 'loading...') {
+    this.load.create({ message, duration: 15000 }).then(r => {
       r.present();
     });
   }
-  dismissLoading(){
-    this.load.getTop().then(v=>{
+  dismissLoading() {
+    this.load.getTop().then(v => {
       v ? this.load.dismiss() : null
     })
   }

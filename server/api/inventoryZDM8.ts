@@ -379,19 +379,18 @@ export class InventoryZDM8 {
                 bill.paymentref = '';
                 bill.paymenttime = new Date();
 
-                bill.vendingsales.map(v => v.position).forEach((p, i) => {
+                const cbill = bill.vendingsales.length;
+                bill.vendingsales.forEach((p, i) => {
                     this.wss.clients.forEach(v => {
                         const x = v['clientId'] as string;
                         if (x) {
                             if (x == bill.clientId) {
                                 setTimeout(() => {
-                                    const position = this.ssocket.processOrder(bill.machineId, p, bill.transactionID);
+                                    const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
                                     const res = {} as IResModel;
                                     res.command = EMACHINE_COMMAND.confirm;
                                     res.message = EMessage.confirmsucceeded;
                                     res.status = 1;
-
-                                   
 
                                     // const ids = bill.vendingsales.map(v => v.stock.id);
                                     bill.vendingsales.forEach(v => {
@@ -400,16 +399,13 @@ export class InventoryZDM8 {
                                             x.stock.qtty--;
                                     });
                                     res.data = { bill, position } as unknown as IBillProcess;
-                                    v.send(JSON.stringify(res),e=>{
-                                        if(e)console.log(e);
-                                        else{
-                                            if(i){
-                                                const x = this.vendingBill.findIndex(x => x.uuid == bill.uuid);
-                                                if(x!=-1){
-                                                    const y =this.vendingBill.splice(x, 1);
-                                                    this.vendingBillPaid.push(...y)
-                                                }
-                                                
+                                    v.send(JSON.stringify(res), e => {
+                                        if (e) console.log(e);
+                                        if (i + 1 >= cbill) {
+                                            const x = this.vendingBill.findIndex(x => x.uuid == bill.uuid);
+                                            if (x != -1) {
+                                                const y = this.vendingBill.splice(x, 1);
+                                                this.vendingBillPaid.push(...y)
                                             }
                                         }
                                     });
