@@ -40,8 +40,8 @@ export class InventoryZDM8 {
                     console.log('CB COMFIRM', d);
                     const c = d.data as IMMoneyConfirm;
                     // c.wallet_ids
-                    this.callBackConfirm(c.trandID, c.amount).then(r => {
-                        return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.trandID }, EMessage.succeeded));
+                    this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+                        return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
                     }).catch(e => {
                         return res.send(PrintError(d.command, e, EMessage.error));
                     })

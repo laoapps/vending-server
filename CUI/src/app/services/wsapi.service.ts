@@ -15,13 +15,16 @@ export class WsapiService {
   public loginSubscription = new BehaviorSubject<IClientId>(null);
   public aliveSubscription = new BehaviorSubject<IAlive>(null);
   public billProcessSubscription = new BehaviorSubject<IBillProcess>(null);
+
+  retry: any;
   constructor() {
-
-
   }
   connect(url: string, machineId: string, otp: string) {
     this.wsurl = url;
     this.webSocket = new WebSocket(this.wsurl);
+
+    clearInterval(this.retries);
+    this.retry = null;
     setWsHeartbeat(this.webSocket, '{"command":"ping"}', { pingInterval: 10000, pingTimeout: 10000 });
     this.webSocket.onopen = (ev) => {
       this.retries = 0;
@@ -39,11 +42,21 @@ export class WsapiService {
         //   this.connect();
         // }, 10000);
         console.log('connection has been closed', ev);
+
         setTimeout(() => {
-          this.connect(url,machineId,otp);
+          // clearInterval(this.retries);
+          // this.retry = null;
+          this.connect(url, machineId, otp);
+
         }, 5000);
       };
     };
+    this.webSocket.onerror = (ev) => {
+      console.log('ERROR', ev);
+      // this.retry = setInterval(() => {
+        this.connect(url, machineId, otp);
+      // }, 5000)
+    }
     this.webSocket.onmessage = (ev) => {
       const res = JSON.parse(ev.data) as IResModel;
       if (res) {
@@ -52,13 +65,13 @@ export class WsapiService {
         console.log('COMMING DATA', res);
         switch (res.command) {
           case 'ping':
-          console.log('Ping');
-          this.aliveSubscription.next({} as IAlive)
+            console.log('Ping');
+            this.aliveSubscription.next({} as IAlive)
             break;
           case 'confirm':
             console.log('confirm', data);
-            
-          this.billProcessSubscription.next(data)
+
+            this.billProcessSubscription.next(data)
             break;
           case 'login':
             if (data.data)
@@ -73,9 +86,9 @@ export class WsapiService {
   send(data: IReqModel | IResModel) {
     const that = this;
     console.log('sending');
-    
+
     this.waitForSocketConnection(function () {
-      console.log('connection is ready to send',data);
+      console.log('connection is ready to send', data);
       that.webSocket.send(JSON.stringify(data));
     });
   }
@@ -85,11 +98,11 @@ export class WsapiService {
     const socket = this.webSocket;
     const that = this;
     console.log('waiting for sending');
-    
+
     setTimeout(
       function () {
-        console.log('wating count',socket.readyState,new Date().getTime());
-        
+        console.log('wating count', socket.readyState, new Date().getTime());
+
         // console.log('ws ready state', socket.readyState);
         if (socket.readyState === 1) {
           console.log("Connection is made")
