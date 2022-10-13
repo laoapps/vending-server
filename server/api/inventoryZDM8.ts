@@ -483,16 +483,20 @@ export class InventoryZDM8 {
                                 ws['machineId'] = machineId.machineId;
                                 ws['clientId'] = uuid4();
                                 res.data = { clientId: ws['clientId'] };
-
+                                ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
                             } else throw new Error(EMessage.MachineIdNotFound)
-                            ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+                            
+                        }else if(d.command=='ping'){
+                            return;
                         }
-
+                        console.log('WS CLOSE');
+                        
                         ws.close();
 
                     } catch (error: any) {
                         console.log(' WS error', error);
                         ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                        ws.close();
                     }
                 }
 
