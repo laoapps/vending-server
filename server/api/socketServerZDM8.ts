@@ -205,29 +205,35 @@ export class SocketServerZDM8 {
             });
             
             socket.on('close', function (error) {
-                var bread = socket.bytesRead;
-                var bwrite = socket.bytesWritten;
-                console.log('Bytes read : ' + bread);
-                console.log('Bytes written : ' + bwrite);
-                console.log('Socket closed!');
-                if (error) {
-                    console.log('Socket was closed coz of transmission error');
-                }
-                const x = that.sclients.findIndex(v => {
-                    if (v) {
-                        const x = v['machineId'] as IMachineClientID;
-                        console.log(' machineId', socket['machineId'],x);
-                        
-                        if (x.machineId+'' == socket['machineId'].machineId+'') return true;
+                try {
+                    var bread = socket.bytesRead;
+                    var bwrite = socket.bytesWritten;
+                    console.log('Bytes read : ' + bread);
+                    console.log('Bytes written : ' + bwrite);
+                    console.log('Socket closed!');
+                    if (error) {
+                        console.log('Socket was closed coz of transmission error');
                     }
-                    return false;
-                });
-                console.log('delete x +',x, that.sclients.length);
-                if(x>-1){
-                    that.sclients.splice(x, 1);
+                    const x = that.sclients.findIndex(v => {
+                        if (v) {
+                            const x = v['machineId'] as IMachineClientID;
+                            console.log(' machineId', socket['machineId'],x);
+                            
+                            if (x.machineId+'' == socket['machineId'].machineId+'') return true;
+                        }
+                        return false;
+                    });
+                    console.log('delete x +',x, that.sclients.length);
+                    if(x>-1){
+                        that.sclients.splice(x, 1);
+                    }
+                    
+                    console.log('delete x -',x, that.sclients.length);
+                } catch (error) {
+                    console.log('Close error',error);
+                    
                 }
-                
-                console.log('delete x -',x, that.sclients.length);
+               
 
             });
 
