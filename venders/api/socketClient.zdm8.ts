@@ -14,6 +14,8 @@ export class SocketClientZDM8 {
     token = '';
     t: any;
     m: VendingZDM8;
+
+    maxRetryReboot=5*60*1000;/// 5 minutes
     constructor() {
         this.m = new VendingZDM8(this);
         this.init();
