@@ -434,13 +434,13 @@ export class InventoryZDM8 {
     }
     initWs(wss: WebSocketServer.Server) {
         try {
-            // setWsHeartbeat(wss, (ws, data, binary) => {
-            //     console.log('WS HEART BEAT');
+            setWsHeartbeat(wss, (ws, data, binary) => {
+                console.log('WS HEART BEAT');
                 
-            //     if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-            //         ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
-            //     }
-            // }, 15000);
+                if (data === '{"command":"ping"}') { // send pong if recieved a ping.
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
+                }
+            }, 15000);
 
             wss.on('connection', (ws: WebSocket) => {
                 console.log(' WS new connection ', ws.url);
