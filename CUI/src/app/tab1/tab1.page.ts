@@ -158,7 +158,7 @@ export class Tab1Page {
   addOrder(e:any,x: IVendingMachineSale) {
     e.preventDefault();
     e.stopPropagation();
-    this.zone.runOutsideAngular(() => {
+    // this.zone.runOutsideAngular(() => {
       console.log('ID', x);
       if (!x) return alert('not found');
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
@@ -167,7 +167,7 @@ export class Tab1Page {
 
       this.orders.push(y);
       this.getSummarizeOrder();
-    });
+    // });
   }
   getSummarizeOrder() {
     this.summarizeOrder.length = 0;

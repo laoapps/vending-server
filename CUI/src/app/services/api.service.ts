@@ -26,7 +26,7 @@ export class ApiService {
   onlineMachines = new Array<IMachineClientID>();
   constructor(public http: HttpClient, public wsapi: WsapiService, public toast: ToastController, public modal: ModalController, public notifyService: NotifierService, private readonly zone: NgZone) {
 
-    this.zone.runOutsideAngular(() => {
+    // this.zone.runOutsideAngular(() => {
       this.machineId.machineId = '12345678';
       this.machineId.otp = '111111';
       this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
@@ -52,7 +52,7 @@ export class ApiService {
           this.notifyService.show({ message, type: 'success' });
           this.dismissModal();
         })
-      });
+      // });
     })
 
 

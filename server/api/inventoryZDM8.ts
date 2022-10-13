@@ -435,6 +435,8 @@ export class InventoryZDM8 {
     initWs(wss: WebSocketServer.Server) {
         try {
             setWsHeartbeat(wss, (ws, data, binary) => {
+                console.log('HEART BEAT');
+                
                 if (data === '{"command":"ping"}') { // send pong if recieved a ping.
                     ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
                 }
