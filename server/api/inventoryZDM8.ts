@@ -456,7 +456,7 @@ export class InventoryZDM8 {
                     console.log('WS HEART BEAT');
 
                     if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                        ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
+                        wsx.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
                     }
                 }, 15000);
                 //connection is up, let's add a simple simple event
