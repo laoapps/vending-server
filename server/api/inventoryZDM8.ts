@@ -483,7 +483,7 @@ export class InventoryZDM8 {
                                 ws['machineId'] = machineId.machineId;
                                 ws['clientId'] = uuid4();
                                 res.data = { clientId: ws['clientId'] };
-                                ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+                                return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
                             } else throw new Error(EMessage.MachineIdNotFound)
                             
                         }else if(d.command=='ping'){
