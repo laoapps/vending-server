@@ -482,10 +482,10 @@ export class InventoryZDM8 {
                                 res.data = { clientId: ws['clientId'] };
 
                             } else throw new Error(EMessage.MachineIdNotFound)
-
+                            ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
                         }
 
-                        ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+                       
 
                     } catch (error: any) {
                         console.log(' WS error', error);
@@ -498,9 +498,7 @@ export class InventoryZDM8 {
             console.log(error);
 
         }
-
     }
-
 }
 
 

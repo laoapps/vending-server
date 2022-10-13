@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { IMachineClientID, IMachineId, IMMoneyQRRes, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
 import { ModalController, Platform } from '@ionic/angular';
@@ -8,7 +8,7 @@ import qrlogo from 'qrcode-with-logos';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss']
+  styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page {
   vendingOnSale = new Array<IVendingMachineSale>();
@@ -25,11 +25,18 @@ export class Tab1Page {
   swidth = 0;
   sheight = 0;
   smode = 2;
-  constructor(public apiService: ApiService, platform: Platform, private scanner: BarcodeScanner) {
+
+  summarizeOrder = new Array<IVendingMachineSale>();
+  getTotalSale = { q: 0, t: 0 };
+
+  saleList = new Array<Array<IVendingMachineSale>>();
+  constructor(private ref: ChangeDetectorRef,public apiService: ApiService, platform: Platform, private scanner: BarcodeScanner, public zone: NgZone) {
+    // ref.detach();
+    // this.zone.runOutsideAngular(()=>{
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url
     // this.initDemo();
-    
+
     platform.ready().then(() => {
       console.log('Width: ' + (this.swidth = platform.width()));
       console.log('Height: ' + (this.sheight = platform.height()));
@@ -38,16 +45,16 @@ export class Tab1Page {
       else this.smode = 2;
       setTimeout(() => {
         console.log('loading sale list');
-        
+
         this.loadSaleList();
       }, 2000);
-      
-
       this.vendingOnSale = this.apiService.vendingOnSale;
       this.vendingBillPaid = this.apiService.vendingBillPaid;
       this.vendingBill = this.apiService.vendingBill;
       this.onlineMachines = this.apiService.onlineMachines;
     });
+    // });
+
 
   }
   initDemo() {
@@ -87,25 +94,25 @@ export class Tab1Page {
       console.log(r);
       if (r.status) {
         this.vendingOnSale.push(...r.data);
-        console.log('VENDING ON SALE',this.vendingOnSale);
-        
+        console.log('VENDING ON SALE', this.vendingOnSale);
+        this.saleList.push(...this.getSaleList());
       }
     })
   }
-  buyMMoney(x:IVendingMachineSale) {
+  buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
-    const amount =x.stock.price*1;
+    const amount = x.stock.price * 1;
     this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
         localStorage.setItem('order', JSON.stringify(this.bills));
-       new qrlogo({logo:'../../assets/icon/mmoney.png',content:this.bills.qr}).getCanvas().then(r=>{
-        this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(),amount,ref:this.bills.paymentref} }).then(r => {
-          r.present();
+        new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
+          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } }).then(r => {
+            r.present();
+          })
         })
-       })
-        
+
         // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
         //   res => {
         //     console.log(res);
@@ -121,19 +128,19 @@ export class Tab1Page {
   }
   buyManyMMoney() {
     if (!this.orders.length) alert('Please add any items first');
-    const amount =this.orders.reduce((a, b) => a + b.stock.price*b.stock.qtty, 0);
-    console.log('ids',this.orders.map(v => {return {id:v.stock.id+'',position:v.position}}));
-    
+    const amount = this.orders.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
+    console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
+
     this.apiService.buyMMoney(this.orders, amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
         this.bills = r.data as IVendingMachineBill;
         localStorage.setItem('order', JSON.stringify(this.bills));
-        new qrlogo({logo:'../../assets/icon/mmoney.png',content:this.bills.qr}).getCanvas().then(r=>{
-          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(),amount,ref:this.bills.paymentref} }).then(r => {
+        new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
+          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } }).then(r => {
             r.present();
           })
-         })
+        })
         // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
         //   res => {
         //     console.log(res);
@@ -148,40 +155,52 @@ export class Tab1Page {
     })
   }
 
-  addOrder(x:IVendingMachineSale) {
-    console.log('ID', x);
-    if (!x) return alert('not found');
-    const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-    y.stock.qtty = 1;
-    console.log('y', y);
+  addOrder(e:any,x: IVendingMachineSale) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.zone.runOutsideAngular(() => {
+      console.log('ID', x);
+      if (!x) return alert('not found');
+      const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+      y.stock.qtty = 1;
+      console.log('y', y);
 
-    this.orders.push(y);
+      this.orders.push(y);
+      this.getSummarizeOrder();
+    });
   }
-  summarizeOrder() {
+  getSummarizeOrder() {
+    this.summarizeOrder.length = 0;
     const o = new Array<IVendingMachineSale>();
     this.orders.forEach(v => {
       const x = o.find(x => x.stock.id == v.stock.id);
       if (!x) o.push(JSON.parse(JSON.stringify(v)));
       else x.stock.qtty += 1
     })
-    return o;
+    this.summarizeOrder.push(...o);
+    const t = this.getTotal();
+    Object.keys(this.getTotalSale).forEach(k => {
+      this.getTotalSale[k] = t[k];
+    })
   }
   getTotal() {
-    const o = this.summarizeOrder();
-    const q=o.reduce((a,b)=>{return a+b.stock.qtty},0);
-    const t=o.reduce((a,b)=>{return a+b.stock.qtty*b.stock.price},0);
-    return {q,t};
+    const o = this.summarizeOrder;
+    const q = o.reduce((a, b) => { return a + b.stock.qtty }, 0);
+    const t = o.reduce((a, b) => { return a + b.stock.qtty * b.stock.price }, 0);
+    return { q, t };
   }
+
+
   getSaleList() {
     const x = new Array<Array<IVendingMachineSale>>();
-    
+
     this.vendingOnSale.forEach((v, i) => {
-      if(i==this.smode){
+      if (i == this.smode) {
         x.push(this.vendingOnSale.slice(0, i));
-      }else{
-        if (!( i% this.smode)) x.push(this.vendingOnSale.slice(i - this.smode, i))
+      } else {
+        if (!(i % this.smode)) x.push(this.vendingOnSale.slice(i - this.smode, i))
       }
-     
+
     })
     // console.log('x',x);
 

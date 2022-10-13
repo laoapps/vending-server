@@ -176,6 +176,7 @@ export class SocketServerZDM8 {
                                 return;
                             }
                         }
+                        socket.end();
 
                     } catch (e) {
                         console.log('wrong data', data, e);
