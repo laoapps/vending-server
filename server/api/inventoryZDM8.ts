@@ -402,10 +402,12 @@ export class InventoryZDM8 {
                         }
                     })
                    if(y){
-                    this.setTask(bill,p,y,cbill,i);
-                    if(i==bill.vendingsales.length-1){
-                        resolve(bill);
-                    }
+                    this.setTask(bill,p,y,cbill,i).then(()=>{
+                        if(i==bill.vendingsales.length-1){
+                            resolve(bill);
+                        }
+                    })
+                  
                    }
                 })
                 
