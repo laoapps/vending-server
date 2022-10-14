@@ -373,6 +373,8 @@ export class InventoryZDM8 {
     callBackConfirm(transactionID: string, amount: number) {
         return new Promise<IVendingMachineBill>((resolve, reject) => {
             try {
+                console.log('transactionID', transactionID ,'value', amount);
+                
                 const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID && v.totalvalue == amount);
                 if (!bill) throw new Error(EMessage.billnotfound);
                 bill.paymentstatus = 'paid';

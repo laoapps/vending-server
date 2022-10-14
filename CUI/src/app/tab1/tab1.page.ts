@@ -5,12 +5,16 @@ import { ModalController, Platform } from '@ionic/angular';
 import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
 import qrlogo from 'qrcode-with-logos';
+var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page {
+
+  mmLogo=host+'/assets/icon/mmoney.png';
+
   vendingOnSale = new Array<IVendingMachineSale>();
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
@@ -30,7 +34,13 @@ export class Tab1Page {
   getTotalSale = { q: 0, t: 0 };
 
   saleList = new Array<Array<IVendingMachineSale>>();
-  constructor(private ref: ChangeDetectorRef,public apiService: ApiService, platform: Platform, private scanner: BarcodeScanner, public zone: NgZone) {
+  constructor(private ref: ChangeDetectorRef,
+    public apiService: ApiService,
+     platform: Platform,
+     private scanner: BarcodeScanner,
+     public zone: NgZone) {
+      // alert('V1_'+this.mmLogo);      
+
     // ref.detach();
     // this.zone.runOutsideAngular(()=>{
     this.machineId = this.apiService.machineId;
