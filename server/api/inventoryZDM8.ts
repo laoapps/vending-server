@@ -83,7 +83,9 @@ export class InventoryZDM8 {
                         if (!Array.isArray(sale)) throw new Error('Invalid array id');
                         // console.log('this.vendingOnSale', this.vendingOnSale);
                         const checkIds = Array<IVendingMachineSale>();
+                        
                         sale.forEach(v => {
+                            v.stock.qtty=1;
                             const x = this.vendingOnSale.find(vx => {
                                 if (!checkIds.length 
                                     && vx.stock.id + '' == v.stock.id + ''
@@ -110,7 +112,7 @@ export class InventoryZDM8 {
                             // return false;
                         })
 
-                        // console.log('checkIds', checkIds, 'ids', ids);
+                        console.log('checkIds', checkIds, 'ids', ids);
 
                         if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
 

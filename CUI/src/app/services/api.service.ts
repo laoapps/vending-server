@@ -45,6 +45,7 @@ export class ApiService {
       this.clientId.clientId = r.clientId;
       this.wsAlive.time = new Date();
       this.wsAlive.isAlive =this.checkOnlineStatus();
+      this.loadSaleList();
     })
     this.wsapi.aliveSubscription.subscribe(r => {
       if (!r) return console.log('empty');
