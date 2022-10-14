@@ -403,7 +403,7 @@ export class InventoryZDM8 {
                     })
                    if(y){
                     this.setTask(bill,p,y,cbill,i);
-                    if(i<=bill.vendingsales.length-1){
+                    if(i==bill.vendingsales.length-1){
                         resolve(bill);
                     }
                    }
