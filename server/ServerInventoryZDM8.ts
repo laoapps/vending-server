@@ -28,4 +28,13 @@ server.listen(process.env.PORT || 9009, async function () {
 });
 const wss = new WebSocket.Server({ server });
 const ss = new SocketServerZDM8();
-new InventoryZDM8(app, wss, ss);
+const inv =new InventoryZDM8(app, wss, ss);
+process.on('exit', (code:number)=>{
+  console.log('exit code',code);
+  
+  inv.ssocket.sclients.forEach(v=>{
+    v.destroy();
+  });
+  wss.close();
+  ss.server.close();
+});

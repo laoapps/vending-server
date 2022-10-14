@@ -45,6 +45,11 @@ export class ApiService {
       console.log('ws alive subscription', r);
       this.wsAlive.time = new Date();
       this.wsAlive.isAlive =this.checkOnlineStatus();
+      if(!this.vendingOnSale.length){
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      }
     });
     this.wsapi.billProcessSubscription.subscribe(r => {
       if (!r) return console.log('empty');
