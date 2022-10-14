@@ -112,7 +112,7 @@ export class InventoryZDM8 {
                             // return false;
                         })
 
-                        console.log('checkIds', checkIds, 'ids', ids);
+                        console.log('checkIds', checkIds, 'ids', sale);
 
                         if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
 
