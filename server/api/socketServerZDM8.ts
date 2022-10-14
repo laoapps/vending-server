@@ -354,7 +354,7 @@ export class SocketServerZDM8 {
                 return false;
             });
             if (position < 0 || position > 99 || Number(position) == NaN)
-                return { position, status: false };
+                return { position, status: x};
             if (x) {
                 const res = {} as IResModel;
                 res.command = EZDM8_COMMAND.shippingcontrol
@@ -366,11 +366,11 @@ export class SocketServerZDM8 {
                 return { position, status: x.write(JSON.stringify(res)) };
             } else {
                 console.log('client id socket not found');
-                return { position, status: false };
+                return { position, status: x ,message:'Error machineID not found'};
             }
-        } catch (error) {
+        } catch (error:any) {
             console.log('client id socket not found');
-            return { position, status: false };
+            return { position, status: false ,message:error.message};
         }
 
     }
