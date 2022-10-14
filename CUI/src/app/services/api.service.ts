@@ -65,7 +65,7 @@ export class ApiService {
           this.toast.create({ message, duration: 2000 }).then(r => {
             r.present();
           })
-        } else {
+        } else if(!r.position.status) {
           // PLAY SOUNDS
           this.alert.create({
             header: 'Alert', message, buttons: [
