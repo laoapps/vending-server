@@ -367,7 +367,7 @@ export class SocketServerZDM8 {
             } else {
                 console.log('client id socket not found');
                 const data = `${machineId}-${position}-${transactionID}`
-                return { position, status: x ,message:'Error machineID not found '+data};
+                return { position, status: x ,message:'Error machineID not found '+data+'--'+JSON.stringify(this.sclients)};
             }
         } catch (error:any) {
             console.log('client id socket not found');
