@@ -1,6 +1,6 @@
 <ion-app>
   <div class="statusbar">
-    <ng-template [ngIf]="checkOnlineStatus()" [ngIfElse]="isOffline">
+    <ng-template [ngIf]="checkOnlineStatus.isAlive" [ngIfElse]="isOffline">
       <div>
           <ion-icon name="cloud-done"></ion-icon>
       </div>

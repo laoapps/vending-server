@@ -53,15 +53,16 @@ export class Tab1Page {
       console.log('screen width', this.swidth, 'screen height', this.sheight);
       if (this.swidth > 550) this.smode = 3;
       else this.smode = 2;
-      setTimeout(() => {
+      // setTimeout(() => {
         console.log('loading sale list');
 
-        this.loadSaleList();
-      }, 2000);
+       
+      // }, 1000);
       this.vendingOnSale = this.apiService.vendingOnSale;
       this.vendingBillPaid = this.apiService.vendingBillPaid;
       this.vendingBill = this.apiService.vendingBill;
       this.onlineMachines = this.apiService.onlineMachines;
+       this.loadSaleList();
     });
     // });
 
@@ -111,6 +112,7 @@ export class Tab1Page {
   }
   buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
+    if(x.stock.qtty<=0) alert('Out Of order');
     const amount = x.stock.price * 1;
     this.apiService.showLoading();
     this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
@@ -168,12 +170,11 @@ export class Tab1Page {
     })
   }
 
-  addOrder(e:any,x: IVendingMachineSale) {
-    e.preventDefault();
-    e.stopPropagation();
+  addOrder(x: IVendingMachineSale) {
     // this.zone.runOutsideAngular(() => {
       console.log('ID', x);
       if (!x) return alert('not found');
+      if(x.stock.qtty<=0) alert('Out Of order');
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
       y.stock.qtty = 1;
       console.log('y', y);

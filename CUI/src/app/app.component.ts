@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
+import { IAlive } from './services/syste.model';
 
 @Component({
   selector: 'app-root',
@@ -7,8 +8,8 @@ import { ApiService } from './services/api.service';
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent {
-  checkOnlineStatus:()=>boolean;
+  checkOnlineStatus:IAlive;
   constructor(public apiService:ApiService) {
-this.checkOnlineStatus= apiService.checkOnlineStatus;
+this.checkOnlineStatus= apiService.wsAlive;
   }
 }

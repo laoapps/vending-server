@@ -43,12 +43,14 @@ export class ApiService {
       console.log('ws login subscription', r);
 
       this.clientId.clientId = r.clientId;
-
+      this.wsAlive.time = new Date();
+      this.wsAlive.isAlive =this.checkOnlineStatus();
     })
     this.wsapi.aliveSubscription.subscribe(r => {
       if (!r) return console.log('empty');
       console.log('ws alive subscription', r);
       this.wsAlive.time = new Date();
+      this.wsAlive.isAlive =this.checkOnlineStatus();
     });
     this.wsapi.billProcessSubscription.subscribe(r => {
       if (!r) return console.log('empty');
@@ -76,8 +78,8 @@ export class ApiService {
               },
             ]
           }).then(v => v.present());
-          this.dismissModal();
         }
+        this.dismissModal();
 
       });
 

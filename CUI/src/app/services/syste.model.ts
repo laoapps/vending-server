@@ -794,6 +794,7 @@ export interface IMachineId{
 
 export interface IAlive{
     time:Date
+    isAlive:boolean;
 }
 
 export interface IClientId{

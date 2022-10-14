@@ -85,12 +85,18 @@ export class InventoryZDM8 {
                         const checkIds = Array<IVendingMachineSale>();
                         sale.forEach(v => {
                             const x = this.vendingOnSale.find(vx => {
-                                if (!checkIds.length && vx.stock.id + '' == v.stock.id + '') {
+                                if (!checkIds.length 
+                                    && vx.stock.id + '' == v.stock.id + ''
+                                    && vx.stock.qtty >= v.stock.qtty
+                                    && vx.stock.qtty > 0) {
                                     return true;
                                 }
-                                else if (vx.stock.qtty > 0 && vx.position == v.position && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
-                                    return a + b.stock.qtty;
-                                }, 0) <= vx.stock.qtty) {
+                                else if (vx.stock.qtty > 0
+                                    && vx.stock.qtty >= v.stock.qtty
+                                    && vx.position == v.position
+                                    && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
+                                        return a + b.stock.qtty;
+                                    }, 0) <= vx.stock.qtty) {
                                     return true;
                                 }
                                 return false;
@@ -373,8 +379,8 @@ export class InventoryZDM8 {
     callBackConfirm(transactionID: string, amount: number) {
         return new Promise<IVendingMachineBill>((resolve, reject) => {
             try {
-                console.log('transactionID', transactionID ,'value', amount);
-                
+                console.log('transactionID', transactionID, 'value', amount);
+
                 const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID && v.totalvalue == amount);
                 if (!bill) throw new Error(EMessage.billnotfound);
                 bill.paymentstatus = 'paid';
