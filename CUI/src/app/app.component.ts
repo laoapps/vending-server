@@ -10,7 +10,11 @@ import { IAlive } from './services/syste.model';
 export class AppComponent {
   checkOnlineStatus:IAlive;
   constructor(public apiService:ApiService) {
+    
 this.checkOnlineStatus= apiService.wsAlive;
     alert('DEMO started')
+
+
+    
   }
 }

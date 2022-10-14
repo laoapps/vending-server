@@ -391,38 +391,44 @@ export class InventoryZDM8 {
 
                 const cbill = bill.vendingsales.length;
                 bill.vendingsales.forEach((p, i) => {
+                    let x ='';
+                    let y :WebSocketServer.WebSocket=null as any;
                     this.wss.clients.forEach(v => {
-                        const x = v['clientId'] as string;
-                        if (x) {
+                         x = v['clientId'] as string;
+                         if (x) {
                             if (x == bill.clientId) {
-                                setTimeout(() => {
-                                    const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
-                                    const res = {} as IResModel;
-                                    res.command = EMACHINE_COMMAND.confirm;
-                                    res.message = EMessage.confirmsucceeded;
-                                    res.status = 1;
-
-                                    // const ids = bill.vendingsales.map(v => v.stock.id);
-                                    bill.vendingsales.forEach(v => {
-                                        const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
-                                        if (x)
-                                            x.stock.qtty--;
-                                    });
-                                    res.data = { bill, position } as unknown as IBillProcess;
-                                    v.send(JSON.stringify(res), e => {
-                                        if (e) console.log(e);
-                                        if (i + 1 >= cbill) {
-                                            const x = this.vendingBill.findIndex(x => x.uuid == bill.uuid);
-                                            if (x != -1) {
-                                                const y = this.vendingBill.splice(x, 1);
-                                                this.vendingBillPaid.push(...y)
-                                            }
-                                        }
-                                    });
-                                }, 3000 * i);
+                               y=v;
                             }
                         }
                     })
+                   if(y){
+                    setTimeout(() => {
+                        const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
+                        const res = {} as IResModel;
+                        res.command = EMACHINE_COMMAND.confirm;
+                        res.message = EMessage.confirmsucceeded;
+                        res.status = 1;
+
+                        // const ids = bill.vendingsales.map(v => v.stock.id);
+                        bill.vendingsales.forEach(v => {
+                            const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
+                            if (x)
+                                x.stock.qtty--;
+                        });
+                        res.data = { bill, position } as unknown as IBillProcess;
+                        y.send(JSON.stringify(res), e => {
+                            if (e) console.log(e);
+                            if (i + 1 >= cbill) {
+                                const x = this.vendingBill.findIndex(x => x.uuid == bill.uuid);
+                                if (x != -1) {
+                                    const y = this.vendingBill.splice(x, 1);
+                                    this.vendingBillPaid.push(...y)
+                                }
+                            }
+                        });
+                    }, 3000 * i);
+                   }
+                  
                 })
                 resolve(bill);
             } catch (error) {

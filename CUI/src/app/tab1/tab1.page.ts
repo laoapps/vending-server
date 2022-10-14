@@ -13,7 +13,7 @@ var host = window.location.protocol + "//" + window.location.host;
 })
 export class Tab1Page {
 
-  mmLogo=host+'/assets/icon/mmoney.png';
+  mmLogo = host + '/assets/icon/mmoney.png';
 
   vendingOnSale = new Array<IVendingMachineSale>();
   vendingBill = new Array<IVendingMachineBill>();
@@ -36,10 +36,10 @@ export class Tab1Page {
   saleList = new Array<Array<IVendingMachineSale>>();
   constructor(private ref: ChangeDetectorRef,
     public apiService: ApiService,
-     platform: Platform,
-     private scanner: BarcodeScanner,
-     public zone: NgZone) {
-      // alert('V1_'+this.mmLogo);      
+    platform: Platform,
+    private scanner: BarcodeScanner,
+    public zone: NgZone) {
+    // alert('V1_'+this.mmLogo);      
 
     // ref.detach();
     // this.zone.runOutsideAngular(()=>{
@@ -54,15 +54,23 @@ export class Tab1Page {
       if (this.swidth > 550) this.smode = 3;
       else this.smode = 2;
       // setTimeout(() => {
-        console.log('loading sale list');
+      console.log('loading sale list');
 
-       
+
       // }, 1000);
       this.vendingOnSale = this.apiService.vendingOnSale;
       this.vendingBillPaid = this.apiService.vendingBillPaid;
       this.vendingBill = this.apiService.vendingBill;
       this.onlineMachines = this.apiService.onlineMachines;
-       this.loadSaleList();
+ 
+      this.apiService.wsapi.loginSubscription.subscribe(r => {
+        if (!r) return console.log('empty')
+        console.log('ws login subscription', r);
+        this.apiService.clientId.clientId = r.clientId;
+        this.apiService.wsAlive.time = new Date();
+        this.apiService.wsAlive.isAlive =this.apiService.checkOnlineStatus();
+        this.loadSaleList();
+      })
     });
     // });
 
@@ -104,6 +112,8 @@ export class Tab1Page {
     this.apiService.loadSaleList().subscribe(r => {
       console.log(r);
       if (r.status) {
+        this.vendingOnSale.length=0;
+        this.saleList.length=0;
         this.vendingOnSale.push(...r.data);
         console.log('VENDING ON SALE', this.vendingOnSale);
         this.saleList.push(...this.getSaleList());
@@ -112,7 +122,7 @@ export class Tab1Page {
   }
   buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
-    if(x.stock.qtty<=0) alert('Out Of order');
+    if (x.stock.qtty <= 0) alert('Out Of order');
     const amount = x.stock.price * 1;
     this.apiService.showLoading();
     this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
@@ -139,6 +149,7 @@ export class Tab1Page {
       }
       this.apiService.dismissLoading();
     })
+    this.orders.length=0;
   }
   buyManyMMoney() {
     if (!this.orders.length) alert('Please add any items first');
@@ -167,20 +178,21 @@ export class Tab1Page {
         // );
       }
       this.apiService.dismissLoading();
-    })
+    });
+    this.orders.length=0;
   }
 
   addOrder(x: IVendingMachineSale) {
     // this.zone.runOutsideAngular(() => {
-      console.log('ID', x);
-      if (!x) return alert('not found');
-      if(x.stock.qtty<=0) alert('Out Of order');
-      const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-      y.stock.qtty = 1;
-      console.log('y', y);
+    console.log('ID', x);
+    if (!x) return alert('not found');
+    if (x.stock.qtty <= 0) alert('Out Of order');
+    const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+    y.stock.qtty = 1;
+    console.log('y', y);
 
-      this.orders.push(y);
-      this.getSummarizeOrder();
+    this.orders.push(y);
+    this.getSummarizeOrder();
     // });
   }
   getSummarizeOrder() {
@@ -203,8 +215,8 @@ export class Tab1Page {
     const t = o.reduce((a, b) => { return a + b.stock.qtty * b.stock.price }, 0);
     return { q, t };
   }
-  clearOrder(){
-    this.orders.length=0;
+  clearOrder() {
+    this.orders.length = 0;
     this.getSummarizeOrder();
   }
 

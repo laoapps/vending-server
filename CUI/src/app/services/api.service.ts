@@ -24,6 +24,7 @@ export class ApiService {
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
+
   constructor(public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
@@ -32,21 +33,13 @@ export class ApiService {
     private readonly zone: NgZone,
     public load: LoadingController,
     public alert: AlertController) {
-
+      this.wsapi = wsapi;
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = '12345678';
     this.machineId.otp = '111111';
     this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
 
-    this.wsapi.loginSubscription.subscribe(r => {
-      if (!r) return console.log('empty')
-      console.log('ws login subscription', r);
-
-      this.clientId.clientId = r.clientId;
-      this.wsAlive.time = new Date();
-      this.wsAlive.isAlive =this.checkOnlineStatus();
-      this.loadSaleList();
-    })
+   
     this.wsapi.aliveSubscription.subscribe(r => {
       if (!r) return console.log('empty');
       console.log('ws alive subscription', r);
