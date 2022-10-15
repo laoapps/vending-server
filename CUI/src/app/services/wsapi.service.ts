@@ -16,6 +16,9 @@ export class WsapiService {
   public aliveSubscription = new BehaviorSubject<IAlive>(null);
   public billProcessSubscription = new BehaviorSubject<IBillProcess>(null);
 
+
+  public refreshSubscription = new BehaviorSubject<boolean>(false);
+
   retry: any;
   constructor() {
   }
@@ -82,6 +85,9 @@ export class WsapiService {
           case 'login':
             if (data.data)
               this.loginSubscription.next(data.data)
+            break;
+          case 'refresh':
+            this.refreshSubscription.next(data.data);
             break;
           default:
             break;

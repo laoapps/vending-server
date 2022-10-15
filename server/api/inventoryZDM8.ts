@@ -176,6 +176,20 @@ export class InventoryZDM8 {
                     res.send(PrintError('init', error, error.message));
                 }
             });
+            router.get('/refresh', async (req, res) => {
+                try {
+                    this.wss.clients.forEach(v=>{
+                        if(v.OPEN){
+                            v.send(JSON.stringify(PrintSucceeded('refresh',true , EMessage.succeeded)));
+                        }
+                    })
+
+                    res.send(PrintSucceeded('refresh', true, EMessage.succeeded));
+                } catch (error: any) {
+                    console.log(error);
+                    res.send(PrintError('init', error, error.message));
+                }
+            });
             router.get('/getPaidBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
