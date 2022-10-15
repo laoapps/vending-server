@@ -64,7 +64,7 @@ export class SocketClientZDM8 {
             //     this.send(c, d.command as any);
             // }
             // console.log(d.command, d);
-            console.log('Data from server:' + data);
+            console.log('DATA from server:' + data);
             const l=data.toString().substring(0,data.toString().length-1)
             const d = JSON.parse(l) as IResModel;
 
@@ -73,19 +73,23 @@ export class SocketClientZDM8 {
             const param = d.data;
 
             that.m.command(d.command as any, param,d.transactionID).then(r=>{
-                console.log('command completed');
+                console.log('DATA command completed');
                 
                 this.send(r,d.transactionID, d.command as any);
             }).catch(e=>{
-                console.log('command error',e);
+                if(e){
+                    console.log('DATA command error',e);
                 
-                this.send(e,d.transactionID, d.command as any);
+                    this.send(e,d.transactionID, d.command as any);
+                }
+                
             })
             
-            console.log('response',d.command, d);
+            console.log('DATA response',d.command, d);
         });
-        this.client.on('error', function (data) {
-            console.log('error:' + data);
+        this.client.on('error', function (e) {
+            if(e)
+            console.log('ERROR error:' + e);
         });
         // this.client.on('end', function (data) {
         //     console.log('Data from server:' + data);
@@ -94,7 +98,7 @@ export class SocketClientZDM8 {
         //     }, 3000);
         // });
         this.client.on('close', function (data) {
-            console.log('on close:' + data);
+            console.log('CLOSE on close:' + data);
             setTimeout(() => {
                 that.client.destroy();
                 that.client = new net.Socket();
@@ -120,7 +124,7 @@ export class SocketClientZDM8 {
         req.data = data;
         req.transactionID=transactionID
         this.client.write(JSON.stringify(req)+'\n',e=>{
-            console.log('error on send',e);
+            console.log('SEND error on send',e);
         });
     }
     close() {
