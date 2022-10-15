@@ -52,9 +52,12 @@ export class ApiService {
       }
     });
     this.wsapi.refreshSubscription.subscribe(r=>{
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+      if(r){
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      }
+    
     })
     this.wsapi.billProcessSubscription.subscribe(r => {
       if (!r) return console.log('empty');
