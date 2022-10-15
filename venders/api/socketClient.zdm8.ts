@@ -124,6 +124,7 @@ export class SocketClientZDM8 {
         req.data = data;
         req.transactionID=transactionID
         this.client.write(JSON.stringify(req)+'\n',e=>{
+            if(e)
             console.log('SEND error on send',e);
         });
     }
