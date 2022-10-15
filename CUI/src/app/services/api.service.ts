@@ -57,8 +57,8 @@ export class ApiService {
       const message = 'processing slot ' + r.position.position + `==>${r.position.status}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
 
 
-      const x=this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id  && r.position.position == vx.position));
-      console.log('X',x,r.position);
+      const x=this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id  && r.position.position+'' == vx.position+''));
+      console.log('X',x,r.position,x && r.position.status);
       
       if (x && r.position.status) {
         x.stock.qtty--;
