@@ -222,11 +222,11 @@ export class SocketServerZDM8 {
                     try {
                         var bread = socket.bytesRead;
                         var bwrite = socket.bytesWritten;
-                        console.log('Bytes read : ' + bread);
-                        console.log('Bytes written : ' + bwrite);
-                        console.log('Socket closed!');
+                        console.log('CLOSING Bytes read : ' + bread);
+                        console.log('CLOSING Bytes written : ' + bwrite);
+                        console.log(' CLOSING Socket closed!');
                         if (error) {
-                            console.log('Socket was closed coz of transmission error');
+                            console.log('CLOSING Socket was closed coz of transmission error');
                         }
                         const x = that.sclients.findIndex(v => {
                             if (v) {
@@ -237,7 +237,7 @@ export class SocketServerZDM8 {
                             }
                             return false;
                         });
-                        console.log('delete x +', x, that.sclients.length);
+                        console.log('CLOSING delete x +', x, that.sclients.length);
                         if (x > -1) {
                             that.sclients.splice(x, 1);
                         }
