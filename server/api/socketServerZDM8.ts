@@ -74,19 +74,19 @@ export class SocketServerZDM8 {
                     try {
                         var bread = socket.bytesRead;
                         var bwrite = socket.bytesWritten;
-                        console.log('Bytes read : ' + bread);
-                        console.log('Bytes written : ' + bwrite);
+                        console.log('DATA Bytes read : ' + bread);
+                        console.log('DATA Bytes written : ' + bwrite);
                         // console.log('Data sent to server : ' + data);
-                        console.log('Data sent to server : ' + data.toString());
+                        console.log('DATA  sent to server : ' + data.toString());
                         const l=data.toString().substring(0,data.toString().length-1)
                         const d = JSON.parse(l) as IReqModel;
 
-                        console.log('total connection', that.sclients.length);
+                        console.log('DATA  total connection', that.sclients.length);
                         if (d.command == EMACHINE_COMMAND.login) {
                             const token = d.token;
                             const x = that.findMachineIdToken(token);
                             if (x) {
-                                console.log('found machine id');
+                                console.log('DATA found machine id');
                                 socket['machineId'] = x;
                                 const mx = that.sclients.filter(v => {
                                     const m = v['machineId'] as IMachineClientID;
@@ -98,32 +98,32 @@ export class SocketServerZDM8 {
 
                                 if (!mx.length) {
                                     that.sclients.push(socket);
-                                    console.log('machine exist and accepted');
+                                    console.log('DATA machine exist and accepted');
                                 } else if (mx.length) {
-                                    console.log('duplicated connection', mx.length);
+                                    console.log('DATA duplicated connection', mx.length);
                                     mx.forEach(v => v.end())
                                     socket.end();
                                     // allow new connection only
-                                    console.log('terminate all connection and restart');
+                                    console.log('DATA terminate all connection and restart');
                                     return;
                                 }
                                 return;
                             } else {
-                                console.log(' not exist machine id ');
+                                console.log('DATA  not exist machine id ');
                                 socket.end();
                                 return;
                             }
 
                         } else if (d.command == EMACHINE_COMMAND.ping) {
-                            console.log('command ping');
+                            console.log('DATA command ping');
                             const token = d.token;
                             const x = that.findMachineIdToken(token);
                             if (!x) {
-                                console.log('ping not found token');
+                                console.log('DATA ping not found token');
                                 socket.end();
 
                             } else {
-                                console.log('ping found token');
+                                console.log('DATA ping found token');
                                 const mx = that.sclients.filter(v => {
                                     const m = v['machineId'] as IMachineClientID;
                                     if (m) {
@@ -134,21 +134,21 @@ export class SocketServerZDM8 {
                                 if (mx.length > 1) {
                                     mx.forEach(v => v.end());
                                     socket.end();
-                                    console.log('ping duplicated !');
+                                    console.log('DATA ping duplicated !');
                                     return;
                                 } else if (!mx.length) {
                                     socket.end();
-                                    console.log('re-login PLEASE!');
+                                    console.log('DATA re-login PLEASE!');
                                     return;
                                 }
                                 return;
                             }
                         } else if (d.command == EMACHINE_COMMAND.status) {
-                            console.log('show status here', d.command, d.token, d.data);
+                            console.log('DATA show status here', d.command, d.token, d.data);
                             const token = d.token;
                             const x = that.findMachineIdToken(token);
                             if (x) {
-                                console.log('ping found token');
+                                console.log('DATA ping found token');
                                 const mx = that.sclients.filter(v => {
                                     const m = v['machineId'] as IMachineClientID;
                                     if (m) {
@@ -159,22 +159,27 @@ export class SocketServerZDM8 {
                                 if (mx.length > 1) {
                                     mx.forEach(v => v.end());
                                     socket.end();
-                                    console.log('duplicated !');
+                                    console.log('DATA duplicated !');
                                     return;
                                 } else if (!mx.length) {
                                     socket.end();
-                                    console.log('re-login PLEASE!');
+                                    console.log('DATA re-login PLEASE!');
                                     return;
                                 }
-                                console.log(' Update status here ');
+                                console.log('DATA  Update status here ');
 
                                 return;
                             } else {
                                 socket.end();
 
-                                console.log(' not exist machine id ');
+                                console.log('DATA  not exist machine id ');
                                 return;
                             }
+                        }else if(Object.keys(EZDM8_COMMAND).includes(d.command)){
+                            console.log('DATA response from the machine');
+                            console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
+                            
+                                return ;
                         }
                         socket.end();
 
