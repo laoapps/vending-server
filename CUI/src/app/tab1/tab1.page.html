@@ -37,7 +37,7 @@
     <ion-row *ngFor="let sl of saleList; index as i" >
       <ion-col  size="{{smode==2?6:4}}"  *ngFor="let s of sl; index as  sl_i ">
         <ion-item-divider>
-          <ion-label>{{sl_i+i}}#. {{s.machineId}}::{{s.position}} </ion-label>
+          <ion-label>{{s.position}}#. {{s.machineId}} </ion-label>
         </ion-item-divider>
         <ion-card>
           <ion-item>

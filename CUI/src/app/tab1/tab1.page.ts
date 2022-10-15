@@ -227,8 +227,9 @@ export class Tab1Page {
     this.vendingOnSale.forEach((v, i) => {
       if (i == this.smode) {
         x.push(this.vendingOnSale.slice(0, i));
-      } else {
-        if (!(i % this.smode)) x.push(this.vendingOnSale.slice(i - this.smode, i))
+      } else if (!(i % this.smode)){ x.push(this.vendingOnSale.slice(i - this.smode, i))
+      }else if(i==this.vendingOnSale.length-1){
+        x.push(this.vendingOnSale.slice(this.vendingOnSale.length- this.smode))
       }
 
     })
