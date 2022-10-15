@@ -69,12 +69,20 @@ export class SocketClientZDM8 {
 
             const param = d.data;
 
-            const c = await that.m.command(d.command as any, param,d.transactionID)
-            this.send(c,d.transactionID, d.command as any);
+            that.m.command(d.command as any, param,d.transactionID).then(r=>{
+                console.log('command completed');
+                
+                this.send(r,d.transactionID, d.command as any);
+            }).catch(e=>{
+                console.log('command error',e);
+                
+                this.send(e,d.transactionID, d.command as any);
+            })
+            
             console.log('response',d.command, d);
         });
         this.client.on('error', function (data) {
-            console.log('Data from server:' + data);
+            console.log('error:' + data);
         });
         // this.client.on('end', function (data) {
         //     console.log('Data from server:' + data);
