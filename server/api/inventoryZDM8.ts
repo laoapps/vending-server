@@ -89,13 +89,16 @@ export class InventoryZDM8 {
                             const x = this.vendingOnSale.find(vx => {
                                 if (!checkIds.length 
                                     && vx.stock.id + '' == v.stock.id + ''
+                                    && vx.position == v.position
                                     && vx.stock.qtty >= v.stock.qtty
                                     && vx.stock.qtty > 0) {
                                     return true;
                                 }
                                 else if (vx.stock.qtty > 0
-                                    && vx.stock.qtty >= v.stock.qtty
+                                    && vx.stock.id + '' == v.stock.id + ''
                                     && vx.position == v.position
+                                    && vx.stock.qtty >= v.stock.qtty
+                                    && vx.stock.qtty > 0
                                     && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
                                         return a + b.stock.qtty;
                                     }, 0) <= vx.stock.qtty) {

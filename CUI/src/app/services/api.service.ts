@@ -57,8 +57,9 @@ export class ApiService {
       const message = 'processing slot ' + r.position.position + `==>${r.position.status}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
 
 
-      const x=r?.bill?.vendingsales?.find(v => { this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position && r.position.position == v.position);
-      });
+      const x=this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id  && r.position.position == vx.position));
+      console.log('X',x,r.position);
+      
       if (x && r.position.status) {
         x.stock.qtty--;
         // PLAY SOUNDS
