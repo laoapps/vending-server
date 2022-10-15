@@ -78,8 +78,8 @@ export class SocketServerZDM8 {
                         console.log('Bytes written : ' + bwrite);
                         // console.log('Data sent to server : ' + data);
                         console.log('Data sent to server : ' + data.toString());
-
-                        const d = JSON.parse(data.toString()) as IReqModel;
+                        const l=data.toString().substring(0,data.toString().length-1)
+                        const d = JSON.parse(l) as IReqModel;
 
                         console.log('total connection', that.sclients.length);
                         if (d.command == EMACHINE_COMMAND.login) {
@@ -363,7 +363,7 @@ export class SocketServerZDM8 {
                 res.status = 1;
                 res.data = { slot: position };
                 console.log('writing...', x['machineId']);
-                return { position, status: x.write(JSON.stringify(res)) };
+                return { position, status: x.write(JSON.stringify(res)+'\n') };
             } else {
                 console.log('client id socket not found');
                 const data = `${machineId}-${position}-${transactionID}`

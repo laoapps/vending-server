@@ -46,7 +46,7 @@ export class SocketClientZDM8 {
 
 
             // writing data to server
-            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }));
+            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token })+'\n');
 
         });
 
@@ -65,7 +65,10 @@ export class SocketClientZDM8 {
             // }
             // console.log(d.command, d);
             console.log('Data from server:' + data);
-            const d = JSON.parse(data.toString()) as IResModel;
+            const l=data.toString().substring(0,data.toString().length-1)
+            const d = JSON.parse(l) as IResModel;
+
+
 
             const param = d.data;
 
@@ -106,7 +109,7 @@ export class SocketClientZDM8 {
             req.token = that.token;
             req.time = new Date().getTime() + '';
             req.command = EMACHINE_COMMAND.ping;
-            that.client.write(JSON.stringify(req));
+            that.client.write(JSON.stringify(req)+'\n');
         }, 5000);
     }
     send(data: any,transactionID:number, command = EMACHINE_COMMAND.status) {
@@ -116,7 +119,9 @@ export class SocketClientZDM8 {
         req.token = this.token;
         req.data = data;
         req.transactionID=transactionID
-        this.client.write(JSON.stringify(req));
+        this.client.write(JSON.stringify(req)+'\n',e=>{
+            console.log('error on send',e);
+        });
     }
     close() {
         this.client.end();
