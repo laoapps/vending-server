@@ -189,8 +189,11 @@
         // CHECK HARDWARE VERSION 
         // const buff = ['01', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '71', '88'];
         // 
+        let check ='';
         const buff =['01', '05', int2hex(1), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
-        port.write(Buffer.from(buff.join(''), 'hex'), (e) => {
+        check =checkSum(buff)
+        const x = buff.join('') + check;
+        port.write(Buffer.from(x, 'hex'), (e) => {
             if (e) {
                  console.log('Error: ', e.message)
             } else {

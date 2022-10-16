@@ -128,8 +128,11 @@ var port = new serialport_1.SerialPort({ path: path, baudRate: 9600 }, function 
     // CHECK HARDWARE VERSION 
     // const buff = ['01', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '71', '88'];
     // 
+    var check = '';
     var buff = ['01', '05', int2hex(1), '02', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
-    port.write(Buffer.from(buff.join(''), 'hex'), function (e) {
+    check = checkSum(buff);
+    var x = buff.join('') + check;
+    port.write(Buffer.from(x, 'hex'), function (e) {
         if (e) {
             console.log('Error: ', e.message);
         }
