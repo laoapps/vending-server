@@ -1,6 +1,6 @@
 
 
-import { KiosServer } from './api/kios';
+import { KiosServer } from './api/kios.essp';
 import { SocketKiosClient } from './api/socketClient.kios';
 
 
