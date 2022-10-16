@@ -172,13 +172,13 @@
 
 
         var b = '';
-        // port.on('data', function (data: any) {
-        //     console.log('data', data);
-        //     b += new String(data);
-        //     console.log('buffer', b);
+        port.on('data', function (data: any) {
+            console.log('data', data);
+            b += new String(data);
+            console.log('buffer', b);
 
 
-        // });
+        });
         function int2hex(i: number) {
             const str = Number(i).toString(16);
             return str.length === 1 ? '0' + str : str;
