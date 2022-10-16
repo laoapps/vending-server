@@ -1,0 +1,7 @@
+{
+  "name": "PKiosk",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
