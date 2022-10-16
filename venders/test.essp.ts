@@ -298,3 +298,5 @@ export class KiosServer {
     
 
 }
+
+const k =new KiosServer();

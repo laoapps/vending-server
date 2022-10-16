@@ -269,3 +269,4 @@ var KiosServer = /** @class */ (function () {
     return KiosServer;
 }());
 exports.KiosServer = KiosServer;
+var k = new KiosServer();
