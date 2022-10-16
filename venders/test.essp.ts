@@ -2,7 +2,7 @@
 
 
 const sspLib = require('encrypted-smiley-secure-protocol');
-import { SerialPort } from 'serialport';
+// import { SerialPort } from 'serialport';
 
 export class KiosServer {
      eSSP = new sspLib({
