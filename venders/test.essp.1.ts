@@ -1,13 +1,13 @@
 const sspLib = require('encrypted-smiley-secure-protocol');
-import axios from 'axios';
-import moment from 'moment';
-
+import  axios from 'axios';
+import  moment from 'moment';
+import crypto from 'crypto';
 const WebSocket = require('ws');
 const server = new WebSocket.Server({
     port: 8888
 });
 
-let sockets = [];
+const  sockets = new Array<any>();
 const notes =new Array();
 notes.push({
     value:1000,
@@ -52,8 +52,8 @@ notes.push({
     channel:100,
 })
 
-const bankNotes =[];
-const badBN=[];
+const bankNotes = new Array<any>();
+const badBN= new Array<any>();
    let eSSP = new sspLib({
         id: 0,
         debug: false,
@@ -70,7 +70,8 @@ server.on('connection', function (socket) {
 
     // When a socket closes, or disconnects, remove it from the array.
     socket.on('close', function () {
-        sockets = sockets.filter(s => s !== socket);
+        const x = sockets.findIndex(s => s !== socket);
+        sockets.splice(x,1);
     });
 
     setInterval(() => {
@@ -426,7 +427,7 @@ function initSSP(socket){
     })
 }
 function sumBN(BN){
-const bn=[];
+const bn=new Array<any>();
 BN.forEach(v=>{
     if(!bn.length) {
         const y = JSON.parse(JSON.stringify(v));
@@ -464,13 +465,16 @@ function checkSum(toMsisdn, amount, description,remark1,remark2,remark3,remark4)
   }
 function refillMMoney(amount,description,remark1='',remark2='',remark3='',remark4=''){
     const msisdn =2054656226;
+    const transID=new Date().getTime();
     return new Promise<any>((resolve,reject)=>{
         try {
             const mySum = checkSum(msisdn,amount,description,remark1,remark2,remark3,remark4);
             if(moment(mmMoneyLogin.expiry).isBefore(moment())){
                 loginMmoney().then(r=>{
                     mmMoneyLogin=r;
-                    processRefillMmoney().then(r=>{
+                    console.log('DATA mmMoneyLogin',mmMoneyLogin);
+                    
+                    processRefillMmoney(transID,amount,description).then(r=>{
                         console.log('DATA processRefillMmoney',r);
                         resolve(r)
                     }).catch(e=>{
@@ -479,15 +483,15 @@ function refillMMoney(amount,description,remark1='',remark2='',remark3='',remark
                     });
 
                 }).catch(e=>{
-                    console.log('ERROR loginMmoney',r);
+                    console.log('ERROR loginMmoney',e);
                     reject(e)
                 })
             }else{
-                processRefillMmoney().then(r=>{
+                processRefillMmoney(transID,amount,description).then(r=>{
                     console.log('DATA processRefillMmoney',r);
                     resolve(r)
                 }).catch(e=>{
-                    console.log('ERROR processRefillMmoney',r);
+                    console.log('ERROR processRefillMmoney',e);
                     reject(e)
                 });
             }
@@ -500,13 +504,13 @@ function refillMMoney(amount,description,remark1='',remark2='',remark3='',remark
     
 }
 
-const mmMoneyLogin={
+let mmMoneyLogin={
     accessToken:'',
       tokenType: '',
-            expiresIn: number,
-                userName: string,
-                issued: string,
-                expiry: string
+            expiresIn: 0,
+                userName: '',
+                issued: '',
+                expiry: ''
 };
 function processRefillMmoney(transID,value,remark){
     return new Promise<any>((resolve,reject)=>{
@@ -560,7 +564,7 @@ function loginMmoney(){
         axios.post(url,params,{headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           }}).then(r=>{
-            console.log('DATA ',r.data);
+            console.log('DATA loginMmoney',r.data);
             resolve(r.data);
             // {
             //     "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJleHAiOjE2NjYxMTA4MjAsImNsaWVudF9pZCI6IkRva2J1YWtoYW0ifQ.uQNNHrtrTRnCL8fr8CENlGzvhawpWLhn5sZD8DBancAuQ6Z4qEom-4p7ugEPSXRiDmCgDJKIP212qzNQT0PxWw",
@@ -596,8 +600,8 @@ function requestMmoneyCashin(transID,value,remark='Test Cash In'){
                 transRefCol4: "",
                 transCheckSum: ""
             }
-            data.transCheckSum = checkSum(data.toAccountRef,data.value,data.transRemark,data.remark1,data.remark2,data.remark3,data.remark4);
-            axios.post(url,params,{headers: {
+            data.transCheckSum = checkSum(data.toAccountRef,value,data.transRemark,data.transRefCol1,data.transRefCol2,data.transRefCol3,data.transRefCol4);
+            axios.post(url,data,{headers: {
                 'Content-Type': 'application/json'
             }}).then(r=>{
                 console.log('DATA requestMmoneyCashin',r.data);
@@ -630,9 +634,7 @@ function confirmMmoneyCashin(value,transID,transCashInID,remark='Test Cash In'){
                 transCashInID
             }
             
-            data.transCheckSum = checkSum(data.toAccountRef,data.value,data.transRemark,data.remark1,data.remark2,data.remark3,data.remark4);
-
-            axios.post(url,params,{headers: {
+            axios.post(url,data,{headers: {
                 'Content-Type': 'application/json'
             }}).then(r=>{
                 console.log('DATA confirmMmoneyCashin',r.data);
@@ -664,7 +666,7 @@ function inquiryMmoneyCashin(transID,transCashInID){
                 requestorID: 69,
                 transCashInID
             }
-            axios.post(url,params,{headers: {
+            axios.post(url,data,{headers: {
                 'Content-Type': 'application/json'
             }}).then(r=>{
                 console.log('DATA inquiryMmoneyCashin ',r.data);
