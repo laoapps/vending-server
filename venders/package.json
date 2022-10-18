@@ -1,24 +1,19 @@
 {
   "dependencies": {
     "@types/buffer-xor": "^2.0.0",
-
     "@types/cors": "^2.8.12",
     "@types/crypto-js": "^4.1.1",
     "@types/elliptic": "^6.4.14",
-
     "@types/redis": "^4.0.11",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "axios": "^0.27.2",
     "buffer-xor": "^2.0.2",
-
-
     "crc": "^4.1.1",
-
     "crypto-js": "^4.1.1",
     "elliptic": "^6.5.4",
     "encrypted-smiley-secure-protocol": "^0.0.11",
-
+    "moment": "^2.29.4",
     "redis": "^4.2.0",
     "request-ip": "^3.3.0",
     "sequelize": "^6.21.3",
@@ -28,6 +23,5 @@
   },
   "devDependencies": {
     "@types/node": "^18.8.3"
-
   }
 }
