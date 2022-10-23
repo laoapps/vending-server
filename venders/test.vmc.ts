@@ -28,7 +28,6 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         if (b == 'fafb410040') {// POLL
             buff = checkCommandsForSubmission();
             if (buff.length) {
-                buff.push(chk8xor(buff))
                 let x = buff.join('');
                 console.log('x command', x);
                 port.write(Buffer.from(x, 'hex'), (e) => {
@@ -67,7 +66,9 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     // const commands = [['fa', 'fb', '63', '01']]
     const commands = [['fa', 'fb', '08', '00']]
     function checkCommandsForSubmission() {
-        return commands[0] || [];
+        const x = JSON.parse(JSON.stringify(commands[0]));
+        x.push(chk8xor(x))
+        return x;
     }
     function int2hex(i: number) {
         const str = Number(i).toString(16);
