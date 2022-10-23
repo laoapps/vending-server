@@ -111,8 +111,10 @@ export function xORChecksum(array = new Array<any>()) {
 export function chk8xor(byteArray = new Array<any>()) {
     let checksum = 0x00
     for (let i = 0; i < byteArray.length - 1; i++)
-        checksum ^=parseInt(byteArray[i].replace(/^#/, ''), 16)
-    return checksum.toString(16)
+        checksum ^= parseInt(byteArray[i].replace(/^#/, ''), 16)
+    const x =checksum.toString(16);
+    if(x.length==1)return '0'+x;
+    return x;
 }
 
 function toHex(str: string) {
