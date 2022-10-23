@@ -13,7 +13,7 @@ import { chk8xor } from './services/service';
     // /dev/tty      /dev/ttyS0  /dev/ttyS2  /dev/ttyS4    /dev/ttyUSB1  /dev/ttyUSB3
     // /dev/ttyFIQ0  /dev/ttyS1==> ok  /dev/ttyS3  /dev/ttyUSB0  /dev/ttyUSB2  /dev/ttyUSB4
     const path = '/dev/ttyS1';
-    const port = new SerialPort({ path: path, baudRate: 9600 }, function (err) {
+    const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         if (err) {
             return console.log('Error: ', err.message)
         }
