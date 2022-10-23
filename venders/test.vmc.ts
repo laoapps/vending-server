@@ -69,7 +69,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         buff.push(chk8xor(buff));
         return buff;
     }
-    const commands = [['fa', 'fb', '03', '03', '00', '01']]
+    const commands = [['fa', 'fb', '03', '03', '01', '01']]
     function checkCommandsForSubmission() {
         return commands.shift() || [];
     }
