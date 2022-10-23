@@ -111,7 +111,7 @@ export function xORChecksum(array = new Array<any>()) {
 export function chk8xor(byteArray = new Array<any>()) {
     let checksum = 0x00
     for (let i = 0; i < byteArray.length - 1; i++)
-        checksum ^= byteArray[i]
+        checksum ^=parseInt(byteArray[i].replace(/^#/, ''), 16)
     return checksum.toString(16)
 }
 
