@@ -55,7 +55,9 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         }
         b='';
     });
+    let isACK=false;
     function getACK() {
+        isACK=true;
         let buff = ['fa', 'fb'];
         buff.push('42');
         buff.push('00'); // default length 00
@@ -66,8 +68,13 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     // const commands = [['fa', 'fb', '63', '01']]
     // const commands = [['fa', 'fb', '08', '00']]
     // Selection Test
-    const commands = [['fa', 'fb', '38', '01', '00', '01']]
+    // const commands = [['fa', 'fb', '38', '01', '00', '01']]
+     // Read machineID
+    //  const commands = [['fa', 'fb', '08', '00']]
+
+    const commands = [['fa', 'fb', '06', '05','01','00','00','00','01']]
     function checkCommandsForSubmission() {
+        isACK=false;
         const x = JSON.parse(JSON.stringify(commands[0]));
         x.push(chk8xor(x))
         return x;
