@@ -1,5 +1,5 @@
-import net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import * as net from 'net';
+import { EM102_COMMAND, EMACHINE_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 import { VendingVMC } from './vendingVMC';
 export class SocketClientVMC {
@@ -9,15 +9,17 @@ export class SocketClientVMC {
     client = new net.Socket();
     port = 2222;
     host = 'laoapps.com';
-    machineid = '123456';
+    machineid = '77777777';
     otp = '111111';
     token = '';
-    t:any;
+    t: any;
     m: VendingVMC;
+
+    maxRetryReboot=5*60*1000;/// 5 minutes
     constructor() {
         this.m = new VendingVMC(this);
         this.init();
-        this.token = cryptojs.SHA256(this.machineid + this.otp).toString(CryptoJS.enc.Hex)
+        this.token = cryptojs.SHA256(this.machineid + this.otp).toString(cryptojs.enc.Hex)
     }
     init() {
         const that = this;
@@ -25,7 +27,10 @@ export class SocketClientVMC {
             port: this.port,
             host: this.host
         });
-        if(this.t)this.t=null;
+        if (this.t) {
+            clearInterval(this.t);
+            this.t = null;
+        }
         this.client.on('connect', function () {
             // console.log('Client: connection established with server');
 
@@ -36,63 +41,92 @@ export class SocketClientVMC {
             // var ipaddr = address.address;
             // console.log('Client is listening at port' + port);
             // console.log('Client ip :' + ipaddr);
+
             // console.log('Client is IP4/IP6 : ' + family);
 
 
             // writing data to server
-            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }));
+            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token })+'\n');
 
         });
 
         this.client.setEncoding('utf8');
 
-        this.client.on('data', function (data) {
-            console.log('Data from server:' + data);
-            const d = JSON.parse(data.toString()) as IResModel;
+        this.client.on('data', async (data) => {
 
-            const req = {} as IReqModel;
-            if (d.command == 'ping') {
-                req.command = 'ping';
-                req.token = that.token;
-                req.time = new Date().getTime() + '';
-            } else if (d.command == EZDM8_COMMAND.shippingcontrol || d.command == EM102_COMMAND.release) {
 
-            } else if (d.command == EZDM8_COMMAND.status || d.command == EM102_COMMAND.readtemperature) {
+            // if (d.command == 'ping') {
+            //     that.send([], d.command as any);
+            // }
+            // else {
+            //     const param = d.data;
+            //     const c = await that.m.command(d.command as any, param)
+            //     this.send(c, d.command as any);
+            // }
+            // console.log(d.command, d);
+            console.log('DATA from server:' + data);
+            const l=data.toString().substring(0,data.toString().length-1)
+            const d = JSON.parse(l) as IResModel;
 
-            } else if (d.command == EZDM8_COMMAND.statusgrid || d.command == EM102_COMMAND.scan) {
 
-            }
-            console.log(d.command, d);
 
+            const param = d.data;
+
+            that.m.command(d.command as any, param,d.transactionID).then(r=>{
+                console.log('DATA command completed');
+                
+                this.send(r,d.transactionID, d.command as any);
+            }).catch(e=>{
+                if(e){
+                    console.log('DATA command error',e);
+                
+                    this.send(e,d.transactionID, d.command as any);
+                }
+                
+            })
+            
+            console.log('DATA response',d.command, d);
         });
-        this.client.on('error', function (data) {
-            console.log('Data from server:' + data);
-            that.client.end();
-            that.init();
+        this.client.on('error', function (e) {
+            if(e)
+            console.log('ERROR error:' + e);
         });
-        this.client.on('end', function (data) {
-            console.log('Data from server:' + data);
-            that.init();
+        // this.client.on('end', function (data) {
+        //     console.log('Data from server:' + data);
+        //     setTimeout(() => {
+        //         that.init();
+        //     }, 3000);
+        // });
+        this.client.on('close', function (data) {
+            console.log('CLOSE on close:' + data);
+            setTimeout(() => {
+                that.client.destroy();
+                that.client = new net.Socket();
+                that.init();
+            }, 3000);
         });
 
-       this.t= setInterval(function () {
+
+        this.t = setInterval(function () {
             // this.client.end('Bye bye server');
             const req = {} as IReqModel;
             req.token = that.token;
             req.time = new Date().getTime() + '';
-            that.client.write(JSON.stringify(req));
-        }, 60000 * 5);
-
+            req.command = EMACHINE_COMMAND.ping;
+            that.client.write(JSON.stringify(req)+'\n');
+        }, 5000);
     }
-   
-    send(data: any,transactionID:number,command=EMACHINE_COMMAND.status) {
+    send(data: any,transactionID:number, command = EMACHINE_COMMAND.status) {
         const req = {} as IReqModel;
         req.command = command;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
-        req.transactionID = transactionID;
-        this.client.write(JSON.stringify(req));
+        req.transactionID=transactionID
+        this.client.write(JSON.stringify(req)+'\n',e=>{
+            if(e)
+            console.log('SEND error on send',e);
+        });
     }
     close() {
         this.client.end();

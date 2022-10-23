@@ -23,7 +23,7 @@ function checkSum(toMsisdn, amount, description,remark1,remark2,remark3,remark4)
 
     const input_str = `REF,${toMsisdn},${amount},LAK,${description},${remark1},${remark2},${remark3},${remark4},ltc`;
   
-    //const input_str = "REF,2055220199,1000,LAK,,,,,,ltc";
+    // const input_str = "REF,2055220199,1000,LAK,,,,,,ltc";
     const hash = crypto.createHash("sha256").update(input_str).digest("base64");
   
     return hash;

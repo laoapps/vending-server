@@ -102,7 +102,7 @@ function initSSP(socket){
                     console.log('DISPLAY_ON', result.info)
                 }
             })
-            .then(() => eSSP.enable())
+            
             .then(result => {
                 if (result.status == 'OK') {
                     console.log('Device is active')
@@ -116,7 +116,7 @@ function initSSP(socket){
                     console.log('SETUP_REQUEST request', result.info)
                 }
                 return;
-            })
+            }).then(() => eSSP.enable())
             // .then(() => eSSP.command('SET_CHANNEL_INHIBITS',{channels:[1,1,1,1,1,1,1]})
             // .then(result => {
             //     if (result.status == 'OK') {

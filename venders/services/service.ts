@@ -14,14 +14,14 @@ export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
 
-export function PrintSucceeded(command: string, data: any, message: string,transactionID:number=-1, code: string = '0'): IResModel {
+export function PrintSucceeded(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
     return {
-        command, data, message, code, status: 1,transactionID
+        command, data, message, code, status: 1, transactionID
     } as IResModel;
 }
-export function PrintError(command: string, data: any, message: string,transactionID:number=-1, code: string = '0'): IResModel {
+export function PrintError(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
     return {
-        command, data: data, message, code, status: 0,transactionID
+        command, data: data, message, code, status: 0, transactionID
     } as IResModel;
 }
 export function broadCast(wss: WebSocketServer.WebSocketServer, comm: string, r: any, delay: boolean = false) {
@@ -108,9 +108,28 @@ export function xORChecksum(array = new Array<any>()) {
         checksum ^ parseInt(item, 16)
         , 0)
 }
-export function  chk8xor(byteArray=new Array<any>()) {
+export function chk8xor(byteArray = new Array<any>()) {
     let checksum = 0x00
-    for(let i = 0; i < byteArray.length - 1; i++)
-      checksum ^= byteArray[i]
-    return Number(checksum.toString(16))
-  }
+    for (let i = 0; i < byteArray.length - 1; i++)
+        checksum ^= byteArray[i]
+    return checksum.toString(16)
+}
+
+function toHex(str: string) {
+    var result = '';
+    for (var i = 0; i < str.length; i++) {
+        result += str.charCodeAt(i).toString(16);
+    }
+    return result;
+}
+function fromHex(hex: string) {
+    let str='';
+    try {
+        str = decodeURIComponent(hex.replace(/(..)/g, '%$1'))
+    }
+    catch (e) {
+        str = hex
+        console.log('invalid hex input: ' + hex)
+    }
+    return str
+}

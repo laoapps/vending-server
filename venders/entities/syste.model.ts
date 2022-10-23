@@ -465,7 +465,9 @@ export const EESSP_COMMANDS = {
     }
 }
 export enum EVMC_COMMAND{
-    
+    _41='41', // poll 
+    _03='03', // select 
+    _28='28', // temperature
 }
 export enum EMACHINE_COMMAND{
     login='login',
