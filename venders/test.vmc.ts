@@ -24,10 +24,8 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     port.on('data', function (data: any) {
         b = data.toString('hex');
         console.log('buffer', b);
-        let buff = Array<string>();
-        if (b == 'fafb410040') {// POLL
-            buff = checkCommandsForSubmission();
-            if (buff.length) {
+        let buff = checkCommandsForSubmission()||Array<string>();
+        if (b == 'fafb410040'&&buff.length) {// POLL
                 let x = buff.join('');
                 console.log('x command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
                 port.write(Buffer.from(x, 'hex'), (e) => {
@@ -38,7 +36,6 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
                         // confirm by socket
                     }
                 })
-            }
         }
         else {
             // 0xfa 0xfb 0x42 0x00 0x43
@@ -75,7 +72,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     const commands = [['fa', 'fb', '06', '05','01','00','00','00','01']]
     function checkCommandsForSubmission() {
         isACK=false;
-        const x = JSON.parse(JSON.stringify(commands[0]));
+        const x = JSON.parse(JSON.stringify(commands[0]))as Array<string>;
         x.push(chk8xor(x))
         return x;
     }
