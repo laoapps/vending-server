@@ -26,6 +26,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         console.log('buffer', b);
         let buff = checkCommandsForSubmission()||Array<string>();
         if (b == 'fafb410040'&&buff.length) {// POLL
+
                 let x = buff.join('');
                 console.log('x command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
                 port.write(Buffer.from(x, 'hex'), (e) => {
@@ -52,16 +53,18 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         }
         b='';
     });
-    let isACK=false;
+    let isACK=true;
     function getACK() {
-        isACK=true;
+        isACK=false;
         let buff = ['fa', 'fb'];
         buff.push('42');
         buff.push('00'); // default length 00
         buff.push(chk8xor(buff));
         return buff;
     }
-    // const commands = [['fa', 'fb', '03', '03', '01', '01']]
+    //4.3.2 Upper computer selects to buy (Upper computer sends out)
+    const commands = [['fa', 'fb', '03', '03', '01','00', '01']]
+    
     // const commands = [['fa', 'fb', '63', '01']]
     // const commands = [['fa', 'fb', '08', '00']]
     // Selection Test
@@ -69,9 +72,10 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
      // Read machineID
     //  const commands = [['fa', 'fb', '08', '00']]
 
-    const commands = [['fa', 'fb', '06', '05','01','00','00','00','01']]
+    // const commands = [['fa', 'fb', '06', '05','01','00','00','00','01']]
     function checkCommandsForSubmission() {
-        isACK=false;
+        
+        isACK=true;
         const x = JSON.parse(JSON.stringify(commands[0]))as Array<string>;
         x.push(chk8xor(x))
         return x;
