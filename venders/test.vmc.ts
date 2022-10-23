@@ -24,7 +24,7 @@ import { chk8xor } from './services/service';
             console.log('data', data);
             b += new String(data);
             console.log('buffer', b);
-
+            b='';
 
         });
         function int2hex(i: number) {
