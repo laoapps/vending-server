@@ -43,7 +43,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
                             if(e){
                                 console.log('Error command',e.message);
                             }else{
-                                console.log('');
+                                console.log('WRITE COMMAND');
                             }
                         })
                     }else{
