@@ -22,7 +22,7 @@ import { chk8xor } from './services/service';
         var b = '';
         port.on('data', function (data: any) {
             console.log('data', data);
-            b += data.toString('16');
+            b += data.toString('hex');
             console.log('buffer', b);
             b='';
 
