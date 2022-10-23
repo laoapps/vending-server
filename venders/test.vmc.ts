@@ -31,7 +31,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
             if (buff.length) {
                 buff.push(chk8xor(buff))
                 let x = buff.join('');
-                console.log('x', x);
+                console.log('x command', x);
                 if (buff.length) {
                     port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
@@ -49,7 +49,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
                 // 0xfa 0xfb 0x42 0x00 0x43
                 buff = getACK();
                 let x = buff.join('')
-                console.log('x', x);
+                console.log('x ACK', x);
                 port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
                         console.log('Error: ', e.message)
