@@ -62,9 +62,11 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         buff.push(chk8xor(buff));
         return buff;
     }
-    const commands = [['fa', 'fb', '03', '03', '01', '01']]
+    // const commands = [['fa', 'fb', '03', '03', '01', '01']]
     // const commands = [['fa', 'fb', '63', '01']]
     // const commands = [['fa', 'fb', '08', '00']]
+    // Selection Test
+    const commands = [['fa', 'fb', '38', '01', '00', '01']]
     function checkCommandsForSubmission() {
         const x = JSON.parse(JSON.stringify(commands[0]));
         x.push(chk8xor(x))
