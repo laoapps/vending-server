@@ -29,12 +29,12 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
             buff = checkCommandsForSubmission();
             if (buff.length) {
                 let x = buff.join('');
-                console.log('x command', x,(Buffer.from(x, 'hex')));
+                console.log('x command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
                 port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
                         console.log('Error command', e.message);
                     } else {
-                        console.log('WRITE COMMAND succeeded');
+                        console.log('WRITE COMMAND succeeded',new Date().getTime());
                         // confirm by socket
                     }
                 })
