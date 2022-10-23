@@ -64,7 +64,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     }
     //4.3.2 Upper computer selects to buy (Upper computer sends out)
     const commands = [['fa', 'fb', '03', '03', '01','00', '01']]
-    
+
     // const commands = [['fa', 'fb', '63', '01']]
     // const commands = [['fa', 'fb', '08', '00']]
     // Selection Test
@@ -118,6 +118,20 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     //     }
     // })
 
+    // fafb
+    // 52 // 
+    // 21 // length
+    // c4 // communication number
+    // 01 // bill acceptor status
+    // 01 // coin acceptor status
+    // 00 // card reader status
+    // 00 // temperature controll status
+    // 00 // temperature 
+    // 00 // door status
+    // 00000000 // bill change
+    // 00000000 // coin change
+    // 30303030303030303030 // machine ID
+    // aaaaaaaaaaaaaaaab6
 
 })
 
