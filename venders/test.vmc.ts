@@ -20,31 +20,51 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     console.log(`port ${path} accessed`);
 
     var b = '';
+    
     port.on('data', function (data: any) {
         b += data.toString('hex');
         console.log('buffer', b);
         if (b == 'fafb410040') {// POLL
             // 0xfa 0xfb 0x42 0x00 0x43
-            let check = '';
-            const buff = ['fa', 'fb'];
-            buff.push('42');
-            buff.push('00'); // default length 00
-            buff.push(chk8xor(buff))
-            let x = buff.join('') + check;
+            let buff = getACK();
+            let x = buff.join('')
             console.log('x',x);
             port.write(Buffer.from(x, 'hex'), (e) => {
                 if (e) {
                     console.log('Error: ', e.message)
                 } else {
-                    console.log('write succeeded');
+                    console.log('write ACK succeeded');
+                    buff =checkCommandsForSubmission();
+                    buff.push(chk8xor(buff))
+                    let x = buff.join('') + check;
+                    console.log('x',x);
+                    if(buff.length){
+                        port.write(Buffer.from(x, 'hex'), (e) => {
+                            if(e){
+                                console.log('Error command',e.message);
+                            }else{
+                                console.log('');
+                            }
+                        })
+                    }else{
+                        console.log('No Commands');
+                    }
                 }
             })
         }
-
         b = '';
-
-
     });
+    function getACK(){
+        let  buff = ['fa', 'fb'];
+        buff.push('42');
+        buff.push('00'); // default length 00
+        buff.push(chk8xor(buff));
+        return buff;
+    }
+    const commands =[['fa','fb','03','03','00','01']]
+    function checkCommandsForSubmission(){
+        return commands.shift()||[];
+    }
     function int2hex(i: number) {
         const str = Number(i).toString(16);
         return str.length === 1 ? '0' + str : str;
