@@ -29,7 +29,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
             buff = checkCommandsForSubmission();
             if (buff.length) {
                 let x = buff.join('');
-                console.log('x command', x);
+                console.log('x command', x,(Buffer.from(x, 'hex')));
                 port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
                         console.log('Error command', e.message);
@@ -44,7 +44,7 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
             // 0xfa 0xfb 0x42 0x00 0x43
             buff = getACK();
             let x = buff.join('')
-            console.log('x ACK', x);
+            console.log('x ACK', x,(Buffer.from(x, 'hex')));
             port.write(Buffer.from(x, 'hex'), (e) => {
                 if (e) {
                     console.log('Error: ', e.message)
@@ -62,9 +62,9 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         buff.push(chk8xor(buff));
         return buff;
     }
-    // const commands = [['fa', 'fb', '03', '03', '01', '01']]
+    const commands = [['fa', 'fb', '03', '03', '01', '01']]
     // const commands = [['fa', 'fb', '63', '01']]
-    const commands = [['fa', 'fb', '08', '00']]
+    // const commands = [['fa', 'fb', '08', '00']]
     function checkCommandsForSubmission() {
         const x = JSON.parse(JSON.stringify(commands[0]));
         x.push(chk8xor(x))
