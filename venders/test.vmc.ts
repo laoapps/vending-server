@@ -22,45 +22,39 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     var b = '';
 
     port.on('data', function (data: any) {
-        b += data.toString('hex');
+        b = data.toString('hex');
         console.log('buffer', b);
+        let buff = Array<string>();
         if (b == 'fafb410040') {// POLL
-            
-            let buff = Array<string>();
             buff = checkCommandsForSubmission();
             if (buff.length) {
                 buff.push(chk8xor(buff))
                 let x = buff.join('');
                 console.log('x command', x);
-                if (buff.length) {
-                    port.write(Buffer.from(x, 'hex'), (e) => {
-                        if (e) {
-                            console.log('Error command', e.message);
-                        } else {
-                            console.log('WRITE COMMAND succeeded');
-                            // confirm by socket
-                        }
-                    })
-                } else {
-                    console.log('No Commands');
-                }
-            }
-            else {
-                // 0xfa 0xfb 0x42 0x00 0x43
-                buff = getACK();
-                let x = buff.join('')
-                console.log('x ACK', x);
                 port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
-                        console.log('Error: ', e.message)
+                        console.log('Error command', e.message);
                     } else {
-                        console.log('write ACK succeeded');
+                        console.log('WRITE COMMAND succeeded');
+                        // confirm by socket
                     }
                 })
             }
-
         }
-        b = '';
+        else {
+            // 0xfa 0xfb 0x42 0x00 0x43
+            buff = getACK();
+            let x = buff.join('')
+            console.log('x ACK', x);
+            port.write(Buffer.from(x, 'hex'), (e) => {
+                if (e) {
+                    console.log('Error: ', e.message)
+                } else {
+                    console.log('write ACK succeeded');
+                }
+            })
+        }
+        b='';
     });
     function getACK() {
         let buff = ['fa', 'fb'];
@@ -70,7 +64,8 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         return buff;
     }
     // const commands = [['fa', 'fb', '03', '03', '01', '01']]
-    const commands = [['fa', 'fb', '63', '01']]
+    // const commands = [['fa', 'fb', '63', '01']]
+    const commands = [['fa', 'fb', '08', '00']]
     function checkCommandsForSubmission() {
         return commands[0] || [];
     }
@@ -84,12 +79,12 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     // CHECK HARDWARE VERSION 
     // const buff = ['01', '01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '71', '88'];
     // 
-    let check = '';
-    const buff = ['fa', 'fb'];
-    buff.push('41');
-    buff.push('00'); // default length 00
-    buff.push(chk8xor(buff))
-    let x = buff.join('') + check;
+    // let check = '';
+    // const buff = ['fa', 'fb'];
+    // buff.push('41');
+    // buff.push('00'); // default length 00
+    // buff.push(chk8xor(buff))
+    // let x = buff.join('') + check;
 
 
     // buff.push('03');
