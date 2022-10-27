@@ -1,28 +1,123 @@
 import { Injectable } from '@angular/core';
+import { environment } from 'src/environments/environment';
+import { IAlive, IBankNote, IBillBankNote, IBillCashIn, IClientId, IMachineId, IMMoneyRequestRes, IResModel } from './syste.model';
 import { WsapiServiceService } from './wsapi-service.service';
-
+import * as moment from 'moment';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ModalController, ToastController } from '@ionic/angular';
+import * as cryptojs from 'crypto-js'
+import { BehaviorSubject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
 export class ApiServiceService {
-  machine = {bankNotes: [], badBN: [], notes:[]} as { bankNotes: Array<any>, badBN: Array<any>, notes: Array<any> };
-  constructor(public wsApiService: WsapiServiceService) {
-    this.wsApiService.dataSubscription.subscribe(v => {
-      console.log('v', v);
+  wsurl = environment.wsurl;
+  url = environment.url;
+  machineId = {} as IMachineId;
+  clientId = {} as IClientId;
+  wsAlive = {} as IAlive;
+  // machine = {bankNotes: [], badBN: []} as { bankNotes: Array<IBankNote>, badBN: Array<IBankNote>};
+  billCashIn=Array<IBillCashIn>();
+  timer = { t: 30 };
+  t: any;
 
-      if (v) {
-        this.machine.badBN.length=0;
-        this.machine.badBN.push(...v.badBN);
-        this.machine.bankNotes.length=0;
-        this.machine.bankNotes.push(...v.bankNotes);
-        this.machine.notes.length=0;
-        this.machine.notes.push(...v.notes);
+  mMoneyRequestor = {} as IMMoneyRequestRes;
+
+  accountInfoSubcription = new BehaviorSubject<any>(null);
+  constructor(public wsapi: WsapiServiceService,
+    public http: HttpClient,
+    public toast: ToastController,
+    public modal: ModalController) {
+
+    // this.zone.runOutsideAngular(() => {
+    this.machineId.machineId = '12345678';
+    this.machineId.otp = '111111';
+    this.wsapi.aliveSubscription.subscribe(r => {
+      if (!r) return console.log('empty');
+      console.log('ws alive subscription', r);
+      this.wsAlive.time = new Date();
+      this.wsAlive.isAlive = this.checkOnlineStatus();
+
+    });
+    this.wsapi.refreshSubscription.subscribe(r => {
+      if (r) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       }
 
     })
-    this.wsApiService.connect();
+    this.wsapi.loginSubscription.subscribe(v => {
+      console.log('v', v);
+      if (v) {
+        this.clientId = v;
+        if (v.billCashIn) {
+          // this.billCashin.badBankNotes.length=0;
+          const x = v.billCashIn;
+          console.log('x',x);
+          this.billCashIn.push(x);
+          this.closeModal();
+
+        }
+      }
+
+    })
+    this.wsapi.billBankNoteSubscription.subscribe(v => {
+      console.log('v', v);
+
+      if (v) {
+        // this.billCashin.badBankNotes.length=0;
+        Object.keys(v).forEach(k => {
+          this.billCashIn[k] = v[k];
+        })
+
+      }
+    })
+
+
+  }
+  connectWS() {
+    const transID = this.mMoneyRequestor.transID;
+    this.wsapi.connect(this.wsurl, transID, this.machineId.machineId, this.machineId.otp);
+  }
+  closeWS() {
+    this.wsapi.closeWS();
+  }
+  setCounter() {
+    if (this.t) {
+      clearInterval(this.t);
+      this.t = null;
+      this.timer.t = 30;
+    }
+    this.t = setInterval(() => {
+      this.timer.t--;
+    }, 1000);
+  }
+
+  showModal(component: any) {
+    return this.modal.create({ component, cssClass: 'dialog-fullscreen' });
+  }
+  closeModal() {
+    this.modal.getTop().then(v => v ? v.dismiss() : null)
+  }
+  public checkOnlineStatus() {
+    if (this.wsAlive) {
+      return (moment().get('milliseconds') - moment(this.wsAlive.time).get('milliseconds')) < 10 * 1000;
+    } else {
+      return false;
+    }
   }
   refresh() {
-    this.wsApiService.send('');
+    this.wsapi.send('');
+  }
+  loadBankNotes() {
+    return this.http.get<IResModel>(this.url + '/loadBankNotes');
+  }
+  validateMMoney(n: string) {
+    const token = cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
+    return this.http.post<IResModel>(this.url + '/validateMmoneyCashIn', {
+      token,
+      n
+    });
   }
 }
