@@ -74,8 +74,8 @@ export class WsapiServiceService {
             console.log('Ping');
             this.aliveSubscription.next({} as IAlive)
             break;
-          case 'finish':
-            console.log('finish', data);
+          case 'confirm':
+            console.log('confirm', data);
             this.billBankNoteSubscription.next(data)
             break;
           case 'login':

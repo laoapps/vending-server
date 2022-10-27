@@ -214,7 +214,7 @@ export class CashNV9 {
                                 billCashIn.confirmTime; // update when cash has come
 
                                 billCashIn.requestTime = new Date();
-
+                                billCashIn.requestor = requestor;
                                 res.data = { clientId: ws['clientId'], billCashIn };
                                 console.log('billCashIn', res.data);
 
@@ -537,9 +537,19 @@ export class CashNV9 {
             if(!n)throw new Error('Confirm FAILED  note not found' + channel + transactionID);
             
 
-            this.confirmMmoneyCashin(n?.value, x.transactionID, x.requestor?.transData[0]?.transCashInID, '').then(rx => {
+            this.confirmMmoneyCashin(n?.value, x.transactionID, x.requestor?.transData[0]?.transCashInID, `CLIENT: ${x.clientId}`).then(rx => {
                 console.log('Succeeded confirmMmoneyCashin', rx);
-                this.wsSend([x?.clientId+''],rx);
+
+                x.bankNotes.push(n);
+                x.confirm =rx;
+                x.confirmTime = new Date();
+            
+                const res = {} as IResModel;
+                res.command = EMACHINE_COMMAND.confirm;
+                res.message = EMessage.confirmsucceeded;
+                res.status = 1;
+                res.data = x;
+                this.wsSend([x?.clientId+''],res);
             }).catch(e => {
                 console.log('ERROR confirm Mmoney Cashin', e);
                 this.wsSend([x?.clientId+''],e.message);
