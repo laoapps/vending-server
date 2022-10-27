@@ -13,15 +13,11 @@ import { resolve } from 'path';
 export class VendingVMC {
 
     // port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
-    port = new SerialPort({ path: '/dev/ttyS1', baudRate: 9600 }, function (err) {
-        if (err) {
-            return console.log('Error: ', err.message)
-        }
-    });
+    port:SerialPort;
     sock: SocketClientVMC | null = null
-    transactionID = -1;
-    resM = '';
-    commands = Array<{ command: EZDM8_COMMAND, params: any, transactionID: number }>();
+    transactionID=new Array<number>();
+    path = '/dev/ttyS1';
+    commands = Array<Array<string>>();
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
@@ -36,46 +32,101 @@ export class VendingVMC {
         let buffer = '';
         const that = this;
 
-        this.port.on("open", function () {
-            console.log('open serial communication');
-            // Listens to incoming data
+        this.port =new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
+            if (err) {
+                return console.log('Error: ', err.message)
+            }
+            console.log(`port ${that.path} accessed`);
+        
+            var b = '';
+        
             that.port.on('data', function (data: any) {
-                console.log('data', data);
-                buffer += new String(data);
-                console.log('buffer', buffer);
-                if (buffer.startsWith('fafb42')) {
-                    if (that.commands.length) {
-                        const x = that.commands.splice(0, 1)
-                        if (x[0].command == EZDM8_COMMAND.shippingcontrol) {
-                            that.commandVMC(EVMC_COMMAND._03, x[0].params, x[0].transactionID).then(r => {
-                                sock.send(buffer, that.transactionID)
-                                that.transactionID = -1;
-                            })
-                        }
-                        if (x[0].command == EZDM8_COMMAND.hutemp) {
-                            that.commandVMC(EVMC_COMMAND._28, x[0].params, x[0].transactionID).then(r => {
-                                sock.send(buffer, that.transactionID)
-                                that.transactionID = -1;
-                            })
-                        }
-                    }
+                b = data.toString('hex');
+                console.log('===>BUFFER', b);
+                let buff = that.checkCommandsForSubmission()||Array<string>();
+                if (b == 'fafb410040'&&buff.length) {// POLL and submit command
+        
+                        let x = buff.join('');
+                        console.log('X command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
+                        that.port.write(Buffer.from(x, 'hex'), (e) => {
+                            if (e) {
+                                console.log('Error command', e.message);
+                                that.sock?.send(x,that.clearTransactionID());
+                            } else {
+                                console.log('WRITE COMMAND succeeded',new Date().getTime());
+                                that.sock?.send(x,that.clearTransactionID());
+                                // confirm by socket
+                            }
+                        })
                 }
-                if (buffer.startsWith('fafb04')) {
-                    that.resM = buffer;
-                    sock.send(buffer, that.transactionID)
+                else if(b=='fafb420043'){// ACK 
+                    console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
+                    console.log('shift the current command and add new command for demo');
+                    that.commands.shift();
+                    that.sock?.send(b, that.clearTransactionID());
+                    // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
-
-
-                // sock.send(buffer, that.transactionID)
-                buffer = '';
-
-                // that.processCoolingSystemTask(buffer);
+                else if(b == 'fafb410040') {// POLL only with no commands in the queue
+                    buff = that.getACK();
+                    let x = buff.join('')
+                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                    that.port.write(Buffer.from(x, 'hex'), (e) => {
+                        if (e) {
+                            console.log('Error: ACK ', e.message);
+                        } else {
+                            console.log('write ACK succeeded');
+                        }
+                    })
+                }else{
+                    // update status to the server
+                    that.sock?.send(b,-1);
+                }
+                b='';
             });
         });
         // setInterval(() => {
         //     this.coolingSystemTask();
         // }, 30000)
 
+    }
+    clearTransactionID(){
+        const x = this.transactionID.length?this.transactionID.shift():-1;
+        return x!=undefined?x:-1;
+    }
+    getTransactionID(){
+        return this.transactionID.length?this.transactionID[0]:-1
+    }
+     isACK=true;
+     getACK() {
+        this.isACK=false;
+        let buff = ['fa', 'fb'];
+        buff.push('42');
+        buff.push('00'); // default length 00
+        buff.push('00'); 
+        buff[buff.length-1]=chk8xor(buff)
+        return buff;
+    }
+     no=0;
+     getNextNo(){
+        this.no++;
+        if(this.no>=255){
+            this.no=0;
+        }
+        return this.no;
+    }
+
+  
+     checkCommandsForSubmission() {
+        
+        this.isACK=true;
+        const x = JSON.parse(JSON.stringify(this.commands[0]))as Array<string>;
+        x.push('00')
+        x[x.length-1]=chk8xor(x)
+        return x;
+    }
+     int2hex(i: number) {
+        const str = Number(i).toString(16);
+        return str.length === 1 ? '0' + str : str;
     }
     // coolingSystemTask() {
     //     this.command('hutemp', null, -1);
@@ -100,19 +151,25 @@ export class VendingVMC {
  
     command(command: EZDM8_COMMAND, params: any, transactionID: number) {
         return new Promise<any>((resolve,reject)=>{
-            this.commands.push({
-                command,
-                params,
-                transactionID
-            })
-            resolve(true)
+         switch (command) {
+            case EZDM8_COMMAND.shippingcontrol:
+                this.commandVMC(EVMC_COMMAND._06,params,transactionID,this.getNextNo()).then(r=>{
+                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                }).catch(e=>{
+                    reject(PrintError(command as any, params,e.message));
+                })
+                break;
+         
+            default:
+                reject(PrintError(command as any, params,EMessage.commandnotfound));
+                break;
+         }
         })
        
     }
-    commandVMC(command: EVMC_COMMAND, params: any, transactionID: number, series = 0) {
-        this.transactionID = transactionID;
+    commandVMC(command: EVMC_COMMAND, params: any, transactionID: number, series = 1) {
+        this.transactionID.push(transactionID);
         return new Promise<IResModel>((resolve, reject) => {
-            const series = params.series;
             const slot = params.slot;
             //STX
             //Command
@@ -121,32 +178,31 @@ export class VendingVMC {
             //XOR
             const buff = ['fa', 'fb'];
             // // POLL command
-            if (command == EVMC_COMMAND._41) {
+             if (command == EVMC_COMMAND._06) {
                 buff.push(command);
-                buff.push('00'); // default length 00
-                buff.push(chk8xor(buff))
-            }
-            //// Upper computer selects to buy
-            else if (command == EVMC_COMMAND._03) {
-                buff.push(command);
-                const x = [series].concat(params.map(v => int2hex(v)))
-                buff.push(int2hex(x.length));//length
+                buff.push(int2hex(5));//length
                 // p.push(parseInt(p.length+'', 16));
                 buff.push(int2hex(series));// 
-                buff.push(slot);// slot 
-                buff.push(chk8xor(buff))
+                buff.push(int2hex(1));// 
+                buff.push(int2hex(0));// 
+                buff.push(int2hex(0));// slot 
+                buff.push(int2hex(slot));// slot 
+                buff.push(chk8xor(buff));
+                buff.push(int2hex(0));// checksum
+                buff[buff.length-1]=chk8xor(buff);// update checksum
+                // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
             }
             // //temperature
-            else if (command == EVMC_COMMAND._28) {// 0x28
-                buff.push(command);
-                const x = [series].concat(params.map(v => int2hex(v)))
-                buff.push(int2hex(x.length));//length
-                buff.push('01');// read drop sensor
-                buff.push(...params)
-                // enable drop sensor [0x00,0x00,0x01] 
-                // disable drop sensor [0x00,0x00,0x00] 
-                buff.push(chk8xor(buff))
-            }
+            // else if (command == EVMC_COMMAND._28) {// 0x28
+            //     buff.push(command);
+            //     const x = [series].concat(params.map(v => int2hex(v)))
+            //     buff.push(int2hex(x.length));//length
+            //     buff.push('01');// read drop sensor
+            //     buff.push(...params)
+            //     // enable drop sensor [0x00,0x00,0x01] 
+            //     // disable drop sensor [0x00,0x00,0x00] 
+            //     buff.push(chk8xor(buff))
+            // }
             /// dispensing
             // else if (command == 0x06) {
             //     buff.push(command);
@@ -221,7 +277,6 @@ export class VendingVMC {
             // }
             const x = buff.join('');
             console.log('X',x);
-            
             this.port.write(Buffer.from(x, 'hex'), (e) => {
                 if (e) {
                     reject(PrintError(command as any, params, e.message));
@@ -238,10 +293,5 @@ export class VendingVMC {
             console.log('closing', e);
         })
     }
-
-
-
-
-
-
 }
+

@@ -7,9 +7,9 @@ export class SocketClientVMC {
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
-    port = 2222;
+    port = 31222;
     host = 'laoapps.com';
-    machineid = '77777777';
+    machineid = '11111111';
     otp = '111111';
     token = '';
     t: any;

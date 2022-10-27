@@ -21,7 +21,7 @@ export class InventoryZDM8 {
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
 
-
+    delayTime =3000;
     constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerZDM8) {
         this.ssocket = socket;
         this.wss = wss;
@@ -462,7 +462,7 @@ export class InventoryZDM8 {
                         }
                     }
                 });
-            }, 3000 * i);
+            }, this.delayTime * i);
             resolve(true);
         })
        

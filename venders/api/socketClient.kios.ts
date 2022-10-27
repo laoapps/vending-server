@@ -1,18 +1,21 @@
 import net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
+import { KiosESSP } from './kios.essp';
 export class SocketKiosClient {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
-    port = 2222;
+    port = 31225;
     host = 'laoapps.com';
     machineId = '12345678';
     otp = '111111';
     token = '';
     t:any;
+    m: KiosESSP;
     constructor() {
+        this.m = new KiosESSP(this);
         this.init();
         this.token = cryptojs.SHA256(this.machineId + this.otp).toString(CryptoJS.enc.Hex)
     }
@@ -37,7 +40,7 @@ export class SocketKiosClient {
 
 
             // writing data to server
-            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }));
+            that.send({},EMACHINE_COMMAND.login);
 
         });
 
@@ -52,13 +55,9 @@ export class SocketKiosClient {
                 req.command = 'ping';
                 req.token = that.token;
                 req.time = new Date().getTime() + '';
-            } else if (d.command == EZDM8_COMMAND.shippingcontrol || d.command == EM102_COMMAND.release) {
-
-            } else if (d.command == EZDM8_COMMAND.status || d.command == EM102_COMMAND.readtemperature) {
-
-            } else if (d.command == EZDM8_COMMAND.statusgrid || d.command == EM102_COMMAND.scan) {
-
-            }
+            } else if (d.command == EMACHINE_COMMAND.start ) {
+                that.m.setTransactionID(d.transactionID);
+            } 
             console.log(d.command, d);
 
         });
@@ -74,20 +73,17 @@ export class SocketKiosClient {
 
        this.t= setInterval(function () {
             // this.client.end('Bye bye server');
-            const req = {} as IReqModel;
-            req.token = that.token;
-            req.time = new Date().getTime() + '';
-            that.client.write(JSON.stringify(req));
-        }, 60000 * 5);
+            that.send(null,EMACHINE_COMMAND.ping)
+        }, 10000);
 
     }
-    send(data: any) {
+    send(data: any,command:any) {
         const req = {} as IReqModel;
-        req.command = EZDM8_COMMAND.status;
+        req.command = command||EMACHINE_COMMAND.status;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
-        this.client.write(JSON.stringify(req));
+        this.client.write(JSON.stringify(req)+'\n');
     }
 
 }

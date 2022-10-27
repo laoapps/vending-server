@@ -7,8 +7,8 @@ export class SocketClientM102 {
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
-    port = 2222;
-    host = 'localhost';
+    port = 31224;
+    host = 'laoapps.com';
     machineid = '12345678';
     otp = '111111';
     token = '';

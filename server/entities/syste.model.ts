@@ -783,11 +783,143 @@ export interface IMachineID extends IBase, IBC {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export enum EMACHINE_COMMAND {
     login = 'login',
     ping = 'ping',
     status = 'status',
-    confirm = "confirm"
+    confirm = "confirm",
+    note_credit = "note_credit",
+    CREDIT_NOTE = "CREDIT_NOTE",
+    READ_NOTE = "READ_NOTE",
+    NOTE_REJECTED = "NOTE_REJECTED",
+    JAMMED = "JAMMED",
+    start = "start"
 }
 
 export interface IMachineClientID {
@@ -803,6 +935,14 @@ export interface IMMoneyLogInRes {
     status: true
 
 }
+export interface IMMoneyLoginCashin{
+    accessToken:string,
+      tokenType: string,
+            expiresIn: number,
+                userName: string,
+                issued: string,
+                expiry: string
+};
 export interface IMMoneyGenerateQR {
     transactionID: string,
     phonenumber: string,
@@ -831,3 +971,44 @@ export interface IBillProcess{
     bill:IVendingMachineBill,
     position:any
 }
+
+export interface IBankNote extends IBase{
+    value:number;
+    amount:number;
+    currency:string;
+    channel:number;
+    image:string;
+}
+export interface IBillCashIn extends IBase{
+    bankNotes:Array<IBankNote>;
+    badBankNotes:Array<IBankNote>;
+    transactionID:number;
+    userUuid:string;
+    requestor:IMMoneyRequestRes;
+    requestTime:Date;
+    confirm:any;
+    confirmTime:Date;
+    clientId:string;
+}
+export interface IMMoneyTransData{
+    transCashInID: number,
+    transStatus: string,
+    accountNo: string,
+    accountNameEN: string,
+    accountRef: string,
+    accountType: string,
+    transExpiry: Date
+}
+export interface IMMoneyRequestRes
+{
+        // "22162": "73494",
+        transData: Array<IMMoneyTransData>,
+        responseCode: string,
+        responseMessage:string,
+        responseStatus: string,
+        transID: number,
+        processTime: number,
+        serverDatetime: Date,
+        serverDatetimeMs: number
+    }
+

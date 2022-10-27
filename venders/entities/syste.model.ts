@@ -464,15 +464,23 @@ export const EESSP_COMMANDS = {
         description: 'Resets the fixed encryption key to the device default. The device may have extra security requirements before it will accept this command (e.g. The Hopper must be empty) if these requirements are not met, the device will reply with Command Cannot be Processed. If successful, the device will reply OK, then reset. When it starts up the fixed key will be the default.'
     }
 }
-export enum EVMC_COMMAND{
-    _41='41', // poll 
-    _03='03', // select 
-    _28='28', // temperature
+export enum EVMC_COMMAND {
+    _41 = '41',
+    _03 = '03',
+    _28 = '28',
+    _06 = "06"
 }
-export enum EMACHINE_COMMAND{
-    login='login',
-    ping ='ping',
-    status = 'status'
+export enum EMACHINE_COMMAND {
+    login = 'login',
+    ping = 'ping',
+    status = 'status',
+    confirm = "confirm",
+    note_credit = "note_credit",
+    CREDIT_NOTE = "CREDIT_NOTE",
+    READ_NOTE = "READ_NOTE",
+    NOTE_REJECTED = "NOTE_REJECTED",
+    JAMMED = "JAMMED",
+    start = "start"
 }
 export interface IResModel {
     transactionID:number;
@@ -719,5 +727,31 @@ export enum EMessage {
     SubmittedCoinIsZeroValue = "SubmittedCoinIsZeroValue",
     commandsucceeded = "commandsucceeded"
 }
-
-
+export interface IBase{
+    id?:number;
+    uuid?:string;
+    isActive?:boolean;
+    createdAt?:Date;
+    updatedAt?:Date;
+    // deletedAt?:Date;
+}
+export interface IBC {
+    hashP: string;
+    hashM: string;
+}
+export interface IBankNote{
+    value:number;
+    amount:number;
+    currency:string;
+    channel:number;
+}
+export interface IBillCashIn extends IBase{
+    bankNotes:Array<IBankNote>;
+    badBankNotes:Array<IBankNote>;
+    transactionID:number;
+    userUuid:string;
+    requestor:any;
+    requestTime:Date;
+    confirm:any;
+    confirmTime:Date;
+}

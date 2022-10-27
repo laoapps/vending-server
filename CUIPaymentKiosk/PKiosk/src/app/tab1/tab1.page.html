@@ -1,9 +1,8 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Payment Kios
-    </ion-title>
-  </ion-toolbar>
+<ion-header>
+  <div class="box">
+    <img [src]="mmLogo" />
+    <!-- <img src="assets/icon/favicon.png"/> -->
+  </div>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -14,31 +13,85 @@
     </ion-toolbar>
   </ion-header>
   <ion-grid>
+
     <ion-row>
       <ion-col size="12">
-      <ion-item-divider> All Notes</ion-item-divider>
+        <ion-item-divider> All Notes</ion-item-divider>
       </ion-col>
     </ion-row>
-    <ion-row *ngFor="let n of machine?.notes">
-      <ion-col size="4">{{n?.value|number}}</ion-col ><ion-col  size="4">{{n?.amount|number}}</ion-col><ion-col  size="4">=>{{n?.amount*n?.value|number}}</ion-col>
+    <ion-row>
+      <ion-col>
+        <ion-chip class="money" *ngFor="let n of bankNotes">
+          <div>
+            <img [src]="'/assets/icon/'+n.image">
+            <div>{{n.value|number}}</div>
+            <div>{{n.currency}}</div>
+          </div>
+        </ion-chip>
+      </ion-col>
 
     </ion-row>
     <ion-row>
-      <ion-col size="12">
-      <ion-item-divider> Total BankNote</ion-item-divider>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngFor="let n of machine?.bankNotes">
-      <ion-col size="4">{{n?.value|number}}</ion-col ><ion-col  size="4">{{n?.amount|number}}</ion-col><ion-col  size="4">=>{{n?.amount*n?.value|number}}</ion-col>
+      <ion-col>
 
+        <ion-item-divider> Welcome: <h1>{{accountname}}</h1> / <h4>{{accountRef}}</h4>
+        </ion-item-divider>
+      </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size="12">
-      <ion-item-divider> Bad BankNote</ion-item-divider>
+        <ion-item-divider> Transaction would be end in <h1>{{timer.t}}</h1> seconds ...</ion-item-divider>
       </ion-col>
     </ion-row>
-  <ion-row *ngFor="let n of machine?.badBN">
-  <ion-col><ion-chip>{{n}}</ion-chip></ion-col>    
-  </ion-row>
-</ion-grid>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item-divider> Total BankNote</ion-item-divider>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngFor="let n of billCashIn; let i = index">
+      <ion-col>
+        {{i+1}}.-
+        <div>{{n.transactionID}}</div>
+        <ion-chip class="money" *ngFor="let m of n.bankNotes;" >
+          <div>
+            <img [src]="'/assets/icon/'+m?.image">
+            <div>{{m?.value|number}}</div>
+            <div>{{m?.currency}}</div>
+            
+          </div>
+        </ion-chip>
+       
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <hr/>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item-divider> Bad BankNote</ion-item-divider>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <hr/>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngFor="let n of billCashIn; let i = index">
+      <ion-col>
+        {{i+1}}.-
+        <div>{{n.transactionID}}</div>
+        <ion-chip class="money" *ngFor="let m of n.bankNotes;" >
+          <div>
+            <img [src]="'/assets/icon/'+m?.image">
+            <div>{{m?.value|number}}</div>
+            <div>{{m?.currency}}</div>
+            
+          </div>
+        </ion-chip>
+       
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

@@ -1,331 +1,398 @@
 import axios from 'axios';
+import { EMACHINE_COMMAND } from '../entities/syste.model';
 
-import { EMessage, EESSP_COMMANDS, IReqModel, IResModel } from '../entities/syste.model';
 const sspLib = require('encrypted-smiley-secure-protocol');
-import { SerialPort } from 'serialport';
-import { initWs, PrintError, PrintSucceeded } from '../services/service';
+
 import { SocketKiosClient } from './socketClient.kios';
-export class KiosServer {
-    port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }, function (err) {
-        if (err) {
-            return console.log('Error: ', err.message)
-        }
-    })
+
+export class KiosESSP {
+
+    sock: SocketKiosClient | null = null;
+
+
+    transactionID = -1;
+    t: any;
+    eSSP = new sspLib({
+        id: 0,
+        debug: false,
+        timeout: 3000,
+        fixedKey: '0123456701234567'
+    });
     constructor(sock: SocketKiosClient) {
-
-        // Read data that is available but keep the stream in "paused mode"
-        // this.port.on('readable', function () {
-        //     console.log('Data:', this.port.read())
-        // })
-
-        // Switches the port into "flowing mode"
-        // this.port.on('data', function (data) {
-        //     console.log('Data:', data)
-        // })
-        let buffer = '';
+        this.sock = sock;
         const that = this;
-        this.port.on("open", function () {
-            console.log('open serial communication');
-            // Listens to incoming data
-            that.port.on('data', function (data: any) {
-                console.log('data', data);
-                buffer += new String(data);
-                console.log('buffer', buffer);
-                if (buffer.length == 4) {
-                    buffer = '';
-                    sock.send(buffer)
+        that.initSSP();
+        
+    }
+    setTransactionID(transactionID: number) {
+        this.transactionID = transactionID;
+        if (this.t) {
+            clearInterval(this.t);
+            this.t = null;
+        }
+        if (this.transactionID != -1) {
+            this.eSSP.command('ENABLE').then(result => {
+                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' },EMACHINE_COMMAND.status);
+            })
+            this.t = setInterval(() => {
+                if (this.transactionID != -1) {
+                    this.eSSP.command('DISABLE')
+                        .then(result => {
+                            this.transactionID = -1;
+                            console.log(result)
+                            this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },EMACHINE_COMMAND.status);
+                        })
                 }
-
-            });
-        });
-         
-        let eSSP = new sspLib({
-            id: 0x00,
-            debug: false,
-            timeout: 3000,
-            fixedKey: '0123456701234567'
-        });
-
-
-        eSSP.on('OPEN', () => {
-            console.log('open');
-        
-            eSSP.command('SYNC')
-            .then(() => eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
-            .then(() => eSSP.initEncryption())
-            .then(() => eSSP.command('GET_SERIAL_NUMBER'))
-            .then(result => {
-                console.log('SERIAL NUMBER:', result.info.serial_number)
-                return;
+            }, 30000)
+        }else {
+            this.eSSP.command('DISABLE').then(result => {
+                clearInterval(this.t);
+                this.t=null
+                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },EMACHINE_COMMAND.status);
             })
-            .then(() => eSSP.enable())
-            .then(result => {
-                if(result.status == 'OK'){
-                    console.log('Device is active')
-                }
-                return;
-            })
-        })
-        
-        eSSP.on('NOTE_REJECTED', result => {
-            console.log('NOTE_REJECTED', result);
-        
-            eSSP.command('LAST_REJECT_CODE')
-            .then(result => {
-                console.log(result)
-                // this.send(sock, EMessage.all,'LAST_REJECT_CODE', result);
-            })
-        })
-
-
-
-
-
-
-
-      
-        eSSP.on('JAM_RECOVERY', result => {
-            console.log(result)
-            // this.send(sock, EMessage.all,'JAM_RECOVERY', result);
-        })
-        eSSP.on('ERROR_DURING_PAYOUT', result => {
-            console.log(result)
-            // this.send(sock, EMessage.all,'ERROR_DURING_PAYOUT', result);
-        })
-        eSSP.on('SMART_EMPTYING', result => {
-            console.log(result)
-            // this.send(sock, EMessage.all,'SMART_EMPTYING', result);
-        })
-        eSSP.on('SMART_EMPTIED', result => {
-            console.log(result)
-            // this.send(sock, EMessage.all,'SMART_EMPTIED', result);
-        })
-        eSSP.on('CHANNEL_DISABLE', result => {
-            console.log(result)
-            // this.send(sock, EMessage.all,'CHANNEL_DISABLE', result);
-        })
-        eSSP.on('INITIALISING', result => {
-            console.log(result)
-            // this.send(sock, EMessage.all,'INITIALISING', result);
-        })
-        eSSP.on('COIN_MECH_ERROR', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'COIN_MECH_ERROR', result);
-        })
-        eSSP.on('EMPTYING', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'EMPTYING', result);
-        })
+        }
        
-        eSSP.on('COIN_MECH_JAMMED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'COIN_MECH_JAMMED', result);
-        })
-        eSSP.on('COIN_MECH_RETURN_PRESSED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'COIN_MECH_RETURN_PRESSED', result);
-        })
-        eSSP.on('PAYOUT_OUT_OF_SERVICE', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'PAYOUT_OUT_OF_SERVICE', result);
-        })
-        eSSP.on('NOTE_FLOAT_REMOVED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_FLOAT_REMOVED', result);
-        })
-
-        eSSP.on('NOTE_FLOAT_ATTACHED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_FLOAT_ATTACHED', result);
-        })
-        eSSP.on('NOTE_TRANSFERED_TO_STACKER', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_TRANSFERED_TO_STACKER', result);
-        })
-        eSSP.on('NOTE_PAID_INTO_STACKER_AT_POWER-UP', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_PAID_INTO_STACKER_AT_POWER-UP', result);
-        })
-        eSSP.on('NOTE_PAID_INTO_STORE_AT_POWER-UP', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_PAID_INTO_STORE_AT_POWER-UP', result);
-        })
-
-        eSSP.on('NOTE_STACKING', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_STACKING', result);
-        })
-        eSSP.on('NOTE_DISPENSED_AT_POWER-UP', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_DISPENSED_AT_POWER-UP', result);
-        })
-        eSSP.on('NOTE_HELD_IN_BEZEL', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_HELD_IN_BEZEL', result);
-        })
-        eSSP.on('BAR_CODE_TICKET_ACKNOWLEDGE', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'BAR_CODE_TICKET_ACKNOWLEDGE', result);
-        })
-        eSSP.on('DISPENSED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'DISPENSED', result);
-        })
-        eSSP.on('JAMMED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'JAMMED', result);
-        })
-        eSSP.on('HALTED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'HALTED', result);
-        })
-        eSSP.on('FLOATING', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'FLOATING', result);
-        })
-        eSSP.on('TIME_OUT', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'TIME_OUT', result);
-        })
-        eSSP.on('DISPENSING', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'DISPENSING', result);
-        })
-        eSSP.on('NOTE_STORED_IN_PAYOUT', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_STORED_IN_PAYOUT', result);
-        })
-        eSSP.on('INCOMPLETE_PAYOUT', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'INCOMPLETE_PAYOUT', result);
-        })
-        eSSP.on('INCOMPLETE_FLOAT', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'INCOMPLETE_FLOAT', result);
-        })
-        eSSP.on('CASHBOX_PAID', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'CASHBOX_PAID', result);
-        })
-        eSSP.on('COIN_CREDIT', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'COIN_CREDIT', result);
-        })
-        eSSP.on('NOTE_PATH_OPEN', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_PATH_OPEN', result);
-        })
-        eSSP.on('NOTE_CLEARED_FROM_FRONT', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_CLEARED_FROM_FRONT', result);
-        })
-        eSSP.on('NOTE_CLEARED_TO_CASHBOX', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_CLEARED_TO_CASHBOX', result);
-        })
-        eSSP.on('CASHBOX_REMOVED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'CASHBOX_REMOVED', result);
-        })
-        eSSP.on('CASHBOX_REPLACED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'CASHBOX_REPLACED', result);
-        })
-        eSSP.on('BAR_CODE_TICKET_VALIDATED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'BAR_CODE_TICKET_VALIDATED', result);
-        })
-        eSSP.on('FRAUD_ATTEMPT', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'FRAUD_ATTEMPT', result);
-        })
-        eSSP.on('STACKER_FULL', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'STACKER_FULL', result);
-        })
-        eSSP.on('DISABLED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'DISABLED', result);
-        })
-        eSSP.on('UNSAFE_NOTE_JAM', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'UNSAFE_NOTE_JAM', result);
-        })
-        eSSP.on('SAFE_NOTE_JAM', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'SAFE_NOTE_JAM', result);
-        })
-        eSSP.on('NOTE_STACKED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_STACKED', result);
-        })
-        eSSP.on('NOTE_REJECTED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_REJECTED', result);
-        })
-        eSSP.on('NOTE_REJECTING', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'NOTE_REJECTING', result);
-        })
-        eSSP.on('CLOSE', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'CLOSE', result);
-        })
-        eSSP.on('OPEN', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'OPEN', result);
-        })
-        eSSP.on('READ_NOTE', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'READ_NOTE', result);
-        })
-
-        eSSP.on('EMPTIED', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'EMPTIED', result);
-        })
-        eSSP.on('DISPENSING', result => {
-            console.log(result)
-            this.send(sock, EMessage.all,'DISPENSING', result);
-        })
-        eSSP.on('CASHBOX_REPLACED', result => {
-            console.log(result)
-             this.send(sock, EMessage.all,'CASHBOX_REPLACED', result);
-        })
-        eSSP.command('SET_BAUD_RATE', {
-            baudrate: 9600, // 9600|38400|115200
-            reset_to_default_on_reset: true
-        })
-        eSSP.open('/dev/ttyS0')
-        // eSSP.open('COM1');
-
-
-    }
-    //  checkSum(buff: any) {
-    //     try {
-    //         const x = crc.crc16modbus(Buffer.from(buff as any, 'hex')).toString(16);
-    //         console.log(x);
-    
-    //         return x.substring(2) + x.substring(0, 2);
-    //     }
-    //     catch (e) {
-    //         console.log('error', e);
-    //         return '';
-    //     }
-    // }
-    send(socket:SocketKiosClient,message:string,command:any,data:any){
-
-    }
-    close() {
-        this.port.close((e) => {
-            console.log('closing', e);
-        })
     }
 
 
+    initSSP() {
 
-   
+        this.eSSP.on('OPEN', () => {
+            console.log('OPEN');
 
-    
+            this.eSSP.command('SYNC')
+                .then(() => this.eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
+                .then(() => this.eSSP.initEncryption())
+                .then(() => this.eSSP.command('GET_SERIAL_NUMBER'))
+                .then(result => {
+                    console.log('SERIAL NUMBER:', result.info.serial_number)
+                    return;
+                })
+                .then(() => this.eSSP.command('DISPLAY_ON'))
+                .then(result => {
+                    if (result.status == 'OK') {
+                        console.log('DISPLAY_ON', result.info)
+                    }
+                })
+                .then(result => {
+                    if (result.status == 'OK') {
+                        console.log('Device is active')
+                    }
+                    return;
+                })
+                .then(() => this.eSSP.command('SETUP_REQUEST'))
+                .then(result => {
+                    if (result.status == 'OK') {
+                        console.log('SETUP_REQUEST request', result.info)
+                    }
+                    return;
+                }).then(() => this.eSSP.enable())
+            // .then(() => eSSP.command('SET_CHANNEL_INHIBITS',{channels:[1,1,1,1,1,1,1]})
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('SET_CHANNEL_INHIBITS', result.info)
+            //     }
+            // })
+            //     return;
+            // })
+            // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+
+            //         console.log('Device value request', result.info)
+            //     }
+
+            //     return;
+            // })// get info from the validator and store useful vars
+
+            // inhibits, this sets which channels can receive notes
+            // NV11.SetInhibits(textBox1);
+            // enable, this allows the validator to operate
+            // NV11.EnableValidator(textBox1);
+            // value reporting, set whether the validator reports channel or coin value in 
+            // subsequent requests
+            // NV11.SetValueReportingType(false, textBox1);
+            // check for notes already in the float on startup
+            // NV11.CheckForStoredNotes(textBox1);
+
+
+            // .then(() => eSSP.command('RESET'))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+
+            //         console.log('RESET request', result.info)
+            //     }
+            //     return;
+            // })
+            // .then(() => eSSP.command('SET_VALUE_REPORTING_TYPE',{reportBy:'value'}))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log(result);
+
+            //         console.log('SET_VALUE_REPORTING_TYPE', result)
+            //     }
+            //     return;
+            // })
+            // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         const x = [];
+            //         Object.keys(result.info.slot).forEach(k => {
+            //             if (result.info.slot[k].value)
+            //                 x.push(
+            //                     (result.info.slot[k].value))
+            //         })
+            //         console.log('GET_NOTE_POSITIONS', x)
+            //     }
+            //     return;
+            // })
+            // .then(() => eSSP.command('PAYOUT_NOTE'))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('PAYOUT_NOTE', result.info)
+            //     }
+            //     return;
+            // })
+            // // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
+            // // .then(result => {
+            // //     if (result.status == 'OK') {
+
+            // //         console.log('CHANNEL_VALUE_REQUEST', result)
+            // //     }
+            // //     return;
+            // // })
+            // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         const x = [];
+            //         console.log('GET_NOTE_POSITIONS',result.info.slot);
+            //         // Object.keys(result.info.slot).forEach(k => {
+            //         //     if (result.info.slot[k].value)
+            //         //         x.push( result.info.slot[k].value)
+            //         // })
+            //         // console.log('GET_NOTE_POSITIONS', x)
+            //     }
+            //     return;
+            // })
+            // .then(() => eSSP.command('GET_DENOMINATION_ROUTE'))
+            //     .then(result => {
+            //         if (result.status == 'OK') {
+            //             console.log('GET_DENOMINATION_ROUTE',result)
+            //         }
+            //         console.log('GET_DENOMINATION_ROUTE',result)
+            //         return;
+            //     })
+            // .then(() => eSSP.command('SET_REFILL_MODE'))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('SET_REFILL_MODE',result.info)
+            //     }
+            //     return;
+            // })
+            // .then(() => eSSP.command('FLOAT_BY_DENOMINATION'), {
+            //     value: [
+            //         {
+            //             number: 1,
+            //             denomination: 1000,
+            //             country_code: 'LAK'
+            //         }, {
+            //             number: 1,
+            //             denomination: 1000,
+            //             country_code: 'LAK'
+            //         }
+            //     ],
+            //     test: false
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('FLOAT_BY_DENOMINATION',result)
+            //     }
+            //     console.log('FLOAT_BY_DENOMINATION',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('GET_DENOMINATION_ROUTE'),  {
+            //     isHopper: true, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('GET_DENOMINATION_ROUTE',result)
+            //     }
+            //     console.log('GET_DENOMINATION_ROUTE',result)
+            //     return;
+            // })
+            //  .then(() => eSSP.command('PAYOUT_BY_DENOMINATION'), {
+            //     value: [
+            //         {
+            //             number: 1,
+            //             denomination: 1000,
+            //             country_code: 'LAK'
+            //         }, {
+            //             number: 1,
+            //             denomination: 1000,
+            //             country_code: 'LAK'
+            //         }
+            //     ],
+            //     test: false
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('PAYOUT_BY_DENOMINATION',result)
+            //     }
+            //     console.log('PAYOUT_BY_DENOMINATION',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('SMART_EMPTY'), {
+            //     isHopper: false, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('SMART_EMPTY',result)
+            //     }
+            //     console.log('SMART_EMPTY',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('FLOAT_AMOUNT', {
+            //     min_possible_payout: 1000,
+            //     amount: 1000,
+            //     country_code: 'LAK',
+            //     test: false
+            // }), {
+            //     isHopper: false, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('FLOAT_AMOUNT',result)
+            //     }
+            //     console.log('PAYOUT_AMOUNT',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('PAYOUT_AMOUNT',{
+            //     amount: 1000,
+            //     country_code: 'LAK',
+            //     test: false
+            // }), {
+            //     isHopper: false, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('PAYOUT_AMOUNT',result)
+            //     }
+            //     console.log('PAYOUT_AMOUNT',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('GET_BAR_CODE_READER_CONFIGURATION'), {
+            //     isHopper: false, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('GET_BAR_CODE_DATA',result)
+            //     }
+            //     console.log('GET_BAR_CODE_DATA',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('GET_BAR_CODE_READER_CONFIGURATION'), {
+            //     isHopper: false, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('GET_BAR_CODE_READER_CONFIGURATION',result)
+            //     }
+            //     console.log('GET_BAR_CODE_READER_CONFIGURATION',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('GET_ALL_LEVELS'), {
+            //     isHopper: false, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('GET_ALL_LEVELS',result)
+            //     }
+            //     console.log('GET_ALL_LEVELS',result)
+            //     return;
+            // })
+            // .then(() => eSSP.command('GET_DENOMINATION_ROUTE'), {
+            //     isHopper: false, // true/false
+            //     value: 1000,
+            //     country_code: 'LAK'
+            // })
+            // .then(result => {
+            //     if (result.status == 'OK') {
+            //         console.log('GET_NOTE_POSITIONS',result)
+            //     }
+            //     return;
+            // })
+            // .then(() => eSSP.command('FLOAT_AMOUNT', {
+            //     min_possible_payout: 1000,
+            //     amount: 10000,
+            //     country_code: 'LAK',
+            //     test: false
+            // }))
+            // .then(result => {
+            //     if (result.status == 'OK') {
+
+            //         console.log('Device value request', result.info)
+            //     }else{
+            //         console.log(result);
+            //     }
+            //     return;
+            // })
+        })
+
+        this.eSSP.on('NOTE_REJECTED', result => {
+            console.log('NOTE_REJECTED', result);
+
+            this.eSSP.command('LAST_REJECT_CODE')
+                .then(result => {
+                    console.log(result)
+                    this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'NOTE_REJECTED' },EMACHINE_COMMAND.status);
+                })
+        })
+        this.eSSP.on('READ_NOTE', result => {
+            console.log('READ_NOTE', result)
+            if (result.channel > 0)
+                this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' },EMACHINE_COMMAND.status);
+        })
+        this.eSSP.on('CREDIT_NOTE', result => {
+            console.log('CREDIT_NOTE', result)
+            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' },EMACHINE_COMMAND.status);
+
+        })
+        this.eSSP.on('JAMMED', result => {
+            console.log('JAMMED', result)
+            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'JAMMED' },EMACHINE_COMMAND.status);
+            this.eSSP.command('DISABLE').then(result => {
+                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },EMACHINE_COMMAND.status);
+            })
+        })
+        this.eSSP.on('DISPENSED', result => {
+            console.log('DISPENSED', result)
+
+        })
+        this.eSSP.on('JAM_RECOVERY', result => {
+            console.log('JAM_RECOVERY', result)
+
+        })
+        this.eSSP.open('COM1');
+        process.on("exit", () => {
+            this.eSSP.close();
+        })
+    }
+  
+
+
 
 }

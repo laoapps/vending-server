@@ -5,7 +5,7 @@ import cryptojs from 'crypto-js';
 export class SocketServerZDM8 {
     server = net.createServer();
     sclients = Array<net.Socket>();
-    ports = 2222;
+    ports = 31223;
 
     private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }];
 

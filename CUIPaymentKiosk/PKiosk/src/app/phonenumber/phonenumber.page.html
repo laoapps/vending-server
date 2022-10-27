@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Phonenumber</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div
+  class="border d-flex align-items-center justify-content-center"
+  style="height: 350px;"
+>
+<ion-input type="number" [(ngModel)]="phonenumber.phonenumber"  placeholder="2056789012"></ion-input>
+  <ion-button  (click)="start()">Start</ion-button>
+</div>
+
+<ion-button (click)="close()">CLOSE</ion-button>
+</ion-content>

@@ -1,18 +1,68 @@
 import { Component } from '@angular/core';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { AdsPage } from '../ads/ads.page';
 import { ApiServiceService } from '../api-service.service';
-
+import { IBankNote, IBillBankNote as IBillCashIn } from '../syste.model';
+var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss']
 })
 export class Tab1Page {
-  machine:{bankNotes:Array<any>,badBN:Array<any>,notes:Array<any>}
-  constructor(public apiService:ApiServiceService) {
-    this.machine = apiService.machine;
+  server_path=host;
+  mmLogo = host + '/assets/icon/mmoney.png';
+  billCashIn:Array<IBillCashIn>;
+  bankNotes = new Array<IBankNote>();
+  timer ={t:30};
+  accountname='';
+  accountRef='';
+ 
+  constructor(public apiService: ApiServiceService) {
+    this.billCashIn = apiService.billCashIn;
+    this.loadBankNotes();
+    this.timer = apiService.timer;
+    setInterval(()=>{
+      if(!this.billCashIn.length){
+        this.apiService.modal.getTop().then(r=>{
+          if(!r){
+            this.apiService.showModal(AdsPage).then(v=>{
+              v.present();
+            })
+          }
+        })
+      }
+    },300)
+   this.apiService.accountInfoSubcription.subscribe(r=>{
+    console.log('R',r);
+    if(r){
+      this.accountname=r.accountNameEN;
+      this.accountRef =r.accountRef;
+    }
+    
+   })
   }
 
-  refresh(){
+  refresh() {
     this.apiService.refresh();
+  }
+  loadBankNotes() {
+    this.apiService.loadBankNotes().subscribe(r => {
+      try {
+        console.log('loadBankNotes', r);
+        if (r.status) {
+          this.bankNotes = r.data;
+        }
+        this.apiService.toast.create({ message: r.message, duration: 5000 }).then(v => {
+          v.present();
+        });
+      } catch (error) {
+        console.log(error);
+        this.apiService.toast.create({ message: error.message, duration: 5000 }).then(v => {
+          v.present();
+        });
+      }
+
+    })
   }
 }

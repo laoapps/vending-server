@@ -1,14 +1,14 @@
 import axios from 'axios';
-import express, { Router } from 'express';
+import { Router } from 'express';
 import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
-import net from 'net';
+
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EM102_COMMAND, EMACHINE_COMMAND, EMessage, EZDM8_COMMAND, IMachineClientID, IMachineID, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyLogInRes, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from '../entities/syste.model';
-import { SocketServerM102 } from './socketServerM102';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess } from '../entities/syste.model';
+import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
-import { parse, toSeconds } from 'iso8601-duration';
+import { SocketServerM102 } from './socketServerM102';
 export class InventoryM102 {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
@@ -20,163 +20,222 @@ export class InventoryM102 {
     vendingBill = new Array<IVendingMachineBill>();
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
+    delayTime =7000;
 
-    mMoneyLoginRes = {} as IMMoneyLogInRes;
-    loginMmoney() {
-        const username = 'test';
-        const password = '12345';
-        return new Promise<IMMoneyLogInRes>((resolve, reject) => {
-            if (this.mMoneyLoginRes.expiresIn) {
-                if (new Date(this.mMoneyLoginRes.expiresIn).getTime() > new Date().getTime()) {
-                    return resolve(this.mMoneyLoginRes);
-                }
-            }
-            axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
-                console.log(r);
-                if (r.status) {
-                    this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
-                    const t = new Date();
-                    t.setSeconds(t.getSeconds() + toSeconds(parse(this.mMoneyLoginRes.expiresIn))) + ''
-                    this.mMoneyLoginRes.expiresIn = t.getTime() + '';
-                    resolve(this.mMoneyLoginRes);
-                } else {
-                    reject(new Error(EMessage.loginfailed));
-                }
-
-            }).catch(e => {
-                reject(e)
-            });
-        })
-    }
     constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerM102) {
         this.ssocket = socket;
         this.wss = wss;
         this.initWs(wss);
+        try {
 
 
-        router.post('/', async (req, res) => {
-            const { limit, skip, data, command  } = req.body;
-            try {
-                const clientId = data.clientId;
-                let loggedin = false;
-                this.wss.clients.forEach(v => {
-                    loggedin = v['clientId'] == clientId;
-                })
+
+            router.post('/', async (req, res) => {
+                const d = req.body as IReqModel;
+                try {
+                    console.log('POST Data', d);
 
 
-                if (!loggedin) throw new Error(EMessage.notloggedinyet);
-                if (command == EClientCommand.confirmMMoney) {
-                    this.callBackConfirm(data.uuid, data.ids, data.value, data.machineId, data.ref, data.others).then(r => {
-                        res.send(PrintSucceeded(command, { uuid: data.uuid, ids: data.ids, value: data.value, machineId: data.machineId, ref: data.ref, others: data.others }, EMessage.succeeded));
-                    }).catch(e => {
-                        res.send(PrintError(command, e, EMessage.error));
-                    })
-                }
-                else if (command == EClientCommand.list) {
-                    res.send(PrintSucceeded(command, this.vendingOnSale, EMessage.succeeded));
-                } else if (command == EClientCommand.buyMMoney) {
-                    const ids = data.ids as Array<string>; // item id
-                    const machineId = data.machineId;
-                    const value = this.vendingOnSale.filter(v => ids.includes(v.stock.id + '')).reduce((a, b) => {
-                        return a + b.stock.price;
-                    }, 0);
-                    const transactionID = new Date().getTime();
-                    const qr = await this.generateBillMMoney(value, transactionID + '');
-                    const bill = {
-                        uuid: uuid4(),
-                        clientId,
-                        qr: qr.qrCode,
-                        transactionID,
-                        machineId: machineId.machineId,
-                        hashM: '',
-                        hashP: '',
-                        paymentmethod: command,
-                        paymentref: '',
-                        paymentstatus: 'pending',
-                        paymenttime: new Date(),
-                        requestpaymenttime: new Date(),
-                        totalvalue: value,
-                        vendingsales: ids.map(v => {
-                            const stock = this.vendingOnSale.find(x => x.id + '' == v)?.stock || {} as IStock;
-                            const position = this.vendingOnSale.find(x => ids.includes(x.id + ''))?.position || {} as -1;
-                            return { stock, position } as IVendingMachineSale;
+
+
+                    if (d.command == EClientCommand.confirmMMoney) {
+                        console.log('CB COMFIRM', d);
+                        const c = d.data as IMMoneyConfirm;
+                        // c.wallet_ids
+                        this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+                            return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
+                        }).catch(e => {
+                            return res.send(PrintError(d.command, e, EMessage.error));
                         })
-                    };
-                    this.vendingBill.push(bill);
-                    res.send(PrintSucceeded(command,bill, EMessage.succeeded));
-                } else {
-                    res.send(PrintError(command, [], EMessage.notsupport));
+                        return;
+                    }
+                    // if (d.command == 'test') {
+                    //     console.log('CB COMFIRM test', d);
+                    //     if (!d.data.p || !d.data.machineId) throw new Error('Test cofirm failed')
+                    //     this.callBackConfirmTest(d.data.p, d.data.machineId).then(r => {
+                    //         return res.send(PrintSucceeded(d.command, { bill: r, transactionID: 'test' }, EMessage.succeeded));
+                    //     }).catch(e => {
+                    //         return res.send(PrintError(d.command, e, EMessage.error));
+                    //     })
+                    //     return;
+                    // }
+
+
+                    const clientId = d.data.clientId;
+                    let loggedin = false;
+                    // console.log(' WS client length', this.wss.clients);
+
+                    this.wss.clients.forEach(v => {
+                        console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
+
+                        if (v['clientId'] == clientId)
+                            loggedin = true;
+                    })
+                    if (!loggedin) throw new Error(EMessage.notloggedinyet);
+
+                    else if (d.command == EClientCommand.list) {
+                        return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
+                    } else if (d.command == EClientCommand.buyMMoney) {
+                        const sale = d.data.ids as Array<IVendingMachineSale>; // item id
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const position = d.data.position;
+                        if (!machineId) throw new Error('Invalid token');
+                        if (!Array.isArray(sale)) throw new Error('Invalid array id');
+                        // console.log('this.vendingOnSale', this.vendingOnSale);
+                        const checkIds = Array<IVendingMachineSale>();
+                        
+                        sale.forEach(v => {
+                            v.stock.qtty=1;
+                            const x = this.vendingOnSale.find(vx => {
+                                if (!checkIds.length 
+                                    && vx.stock.id + '' == v.stock.id + ''
+                                    && vx.position == v.position
+                                    && vx.stock.qtty >= v.stock.qtty
+                                    && vx.stock.qtty > 0) {
+                                    return true;
+                                }
+                                else if (vx.stock.qtty > 0
+                                    && vx.stock.id + '' == v.stock.id + ''
+                                    && vx.position == v.position
+                                    && vx.stock.qtty >= v.stock.qtty
+                                    && vx.stock.qtty > 0
+                                    && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
+                                        return a + b.stock.qtty;
+                                    }, 0) <= vx.stock.qtty) {
+                                    return true;
+                                }
+                                return false;
+                            });
+                            if (x) {
+                                const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+                                y.stock.qtty = 1;
+                                checkIds.push(y);
+                            }
+
+                            // return false;
+                        })
+
+                        console.log('checkIds', checkIds, 'ids', sale);
+
+                        if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
+
+                        const value = checkIds.reduce((a, b) => {
+                            return a + (b.stock.price * b.stock.qtty);
+                        }, 0);
+                        // console.log('qtty', checkIds);
+                        console.log('ids', sale.length);
+
+                        console.log(' value' + d.data.value + ' ' + value);
+
+                        if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
+
+                        const transactionID = new Date().getTime();
+                        const qr = await this.generateBillMMoney(value, transactionID + '');
+                        if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
+                        const bill = {
+                            uuid: uuid4(),
+                            clientId,
+                            qr: qr.qrCode,
+                            transactionID,
+                            machineId: machineId.machineId,
+                            hashM: '',
+                            hashP: '',
+                            paymentmethod: d.command,
+                            paymentref: qr.name,
+                            paymentstatus: 'pending',
+                            paymenttime: new Date(),
+                            requestpaymenttime: new Date(),
+                            totalvalue: value,
+                            vendingsales: sale
+                        };
+                        this.vendingBill.push(bill);
+
+                        return res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
+                    } else {
+                        return res.send(PrintError(d.command, [], EMessage.notsupport));
+                    }
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError(d.command, error, EMessage.error));
                 }
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError(command, error, EMessage.error));
-            }
-        });
-        // router.post('/confirm', async (req, res) => {
-        //     try {
-        //         const { uuid, value, ids } = req.body;
-        //         broadCast(this.wss, 'confirm', { uuid, value, ids })
-        //     } catch (error) {
-        //         console.log(error);
-        //         res.send(PrintError('confirm', error, EMessage.error));
-        //     }
-        // })
+            });
 
 
-        /// 0. init for demo 
 
-        router.get('/init', async (req, res) => {
-            try {
-                const machineId = req.query['machineId'];
-                if(!this.ssocket.findOnlneMachine(machineId+'')) throw new Error(EMessage.MachineIsNotOnline)
-                this.init(machineId+'');
-                
-                res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
-            } catch (error:any) {
-                console.log(error);
-                res.send(PrintError('init', error, error.message));
-            }
-        });
-        router.get('/getPaidBills', async (req, res) => {
-            try {
-                res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError('init', error, EMessage.error));
-            }
-        });
-        router.get('/getBills', async (req, res) => {
-            try {
-                res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError('init', error, EMessage.error));
-            }
-        });
-        router.get('/getOnlineMachines', async (req, res) => {
-            try {
-                res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError('init', error, EMessage.error));
-            }
-        });
+            /// 0. init for demo 
+
+            router.get('/init', async (req, res) => {
+                try {
+                    const machineId = req.query['machineId'];
+                    if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline)
+                    this.init(machineId + '');
+
+                    res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
+                } catch (error: any) {
+                    console.log(error);
+                    res.send(PrintError('init', error, error.message));
+                }
+            });
+            router.get('/refresh', async (req, res) => {
+                try {
+                    this.wss.clients.forEach(v=>{
+                        if(v.OPEN){
+                            v.send(JSON.stringify(PrintSucceeded('refresh',true , EMessage.succeeded)));
+                        }
+                    })
+
+                    res.send(PrintSucceeded('refresh', true, EMessage.succeeded));
+                } catch (error: any) {
+                    console.log(error);
+                    res.send(PrintError('init', error, error.message));
+                }
+            });
+            router.get('/getPaidBills', async (req, res) => {
+                try {
+                    res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('init', error, EMessage.error));
+                }
+            });
+            router.get('/getBills', async (req, res) => {
+                try {
+                    res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('init', error, EMessage.error));
+                }
+            });
+            router.get('/getOnlineMachines', async (req, res) => {
+                try {
+                    console.log(' WS getOnlineMachines');
+                    res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('init', error, EMessage.error));
+                }
+            });
 
 
-        router.get('/submit_command', async (req, res) => {
-            try {
-                const machineId = req.query['machineId']+'';
-                const position = Number(req.query['position'])? Number(req.query['position']):0;
-                console.log('submit command');
-                
-                res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId,position), EMessage.succeeded));
-            } catch (error) {
-                console.log(error);
-                res.send(PrintError('init', error, EMessage.error));
-            }
-        });
+            router.get('/submit_command', async (req, res) => {
+                try {
+                    const machineId = req.query['machineId'] + '';
+                    const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
+                    console.log(' WS submit command', machineId, position);
+
+                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('init', error, EMessage.error));
+                }
+            });
+        } catch (error) {
+            console.log(error);
+
+        }
+
     }
-    init(machineId:string) {
+    init(machineId: string) {
         this.stock = [];
         this.vendingOnSale = [];
         try {
@@ -186,7 +245,7 @@ export class InventoryM102 {
                 image: 'cokecan.jpg'
                 ,
                 price: 9000,
-                qtty: 1000,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
             }, {
@@ -195,7 +254,7 @@ export class InventoryM102 {
                 image: 'pepsican.jpeg'
                 ,
                 price: 9000,
-                qtty: 1000,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
 
@@ -205,7 +264,7 @@ export class InventoryM102 {
                 image: 'oishiteabottle.png'
                 ,
                 price: 12000,
-                qtty: 1000,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
             }
@@ -214,7 +273,7 @@ export class InventoryM102 {
                 name: 'Chinese tea 330ml',
                 image: 'chineseteacan.jpg',
                 price: 8000,
-                qtty: 100,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
 
@@ -224,21 +283,24 @@ export class InventoryM102 {
                 name: 'Water tiger head 380ml',
                 image: 'tigerheadbottle.png',
                 price: 9000,
-                qtty: 100,
+                qtty: 5,
                 hashP: '',
                 hashM: ''
             }]
-            )
+            );
+            let x = 5;
+            let y = 0;
             new Array(60).fill(0).forEach((v, i) => {
-                const c = Math.floor(Math.random() * this.stock.length);
+                const c = x > i ? i : (i - (x * y) - 1);
+                !(i % x) && i >= x ? y++ : '';
                 this.vendingOnSale.push({
                     machineId,
                     stock: this.stock[c],
-                     position: i,
+                    position: i,
                     hashP: '',
                     hashM: ''
                 })
-            })
+            });
         } catch (error) {
             console.log(error);
         }
@@ -246,25 +308,23 @@ export class InventoryM102 {
 
     generateBillMMoney(value: number, transactionID: string) {
         return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
-            const uuid = randomUUID();
-            // resolve({ uuid, qr: 'qr', value, machineId });
             // generate QR from MMoney
             this.loginMmoney().then(r => {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber: '2054445447',
+                        phonenumber: '2054445447',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
-                    axios.post('https://qr.mmoney.la/test/generateQR',
+                    axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
                         qr,
-                        { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(r => {
-                            console.log(r);
-                            if (r.status) {
-                                resolve(r.data as IMMoneyGenerateQRRes);
+                        { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(rx => {
+                            // console.log(r);
+                            if (rx.status) {
+                                resolve(rx.data as IMMoneyGenerateQRRes);
                             } else {
-                                reject(new Error(r.statusText));
+                                reject(new Error(rx.statusText));
                             }
 
                         }).catch(e => {
@@ -281,55 +341,94 @@ export class InventoryM102 {
 
         })
     }
-    callBackConfirm(uuid: string, ids: Array<string>, value: number, machineId: string, ref: string, others: any) {
-        return new Promise<any>((resolve, reject) => {
+    mMoneyLoginRes = {} as IMMoneyLogInRes;
+    loginMmoney() {
+        const username = 'test';
+        const password = '12345';
+        return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
-                const c = this.checkMachineId(machineId);
-                if (!c) throw new Error(EMessage.MachineIdNotFound);
-
-                const sale = this.vendingBill.find(v => v.uuid == uuid);
-                if (!sale) throw new Error(EMessage.billnotfound);
-                sale.vendingsales.map(v=>v.position).forEach((p,i)=>{
-                    setTimeout(() => {
-                        const position =this.ssocket.processOrder(machineId,p);
-                        this.wss.clients.forEach(v => {
-                            const x = v['clientId'] as string;
-                            if (x) {
-                                if (x == sale?.clientId) {
-                                    const res = {} as IResModel;
-                                    res.command = EM102_COMMAND.release;
-                                    res.message = EMessage.confirmsucceeded;
-                                    res.status = 1;
-                                    res.data = {sale,position};
-                                    const i =this.vendingBill.findIndex(i => i.uuid == uuid);
-                                    delete this.vendingBill[i];
-                                    v.send(JSON.stringify(res));
-                                }
-                            }
-                        })
-                    }, 3000*i);
-                   
-                })
-                // this.wss.
-                sale.paymentstatus = 'paid';
-                sale.paymentref = ref;
-                sale.paymenttime = new Date();
-                this.wss.clients.forEach(v => {
-                    const x = v['clientId'] as string;
-                    if (x) {
-                        if (x == sale?.clientId) {
-                            const res = {} as IResModel;
-                            res.command = EM102_COMMAND.release;
-                            res.message = EMessage.confirmsucceeded;
-                            res.status = 1;
-                            res.data = sale;
-                            const i =this.vendingBill.findIndex(v => v.uuid == uuid);
-                            this.vendingBillPaid.push(this.vendingBill.splice(i,1)[0]);
-                            v.send(JSON.stringify(res));
-                        }
+                if (this.mMoneyLoginRes.expiresIn) {
+                    if (new Date(this.mMoneyLoginRes.expiresIn).getTime() > new Date().getTime()) {
+                        return resolve(this.mMoneyLoginRes);
                     }
+                }
+                axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
+                    // console.log(r);
+                    if (r.status) {
+                        this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
+                        this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT' + this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(), 'milliseconds') + '';
+                        resolve(this.mMoneyLoginRes);
+                    } else {
+                        reject(new Error(EMessage.loginfailed));
+                    }
+
+                }).catch(e => {
+                    reject(e)
+                });
+            } catch (error) {
+                console.log(error);
+
+            }
+
+        })
+    }
+    // callBackConfirmTest(position: Array<number>, machineId: string) {
+    //     return new Promise<IVendingMachineBill>((resolve, reject) => {
+    //         try {
+    //             position.forEach((p, i) => {
+    //                 this.wss.clients.forEach(v => {
+    //                     setTimeout(() => {
+    //                         const position = this.ssocket.processOrder(machineId, p, -1);
+    //                         const res = {} as IResModel;
+    //                         res.command = EMACHINE_COMMAND.confirm;
+    //                         res.message = EMessage.confirmsucceeded;
+    //                         res.status = 1;
+    //                         res.data = { bill: null, position } as unknown as IBillProcess;
+    //                         v.send(JSON.stringify(res));
+    //                     }, 3000 * i);
+    //                 })
+    //             })
+    //             resolve({} as IVendingMachineBill);
+    //         } catch (error) {
+    //             console.log(error);
+    //             reject(error);
+    //         }
+    //     })
+    // }
+    callBackConfirm(transactionID: string, amount: number) {
+        return new Promise<IVendingMachineBill>((resolve, reject) => {
+            try {
+                console.log('transactionID', transactionID, 'value', amount);
+
+                const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID && v.totalvalue == amount);
+                if (!bill) throw new Error(EMessage.billnotfound);
+                bill.paymentstatus = 'paid';
+                bill.paymentref = '';
+                bill.paymenttime = new Date();
+
+                const cbill = bill.vendingsales.length;
+                bill.vendingsales.forEach((p, i) => {
+                    let x ='';
+                    let y :WebSocketServer.WebSocket=null as any;
+                    this.wss.clients.forEach(v => {
+                         x = v['clientId'] as string;
+                         if (x) {
+                            if (x == bill.clientId) {
+                               y=v;
+                            }
+                        }
+                    })
+                   if(y){
+                    this.setTask(bill,p,y,cbill,i).then(()=>{
+                        if(i==bill.vendingsales.length-1){
+                            resolve(bill);
+                        }
+                    })
+                  
+                   }
                 })
-                resolve(true);
+                
+                
             } catch (error) {
                 console.log(error);
                 reject(error);
@@ -338,7 +437,36 @@ export class InventoryM102 {
         })
 
     }
-
+    setTask(bill:IVendingMachineBill,p:IVendingMachineSale,y:WebSocketServer.WebSocket,cbill:number,i:number){
+        return new Promise<any>((resolve,reject)=>{
+            setTimeout(() => {
+                const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
+                const res = {} as IResModel;
+                res.command = EMACHINE_COMMAND.confirm;
+                res.message = EMessage.confirmsucceeded;
+                res.status = 1;
+                // const ids = bill.vendingsales.map(v => v.stock.id);
+                bill.vendingsales.forEach(v => {
+                    const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
+                    if (x)
+                        x.stock.qtty--;
+                });
+                res.data = { bill, position } as unknown as IBillProcess;
+                y.send(JSON.stringify(res), e => {
+                    if (e) console.log(e);
+                    if (i + 1 >= cbill) {
+                        const x = this.vendingBill.findIndex(x => x.uuid == bill.uuid);
+                        if (x != -1) {
+                            const y = this.vendingBill.splice(x, 1);
+                            this.vendingBillPaid.push(...y)
+                        }
+                    }
+                });
+            }, this.delayTime * i);
+            resolve(true);
+        })
+       
+    }
     checkMachineId(machineId: string): IMachineClientID | null {
         const x = this.ssocket.sclients.find(v => {
             const x = v['machineId'] as IMachineClientID;
@@ -352,27 +480,30 @@ export class InventoryM102 {
 
     }
     initWs(wss: WebSocketServer.Server) {
-        setWsHeartbeat(wss, (ws, data, binary) => {
-            if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                ws.send(JSON.stringify(PrintSucceeded('pong', { kind: 'ping' }, EMessage.succeeded)));
-            }
-        }, 15000);
+        try {
+            setWsHeartbeat(wss, (ws, data, binary) => {
+                console.log('WS HEART BEAT');
 
-        wss.on('connection', (ws: WebSocket) => {
-            console.log('new connection ', ws.url);
+                if (data === '{"command":"ping"}') { // send pong if recieved a ping.
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
+                }
+            }, 15000);
 
-            console.log('current connection is alive', ws['isAlive']);
+            wss.on('connection', (ws: WebSocket) => {
+                console.log(' WS new connection ', ws.url);
 
+                console.log(' WS current connection is alive', ws['isAlive'])
 
+                ws.onopen = (ev: Event) => {
+                    console.log(' WS open', ev);
+                }
 
-            ws.onopen = (ev: Event) => {
-                console.log('open', ev);
                 // ws['isAlive'] = true;
                 ws.onclose = (ev: CloseEvent) => {
 
                 }
                 ws.onerror = (ev: Event) => {
-                    console.log('error', ev);
+                    console.log(' WS error', ev);
                 }
 
                 //connection is up, let's add a simple simple event
@@ -380,7 +511,7 @@ export class InventoryM102 {
                     let d: IReqModel = {} as IReqModel;
                     // ws['isAlive'] = true;
                     try {
-                        console.log('comming', ev.data.toString());
+                        console.log(' WS comming', ev.data.toString());
 
                         d = JSON.parse(ev.data.toString()) as IReqModel;
 
@@ -389,30 +520,40 @@ export class InventoryM102 {
                             res.command = d.command;
                             res.message = EMessage.loginok;
                             res.status = 1;
-                            if (d.data) {
-                                const x = d.data as string;
-                                ws['machineId'] = x;
-                                console.log('online machine', this.ssocket.listOnlineMachine());
+                            if (d.token) {
+                                const x = d.token as string;
+                                console.log(' WS online machine', this.ssocket.listOnlineMachine());
+                                let machineId = this.ssocket.findMachineIdToken(x)
 
-                                if (!this.ssocket.findOnlneMachine(x)) throw new Error('machine is not online');
+                                if (!machineId) throw new Error('machine is not exit');
+                                ws['machineId'] = machineId.machineId;
+                                ws['clientId'] = uuid4();
+                                res.data = { clientId: ws['clientId'] };
+                                return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
 
                             } else throw new Error(EMessage.MachineIdNotFound)
-                            ws['clientId'] = uuid4();
-                            res.data = { machineId: d.data, clientId: ws['clientId'] };
-                        }
+                        } else if (d.command == 'ping') {
+                            console.log('WS PING');
+                            return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
 
-                        ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+                        }
+                        console.log('WS CLOSE');
+                        ws.close();
+
+
 
                     } catch (error: any) {
-                        console.log('error', error);
+                        console.log(' WS error', error);
                         ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
                     }
                 }
-            }
 
-        });
+            });
+        } catch (error) {
+            console.log(error);
+
+        }
     }
-
 }
 
 
