@@ -4,7 +4,7 @@ import { EMACHINE_COMMAND } from '../entities/syste.model';
 const sspLib = require('encrypted-smiley-secure-protocol');
 
 import { SocketKiosClient } from './socketClient.kios';
-
+import fs  from 'fs';
 export class KiosESSP {
 
     sock: SocketKiosClient | null = null;
@@ -360,16 +360,19 @@ export class KiosESSP {
                     console.log(result)
                     this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'NOTE_REJECTED' },EMACHINE_COMMAND.status);
                 })
+                this.writeLog(result);
         })
         this.eSSP.on('READ_NOTE', result => {
             console.log('READ_NOTE', result)
             if (result.channel > 0)
                 this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' },EMACHINE_COMMAND.status);
-        })
+                this.writeLog(result);
+        
+            })
         this.eSSP.on('CREDIT_NOTE', result => {
             console.log('CREDIT_NOTE', result)
             this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' },EMACHINE_COMMAND.status);
-
+            this.writeLog(result);
         })
         this.eSSP.on('JAMMED', result => {
             console.log('JAMMED', result)
@@ -377,14 +380,16 @@ export class KiosESSP {
             this.eSSP.command('DISABLE').then(result => {
                 this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },EMACHINE_COMMAND.status);
             })
+            this.writeLog(result);
         })
         this.eSSP.on('DISPENSED', result => {
             console.log('DISPENSED', result)
-
+            this.writeLog(result);
         })
+        
         this.eSSP.on('JAM_RECOVERY', result => {
             console.log('JAM_RECOVERY', result)
-
+            this.writeLog(result);
         })
         this.eSSP.open('COM1');
         process.on("exit", () => {
@@ -392,7 +397,11 @@ export class KiosESSP {
         })
     }
   
+    writeLog(data:any){
+        const d ={data}
+        fs.writeFileSync(__dirname+'/'+new Date().getTime(), JSON.stringify(d));
 
+    }
 
 
 }

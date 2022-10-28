@@ -88,7 +88,7 @@ export class CashNV9 {
                     const machineId = this.ssocket.findMachineIdToken(token);
                     if (!machineId) throw new Error(EMessage.MachineIdNotFound)
                     const sock = this.ssocket.findOnlneMachine(machineId.machineId);
-                    // if(!sock) throw new Error(EMessage.MachineIsNotOnline);
+                    if(!sock) throw new Error(EMessage.MachineIsNotOnline);
                     this.validateMmoneyCashIn(n, 1000, JSON.stringify(machineId)).then(r => {
                         this.requestors.push(r);
                         res.send(PrintSucceeded('validateMmoneyCashIn', {

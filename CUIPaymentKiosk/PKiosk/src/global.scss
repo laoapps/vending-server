@@ -26,7 +26,8 @@
 @import "~@ionic/angular/css/flex-utils.css";
 
 
-.dialog-fullscreen .modal-wrapper {
-    width: 100%;
-    height: 100%;
+
+  ion-modal.full-modal {
+    --height: 100%;
+    --width: 100%;
   }

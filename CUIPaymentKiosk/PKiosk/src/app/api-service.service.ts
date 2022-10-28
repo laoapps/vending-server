@@ -17,7 +17,7 @@ export class ApiServiceService {
   clientId = {} as IClientId;
   wsAlive = {} as IAlive;
   // machine = {bankNotes: [], badBN: []} as { bankNotes: Array<IBankNote>, badBN: Array<IBankNote>};
-  billCashIn=Array<IBillCashIn>();
+  billCashIn = Array<IBillCashIn>();
   timer = { t: 30 };
   t: any;
 
@@ -54,15 +54,15 @@ export class ApiServiceService {
         if (v.billCashIn) {
           // this.billCashin.badBankNotes.length=0;
           const x = v.billCashIn;
-          console.log('x',x);
+          console.log('x', x);
           this.billCashIn.push(x);
           this.closeModal();
-
+          this.setCounter();
         }
       }
 
     })
-    this.wsapi.billBankNoteSubscription.subscribe(v => {
+    this.wsapi.billBankCashInSubscription.subscribe(v => {
       console.log('v', v);
 
       if (v) {
@@ -70,6 +70,7 @@ export class ApiServiceService {
         Object.keys(v).forEach(k => {
           this.billCashIn[k] = v[k];
         })
+        this.validateMMoney(v.requestor.transData[0].accountRef);
 
       }
     })
@@ -90,12 +91,22 @@ export class ApiServiceService {
       this.timer.t = 30;
     }
     this.t = setInterval(() => {
+      if (this.timer.t == 0) {
+        clearInterval(this.t);
+        this.t = null;
+        this.timer.t = 30;
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+
+      }
+
       this.timer.t--;
     }, 1000);
   }
 
   showModal(component: any) {
-    return this.modal.create({ component, cssClass: 'dialog-fullscreen' });
+    return this.modal.create({ component, cssClass: 'full-modal' });
   }
   closeModal() {
     this.modal.getTop().then(v => v ? v.dismiss() : null)

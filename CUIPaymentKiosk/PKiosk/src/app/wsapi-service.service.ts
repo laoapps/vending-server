@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { EMACHINE_COMMAND, IAlive, IBillBankNote, IClientId, IResModel } from './syste.model';
+import { EMACHINE_COMMAND, IAlive, IBillBankNote, IBillCashIn, IClientId, IResModel } from './syste.model';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
 import * as cryptojs from 'crypto-js';
 @Injectable({
@@ -18,7 +18,7 @@ export class WsapiServiceService {
 
   public loginSubscription = new BehaviorSubject<IClientId>(null);
   public aliveSubscription = new BehaviorSubject<IAlive>(null);
-  public billBankNoteSubscription = new BehaviorSubject<IBillBankNote>(null);
+  public billBankCashInSubscription = new BehaviorSubject<IBillCashIn>(null);
 
 
   public refreshSubscription = new BehaviorSubject<boolean>(false);
@@ -76,7 +76,7 @@ export class WsapiServiceService {
             break;
           case 'confirm':
             console.log('confirm', data);
-            this.billBankNoteSubscription.next(data)
+            this.billBankCashInSubscription.next(data)
             break;
           case 'login':
             if (data.data)

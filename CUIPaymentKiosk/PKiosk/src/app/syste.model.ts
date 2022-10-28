@@ -802,7 +802,7 @@ export interface IBillCashIn extends IBase{
     badBankNotes:Array<IBankNote>;
     transactionID:number;
     userUuid:string;
-    requestor:any;
+    requestor:IMMoneyRequestRes;
     requestTime:Date;
     confirm:any;
     confirmTime:Date;
