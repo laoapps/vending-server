@@ -4,7 +4,7 @@ import { EMACHINE_COMMAND } from '../entities/syste.model';
 const sspLib = require('encrypted-smiley-secure-protocol');
 
 import { SocketKiosClient } from './socketClient.kios';
-import fs  from 'fs';
+import fs from 'fs';
 export class KiosESSP {
 
     sock: SocketKiosClient | null = null;
@@ -22,7 +22,14 @@ export class KiosESSP {
         this.sock = sock;
         const that = this;
         that.initSSP();
-        
+        this.eSSP.open('COM1').then(r => {
+            console.log('OPEN COM1', r);
+
+        }).catch(e => {
+            console.log('ERROR OPEN COM1', e);
+        });
+
+
     }
     setTransactionID(transactionID: number) {
         this.transactionID = transactionID;
@@ -32,7 +39,7 @@ export class KiosESSP {
         }
         if (this.transactionID != -1) {
             this.eSSP.command('ENABLE').then(result => {
-                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' },EMACHINE_COMMAND.status);
+                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' }, EMACHINE_COMMAND.status);
             })
             this.t = setInterval(() => {
                 if (this.transactionID != -1) {
@@ -40,18 +47,18 @@ export class KiosESSP {
                         .then(result => {
                             this.transactionID = -1;
                             console.log(result)
-                            this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },EMACHINE_COMMAND.status);
+                            this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
                         })
                 }
             }, 30000)
-        }else {
+        } else {
             this.eSSP.command('DISABLE').then(result => {
                 clearInterval(this.t);
-                this.t=null
-                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },EMACHINE_COMMAND.status);
+                this.t = null
+                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
             })
         }
-       
+
     }
 
 
@@ -70,26 +77,27 @@ export class KiosESSP {
                 })
                 .then(() => this.eSSP.command('DISPLAY_ON'))
                 .then(result => {
-                    if (result.status == 'OK') {
+                    if (result)if (result.status == 'OK') {
                         console.log('DISPLAY_ON', result.info)
                     }
                 })
                 .then(result => {
-                    if (result.status == 'OK') {
+                    console.log('Device is active', result)
+                    if (result)if (result.status == 'OK') {
                         console.log('Device is active')
                     }
                     return;
                 })
                 .then(() => this.eSSP.command('SETUP_REQUEST'))
                 .then(result => {
-                    if (result.status == 'OK') {
+                    if (result)if (result.status == 'OK') {
                         console.log('SETUP_REQUEST request', result.info)
                     }
                     return;
                 }).then(() => this.eSSP.enable())
             // .then(() => eSSP.command('SET_CHANNEL_INHIBITS',{channels:[1,1,1,1,1,1,1]})
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('SET_CHANNEL_INHIBITS', result.info)
             //     }
             // })
@@ -97,7 +105,7 @@ export class KiosESSP {
             // })
             // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
 
             //         console.log('Device value request', result.info)
             //     }
@@ -118,7 +126,7 @@ export class KiosESSP {
 
             // .then(() => eSSP.command('RESET'))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
 
             //         console.log('RESET request', result.info)
             //     }
@@ -126,7 +134,7 @@ export class KiosESSP {
             // })
             // .then(() => eSSP.command('SET_VALUE_REPORTING_TYPE',{reportBy:'value'}))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log(result);
 
             //         console.log('SET_VALUE_REPORTING_TYPE', result)
@@ -135,7 +143,7 @@ export class KiosESSP {
             // })
             // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         const x = [];
             //         Object.keys(result.info.slot).forEach(k => {
             //             if (result.info.slot[k].value)
@@ -148,14 +156,14 @@ export class KiosESSP {
             // })
             // .then(() => eSSP.command('PAYOUT_NOTE'))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('PAYOUT_NOTE', result.info)
             //     }
             //     return;
             // })
             // // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
             // // .then(result => {
-            // //     if (result.status == 'OK') {
+            // //     if (result)if (result.status == 'OK') {
 
             // //         console.log('CHANNEL_VALUE_REQUEST', result)
             // //     }
@@ -163,7 +171,7 @@ export class KiosESSP {
             // // })
             // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         const x = [];
             //         console.log('GET_NOTE_POSITIONS',result.info.slot);
             //         // Object.keys(result.info.slot).forEach(k => {
@@ -176,7 +184,7 @@ export class KiosESSP {
             // })
             // .then(() => eSSP.command('GET_DENOMINATION_ROUTE'))
             //     .then(result => {
-            //         if (result.status == 'OK') {
+            //         if (result)if (result.status == 'OK') {
             //             console.log('GET_DENOMINATION_ROUTE',result)
             //         }
             //         console.log('GET_DENOMINATION_ROUTE',result)
@@ -184,7 +192,7 @@ export class KiosESSP {
             //     })
             // .then(() => eSSP.command('SET_REFILL_MODE'))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('SET_REFILL_MODE',result.info)
             //     }
             //     return;
@@ -204,7 +212,7 @@ export class KiosESSP {
             //     test: false
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('FLOAT_BY_DENOMINATION',result)
             //     }
             //     console.log('FLOAT_BY_DENOMINATION',result)
@@ -216,7 +224,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('GET_DENOMINATION_ROUTE',result)
             //     }
             //     console.log('GET_DENOMINATION_ROUTE',result)
@@ -237,7 +245,7 @@ export class KiosESSP {
             //     test: false
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('PAYOUT_BY_DENOMINATION',result)
             //     }
             //     console.log('PAYOUT_BY_DENOMINATION',result)
@@ -249,7 +257,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('SMART_EMPTY',result)
             //     }
             //     console.log('SMART_EMPTY',result)
@@ -266,7 +274,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('FLOAT_AMOUNT',result)
             //     }
             //     console.log('PAYOUT_AMOUNT',result)
@@ -282,7 +290,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('PAYOUT_AMOUNT',result)
             //     }
             //     console.log('PAYOUT_AMOUNT',result)
@@ -294,7 +302,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('GET_BAR_CODE_DATA',result)
             //     }
             //     console.log('GET_BAR_CODE_DATA',result)
@@ -306,7 +314,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('GET_BAR_CODE_READER_CONFIGURATION',result)
             //     }
             //     console.log('GET_BAR_CODE_READER_CONFIGURATION',result)
@@ -318,7 +326,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('GET_ALL_LEVELS',result)
             //     }
             //     console.log('GET_ALL_LEVELS',result)
@@ -330,7 +338,7 @@ export class KiosESSP {
             //     country_code: 'LAK'
             // })
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
             //         console.log('GET_NOTE_POSITIONS',result)
             //     }
             //     return;
@@ -342,7 +350,7 @@ export class KiosESSP {
             //     test: false
             // }))
             // .then(result => {
-            //     if (result.status == 'OK') {
+            //     if (result)if (result.status == 'OK') {
 
             //         console.log('Device value request', result.info)
             //     }else{
@@ -358,27 +366,28 @@ export class KiosESSP {
             this.eSSP.command('LAST_REJECT_CODE')
                 .then(result => {
                     console.log(result)
-                    this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'NOTE_REJECTED' },EMACHINE_COMMAND.status);
+                    this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'NOTE_REJECTED' }, EMACHINE_COMMAND.status);
                 })
-                this.writeLog(result);
+            this.writeLog(result);
         })
         this.eSSP.on('READ_NOTE', result => {
             console.log('READ_NOTE', result)
+            if(this.transactionID==-1) this.eSSP.command('REJECT')
             if (result.channel > 0)
-                this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' },EMACHINE_COMMAND.status);
-                this.writeLog(result);
-        
-            })
+                this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
+            this.writeLog(result);
+
+        })
         this.eSSP.on('CREDIT_NOTE', result => {
             console.log('CREDIT_NOTE', result)
-            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' },EMACHINE_COMMAND.status);
+            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' }, EMACHINE_COMMAND.status);
             this.writeLog(result);
         })
         this.eSSP.on('JAMMED', result => {
             console.log('JAMMED', result)
-            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'JAMMED' },EMACHINE_COMMAND.status);
+            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'JAMMED' }, EMACHINE_COMMAND.status);
             this.eSSP.command('DISABLE').then(result => {
-                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },EMACHINE_COMMAND.status);
+                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
             })
             this.writeLog(result);
         })
@@ -386,20 +395,25 @@ export class KiosESSP {
             console.log('DISPENSED', result)
             this.writeLog(result);
         })
-        
+
         this.eSSP.on('JAM_RECOVERY', result => {
             console.log('JAM_RECOVERY', result)
             this.writeLog(result);
         })
-        this.eSSP.open('COM1');
+
+
+
+
+
+
         process.on("exit", () => {
             this.eSSP.close();
         })
     }
-  
-    writeLog(data:any){
-        const d ={data}
-        fs.writeFileSync(__dirname+'/'+new Date().getTime(), JSON.stringify(d));
+
+    writeLog(data: any) {
+        const d = { data }
+        fs.writeFileSync(__dirname + '/' + new Date().getTime(), JSON.stringify(d));
 
     }
 

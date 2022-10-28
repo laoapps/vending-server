@@ -1,4 +1,4 @@
-import net from 'net';
+import * as net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 import { KiosESSP } from './kios.essp';
@@ -8,8 +8,8 @@ export class SocketKiosClient {
     // creating a custom socket client and connecting it....
     client = new net.Socket();
     port = 31225;
-    host = 'laoapps.com';
-    machineId = '12345678';
+    host = 'localhost';
+    machineId = '88888888';
     otp = '111111';
     token = '';
     t:any;
@@ -17,7 +17,7 @@ export class SocketKiosClient {
     constructor() {
         this.m = new KiosESSP(this);
         this.init();
-        this.token = cryptojs.SHA256(this.machineId + this.otp).toString(CryptoJS.enc.Hex)
+        this.token = cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex)
     }
     init() {
         const that = this;

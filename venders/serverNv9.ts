@@ -6,4 +6,4 @@ import { SocketKiosClient } from './api/socketClient.kios';
 
 
 
-new KiosESSP(new SocketKiosClient())
+new SocketKiosClient()
