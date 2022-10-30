@@ -51,8 +51,8 @@
     <ion-row *ngFor="let n of billCashIn; let i = index">
       <ion-col>
         {{i+1}}.-
-        <div>{{n.transactionID}}</div>
-        <ion-chip class="money" *ngFor="let m of n.bankNotes;" >
+        <div>{{n.transactionID}} {{n.bankNotes.length}}</div>
+        <ion-chip class="money" *ngFor="let m of n.bankNotes" >
           <div>
             <img [src]="'/assets/icon/'+m?.image">
             <div>{{m?.value|number}}</div>

@@ -22,17 +22,7 @@ export class Tab1Page {
     this.billCashIn = apiService.billCashIn;
     this.loadBankNotes();
     this.timer = apiService.timer;
-    setInterval(()=>{
-      if(!this.billCashIn.length){
-        this.apiService.modal.getTop().then(r=>{
-          if(!r){
-            this.apiService.showModal(AdsPage).then(v=>{
-              v.present();
-            })
-          }
-        })
-      }
-    },300)
+   
    this.apiService.accountInfoSubcription.subscribe(r=>{
     console.log('R',r);
     if(r){

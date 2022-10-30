@@ -33,13 +33,14 @@ export class CashNV9 {
     requestors = new Array<IMMoneyRequestRes>();
 
     mmMoneyLogin: IMMoneyLoginCashin | null = null;
+    path = '/cashNV9'
     constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerESSP) {
         this.ssocket = socket;
-
+        this.ssocket.setCashInstant(this);
         this.wss = wss;
         this.initWs(wss);
         try {
-            router.post('/', async (req, res) => {
+            router.post(this.path + '/', async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
 
@@ -54,7 +55,7 @@ export class CashNV9 {
             /// 0. init for demo 
 
 
-            router.get('/loadBankNotes', async (req, res) => {
+            router.get(this.path + '/loadBankNotes', async (req, res) => {
                 try {
                     console.log(' REST loadBankNotes');
                     res.send(PrintSucceeded('loadBankNotes', this.notes, EMessage.succeeded));
@@ -63,7 +64,7 @@ export class CashNV9 {
                     res.send(PrintError('loadBankNotes', error, EMessage.error));
                 }
             });
-            router.get('/requestMmoneyCashIn', async (req, res) => {
+            router.get(this.path + '/requestMmoneyCashIn', async (req, res) => {
                 try {
                     console.log(' REST requestMmoneyCashIn');
                     res.send(PrintSucceeded('loadBankNotes', this.notes, EMessage.succeeded));
@@ -72,7 +73,7 @@ export class CashNV9 {
                     res.send(PrintError('loadBankNotes', error, EMessage.error));
                 }
             });
-            router.get('/getOnlineMachines', async (req, res) => {
+            router.get(this.path + '/getOnlineMachines', async (req, res) => {
                 try {
                     console.log(' WS getOnlineMachines');
                     res.send(PrintSucceeded('WS getOnlineMachines', this.ssocket.listOnlineMachine(), EMessage.succeeded));
@@ -81,14 +82,23 @@ export class CashNV9 {
                     res.send(PrintError('WS getOnlineMachines', error, EMessage.error));
                 }
             });
-            router.post('/validateMmoneyCashIn', async (req, res) => {
+            router.get(this.path + '/getClientWS', async (req, res) => {
+                try {
+                    console.log(' WS getClientWS');
+                    res.send(PrintSucceeded('WS getClientWS', await this.listOnlineWSClients(), EMessage.succeeded));
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('WS getClientWS', error, EMessage.error));
+                }
+            });
+            router.post(this.path + '/validateMmoneyCashIn', async (req, res) => {
                 try {
                     console.log(' REST validateMmoneyCashIn');
                     const { n, token } = req.body;
                     const machineId = this.ssocket.findMachineIdToken(token);
                     if (!machineId) throw new Error(EMessage.MachineIdNotFound)
                     const sock = this.ssocket.findOnlneMachine(machineId.machineId);
-                    if(!sock) throw new Error(EMessage.MachineIsNotOnline);
+                    if (!sock) throw new Error(EMessage.MachineIsNotOnline);
                     this.validateMmoneyCashIn(n, 1000, JSON.stringify(machineId)).then(r => {
                         this.requestors.push(r);
                         res.send(PrintSucceeded('validateMmoneyCashIn', {
@@ -117,17 +127,19 @@ export class CashNV9 {
         }
 
     }
-
-
     wsSend(clientId: Array<string>, data: any) {
         try {
-            if (!clientId.length) {
+            console.log('CLIENT ID',clientId,data);
+            console.log('CLIENT ID',clientId,data);
+            if (clientId.length) {
                 this.wss.clients.forEach(v => {
+                    console.log('CLIENT ID',v['clientId']);
+                    
                     if (v.OPEN) {
-                        if (clientId.includes(v['clinetId'] + '')) {
+                        if (clientId.includes(v['clientId'] + '')) {
                             v.send(JSON.stringify(data));
-                            console.log('SENDING ',v['clientId'],data);
-                            
+                            console.log('SENDING ', v['clientId'], data);
+
                         }
                     }
                 })
@@ -138,7 +150,23 @@ export class CashNV9 {
 
         }
     }
+    listOnlineWSClients(){
+        return new Promise<Array<string>>((resolve,reject)=>{
+            const clientIds=Array<string>();
+            this.wss.clients.forEach(v=>{
+                console.log('CLIENT ID',v['clientId']);
+                
+                clientIds.push(v['clientId'])
     
+                if(clientIds.length==this.wss.clients.size){
+                    resolve(clientIds);
+                }
+            });
+        });
+       
+        
+    }
+
     initWs(wss: WebSocketServer.Server) {
         try {
             setWsHeartbeat(wss, (ws, data, binary) => {
@@ -160,11 +188,11 @@ export class CashNV9 {
 
                 // ws['isAlive'] = true;
                 ws.onclose = (ev: CloseEvent) => {
-                    console.log(' WS CLOSE', ev);
+                    console.log(' WS CLOSE');
 
                 }
                 ws.onerror = (ev: Event) => {
-                    console.log(' WS error', ev);
+                    console.log(' WS error');
                 }
 
                 //connection is up, let's add a simple simple event
@@ -223,12 +251,11 @@ export class CashNV9 {
                                 billCashIn.requestor = requestor;
                                 this.billCashIn.push(billCashIn);
                                 this.ssocket.processOrder(machineId.machineId, billCashIn.transactionID);
-                                return
+                                return;
                             } else throw new Error(EMessage.MachineIdNotFound)
                         } else if (d.command == 'ping') {
                             console.log('WS PING');
                             return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
-
                         }
                         console.log('WS CLOSE');
                         ws.close();
@@ -266,35 +293,35 @@ export class CashNV9 {
             value: 5000,
             amount: 0,
             currency: 'LAK',
-            channel: 5,
+            channel: 3,
             image: 'lak5000.jpg'
         })
         this.notes.push({
             value: 10000,
             amount: 0,
             currency: 'LAK',
-            channel: 10,
+            channel: 4,
             image: 'lak10000.jpg'
         })
         this.notes.push({
             value: 20000,
             amount: 0,
             currency: 'LAK',
-            channel: 20,
+            channel: 5,
             image: 'lak20000.jpg'
         })
         this.notes.push({
             value: 50000,
             amount: 0,
             currency: 'LAK',
-            channel: 50,
+            channel: 6,
             image: 'lak50000.jpg'
         })
         this.notes.push({
             value: 100000,
             amount: 0,
             currency: 'LAK',
-            channel: 100,
+            channel: 7,
             image: 'lak100000.jpg'
         })
     }
@@ -319,8 +346,6 @@ export class CashNV9 {
         return bn;
     }
 
-
-
     checkSum(toMsisdn, amount, description, remark1, remark2, remark3, remark4) {
         //const hash = crypto.createHash('sha256').update(pwd).digest('base64');
         //const input_str = `REF,2055220199,150000,LAK,ໝາເຫດ,ເລກອ້າງອິງ01,ເລກອ້າງອິງ02,ເລກອ້າງອິງ03,ເລກອ້າງອິງ04,ltc`;
@@ -333,7 +358,7 @@ export class CashNV9 {
 
         return hash;
     }
-    validateMmoneyCashIn(msisdn: number, amount = 1, description: string, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
+    validateMmoneyCashIn(msisdn: string, amount = 1, description: string, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
 
         const transID = new Date().getTime();
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
@@ -372,7 +397,7 @@ export class CashNV9 {
 
         })
     }
-    refillMMoney(msisdn: number, amount, description, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
+    refillMMoney(msisdn: string, amount, description, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
 
         const transID = new Date().getTime();
         return new Promise<any>((resolve, reject) => {
@@ -413,7 +438,7 @@ export class CashNV9 {
 
     }
 
-    processRefillMmoney(msisdn: number, transID: number, value: number, remark: string) {
+    processRefillMmoney(msisdn: string, transID: number, value: number, remark: string) {
         return new Promise<any>((resolve, reject) => {
             this.requestMmoneyCashin(msisdn, transID, value, remark).then(r => {
                 console.log('DATA requestMmoneyCashin', r);
@@ -486,7 +511,7 @@ export class CashNV9 {
         })
 
     }
-    requestMmoneyCashin(msisdn: number, transID, value, remark = 'Test Cash In') {
+    requestMmoneyCashin(msisdn: string, transID, value, remark = 'Test Cash In') {
         const url = 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             const data = {
@@ -529,37 +554,149 @@ export class CashNV9 {
         })
 
     }
-    confirmCredit(channel: number, transactionID: number) {
+    confirmCredit(machineId: string, channel: number, transactionID: number) {
+
         const x = this.billCashIn.find(v => v.transactionID == transactionID);
         try {
             if (!x) throw new Error('Confirm FAILED  bill not found' + channel + transactionID);
-            const n = this.notes.find(v=>v.channel==channel);
-            if(!n)throw new Error('Confirm FAILED  note not found' + channel + transactionID);
-            
-
-            this.confirmMmoneyCashin(n?.value, x.transactionID, x.requestor?.transData[0]?.transCashInID, `CLIENT: ${x.clientId}`).then(rx => {
+            const n = this.notes.find(v => v.channel == channel);
+            if (!n) throw new Error('Confirm FAILED  note not found' + channel + transactionID);
+            console.log('MACHINE ID', machineId);
+            this.refillMMoney(x.requestor.transData[0].accountRef, n.value, machineId + '-' + transactionID).then(rx => {
                 console.log('Succeeded confirmMmoneyCashin', rx);
-
+                // save to database
                 x.bankNotes.push(n);
-                x.confirm =rx;
+                x.confirm = rx;
                 x.confirmTime = new Date();
-            
+                // SAVE TO DATABASE
+                this.completedBillCashIn.push(JSON.parse(JSON.stringify(x)))
                 const res = {} as IResModel;
                 res.command = EMACHINE_COMMAND.confirm;
                 res.message = EMessage.confirmsucceeded;
                 res.status = 1;
                 res.data = x;
-                this.wsSend([x?.clientId+''],res);
+                this.wsSend([x?.clientId + ''], res);
+                this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
+                this.ssocket.setMachineCounter(machineId);
             }).catch(e => {
                 console.log('ERROR confirm Mmoney Cashin', e);
-                this.wsSend([x?.clientId+''],e.message);
+                this.wsSend([x?.clientId + ''], e.message);
             })
-        } catch (error:any) {
+        } catch (error: any) {
             // TODO: Notify to admin
             console.log(error);
-            this.wsSend([x?.clientId+''],error.message);
+            this.wsSend([x?.clientId + ''], error.message);
         }
     }
+    timers = new Array<{ clientId: string, t: any, ttl: number }>();
+    setCounter(machineId: string, transactionID: number, command: EMACHINE_COMMAND) {
+        const x = this.billCashIn.find(v => v.transactionID == transactionID);
+        try {
+            if (!x) throw new Error('Confirm FAILED  bill not found' + command + transactionID);
+            const res = {} as IResModel;
+            if (command == EMACHINE_COMMAND.ENABLE) {
+                res.command = EMACHINE_COMMAND.start;
+                res.message = EMessage.succeeded;
+                res.status = 1;
+                res.data = 30;
+                // 
+                console.log('TIMERFIND INDEX ');
+
+                const i = this.timers.findIndex(v => v.clientId == x.clientId);
+                if (i != -1) {
+                    console.log('TIMER EXIST and clear');
+                    clearInterval(this.timers[i].t);
+                    this.timers.splice(i, 1);
+                }
+                console.log('TIMER CREATE TIMER ');
+                const that = this;
+                const t = setInterval(() => {                
+                    console.log('TIMER find and creating');
+                    const y = that.timers.find(vy => vy.clientId == x?.clientId);
+                    if (!y) {
+                        console.log('TIMER CREATE 30 ');
+                        res.data = {t:30};
+                    }
+                    if (y) {
+                        res.command = EMACHINE_COMMAND.setcounter;
+                        res.message = EMessage.succeeded;
+                        res.status = 1;
+                        res.data = {t:--y.ttl};
+                        console.log('setcounter exist -- ', y.ttl);
+
+                        console.log('setcounter response WS',x?.clientId);
+                        console.log('setcounter response WS',res);
+                        that.wsSend([x?.clientId + ''], res);
+                        // this.ssocket.setMachineCounter(machineId);
+                        // remove counter
+
+                        console.log('setcounter check if it is time out');
+
+                        if (y.ttl == 0) {
+                            console.log('setcounter time out');
+                            const i = that.timers.findIndex(v => v.clientId == x.clientId);
+                            if (i != -1) {
+                                console.log('setcounter response WS');
+                                clearInterval(that.timers[i].t);
+                                that.timers.splice(i, 1);
+                                that.ssocket.haltOrder(machineId);
+                                res.command = EMACHINE_COMMAND.stop;
+                                that.wsSend([x?.clientId + ''], res);
+                            }
+                        }
+                    }
+                }, 1000);
+                this.timers.push({
+                    clientId: x.clientId, t, ttl: 30
+                })
+                return;
+
+            } else if (command == EMACHINE_COMMAND.READ_NOTE) {
+                //pause
+                // setTimeout(()=>{
+                    this.setCounter(machineId,transactionID,EMACHINE_COMMAND.ENABLE);
+                this.ssocket.setMachineCounter(machineId);
+                // },300)
+                
+                return;
+            }
+            else if (command == EMACHINE_COMMAND.REJECT_BANKNOTE) {
+
+                this.setCounter(machineId,transactionID,EMACHINE_COMMAND.ENABLE);
+                this.ssocket.setMachineCounter(machineId);
+                return;
+            }
+            else if (command == EMACHINE_COMMAND.DISABLE) {
+                res.command = EMACHINE_COMMAND.stop;
+                res.message = EMessage.disabled;
+                res.status = 1;
+
+            } else if (command == EMACHINE_COMMAND.JAMMED) {
+                res.command = EMACHINE_COMMAND.stop;
+                res.message = EMessage.jammed;
+                res.status = 1;
+            }
+            console.log('TIMER response WS stop');
+            this.wsSend([x?.clientId + ''], res);
+            const i = this.timers.findIndex(v => v.clientId == x.clientId);
+            if (i != -1) {
+                clearInterval(this.timers[i].t);
+                this.timers.splice(i, 1);
+            }
+
+
+
+
+
+        } catch (error: any) {
+            // TODO: Notify to admin
+            console.log(error);
+            this.wsSend([x?.clientId + ''], error.message);
+        }
+    }
+
+
+
     confirmMmoneyCashin(value, transID, transCashInID, remark = 'Test Cash In') {
         const url = 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/confirm-cash-in.service';
         return new Promise<any>((resolve, reject) => {

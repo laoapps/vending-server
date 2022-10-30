@@ -7,6 +7,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ModalController, ToastController } from '@ionic/angular';
 import * as cryptojs from 'crypto-js'
 import { BehaviorSubject } from 'rxjs';
+import { AdsPage } from './ads/ads.page';
 @Injectable({
   providedIn: 'root'
 })
@@ -30,7 +31,7 @@ export class ApiServiceService {
     public modal: ModalController) {
 
     // this.zone.runOutsideAngular(() => {
-    this.machineId.machineId = '12345678';
+    this.machineId.machineId = '88888888';
     this.machineId.otp = '111111';
     this.wsapi.aliveSubscription.subscribe(r => {
       if (!r) return console.log('empty');
@@ -39,16 +40,62 @@ export class ApiServiceService {
       this.wsAlive.isAlive = this.checkOnlineStatus();
 
     });
+    setInterval(()=>{
+      if(!this.billCashIn.length){
+        this.modal.getTop().then(r=>{
+          if(!r){
+            this.showModal(AdsPage).then(v=>{
+              v.present();
+            })
+          }
+        })
+      }else{
+        this.closeModal();
+      }
+    },1000)
     this.wsapi.refreshSubscription.subscribe(r => {
       if (r) {
-        setTimeout(() => {
+        // setTimeout(() => {
           window.location.reload();
-        }, 3000);
+        // }, 3000);
       }
 
     })
+    this.wsapi.startCounterSubscription.subscribe(v => {
+      console.log('startCounterSubscription', v);
+      if (v) {
+       this.setCounter(v.t);
+       this.closeModal();
+      }
+
+    })
+    this.wsapi.statusSubscription.subscribe(v => {
+      console.log('statusSubscription', v);
+      if (v) {
+       toast.create({message:v,duration:5000}).then(r=>{
+        r.present();
+
+       })
+      }
+    })
+    this.wsapi.stopSubscription.subscribe(v => {
+      console.log('stopSubscription', v);
+      if (v) {        
+        window.location.reload();
+       
+      }
+    })
+    this.wsapi.setCounterSubscription.subscribe(v => {
+      console.log('setCounterSubscription', v);
+      if (v) {
+       this.setCounter(v.t);
+      //  if(v.t==0){
+      //   window.location.reload();
+      //  }
+      }
+    })
     this.wsapi.loginSubscription.subscribe(v => {
-      console.log('v', v);
+      console.log('loginSubscription', v);
       if (v) {
         this.clientId = v;
         if (v.billCashIn) {
@@ -56,20 +103,25 @@ export class ApiServiceService {
           const x = v.billCashIn;
           console.log('x', x);
           this.billCashIn.push(x);
-          this.closeModal();
-          this.setCounter();
+        
+          // this.setCounter();
         }
       }
 
     })
     this.wsapi.billBankCashInSubscription.subscribe(v => {
-      console.log('v', v);
+      console.log('billBankCashInSubscription', v);
 
       if (v) {
         // this.billCashin.badBankNotes.length=0;
+  
         Object.keys(v).forEach(k => {
-          this.billCashIn[k] = v[k];
+          this.billCashIn[0].bankNotes[k] = v[k];
         })
+        Object.keys(v.badBankNotes).forEach(k => {
+          this.billCashIn[0].badBankNotes[k] = v[k];
+        })
+        console.log('bank notes', this.billCashIn);
         this.validateMMoney(v.requestor.transData[0].accountRef);
 
       }
@@ -84,25 +136,26 @@ export class ApiServiceService {
   closeWS() {
     this.wsapi.closeWS();
   }
-  setCounter() {
-    if (this.t) {
-      clearInterval(this.t);
-      this.t = null;
-      this.timer.t = 30;
-    }
-    this.t = setInterval(() => {
-      if (this.timer.t == 0) {
-        clearInterval(this.t);
-        this.t = null;
-        this.timer.t = 30;
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+  setCounter(t:number) {
+    this.timer.t = t;
+    // if (this.t) {
+    //   clearInterval(this.t);
+    //   this.t = null;
+    //   this.timer.t = 30;
+    // }
+    // this.t = setInterval(() => {
+    //   if (this.timer.t == 0) {
+    //     clearInterval(this.t);
+    //     this.t = null;
+    //     return this.timer.t = 30;
+    //     // setTimeout(() => {
+    //       // window.location.reload();
+    //     // }, 100);
 
-      }
+    //   }
 
-      this.timer.t--;
-    }, 1000);
+    //    this.timer.t--;
+    // }, 1000);
   }
 
   showModal(component: any) {
@@ -119,7 +172,7 @@ export class ApiServiceService {
     }
   }
   refresh() {
-    this.wsapi.send('');
+    window.location.reload();
   }
   loadBankNotes() {
     return this.http.get<IResModel>(this.url + '/loadBankNotes');

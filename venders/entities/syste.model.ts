@@ -480,7 +480,10 @@ export enum EMACHINE_COMMAND {
     READ_NOTE = "READ_NOTE",
     NOTE_REJECTED = "NOTE_REJECTED",
     JAMMED = "JAMMED",
-    start = "start"
+    start = "start",
+    stop = "stop",
+    setcounter = "setcounter",
+    restart = "restart"
 }
 export interface IResModel {
     transactionID:number;

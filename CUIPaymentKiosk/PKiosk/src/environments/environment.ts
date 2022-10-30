@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  url : 'http://localhost:9009',
-  wsurl : 'ws://localhost:9009'
+  url : 'http://localhost:9009/cashNV9',
+  wsurl : 'ws://localhost:9009/cashNV9'
 };
 
 /*

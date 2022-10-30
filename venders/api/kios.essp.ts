@@ -31,33 +31,56 @@ export class KiosESSP {
 
 
     }
-    setTransactionID(transactionID: number) {
-        this.transactionID = transactionID;
-        if (this.t) {
-            clearInterval(this.t);
-            this.t = null;
-        }
-        if (this.transactionID != -1) {
-            this.eSSP.command('ENABLE').then(result => {
-                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' }, EMACHINE_COMMAND.status);
-            })
-            this.t = setInterval(() => {
-                if (this.transactionID != -1) {
-                    this.eSSP.command('DISABLE')
-                        .then(result => {
-                            this.transactionID = -1;
-                            console.log(result)
-                            this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
-                        })
-                }
-            }, 30000)
-        } else {
-            this.eSSP.command('DISABLE').then(result => {
-                clearInterval(this.t);
-                this.t = null
-                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
-            })
-        }
+    // isReading=false;
+    counter = 0;
+    tCounter: any;
+    setCounter(v: number) {
+        this.counter = v;
+        clearInterval(this.tCounter);
+        this.tCounter = null;
+        this.tCounter = setInterval(() => {
+            console.log('COUNTER', this.counter);
+
+            this.counter--;
+            if (this.counter <= 0) {
+                clearInterval(this.tCounter);
+            }
+        }, 1000)
+    }
+    setTransactionID(transactionID: number, counter: number = 30) {
+        // console.log('READING NOTE',this.isReading,transactionID);
+
+        // if(this.isReading){
+        //     setTimeout(() => {
+        //         this.setTransactionID(transactionID);
+        //     }, 1000);
+        //     return;
+        // }
+        console.log('SET TRANSACTION ',transactionID);
+        
+        this.setCounter(counter);
+
+        this.eSSP.command('RESET_COUNTERS').then(result => {
+            console.log('RESET_COUNTERS', result)
+            this.transactionID = transactionID;
+            // if (this.t) {
+            //     clearInterval(this.t);
+            //     this.t = null;
+            // }
+            if (this.transactionID != -1) {
+                this.eSSP.command('ENABLE').then(result => {
+                    console.log('ENABLED', transactionID);
+                    this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' }, EMACHINE_COMMAND.status);
+                })
+
+            } else {
+                // this.eSSP.command('DISABLE').then(result => {
+                //     console.log('DISABLE',transactionID); 
+                //     this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
+                // })
+            }
+        })
+
 
     }
 
@@ -77,24 +100,31 @@ export class KiosESSP {
                 })
                 .then(() => this.eSSP.command('DISPLAY_ON'))
                 .then(result => {
-                    if (result)if (result.status == 'OK') {
+                    if (result) if (result.status == 'OK') {
                         console.log('DISPLAY_ON', result.info)
                     }
                 })
                 .then(result => {
                     console.log('Device is active', result)
-                    if (result)if (result.status == 'OK') {
+                    if (result) if (result.status == 'OK') {
                         console.log('Device is active')
                     }
                     return;
                 })
                 .then(() => this.eSSP.command('SETUP_REQUEST'))
                 .then(result => {
-                    if (result)if (result.status == 'OK') {
+                    if (result) if (result.status == 'OK') {
                         console.log('SETUP_REQUEST request', result.info)
                     }
                     return;
-                }).then(() => this.eSSP.enable())
+                })
+                .then(() => this.eSSP.enable())
+                .then(() => this.eSSP.command('RESET_COUNTERS').then(result => {
+                    if (result) if (result.status == 'OK') {
+                        console.log('RESET_COUNTERS', result)
+                    }
+                    return;
+                }))
             // .then(() => eSSP.command('SET_CHANNEL_INHIBITS',{channels:[1,1,1,1,1,1,1]})
             // .then(result => {
             //     if (result)if (result.status == 'OK') {
@@ -368,37 +398,75 @@ export class KiosESSP {
                     console.log(result)
                     this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'NOTE_REJECTED' }, EMACHINE_COMMAND.status);
                 })
-            this.writeLog(result);
+            this.writeLog(result, 'NOTE_REJECTED');
         })
+        let countRead=0;
         this.eSSP.on('READ_NOTE', result => {
-            console.log('READ_NOTE', result)
-            if(this.transactionID==-1) this.eSSP.command('REJECT')
-            if (result.channel > 0)
+            console.log('READ_NOTE', result,countRead,this.counter);
+            if(!countRead&&this.counter > 5){
                 this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
-            this.writeLog(result);
+                countRead=1;
+                 return;
+            }
+           
+            // this.isReading=true;
+           else if (this.transactionID == -1 || this.counter <= 5) {
+                countRead=0;
+                this.eSSP.command('REJECT_BANKNOTE').then(r => {
+                    // this.eSSP.disable()
+                    this.writeLog(result, 'REJECT_BANKNOTE');
+                    this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'REJECT_BANKNOTE' }, EMACHINE_COMMAND.status);
+                    // this.isReading=false;
+                    result.transactionID=this.transactionID;
+                    this.writeLog(result,'REJECT_BANKNOTE')
+                })
+                return;
+            }
+            else if (result.channel > 0) {
+                countRead=0;
+                this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
+                // this.isReading=false;
+                result.transactionID=this.transactionID;
+                this.writeLog(result,'READ_NOTE')
+                return;
+            }
+
 
         })
         this.eSSP.on('CREDIT_NOTE', result => {
             console.log('CREDIT_NOTE', result)
             this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' }, EMACHINE_COMMAND.status);
-            this.writeLog(result);
+            result.transactionID=this.transactionID;
+            this.writeLog(result, 'CREDIT_NOTE');
+            // this.isReading=false;
         })
         this.eSSP.on('JAMMED', result => {
             console.log('JAMMED', result)
             this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'JAMMED' }, EMACHINE_COMMAND.status);
-            this.eSSP.command('DISABLE').then(result => {
-                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
-            })
-            this.writeLog(result);
+            // this.eSSP.command('DISABLE').then(result => {
+            // this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
+            // })
+            result.transactionID=this.transactionID;
+            this.writeLog(result, 'JAMMED');
+            // this.isReading=false;
         })
         this.eSSP.on('DISPENSED', result => {
             console.log('DISPENSED', result)
-            this.writeLog(result);
+            result.transactionID=this.transactionID;
+            this.writeLog(result, 'DISPENSED');
+            // this.isReading=false;
         })
 
         this.eSSP.on('JAM_RECOVERY', result => {
             console.log('JAM_RECOVERY', result)
-            this.writeLog(result);
+            result.transactionID=this.transactionID;
+            this.writeLog(result, 'JAM_RECOVERY');
+            // this.isReading=false;
+        })
+        this.eSSP.on('DISABLED', result => {
+            //  console.log('DISABLED', result)
+            // this.writeLog(result,'DISABLED);
+            // this.isReading=false;
         })
 
 
@@ -411,9 +479,9 @@ export class KiosESSP {
         })
     }
 
-    writeLog(data: any) {
+    writeLog(data: any, name: string) {
         const d = { data }
-        fs.writeFileSync(__dirname + '/' + new Date().getTime(), JSON.stringify(d));
+        fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d));
 
     }
     close() {

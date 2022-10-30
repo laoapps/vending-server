@@ -20,12 +20,17 @@ export class SocketKiosClient {
         this.token = cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex)
     }
     init() {
+        if(this.t){
+            clearInterval(this.t)
+            this.t=null;
+        }
         const that = this;
+        this.client=new net.Socket();
         this.client.connect({
             port: this.port,
             host: this.host
         });
-        if(this.t)this.t=null;
+       
         this.client.on('connect', function () {
             // console.log('Client: connection established with server');
 
@@ -47,32 +52,56 @@ export class SocketKiosClient {
         this.client.setEncoding('utf8');
 
         this.client.on('data', function (data) {
-            console.log('Data from server:' + data);
-            const d = JSON.parse(data.toString()) as IResModel;
-
-            const req = {} as IReqModel;
-            if (d.command == 'ping') {
-                req.command = 'ping';
-                req.token = that.token;
-                req.time = new Date().getTime() + '';
-            } else if (d.command == EMACHINE_COMMAND.start ) {
-                that.m.setTransactionID(d.transactionID);
-            } 
-            console.log(d.command, d);
+            try{
+                console.log('Data from server:' + data);
+                const l=data.toString().substring(0,data.toString().length-1)
+                const d = JSON.parse(l) as IResModel;
+    
+                const req = {} as IReqModel;
+                if (d.command == 'ping') {
+                    req.command = 'ping';
+                    req.token = that.token;
+                    req.time = new Date().getTime() + '';
+                } else if (d.command == EMACHINE_COMMAND.start ) {
+                    that.m.setTransactionID(d.transactionID);
+                } 
+                else if (d.command == EMACHINE_COMMAND.stop ) {
+                    that.m.setTransactionID(d.transactionID,0);
+                } 
+                else if (d.command == EMACHINE_COMMAND.setcounter ) {
+                    that.m.setCounter(d.data.t);
+                } 
+                else if (d.command == EMACHINE_COMMAND.restart ) {
+                    process.exit(0);
+                } 
+                console.log(d.command, d);
+            }catch(e){
+                console.log(e);
+                
+            }
+           
 
         });
         this.client.on('error', function (data) {
             console.log('Data from server:' + data);
-            that.client.end();
-            that.init();
+           setTimeout(()=>{
+                that.client.end();
+                that.client.destroy();
+                that.init();
+            },3000)
         });
         this.client.on('end', function (data) {
             console.log('Data from server:' + data);
-            that.init();
+            that.client.destroy();
+            setTimeout(()=>{
+                that.init();
+            },3000)
         });
 
        this.t= setInterval(function () {
             // this.client.end('Bye bye server');
+            console.log('PING from vender');
+            
             that.send(null,EMACHINE_COMMAND.ping)
         }, 10000);
 

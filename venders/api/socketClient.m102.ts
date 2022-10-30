@@ -50,7 +50,8 @@ export class SocketClientM102 {
         this.client.setEncoding('utf8');
         this.client.on('data', async (data) => {
             console.log('Data from server:' + data);
-            const d = JSON.parse(data.toString()) as IResModel;
+            const l=data.toString().substring(0,data.toString().length-1)
+            const d = JSON.parse(l) as IResModel;
 
             const param = d.data;
 

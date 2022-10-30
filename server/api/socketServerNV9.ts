@@ -11,11 +11,11 @@ export class SocketServerESSP {
     private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }, { machineId: '88888888', otp: '111111' }];
 
 
-    cashNV9:CashNV9|null=null;
+    cashNV9: CashNV9 | null = null;
     constructor() {
-        
+
         try {
-            
+
             //creates the server
 
 
@@ -150,7 +150,8 @@ export class SocketServerESSP {
                             }
                         } else if (d.command == EMACHINE_COMMAND.status) {
                             console.log('DATA show status here', d.command, d.token, d.data);
-                            const token = d.token;
+                            const token = d.token
+                            const dx = d.data;
                             const x = that.findMachineIdToken(token);
                             if (x) {
                                 console.log('DATA ping found token');
@@ -171,8 +172,46 @@ export class SocketServerESSP {
                                     console.log('DATA re-login PLEASE!');
                                     return;
                                 }
-                                console.log('DATA  Update status here ');
+                                console.log('DATA  Update status here ', dx);
+                                if (dx.command == EMACHINE_COMMAND.CREDIT_NOTE) {
+                                    console.log('CREDIT_NOTE response from the machine');
+                                    console.log('CREDIT_NOTE need to confirm the ORDER has been completed or not, TODO LATER');
 
+                                    console.log(' CREDIT_NOTE', dx);
+
+                                    that.cashNV9?.confirmCredit(socket['machineId'].machineId, dx.channel, dx.transactionID);
+
+                                    return;
+                                }
+
+                                else if (dx.command == EMACHINE_COMMAND.ENABLE) {
+                                    console.log('ENABLE');
+                                    that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
+                                    return;
+                                }
+                                else if (dx.command == EMACHINE_COMMAND.DISABLE) {
+                                    console.log('DISABLE');
+                                    that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
+                                    return;
+                                }
+
+                                else if (dx.command == EMACHINE_COMMAND.JAMMED) {
+                                    console.log('JAMMED');
+                                    that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
+
+                                    return;
+                                }
+                                else if (dx.command == EMACHINE_COMMAND.READ_NOTE) {
+                                    console.log('READ_NOTE');
+                                    that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
+                                    return;
+                                }
+                                else if (dx.command == EMACHINE_COMMAND.REJECT_BANKNOTE) {
+                                    that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
+                                    console.log('REJECT_BANKNOTE');
+
+                                    return;
+                                }
                                 return;
                             } else {
                                 socket.end();
@@ -180,25 +219,6 @@ export class SocketServerESSP {
                                 console.log('DATA  not exist machine id ');
                                 return;
                             }
-                        } else if (d.command == EMACHINE_COMMAND.CREDIT_NOTE) {
-                            console.log('DATA response from the machine');
-                            console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
-                            const data = d.data;
-                            console.log(' DATA',data);
-                            
-                            that.cashNV9?.confirmCredit(data.channel,data.transactionID);
-
-                            return;
-                        }
-                        else if (d.command == EMACHINE_COMMAND.READ_NOTE) {
-                            return;
-                        }
-                        else if (d.command == EMACHINE_COMMAND.NOTE_REJECTED) {
-                            return;
-                        }
-                        else if (d.command == EMACHINE_COMMAND.JAMMED) {
-
-                            return;
                         }
                         socket.end();
 
@@ -323,8 +343,8 @@ export class SocketServerESSP {
         }
     }
 
-    setCashInstant(c:CashNV9){
-        this.cashNV9=c;
+    setCashInstant(c: CashNV9) {
+        this.cashNV9 = c;
     }
 
     findMachineId(machineId: string) {
@@ -374,29 +394,98 @@ export class SocketServerESSP {
         }
 
     }
-    processOrder(machineId: string,transactionID: number) {
+    processOrder(machineId: string, transactionID: number) {
         try {
-            const x = this.sclients.find(v => {
-                const x = v['machineId'] as IMachineClientID;
+            setTimeout(() => {
+                const x = this.sclients.find(v => {
+                    const x = v['machineId'] as IMachineClientID;
+                    if (x) {
+                        return x.machineId == machineId;
+                    }
+                    return false;
+                });
                 if (x) {
-                    return x.machineId == machineId;
+                    const res = {} as IResModel;
+                    res.command = EMACHINE_COMMAND.start
+                    res.message = EMessage.processingorder;
+                    res.transactionID = transactionID;
+                    res.status = 1;
+                    res.data = {};
+                    console.log('writing...', x['machineId']);
+                    return { status: x.write(JSON.stringify(res) + '\n') };
+                } else {
+                    console.log('client id socket not found');
+                    const data = `${machineId}-${transactionID}`
+                    return { status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
                 }
-                return false;
-            });
-            if (x) {
-                const res = {} as IResModel;
-                res.command = EMACHINE_COMMAND.start
-                res.message = EMessage.processingorder;
-                res.transactionID = transactionID;
-                res.status = 1;
-                res.data = { };
-                console.log('writing...', x['machineId']);
-                return {  status: x.write(JSON.stringify(res) + '\n') };
-            } else {
-                console.log('client id socket not found');
-                const data = `${machineId}-${transactionID}`
-                return {  status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
-            }
+            }, 300);
+
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return { status: false, message: error.message };
+        }
+
+    }
+
+    haltOrder(machineId: string, transactionID: number = -1) {
+        try {
+            setTimeout(() => {
+                const x = this.sclients.find(v => {
+                    const x = v['machineId'] as IMachineClientID;
+                    if (x) {
+                        return x.machineId == machineId;
+                    }
+                    return false;
+                });
+                if (x) {
+                    const res = {} as IResModel;
+                    res.command = EMACHINE_COMMAND.stop
+                    res.message = EMessage.processingorder;
+                    res.transactionID = transactionID;
+                    res.status = 1;
+                    res.data = {};
+                    console.log('writing...', x['machineId']);
+                    return { status: x.write(JSON.stringify(res) + '\n') };
+                } else {
+                    console.log('client id socket not found');
+                    const data = `${machineId}-${transactionID}`
+                    return { status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+                }
+            }, 300)
+
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return { status: false, message: error.message };
+        }
+
+    }
+    
+    setMachineCounter(machineId: string, transactionID: number = -1) {
+        try {
+            setTimeout(() => {
+                const x = this.sclients.find(v => {
+                    const x = v['machineId'] as IMachineClientID;
+                    if (x) {
+                        return x.machineId == machineId;
+                    }
+                    return false;
+                });
+                if (x) {
+                    const res = {} as IResModel;
+                    res.command = EMACHINE_COMMAND.setcounter
+                    res.message = EMessage.setcounter;
+                    res.transactionID = transactionID;
+                    res.status = 1;
+                    res.data = { t: 30 };
+                    console.log('writing...', x['machineId']);
+                    return { status: x.write(JSON.stringify(res) + '\n') };
+                } else {
+                    console.log('client id socket not found');
+                    const data = `${machineId}-${transactionID}`
+                    return { status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+                }
+            }, 300);
+
         } catch (error: any) {
             console.log('client id socket not found');
             return { status: false, message: error.message };

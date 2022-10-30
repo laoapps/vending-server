@@ -11,12 +11,16 @@ export class WsapiServiceService {
   wsurl = 'ws://localhost:8888';
   webSocket: WebSocket;
   retries = 1;
-  machineId=''
+  machineId = ''
   otp = '';
   token = '';
-  transID=-1;
+  transID = -1;
 
   public loginSubscription = new BehaviorSubject<IClientId>(null);
+  public startCounterSubscription = new BehaviorSubject<{t:number}>({t:30});
+  public setCounterSubscription = new BehaviorSubject<{t:number}>({t:30});
+  public statusSubscription = new BehaviorSubject<string>('');
+  public stopSubscription = new BehaviorSubject<string>('');
   public aliveSubscription = new BehaviorSubject<IAlive>(null);
   public billBankCashInSubscription = new BehaviorSubject<IBillCashIn>(null);
 
@@ -25,12 +29,12 @@ export class WsapiServiceService {
   retry: any;
   constructor() {
   }
-  closeWS(){
+  closeWS() {
     this.webSocket.close();
 
   }
-  connect(url: string,transID:number, machineId: string, otp: string) {
-    this.transID=transID;
+  connect(url: string, transID: number, machineId: string, otp: string) {
+    this.transID = transID;
     this.wsurl = url;
     this.machineId = machineId;
     this.otp = otp;
@@ -56,10 +60,10 @@ export class WsapiServiceService {
     };
     this.webSocket.onerror = (ev) => {
       console.log('ERROR', ev);
-        // setTimeout(() => {
-        //   this.connect(url, machineId, otp);
+      // setTimeout(() => {
+      //   this.connect(url, machineId, otp);
 
-        // }, 5000);
+      // }, 5000);
     }
     this.webSocket.onmessage = (ev) => {
       // this.dataSubscription.next(JSON.parse(ev.data));
@@ -85,15 +89,27 @@ export class WsapiServiceService {
           case 'refresh':
             this.refreshSubscription.next(data.data);
             break;
+          case 'start':
+            this.startCounterSubscription.next(data);
+            break;
+          case 'setcounter':
+            this.setCounterSubscription.next(data);
+            break;
+          case 'stop':
+            this.stopSubscription.next(res.message);
+            break;
+          case 'status':
+            this.statusSubscription.next(res.message);
+            break;
           default:
             break;
         }
       }
-    
-    }
-    this.send({ command: EMACHINE_COMMAND.login, data: {transID}, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex) });
 
-    
+    }
+    this.send({ command: EMACHINE_COMMAND.login, data: { transID }, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex) });
+
+
   }
   send(data) {
     const that = this;
@@ -126,7 +142,7 @@ export class WsapiServiceService {
             console.log('create a new connection');
 
             // that.webSocket.close();
-            that.connect(that.wsurl,that.transID, that.machineId, that.otp);
+            that.connect(that.wsurl, that.transID, that.machineId, that.otp);
             that.retries = 0;
           } else {
             console.log("waiting for the connection...")

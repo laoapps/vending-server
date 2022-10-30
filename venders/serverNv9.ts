@@ -6,4 +6,7 @@ import { SocketKiosClient } from './api/socketClient.kios';
 
 
 
-new SocketKiosClient()
+const x =new SocketKiosClient();
+process.on('exit', (code: number) => {
+    // port.close();
+});
