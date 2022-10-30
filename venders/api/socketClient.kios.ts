@@ -85,5 +85,10 @@ export class SocketKiosClient {
         req.data = data;
         this.client.write(JSON.stringify(req)+'\n');
     }
+    close() {
+        this.client.end();
+        this.m.close();
+    }
+
 
 }
