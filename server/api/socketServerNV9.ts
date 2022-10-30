@@ -8,7 +8,7 @@ export class SocketServerESSP {
     sclients = Array<net.Socket>();
     ports = 31225;
 
-    private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }];
+    private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }, { machineId: '88888888', otp: '111111' }];
 
 
     cashNV9:CashNV9|null=null;

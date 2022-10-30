@@ -1,0 +1,1 @@
+{"data":{"code":238,"name":"CREDIT_NOTE","description":"A note has passed through the device, past the point of possible recovery and the host can safely issue its credit amount. The byte value is the channel number of the note to credit.","channel":2}}
