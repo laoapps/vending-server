@@ -402,6 +402,11 @@ export class KiosESSP {
         fs.writeFileSync(__dirname+'/'+new Date().getTime(), JSON.stringify(d));
 
     }
+    close() {
+        this.eSSP.close((e) => {
+            console.log('closing', e);
+        })
+    }
 
 
 }
