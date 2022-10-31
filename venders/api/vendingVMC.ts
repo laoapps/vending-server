@@ -48,8 +48,6 @@ export class VendingVMC {
                 console.log('===>BUFFER', b);
                 let buff = that.checkCommandsForSubmission() || Array<string>();
                 if (b == 'fafb410040' && buff.length) {// POLL and submit command
-                   
-                    that.doACK(b).then(r=>{
                         let x = buff.join('');
                         console.log('X command', new Date().getTime(), x, (Buffer.from(x, 'hex')));
                         that.port.write(Buffer.from(x, 'hex'), (e) => {
@@ -67,7 +65,7 @@ export class VendingVMC {
                             that.commands.shift();
                             that.sock?.send(b, that.clearTransactionID());
                         }
-                    })
+                
                    
                 }
                 else if (b == 'fafb420043') {// ACK 
@@ -113,23 +111,7 @@ export class VendingVMC {
         // }, 30000)
 
     }
-    doACK(b) {
-        return new Promise<any>((resolve,reject)=>{
-            const buff = this.getACK();
-            let x = buff.join('')
-            console.log('DO ACK', x, (Buffer.from(x, 'hex')));
-            this.port.write(Buffer.from(x, 'hex'), (e) => {
-                if (e) {
-                    console.log('Error: ACK ', e.message);
-                } else {
-                    console.log('write ACK succeeded');
-                }
-                this.sock?.send(b, -1);
-                resolve('');
-            })
-        })
-       
-    }
+
     sycnVMC() {
         let buff = ['fa', 'fb'];
         buff.push('31');
