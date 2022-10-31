@@ -117,6 +117,12 @@ export function chk8xor(byteArray = new Array<any>()) {
     return x;
 }
 
+//    short crc = 0;
+//         for(int i=offset; i < offset+ len; i++)
+//         {
+//             crc ^=data[i];
+//         }
+//         return (short) (crc & 0xff);
 function toHex(str: string) {
     var result = '';
     for (var i = 0; i < str.length; i++) {

@@ -192,6 +192,7 @@ export class VendingVMC {
             // 00 // selection
             // 01 // selection
             // 0701 // chk
+            // fafb0605040100000106
             // PackNO+
             // Text Communication number+
             // Enable drop sensor or not(1 byte) +
