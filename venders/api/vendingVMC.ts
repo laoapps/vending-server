@@ -117,11 +117,17 @@ export class VendingVMC {
 
   
      checkCommandsForSubmission() {
-        
-        this.isACK=true;
-        const x = JSON.parse(JSON.stringify(this.commands[0]))as Array<string>;
-        x.push('00')
-        x[x.length-1]=chk8xor(x)
+        let x =Array<string>();
+        try {
+            this.isACK=true;
+            x= JSON.parse(JSON.stringify(this.commands[0]))as Array<string>;
+            x.push('00')
+            x[x.length-1]=chk8xor(x)
+        } catch (error) {
+            console.log('ERROR NO COMMAND FOUND');
+            
+        }
+       
         return x;
     }
      int2hex(i: number) {
