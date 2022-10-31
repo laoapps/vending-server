@@ -21,7 +21,9 @@ export class InventoryVMC {
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
     delayTime = 1000;
-
+    path='/vmc';
+    public phonenumber ='2054452222'; //TPLUS
+    public walletId = '2443128596';// TPLUS
     constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerVMC) {
         this.ssocket = socket;
         this.wss = wss;
@@ -29,8 +31,11 @@ export class InventoryVMC {
         try {
 
 
-
-            router.post('/', async (req, res) => {
+            router.get(this.path+'/', async (req, res) => {
+                console.log('TEST IS WORKING');
+                res.send({data:'test is working'})
+            });
+            router.post(this.path+'/', async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
                     console.log('POST Data', d);
@@ -160,7 +165,7 @@ export class InventoryVMC {
 
             /// 0. init for demo 
 
-            router.get('/init', async (req, res) => {
+            router.get(this.path+'/init', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];
                     if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline)
@@ -172,7 +177,7 @@ export class InventoryVMC {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get('/refresh', async (req, res) => {
+            router.get(this.path+'/refresh', async (req, res) => {
                 try {
                     this.wss.clients.forEach(v => {
                         if (v.OPEN) {
@@ -186,7 +191,7 @@ export class InventoryVMC {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get('/getPaidBills', async (req, res) => {
+            router.get(this.path+'/getPaidBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
                 } catch (error) {
@@ -194,7 +199,7 @@ export class InventoryVMC {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get('/getBills', async (req, res) => {
+            router.get(this.path+'/getBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
                 } catch (error) {
@@ -202,7 +207,7 @@ export class InventoryVMC {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get('/getOnlineMachines', async (req, res) => {
+            router.get(this.path+'/getOnlineMachines', async (req, res) => {
                 try {
                     console.log(' WS getOnlineMachines');
                     res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
@@ -213,7 +218,7 @@ export class InventoryVMC {
             });
 
 
-            router.get('/submit_command', async (req, res) => {
+            router.get(this.path+'/submit_command', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'] + '';
                     const position = Number(req.query['position']) ? Number(req.query['position']) : 0;

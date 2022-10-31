@@ -21,16 +21,21 @@ export class InventoryM102 {
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
     delayTime =7000;
-
+    path='/vmc';
+    public phonenumber =''; //
+    public walletId = '';// 
     constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerM102) {
         this.ssocket = socket;
         this.wss = wss;
         this.initWs(wss);
         try {
 
+            router.get(this.path+'/', async (req, res) => {
+                console.log('TEST IS WORKING');
+                res.send({data:'test is working'})
+            });
 
-
-            router.post('/', async (req, res) => {
+            router.post(this.path+'/', async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
                     console.log('POST Data', d);
@@ -164,7 +169,7 @@ export class InventoryM102 {
 
             /// 0. init for demo 
 
-            router.get('/init', async (req, res) => {
+            router.get(this.path+'/init', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];
                     if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline)
@@ -176,7 +181,7 @@ export class InventoryM102 {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get('/refresh', async (req, res) => {
+            router.get(this.path+'/refresh', async (req, res) => {
                 try {
                     this.wss.clients.forEach(v=>{
                         if(v.OPEN){
@@ -190,7 +195,7 @@ export class InventoryM102 {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get('/getPaidBills', async (req, res) => {
+            router.get(this.path+'/getPaidBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
                 } catch (error) {
@@ -198,7 +203,7 @@ export class InventoryM102 {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get('/getBills', async (req, res) => {
+            router.get(this.path+'/getBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
                 } catch (error) {
@@ -206,7 +211,7 @@ export class InventoryM102 {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get('/getOnlineMachines', async (req, res) => {
+            router.get(this.path+'/getOnlineMachines', async (req, res) => {
                 try {
                     console.log(' WS getOnlineMachines');
                     res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
@@ -217,7 +222,7 @@ export class InventoryM102 {
             });
 
 
-            router.get('/submit_command', async (req, res) => {
+            router.get(this.path+'/submit_command', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'] + '';
                     const position = Number(req.query['position']) ? Number(req.query['position']) : 0;

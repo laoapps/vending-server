@@ -25,10 +25,9 @@ app.disable('x-powered-by');
 app.use(helmet.hidePoweredBy());
 app.use('/public', express.static(path.join(__dirname, 'public')))
 const server = http.createServer(app)
-server.listen(process.env.PORT || 9009, async function () {
-  console.log('HTTP listening on port ' + process.env.PORT || 9009);
-});
 const wss = new WebSocket.Server({ server });
+
+
 const ssZDM8 = new SocketServerZDM8();
 const invZDM8 =new InventoryZDM8(app, wss, ssZDM8);
 
@@ -40,6 +39,13 @@ const invM102 =new InventoryM102(app, wss, ssM102);
 
 const ssNV9 = new SocketServerESSP();
 const cashNV9 =new CashNV9(app, wss, ssNV9);
+
+
+
+server.listen(process.env.PORT || 9009, async function () {
+  console.log('HTTP listening on port ' + process.env.PORT || 9009);
+});
+
 
 process.on('exit', (code:number)=>{
   console.log('exit code',code);

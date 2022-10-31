@@ -183,17 +183,29 @@ export class VendingVMC {
             // PackNO+Text
             //XOR
             const buff = ['fa', 'fb'];
-            // // POLL command
+            // fafb
+            // 06 // command
+            // 05 // length
+            // 04 // series
+            // 01 // enable drop sensor
+            // 00 // enable elevator
+            // 00 // selection
+            // 01 // selection
+            // 0701 // chk
+            // PackNO+
+            // Text Communication number+
+            // Enable drop sensor or not(1 byte) +
+            //  Enable elevator or not (1 byte) 
+            //  selection number (2 byte)
              if (command == EVMC_COMMAND._06) {
                 buff.push(command);
                 buff.push(int2hex(5));//length
                 // p.push(parseInt(p.length+'', 16));
                 buff.push(int2hex(series));// 
-                buff.push(int2hex(1));// 
-                buff.push(int2hex(0));// 
+                buff.push(int2hex(1));// enable drop sensor
+                buff.push(int2hex(0));// enable elevator
                 buff.push(int2hex(0));// slot 
                 buff.push(int2hex(slot));// slot 
-                buff.push(chk8xor(buff));
                 buff.push(int2hex(0));// checksum
                 buff[buff.length-1]=chk8xor(buff);// update checksum
                 // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);

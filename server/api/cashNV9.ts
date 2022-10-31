@@ -33,6 +33,12 @@ export class CashNV9 {
     requestors = new Array<IMMoneyRequestRes>();
 
     mmMoneyLogin: IMMoneyLoginCashin | null = null;
+//     Cash In Production :
+// Create account requester success.
+    MMoneyRequesterId = 59
+    MMoneyName ='LMM KIOS'
+    MMoneyUsername ='lmmkios'
+    MMoneyPassword = 'Qh7~Lq9@'
     path = '/cashNV9'
     constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerESSP) {
         this.ssocket = socket;
