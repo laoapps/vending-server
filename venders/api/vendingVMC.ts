@@ -49,7 +49,7 @@ export class VendingVMC {
                 if (b == 'fafb410040' && buff!=null) {// POLL and submit command
                        
                         console.log('X command', buff);
-                        that.port.write(buff, (e) => {
+                        that.port.write(buff.b, (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
                                 that.sock?.send(buff?.b.toString("hex"), buff?.transactionID||-1);
