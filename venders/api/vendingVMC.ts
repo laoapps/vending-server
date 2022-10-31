@@ -33,7 +33,7 @@ export class VendingVMC {
         // })
         let buffer = '';
         const that = this;
-        this.commands.push(this.sycnVMC());
+        this.sycnVMC();
      
         this.port =new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
             if (err) {
@@ -70,7 +70,20 @@ export class VendingVMC {
                     that.sock?.send(b, that.clearTransactionID());
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
-                else if(b !== 'fafb410040') {// POLL only with no commands in the queue
+                // else if(b == 'fafb410040') {// POLL only with no commands in the queue
+                //     buff = that.getACK();
+                //     let x = buff.join('')
+                //     console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                //     that.port.write(Buffer.from(x, 'hex'), (e) => {
+                //         if (e) {
+                //             console.log('Error: ACK ', e.message);
+                //         } else {
+                //             console.log('write ACK succeeded');
+                //         }
+                //     })
+                // }
+                else{
+                    // update status to the server
                     buff = that.getACK();
                     let x = buff.join('')
                     console.log('X ACK', x,(Buffer.from(x, 'hex')));
@@ -81,11 +94,8 @@ export class VendingVMC {
                             console.log('write ACK succeeded');
                         }
                     })
+                    that.sock?.send(b,-1);
                 }
-                // else{
-                //     // update status to the server
-                //     that.sock?.send(b,-1);
-                // }
                 b='';
             });
         });
@@ -101,7 +111,15 @@ export class VendingVMC {
         buff.push('01'); 
         buff.push('00'); 
         buff[buff.length-1]=chk8xor(buff)
-        return buff;
+        let x = buff.join('')
+        this.port.write(Buffer.from(x, 'hex'), (e) => {
+            if (e) {
+                console.log('Error: ACK ', e.message);
+            } else {
+                console.log('write ACK succeeded');
+            }
+        })
+        ;
     }
     clearTransactionID(){
         const x = this.transactionID.length?this.transactionID.shift():-1;
