@@ -33,7 +33,7 @@ export class VendingVMC {
         // })
         let buffer = '';
         const that = this;
-        this.sycnVMC();
+     
      
         this.port =new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
             if (err) {
@@ -42,7 +42,7 @@ export class VendingVMC {
             console.log(`port ${that.path} accessed`);
         
             var b = '';
-        
+            that.sycnVMC();
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
