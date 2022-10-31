@@ -48,6 +48,7 @@ export class VendingVMC {
                 console.log('===>BUFFER', b);
                 let buff = that.checkCommandsForSubmission() || Array<string>();
                 if (b == 'fafb410040' && buff.length) {// POLL and submit command
+                   
                     that.doACK(b).then(r=>{
                         let x = buff.join('');
                         console.log('X command', new Date().getTime(), x, (Buffer.from(x, 'hex')));
@@ -116,7 +117,7 @@ export class VendingVMC {
         return new Promise<any>((resolve,reject)=>{
             const buff = this.getACK();
             let x = buff.join('')
-            console.log('X ACK', x, (Buffer.from(x, 'hex')));
+            console.log('DO ACK', x, (Buffer.from(x, 'hex')));
             this.port.write(Buffer.from(x, 'hex'), (e) => {
                 if (e) {
                     console.log('Error: ACK ', e.message);
