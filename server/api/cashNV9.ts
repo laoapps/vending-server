@@ -34,6 +34,7 @@ export class CashNV9  implements IBaseClass{
     requestors = new Array<IMMoneyRequestRes>();
 
     mmMoneyLogin: IMMoneyLoginCashin | null = null;
+    
      /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
 //     Cash In Production :
 // Create account requester success.
@@ -42,6 +43,10 @@ export class CashNV9  implements IBaseClass{
     MMoneyUsername ='lmmkios'
     MMoneyPassword = 'Qh7~Lq9@'
     production=false;
+
+    pathMMoneyLogin='https://apigateway.laotel.com/ewallet-ltc-api/oauth/token.service';
+    pathMMoneyConfirm='https://apigateway.laotel.com/ewallet-ltc-api/cash-management/confirm-cash-in.service';
+    pathMMoneyInquiry='https://apigateway.laotel.com/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
  /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
 
 
@@ -491,7 +496,7 @@ export class CashNV9  implements IBaseClass{
         });
     }
     loginMmoney() {
-        const url = 'http://115.84.121.101:31153/ewallet-ltc-api/oauth/token.service';
+        const url =this.production?this.pathMMoneyLogin: 'http://115.84.121.101:31153/ewallet-ltc-api/oauth/token.service';
         return new Promise<IMMoneyLoginCashin>((resolve, reject) => {
             // const data={
             //     username:'Dokbuakham',
@@ -746,7 +751,7 @@ export class CashNV9  implements IBaseClass{
 
 
     confirmMmoneyCashin(value, transID, transCashInID, remark = 'Test Cash In') {
-        const url = 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/confirm-cash-in.service';
+        const url = this.production?this.pathMMoneyConfirm:'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/confirm-cash-in.service';
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
@@ -781,7 +786,7 @@ export class CashNV9  implements IBaseClass{
     }
 
     inquiryMmoneyCashin(transID, transCashInID) {
-        const url = 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
+        const url = this.production?this.pathMMoneyInquiry:'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",

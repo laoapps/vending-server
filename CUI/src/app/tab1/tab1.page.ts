@@ -123,7 +123,7 @@ export class Tab1Page {
   }
   buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
-    if (x.stock.qtty <= 0) alert('Out Of order');
+    // if (x.stock.qtty <= 0) alert('Out Of order');
     const amount = x.stock.price * 1;
     this.apiService.showLoading();
     this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
@@ -187,7 +187,7 @@ export class Tab1Page {
     // this.zone.runOutsideAngular(() => {
     console.log('ID', x);
     if (!x) return alert('not found');
-    if (x.stock.qtty <= 0) alert('Out Of order');
+    // if (x.stock.qtty <= 0) alert('Out Of order');
     const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
     y.stock.qtty = 1;
     console.log('y', y);

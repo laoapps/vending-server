@@ -25,7 +25,7 @@ export class InventoryM102 implements IBaseClass {
     public phonenumber =''; //
     public walletId = '';// 
     mmoneyusername='test';
-    mmoneypassword='123456';
+    mmoneypassword='12345';
     production=false;
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerM102();
@@ -354,8 +354,8 @@ export class InventoryM102 implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = this.mmoneyusername;
-        const password = this.mmoneypassword;
+        const username = this.production?this.mmoneyusername:'test';
+        const password = this.production?this.mmoneypassword:'12345';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {

@@ -26,7 +26,7 @@ export class InventoryZDM8 implements IBaseClass {
     public phonenumber ='2058623333'; //LTC
     public walletId = '2599087166';// LTC
     mmoneyusername='test';
-    mmoneypassword='123456';
+    mmoneypassword='12345';
     production =false;
     
     constructor(router: Router, wss: WebSocketServer.Server) {
@@ -356,7 +356,7 @@ export class InventoryZDM8 implements IBaseClass {
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
         const username = this.production?this.mmoneyusername:'test';
-        const password = this.production?this.mmoneypassword:'123456';
+        const password = this.production?this.mmoneypassword:'12345';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
