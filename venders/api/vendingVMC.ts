@@ -15,9 +15,8 @@ export class VendingVMC {
     // port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
     port: SerialPort;
     sock: SocketClientVMC | null = null
-    transactionID = new Array<number>();
     path = '/dev/ttyS1';
-    commands = Array<Buffer>();
+    commands = Array<{b:Buffer,transactionID:number}>();
     isACK = false;
     retry = 5;
     constructor(sock: SocketClientVMC) {
@@ -47,23 +46,23 @@ export class VendingVMC {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
                 let buff = that.checkCommandsForSubmission() ;
-                if (b == 'fafb410040' && buff) {// POLL and submit command
+                if (b == 'fafb410040' && buff!=null) {// POLL and submit command
                        
                         console.log('X command', buff);
                         that.port.write(buff, (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
-                                that.sock?.send(buff.toString("hex"), that.transactionID[0]);
+                                that.sock?.send(buff?.b.toString("hex"), buff?.transactionID||-1);
                             } else {
                                 console.log('WRITE COMMAND succeeded', new Date().getTime());
-                                that.sock?.send(buff.toString("hex"), that.transactionID[0]);
+                                that.sock?.send(buff?.b.toString("hex"), buff?.transactionID||-1);
                                 // confirm by socket
                             }
                         })
                         that.retry--;
                         if (that.retry <= 0) {
-                            that.commands.shift();
-                            that.sock?.send(b, that.clearTransactionID());
+                            const t = that.clearTransactionID();
+                            that.sock?.send(b, t?.transactionID||-1);
                         }
                 
                    
@@ -72,8 +71,8 @@ export class VendingVMC {
                     that.retry = 5;
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
                     console.log('shift the current command and add new command for demo');
-                    that.commands.shift();
-                    that.sock?.send(b, that.clearTransactionID());
+                    const t = that.clearTransactionID();
+                    that.sock?.send(b, t?.transactionID||-1);
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
                 else if (b != 'fafb410040') {// POLL only with no commands in the queue
@@ -130,12 +129,9 @@ export class VendingVMC {
             ;
     }
     clearTransactionID() {
-        const x = this.transactionID.length ? this.transactionID.shift() : -1;
-        return x != undefined ? x : -1;
+        return this.commands.length ? this.commands.shift() : null;
     }
-    getTransactionID() {
-        return this.transactionID.length ? this.transactionID[0] : -1
-    }
+
     getACK() {
 
         let buff = ['fa', 'fb'];
@@ -166,7 +162,7 @@ export class VendingVMC {
 
         }
 
-        return false;
+        return null;
     }
     int2hex(i: number) {
         const str = Number(i).toString(16);
@@ -212,7 +208,7 @@ export class VendingVMC {
 
     }
     commandVMC(command: EVMC_COMMAND, params: any, transactionID: number, series = 1) {
-        this.transactionID.push(transactionID);
+        
         return new Promise<IResModel>((resolve, reject) => {
             const slot = params.slot;
             //STX
@@ -335,7 +331,7 @@ export class VendingVMC {
             //     p.push(chk8xor(p))
             // }
             const x = buff.join('');
-            this.commands.push(Buffer.from(x, 'hex'))
+            this.commands.push({b:Buffer.from(x, 'hex'),transactionID})
             // const x = buff.join('');
             // console.log('X', x);
             // this.port.write(Buffer.from(x, 'hex'), (e) => {

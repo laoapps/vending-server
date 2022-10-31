@@ -181,6 +181,9 @@ export class SocketServerVMC  extends SocketEmitter{
                                 console.log('DATA  Update status here ');
                                 // fafb 52 21 0d010100000000000000000000000030303030303030303030aaaaaaaaaaaaaaaa7f
                                 if((d.data+'').startsWith('fafb52')){
+                                    // report status here 
+                                }
+                                if((d.data+'').startsWith('fafb420043')){
                                     
                                 }
                                 // Communication number+ 
