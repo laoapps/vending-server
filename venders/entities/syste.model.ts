@@ -753,8 +753,31 @@ export interface IBillCashIn extends IBase{
     badBankNotes:Array<IBankNote>;
     transactionID:number;
     userUuid:string;
-    requestor:any;
+    requestor:IMMoneyRequestRes;
     requestTime:Date;
     confirm:any;
     confirmTime:Date;
+    clientId:string;
+    machineId:string
 }
+export interface IMMoneyRequestRes
+{
+        // "22162": "73494",
+        transData: Array<IMMoneyTransData>,
+        responseCode: string,
+        responseMessage:string,
+        responseStatus: string,
+        transID: number,
+        processTime: number,
+        serverDatetime: Date,
+        serverDatetimeMs: number
+    }
+    export interface IMMoneyTransData{
+        transCashInID: number,
+        transStatus: string,
+        accountNo: string,
+        accountNameEN: string,
+        accountRef: string,
+        accountType: string,
+        transExpiry: Date
+    }

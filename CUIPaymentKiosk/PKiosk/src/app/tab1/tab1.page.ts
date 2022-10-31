@@ -17,9 +17,10 @@ export class Tab1Page {
   timer ={t:30};
   accountname='';
   accountRef='';
- 
+  sumBN={value:0};
   constructor(public apiService: ApiServiceService) {
     this.billCashIn = apiService.billCashIn;
+    this.sumBN = apiService.sumBN;
     this.loadBankNotes();
     this.timer = apiService.timer;
    

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiServiceService } from '../api-service.service';
+import { NumberpadPage } from '../numberpad/numberpad.page';
 import { EMessage } from '../syste.model';
 
 @Component({
@@ -9,12 +10,17 @@ import { EMessage } from '../syste.model';
 })
 export class PhonenumberPage implements OnInit {
   phonenumber={phonenumber:'2055516321'}
-  constructor(public api:ApiServiceService) { }
+  constructor(public api:ApiServiceService) {
+    this.phonenumber.phonenumber=api.pn
+   }
 
   ngOnInit() {
   }
   start(){
-    if((this.phonenumber.phonenumber+'').length<8){
+    this.phonenumber.phonenumber=this.api.pn
+    console.log(this.phonenumber);
+    
+    if((this.phonenumber.phonenumber+'').length<10){
       this.api.toast.create({message:EMessage.phonenumberisempty,duration:3000}).then(x=>{
         x.present();
       })
@@ -43,5 +49,10 @@ export class PhonenumberPage implements OnInit {
   }
   close(){
     this.api.closeModal();
+  }
+  showPad(){
+    this.api.showModal(NumberpadPage).then(r=>{
+      r.present()
+    })
   }
 }

@@ -13,7 +13,11 @@ const routes: Routes = [
   {
     path: 'phonenumber',
     loadChildren: () => import('./phonenumber/phonenumber.module').then( m => m.PhonenumberPageModule)
+  },  {
+    path: 'numberpad',
+    loadChildren: () => import('./numberpad/numberpad.module').then( m => m.NumberpadPageModule)
   }
+
 ];
 @NgModule({
   imports: [

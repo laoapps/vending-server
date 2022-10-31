@@ -29,7 +29,7 @@ export class CashNV9 {
     // badBN = new Array<IBankNote>();
     billCashIn = new Array<IBillCashIn>();
     completedBillCashIn = new Array<IBillCashIn>();
-
+    badBillCashIn = new Array<IBillCashIn>();
     requestors = new Array<IMMoneyRequestRes>();
 
     mmMoneyLogin: IMMoneyLoginCashin | null = null;
@@ -129,12 +129,12 @@ export class CashNV9 {
     }
     wsSend(clientId: Array<string>, data: any) {
         try {
-            console.log('CLIENT ID',clientId,data);
-            console.log('CLIENT ID',clientId,data);
+            console.log('CLIENT ID', clientId, data);
+            console.log('CLIENT ID', clientId, data);
             if (clientId.length) {
                 this.wss.clients.forEach(v => {
-                    console.log('CLIENT ID',v['clientId']);
-                    
+                    console.log('CLIENT ID', v['clientId']);
+
                     if (v.OPEN) {
                         if (clientId.includes(v['clientId'] + '')) {
                             v.send(JSON.stringify(data));
@@ -150,21 +150,21 @@ export class CashNV9 {
 
         }
     }
-    listOnlineWSClients(){
-        return new Promise<Array<string>>((resolve,reject)=>{
-            const clientIds=Array<string>();
-            this.wss.clients.forEach(v=>{
-                console.log('CLIENT ID',v['clientId']);
-                
+    listOnlineWSClients() {
+        return new Promise<Array<string>>((resolve, reject) => {
+            const clientIds = Array<string>();
+            this.wss.clients.forEach(v => {
+                console.log('CLIENT ID', v['clientId']);
+
                 clientIds.push(v['clientId'])
-    
-                if(clientIds.length==this.wss.clients.size){
+
+                if (clientIds.length == this.wss.clients.size) {
                     resolve(clientIds);
                 }
             });
         });
-       
-        
+
+
     }
 
     initWs(wss: WebSocketServer.Server) {
@@ -243,6 +243,7 @@ export class CashNV9 {
 
                                 billCashIn.requestTime = new Date();
                                 billCashIn.requestor = requestor;
+                                billCashIn.machineId = machineId.machineId
                                 res.data = { clientId: ws['clientId'], billCashIn };
                                 console.log('billCashIn', res.data);
 
@@ -556,7 +557,7 @@ export class CashNV9 {
     }
     confirmCredit(machineId: string, channel: number, transactionID: number) {
 
-        const x = this.billCashIn.find(v => v.transactionID == transactionID);
+        const x = this.billCashIn.find(v => v.transactionID == transactionID && v.machineId == machineId);
         try {
             if (!x) throw new Error('Confirm FAILED  bill not found' + channel + transactionID);
             const n = this.notes.find(v => v.channel == channel);
@@ -580,17 +581,31 @@ export class CashNV9 {
                 this.ssocket.setMachineCounter(machineId);
             }).catch(e => {
                 console.log('ERROR confirm Mmoney Cashin', e);
-                this.wsSend([x?.clientId + ''], e.message);
+
+                this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
+                const res = {} as IResModel;
+                res.command = EMACHINE_COMMAND.status;
+                res.message = e.message;
+                res.status = 0;
+                this.wsSend([x?.clientId + ''], res);
             })
         } catch (error: any) {
             // TODO: Notify to admin
             console.log(error);
-            this.wsSend([x?.clientId + ''], error.message);
+            // save to database 
+            this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
+
+            const res = {} as IResModel;
+            res.command = EMACHINE_COMMAND.status;
+            res.message = error.message;
+            res.status = 0;
+            this.wsSend([x?.clientId + ''], res);
+
         }
     }
-    timers = new Array<{ clientId: string, t: any, ttl: number }>();
+    timers = new Array<{ clientId: string, t: any, ttl: number, machineId: string }>();
     setCounter(machineId: string, transactionID: number, command: EMACHINE_COMMAND) {
-        const x = this.billCashIn.find(v => v.transactionID == transactionID);
+        const x = this.billCashIn.find(v => v.transactionID == transactionID&&machineId==v.machineId);
         try {
             if (!x) throw new Error('Confirm FAILED  bill not found' + command + transactionID);
             const res = {} as IResModel;
@@ -610,22 +625,22 @@ export class CashNV9 {
                 }
                 console.log('TIMER CREATE TIMER ');
                 const that = this;
-                const t = setInterval(() => {                
+                const t = setInterval(() => {
                     console.log('TIMER find and creating');
                     const y = that.timers.find(vy => vy.clientId == x?.clientId);
                     if (!y) {
                         console.log('TIMER CREATE 30 ');
-                        res.data = {t:30};
+                        res.data = { t: 30 };
                     }
                     if (y) {
                         res.command = EMACHINE_COMMAND.setcounter;
                         res.message = EMessage.succeeded;
                         res.status = 1;
-                        res.data = {t:--y.ttl};
+                        res.data = { t: --y.ttl };
                         console.log('setcounter exist -- ', y.ttl);
 
-                        console.log('setcounter response WS',x?.clientId);
-                        console.log('setcounter response WS',res);
+                        console.log('setcounter response WS', x?.clientId);
+                        console.log('setcounter response WS', res);
                         that.wsSend([x?.clientId + ''], res);
                         // this.ssocket.setMachineCounter(machineId);
                         // remove counter
@@ -647,22 +662,24 @@ export class CashNV9 {
                     }
                 }, 1000);
                 this.timers.push({
-                    clientId: x.clientId, t, ttl: 30
-                })
+                    clientId: x.clientId, t, ttl: 30, machineId
+                }
+                )
                 return;
 
             } else if (command == EMACHINE_COMMAND.READ_NOTE) {
                 //pause
                 // setTimeout(()=>{
-                    this.setCounter(machineId,transactionID,EMACHINE_COMMAND.ENABLE);
+
+                this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
                 this.ssocket.setMachineCounter(machineId);
                 // },300)
-                
+
                 return;
             }
             else if (command == EMACHINE_COMMAND.REJECT_BANKNOTE) {
 
-                this.setCounter(machineId,transactionID,EMACHINE_COMMAND.ENABLE);
+                this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
                 this.ssocket.setMachineCounter(machineId);
                 return;
             }
@@ -683,15 +700,17 @@ export class CashNV9 {
                 clearInterval(this.timers[i].t);
                 this.timers.splice(i, 1);
             }
-
-
-
-
-
         } catch (error: any) {
-            // TODO: Notify to admin
             console.log(error);
-            this.wsSend([x?.clientId + ''], error.message);
+            this.badBillCashIn.push({ transactionID, badBankNotes: [{  } as IBankNote], machineId } as IBillCashIn)
+
+            const res = {} as IResModel;
+            res.command = EMACHINE_COMMAND.status;
+            res.message = error.message;
+            res.status = 0;
+            this.wsSend([x?.clientId + ''], res);
+            // TODO: Notify to admin
+            
         }
     }
 

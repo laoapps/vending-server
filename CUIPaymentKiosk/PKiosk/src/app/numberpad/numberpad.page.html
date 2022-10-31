@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>numberpad</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<ion-input [(ngModel)]="api.pn" style="width:100%; background-color:bisque">
+
+</ion-input>
+<ion-grid>
+  <ion-row>
+    <ion-col size="4">
+      <ion-button (click)="click(1)" style="width: 100%;">1</ion-button>
+    </ion-col> <ion-col size="4">
+      <ion-button (click)="click(2)" style="width: 100%;">2</ion-button>
+    </ion-col> <ion-col size="4">
+      <ion-button (click)="click(3)" style="width: 100%;">3</ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="4">
+      <ion-button (click)="click(4)" style="width: 100%;">4</ion-button>
+    </ion-col> <ion-col size="4">
+      <ion-button (click)="click(5)" style="width: 100%;">5</ion-button>
+    </ion-col> <ion-col size="4">
+      <ion-button (click)="click(6)" style="width: 100%;">6</ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="4">
+      <ion-button (click)="click(7)" style="width: 100%;">7</ion-button>
+    </ion-col> <ion-col size="4">
+      <ion-button (click)="click(8)" style="width: 100%;">8</ion-button>
+    </ion-col> <ion-col size="4">
+      <ion-button (click)="click(9)" style="width: 100%;">9</ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-button (click)="click(0)" style="width: 100%;">0</ion-button>
+    </ion-col> 
+  </ion-row>
+  <ion-row>
+    <ion-col size="6">
+      <ion-button (click)="back()" style="width: 100%;"><ion-icon name="arrow-back-outline"></ion-icon></ion-button>
+    </ion-col> 
+    <ion-col size="6">
+      <ion-button (click)="close()" style="width: 100%;">X</ion-button>
+    </ion-col> 
+  </ion-row>
+</ion-grid>
+</ion-content>

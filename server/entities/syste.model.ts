@@ -2918,6 +2918,7 @@ export interface IBillCashIn extends IBase{
     confirm:any;
     confirmTime:Date;
     clientId:string;
+    machineId:string
 }
 export interface IMMoneyTransData{
     transCashInID: number,

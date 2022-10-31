@@ -9,7 +9,7 @@
   class="border d-flex align-items-center justify-content-center"
   style="height: 350px;"
 >
-<ion-input type="number" [(ngModel)]="phonenumber.phonenumber"  placeholder="2056789012"></ion-input>
+<ion-input type="number" [(ngModel)]="api.pn"  placeholder="2056789012" (click)="showPad()"></ion-input>
   <ion-button  (click)="start()">Start</ion-button>
 </div>
 

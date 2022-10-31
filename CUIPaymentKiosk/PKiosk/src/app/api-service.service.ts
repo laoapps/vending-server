@@ -21,7 +21,8 @@ export class ApiServiceService {
   billCashIn = Array<IBillCashIn>();
   timer = { t: 30 };
   t: any;
-
+  pn='';
+  sumBN={value:0};
   mMoneyRequestor = {} as IMMoneyRequestRes;
 
   accountInfoSubcription = new BehaviorSubject<any>(null);
@@ -113,16 +114,14 @@ export class ApiServiceService {
       console.log('billBankCashInSubscription', v);
 
       if (v) {
-        // this.billCashin.badBankNotes.length=0;
-  
-        Object.keys(v).forEach(k => {
-          this.billCashIn[0].bankNotes[k] = v[k];
-        })
-        Object.keys(v.badBankNotes).forEach(k => {
-          this.billCashIn[0].badBankNotes[k] = v[k];
+        this.billCashIn[0].bankNotes.length=0;
+        this.billCashIn[0].bankNotes.push(...v.bankNotes);
+        this.sumBN.value=0;
+        this.billCashIn[0].bankNotes.forEach(v=>{
+          this.sumBN.value+= v.value;
         })
         console.log('bank notes', this.billCashIn);
-        this.validateMMoney(v.requestor.transData[0].accountRef);
+        // this.validateMMoney(v.requestor.transData[0].accountRef);
 
       }
     })

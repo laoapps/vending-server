@@ -403,14 +403,8 @@ export class KiosESSP {
         let countRead=0;
         this.eSSP.on('READ_NOTE', result => {
             console.log('READ_NOTE', result,countRead,this.counter);
-            if(!countRead&&this.counter > 5){
-                this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
-                countRead=1;
-                 return;
-            }
-           
-            // this.isReading=true;
-           else if (this.transactionID == -1 || this.counter <= 5) {
+
+             if (this.transactionID == -1 || this.counter <= 5) {
                 countRead=0;
                 this.eSSP.command('REJECT_BANKNOTE').then(r => {
                     // this.eSSP.disable()
@@ -422,6 +416,14 @@ export class KiosESSP {
                 })
                 return;
             }
+            else if(!countRead&&this.counter > 5){
+                this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
+                countRead=1;
+                 return;
+            }
+           
+            // this.isReading=true;
+          
             else if (result.channel > 0) {
                 countRead=0;
                 this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
