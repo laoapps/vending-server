@@ -19,6 +19,7 @@ export class VendingVMC {
     path = '/dev/ttyS1';
     commands = Array<Array<string>>();
     isACK=false;
+     retry=5;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
@@ -32,7 +33,8 @@ export class VendingVMC {
         // })
         let buffer = '';
         const that = this;
-
+        this.commands.push(this.sycnVMC());
+     
         this.port =new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
             if (err) {
                 return console.log('Error: ', err.message)
@@ -61,25 +63,26 @@ export class VendingVMC {
                         })
                 }
                 else if(b=='fafb420043'){// ACK 
-                    
+                    that.retry=5;
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
                     console.log('shift the current command and add new command for demo');
                     that.commands.shift();
                     that.sock?.send(b, that.clearTransactionID());
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
-                // else if(b == 'fafb410040') {// POLL only with no commands in the queue
-                //     buff = that.getACK();
-                //     let x = buff.join('')
-                //     console.log('X ACK', x,(Buffer.from(x, 'hex')));
-                //     that.port.write(Buffer.from(x, 'hex'), (e) => {
-                //         if (e) {
-                //             console.log('Error: ACK ', e.message);
-                //         } else {
-                //             console.log('write ACK succeeded');
-                //         }
-                //     })
-                // }else{
+                else if(b !== 'fafb410040') {// POLL only with no commands in the queue
+                    buff = that.getACK();
+                    let x = buff.join('')
+                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                    that.port.write(Buffer.from(x, 'hex'), (e) => {
+                        if (e) {
+                            console.log('Error: ACK ', e.message);
+                        } else {
+                            console.log('write ACK succeeded');
+                        }
+                    })
+                }
+                // else{
                 //     // update status to the server
                 //     that.sock?.send(b,-1);
                 // }
@@ -90,6 +93,15 @@ export class VendingVMC {
         //     this.coolingSystemTask();
         // }, 30000)
 
+    }
+    sycnVMC(){
+        let buff = ['fa', 'fb'];
+        buff.push('31');
+        buff.push('01'); // default length 00
+        buff.push('01'); 
+        buff.push('00'); 
+        buff[buff.length-1]=chk8xor(buff)
+        return buff;
     }
     clearTransactionID(){
         const x = this.transactionID.length?this.transactionID.shift():-1;
