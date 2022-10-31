@@ -4,7 +4,7 @@ import { v4 as uuid4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
+import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel } from '../entities/system.model';
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';

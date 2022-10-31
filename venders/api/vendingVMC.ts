@@ -34,13 +34,13 @@ export class VendingVMC {
         let buffer = '';
         const that = this;
 
-
+    
         this.port = new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
             if (err) {
                 return console.log('Error: ', err.message)
             }
             console.log(`port ${that.path} accessed`);
-
+            that.sycnVMC();
             var b = '';
             // that.sycnVMC();
             that.port.on('data', function (data: any) {

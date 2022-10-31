@@ -4,7 +4,7 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBankNote, IBillCashIn, IMMoneyLoginCashin, IMMoneyRequestRes } from '../entities/syste.model';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBankNote, IBillCashIn, IMMoneyLoginCashin, IMMoneyRequestRes, IBaseClass } from '../entities/system.model';
 import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
@@ -12,7 +12,7 @@ import { SocketServerZDM8 } from './socketServerZDM8';
 import { SocketServerESSP } from './socketServerNV9';
 import crypto from 'crypto';
 import cryptojs from 'crypto-js'
-export class CashNV9 {
+export class CashNV9  implements IBaseClass{
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -40,8 +40,8 @@ export class CashNV9 {
     MMoneyUsername ='lmmkios'
     MMoneyPassword = 'Qh7~Lq9@'
     path = '/cashNV9'
-    constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerESSP) {
-        this.ssocket = socket;
+    constructor(router: Router, wss: WebSocketServer.Server) {
+        this.ssocket =  new SocketServerESSP();
         this.ssocket.setCashInstant(this);
         this.wss = wss;
         this.initWs(wss);
@@ -806,6 +806,13 @@ export class CashNV9 {
 
         })
 
+    }
+    close(){
+        this.wss.close();
+        this.ssocket.server.close();
+        this.ssocket.sclients.forEach(v => {
+            v.destroy();
+          });
     }
 }
 

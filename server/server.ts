@@ -15,6 +15,9 @@ import { InventoryM102 } from './api/inventoryM102';
 import { SocketServerM102 } from './api/socketServerM102';
 import { SocketServerESSP } from './api/socketServerNV9';
 import { CashNV9 } from './api/cashNV9';
+import axios from 'axios';
+import { EClientCommand, EMessage, IBaseClass, IMMoneyConfirm, IReqModel } from './entities/system.model';
+import { PrintError, PrintSucceeded } from './services/service';
 const app = express();
 const router = express.Router();
 app.use(express.json({ limit: '50mb' }));
@@ -28,44 +31,50 @@ const server = http.createServer(app)
 const wss = new WebSocket.Server({ server });
 
 
-const ssZDM8 = new SocketServerZDM8();
-const invZDM8 =new InventoryZDM8(app, wss, ssZDM8);
+// const ssZDM8 = new SocketServerZDM8();
+const invZDM8 = new InventoryZDM8(app, wss);
 
-const ssVMC = new SocketServerVMC();
-const invVMC =new InventoryVMC(app, wss, ssVMC);
+// const ssVMC = new SocketServerVMC();
+const invVMC = new InventoryVMC(app, wss);
 
-const ssM102 = new SocketServerM102();
-const invM102 =new InventoryM102(app, wss, ssM102);
+// const ssM102 = new SocketServerM102();
+const invM102 = new InventoryM102(app, wss);
 
-const ssNV9 = new SocketServerESSP();
-const cashNV9 =new CashNV9(app, wss, ssNV9);
+// const ssNV9 = new SocketServerESSP();
+const cashNV9 = new CashNV9(app, wss);
 
+const sss =Array<IBaseClass>();
+sss.push(invM102,invVMC,invZDM8,cashNV9);
+app.post('/', (req, res) => {
+  const d = req.body as IReqModel;
+  try {
+    console.log('POST Data', d);
+    const c = d.data as IMMoneyConfirm;
+    if (d.command == EClientCommand.confirmMMoney) {
+      if(c.PhoneNumber==invZDM8.phonenumber&&c.wallet_ids==invVMC.walletId){
 
+      }else if(c.PhoneNumber==invVMC.phonenumber&&c.wallet_ids==invVMC.walletId){
+
+      }
+      else if(c.PhoneNumber==invM102.phonenumber&&c.wallet_ids==invM102.walletId){
+        
+      }
+    }
+  } catch (error) {
+    return res.send(PrintError(d.command, error, EMessage.error));
+
+  }
+
+})
 
 server.listen(process.env.PORT || 9009, async function () {
   console.log('HTTP listening on port ' + process.env.PORT || 9009);
 });
 
 
-process.on('exit', (code:number)=>{
-  console.log('exit code',code);
-  
-  invZDM8.ssocket.sclients.forEach(v=>{
-    v.destroy();
+process.on('exit', (code: number) => {
+  console.log('exit code', code);
+  sss.forEach(v=>{
+    v.close();
   });
-
-  invVMC.ssocket.sclients.forEach(v=>{
-    v.destroy();
-  });
-
-  invM102.ssocket.sclients.forEach(v=>{
-    v.destroy();
-  });
-  cashNV9.ssocket.sclients.forEach(v=>{
-    v.destroy();
-  });
-  wss.close();
-  ssZDM8.server.close();
-  ssM102.server.close();
-  ssVMC.server.close();
 });

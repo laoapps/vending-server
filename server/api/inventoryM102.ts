@@ -4,12 +4,12 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess } from '../entities/syste.model';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass } from '../entities/system.model';
 import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { SocketServerM102 } from './socketServerM102';
-export class InventoryM102 {
+export class InventoryM102 implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -24,8 +24,8 @@ export class InventoryM102 {
     path='/vmc';
     public phonenumber =''; //
     public walletId = '';// 
-    constructor(router: Router, wss: WebSocketServer.Server, socket: SocketServerM102) {
-        this.ssocket = socket;
+    constructor(router: Router, wss: WebSocketServer.Server) {
+        this.ssocket = new SocketServerM102();
         this.wss = wss;
         this.initWs(wss);
         try {
@@ -558,6 +558,13 @@ export class InventoryM102 {
             console.log(error);
 
         }
+    }
+    close(){
+        this.wss.close();
+        this.ssocket.server.close();
+        this.ssocket.sclients.forEach(v => {
+            v.destroy();
+          });
     }
 }
 

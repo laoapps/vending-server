@@ -1,15 +1,19 @@
 import net from 'net';
-import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
+import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, SocketEmitter } from '../entities/system.model';
 import cryptojs from 'crypto-js';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
-export class SocketServerVMC {
+
+export class SocketServerVMC  extends SocketEmitter{
     server = net.createServer();
     sclients = Array<net.Socket>();
     ports = 31222;
 
     private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }];
 
+
+
     constructor() {
+        super();
         try {
             //creates the server
 
@@ -99,21 +103,24 @@ export class SocketServerVMC {
                                 if (!mx.length) {
                                     that.sclients.push(socket);
                                     console.log('DATA machine exist and accepted');
+                                    that.isAcceptMachineLogin(x.machineId);
                                 } else if (mx.length) {
                                     console.log('DATA duplicated connection', mx.length);
                                     mx.forEach(v => v.end())
                                     socket.end();
                                     // allow new connection only
                                     console.log('DATA terminate all connection and restart');
+                                    that.isDuplicatedMachine(true);
                                     return;
                                 }
                                 return;
                             } else {
-                                console.log('DATA  not exist machine id ');
+                                console.log('DATA machine  is not exist ');
+                                that.isMachineExist(false);
                                 socket.end();
                                 return;
                             }
-
+                           
                         } else if (d.command == EMACHINE_COMMAND.ping) {
                             console.log('DATA command ping');
                             const token = d.token;
@@ -121,7 +128,7 @@ export class SocketServerVMC {
                             if (!x) {
                                 console.log('DATA ping not found token');
                                 socket.end();
-
+                                that.isMachinePing('');
                             } else {
                                 console.log('DATA ping found token');
                                 const mx = that.sclients.filter(v => {
@@ -135,12 +142,15 @@ export class SocketServerVMC {
                                     mx.forEach(v => v.end());
                                     socket.end();
                                     console.log('DATA ping duplicated !');
+                                    that.isDuplicatedMachine(true);
                                     return;
                                 } else if (!mx.length) {
                                     socket.end();
                                     console.log('DATA re-login PLEASE!');
+                                    that.isMachineExist(false);
                                     return;
                                 }
+                                that.isMachinePing(d.token);
                                 return;
                             }
                         } else if (d.command == EMACHINE_COMMAND.status) {
@@ -148,7 +158,7 @@ export class SocketServerVMC {
                             const token = d.token;
                             const x = that.findMachineIdToken(token);
                             if (x) {
-                                console.log('DATA ping found token');
+                                console.log('DATA status found token');
                                 const mx = that.sclients.filter(v => {
                                     const m = v['machineId'] as IMachineClientID;
                                     if (m) {
@@ -160,21 +170,39 @@ export class SocketServerVMC {
                                     mx.forEach(v => v.end());
                                     socket.end();
                                     console.log('DATA duplicated !');
+                                    that.isDuplicatedMachine(true);
                                     return;
                                 } else if (!mx.length) {
                                     socket.end();
                                     console.log('DATA re-login PLEASE!');
+                                    that.isMachineExist(false);
                                     return;
                                 }
                                 console.log('DATA  Update status here ');
-
+                                // fafb 52 21 0d010100000000000000000000000030303030303030303030aaaaaaaaaaaaaaaa7f
+                                if((d.data+'').startsWith('fafb52')){
+                                    
+                                }
+                                // Communication number+ 
+                                // Bill acceptor status+ Coin
+                                // acceptor status+ 
+                                // Card reader status+
+                                // Temperature controller status+ 
+                                // Temperature+ Door status+ 
+                                // Bill change(4 byte)+ 
+                                // Coin change(4 byte)+ 
+                                // Machine ID number (10 byte) + 
+                                // Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) + 
+                                // Machine humidity (8 byte, start from master machine)
+                               that.response(d);
                                 return;
                             } else {
                                 socket.end();
-
+                                that.isMachineExist(false);
                                 console.log('DATA  not exist machine id ');
                                 return;
                             }
+                            
                         }else if(Object.keys(EZDM8_COMMAND).includes(d.command)){
                             console.log('DATA response from the machine');
                             console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
@@ -300,6 +328,10 @@ export class SocketServerVMC {
 
         }
 
+    }
+  
+    onResponse(cb: (data: any) => void): void {
+        throw new Error('Method not implemented.');
     }
     findMachineId(machineId: string) {
         try {

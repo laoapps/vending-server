@@ -1,4 +1,4 @@
-
+import { EventEmitter } from 'events';
 export const EESSP_COMMANDS = {
     RESET: {
         code: 1,
@@ -787,6 +787,66 @@ export interface IMachineID extends IBase, IBC {
     machineCommands: string;
     logintoken: string;
 }
+
+export class SocketEmitter {
+    ev = new EventEmitter();
+    onResponse(cb: (data: any) => void) {
+        this.ev.on('response', (data) => {
+            cb(data);
+        })
+    };
+    response(data:IReqModel){
+        this.ev.emit('response',data)
+    }
+    onMachineExist(cb: (data: any) => void) {
+        this.ev.on('machineexist', (data) => {
+            cb(data);
+        })
+    };
+    isMachineExist(b:boolean){
+        this.ev.emit('machineexist',b);
+    }
+    onDuplicatedMachine(cb: (data: any) => void) {
+        this.ev.on('dupcatedmachine', (data) => {
+            cb(data);
+        })
+    };
+    isDuplicatedMachine(b:boolean){
+        this.ev.emit('dupcatedmachine',b);
+    }
+
+    onAcceptMachineLogin(cb: (data: any) => void) {
+        this.ev.on('acceptMachineLogin', (data) => {
+            cb(data);
+        })
+    };
+    isAcceptMachineLogin(machineId:string){
+        this.ev.emit('acceptMachineLogin',machineId);
+    }
+
+    onMachinePing(cb: (data: any) => void) {
+        this.ev.on('machineping', (data) => {
+            cb(data);
+        })
+    };
+    isMachinePing(machineId:string){
+        this.ev.emit('machineping',machineId);
+    }
+
+    onConnectionExist(cb: (data: any) => void) {
+        this.ev.on('connectionexist', (data) => {
+            cb(data);
+        })
+    };
+    isConnectionExist(machineId:string){
+        this.ev.emit('connectionexist',machineId);
+    }
+}
+export interface IBaseClass {
+
+    close:()=>void;
+}
+
 
 
 
@@ -4914,13 +4974,13 @@ export interface IMMoneyLogInRes {
     status: true
 
 }
-export interface IMMoneyLoginCashin{
-    accessToken:string,
-      tokenType: string,
-            expiresIn: number,
-                userName: string,
-                issued: string,
-                expiry: string
+export interface IMMoneyLoginCashin {
+    accessToken: string,
+    tokenType: string,
+    expiresIn: number,
+    userName: string,
+    issued: string,
+    expiry: string
 };
 export interface IMMoneyGenerateQR {
     transactionID: string,
@@ -4943,34 +5003,34 @@ export interface IMMoneyConfirm {
     resultCode: string,//200
     resultDescription: string,//'Operation'
     trandID: string, // 
-    tranid_client:string,
-    PhoneNumber:string
+    tranid_client: string,
+    PhoneNumber: string
 }
-export interface IBillProcess{
-    bill:IVendingMachineBill,
-    position:any
+export interface IBillProcess {
+    bill: IVendingMachineBill,
+    position: any
 }
 
-export interface IBankNote extends IBase{
-    value:number;
-    amount:number;
-    currency:string;
-    channel:number;
-    image:string;
+export interface IBankNote extends IBase {
+    value: number;
+    amount: number;
+    currency: string;
+    channel: number;
+    image: string;
 }
-export interface IBillCashIn extends IBase{
-    bankNotes:Array<IBankNote>;
-    badBankNotes:Array<IBankNote>;
-    transactionID:number;
-    userUuid:string;
-    requestor:IMMoneyRequestRes;
-    requestTime:Date;
-    confirm:any;
-    confirmTime:Date;
-    clientId:string;
-    machineId:string
+export interface IBillCashIn extends IBase {
+    bankNotes: Array<IBankNote>;
+    badBankNotes: Array<IBankNote>;
+    transactionID: number;
+    userUuid: string;
+    requestor: IMMoneyRequestRes;
+    requestTime: Date;
+    confirm: any;
+    confirmTime: Date;
+    clientId: string;
+    machineId: string
 }
-export interface IMMoneyTransData{
+export interface IMMoneyTransData {
     transCashInID: number,
     transStatus: string,
     accountNo: string,
@@ -4979,16 +5039,15 @@ export interface IMMoneyTransData{
     accountType: string,
     transExpiry: Date
 }
-export interface IMMoneyRequestRes
-{
-        // "22162": "73494",
-        transData: Array<IMMoneyTransData>,
-        responseCode: string,
-        responseMessage:string,
-        responseStatus: string,
-        transID: number,
-        processTime: number,
-        serverDatetime: Date,
-        serverDatetimeMs: number
-    }
+export interface IMMoneyRequestRes {
+    // "22162": "73494",
+    transData: Array<IMMoneyTransData>,
+    responseCode: string,
+    responseMessage: string,
+    responseStatus: string,
+    transID: number,
+    processTime: number,
+    serverDatetime: Date,
+    serverDatetimeMs: number
+}
 

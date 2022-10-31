@@ -1,5 +1,5 @@
 import net from 'net';
-import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/syste.model';
+import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/system.model';
 import cryptojs from 'crypto-js';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
