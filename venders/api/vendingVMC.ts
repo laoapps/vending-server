@@ -45,7 +45,7 @@ export class VendingVMC {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
                 let buff = that.checkCommandsForSubmission()||Array<string>();
-                if (b == 'fafb410040'&&buff.length&&that.isACK) {// POLL and submit command
+                if (b == 'fafb410040') {// POLL and submit command
         
                         let x = buff.join('');
                         console.log('X command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
@@ -61,6 +61,7 @@ export class VendingVMC {
                         })
                 }
                 else if(b=='fafb420043'){// ACK 
+                    
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
                     console.log('shift the current command and add new command for demo');
                     that.commands.shift();
@@ -98,7 +99,7 @@ export class VendingVMC {
         return this.transactionID.length?this.transactionID[0]:-1
     }
      getACK() {
-        this.isACK=true;
+      
         let buff = ['fa', 'fb'];
         buff.push('42');
         buff.push('00'); // default length 00
