@@ -17,7 +17,7 @@ export class VendingVMC {
     sock: SocketClientVMC | null = null
     transactionID = new Array<number>();
     path = '/dev/ttyS1';
-    commands = Array<Array<string>>();
+    commands = Array<Buffer>();
     isACK = false;
     retry = 5;
     constructor(sock: SocketClientVMC) {
@@ -46,17 +46,17 @@ export class VendingVMC {
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
-                let buff = that.checkCommandsForSubmission() || Array<string>();
-                if (b == 'fafb410040' && buff.length) {// POLL and submit command
-                        let x = buff.join('');
-                        console.log('X command', new Date().getTime(), x, (Buffer.from(x, 'hex')));
-                        that.port.write(Buffer.from(x, 'hex'), (e) => {
+                let buff = that.checkCommandsForSubmission() ;
+                if (b == 'fafb410040' && buff) {// POLL and submit command
+                       
+                        console.log('X command', buff);
+                        that.port.write(buff, (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
-                                that.sock?.send(x, that.transactionID[0]);
+                                that.sock?.send(buff.toString("hex"), that.transactionID[0]);
                             } else {
                                 console.log('WRITE COMMAND succeeded', new Date().getTime());
-                                that.sock?.send(x, that.transactionID[0]);
+                                that.sock?.send(buff.toString("hex"), that.transactionID[0]);
                                 // confirm by socket
                             }
                         })
@@ -77,8 +77,8 @@ export class VendingVMC {
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
                 else if (b != 'fafb410040') {// POLL only with no commands in the queue
-                    buff = that.getACK();
-                    let x = buff.join('')
+                    
+                    let x = that.getACK().join('')
                     console.log('X ACK', x, (Buffer.from(x, 'hex')));
                     that.port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
@@ -151,22 +151,22 @@ export class VendingVMC {
         if (this.no >= 255) {
             this.no = 0;
         }
+
         return this.no;
     }
+    writeConfig(){
 
+    }
 
     checkCommandsForSubmission() {
-        let x = Array<string>();
         try {
-            x = JSON.parse(JSON.stringify(this.commands[0])) as Array<string>;
-            x.push('00')
-            x[x.length - 1] = chk8xor(x)
+            return this.commands[0];
         } catch (error) {
             console.log('ERROR NO COMMAND FOUND');
 
         }
 
-        return x;
+        return false;
     }
     int2hex(i: number) {
         const str = Number(i).toString(16);
@@ -335,15 +335,17 @@ export class VendingVMC {
             //     p.push(chk8xor(p))
             // }
             const x = buff.join('');
-            console.log('X', x);
-            this.port.write(Buffer.from(x, 'hex'), (e) => {
-                if (e) {
-                    reject(PrintError(command as any, params, e.message));
-                    return console.log('Error: ', e.message)
-                } else {
-                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                }
-            })
+            this.commands.push(Buffer.from(x, 'hex'))
+            // const x = buff.join('');
+            // console.log('X', x);
+            // this.port.write(Buffer.from(x, 'hex'), (e) => {
+            //     if (e) {
+            //         reject(PrintError(command as any, params, e.message));
+            //         return console.log('Error: ', e.message)
+            //     } else {
+            //         resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+            //     }
+            // })
         })
 
     }
