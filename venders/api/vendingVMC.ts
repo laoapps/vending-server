@@ -75,7 +75,21 @@ export class VendingVMC {
                     that.sock?.send(b, that.clearTransactionID());
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
-                // else if(b == 'fafb410040') {// POLL only with no commands in the queue
+                else if(b != 'fafb410040') {// POLL only with no commands in the queue
+                    buff = that.getACK();
+                    let x = buff.join('')
+                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                    that.port.write(Buffer.from(x, 'hex'), (e) => {
+                        if (e) {
+                            console.log('Error: ACK ', e.message);
+                        } else {
+                            console.log('write ACK succeeded');
+                        }
+                        that.sock?.send(b,-1);
+                    })
+                }
+                // else{
+                //     // update status to the server
                 //     buff = that.getACK();
                 //     let x = buff.join('')
                 //     console.log('X ACK', x,(Buffer.from(x, 'hex')));
@@ -86,21 +100,8 @@ export class VendingVMC {
                 //             console.log('write ACK succeeded');
                 //         }
                 //     })
+                //     that.sock?.send(b,-1);
                 // }
-                else{
-                    // update status to the server
-                    buff = that.getACK();
-                    let x = buff.join('')
-                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
-                    that.port.write(Buffer.from(x, 'hex'), (e) => {
-                        if (e) {
-                            console.log('Error: ACK ', e.message);
-                        } else {
-                            console.log('write ACK succeeded');
-                        }
-                    })
-                    that.sock?.send(b,-1);
-                }
                 b='';
             });
         });
