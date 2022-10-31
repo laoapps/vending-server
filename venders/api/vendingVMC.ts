@@ -61,6 +61,11 @@ export class VendingVMC {
                                 // confirm by socket
                             }
                         })
+                        that.retry--;
+                    if(that.retry<=0){
+                        that.commands.shift();
+                        that.sock?.send(b, that.clearTransactionID());
+                    }
                 }
                 else if(b=='fafb420043'){// ACK 
                     that.retry=5;
