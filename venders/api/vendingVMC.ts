@@ -42,7 +42,7 @@ export class VendingVMC {
             console.log(`port ${that.path} accessed`);
 
             var b = '';
-            that.sycnVMC();
+            // that.sycnVMC();
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
