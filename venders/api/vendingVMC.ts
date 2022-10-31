@@ -45,17 +45,17 @@ export class VendingVMC {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
                 let buff = that.checkCommandsForSubmission()||Array<string>();
-                if (b == 'fafb410040') {// POLL and submit command
+                if (b == 'fafb410040'&&buff.length) {// POLL and submit command
         
                         let x = buff.join('');
                         console.log('X command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
                         that.port.write(Buffer.from(x, 'hex'), (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
-                                that.sock?.send(x,that.clearTransactionID());
+                                that.sock?.send(x,that.transactionID[0]);
                             } else {
                                 console.log('WRITE COMMAND succeeded',new Date().getTime());
-                                that.sock?.send(x,that.clearTransactionID());
+                                that.sock?.send(x,that.transactionID[0]);
                                 // confirm by socket
                             }
                         })
@@ -68,21 +68,21 @@ export class VendingVMC {
                     that.sock?.send(b, that.clearTransactionID());
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
-                else if(b == 'fafb410040') {// POLL only with no commands in the queue
-                    buff = that.getACK();
-                    let x = buff.join('')
-                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
-                    that.port.write(Buffer.from(x, 'hex'), (e) => {
-                        if (e) {
-                            console.log('Error: ACK ', e.message);
-                        } else {
-                            console.log('write ACK succeeded');
-                        }
-                    })
-                }else{
-                    // update status to the server
-                    that.sock?.send(b,-1);
-                }
+                // else if(b == 'fafb410040') {// POLL only with no commands in the queue
+                //     buff = that.getACK();
+                //     let x = buff.join('')
+                //     console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                //     that.port.write(Buffer.from(x, 'hex'), (e) => {
+                //         if (e) {
+                //             console.log('Error: ACK ', e.message);
+                //         } else {
+                //             console.log('write ACK succeeded');
+                //         }
+                //     })
+                // }else{
+                //     // update status to the server
+                //     that.sock?.send(b,-1);
+                // }
                 b='';
             });
         });
