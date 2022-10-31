@@ -13,13 +13,13 @@ import { resolve } from 'path';
 export class VendingVMC {
 
     // port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
-    port:SerialPort;
+    port: SerialPort;
     sock: SocketClientVMC | null = null
-    transactionID=new Array<number>();
+    transactionID = new Array<number>();
     path = '/dev/ttyS1';
     commands = Array<Array<string>>();
-    isACK=false;
-     retry=5;
+    isACK = false;
+    retry = 5;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
@@ -33,59 +33,61 @@ export class VendingVMC {
         // })
         let buffer = '';
         const that = this;
-     
-     
-        this.port =new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
+
+
+        this.port = new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
             if (err) {
                 return console.log('Error: ', err.message)
             }
             console.log(`port ${that.path} accessed`);
-        
+
             var b = '';
             that.sycnVMC();
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
-                let buff = that.checkCommandsForSubmission()||Array<string>();
-                if (b == 'fafb410040'&&buff.length) {// POLL and submit command
-        
+                let buff = that.checkCommandsForSubmission() || Array<string>();
+                if (b == 'fafb410040' && buff.length) {// POLL and submit command
+                    that.doACK(b).then(r=>{
                         let x = buff.join('');
-                        console.log('X command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
+                        console.log('X command', new Date().getTime(), x, (Buffer.from(x, 'hex')));
                         that.port.write(Buffer.from(x, 'hex'), (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
-                                that.sock?.send(x,that.transactionID[0]);
+                                that.sock?.send(x, that.transactionID[0]);
                             } else {
-                                console.log('WRITE COMMAND succeeded',new Date().getTime());
-                                that.sock?.send(x,that.transactionID[0]);
+                                console.log('WRITE COMMAND succeeded', new Date().getTime());
+                                that.sock?.send(x, that.transactionID[0]);
                                 // confirm by socket
                             }
                         })
                         that.retry--;
-                    if(that.retry<=0){
-                        that.commands.shift();
-                        that.sock?.send(b, that.clearTransactionID());
-                    }
+                        if (that.retry <= 0) {
+                            that.commands.shift();
+                            that.sock?.send(b, that.clearTransactionID());
+                        }
+                    })
+                   
                 }
-                else if(b=='fafb420043'){// ACK 
-                    that.retry=5;
+                else if (b == 'fafb420043') {// ACK 
+                    that.retry = 5;
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
                     console.log('shift the current command and add new command for demo');
                     that.commands.shift();
                     that.sock?.send(b, that.clearTransactionID());
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
-                else if(b != 'fafb410040') {// POLL only with no commands in the queue
+                else if (b != 'fafb410040') {// POLL only with no commands in the queue
                     buff = that.getACK();
                     let x = buff.join('')
-                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                    console.log('X ACK', x, (Buffer.from(x, 'hex')));
                     that.port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
                             console.log('Error: ACK ', e.message);
                         } else {
                             console.log('write ACK succeeded');
                         }
-                        that.sock?.send(b,-1);
+                        that.sock?.send(b, -1);
                     })
                 }
                 // else{
@@ -102,7 +104,7 @@ export class VendingVMC {
                 //     })
                 //     that.sock?.send(b,-1);
                 // }
-                b='';
+                b = '';
             });
         });
         // setInterval(() => {
@@ -110,13 +112,30 @@ export class VendingVMC {
         // }, 30000)
 
     }
-    sycnVMC(){
+    doACK(b) {
+        return new Promise<any>((resolve,reject)=>{
+            const buff = this.getACK();
+            let x = buff.join('')
+            console.log('X ACK', x, (Buffer.from(x, 'hex')));
+            this.port.write(Buffer.from(x, 'hex'), (e) => {
+                if (e) {
+                    console.log('Error: ACK ', e.message);
+                } else {
+                    console.log('write ACK succeeded');
+                }
+                this.sock?.send(b, -1);
+                resolve('');
+            })
+        })
+       
+    }
+    sycnVMC() {
         let buff = ['fa', 'fb'];
         buff.push('31');
         buff.push('01'); // default length 00
-        buff.push('01'); 
-        buff.push('00'); 
-        buff[buff.length-1]=chk8xor(buff)
+        buff.push('01');
+        buff.push('00');
+        buff[buff.length - 1] = chk8xor(buff)
         let x = buff.join('')
         this.port.write(Buffer.from(x, 'hex'), (e) => {
             if (e) {
@@ -125,48 +144,48 @@ export class VendingVMC {
                 console.log('write ACK succeeded');
             }
         })
-        ;
+            ;
     }
-    clearTransactionID(){
-        const x = this.transactionID.length?this.transactionID.shift():-1;
-        return x!=undefined?x:-1;
+    clearTransactionID() {
+        const x = this.transactionID.length ? this.transactionID.shift() : -1;
+        return x != undefined ? x : -1;
     }
-    getTransactionID(){
-        return this.transactionID.length?this.transactionID[0]:-1
+    getTransactionID() {
+        return this.transactionID.length ? this.transactionID[0] : -1
     }
-     getACK() {
-      
+    getACK() {
+
         let buff = ['fa', 'fb'];
         buff.push('42');
         buff.push('00'); // default length 00
-        buff.push('00'); 
-        buff[buff.length-1]=chk8xor(buff)
+        buff.push('00');
+        buff[buff.length - 1] = chk8xor(buff)
         return buff;
     }
-     no=0;
-     getNextNo(){
+    no = 0;
+    getNextNo() {
         this.no++;
-        if(this.no>=255){
-            this.no=0;
+        if (this.no >= 255) {
+            this.no = 0;
         }
         return this.no;
     }
 
-  
-     checkCommandsForSubmission() {
-        let x =Array<string>();
+
+    checkCommandsForSubmission() {
+        let x = Array<string>();
         try {
-            x= JSON.parse(JSON.stringify(this.commands[0]))as Array<string>;
+            x = JSON.parse(JSON.stringify(this.commands[0])) as Array<string>;
             x.push('00')
-            x[x.length-1]=chk8xor(x)
+            x[x.length - 1] = chk8xor(x)
         } catch (error) {
             console.log('ERROR NO COMMAND FOUND');
-            
+
         }
-       
+
         return x;
     }
-     int2hex(i: number) {
+    int2hex(i: number) {
         const str = Number(i).toString(16);
         return str.length === 1 ? '0' + str : str;
     }
@@ -190,24 +209,24 @@ export class VendingVMC {
     // getTemp(buff: string) {
     //     return { t: 10, h: 0.5 }
     // }
- 
+
     command(command: EZDM8_COMMAND, params: any, transactionID: number) {
-        return new Promise<any>((resolve,reject)=>{
-         switch (command) {
-            case EZDM8_COMMAND.shippingcontrol:
-                this.commandVMC(EVMC_COMMAND._06,params,transactionID,this.getNextNo()).then(r=>{
-                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                }).catch(e=>{
-                    reject(PrintError(command as any, params,e.message));
-                })
-                break;
-         
-            default:
-                reject(PrintError(command as any, params,EMessage.commandnotfound));
-                break;
-         }
+        return new Promise<any>((resolve, reject) => {
+            switch (command) {
+                case EZDM8_COMMAND.shippingcontrol:
+                    this.commandVMC(EVMC_COMMAND._06, params, transactionID, this.getNextNo()).then(r => {
+                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                    }).catch(e => {
+                        reject(PrintError(command as any, params, e.message));
+                    })
+                    break;
+
+                default:
+                    reject(PrintError(command as any, params, EMessage.commandnotfound));
+                    break;
+            }
         })
-       
+
     }
     commandVMC(command: EVMC_COMMAND, params: any, transactionID: number, series = 1) {
         this.transactionID.push(transactionID);
@@ -236,7 +255,7 @@ export class VendingVMC {
             // Enable drop sensor or not(1 byte) +
             //  Enable elevator or not (1 byte) 
             //  selection number (2 byte)
-             if (command == EVMC_COMMAND._06) {
+            if (command == EVMC_COMMAND._06) {
                 buff.push(command);
                 buff.push(int2hex(5));//length
                 // p.push(parseInt(p.length+'', 16));
@@ -246,7 +265,7 @@ export class VendingVMC {
                 buff.push(int2hex(0));// slot 
                 buff.push(int2hex(slot));// slot 
                 buff.push(int2hex(0));// checksum
-                buff[buff.length-1]=chk8xor(buff);// update checksum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
                 // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
             }
             // //temperature
@@ -333,7 +352,7 @@ export class VendingVMC {
             //     p.push(chk8xor(p))
             // }
             const x = buff.join('');
-            console.log('X',x);
+            console.log('X', x);
             this.port.write(Buffer.from(x, 'hex'), (e) => {
                 if (e) {
                     reject(PrintError(command as any, params, e.message));
