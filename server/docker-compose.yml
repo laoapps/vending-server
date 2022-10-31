@@ -1,9 +1,9 @@
 version: "3.7"
 services:
-etl-service:
+  vender-server-service:
     build: . 
     restart: always
-    container_name: etl-service
+    container_name: vender-server-service
     # image: touyara/orderbillingapi:v1
     # command: npm start
     environment:
@@ -22,9 +22,9 @@ etl-service:
       - ./package-lock.json:/app/package-lock.json
       - back-notused:/opt/app/node_modules
     networks:
-      - etlservicebackend
-    depends_on:
-      - etl-topup-service
+      - enderserverservice
+    # depends_on:
+    #   - etl-topup-service
       #- postgresql
       #- redis
 
@@ -32,4 +32,4 @@ etl-service:
 volumes:
   back-notused:
 networks:
-  etlservicebackend:
+  venderserverservice:

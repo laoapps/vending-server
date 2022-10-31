@@ -18,6 +18,7 @@ import { CashNV9 } from './api/cashNV9';
 import axios from 'axios';
 import { EClientCommand, EMessage, IBaseClass, IMMoneyConfirm, IReqModel } from './entities/system.model';
 import { PrintError, PrintSucceeded } from './services/service';
+import { parse } from 'url';
 const app = express();
 const router = express.Router();
 app.use(express.json({ limit: '50mb' }));
@@ -26,38 +27,56 @@ app.use(cors());
 app.use(cookieParser());
 app.disable('x-powered-by');
 app.use(helmet.hidePoweredBy());
-app.use('/public', express.static(path.join(__dirname, 'public')))
-const server = http.createServer(app)
-const wss = new WebSocket.Server({ server });
 
+const server = http.createServer(app)
+// const wss = new WebSocket.Server({ server });
+const wss1 = new WebSocket.Server({ noServer: true });
+const wss2 = new WebSocket.Server({ noServer: true });
+const wss3 = new WebSocket.Server({ noServer: true });
+const wss4 = new WebSocket.Server({ noServer: true });
 
 // const ssZDM8 = new SocketServerZDM8();
-const invZDM8 = new InventoryZDM8(app, wss);
+const invZDM8 = new InventoryZDM8(app, wss1);
 
 // const ssVMC = new SocketServerVMC();
-const invVMC = new InventoryVMC(app, wss);
+const invVMC = new InventoryVMC(app, wss2);
 
 // const ssM102 = new SocketServerM102();
-const invM102 = new InventoryM102(app, wss);
+const invM102 = new InventoryM102(app, wss3);
 
 // const ssNV9 = new SocketServerESSP();
-const cashNV9 = new CashNV9(app, wss);
+const cashNV9 = new CashNV9(app, wss4);
 
 const sss =Array<IBaseClass>();
 sss.push(invM102,invVMC,invZDM8,cashNV9);
+app.use('/vmc/public', express.static(path.join(__dirname, 'public')))
+app.use('/zdm8/public', express.static(path.join(__dirname, 'public')))
+app.use('/m102/public', express.static(path.join(__dirname, 'public')))
 app.post('/', (req, res) => {
+ const http= req.protocol; // http
+const host = req.get('Host') // localhost:4000
+  const server = http+host;
   const d = req.body as IReqModel;
   try {
     console.log('POST Data', d);
     const c = d.data as IMMoneyConfirm;
     if (d.command == EClientCommand.confirmMMoney) {
       if(c.PhoneNumber==invZDM8.phonenumber&&c.wallet_ids==invVMC.walletId){
-
+        axios.post(server+'/zdm8/',c).then(r=>{
+          console.log(r.data);
+          res.send(r.data);
+        })
       }else if(c.PhoneNumber==invVMC.phonenumber&&c.wallet_ids==invVMC.walletId){
-
+        axios.post(server+'/vmc/',c).then(r=>{
+          console.log(r.data);
+          res.send(r.data);
+        })
       }
       else if(c.PhoneNumber==invM102.phonenumber&&c.wallet_ids==invM102.walletId){
-        
+        axios.post(server+'/m102/',c).then(r=>{
+          console.log(r.data);
+          res.send(r.data);
+        })
       }
     }
   } catch (error) {
@@ -66,6 +85,36 @@ app.post('/', (req, res) => {
   }
 
 })
+
+server.on('upgrade', function upgrade(request, socket, head) {
+  try {
+    const { pathname } = parse(request.url||'');
+    console.log('pathname',pathname);
+    
+    if (pathname === '/zdm8') {
+      wss1.handleUpgrade(request, socket, head, function done(ws) {
+        wss1.emit('connection', ws, request);
+      });
+    } else if (pathname === '/vmc') {
+      wss2.handleUpgrade(request, socket, head, function done(ws) {
+        wss2.emit('connection', ws, request);
+      });
+    } 
+    else if (pathname === '/m102') {
+      wss2.handleUpgrade(request, socket, head, function done(ws) {
+        wss2.emit('connection', ws, request);
+      });
+    } 
+    else {
+      socket.destroy();
+    }
+  } catch (error) {
+    console.log(error);
+    
+    socket.destroy();
+  }
+ 
+});
 
 server.listen(process.env.PORT || 9009, async function () {
   console.log('HTTP listening on port ' + process.env.PORT || 9009);

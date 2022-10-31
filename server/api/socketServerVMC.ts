@@ -184,7 +184,7 @@ export class SocketServerVMC  extends SocketEmitter{
                                     // report status here 
                                 }
                                 if((d.data+'').startsWith('fafb420043')){
-                                    
+                                    that.response(d);
                                 }
                                 // Communication number+ 
                                 // Bill acceptor status+ Coin
@@ -197,7 +197,7 @@ export class SocketServerVMC  extends SocketEmitter{
                                 // Machine ID number (10 byte) + 
                                 // Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) + 
                                 // Machine humidity (8 byte, start from master machine)
-                               that.response(d);
+                            //    that.response(d);
                                 return;
                             } else {
                                 socket.end();
@@ -333,9 +333,7 @@ export class SocketServerVMC  extends SocketEmitter{
 
     }
   
-    onResponse(cb: (data: any) => void): void {
-        throw new Error('Method not implemented.');
-    }
+
     findMachineId(machineId: string) {
         try {
             return this.machineIds.find(v => v.machineId == machineId);

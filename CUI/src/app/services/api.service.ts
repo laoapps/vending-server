@@ -11,8 +11,8 @@ import * as moment from 'moment';
   providedIn: 'root'
 })
 export class ApiService {
-  url = environment.url;
-  wsurl = environment.wsurl;
+  url = localStorage.getItem('url')||environment.url;
+  wsurl = localStorage.getItem('wsurl')||environment.wsurl;
   currentPaymentProvider = EPaymentProvider.laab;
   machineId = {} as IMachineId;
 
@@ -35,8 +35,8 @@ export class ApiService {
     public alert: AlertController) {
       this.wsapi = wsapi;
     // this.zone.runOutsideAngular(() => {
-    this.machineId.machineId = '12345678';
-    this.machineId.otp = '111111';
+    this.machineId.machineId = localStorage.getItem('machineId')||'12345678';
+    this.machineId.otp = localStorage.getItem('otp')||'111111';
     this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
 
    
@@ -46,9 +46,9 @@ export class ApiService {
       this.wsAlive.time = new Date();
       this.wsAlive.isAlive =this.checkOnlineStatus();
       if(!this.vendingOnSale.length){
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 3000);
       }
     });
     this.wsapi.refreshSubscription.subscribe(r=>{
@@ -118,6 +118,16 @@ export class ApiService {
     headers.append('content-type', 'application/json');
     //let options = new RequestOptions({ headers:headers})
     return headers;
+  }
+  showModal(component:any){
+    this.modal.create({component}).then(r=>{
+      r.present();
+    })
+  }
+  closeModal(){
+    this.modal.getTop().then(r=>{
+      r?r.dismiss():null;
+    })
   }
   initDemo() {
     return this.http.get<IResModel>(this.url + '/init?machineId=' + this.machineId.machineId, { headers: this.headerBase() });

@@ -25,6 +25,10 @@ export class InventoryZDM8 implements IBaseClass {
     path='/zdm8';
     public phonenumber ='2058623333'; //LTC
     public walletId = '2599087166';// LTC
+    mmoneyusername='test';
+    mmoneypassword='123456';
+    production =false;
+    
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerZDM8();;
         this.wss = wss;
@@ -296,13 +300,15 @@ export class InventoryZDM8 implements IBaseClass {
             );
             let x = 5;
             let y = 0;
+            const exception =new Array<number>();
             new Array(60).fill(0).forEach((v, i) => {
                 const c = x > i ? i : (i - (x * y) - 1);
                 !(i % x) && i >= x ? y++ : '';
+                if(!exception.includes(i))
                 this.vendingOnSale.push({
                     machineId,
                     stock: this.stock[c],
-                    position: i,
+                    position: i, // for ZDM8 only
                     hashP: '',
                     hashM: ''
                 })
@@ -319,7 +325,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber: '2054445447',// '2055220199',
+                        phonenumber:this.production? this.phonenumber:'2055516321',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
@@ -349,8 +355,8 @@ export class InventoryZDM8 implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = 'test';
-        const password = '12345';
+        const username = this.production?this.mmoneyusername:'test';
+        const password = this.production?this.mmoneypassword:'123456';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
@@ -487,6 +493,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     initWs(wss: WebSocketServer.Server) {
         try {
+           
             setWsHeartbeat(wss, (ws, data, binary) => {
                 console.log('WS HEART BEAT');
 
@@ -496,6 +503,7 @@ export class InventoryZDM8 implements IBaseClass {
             }, 15000);
 
             wss.on('connection', (ws: WebSocket) => {
+                console.log('WS ZDM8');
                 console.log(' WS new connection ', ws.url);
 
                 console.log(' WS current connection is alive', ws['isAlive'])

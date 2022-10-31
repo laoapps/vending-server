@@ -790,7 +790,7 @@ export interface IMachineID extends IBase, IBC {
 
 export class SocketEmitter {
     ev = new EventEmitter();
-    onResponse(cb: (data: any) => void) {
+    onResponse(cb: (data: IReqModel) => void) {
         this.ev.on('response', (data) => {
             cb(data);
         })
@@ -798,7 +798,7 @@ export class SocketEmitter {
     response(data:IReqModel){
         this.ev.emit('response',data)
     }
-    onMachineExist(cb: (data: any) => void) {
+    onMachineExist(cb: (data: boolean) => void) {
         this.ev.on('machineexist', (data) => {
             cb(data);
         })
@@ -815,7 +815,7 @@ export class SocketEmitter {
         this.ev.emit('dupcatedmachine',b);
     }
 
-    onAcceptMachineLogin(cb: (data: any) => void) {
+    onAcceptMachineLogin(cb: (data: string) => void) {
         this.ev.on('acceptMachineLogin', (data) => {
             cb(data);
         })
@@ -824,7 +824,7 @@ export class SocketEmitter {
         this.ev.emit('acceptMachineLogin',machineId);
     }
 
-    onMachinePing(cb: (data: any) => void) {
+    onMachinePing(cb: (data: string) => void) {
         this.ev.on('machineping', (data) => {
             cb(data);
         })
@@ -833,7 +833,7 @@ export class SocketEmitter {
         this.ev.emit('machineping',machineId);
     }
 
-    onConnectionExist(cb: (data: any) => void) {
+    onConnectionExist(cb: (data: string) => void) {
         this.ev.on('connectionexist', (data) => {
             cb(data);
         })

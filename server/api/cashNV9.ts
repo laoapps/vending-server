@@ -27,18 +27,24 @@ export class CashNV9  implements IBaseClass{
 
     // bankNotes = new Array<IBankNote>();
     // badBN = new Array<IBankNote>();
+   
     billCashIn = new Array<IBillCashIn>();
     completedBillCashIn = new Array<IBillCashIn>();
     badBillCashIn = new Array<IBillCashIn>();
     requestors = new Array<IMMoneyRequestRes>();
 
     mmMoneyLogin: IMMoneyLoginCashin | null = null;
+     /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
 //     Cash In Production :
 // Create account requester success.
     MMoneyRequesterId = 59
     MMoneyName ='LMM KIOS'
     MMoneyUsername ='lmmkios'
     MMoneyPassword = 'Qh7~Lq9@'
+    production=false;
+ /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
+
+
     path = '/cashNV9'
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket =  new SocketServerESSP();
@@ -493,8 +499,8 @@ export class CashNV9  implements IBaseClass{
             //     grant_type:'client_credentials'
             // }
             const params = new URLSearchParams();
-            params.append('username', 'Dokbuakham');
-            params.append('password', 'Ko8-En6;');
+            params.append('username', this.production?this.MMoneyUsername:'Dokbuakham');
+            params.append('password', this.production?this.MMoneyPassword:'Ko8-En6;');
             params.append('grant_type', 'client_credentials');
             axios.post(url, params, {
                 headers: {
@@ -518,14 +524,14 @@ export class CashNV9  implements IBaseClass{
         })
 
     }
-    requestMmoneyCashin(msisdn: string, transID, value, remark = 'Test Cash In') {
+    requestMmoneyCashin(msisdn: string, transID, value, remark = this.production?this.MMoneyName:'Test Dorkbouakham Cash-In') {
         const url = 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             const data = {
                 apiKey: "b7b7ef0830ff278262c72e57bc43d11f",
                 apiToken: this.mmMoneyLogin?.accessToken,
                 transID,
-                requestorID: 69,
+                requestorID: this.production?this.MMoneyRequesterId: 69,
                 toAccountOption: "REF",
                 toAccountRef: msisdn,
                 transAmount: value,
@@ -746,7 +752,7 @@ export class CashNV9  implements IBaseClass{
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
                 apiToken: this.mmMoneyLogin?.accessToken,
                 transID,
-                requestorID: 69,
+                requestorID: this.production?this.MMoneyRequesterId: 69,
                 transCashInID
             }
 
@@ -781,7 +787,7 @@ export class CashNV9  implements IBaseClass{
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
                 apiToken: this.mmMoneyLogin?.accessToken,
                 transID,
-                requestorID: 69,
+                requestorID: this.production?this.MMoneyRequesterId: 69,
                 transCashInID
             }
             axios.post(url, data, {

@@ -81,6 +81,7 @@ export class Tab1Page {
       console.log(r);
       if (r.status) {
         this.vendingOnSale.push(...r.data);
+        window.location.reload();
       }
     })
   }

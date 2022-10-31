@@ -20,17 +20,18 @@ export class InventoryVMC implements IBaseClass {
     vendingBill = new Array<IVendingMachineBill>();
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
-    delayTime = 1000;
+    delayTime = 3000;
     path='/vmc';
     public phonenumber ='2054452222'; //TPLUS
     public walletId = '2443128596';// TPLUS
+    mmoneyusername='test';
+    mmoneypassword='123456';
+    production=false;
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerVMC();
         this.wss = wss;
         this.initWs(wss);
         try {
-
-
             router.get(this.path+'/', async (req, res) => {
                 console.log('TEST IS WORKING');
                 res.send({data:'test is working'})
@@ -291,13 +292,15 @@ export class InventoryVMC implements IBaseClass {
             );
             let x = 5;
             let y = 0;
+            const exception =[6,7,8,9,10,16,17,18,19,20]
             new Array(60).fill(0).forEach((v, i) => {
                 const c = x > i ? i : (i - (x * y) - 1);
                 !(i % x) && i >= x ? y++ : '';
+                if(!exception.includes(i))
                 this.vendingOnSale.push({
                     machineId,
                     stock: this.stock[c],
-                    position: i,
+                    position: i+1, // for VMC only
                     hashP: '',
                     hashM: ''
                 })
@@ -314,7 +317,7 @@ export class InventoryVMC implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber: '2054445447',// '2055220199',
+                        phonenumber:this.production? this.phonenumber:'2055516321',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
@@ -344,8 +347,8 @@ export class InventoryVMC implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = 'test';
-        const password = '12345';
+        const username = this.production?this.mmoneyusername:'test';
+        const password = this.production?this.mmoneypassword:'123456';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
@@ -447,10 +450,13 @@ export class InventoryVMC implements IBaseClass {
                 res.message = EMessage.confirmsucceeded;
                 res.status = 1;
                 // const ids = bill.vendingsales.map(v => v.stock.id);
-                bill.vendingsales.forEach(v => {
+                bill.vendingsales.find(v => {
                     const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
-                    if (x)
+                    if (x){
                         x.stock.qtty--;
+                        return true;
+                    }
+                    return false;
                 });
                 res.data = { bill, position } as unknown as IBillProcess;
                 y.send(JSON.stringify(res), e => {
@@ -482,6 +488,11 @@ export class InventoryVMC implements IBaseClass {
     }
     initWs(wss: WebSocketServer.Server) {
         try {
+           
+            
+            this.ssocket.onResponse(data=>{
+                this.wss.clients
+            })
             setWsHeartbeat(wss, (ws, data, binary) => {
                 console.log('WS HEART BEAT');
 
@@ -491,6 +502,7 @@ export class InventoryVMC implements IBaseClass {
             }, 15000);
 
             wss.on('connection', (ws: WebSocket) => {
+                console.log('WS VMC');
                 console.log(' WS new connection ', ws.url);
 
                 console.log(' WS current connection is alive', ws['isAlive'])
@@ -548,7 +560,7 @@ export class InventoryVMC implements IBaseClass {
                         ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
                     }
                 }
-
+               
             });
         } catch (error) {
             console.log(error);

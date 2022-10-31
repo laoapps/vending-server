@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc  &&node ./dist/server.js",
+    "build": "tsc && cp -R public dist"
+  },
   "dependencies": {
     "@types/buffer-xor": "^2.0.0",
     "@types/cors": "^2.8.12",
