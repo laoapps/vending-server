@@ -212,6 +212,12 @@ export class SocketServerESSP {
 
                                     return;
                                 }
+                                else if (dx.command == EMACHINE_COMMAND.NOTE_REJECTED) {
+                                    console.log('NOTE_REJECTED');
+                                    that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
+
+                                    return;
+                                }
                                 return;
                             } else {
                                 socket.end();

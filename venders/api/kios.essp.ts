@@ -424,7 +424,7 @@ export class KiosESSP {
            
             // this.isReading=true;
           
-            else if (result.channel > 0) {
+            else if (result.channel > 0&&this.transactionID !== -1 ) {
                 countRead=0;
                 this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
                 // this.isReading=false;

@@ -605,8 +605,19 @@ export class CashNV9 {
     }
     timers = new Array<{ clientId: string, t: any, ttl: number, machineId: string }>();
     setCounter(machineId: string, transactionID: number, command: EMACHINE_COMMAND) {
-        const x = this.billCashIn.find(v => v.transactionID == transactionID&&machineId==v.machineId);
+        const x = this.billCashIn.find(v => v.transactionID == transactionID && machineId == v.machineId);
+
         try {
+            if (this.timers.find(v => v.machineId == machineId && v.ttl <= 5)) {
+                this.ssocket.haltOrder(machineId);
+                throw new Error(EMessage.TransactionTimeOut);
+
+            }
+            if (!this.timers.find(v => v.machineId == machineId)) {
+                this.ssocket.haltOrder(machineId);
+                throw new Error(EMessage.transactionnotfound);
+
+            }
             if (!x) throw new Error('Confirm FAILED  bill not found' + command + transactionID);
             const res = {} as IResModel;
             if (command == EMACHINE_COMMAND.ENABLE) {
@@ -683,6 +694,12 @@ export class CashNV9 {
                 this.ssocket.setMachineCounter(machineId);
                 return;
             }
+            else if (command == EMACHINE_COMMAND.NOTE_REJECTED) {
+
+                this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
+                this.ssocket.setMachineCounter(machineId);
+                return;
+            }
             else if (command == EMACHINE_COMMAND.DISABLE) {
                 res.command = EMACHINE_COMMAND.stop;
                 res.message = EMessage.disabled;
@@ -702,7 +719,7 @@ export class CashNV9 {
             }
         } catch (error: any) {
             console.log(error);
-            this.badBillCashIn.push({ transactionID, badBankNotes: [{  } as IBankNote], machineId } as IBillCashIn)
+            this.badBillCashIn.push({ transactionID, badBankNotes: [{} as IBankNote], machineId } as IBillCashIn)
 
             const res = {} as IResModel;
             res.command = EMACHINE_COMMAND.status;
@@ -710,7 +727,7 @@ export class CashNV9 {
             res.status = 0;
             this.wsSend([x?.clientId + ''], res);
             // TODO: Notify to admin
-            
+
         }
     }
 
