@@ -612,12 +612,12 @@ export class CashNV9 {
                 this.ssocket.haltOrder(machineId);
                 throw new Error(EMessage.TransactionTimeOut);
 
-            }
-            if (!this.timers.find(v => v.machineId == machineId)) {
-                this.ssocket.haltOrder(machineId);
-                throw new Error(EMessage.transactionnotfound);
+             }
+            // if (!this.timers.find(v => v.machineId == machineId)) {
+            //     this.ssocket.haltOrder(machineId);
+            //     throw new Error(EMessage.transactionnotfound);
 
-            }
+            // }
             if (!x) throw new Error('Confirm FAILED  bill not found' + command + transactionID);
             const res = {} as IResModel;
             if (command == EMACHINE_COMMAND.ENABLE) {

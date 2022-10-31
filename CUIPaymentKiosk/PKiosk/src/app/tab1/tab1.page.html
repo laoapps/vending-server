@@ -40,7 +40,7 @@
     </ion-row>
     <ion-row>
       <ion-col size="12">
-        <ion-item-divider> Transaction would be end in <h1>{{timer.t}}</h1> seconds ...</ion-item-divider>
+        <ion-item-divider> Transaction would be end in <h1 class="{{timer.t>10?'green-counter':timer.t>5?'yellow-counter':'red-counter'}}">{{timer.t}}</h1> seconds ...</ion-item-divider>
       </ion-col>
     </ion-row>
     <ion-row>
