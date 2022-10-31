@@ -18,6 +18,7 @@ export class VendingVMC {
     transactionID=new Array<number>();
     path = '/dev/ttyS1';
     commands = Array<Array<string>>();
+    isACK=false;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
@@ -44,7 +45,7 @@ export class VendingVMC {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
                 let buff = that.checkCommandsForSubmission()||Array<string>();
-                if (b == 'fafb410040'&&buff.length) {// POLL and submit command
+                if (b == 'fafb410040'&&buff.length&&that.isACK) {// POLL and submit command
         
                         let x = buff.join('');
                         console.log('X command',new Date().getTime(), x,(Buffer.from(x, 'hex')));
@@ -96,9 +97,8 @@ export class VendingVMC {
     getTransactionID(){
         return this.transactionID.length?this.transactionID[0]:-1
     }
-     isACK=true;
      getACK() {
-        this.isACK=false;
+        this.isACK=true;
         let buff = ['fa', 'fb'];
         buff.push('42');
         buff.push('00'); // default length 00
@@ -119,7 +119,6 @@ export class VendingVMC {
      checkCommandsForSubmission() {
         let x =Array<string>();
         try {
-            this.isACK=true;
             x= JSON.parse(JSON.stringify(this.commands[0]))as Array<string>;
             x.push('00')
             x[x.length-1]=chk8xor(x)
@@ -193,6 +192,8 @@ export class VendingVMC {
             // 01 // selection
             // 0701 // chk
             // fafb0605040100000106
+            // fafb0605020100000100
+            // fafb0605020100000100
             // PackNO+
             // Text Communication number+
             // Enable drop sensor or not(1 byte) +
