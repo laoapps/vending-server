@@ -52,6 +52,7 @@ sss.push(invM102,invVMC,invZDM8,cashNV9);
 app.use('/vmc/public', express.static(path.join(__dirname, 'public')))
 app.use('/zdm8/public', express.static(path.join(__dirname, 'public')))
 app.use('/m102/public', express.static(path.join(__dirname, 'public')))
+app.use('/cashNV9/public', express.static(path.join(__dirname, 'public')))
 app.post('/', (req, res) => {
  const http= req.protocol; // http
 const host = req.get('Host') // localhost:4000
@@ -101,8 +102,13 @@ server.on('upgrade', function upgrade(request, socket, head) {
       });
     } 
     else if (pathname === '/m102') {
-      wss2.handleUpgrade(request, socket, head, function done(ws) {
-        wss2.emit('connection', ws, request);
+      wss3.handleUpgrade(request, socket, head, function done(ws) {
+        wss3.emit('connection', ws, request);
+      });
+    } 
+    else if (pathname === '/cashNV9') {
+      wss4.handleUpgrade(request, socket, head, function done(ws) {
+        wss4.emit('connection', ws, request);
       });
     } 
     else {
