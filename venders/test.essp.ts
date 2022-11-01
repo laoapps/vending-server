@@ -270,7 +270,7 @@ export class KiosServer {
             reset_to_default_on_reset: true
         })
         // this.eSSP.open('/dev/ttyS0')
-         this.eSSP.open('COM1');
+         this.eSSP.open('/dev/ttyS1');
 
 
     }

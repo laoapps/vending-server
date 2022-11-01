@@ -22,11 +22,11 @@ export class KiosESSP {
         this.sock = sock;
         const that = this;
         that.initSSP();
-        this.eSSP.open('COM1').then(r => {
-            console.log('OPEN COM1', r);
+        this.eSSP.open('/dev/ttyS1').then(r => {
+            console.log('OPEN /dev/ttyS1', r);
 
         }).catch(e => {
-            console.log('ERROR OPEN COM1', e);
+            console.log('ERROR OPEN /dev/ttyS1', e);
         });
 
 
