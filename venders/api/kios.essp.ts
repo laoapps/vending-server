@@ -483,14 +483,21 @@ export class KiosESSP {
     }
 
     writeLog(data: any, name: string) {
-        const d = { data }
+        try {
+             const d = { data }
         const o= os.platform();
         if(o!='win32')
         // linux
-         fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d));
+         fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
         else 
-         fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d));
-
+         fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
+        console.log('OS',o);
+        } catch (error) {
+            console.log(error);
+            
+        }
+       
+        
     }
     close() {
         this.eSSP.close((e) => {
