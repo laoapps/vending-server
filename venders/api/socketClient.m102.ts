@@ -9,7 +9,7 @@ export class SocketClientM102 {
     client = new net.Socket();
     port = 31224;
     host = 'laoapps.com';
-    machineid = '12345678';
+    machineid = '99999999';
     otp = '111111';
     token = '';
     t: any;
