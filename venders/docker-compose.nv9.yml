@@ -10,8 +10,9 @@ services:
       - DATABASE_HOST=host.docker.internal
       - DATABASE_USER=dbvenderadminservice
       - DATABASE_DB=dbvenderservice
-      - DATABASE_PASSWORD=1MqMI8eT32Jj
+      - DATABASE_PASSWORD=
       - PORT=34214
+      - pname=nv9
     ports:
       - 34214:34214
     volumes:
@@ -21,8 +22,8 @@ services:
       - back-notused:/opt/app/node_modules
     networks:
       - venderservice
-    devices:
-      - com1:/dev/ttyS0
+    # devices:
+    #   - com1:/dev/ttyS0
 
       #- postgresql
       #- redis

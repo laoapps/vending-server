@@ -10,8 +10,9 @@ services:
       - DATABASE_HOST=host.docker.internal
       - DATABASE_USER=dbvenderadminservice
       - DATABASE_DB=dbvenderservice
-      - DATABASE_PASSWORD=1MqMI8eT32Jj
+      - DATABASE_PASSWORD=
       - PORT=34214
+      - pname=m102
     ports:
       - 34214:34214
     volumes:
