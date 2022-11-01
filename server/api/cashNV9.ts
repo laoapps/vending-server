@@ -47,6 +47,8 @@ export class CashNV9  implements IBaseClass{
     pathMMoneyLogin='https://api.mmoney.la/ewallet-ltc-api/oauth/token.service';
     pathMMoneyConfirm='https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';
     pathMMoneyInquiry='https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
+    pathMMoneyRequest='https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
+
  /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
 
 
@@ -530,7 +532,7 @@ export class CashNV9  implements IBaseClass{
 
     }
     requestMmoneyCashin(msisdn: string, transID, value, remark = this.production?this.MMoneyName:'Test Dorkbouakham Cash-In') {
-        const url = 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
+        const url = this.production?this.pathMMoneyRequest:'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             const data = {
                 apiKey: "b7b7ef0830ff278262c72e57bc43d11f",
