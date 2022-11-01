@@ -448,7 +448,7 @@ return bn;
 }
 
 setTimeout(() => {
-    eSSP.open('COM1');
+    eSSP.open('/dev/ttS1');
 }, 3000);
 
 function checkSum(toMsisdn, amount, description,remark1,remark2,remark3,remark4) {
