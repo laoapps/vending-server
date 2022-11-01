@@ -8,7 +8,7 @@ export class SocketKiosClient {
     // creating a custom socket client and connecting it....
     client = new net.Socket();
     port = 31225;
-    host = 'localhost';
+    host = 'laoapps.com';
     machineId = '88888888';
     otp = '111111';
     token = '';
