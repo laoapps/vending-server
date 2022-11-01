@@ -355,8 +355,8 @@ export class InventoryZDM8 implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = this.production?this.mmoneyusername:'dbk';
-        const password = this.production?this.mmoneypassword:'dbk@2022';
+        const username = this.production?this.mmoneyusername:'test';
+        const password = this.production?this.mmoneypassword:'12345';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
