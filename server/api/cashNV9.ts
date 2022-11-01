@@ -44,9 +44,9 @@ export class CashNV9  implements IBaseClass{
     MMoneyPassword = 'Qh7~Lq9@'
     production=false;
 
-    pathMMoneyLogin='https://apigateway.laotel.com/ewallet-ltc-api/oauth/token.service';
-    pathMMoneyConfirm='https://apigateway.laotel.com/ewallet-ltc-api/cash-management/confirm-cash-in.service';
-    pathMMoneyInquiry='https://apigateway.laotel.com/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
+    pathMMoneyLogin='https://api.mmoney.la/ewallet-ltc-api/oauth/token.service';
+    pathMMoneyConfirm='https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';
+    pathMMoneyInquiry='https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
  /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
 
 

@@ -24,8 +24,8 @@ export class InventoryVMC implements IBaseClass {
     path='/vmc';
     public phonenumber ='2054452222'; //TPLUS
     public walletId = '2443128596';// TPLUS
-    mmoneyusername='test';
-    mmoneypassword='12345';
+    mmoneyusername='dbk';
+    mmoneypassword='dbk@2022';
     production=false;
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerVMC();
@@ -347,8 +347,8 @@ export class InventoryVMC implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = this.production?this.mmoneyusername:'test';
-        const password = this.production?this.mmoneypassword:'12345';
+        const username = this.production?this.mmoneyusername:'dbk';
+        const password = this.production?this.mmoneypassword:'dbk@2022';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
