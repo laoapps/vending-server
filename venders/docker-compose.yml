@@ -1,16 +1,16 @@
 version: "3.7"
 services:
-etl-service:
+vender-service:
     build: . 
     restart: always
-    container_name: etl-service
+    container_name: vender-service
     # image: touyara/orderbillingapi:v1
     # command: npm start
     environment:
       - DATABASE_HOST=host.docker.internal
-      - DATABASE_USER=dbetlserviceadmin
-      - DATABASE_DB=dbetlservice
-      - DATABASE_PASSWORD=2Grg7Dith14P
+      - DATABASE_USER=dbvenderadminservice
+      - DATABASE_DB=dbvenderservice
+      - DATABASE_PASSWORD=1MqMI8eT32Jj
       - PORT=34214
     ports:
       - 34214:34214
@@ -22,9 +22,9 @@ etl-service:
       - ./package-lock.json:/app/package-lock.json
       - back-notused:/opt/app/node_modules
     networks:
-      - etlservicebackend
+      - venderservice
     depends_on:
-      - etl-topup-service
+      - vender-service-service
       #- postgresql
       #- redis
 
@@ -32,4 +32,4 @@ etl-service:
 volumes:
   back-notused:
 networks:
-  etlservicebackend:
+  venderservice:

@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  cashinkiosk.laoapps.com:
+    container_name: cashinkiosk.laoapps.com
+    build: .
+    restart: on-failure:5
+    environment:
+      - DATABASE_HOST=host.docker.internal
+      - PORT=48882
+      - TZ=Asia/Vientiane
+    command: >
+      sh -c "ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && 
+      echo $TZ > /etc/timezone 
+    ports:
+      - 48882:48882
+    volumes:
+      - ./www:/app/www
+      - ./static:/app/
+
+volumes:
+  back-notused:
+  db-data:
+
+# curl -H 'Content-Type: application/json' -X POST -d '{"source":"http://admin:5martH67@laab.laoapps.com:5984/gijusers","target":"http://admin:5martH67@localhost:5984/gijusers"}' http://admin:5martH67@localhost:5984/_replicate
+
+# curl -H 'Content-Type: application/json' -X POST -d '{"source":"http://admin:5martH67@laab.laoapps.com:5984/icemaker_bill","target":"http://admin:5martH67@localhost:5984/icemaker_bill"}' http://admin:5martH67@localhost:5984/_replicate
+
+# curl -H 'Content-Type: application/json' -X POST -d '{"source":"http://admin:5martH67@laab.laoapps.com:5984/icemaker_device","target":"http://admin:5martH67@localhost:5984/icemaker_device"}' http://admin:5martH67@localhost:5984/_replicate
+
+# curl -H 'Content-Type: application/json' -X POST -d '{"source":"http://admin:5martH67@laab.laoapps.com:5984/icemaker_payment","target":"http://admin:5martH67@localhost:5984/icemaker_payment"}' http://admin:5martH67@localhost:5984/_replicate
