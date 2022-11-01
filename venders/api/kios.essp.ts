@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { EMACHINE_COMMAND } from '../entities/syste.model';
-
+import os from 'os';
 const sspLib = require('encrypted-smiley-secure-protocol');
 
 import { SocketKiosClient } from './socketClient.kios';
@@ -484,7 +484,12 @@ export class KiosESSP {
 
     writeLog(data: any, name: string) {
         const d = { data }
-        fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d));
+        const o= os.platform();
+        if(o!='win32')
+        // linux
+         fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d));
+        else 
+         fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d));
 
     }
     close() {
