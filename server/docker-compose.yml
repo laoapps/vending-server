@@ -8,21 +8,25 @@ services:
     # command: npm start
     environment:
       - DATABASE_HOST=host.docker.internal
-      - DATABASE_USER=dbetlserviceadmin
-      - DATABASE_DB=dbetlservice
+      - DATABASE_USER=dbvenderserveradmin
+      - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=2Grg7Dith14P
-      - PORT=34214
+     
     ports:
-      - 34214:34214
-    secrets:
-      - db-password
+      - 31221:31221
+      - 31222:31222
+      - 31223:31223
+      - 31224:31224
+      - 31225:31225
+      - 9009:9009
+
     volumes:
       - .:/app
       - ./package.json:/app/package.json
       - ./package-lock.json:/app/package-lock.json
       - back-notused:/opt/app/node_modules
     networks:
-      - enderserverservice
+      - venderserverservice
     # depends_on:
     #   - etl-topup-service
       #- postgresql
