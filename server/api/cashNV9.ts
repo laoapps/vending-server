@@ -47,7 +47,7 @@ export class CashNV9  implements IBaseClass{
     pathMMoneyLogin='https://api.mmoney.la/ewallet-ltc-api/oauth/token.service';
     pathMMoneyConfirm='https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';
     pathMMoneyInquiry='https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
-    pathMMoneyRequest='https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
+    pathMMoneyRequest='https://api.mmoney.la/ewallet-ltc-api/cash-management/request-cash-in.service';
 
  /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
 
