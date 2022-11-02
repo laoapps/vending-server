@@ -8,7 +8,7 @@ var host = window.location.protocol + "//" + window.location.host;
   styleUrls: ['./ads.page.scss'],
 })
 export class AdsPage implements OnInit {
-  mmLogo = host + '/assets/icon/mmoney.png';
+  mmLogo = host + '/assets/icon/ເກີນປຸ່ຍມຸຍ 1080x1920.png';
   constructor(public api: ApiServiceService) { }
 
   ngOnInit() {

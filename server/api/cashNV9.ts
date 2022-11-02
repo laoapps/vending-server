@@ -12,6 +12,8 @@ import { SocketServerZDM8 } from './socketServerZDM8';
 import { SocketServerESSP } from './socketServerNV9';
 import crypto from 'crypto';
 import cryptojs from 'crypto-js'
+import os from 'os';
+import fs from 'fs';
 export class CashNV9  implements IBaseClass{
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
@@ -823,6 +825,24 @@ export class CashNV9  implements IBaseClass{
 
         })
 
+    }
+
+    writeLog(data: any, name: string) {
+        try {
+             const d = { data }
+        const o= os.platform();
+        if(o!='win32')
+        // linux
+         fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
+        else 
+         fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
+        console.log('OS',o);
+        } catch (error) {
+            console.log(error);
+            
+        }
+       
+        
     }
     close(){
         this.wss.close();
