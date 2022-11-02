@@ -550,7 +550,9 @@ export class CashNV9  implements IBaseClass{
                 transRefCol4: "",
                 transCheckSum: ""
             }
+
             data.transCheckSum = this.checkSum(data.toAccountRef, value, data.transRemark, data.transRefCol1, data.transRefCol2, data.transRefCol3, data.transRefCol4);
+            console.log('IMMoneyRequestRes', data);
             axios.post(url, data, {
                 headers: {
                     'Content-Type': 'application/json'
