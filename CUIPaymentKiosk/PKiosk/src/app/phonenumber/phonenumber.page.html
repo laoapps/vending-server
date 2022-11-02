@@ -10,8 +10,8 @@
   style="height: 350px;"
 >
 <ion-input type="number" [(ngModel)]="api.pn"  placeholder="2056789012" (click)="showPad()"></ion-input>
-  <ion-button  (click)="start()">Start</ion-button>
+  <ion-button  (click)="start()" style="width: 50%;">></ion-button><ion-button (click)="close()" style="width: 50%;">X</ion-button>
 </div>
 
-<ion-button (click)="close()">CLOSE</ion-button>
+
 </ion-content>
