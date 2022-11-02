@@ -534,7 +534,7 @@ export class CashNV9  implements IBaseClass{
     requestMmoneyCashin(msisdn: string, transID, value, remark = this.production?this.MMoneyName:'Test Dorkbouakham Cash-In') {
         const url = this.production?this.pathMMoneyRequest:'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
-            const data = {
+            let data = {
                 apiKey: "b7b7ef0830ff278262c72e57bc43d11f",
                 apiToken: this.mmMoneyLogin?.accessToken,
                 transID,
@@ -549,6 +549,22 @@ export class CashNV9  implements IBaseClass{
                 transRefCol3: "",
                 transRefCol4: "",
                 transCheckSum: ""
+            }
+             data ={
+                "apiKey": "b7b7ef0830ff278262c72e57bc43d11f",
+                "apiToken": "eyJhbGciOiJIUzUxMiJ9.eyJleHAiOjE2Njc0NDIxOTUsImNsaWVudF9pZCI6ImxtbWtpb3MifQ.XbstVHt0IOBLo6gaNbZI07TQSwz_QoqDyuAlHlsuggnJiSxeB24aHtPuOhM26g2GF7OMd6GXRoINKSUxZEmZ-Q",
+                "transID": "202211020830124006",
+                "requestorID": 59,
+                "toAccountOption": "REF",
+                "toAccountRef": "2055516321",
+                "transAmount": "1000",
+                "transCurrency": "LAK",
+                "transRemark": "{'machineId':'88888888','otp':'111111'}",
+                "transRefCol1": "",
+                "transRefCol2": "",
+                "transRefCol3": "",
+                "transRefCol4": "",
+                "transCheckSum": "cWorEJLDYCyIJNwqbdm5WaCxo7GtCRAORy/80lzzt/w="
             }
 
             data.transCheckSum = this.checkSum(data.toAccountRef, value, data.transRemark, data.transRefCol1, data.transRefCol2, data.transRefCol3, data.transRefCol4);
