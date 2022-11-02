@@ -554,7 +554,7 @@ export class CashNV9  implements IBaseClass{
                 "apiKey": "b7b7ef0830ff278262c72e57bc43d11f",
                 "apiToken": "eyJhbGciOiJIUzUxMiJ9.eyJleHAiOjE2Njc0NDIxOTUsImNsaWVudF9pZCI6ImxtbWtpb3MifQ.XbstVHt0IOBLo6gaNbZI07TQSwz_QoqDyuAlHlsuggnJiSxeB24aHtPuOhM26g2GF7OMd6GXRoINKSUxZEmZ-Q",
                 "transID": "202211020830124006",
-                "requestorID": 59,
+                "requestorID": "59",
                 "toAccountOption": "REF",
                 "toAccountRef": "2055516321",
                 "transAmount": "1000",
@@ -565,7 +565,7 @@ export class CashNV9  implements IBaseClass{
                 "transRefCol3": "",
                 "transRefCol4": "",
                 "transCheckSum": "cWorEJLDYCyIJNwqbdm5WaCxo7GtCRAORy/80lzzt/w="
-            }
+            } as any;
 
             data.transCheckSum = this.checkSum(data.toAccountRef, value, data.transRemark, data.transRefCol1, data.transRefCol2, data.transRefCol3, data.transRefCol4);
             console.log('IMMoneyRequestRes', data);
