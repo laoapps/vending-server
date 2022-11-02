@@ -509,14 +509,14 @@ export class CashNV9  implements IBaseClass{
             params.append('username', this.production?this.MMoneyUsername:'Dokbuakham');
             params.append('password', this.production?this.MMoneyPassword:'Ko8-En6;');
             params.append('grant_type', 'client_credentials');
-            console.log('PARAM LOGIN',params);
+            console.log('PARAM LOGIN',url,params);
             
             axios.post(url, params, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
             }).then(r => {
-                console.log('DATA loginMmoney', r.data);
+                console.log('DATA loginMmoney',url, r.data);
                 resolve(r.data);
                 // {
                 //     "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJleHAiOjE2NjYxMTA4MjAsImNsaWVudF9pZCI6IkRva2J1YWtoYW0ifQ.uQNNHrtrTRnCL8fr8CENlGzvhawpWLhn5sZD8DBancAuQ6Z4qEom-4p7ugEPSXRiDmCgDJKIP212qzNQT0PxWw",
