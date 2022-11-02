@@ -6,4 +6,3 @@ COPY static /app/
 RUN npm i express
 ENV TZ=Asia/Vientiane
 CMD ["node", "./static.js"]
-
