@@ -19,6 +19,7 @@ import axios from 'axios';
 import { EClientCommand, EMessage, IBaseClass, IMMoneyConfirm, IReqModel } from './entities/system.model';
 import { PrintError, PrintSucceeded } from './services/service';
 import { parse } from 'url';
+import { CreateDatabase } from './entities';
 const app = express();
 const router = express.Router();
 app.use(express.json({ limit: '50mb' }));
@@ -53,6 +54,7 @@ app.use('/vmc/public', express.static(path.join(__dirname, 'public')))
 app.use('/zdm8/public', express.static(path.join(__dirname, 'public')))
 app.use('/m102/public', express.static(path.join(__dirname, 'public')))
 app.use('/cashNV9/public', express.static(path.join(__dirname, 'public')))
+CreateDatabase('');
 app.post('/', (req, res) => {
  const http= req.protocol; // http
 const host = req.get('Host') // localhost:4000

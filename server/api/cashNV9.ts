@@ -4,7 +4,7 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
 import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBankNote, IBillCashIn, IMMoneyLoginCashin, IMMoneyRequestRes, IBaseClass } from '../entities/system.model';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBankNote, IBillCashIn, IMMoneyLoginCashin, IMMoneyRequestRes, IBaseClass, EEntity } from '../entities/system.model';
 import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
@@ -14,7 +14,10 @@ import crypto from 'crypto';
 import cryptojs from 'crypto-js'
 import os from 'os';
 import fs from 'fs';
-export class CashNV9  implements IBaseClass{
+import { BillCashInFactory, BillCashInStatic } from '../entities/billcash.entity';
+import { dbConnection } from '../entities';
+import { MachineIDFactory, MachineIDStatic } from '../entities/machineid.entity';
+export class CashNV9 implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -29,34 +32,34 @@ export class CashNV9  implements IBaseClass{
 
     // bankNotes = new Array<IBankNote>();
     // badBN = new Array<IBankNote>();
-   
+
     billCashIn = new Array<IBillCashIn>();
-    completedBillCashIn = new Array<IBillCashIn>();
+    // completedBillCashIn = new Array<IBillCashIn>();
     badBillCashIn = new Array<IBillCashIn>();
     requestors = new Array<IMMoneyRequestRes>();
 
     mmMoneyLogin: IMMoneyLoginCashin | null = null;
-    
-     /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
-//     Cash In Production :
-// Create account requester success.
+
+    /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
+    //     Cash In Production :
+    // Create account requester success.
     MMoneyRequesterId = 59
-    MMoneyName ='LMM KIOS'
-    MMoneyUsername ='lmmkios'
+    MMoneyName = 'LMM KIOS'
+    MMoneyUsername = 'lmmkios'
     MMoneyPassword = 'Qh7~Lq9@'
-    production=true;
+    production = false;
 
-    pathMMoneyLogin='https://api.mmoney.la/ewallet-ltc-api/oauth/token.service';
-    pathMMoneyConfirm='https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';
-    pathMMoneyInquiry='https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
-    pathMMoneyRequest='https://api.mmoney.la/ewallet-ltc-api/cash-management/request-cash-in.service';
+    pathMMoneyLogin = 'https://api.mmoney.la/ewallet-ltc-api/oauth/token.service';
+    pathMMoneyConfirm = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';
+    pathMMoneyInquiry = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
+    pathMMoneyRequest = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/request-cash-in.service';
 
- /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
+    /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
 
 
     path = '/cashNV9'
     constructor(router: Router, wss: WebSocketServer.Server) {
-        this.ssocket =  new SocketServerESSP();
+        this.ssocket = new SocketServerESSP();
         this.ssocket.setCashInstant(this);
         this.wss = wss;
         this.initWs(wss);
@@ -64,7 +67,7 @@ export class CashNV9  implements IBaseClass{
             router.post(this.path + '/', async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
-
+                    res.send(PrintSucceeded('cashNV9', this.notes, EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError(d.command, error, EMessage.error));
@@ -112,6 +115,68 @@ export class CashNV9  implements IBaseClass{
                     res.send(PrintError('WS getClientWS', error, EMessage.error));
                 }
             });
+          
+            router.post(this.path + '/getBillCashIn', async (req, res) => {
+                try {
+                    let { msisdn, limit, skip } = req.body;
+                    limit = limit > 0 ? limit : 5;
+                    const offset = limit * skip;
+                    console.log(' REST getBillCashIn');
+                    const bEnt: BillCashInStatic = BillCashInFactory(EEntity.billcash + '_' + msisdn, dbConnection);
+                    bEnt.sync().then(r => {
+                        bEnt.findAndCountAll({ order: ['updatedAt', 'DESC'], limit, offset }).then(async r => {
+                            res.send(PrintSucceeded('REST getBillCashIn', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('REST getBillCashIn', e, EMessage.error));
+                        })
+                    })
+
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('REST getBillCashIn', error, EMessage.error));
+                }
+            });
+            router.post(this.path + '/getMachineHistory', async (req, res) => {
+                try {
+                    let { machineId, limit, skip } = req.body;
+                    limit = limit > 0 ? limit : 5;
+                    const offset = limit * skip;
+                    console.log(' REST getMachineHistory');
+                    const bEnt: MachineIDStatic = MachineIDFactory(EEntity.machineID + '_' + machineId, dbConnection);
+                    bEnt.sync().then(r => {
+                        bEnt.findAndCountAll({ order: ['updatedAt', 'DESC'], limit, offset }).then(async r => {
+                            res.send(PrintSucceeded('REST getMachineHistory', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('REST getMachineHistory', e, EMessage.error));
+                        })
+                    })
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('REST getMachineHistory', error, EMessage.error));
+                }
+            });
+            router.post(this.path + '/getMachineId', async (req, res) => {
+                try {
+                    let { limit, skip } = req.body;
+                    limit = limit > 0 ? limit : 5;
+                    const offset = limit * skip;
+                    console.log(' REST getMachineId');
+                    const bEnt: MachineIDStatic = MachineIDFactory(EEntity.machineID, dbConnection);
+                    bEnt.sync().then(r => {
+                        bEnt.findAndCountAll({ order: ['updatedAt', 'DESC'], limit, offset }).then(async r => {
+                            res.send(PrintSucceeded('REST getMachineId', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('REST getMachineId', e, EMessage.error));
+                        })
+                    })
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('REST getMachineId', error, EMessage.error));
+                }
+            });
+
+
+
             router.post(this.path + '/validateMmoneyCashIn', async (req, res) => {
                 try {
                     console.log(' REST validateMmoneyCashIn');
@@ -245,34 +310,37 @@ export class CashNV9  implements IBaseClass{
 
                                 ws['machineId'] = machineId.machineId;
                                 ws['clientId'] = uuid4();
-                                const billCashIn = {} as IBillCashIn;
-                                billCashIn.clientId = ws['clientId'];
-                                billCashIn.createdAt = new Date();
-                                billCashIn.updatedAt = billCashIn.createdAt;
-                                billCashIn.transactionID = d.data.transID;
-                                billCashIn.uuid = uuid4();
-                                billCashIn.userUuid; // later
-                                billCashIn.id; // auto
+                                const bsi = {} as IBillCashIn;
+                                bsi.clientId = ws['clientId'];
+                                bsi.createdAt = new Date();
+                                bsi.updatedAt = bsi.createdAt;
+                                bsi.transactionID = d.data.transID;
+                                bsi.uuid = uuid4();
+                                bsi.userUuid; // later
+                                bsi.id; // auto
 
-                                billCashIn.isActive = true;
+                                bsi.isActive = true;
 
-                                billCashIn.badBankNotes = []; // update from machine
-                                billCashIn.bankNotes = []; // update from machine
+                                bsi.badBankNotes = []; // update from machine
+                                bsi.bankNotes = []; // update from machine
 
-                                billCashIn.confirm; // update when cash has come
-                                billCashIn.confirmTime; // update when cash has come
+                                bsi.confirm; // update when cash has come
+                                bsi.confirmTime; // update when cash has come
 
-                                billCashIn.requestTime = new Date();
-                                billCashIn.requestor = requestor;
-                                billCashIn.machineId = machineId.machineId
-                                res.data = { clientId: ws['clientId'], billCashIn };
+                                bsi.requestTime = new Date();
+                                bsi.requestor = requestor;
+                                bsi.machineId = machineId.machineId
+                                res.data = { clientId: ws['clientId'], billCashIn: bsi };
                                 console.log('billCashIn', res.data);
 
                                 ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
 
-                                billCashIn.requestor = requestor;
-                                this.billCashIn.push(billCashIn);
-                                this.ssocket.processOrder(machineId.machineId, billCashIn.transactionID);
+                                bsi.requestor = requestor;
+                                this.billCashIn.push(bsi);
+                                //
+
+                                this.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
+                                this.ssocket.processOrder(machineId.machineId, bsi.transactionID);
                                 return;
                             } else throw new Error(EMessage.MachineIdNotFound)
                         } else if (d.command == 'ping') {
@@ -500,7 +568,7 @@ export class CashNV9  implements IBaseClass{
         });
     }
     loginMmoney() {
-        const url =this.production?this.pathMMoneyLogin: 'http://115.84.121.101:31153/ewallet-ltc-api/oauth/token.service';
+        const url = this.production ? this.pathMMoneyLogin : 'http://115.84.121.101:31153/ewallet-ltc-api/oauth/token.service';
         return new Promise<IMMoneyLoginCashin>((resolve, reject) => {
             // const data={
             //     username:'Dokbuakham',
@@ -508,17 +576,17 @@ export class CashNV9  implements IBaseClass{
             //     grant_type:'client_credentials'
             // }
             const params = new URLSearchParams();
-            params.append('username', this.production?this.MMoneyUsername:'Dokbuakham');
-            params.append('password', this.production?this.MMoneyPassword:'Ko8-En6;');
+            params.append('username', this.production ? this.MMoneyUsername : 'Dokbuakham');
+            params.append('password', this.production ? this.MMoneyPassword : 'Ko8-En6;');
             params.append('grant_type', 'client_credentials');
-            console.log('PARAM LOGIN',url,params);
-            
+            console.log('PARAM LOGIN', url, params);
+
             axios.post(url, params, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
             }).then(r => {
-                console.log('DATA loginMmoney',url, r.data);
+                console.log('DATA loginMmoney', url, r.data);
                 resolve(r.data);
                 // {
                 //     "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJleHAiOjE2NjYxMTA4MjAsImNsaWVudF9pZCI6IkRva2J1YWtoYW0ifQ.uQNNHrtrTRnCL8fr8CENlGzvhawpWLhn5sZD8DBancAuQ6Z4qEom-4p7ugEPSXRiDmCgDJKIP212qzNQT0PxWw",
@@ -535,14 +603,14 @@ export class CashNV9  implements IBaseClass{
         })
 
     }
-    requestMmoneyCashin(msisdn: string, transID, value, remark = this.production?this.MMoneyName:'Test Dorkbouakham Cash-In') {
-        const url = this.production?this.pathMMoneyRequest:'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
+    requestMmoneyCashin(msisdn: string, transID, value, remark = this.production ? this.MMoneyName : 'Test Dorkbouakham Cash-In') {
+        const url = this.production ? this.pathMMoneyRequest : 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             let data = {
                 apiKey: "b7b7ef0830ff278262c72e57bc43d11f",
                 apiToken: this.mmMoneyLogin?.accessToken,
                 transID,
-                requestorID: this.production?this.MMoneyRequesterId: 69,
+                requestorID: this.production ? this.MMoneyRequesterId : 69,
                 toAccountOption: "REF",
                 toAccountRef: msisdn,
                 transAmount: value,
@@ -595,19 +663,22 @@ export class CashNV9  implements IBaseClass{
                 x.confirm = rx;
                 x.confirmTime = new Date();
                 // SAVE TO DATABASE
-                this.completedBillCashIn.push(JSON.parse(JSON.stringify(x)))
+                // this.completedBillCashIn.push(JSON.parse(JSON.stringify(x)))
                 const res = {} as IResModel;
                 res.command = EMACHINE_COMMAND.confirm;
                 res.message = EMessage.confirmsucceeded;
                 res.status = 1;
                 res.data = x;
+                this.updateBillCash(x, machineId, transactionID);
+
                 this.wsSend([x?.clientId + ''], res);
                 this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
                 this.ssocket.setMachineCounter(machineId);
             }).catch(e => {
                 console.log('ERROR confirm Mmoney Cashin', e);
 
-                this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
+                this.updateBadBillCash(x, machineId, transactionID);
+                // this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
                 const res = {} as IResModel;
                 res.command = EMACHINE_COMMAND.status;
                 res.message = e.message;
@@ -618,8 +689,8 @@ export class CashNV9  implements IBaseClass{
             // TODO: Notify to admin
             console.log(error);
             // save to database 
-            this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
-
+            // this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
+            this.updateBadBillCash(x as any, machineId, transactionID);
             const res = {} as IResModel;
             res.command = EMACHINE_COMMAND.status;
             res.message = error.message;
@@ -628,6 +699,73 @@ export class CashNV9  implements IBaseClass{
 
         }
     }
+    updateBillCash(billCash: IBillCashIn, machineId: string, transactionID: number) {
+        try {
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.billcash + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            bEnt.sync().then(r => {
+                bEnt.create(billCash).then(rx => {
+                    console.log('SAVED BILL CASH-IN', EEntity.billcash + '_' + billCash?.requestor?.transData[0]?.accountRef);
+                })
+            })
+            const mId = this.ssocket.findMachineId(machineId);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + machineId, dbConnection);
+            mEnt.sync().then(r => {
+                mEnt.create({
+                    logintoken: this.mmMoneyLogin?.accessToken + '',
+                    machineCommands: '',
+                    machineId: mId?.machineId + '_' + mId?.otp,
+                    machineIp: '',
+                    bill: billCash
+                }).then(rx => {
+                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_' + mId?.machineId);
+                    const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
+                    this.billCashIn.splice(i, 1);
+                }).catch(e => {
+                    console.log('  mEnt.create', e);
+                })
+            })
+        } catch (error) {
+            console.log('Error updateBillCash');
+
+        }
+
+    }
+    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number) {
+        try {
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            bEnt.sync().then(r => {
+                bEnt.create(billCash).then(rx => {
+                    console.log('SAVED BILL CASH-IN', EEntity.badbillcash + '_' + billCash?.requestor?.transData[0]?.accountRef);
+
+                })
+            }).catch(e => {
+                console.log(' bEnt.create', e);
+
+            })
+            const mId = this.ssocket.findMachineId(machineId);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + machineId, dbConnection);
+            mEnt.sync().then(r => {
+                mEnt.create({
+                    logintoken: this.mmMoneyLogin?.accessToken + '',
+                    machineCommands: '',
+                    machineId: mId?.machineId + '_' + mId?.otp,
+                    machineIp: '',
+                    bill: billCash
+                }).then(rx => {
+                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_' + mId?.machineId);
+                    const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
+                    this.billCashIn.splice(i, 1);
+                }).catch(e => {
+                    console.log('  mEnt.create', e);
+                })
+            })
+        } catch (error) {
+            console.log('Error updateBillCash');
+
+        }
+
+    }
+
     timers = new Array<{ clientId: string, t: any, ttl: number, machineId: string }>();
     setCounter(machineId: string, transactionID: number, command: EMACHINE_COMMAND) {
         const x = this.billCashIn.find(v => v.transactionID == transactionID && machineId == v.machineId);
@@ -637,7 +775,7 @@ export class CashNV9  implements IBaseClass{
                 this.ssocket.haltOrder(machineId);
                 throw new Error(EMessage.TransactionTimeOut);
 
-             }
+            }
             // if (!this.timers.find(v => v.machineId == machineId)) {
             //     this.ssocket.haltOrder(machineId);
             //     throw new Error(EMessage.transactionnotfound);
@@ -744,8 +882,8 @@ export class CashNV9  implements IBaseClass{
             }
         } catch (error: any) {
             console.log(error);
-            this.badBillCashIn.push({ transactionID, badBankNotes: [{} as IBankNote], machineId } as IBillCashIn)
-
+            // this.badBillCashIn.push({ transactionID, badBankNotes: [{} as IBankNote], machineId } as IBillCashIn)
+            this.updateBadBillCash(x ? x : {} as IBillCashIn, machineId, transactionID);
             const res = {} as IResModel;
             res.command = EMACHINE_COMMAND.status;
             res.message = error.message;
@@ -759,13 +897,13 @@ export class CashNV9  implements IBaseClass{
 
 
     confirmMmoneyCashin(value, transID, transCashInID, remark = 'Test Cash In') {
-        const url = this.production?this.pathMMoneyConfirm:'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/confirm-cash-in.service';
+        const url = this.production ? this.pathMMoneyConfirm : 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/confirm-cash-in.service';
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
                 apiToken: this.mmMoneyLogin?.accessToken,
                 transID,
-                requestorID: this.production?this.MMoneyRequesterId: 69,
+                requestorID: this.production ? this.MMoneyRequesterId : 69,
                 transCashInID
             }
 
@@ -794,13 +932,13 @@ export class CashNV9  implements IBaseClass{
     }
 
     inquiryMmoneyCashin(transID, transCashInID) {
-        const url = this.production?this.pathMMoneyInquiry:'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
+        const url = this.production ? this.pathMMoneyInquiry : 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
                 apiToken: this.mmMoneyLogin?.accessToken,
                 transID,
-                requestorID: this.production?this.MMoneyRequesterId: 69,
+                requestorID: this.production ? this.MMoneyRequesterId : 69,
                 transCashInID
             }
             axios.post(url, data, {
@@ -829,27 +967,27 @@ export class CashNV9  implements IBaseClass{
 
     writeLog(data: any, name: string) {
         try {
-             const d = { data }
-        const o= os.platform();
-        if(o!='win32')
-        // linux
-         fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
-        else 
-         fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
-        console.log('OS',o);
+            const d = { data }
+            const o = os.platform();
+            if (o != 'win32')
+                // linux
+                fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d), { flag: 'a' });
+            else
+                fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d), { flag: 'a' });
+            console.log('OS', o);
         } catch (error) {
             console.log(error);
-            
+
         }
-       
-        
+
+
     }
-    close(){
+    close() {
         this.wss.close();
         this.ssocket.server.close();
         this.ssocket.sclients.forEach(v => {
             v.destroy();
-          });
+        });
     }
 }
 

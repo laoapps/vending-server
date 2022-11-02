@@ -741,8 +741,8 @@ export interface IBase {
     // deletedAt?:Date;
 }
 export interface IBC {
-    hashP: string;
-    hashM: string;
+    hashP?: string;
+    hashM?: string;
 
 }
 export interface IStock extends IBase, IBC {
@@ -786,7 +786,13 @@ export interface IMachineID extends IBase, IBC {
     machineIp: string;
     machineCommands: string;
     logintoken: string;
+    bill:any;
 }
+
+
+
+
+
 
 export class SocketEmitter {
     ev = new EventEmitter();
@@ -5049,5 +5055,271 @@ export interface IMMoneyRequestRes {
     processTime: number,
     serverDatetime: Date,
     serverDatetimeMs: number
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export enum EEntity {
+    banknote = 'banknote',
+    billcash = "billcash",
+    vendingmachinesale = "vendingmachinesale",
+    stock = "stock",
+    vendingmachinebill = "vendingmachinebill",
+    machineID = "machineID",
+    machineIDHistory = "machineIDHistory",
+    badbillcash = "badbillcash"
 }
 

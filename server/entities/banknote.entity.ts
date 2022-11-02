@@ -1,20 +1,20 @@
 import { BuildOptions, DataTypes, DATE, JSONB, Model, ModelAttributes, Sequelize, UUIDV4 } from "sequelize";
 import * as uuid from 'uuid';
-import { IVendingMachineBill } from "./system.model";
+import { IBankNote } from "./system.model";
 
-interface VendingMachineBillAttribute extends IVendingMachineBill {
+interface IBankNoteAttribute extends IBankNote {
 }
-export interface VendingMachineBillModel extends Model<VendingMachineBillAttribute>, VendingMachineBillAttribute {
+export interface BankNoteModel extends Model<IBankNoteAttribute>, IBankNoteAttribute {
 
 }
-export class VendingMachineBill extends Model<VendingMachineBillModel, VendingMachineBillAttribute> { }
+export class BankNote extends Model<BankNoteModel, IBankNoteAttribute> { }
 
-export type VendingMachineBillStatic = typeof Model & {
-    new(values?: object, options?: BuildOptions): VendingMachineBillModel;
+export type BankNoteStatic = typeof Model & {
+    new(values?: object, options?: BuildOptions): BankNoteModel;
 };
 
-export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):any => {
-    const attributes: ModelAttributes<VendingMachineBillModel> = {
+export const BankNoteFactory = (name: string, sequelize: Sequelize):any => {
+    const attributes: ModelAttributes<BankNoteModel> = {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -40,38 +40,17 @@ export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):an
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
         },
-        vendingsales: {
-            type: DataTypes.JSONB,
+        name:{
+            type: DataTypes.STRING,
         },
-        totalvalue: {
+        image: {
+            type: DataTypes.TEXT,
+        },
+        price:{
             type: DataTypes.FLOAT,
         },
-        paymentmethod:  {
-            type: DataTypes.STRING,
-        },
-        paymentstatus:  {
-            type: DataTypes.STRING,
-        },
-        paymentref:  {
-            type: DataTypes.STRING,
-        },
-        paymenttime:  {
-            type: DataTypes.DATE,
-        },
-        requestpaymenttime: {
-            type: DataTypes.DATE,
-        },
-        machineId:  {
-            type: DataTypes.STRING,
-        },
-        clientId:  {
-            type: DataTypes.STRING,
-        },
-        transactionID:  {
+        qtty: {
             type: DataTypes.FLOAT,
-        },
-        qr:  {
-            type: DataTypes.STRING,
         },
         hasM: {
             type: DataTypes.TEXT,
@@ -80,7 +59,7 @@ export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):an
             type: DataTypes.TEXT,
         }
 
-    } as ModelAttributes<VendingMachineBillModel>;
+    } as ModelAttributes<BankNoteModel>;
 
     const x = sequelize.define(name, attributes, { tableName: name, freezeTableName: true });
     x.beforeUpdate(async (o, options) => {
