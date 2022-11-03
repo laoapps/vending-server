@@ -15,8 +15,7 @@ services:
       - ./static:/app/
 
 volumes:
-  back-notused:
-   cashinkiosk.laoapps.com.db-data:
+  cashinkioskdb-data:
 
 # curl -H 'Content-Type: application/json' -X POST -d '{"source":"http://admin:5martH67@laab.laoapps.com:5984/gijusers","target":"http://admin:5martH67@localhost:5984/gijusers"}' http://admin:5martH67@localhost:5984/_replicate
 
