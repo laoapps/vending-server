@@ -718,8 +718,7 @@ export class CashNV9 implements IBaseClass {
                     bill: billCash
                 }).then(rx => {
                     console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_'+this.production+'_' + mId?.machineId);
-                    const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
-                    this.billCashIn.splice(i, 1);
+                    
                 }).catch(e => {
                     console.log('  mEnt.create', e);
                 })
