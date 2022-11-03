@@ -31,3 +31,12 @@
     --height: 100%;
     --width: 100%;
   }
+
+  .watermark {
+    opacity: 0.5;
+    color: red;
+    position: fixed;
+    top: auto;
+    left: 80%;
+    font-size: 20;
+}

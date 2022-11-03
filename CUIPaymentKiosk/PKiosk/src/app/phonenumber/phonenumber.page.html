@@ -9,6 +9,9 @@
   class="border d-flex align-items-center justify-content-center"
   style="height: 350px;"
 >
+<div class="watermark" *ngIf="test.test">
+  TEST MODE 
+</div>
 <ion-input type="number" [(ngModel)]="api.pn"  placeholder="2056789012" (click)="showPad()"></ion-input>
 <ion-grid>
 <ion-row>

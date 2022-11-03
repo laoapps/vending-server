@@ -6,6 +6,9 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <div class="watermark" *ngIf="test.test">
+    TEST MODE 
+  </div>
   <ion-button (click)="refresh()">Refresh</ion-button>
   <ion-header collapse="condense">
     <ion-toolbar>

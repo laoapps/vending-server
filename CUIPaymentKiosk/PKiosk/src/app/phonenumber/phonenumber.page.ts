@@ -9,12 +9,14 @@ import { EMessage } from '../syste.model';
   styleUrls: ['./phonenumber.page.scss'],
 })
 export class PhonenumberPage implements OnInit {
-  phonenumber={phonenumber:'2055516321'}
+  phonenumber={phonenumber:'2055516321'};
+  test={test:false}
   constructor(public api:ApiServiceService) {
-    this.phonenumber.phonenumber=api.pn
+    this.phonenumber.phonenumber=api.pn;
    }
 
   ngOnInit() {
+    this.test=this.api.test;
   }
   start(){
     this.phonenumber.phonenumber=this.api.pn

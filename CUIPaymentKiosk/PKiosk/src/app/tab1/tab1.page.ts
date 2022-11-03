@@ -18,6 +18,7 @@ export class Tab1Page {
   accountname='';
   accountRef='';
   sumBN={value:0};
+  test={test:false}
   constructor(public apiService: ApiServiceService) {
     this.billCashIn = apiService.billCashIn;
     this.sumBN = apiService.sumBN;
@@ -32,6 +33,7 @@ export class Tab1Page {
     }
     
    })
+   this.test=this.apiService.test;
   }
 
   refresh() {

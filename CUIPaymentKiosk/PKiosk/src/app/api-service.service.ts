@@ -12,6 +12,8 @@ import { AdsPage } from './ads/ads.page';
   providedIn: 'root'
 })
 export class ApiServiceService {
+  test={test:false};
+
   wsurl = environment.wsurl;
   url = environment.url;
   machineId = {} as IMachineId;
@@ -39,7 +41,7 @@ export class ApiServiceService {
       console.log('ws alive subscription', r);
       this.wsAlive.time = new Date();
       this.wsAlive.isAlive = this.checkOnlineStatus();
-
+      this.test.test=r?.test
     });
     setInterval(()=>{
       if(!this.billCashIn.length){

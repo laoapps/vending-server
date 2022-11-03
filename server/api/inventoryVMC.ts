@@ -497,7 +497,7 @@ export class InventoryVMC implements IBaseClass {
                 console.log('WS HEART BEAT');
 
                 if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping',production:this.production }, EMessage.succeeded)));
                 }
             }, 15000);
 

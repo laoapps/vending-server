@@ -24,13 +24,13 @@ export class ApiService {
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
-
+  test={test:false};
   constructor(public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
     public modal: ModalController,
     public notifyService: NotifierService,
-    private readonly zone: NgZone,
+    
     public load: LoadingController,
     public alert: AlertController) {
       this.wsapi = wsapi;
@@ -45,6 +45,7 @@ export class ApiService {
       console.log('ws alive subscription', r);
       this.wsAlive.time = new Date();
       this.wsAlive.isAlive =this.checkOnlineStatus();
+      this.test.test=r?.test;
       if(!this.vendingOnSale.length){
         // setTimeout(() => {
         //   window.location.reload();

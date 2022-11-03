@@ -259,7 +259,7 @@ export class CashNV9 implements IBaseClass {
                 console.log('WS HEART BEAT');
 
                 if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping' }, EMessage.succeeded)));
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping',production:this.production }, EMessage.succeeded)));
                 }
             }, 15000);
 
@@ -701,14 +701,14 @@ export class CashNV9 implements IBaseClass {
     }
     updateBillCash(billCash: IBillCashIn, machineId: string, transactionID: number) {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.billcash + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.billcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
-                    console.log('SAVED BILL CASH-IN', EEntity.billcash + '_' + billCash?.requestor?.transData[0]?.accountRef);
+                    console.log('SAVED BILL CASH-IN', EEntity.billcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef);
                 })
             })
             const mId = this.ssocket.findMachineId(machineId);
-            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + machineId, dbConnection);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_'+this.production+'_' + machineId, dbConnection);
             mEnt.sync().then(r => {
                 mEnt.create({
                     logintoken: this.mmMoneyLogin?.accessToken + '',
@@ -717,7 +717,7 @@ export class CashNV9 implements IBaseClass {
                     machineIp: '',
                     bill: billCash
                 }).then(rx => {
-                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_' + mId?.machineId);
+                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_'+this.production+'_' + mId?.machineId);
                     const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
                     this.billCashIn.splice(i, 1);
                 }).catch(e => {
@@ -732,10 +732,10 @@ export class CashNV9 implements IBaseClass {
     }
     updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number) {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
-                    console.log('SAVED BILL CASH-IN', EEntity.badbillcash + '_' + billCash?.requestor?.transData[0]?.accountRef);
+                    console.log('SAVED BILL CASH-IN', EEntity.badbillcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef);
 
                 })
             }).catch(e => {
@@ -743,7 +743,7 @@ export class CashNV9 implements IBaseClass {
 
             })
             const mId = this.ssocket.findMachineId(machineId);
-            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + machineId, dbConnection);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_'+this.production+'_' + machineId, dbConnection);
             mEnt.sync().then(r => {
                 mEnt.create({
                     logintoken: this.mmMoneyLogin?.accessToken + '',
@@ -753,8 +753,8 @@ export class CashNV9 implements IBaseClass {
                     bill: billCash
                 }).then(rx => {
                     console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_' + mId?.machineId);
-                    const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
-                    this.billCashIn.splice(i, 1);
+                    // const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
+                    // this.billCashIn.splice(i, 1);
                 }).catch(e => {
                     console.log('  mEnt.create', e);
                 })

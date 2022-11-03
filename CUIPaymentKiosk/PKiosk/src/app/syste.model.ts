@@ -796,6 +796,7 @@ export interface IMachineId{
 export interface IAlive{
     time:Date
     isAlive:boolean;
+    test:boolean
 }
 export interface IBillCashIn extends IBase{
     bankNotes:Array<IBankNote>;
