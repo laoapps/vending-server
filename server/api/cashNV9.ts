@@ -47,7 +47,7 @@ export class CashNV9 implements IBaseClass {
     MMoneyName = 'LMM KIOS'
     MMoneyUsername = 'lmmkios'
     MMoneyPassword = 'Qh7~Lq9@'
-    production = false;
+    production = true;
 
     pathMMoneyLogin = 'https://api.mmoney.la/ewallet-ltc-api/oauth/token.service';
     pathMMoneyConfirm = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';

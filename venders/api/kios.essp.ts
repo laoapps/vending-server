@@ -98,19 +98,19 @@ export class KiosESSP {
                     console.log('SERIAL NUMBER:', result.info.serial_number)
                     return;
                 })
-                .then(() => this.eSSP.command('DISPLAY_ON'))
-                .then(result => {
-                    if (result) if (result.status == 'OK') {
-                        console.log('DISPLAY_ON', result.info)
-                    }
-                })
-                .then(result => {
-                    console.log('Device is active', result)
-                    if (result) if (result.status == 'OK') {
-                        console.log('Device is active')
-                    }
-                    return;
-                })
+                // .then(() => this.eSSP.command('DISPLAY_ON'))
+                // .then(result => {
+                //     if (result) if (result.status == 'OK') {
+                //         console.log('DISPLAY_ON', result.info)
+                //     }
+                // })
+                // .then(result => {
+                //     console.log('Device is active', result)
+                //     if (result) if (result.status == 'OK') {
+                //         console.log('Device is active')
+                //     }
+                //     return;
+                // })
                 .then(() => this.eSSP.command('SETUP_REQUEST'))
                 .then(result => {
                     if (result) if (result.status == 'OK') {
