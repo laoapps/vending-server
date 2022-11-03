@@ -9,7 +9,7 @@ var host = window.location.protocol + "//" + window.location.host;
   styleUrls: ['./ads.page.scss'],
 })
 export class AdsPage implements OnInit {
-  mmLogo = host + '/assets/icon/d1080x1920.png';
+  mmLogo ='/assets/icon/d1080x1920.png';
 
   ads = [
     'd1080x1920.png',
@@ -46,7 +46,7 @@ export class AdsPage implements OnInit {
   i = 0;
   getAds() {
     if (++this.i > this.ads.length - 1) this.i = 0;
-    return host + '/assets/icon/' + this.ads[this.i];
+    return '/assets/icon/' + this.ads[this.i];
   }
   close() {
     clearInterval(this.t);
