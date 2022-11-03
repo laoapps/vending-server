@@ -358,7 +358,7 @@ export class SocketServerZDM8 {
                 }
                 return false;
             });
-            if (position < 0 || position > 99 || Number(position) == NaN)
+            if (position < 0 || position > 100 || Number.isNaN(position))
                 return { position, status: x};
             if (x) {
                 const res = {} as IResModel;
