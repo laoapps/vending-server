@@ -3,11 +3,13 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { AdsPage } from '../ads/ads.page';
 import { ApiServiceService } from '../api-service.service';
 import { IBankNote, IBillBankNote as IBillCashIn } from '../syste.model';
+import { Animation, AnimationController } from '@ionic/angular';
+
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss']
+  styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page {
   server_path=host;
@@ -34,6 +36,10 @@ export class Tab1Page {
     
    })
    this.test=this.apiService.test;
+
+
+
+   
   }
 
   refresh() {
