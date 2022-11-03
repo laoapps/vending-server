@@ -5,11 +5,11 @@
   </div>
 </ion-header>
 
-<ion-content [fullscreen]="true"  style="top:35%">
+<ion-content [fullscreen]="true"  style="top:25%">
   <div class="watermark" *ngIf="test.test">
     TEST MODE 
   </div>
-  <ion-button (click)="refresh()">Refresh</ion-button>
+  <ion-button (click)="refresh()" class="pad-button">Refresh</ion-button>
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Payment</ion-title>
@@ -97,4 +97,7 @@
       </ion-col>
     </ion-row> -->
   </ion-grid>
+  <div>
+    <img src="/assets/icon/arrow-down.png"  style="width:350px; height:350px; float:right"/>
+  </div>
 </ion-content>

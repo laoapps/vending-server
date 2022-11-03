@@ -4,49 +4,49 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content style="top:35%">
-<ion-input [(ngModel)]="api.pn" style="width:100%; background-color:bisque">
+<ion-content style="top:25%">
+<ion-input [(ngModel)]="api.pn" type="number" style="width:100%; background-color:bisque; font-size:64px">
 
 </ion-input>
 <ion-grid>
   <ion-row>
     <ion-col size="4">
-      <ion-button (click)="click(1)" style="width: 100%;">1</ion-button>
+      <ion-button (click)="click(1)" style="width: 100%;" class="pad-button">1</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(2)" style="width: 100%;">2</ion-button>
+      <ion-button (click)="click(2)" style="width: 100%;" class="pad-button">2</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(3)" style="width: 100%;">3</ion-button>
+      <ion-button (click)="click(3)" style="width: 100%;" class="pad-button">3</ion-button>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="4">
-      <ion-button (click)="click(4)" style="width: 100%;">4</ion-button>
+      <ion-button (click)="click(4)" style="width: 100%;" class="pad-button">4</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(5)" style="width: 100%;">5</ion-button>
+      <ion-button (click)="click(5)" style="width: 100%;" class="pad-button">5</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(6)" style="width: 100%;">6</ion-button>
+      <ion-button (click)="click(6)" style="width: 100%;" class="pad-button">6</ion-button>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="4">
-      <ion-button (click)="click(7)" style="width: 100%;">7</ion-button>
+      <ion-button (click)="click(7)" style="width: 100%;" class="pad-button">7</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(8)" style="width: 100%;">8</ion-button>
+      <ion-button (click)="click(8)" style="width: 100%;" class="pad-button">8</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(9)" style="width: 100%;">9</ion-button>
+      <ion-button (click)="click(9)" style="width: 100%;" class="pad-button">9</ion-button>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="12">
-      <ion-button (click)="click(0)" style="width: 100%;">0</ion-button>
+      <ion-button (click)="click(0)" style="width: 100%;" class="pad-button">0</ion-button>
     </ion-col> 
   </ion-row>
   <ion-row>
     <ion-col size="6">
-      <ion-button (click)="back()" style="width: 100%;"><ion-icon name="backspace-sharp"></ion-icon></ion-button>
+      <ion-button (click)="back()" style="width: 100%;"><ion-icon name="backspace-sharp"  class="pad-button"></ion-icon></ion-button>
     </ion-col> 
     <ion-col size="6">
-      <ion-button (click)="close()" style="width: 100%;"><ion-icon name="arrow-forward-circle-sharp"></ion-icon></ion-button>
+      <ion-button (click)="close()" style="width: 100%;"><ion-icon name="arrow-forward-circle-sharp"  class="pad-button"></ion-icon></ion-button>
     </ion-col> 
   </ion-row>
 </ion-grid>
