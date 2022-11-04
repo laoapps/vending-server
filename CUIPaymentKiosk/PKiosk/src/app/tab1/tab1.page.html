@@ -5,21 +5,21 @@
   </div>
 </ion-header>
 
-<ion-content [fullscreen]="true"  style="top:25%">
+<ion-content [fullscreen]="true"  style="top:5%">
   <div class="watermark" *ngIf="test.test">
     TEST MODE 
   </div>
   <ion-button (click)="refresh()" class="pad-button">Refresh</ion-button>
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Payment</ion-title>
+      <ion-title size="large" >Payment</ion-title>
     </ion-toolbar>
   </ion-header>
   <ion-grid>
 
     <ion-row>
       <ion-col size="12">
-        <ion-item-divider> All Notes</ion-item-divider>
+        <ion-item-divider class="title"> All Notes</ion-item-divider>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -37,27 +37,27 @@
     <ion-row>
       <ion-col>
 
-        <ion-item-divider> Welcome: <h1>{{accountname}}</h1> / <h4>{{accountRef}}</h4>
+        <ion-item-divider class="title"> title: <h1>{{accountname}}</h1> / <h4>{{accountRef}}</h4>
         </ion-item-divider>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size="12">
-        <ion-item-divider> Transaction would be end in <h1 class="{{timer.t>10?'green-counter':timer.t>5?'yellow-counter':'red-counter'}}">{{timer.t}}</h1> seconds ...</ion-item-divider>
+        <ion-item-divider class="desc"> Transaction would be end in <h1 class="{{timer.t>10?'green-counter':timer.t>5?'yellow-counter':'red-counter'}}">{{timer.t}}</h1> seconds ...</ion-item-divider>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size="12">
-        <ion-item-divider> Total BankNote</ion-item-divider>
+        <ion-item-divider class="title"> Total BankNote</ion-item-divider>
       </ion-col>
     </ion-row>
     <ion-row *ngFor="let n of billCashIn; let i = index">
       <ion-col>
         {{i+1}}.-
-        <div>{{n.transactionID}}<<<< {{n.bankNotes.length|number}} >>>> {{sumBN.value|number}}</div>
+        <div class="desc">{{n.transactionID}}<<<< {{n.bankNotes.length|number}} >>>> {{sumBN.value|number}}</div>
         <ion-chip class="money" *ngFor="let m of n.bankNotes" >
           <div>
-            <img [src]="'/assets/icon/'+m?.image">
+            <img class="moneyimg" [src]="'/assets/icon/'+m?.image">
             <div>{{m?.value|number}}</div>
             <div>{{m?.currency}}</div>
             
@@ -98,6 +98,6 @@
     </ion-row> -->
   </ion-grid>
   <div>
-    <img src="/assets/icon/arrow-down.png"  style="width:350px; height:350px; float:right"/>
+    <img src="/assets/icon/arrow-down.png"  style="width:300px; height:300px; float:right"/>
   </div>
 </ion-content>
