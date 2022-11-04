@@ -36,10 +36,6 @@ export class Tab1Page {
     
    })
    this.test=this.apiService.test;
-
-
-
-   
   }
 
   refresh() {
