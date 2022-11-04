@@ -24,10 +24,11 @@ export class KiosESSP {
         const that = this;
 
         const serialport = new SerialPort({ path: 'COM1', baudRate: 9600, autoOpen: false })
-        serialport.close((e)=>{
-            console.log('CLOSING PORT',e);
-            
-        })
+        serialport.close((e) => {
+            console.log('CLOSING PORT', e);
+
+        });
+        serialport.destroy()
         that.initSSP();
         this.eSSP.open('COM1').then(r => {
             console.log('OPEN COM1', r);
@@ -62,8 +63,8 @@ export class KiosESSP {
         //     }, 1000);
         //     return;
         // }
-        console.log('SET TRANSACTION ',transactionID);
-        
+        console.log('SET TRANSACTION ', transactionID);
+
         this.setCounter(counter);
 
         this.eSSP.command('RESET_COUNTERS').then(result => {
@@ -97,6 +98,9 @@ export class KiosESSP {
             console.log('OPEN');
 
             this.eSSP.command('SYNC')
+                .then(result => {
+                    console.log('SYNC:', result)
+                })
                 .then(() => this.eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
                 .then(() => this.eSSP.initEncryption())
                 .then(() => this.eSSP.command('GET_SERIAL_NUMBER'))
@@ -117,6 +121,19 @@ export class KiosESSP {
                 //     }
                 //     return;
                 // })
+                .then(() => this.eSSP.command('RESET_COUNTERS').then(result => {
+                    if (result) if (result.status == 'OK') {
+                        console.log('RESET_COUNTERS', result)
+                    }
+                    return;
+                }))
+                .then(() => this.eSSP.enable())
+                .then(result => {
+                    if (result) if (result.status == 'OK') {
+                        console.log('enable request', result.info)
+                    }
+                    return;
+                })
                 .then(() => this.eSSP.command('SETUP_REQUEST'))
                 .then(result => {
                     if (result) if (result.status == 'OK') {
@@ -124,13 +141,7 @@ export class KiosESSP {
                     }
                     return;
                 })
-                .then(() => this.eSSP.enable())
-                .then(() => this.eSSP.command('RESET_COUNTERS').then(result => {
-                    if (result) if (result.status == 'OK') {
-                        console.log('RESET_COUNTERS', result)
-                    }
-                    return;
-                }))
+               
             // .then(() => eSSP.command('SET_CHANNEL_INHIBITS',{channels:[1,1,1,1,1,1,1]})
             // .then(result => {
             //     if (result)if (result.status == 'OK') {
@@ -406,37 +417,37 @@ export class KiosESSP {
                 })
             this.writeLog(result, 'NOTE_REJECTED');
         })
-        let countRead=0;
+        let countRead = 0;
         this.eSSP.on('READ_NOTE', result => {
-            console.log('READ_NOTE', result,countRead,this.counter);
+            console.log('READ_NOTE', result, countRead, this.counter);
 
-             if (this.transactionID == -1 || this.counter <= 5) {
-                
+            if (this.transactionID == -1 || this.counter <= 5) {
+
                 this.eSSP.command('REJECT_BANKNOTE').then(r => {
                     // this.eSSP.disable()
                     this.writeLog(result, 'REJECT_BANKNOTE');
                     this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'REJECT_BANKNOTE' }, EMACHINE_COMMAND.status);
                     // this.isReading=false;
-                    result.transactionID=this.transactionID;
-                    this.writeLog(result,'REJECT_BANKNOTE')
-                    countRead=0;
+                    result.transactionID = this.transactionID;
+                    this.writeLog(result, 'REJECT_BANKNOTE')
+                    countRead = 0;
                 })
                 return;
             }
-            else if(!countRead&&this.counter > 5){
+            else if (!countRead && this.counter > 5) {
                 this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
-                countRead=1;
-                 return;
+                countRead = 1;
+                return;
             }
-           
+
             // this.isReading=true;
-          
-            else if (countRead&&result.channel > 0&&this.transactionID !== -1 ) {
-                countRead=0;
+
+            else if (countRead && result.channel > 0 && this.transactionID !== -1) {
+                countRead = 0;
                 this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
                 // this.isReading=false;
-                result.transactionID=this.transactionID;
-                this.writeLog(result,'READ_NOTE')
+                result.transactionID = this.transactionID;
+                this.writeLog(result, 'READ_NOTE')
                 return;
             }
 
@@ -445,7 +456,7 @@ export class KiosESSP {
         this.eSSP.on('CREDIT_NOTE', result => {
             console.log('CREDIT_NOTE', result)
             this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' }, EMACHINE_COMMAND.status);
-            result.transactionID=this.transactionID;
+            result.transactionID = this.transactionID;
             this.writeLog(result, 'CREDIT_NOTE');
             // this.isReading=false;
         })
@@ -455,20 +466,20 @@ export class KiosESSP {
             // this.eSSP.command('DISABLE').then(result => {
             // this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
             // })
-            result.transactionID=this.transactionID;
+            result.transactionID = this.transactionID;
             this.writeLog(result, 'JAMMED');
             // this.isReading=false;
         })
         this.eSSP.on('DISPENSED', result => {
             console.log('DISPENSED', result)
-            result.transactionID=this.transactionID;
+            result.transactionID = this.transactionID;
             this.writeLog(result, 'DISPENSED');
             // this.isReading=false;
         })
 
         this.eSSP.on('JAM_RECOVERY', result => {
             console.log('JAM_RECOVERY', result)
-            result.transactionID=this.transactionID;
+            result.transactionID = this.transactionID;
             this.writeLog(result, 'JAM_RECOVERY');
             // this.isReading=false;
         })
@@ -490,20 +501,20 @@ export class KiosESSP {
 
     writeLog(data: any, name: string) {
         try {
-             const d = { data }
-        const o= os.platform();
-        if(o!='win32')
-        // linux
-         fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
-        else 
-         fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d),{flag:'a'});
-        console.log('OS',o);
+            const d = { data }
+            const o = os.platform();
+            if (o != 'win32')
+                // linux
+                fs.writeFileSync(__dirname + '/logs/' + name + '' + new Date().getTime(), JSON.stringify(d), { flag: 'a' });
+            else
+                fs.writeFileSync(__dirname + '\\logs\\' + name + '' + new Date().getTime(), JSON.stringify(d), { flag: 'a' });
+            console.log('OS', o);
         } catch (error) {
             console.log(error);
-            
+
         }
-       
-        
+
+
     }
     close() {
         this.eSSP.close((e) => {
