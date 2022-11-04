@@ -5,6 +5,7 @@ const sspLib = require('encrypted-smiley-secure-protocol');
 
 import { SocketKiosClient } from './socketClient.kios';
 import fs from 'fs';
+import { SerialPort } from 'serialport';
 export class KiosESSP {
 
     sock: SocketKiosClient | null = null;
@@ -21,6 +22,12 @@ export class KiosESSP {
     constructor(sock: SocketKiosClient) {
         this.sock = sock;
         const that = this;
+
+        const serialport = new SerialPort({ path: 'COM1', baudRate: 9600, autoOpen: false })
+        serialport.close((e)=>{
+            console.log('CLOSING PORT',e);
+            
+        })
         that.initSSP();
         this.eSSP.open('COM1').then(r => {
             console.log('OPEN COM1', r);
@@ -28,7 +35,6 @@ export class KiosESSP {
         }).catch(e => {
             console.log('ERROR OPEN COM1', e);
         });
-
 
     }
     // isReading=false;
@@ -86,7 +92,7 @@ export class KiosESSP {
 
 
     initSSP() {
-        this.eSSP.close();
+        // this.eSSP.close();
         this.eSSP.on('OPEN', () => {
             console.log('OPEN');
 

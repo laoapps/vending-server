@@ -252,7 +252,15 @@ export class CashNV9 implements IBaseClass {
 
 
     }
-
+    prePareForMaintenance(){
+        //TODO:
+        // from REST API , admin can set the maintenance schedule
+        // broadCast for all client WS with counter
+        // check if the machine ws in the progress
+        //.... accept the current transaction first and terminate 
+        //.... check machine if it's reading state , and credit state
+        // set terminateByAdmin
+    }
     initWs(wss: WebSocketServer.Server) {
         try {
             setWsHeartbeat(wss, (ws, data, binary) => {
@@ -275,7 +283,12 @@ export class CashNV9 implements IBaseClass {
                 // ws['isAlive'] = true;
                 ws.onclose = (ev: CloseEvent) => {
                     console.log(' WS CLOSE');
-
+                    const x = this.billCashIn.find(v=>v.clientId=ws['clientId']);
+                    if(x){
+                       
+                        this.ssocket.terminateByClientClose(x.machineId)
+                    }
+                   
                 }
                 ws.onerror = (ev: Event) => {
                     console.log(' WS error');
