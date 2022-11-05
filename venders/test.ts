@@ -1,13 +1,21 @@
+import { initWs } from "./services/service";
 
- const sspLib = require('encrypted-smiley-secure-protocol');
- var eSSP = new sspLib({
+const sspLib = require('encrypted-smiley-secure-protocol');
+var eSSP = new sspLib({
     id: 0,
     debug: false,
     timeout: 3000,
     fixedKey: '0123456701234567'
 });
-eSSP.open('/dev/ttyS3').then(r=>{
-    console.log('OPEN /dev/ttyS3',r);
+init();
+eSSP.open('/dev/tty.usbserial-AB0PVS8I').then(r => {
+    console.log('OPEN //dev/tty.usbserial-AB0PVS8I', r);
+
+}).catch(e => {
+    console.log('ERROR OPEN COM1', e);
+});
+
+function init() {
     eSSP.on('OPEN', () => {
         console.log('open');
 
@@ -25,13 +33,7 @@ eSSP.open('/dev/ttyS3').then(r=>{
                     console.log('DISPLAY_ON', result.info)
                 }
             })
-            
-            .then(result => {
-                if (result.status == 'OK') {
-                    console.log('Device is active')
-                }
-                return;
-            })
+
             .then(() => eSSP.command('SETUP_REQUEST'))
             .then(result => {
                 if (result.status == 'OK') {
@@ -39,107 +41,108 @@ eSSP.open('/dev/ttyS3').then(r=>{
                     console.log('SETUP_REQUEST request', result.info)
                 }
                 return;
-            }).then(() => eSSP.enable()
-             .then(result => {
-                if (result.status == 'OK') {
-                    console.log('SET_CHANNEL_INHIBITS', result.info)
-                }
-            }))
-            // .then(() => eSSP.command('SET_CHANNEL_INHIBITS',{channels:[1,1,1,1,1,1,1]})
-            // .then(result => {
-            //     if (result.status == 'OK') {
-            //         console.log('SET_CHANNEL_INHIBITS', result.info)
-            //     }
-            // })
-            //     return;
-            // })
-            // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
-            // .then(result => {
-            //     if (result.status == 'OK') {
+            })
+            .then(() => eSSP.command('SET_CHANNEL_INHIBITS', { channels: [1, 1, 1, 1, 1, 1, 1] })
+                .then(result => {
+                    if (result.status == 'OK') {
+                        console.log('SET_CHANNEL_INHIBITS', result.info)
+                    }
+                })
+            )
+            .then(() => eSSP.enable()
+                .then(result => {
+                    if (result.status == 'OK') {
+                        console.log('Device is active', result.info)
+                    }
+                }))
 
-            //         console.log('Device value request', result.info)
-            //     }
+        // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
+        // .then(result => {
+        //     if (result.status == 'OK') {
 
-            //     return;
-            // })// get info from the validator and store useful vars
-          
-            // inhibits, this sets which channels can receive notes
-            // NV11.SetInhibits(textBox1);
-            // enable, this allows the validator to operate
-            // NV11.EnableValidator(textBox1);
-            // value reporting, set whether the validator reports channel or coin value in 
-            // subsequent requests
-            // NV11.SetValueReportingType(false, textBox1);
-            // check for notes already in the float on startup
-            // NV11.CheckForStoredNotes(textBox1);
-            
-            
-            // .then(() => eSSP.command('RESET'))
-            // .then(result => {
-            //     if (result.status == 'OK') {
+        //         console.log('Device value request', result.info)
+        //     }
 
-            //         console.log('RESET request', result.info)
-            //     }
-            //     return;
-            // })
-            // .then(() => eSSP.command('SET_VALUE_REPORTING_TYPE',{reportBy:'value'}))
-            // .then(result => {
-            //     if (result.status == 'OK') {
-            //         console.log(result);
-                 
-            //         console.log('SET_VALUE_REPORTING_TYPE', result)
-            //     }
-            //     return;
-            // })
-            // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
-            // .then(result => {
-            //     if (result.status == 'OK') {
-            //         const x = [];
-            //         Object.keys(result.info.slot).forEach(k => {
-            //             if (result.info.slot[k].value)
-            //                 x.push(
-            //                     (result.info.slot[k].value))
-            //         })
-            //         console.log('GET_NOTE_POSITIONS', x)
-            //     }
-            //     return;
-            // })
-            // .then(() => eSSP.command('PAYOUT_NOTE'))
-            // .then(result => {
-            //     if (result.status == 'OK') {
-            //         console.log('PAYOUT_NOTE', result.info)
-            //     }
-            //     return;
-            // })
-            // // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
-            // // .then(result => {
-            // //     if (result.status == 'OK') {
-                 
-            // //         console.log('CHANNEL_VALUE_REQUEST', result)
-            // //     }
-            // //     return;
-            // // })
-            // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
-            // .then(result => {
-            //     if (result.status == 'OK') {
-            //         const x = [];
-            //         console.log('GET_NOTE_POSITIONS',result.info.slot);
-            //         // Object.keys(result.info.slot).forEach(k => {
-            //         //     if (result.info.slot[k].value)
-            //         //         x.push( result.info.slot[k].value)
-            //         // })
-            //         // console.log('GET_NOTE_POSITIONS', x)
-            //     }
-            //     return;
-            // })
-            // .then(() => eSSP.command('GET_DENOMINATION_ROUTE'))
-            //     .then(result => {
-            //         if (result.status == 'OK') {
-            //             console.log('GET_DENOMINATION_ROUTE',result)
-            //         }
-            //         console.log('GET_DENOMINATION_ROUTE',result)
-            //         return;
-            //     })
+        //     return;
+        // })// get info from the validator and store useful vars
+
+        // inhibits, this sets which channels can receive notes
+        // NV11.SetInhibits(textBox1);
+        // enable, this allows the validator to operate
+        // NV11.EnableValidator(textBox1);
+        // value reporting, set whether the validator reports channel or coin value in 
+        // subsequent requests
+        // NV11.SetValueReportingType(false, textBox1);
+        // check for notes already in the float on startup
+        // NV11.CheckForStoredNotes(textBox1);
+
+
+        // .then(() => eSSP.command('RESET'))
+        // .then(result => {
+        //     if (result.status == 'OK') {
+
+        //         console.log('RESET request', result.info)
+        //     }
+        //     return;
+        // })
+        // .then(() => eSSP.command('SET_VALUE_REPORTING_TYPE',{reportBy:'value'}))
+        // .then(result => {
+        //     if (result.status == 'OK') {
+        //         console.log(result);
+
+        //         console.log('SET_VALUE_REPORTING_TYPE', result)
+        //     }
+        //     return;
+        // })
+        // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
+        // .then(result => {
+        //     if (result.status == 'OK') {
+        //         const x = [];
+        //         Object.keys(result.info.slot).forEach(k => {
+        //             if (result.info.slot[k].value)
+        //                 x.push(
+        //                     (result.info.slot[k].value))
+        //         })
+        //         console.log('GET_NOTE_POSITIONS', x)
+        //     }
+        //     return;
+        // })
+        // .then(() => eSSP.command('PAYOUT_NOTE'))
+        // .then(result => {
+        //     if (result.status == 'OK') {
+        //         console.log('PAYOUT_NOTE', result.info)
+        //     }
+        //     return;
+        // })
+        // // .then(() => eSSP.command('CHANNEL_VALUE_REQUEST'))
+        // // .then(result => {
+        // //     if (result.status == 'OK') {
+
+        // //         console.log('CHANNEL_VALUE_REQUEST', result)
+        // //     }
+        // //     return;
+        // // })
+        // .then(() => eSSP.command('GET_NOTE_POSITIONS'))
+        // .then(result => {
+        //     if (result.status == 'OK') {
+        //         const x = [];
+        //         console.log('GET_NOTE_POSITIONS',result.info.slot);
+        //         // Object.keys(result.info.slot).forEach(k => {
+        //         //     if (result.info.slot[k].value)
+        //         //         x.push( result.info.slot[k].value)
+        //         // })
+        //         // console.log('GET_NOTE_POSITIONS', x)
+        //     }
+        //     return;
+        // })
+        // .then(() => eSSP.command('GET_DENOMINATION_ROUTE'))
+        //     .then(result => {
+        //         if (result.status == 'OK') {
+        //             console.log('GET_DENOMINATION_ROUTE',result)
+        //         }
+        //         console.log('GET_DENOMINATION_ROUTE',result)
+        //         return;
+        //     })
         // .then(() => eSSP.command('SET_REFILL_MODE'))
         // .then(result => {
         //     if (result.status == 'OK') {
@@ -316,34 +319,43 @@ eSSP.open('/dev/ttyS3').then(r=>{
         eSSP.command('LAST_REJECT_CODE')
             .then(result => {
                 console.log(result)
+                eSSP.disable();
+            setTimeout(() => {
+                eSSP.enable();
+            }, 3000);
             })
+            
     })
+
     eSSP.on('READ_NOTE', result => {
         console.log('READ_NOTE', result)
-        
+
     })
     eSSP.on('CREDIT_NOTE', result => {
         console.log('CREDIT_NOTE', result)
-        if(result.channel>0){
-          
+        if (result.channel > 0) {
+
         }
-     
+
     })
     eSSP.on('JAMMED', result => {
         console.log('JAMMED', result)
-        
+        // eSSP.disable();
+        // setTimeout(() => {
+        //     eSSP.enable();
+        // }, 3000);
     })
     eSSP.on('DISPENSED', result => {
         console.log('DISPENSED', result)
-        
+
     })
     eSSP.on('JAM_RECOVERY', result => {
         console.log('JAM_RECOVERY', result)
-        
+
     })
-    process.on("exit", ()=>{
+    process.on("exit", () => {
+        console.log('PROCESS EXIT');
+
         eSSP.close();
     })
-}).catch(e=>{
-    console.log('ERROR OPEN COM1',e);
-});
+}
