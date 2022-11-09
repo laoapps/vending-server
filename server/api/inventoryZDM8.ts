@@ -27,7 +27,7 @@ export class InventoryZDM8 implements IBaseClass {
     public walletId = '2599087166';// LTC
     mmoneyusername='dbk';
     mmoneypassword='ddbk@2022';
-    production =true;
+    production =false;
     
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerZDM8();;
