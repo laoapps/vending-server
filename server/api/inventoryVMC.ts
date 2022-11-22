@@ -317,7 +317,7 @@ export class InventoryVMC implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber:this.production? this.phonenumber:'2055516321',// '2055220199',
+                        phonenumber:this.production? this.phonenumber:'2054452222',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
