@@ -13,7 +13,7 @@ import * as moment from 'moment';
 export class ApiService {
   url = localStorage.getItem('url')||environment.url;
   wsurl = localStorage.getItem('wsurl')||environment.wsurl;
-  currentPaymentProvider = EPaymentProvider.laab;
+  currentPaymentProvider = EPaymentProvider.mmoney;
   machineId = {} as IMachineId;
 
   clientId = {} as IClientId;

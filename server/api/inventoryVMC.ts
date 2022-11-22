@@ -26,7 +26,7 @@ export class InventoryVMC implements IBaseClass {
     public walletId = '2443128596';// TPLUS
     mmoneyusername='dbk';
     mmoneypassword='dbk@2022';
-    production=false;
+    production=true;
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerVMC();
         this.wss = wss;
@@ -317,7 +317,7 @@ export class InventoryVMC implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber:this.production? this.phonenumber:'2054452222',// '2055220199',
+                        phonenumber:this.production? this.phonenumber:'2052899515',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
