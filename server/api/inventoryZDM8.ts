@@ -325,7 +325,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber:this.production? this.phonenumber:'2055516321',// '2055220199',
+                        phonenumber:this.production? this.phonenumber:'2055220199',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
