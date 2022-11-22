@@ -332,7 +332,7 @@ export class InventoryZDM8 implements IBaseClass {
                     axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
                         qr,
                         { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(rx => {
-                             console.log('generateBillMMoney',r);
+                             console.log('generateBillMMoney',rx);
                             if (rx.status) {
                                 resolve(rx.data as IMMoneyGenerateQRRes);
                             } else {
