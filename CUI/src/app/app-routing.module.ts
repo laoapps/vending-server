@@ -17,6 +17,14 @@ const routes: Routes = [
   {
     path: 'setting',
     loadChildren: () => import('./setting/setting.module').then( m => m.SettingPageModule)
+  },
+  {
+    path: 'stock',
+    loadChildren: () => import('./stock/stock.module').then( m => m.StockPageModule)
+  },
+  {
+    path: 'stocksale',
+    loadChildren: () => import('./stocksale/stocksale.module').then( m => m.StocksalePageModule)
   }
 ];
 @NgModule({

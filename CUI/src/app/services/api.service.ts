@@ -11,8 +11,8 @@ import * as moment from 'moment';
   providedIn: 'root'
 })
 export class ApiService {
-  url = localStorage.getItem('url')||environment.url;
-  wsurl = localStorage.getItem('wsurl')||environment.wsurl;
+  url = localStorage.getItem('url') || environment.url;
+  wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   currentPaymentProvider = EPaymentProvider.mmoney;
   machineId = {} as IMachineId;
 
@@ -24,41 +24,44 @@ export class ApiService {
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
-  test={test:false};
+  test = { test: false };
+
+  audio = new Audio('assets/khopchay.mp3');
+
   constructor(public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
     public modal: ModalController,
     public notifyService: NotifierService,
-    
+
     public load: LoadingController,
     public alert: AlertController) {
-      this.wsapi = wsapi;
+    this.wsapi = wsapi;
     // this.zone.runOutsideAngular(() => {
-    this.machineId.machineId = localStorage.getItem('machineId')||'12345678';
-    this.machineId.otp = localStorage.getItem('otp')||'111111';
+    this.machineId.machineId = localStorage.getItem('machineId') || '12345678';
+    this.machineId.otp = localStorage.getItem('otp') || '111111';
     this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
 
-   
+
     this.wsapi.aliveSubscription.subscribe(r => {
       if (!r) return console.log('empty');
       console.log('ws alive subscription', r);
       this.wsAlive.time = new Date();
-      this.wsAlive.isAlive =this.checkOnlineStatus();
-      this.test.test=r?.test;
-      if(!this.vendingOnSale.length){
+      this.wsAlive.isAlive = this.checkOnlineStatus();
+      this.test.test = r?.test;
+      if (!this.vendingOnSale.length) {
         // setTimeout(() => {
         //   window.location.reload();
         // }, 3000);
       }
     });
-    this.wsapi.refreshSubscription.subscribe(r=>{
-      if(r){
+    this.wsapi.refreshSubscription.subscribe(r => {
+      if (r) {
         setTimeout(() => {
           window.location.reload();
         }, 3000);
       }
-    
+
     })
     this.wsapi.billProcessSubscription.subscribe(r => {
       if (!r) return console.log('empty');
@@ -66,17 +69,21 @@ export class ApiService {
       const message = 'processing slot ' + r.position.position + `==>${r.position.status}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
 
 
-      const x=this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id  && r.position.position+'' == vx.position+''));
-      console.log('X',x,r.position,x && r.position.status);
-      
+      const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
+      console.log('X', x, r.position, x && r.position.status);
+
       if (x && r.position.status) {
         x.stock.qtty--;
         // PLAY SOUNDS
+        this.audio = new Audio('assets/khopchay.mp3');
+        this.audio.play();
         this.toast.create({ message, duration: 2000 }).then(r => {
           r.present();
         })
-      } else if(!r.position.status) {
+      } else if (!r.position.status) {
         // PLAY SOUNDS
+        this.audio = new Audio('assets/labob.mp3');
+        this.audio.play();
         this.alert.create({
           header: 'Alert', message, buttons: [
             {
@@ -103,9 +110,9 @@ export class ApiService {
       return false;
     }
   }
-  public dismissModal() {
+  public dismissModal(data: any = null) {
     this.modal.getTop().then(r => {
-      r ? this.modal.dismiss() : null
+      r ? this.modal.dismiss({ data }) : null
     })
   }
 
@@ -120,14 +127,30 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
-  showModal(component:any){
-    this.modal.create({component}).then(r=>{
-      r.present();
-    })
+  async showModal(component: any, d: any = {}) {
+    try {
+      let x = '{';
+      const l = Object.keys(d).length;
+      if (!l) {
+        Object.keys(d).forEach((v, i) => {
+          i < l ?
+            x += '"' + v + '":"' + d[v] + '",' : x += '"' + v + '":"' + d[v] + '"';
+        });
+      }
+      x += '}';
+      const data = JSON.parse(x);
+      return await this.modal.create({ component, componentProps: data });
+    } catch (error) {
+      console.log('ERROR', error);
+      this.toast.create({ message: 'Error' }).then(r => {
+        r.present();
+      });
+    }
+
   }
-  closeModal(){
-    this.modal.getTop().then(r=>{
-      r?r.dismiss():null;
+  closeModal(data: any = null) {
+    this.modal.getTop().then(r => {
+      r ? r.dismiss(data) : null;
     })
   }
   initDemo() {

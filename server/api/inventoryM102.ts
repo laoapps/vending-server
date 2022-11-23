@@ -93,25 +93,28 @@ export class InventoryM102 implements IBaseClass {
                         const checkIds = Array<IVendingMachineSale>();
                         
                         sale.forEach(v => {
-                            v.stock.qtty=1;
+                            // v.stock.qtty=1;
                             const x = this.vendingOnSale.find(vx => {
-                                if (!checkIds.length 
-                                    && vx.stock.id + '' == v.stock.id + ''
-                                    && vx.position == v.position
-                                    && vx.stock.qtty >= v.stock.qtty
-                                    && vx.stock.qtty > 0) {
+                                if (
+                                    // !checkIds.length &&
+                                    vx.stock.id + '' == v.stock.id + ''&& 
+                                    vx.position == v.position
+                                    // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                    // && vx.stock.qtty > 0
+                                    ) {
                                     return true;
                                 }
-                                else if (vx.stock.qtty > 0
-                                    && vx.stock.id + '' == v.stock.id + ''
-                                    && vx.position == v.position
-                                    && vx.stock.qtty >= v.stock.qtty
-                                    && vx.stock.qtty > 0
-                                    && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
-                                        return a + b.stock.qtty;
-                                    }, 0) <= vx.stock.qtty) {
-                                    return true;
-                                }
+                                // else if (vx.stock.qtty > 0
+                                //     && vx.stock.id + '' == v.stock.id + ''
+                                //     && vx.position == v.position
+                                //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                //     // && vx.stock.qtty > 0
+                                //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
+                                //     //     return a + b.stock.qtty;
+                                //     // }, 0) <= vx.stock.qtty
+                                //     ) {
+                                //     return true;
+                                // }
                                 return false;
                             });
                             if (x) {
@@ -253,7 +256,7 @@ export class InventoryM102 implements IBaseClass {
                 image: 'cokecan.jpg'
                 ,
                 price: 9000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
             }, {
@@ -262,7 +265,7 @@ export class InventoryM102 implements IBaseClass {
                 image: 'pepsican.jpeg'
                 ,
                 price: 9000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
 
@@ -272,7 +275,7 @@ export class InventoryM102 implements IBaseClass {
                 image: 'oishiteabottle.png'
                 ,
                 price: 12000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
             }
@@ -281,7 +284,7 @@ export class InventoryM102 implements IBaseClass {
                 name: 'Chinese tea 330ml',
                 image: 'chineseteacan.jpg',
                 price: 8000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
 
@@ -291,7 +294,7 @@ export class InventoryM102 implements IBaseClass {
                 name: 'Water tiger head 380ml',
                 image: 'tigerheadbottle.png',
                 price: 9000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
             }]
@@ -307,9 +310,10 @@ export class InventoryM102 implements IBaseClass {
                 this.vendingOnSale.push({
                     machineId,
                     stock: this.stock[c],
-                    position: i, // for M1
+                    position: i, // for M102
                     hashP: '',
-                    hashM: ''
+                    hashM: '',
+                    max:5
                 })
             });
         } catch (error) {
@@ -457,11 +461,11 @@ export class InventoryM102 implements IBaseClass {
                 res.message = EMessage.confirmsucceeded;
                 res.status = 1;
                 // const ids = bill.vendingsales.map(v => v.stock.id);
-                bill.vendingsales.forEach(v => {
-                    const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
-                    if (x)
-                        x.stock.qtty--;
-                });
+                // bill.vendingsales.forEach(v => {
+                //     const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
+                //     if (x)
+                //         x.stock.qtty--;
+                // });
                 res.data = { bill, position } as unknown as IBillProcess;
                 y.send(JSON.stringify(res), e => {
                     if (e) console.log(e);

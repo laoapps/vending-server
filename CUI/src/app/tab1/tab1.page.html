@@ -3,7 +3,7 @@
   <!-- <ion-toolbar mode="ios" > -->
     <!-- <ion-title style="height: 160px; "> -->
       <div class="box">
-        <img [src]="mmLogo" />
+        <img [src]="mmLogo" (press)="holdCount()" (touchend)="endCount()" (click)="manageStock()"/>
         <!-- <img src="assets/icon/favicon.png"/> -->
       </div>
        
@@ -29,8 +29,8 @@
         <ion-button (click)="clearOrder()">
           Clear
         </ion-button> -->
-        <ion-button (click)="initDemo()">
-          init Demo
+        <ion-button (click)="refresh()">
+          Refresh
         </ion-button>
       </ion-col>
     </ion-row>

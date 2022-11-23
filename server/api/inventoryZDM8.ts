@@ -88,32 +88,35 @@ export class InventoryZDM8 implements IBaseClass {
                     } else if (d.command == EClientCommand.buyMMoney) {
                         const sale = d.data.ids as Array<IVendingMachineSale>; // item id
                         const machineId = this.ssocket.findMachineIdToken(d.token);
-                        const position = d.data.position;
+                        // const position = d.data.position;
                         if (!machineId) throw new Error('Invalid token');
                         if (!Array.isArray(sale)) throw new Error('Invalid array id');
                         // console.log('this.vendingOnSale', this.vendingOnSale);
                         const checkIds = Array<IVendingMachineSale>();
                         
                         sale.forEach(v => {
-                            v.stock.qtty=1;
+                            // v.stock.qtty=1;
                             const x = this.vendingOnSale.find(vx => {
-                                if (!checkIds.length 
-                                    && vx.stock.id + '' == v.stock.id + ''
-                                    && vx.position == v.position
-                                    && vx.stock.qtty >= v.stock.qtty
-                                    && vx.stock.qtty > 0) {
+                                if (
+                                    // !checkIds.length &&
+                                    vx.stock.id + '' == v.stock.id + ''&& 
+                                    vx.position == v.position
+                                    // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                    // && vx.stock.qtty > 0
+                                    ) {
                                     return true;
                                 }
-                                else if (vx.stock.qtty > 0
-                                    && vx.stock.id + '' == v.stock.id + ''
-                                    && vx.position == v.position
-                                    && vx.stock.qtty >= v.stock.qtty
-                                    && vx.stock.qtty > 0
-                                    && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
-                                        return a + b.stock.qtty;
-                                    }, 0) <= vx.stock.qtty) {
-                                    return true;
-                                }
+                                // else if (vx.stock.qtty > 0
+                                //     && vx.stock.id + '' == v.stock.id + ''
+                                //     && vx.position == v.position
+                                //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                //     // && vx.stock.qtty > 0
+                                //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
+                                //     //     return a + b.stock.qtty;
+                                //     // }, 0) <= vx.stock.qtty
+                                //     ) {
+                                //     return true;
+                                // }
                                 return false;
                             });
                             if (x) {
@@ -125,15 +128,15 @@ export class InventoryZDM8 implements IBaseClass {
                             // return false;
                         })
 
-                        console.log('checkIds', checkIds, 'ids', sale);
+                        // console.log('checkIds', checkIds, 'ids', sale);
 
-                        if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
+                        // if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
 
                         const value = checkIds.reduce((a, b) => {
                             return a + (b.stock.price * b.stock.qtty);
                         }, 0);
                         // console.log('qtty', checkIds);
-                        console.log('ids', sale.length);
+                        // console.log('ids', sale.length);
 
                         console.log(' value' + d.data.value + ' ' + value);
 
@@ -255,7 +258,7 @@ export class InventoryZDM8 implements IBaseClass {
                 image: 'cokecan.jpg'
                 ,
                 price: 9000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
             }, {
@@ -264,7 +267,7 @@ export class InventoryZDM8 implements IBaseClass {
                 image: 'pepsican.jpeg'
                 ,
                 price: 9000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
 
@@ -274,7 +277,7 @@ export class InventoryZDM8 implements IBaseClass {
                 image: 'oishiteabottle.png'
                 ,
                 price: 12000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
             }
@@ -283,7 +286,7 @@ export class InventoryZDM8 implements IBaseClass {
                 name: 'Chinese tea 330ml',
                 image: 'chineseteacan.jpg',
                 price: 8000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
 
@@ -293,7 +296,7 @@ export class InventoryZDM8 implements IBaseClass {
                 name: 'Water tiger head 380ml',
                 image: 'tigerheadbottle.png',
                 price: 9000,
-                qtty: 5,
+                qtty: 1,
                 hashP: '',
                 hashM: ''
             }]
@@ -310,7 +313,8 @@ export class InventoryZDM8 implements IBaseClass {
                     stock: this.stock[c],
                     position: i, // for ZDM8 only
                     hashP: '',
-                    hashM: ''
+                    hashM: '',
+                    max:5
                 })
             });
         } catch (error) {
@@ -458,11 +462,11 @@ export class InventoryZDM8 implements IBaseClass {
                 res.message = EMessage.confirmsucceeded;
                 res.status = 1;
                 // const ids = bill.vendingsales.map(v => v.stock.id);
-                bill.vendingsales.forEach(v => {
-                    const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
-                    if (x)
-                        x.stock.qtty--;
-                });
+                // bill.vendingsales.forEach(v => {
+                //     const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
+                //     if (x)
+                //         x.stock.qtty--;
+                // });
                 res.data = { bill, position } as unknown as IBillProcess;
                 y.send(JSON.stringify(res), e => {
                     if (e) console.log(e);

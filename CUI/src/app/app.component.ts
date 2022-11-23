@@ -12,7 +12,7 @@ export class AppComponent {
   constructor(public apiService:ApiService) {
     
 this.checkOnlineStatus= apiService.wsAlive;
-    alert('DEMO started')
+    // alert('DEMO started')
 
 
     

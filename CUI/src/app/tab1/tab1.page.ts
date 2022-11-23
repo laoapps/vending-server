@@ -5,6 +5,7 @@ import { ModalController, Platform } from '@ionic/angular';
 import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
 import qrlogo from 'qrcode-with-logos';
+import { StocksalePage } from '../stocksale/stocksale.page';
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
@@ -13,7 +14,7 @@ var host = window.location.protocol + "//" + window.location.host;
 })
 export class Tab1Page {
 
-  mmLogo = host + '/assets/icon/mmoney.png';
+  mmLogo = 'assets/icon/mmoney.png';
 
   vendingOnSale = new Array<IVendingMachineSale>();
   vendingBill = new Array<IVendingMachineBill>();
@@ -34,6 +35,8 @@ export class Tab1Page {
   getTotalSale = { q: 0, t: 0 };
 
   saleList = new Array<Array<IVendingMachineSale>>();
+  timeoutHandler: any;
+  count: any;
   constructor(private ref: ChangeDetectorRef,
     public apiService: ApiService,
     platform: Platform,
@@ -45,7 +48,7 @@ export class Tab1Page {
     // this.zone.runOutsideAngular(()=>{
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url
-    // this.initDemo();
+    this.initDemo();
 
     platform.ready().then(() => {
       console.log('Width: ' + (this.swidth = platform.width()));
@@ -62,45 +65,89 @@ export class Tab1Page {
       this.vendingBillPaid = this.apiService.vendingBillPaid;
       this.vendingBill = this.apiService.vendingBill;
       this.onlineMachines = this.apiService.onlineMachines;
- 
+
       this.apiService.wsapi.loginSubscription.subscribe(r => {
         if (!r) return console.log('empty')
         console.log('ws login subscription', r);
         this.apiService.clientId.clientId = r.clientId;
         this.apiService.wsAlive.time = new Date();
-        this.apiService.wsAlive.isAlive =this.apiService.checkOnlineStatus();
-        this.loadSaleList();
+        this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
+        // this.loadSaleList();
       })
     });
     // });
 
 
   }
+  refresh() {
+    window.location.reload();
+  }
   initDemo() {
     this.apiService.initDemo().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.vendingOnSale.push(...r.data);
-        window.location.reload();
+        const sale = localStorage.getItem('sale') ? JSON.parse(localStorage.getItem('sale')) as Array<IVendingMachineSale> : [] as Array<IVendingMachineSale>;
+        const saley = r.data as Array<IVendingMachineSale>;
+        saley.forEach(v => {
+          const x = sale.find(x => x.stock.id == v.id);
+          if (x) {
+            v.stock.qtty = x.stock?.qtty || 0;
+            v.stock.price = x.stock?.price || 0;
+          } else {
+            v.stock.qtty = 0;
+            v.stock.price = 0;
+          }
+        })
+        this.vendingOnSale.push(...saley);
+
+        // window.location.reload();
       }
     })
   }
-  loadPaidBills() {
-    this.apiService.loadPaidBills().subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.vendingBillPaid.push(...r.data);
-      }
-    })
+  endCount() {
+    if (this.timeoutHandler) {
+      clearTimeout(this.timeoutHandler);
+      this.timeoutHandler = null;
+    }
+    if (this.count >= 3) {
+      this.manageStock();
+    }
+    this.count = 0;
   }
-  loadBills() {
-    this.apiService.loadBills().subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.vendingBill.push(...r.data);
-      }
-    })
+  holdCount() {
+    this.timeoutHandler = setInterval(() => {
+      ++this.count;
+    }, 1000);
   }
+  async manageStock() {
+    const m = await this.apiService.showModal(StocksalePage);
+    m.onDidDismiss().then(r => {
+      r.data;
+      console.log('manageStock',r.data);
+      
+    })
+    m.present();
+
+  }
+  saveMachineStock() {
+    localStorage.setItem('sale', JSON.stringify(this.vendingOnSale));
+  }
+  // loadPaidBills() {
+  //   this.apiService.loadPaidBills().subscribe(r => {
+  //     console.log(r);
+  //     if (r.status) {
+  //       this.vendingBillPaid.push(...r.data);
+  //     }
+  //   })
+  // }
+  // loadBills() {
+  //   this.apiService.loadBills().subscribe(r => {
+  //     console.log(r);
+  //     if (r.status) {
+  //       this.vendingBill.push(...r.data);
+  //     }
+  //   })
+  // }
   loadOnlineMachine() {
     this.apiService.loadOnlineMachine().subscribe(r => {
       console.log(r);
@@ -109,18 +156,18 @@ export class Tab1Page {
       }
     })
   }
-  loadSaleList() {
-    this.apiService.loadSaleList().subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.vendingOnSale.length=0;
-        this.saleList.length=0;
-        this.vendingOnSale.push(...r.data);
-        console.log('VENDING ON SALE', this.vendingOnSale);
-        this.saleList.push(...this.getSaleList());
-      }
-    })
-  }
+  // loadSaleList() {
+  //   this.apiService.loadSaleList().subscribe(r => {
+  //     console.log(r);
+  //     if (r.status) {
+  //       this.vendingOnSale.length=0;
+  //       this.saleList.length=0;
+  //       this.vendingOnSale.push(...r.data);
+  //       console.log('VENDING ON SALE', this.vendingOnSale);
+  //       this.saleList.push(...this.getSaleList());
+  //     }
+  //   })
+  // }
   buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
@@ -147,10 +194,14 @@ export class Tab1Page {
         //     alert(error);
         //   }
         // );
+      } else {
+        this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
+          r.present();
+        })
       }
       this.apiService.dismissLoading();
     })
-    this.orders.length=0;
+    this.orders.length = 0;
   }
   buyManyMMoney() {
     if (!this.orders.length) alert('Please add any items first');
@@ -180,7 +231,7 @@ export class Tab1Page {
       }
       this.apiService.dismissLoading();
     });
-    this.orders.length=0;
+    this.orders.length = 0;
   }
 
   addOrder(x: IVendingMachineSale) {
@@ -216,28 +267,28 @@ export class Tab1Page {
     const t = o.reduce((a, b) => { return a + b.stock.qtty * b.stock.price }, 0);
     return { q, t };
   }
-  clearOrder() {
-    this.orders.length = 0;
-    this.getSummarizeOrder();
-  }
+  // clearOrder() {
+  //   this.orders.length = 0;
+  //   this.getSummarizeOrder();
+  // }
 
 
-  getSaleList() {
-    const x = new Array<Array<IVendingMachineSale>>();
+  // getSaleList() {
+  //   const x = new Array<Array<IVendingMachineSale>>();
 
-    this.vendingOnSale.forEach((v, i) => {
-      if (i == this.smode) {
-        x.push(this.vendingOnSale.slice(0, i));
-      } else if (!(i % this.smode)){ x.push(this.vendingOnSale.slice(i - this.smode, i))
-      }else if(i==this.vendingOnSale.length-1){
-        x.push(this.vendingOnSale.slice(this.vendingOnSale.length- this.smode))
-      }
+  //   this.vendingOnSale.forEach((v, i) => {
+  //     if (i == this.smode) {
+  //       x.push(this.vendingOnSale.slice(0, i));
+  //     } else if (!(i % this.smode)){ x.push(this.vendingOnSale.slice(i - this.smode, i))
+  //     }else if(i==this.vendingOnSale.length-1){
+  //       x.push(this.vendingOnSale.slice(this.vendingOnSale.length- this.smode))
+  //     }
 
-    })
-    // console.log('x',x);
+  //   })
+  //   // console.log('x',x);
 
-    return x;
-  }
+  //   return x;
+  // }
 
 
 }

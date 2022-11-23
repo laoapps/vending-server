@@ -766,6 +766,7 @@ export interface IVendingMachineSale extends IBase, IBC {
     machineId: string;
     stock: IStock;
     position: number;
+    max:number;
 }
 export interface IVendingMachineBill extends IBase, IBC {
     vendingsales: Array<IVendingMachineSale>;
