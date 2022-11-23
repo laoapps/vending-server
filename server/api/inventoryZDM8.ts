@@ -27,7 +27,7 @@ export class InventoryZDM8 implements IBaseClass {
     public walletId = '2599087166';// LTC
     mmoneyusername='dbk';
     mmoneypassword='ddbk@2022';
-    production =true;
+    production =false;
     
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerZDM8();;
@@ -369,7 +369,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
                 axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
-                    // console.log(r);
+                     console.log(r);
                     if (r.status) {
                         this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
                         this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT' + this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(), 'milliseconds') + '';

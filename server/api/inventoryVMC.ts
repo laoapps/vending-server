@@ -26,7 +26,7 @@ export class InventoryVMC implements IBaseClass {
     public walletId = '2443128596';// TPLUS
     mmoneyusername='dbk';
     mmoneypassword='dbk@2022';
-    production=true;
+    production=false;
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerVMC();
         this.wss = wss;
