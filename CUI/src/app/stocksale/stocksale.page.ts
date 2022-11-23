@@ -1,8 +1,8 @@
 import { Component, Input, OnInit, Output } from '@angular/core';
+import { IonicStorageService } from '../ionic-storage.service';
 import { ApiService } from '../services/api.service';
 import { IStock, IVendingMachineSale } from '../services/syste.model';
 import { StockPage } from '../stock/stock.page';
-
 @Component({
   selector: 'app-stocksale',
   templateUrl: './stocksale.page.html',
@@ -12,7 +12,8 @@ export class StocksalePage implements OnInit {
 
   saleStock: IVendingMachineSale[];
   stock=new Array<IStock>();
-  constructor(public apiService:ApiService) {
+  constructor(public apiService:ApiService,
+   public storage: IonicStorageService) {
     this.saleStock= apiService.vendingOnSale;
     this.saleStock.map(v=>this.stock).forEach(v=>{
       if(!v.find(x=>this.stock.find(y=>y.id==x.id)))
@@ -27,6 +28,7 @@ export class StocksalePage implements OnInit {
       if(r.data){
         const x = this.saleStock.find(v=>v.position==position);
         if(x)x.stock=r.data;
+       
       }
     })
     s.present();

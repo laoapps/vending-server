@@ -6,6 +6,7 @@ import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-sca
 import { QrpayPage } from '../qrpay/qrpay.page';
 import qrlogo from 'qrcode-with-logos';
 import { StocksalePage } from '../stocksale/stocksale.page';
+import { IonicStorageService } from '../ionic-storage.service';
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
@@ -41,7 +42,7 @@ export class Tab1Page {
     public apiService: ApiService,
     platform: Platform,
     private scanner: BarcodeScanner,
-    public zone: NgZone) {
+    public storage: IonicStorageService) {
     // alert('V1_'+this.mmLogo);      
 
     // ref.detach();
@@ -86,21 +87,30 @@ export class Tab1Page {
     this.apiService.initDemo().subscribe(r => {
       console.log(r);
       if (r.status) {
-        const sale = localStorage.getItem('sale') ? JSON.parse(localStorage.getItem('sale')) as Array<IVendingMachineSale> : [] as Array<IVendingMachineSale>;
-        const saley = r.data as Array<IVendingMachineSale>;
-        saley.forEach(v => {
-          const x = sale.find(x => x.stock.id == v.id);
-          if (x) {
-            v.stock.qtty = x.stock?.qtty || 0;
-            v.stock.price = x.stock?.price || 0;
-          } else {
-            v.stock.qtty = 0;
-            v.stock.price = 0;
-          }
+        this.storage.get('saleStock','stock').then(s=>{
+          console.log('storage',s);
+          const storage = JSON.parse(s)?.v as Array<IVendingMachineSale>
+          const sale = storage ? storage  : [] as Array<IVendingMachineSale>;
+          const saley = r.data as Array<IVendingMachineSale>;
+          console.log('storage',storage);
+          saley.forEach(v => {
+            const x = sale.find(x => x.stock.id == v.id);
+            if (x) {
+              v.stock.qtty = x.stock?.qtty || 0;
+              // v.stock.price = x.stock?.price || 0;
+            } else {
+              v.stock.qtty = 0;
+              // v.stock.price = 0;
+            }
+          })
+          this.vendingOnSale.push(...saley);
+          this.saleList.push(...this.getSaleList());
         })
-        this.vendingOnSale.push(...saley);
+       
 
         // window.location.reload();
+      }else{
+        alert(r.message)
       }
     })
   }
@@ -124,13 +134,15 @@ export class Tab1Page {
     m.onDidDismiss().then(r => {
       r.data;
       console.log('manageStock',r.data);
-      
+      this.storage.set('saleStock',this.vendingOnSale,'stock').then(r=>{
+        console.log('SAVE',r);
+        
+      }).catch(e=>{
+        console.log('Error',e);
+      })
     })
     m.present();
 
-  }
-  saveMachineStock() {
-    localStorage.setItem('sale', JSON.stringify(this.vendingOnSale));
   }
   // loadPaidBills() {
   //   this.apiService.loadPaidBills().subscribe(r => {
@@ -273,22 +285,22 @@ export class Tab1Page {
   // }
 
 
-  // getSaleList() {
-  //   const x = new Array<Array<IVendingMachineSale>>();
+  getSaleList() {
+    const x = new Array<Array<IVendingMachineSale>>();
 
-  //   this.vendingOnSale.forEach((v, i) => {
-  //     if (i == this.smode) {
-  //       x.push(this.vendingOnSale.slice(0, i));
-  //     } else if (!(i % this.smode)){ x.push(this.vendingOnSale.slice(i - this.smode, i))
-  //     }else if(i==this.vendingOnSale.length-1){
-  //       x.push(this.vendingOnSale.slice(this.vendingOnSale.length- this.smode))
-  //     }
+    this.vendingOnSale.forEach((v, i) => {
+      if (i == this.smode) {
+        x.push(this.vendingOnSale.slice(0, i));
+      } else if (!(i % this.smode)){ x.push(this.vendingOnSale.slice(i - this.smode, i))
+      }else if(i==this.vendingOnSale.length-1){
+        x.push(this.vendingOnSale.slice(this.vendingOnSale.length- this.smode))
+      }
 
-  //   })
-  //   // console.log('x',x);
+    })
+    // console.log('x',x);
 
-  //   return x;
-  // }
+    return x;
+  }
 
 
 }

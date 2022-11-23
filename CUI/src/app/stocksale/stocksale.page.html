@@ -8,7 +8,7 @@
   <ion-grid>
     <ion-row *ngFor="let s of saleStock">
       <ion-col size="8">
-        <ion-label>{{s.position==0?s.position+1:1|number}}</ion-label>
+        <ion-label>{{s.position==0?s.position+1:s.position|number}}</ion-label>
         <img style="width:180px ;height:180px;" [src]="s.stock.image" (click)="changeStock(s.position)">
       </ion-col>
       <ion-col size="4">
@@ -18,8 +18,6 @@
        <div>
         <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
         <ion-range [ticks]="true" [snaps]="true" [min]="0" [max]="s.max" [(ngModel)]="s.stock.qtty"></ion-range>
-
-
        </div>
       </ion-col>
     </ion-row>

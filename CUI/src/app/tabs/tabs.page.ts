@@ -20,7 +20,9 @@ export class TabsPage {
       console.log(x,this.getPassword());
       
       if(this.getPassword().endsWith(x)&&x.length>=6)
-      this.api.showModal(SettingPage)
+      this.api.showModal(SettingPage).then(r=>{
+        r.present();
+      })
     }
   }
   getPassword(){
