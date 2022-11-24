@@ -24,11 +24,11 @@ export class InventoryZDM8 implements IBaseClass {
     delayTime = 3000;
     path = '/zdm8';
     production = false;
-    public phonenumber =this.production? '2058623333':'2055220199'; //LTC
-    public walletId = this.production?'2599087166':'2351106808';// LTC
+    public phonenumber = this.production ? '2058623333' : '2055220199'; //LTC
+    public walletId = this.production ? '2599087166' : '2351106808';// LTC
     mmoneyusername = 'dbk';
     mmoneypassword = 'ddbk@2022';
-   
+
 
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerZDM8();;
@@ -59,7 +59,6 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log('error confirmMMoney');
                             res.send(PrintError(d.command, e, EMessage.error));
                         })
-                        return;
                     }
                     // if (d.command == 'test') {
                     //     console.log('CB COMFIRM test', d);
@@ -164,9 +163,9 @@ export class InventoryZDM8 implements IBaseClass {
                             };
                             this.vendingBill.push(bill);
 
-                             res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
+                            res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
                         } else {
-                             res.send(PrintError(d.command, [], EMessage.notsupport));
+                            res.send(PrintError(d.command, [], EMessage.notsupport));
                         }
                     }
 
@@ -252,6 +251,18 @@ export class InventoryZDM8 implements IBaseClass {
         }
 
     }
+    confirmMMoneyOder(c: IMMoneyConfirm) {
+        return new Promise<any>((resolve, reject) => {
+            // c.wallet_ids
+            this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+                return { bill: r, transactionID: c.tranid_client };
+            }).catch(e => {
+                console.log('error confirmMMoney');
+                return e;
+            })
+        })
+
+    }
     init(machineId: string) {
         this.stock = [];
         this.vendingOnSale = [];
@@ -333,7 +344,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber: this.phonenumber ,// '2055220199',
+                        phonenumber: this.phonenumber,// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 

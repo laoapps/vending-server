@@ -66,20 +66,20 @@ const host = req.get('Host') // localhost:4000
     if (d.command == EClientCommand.confirmMMoney) {
       
       if(c.PhoneNumber== invZDM8.phonenumber&&c.wallet_ids==invVMC.walletId){
-        axios.post(server+'/zdm8',c).then(r=>{
+        invZDM8.confirmMMoneyOder(c).then(r=>{
           console.log(r.data);
-          res.send(r.data);
+          res.send(PrintSucceeded(d.command, r.data,EMessage.succeeded));
         })
       }else if(c.PhoneNumber==invVMC.phonenumber&&c.wallet_ids==invVMC.walletId){
-        axios.post(server+'/vmc',c).then(r=>{
+        invVMC.confirmMMoneyOder(c).then(r=>{
           console.log(r.data);
-          res.send(r.data);
+          res.send(PrintSucceeded(d.command, r.data,EMessage.succeeded));
         })
       }
       else if(c.PhoneNumber==invM102.phonenumber&&c.wallet_ids==invM102.walletId){
-        axios.post(server+'/m102',c).then(r=>{
+        invM102.confirmMMoneyOder(c).then(r=>{
           console.log(r.data);
-          res.send(r.data);
+          res.send(PrintSucceeded(d.command, r.data,EMessage.succeeded));
         })
       }
     }

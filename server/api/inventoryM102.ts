@@ -52,11 +52,11 @@ export class InventoryM102 implements IBaseClass {
                         const c = d.data as IMMoneyConfirm;
                         // c.wallet_ids
                         this.callBackConfirm(c.tranid_client, c.amount).then(r => {
-                            return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
+                            res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
                         }).catch(e => {
-                            return res.send(PrintError(d.command, e, EMessage.error));
+                            console.log('error confirmMMoney');
+                            res.send(PrintError(d.command, e, EMessage.error));
                         })
-                        return;
                     }
                     // if (d.command == 'test') {
                     //     console.log('CB COMFIRM test', d);
@@ -68,103 +68,103 @@ export class InventoryM102 implements IBaseClass {
                     //     })
                     //     return;
                     // }
+                    else {
+                        const clientId = d.data.clientId;
+                        let loggedin = false;
+                        // console.log(' WS client length', this.wss.clients);
 
+                        this.wss.clients.forEach(v => {
+                            console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
 
-                    const clientId = d.data.clientId;
-                    let loggedin = false;
-                    // console.log(' WS client length', this.wss.clients);
-
-                    this.wss.clients.forEach(v => {
-                        console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
-
-                        if (v['clientId'] == clientId)
-                            loggedin = true;
-                    })
-                    if (!loggedin) throw new Error(EMessage.notloggedinyet);
-
-                    else if (d.command == EClientCommand.list) {
-                        return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
-                    } else if (d.command == EClientCommand.buyMMoney) {
-                        const sale = d.data.ids as Array<IVendingMachineSale>; // item id
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        const position = d.data.position;
-                        if (!machineId) throw new Error('Invalid token');
-                        if (!Array.isArray(sale)) throw new Error('Invalid array id');
-                        // console.log('this.vendingOnSale', this.vendingOnSale);
-                        const checkIds = Array<IVendingMachineSale>();
-                        
-                        sale.forEach(v => {
-                            // v.stock.qtty=1;
-                            const x = this.vendingOnSale.find(vx => {
-                                if (
-                                    // !checkIds.length &&
-                                    vx.stock.id + '' == v.stock.id + ''&& 
-                                    vx.position == v.position
-                                    // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                    // && vx.stock.qtty > 0
-                                    ) {
-                                    return true;
-                                }
-                                // else if (vx.stock.qtty > 0
-                                //     && vx.stock.id + '' == v.stock.id + ''
-                                //     && vx.position == v.position
-                                //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                //     // && vx.stock.qtty > 0
-                                //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
-                                //     //     return a + b.stock.qtty;
-                                //     // }, 0) <= vx.stock.qtty
-                                //     ) {
-                                //     return true;
-                                // }
-                                return false;
-                            });
-                            if (x) {
-                                const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-                                y.stock.qtty = 1;
-                                checkIds.push(y);
-                            }
-
-                            // return false;
+                            if (v['clientId'] == clientId)
+                                loggedin = true;
                         })
+                        if (!loggedin) throw new Error(EMessage.notloggedinyet);
 
-                        console.log('checkIds', checkIds, 'ids', sale);
+                        else if (d.command == EClientCommand.list) {
+                            return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
+                        } else if (d.command == EClientCommand.buyMMoney) {
+                            const sale = d.data.ids as Array<IVendingMachineSale>; // item id
+                            const machineId = this.ssocket.findMachineIdToken(d.token);
+                            // const position = d.data.position;
+                            if (!machineId) throw new Error('Invalid token');
+                            if (!Array.isArray(sale)) throw new Error('Invalid array id');
+                            // console.log('this.vendingOnSale', this.vendingOnSale);
+                            const checkIds = Array<IVendingMachineSale>();
 
-                        if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
+                            sale.forEach(v => {
+                                // v.stock.qtty=1;
+                                const x = this.vendingOnSale.find(vx => {
+                                    if (
+                                        // !checkIds.length &&
+                                        vx.stock.id + '' == v.stock.id + '' &&
+                                        vx.position == v.position
+                                        // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                        // && vx.stock.qtty > 0
+                                    ) {
+                                        return true;
+                                    }
+                                    // else if (vx.stock.qtty > 0
+                                    //     && vx.stock.id + '' == v.stock.id + ''
+                                    //     && vx.position == v.position
+                                    //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                    //     // && vx.stock.qtty > 0
+                                    //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
+                                    //     //     return a + b.stock.qtty;
+                                    //     // }, 0) <= vx.stock.qtty
+                                    //     ) {
+                                    //     return true;
+                                    // }
+                                    return false;
+                                });
+                                if (x) {
+                                    const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+                                    y.stock.qtty = 1;
+                                    checkIds.push(y);
+                                }
 
-                        const value = checkIds.reduce((a, b) => {
-                            return a + (b.stock.price * b.stock.qtty);
-                        }, 0);
-                        // console.log('qtty', checkIds);
-                        console.log('ids', sale.length);
+                                // return false;
+                            })
 
-                        console.log(' value' + d.data.value + ' ' + value);
+                            // console.log('checkIds', checkIds, 'ids', sale);
 
-                        if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
+                            // if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
 
-                        const transactionID = new Date().getTime();
-                        const qr = await this.generateBillMMoney(value, transactionID + '');
-                        if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
-                        const bill = {
-                            uuid: uuid4(),
-                            clientId,
-                            qr: qr.qrCode,
-                            transactionID,
-                            machineId: machineId.machineId,
-                            hashM: '',
-                            hashP: '',
-                            paymentmethod: d.command,
-                            paymentref: qr.name,
-                            paymentstatus: 'pending',
-                            paymenttime: new Date(),
-                            requestpaymenttime: new Date(),
-                            totalvalue: value,
-                            vendingsales: sale
-                        };
-                        this.vendingBill.push(bill);
+                            const value = checkIds.reduce((a, b) => {
+                                return a + (b.stock.price * b.stock.qtty);
+                            }, 0);
+                            // console.log('qtty', checkIds);
+                            // console.log('ids', sale.length);
 
-                        return res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
-                    } else {
-                        return res.send(PrintError(d.command, [], EMessage.notsupport));
+                            console.log(' value' + d.data.value + ' ' + value);
+
+                            if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
+
+                            const transactionID = new Date().getTime();
+                            const qr = await this.generateBillMMoney(value, transactionID + '');
+                            if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
+                            const bill = {
+                                uuid: uuid4(),
+                                clientId,
+                                qr: qr.qrCode,
+                                transactionID,
+                                machineId: machineId.machineId,
+                                hashM: '',
+                                hashP: '',
+                                paymentmethod: d.command,
+                                paymentref: qr.name,
+                                paymentstatus: 'pending',
+                                paymenttime: new Date(),
+                                requestpaymenttime: new Date(),
+                                totalvalue: value,
+                                vendingsales: sale
+                            };
+                            this.vendingBill.push(bill);
+
+                             res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
+                        } else {
+                             res.send(PrintError(d.command, [], EMessage.notsupport));
+                        }
                     }
                 } catch (error) {
                     console.log(error);
@@ -245,6 +245,19 @@ export class InventoryM102 implements IBaseClass {
             console.log(error);
 
         }
+
+    }
+
+    confirmMMoneyOder(c: IMMoneyConfirm) {
+        return new Promise<any>((resolve, reject) => {
+            // c.wallet_ids
+            this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+                return { bill: r, transactionID: c.tranid_client };
+            }).catch(e => {
+                console.log('error confirmMMoney');
+                return e;
+            })
+        })
 
     }
     init(machineId: string) {
