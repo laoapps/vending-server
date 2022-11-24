@@ -23,11 +23,12 @@ export class InventoryZDM8 implements IBaseClass {
 
     delayTime = 3000;
     path = '/zdm8';
-    public phonenumber = '2058623333'; //LTC
-    public walletId = '2599087166';// LTC
+    production = false;
+    public phonenumber =this.production? '2058623333':'2055220199'; //LTC
+    public walletId = this.production?'2599087166':'2351106808';// LTC
     mmoneyusername = 'dbk';
     mmoneypassword = 'ddbk@2022';
-    production = false;
+   
 
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerZDM8();;
@@ -332,7 +333,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber: this.production ? this.phonenumber : '2055220199',// '2055220199',
+                        phonenumber: this.phonenumber ,// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 

@@ -22,11 +22,12 @@ export class InventoryM102 implements IBaseClass {
     clients = new Array<IMachineID>();
     delayTime =7000;
     path='/m102';
-    public phonenumber =''; //
-    public walletId = '';// 
+    production=false;
+    public phonenumber =this.production? '2058623333':'2055220199'; //LTC
+    public walletId = this.production?'':'2351106808';// 
     mmoneyusername='dbk';
     mmoneypassword='dbk@2022';
-    production=false;
+   
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerM102();
         this.wss = wss;

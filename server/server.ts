@@ -64,7 +64,8 @@ const host = req.get('Host') // localhost:4000
     console.log('POST Data', d);
     const c = d.data as IMMoneyConfirm;
     if (d.command == EClientCommand.confirmMMoney) {
-      if(c.PhoneNumber==invZDM8.phonenumber&&c.wallet_ids==invVMC.walletId){
+      
+      if(c.PhoneNumber== invZDM8.phonenumber&&c.wallet_ids==invVMC.walletId){
         axios.post(server+'/zdm8',c).then(r=>{
           console.log(r.data);
           res.send(r.data);

@@ -22,11 +22,12 @@ export class InventoryVMC implements IBaseClass {
     clients = new Array<IMachineID>();
     delayTime = 3000;
     path='/vmc';
-    public phonenumber ='2054452222'; //TPLUS
-    public walletId = '2443128596';// TPLUS
+    production=false;
+    public phonenumber =this.production? '2054452222':'2055220199'; //TPLUS
+    public walletId = this.production?'2443128596':'2351106808';// TPLUS
     mmoneyusername='dbk';
     mmoneypassword='dbk@2022';
-    production=false;
+  
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerVMC();
         this.wss = wss;
