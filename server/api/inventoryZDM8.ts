@@ -21,14 +21,14 @@ export class InventoryZDM8 implements IBaseClass {
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
 
-    delayTime =3000;
-    path='/zdm8';
-    public phonenumber ='2058623333'; //LTC
+    delayTime = 3000;
+    path = '/zdm8';
+    public phonenumber = '2058623333'; //LTC
     public walletId = '2599087166';// LTC
-    mmoneyusername='dbk';
-    mmoneypassword='ddbk@2022';
-    production =false;
-    
+    mmoneyusername = 'dbk';
+    mmoneypassword = 'ddbk@2022';
+    production = false;
+
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerZDM8();;
         this.wss = wss;
@@ -36,11 +36,11 @@ export class InventoryZDM8 implements IBaseClass {
         try {
 
 
-            router.get(this.path+'/', async (req, res) => {
+            router.get(this.path + '/', async (req, res) => {
                 console.log('TEST IS WORKING');
-                res.send({data:'test is working'})
+                res.send({ data: 'test is working' })
             });
-            router.post(this.path+'/', async (req, res) => {
+            router.post(this.path + '/', async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
                     console.log('POST Data', d);
@@ -53,9 +53,10 @@ export class InventoryZDM8 implements IBaseClass {
                         const c = d.data as IMMoneyConfirm;
                         // c.wallet_ids
                         this.callBackConfirm(c.tranid_client, c.amount).then(r => {
-                            return res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
+                            res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
                         }).catch(e => {
-                            return res.send(PrintError(d.command, e, EMessage.error));
+                            console.log('error confirmMMoney');
+                            res.send(PrintError(d.command, e, EMessage.error));
                         })
                         return;
                     }
@@ -69,104 +70,106 @@ export class InventoryZDM8 implements IBaseClass {
                     //     })
                     //     return;
                     // }
+                    else {
+                        const clientId = d.data.clientId;
+                        let loggedin = false;
+                        // console.log(' WS client length', this.wss.clients);
 
+                        this.wss.clients.forEach(v => {
+                            console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
 
-                    const clientId = d.data.clientId;
-                    let loggedin = false;
-                    // console.log(' WS client length', this.wss.clients);
-
-                    this.wss.clients.forEach(v => {
-                        console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
-
-                        if (v['clientId'] == clientId)
-                            loggedin = true;
-                    })
-                    if (!loggedin) throw new Error(EMessage.notloggedinyet);
-
-                    else if (d.command == EClientCommand.list) {
-                        return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
-                    } else if (d.command == EClientCommand.buyMMoney) {
-                        const sale = d.data.ids as Array<IVendingMachineSale>; // item id
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        // const position = d.data.position;
-                        if (!machineId) throw new Error('Invalid token');
-                        if (!Array.isArray(sale)) throw new Error('Invalid array id');
-                        // console.log('this.vendingOnSale', this.vendingOnSale);
-                        const checkIds = Array<IVendingMachineSale>();
-                        
-                        sale.forEach(v => {
-                            // v.stock.qtty=1;
-                            const x = this.vendingOnSale.find(vx => {
-                                if (
-                                    // !checkIds.length &&
-                                    vx.stock.id + '' == v.stock.id + ''&& 
-                                    vx.position == v.position
-                                    // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                    // && vx.stock.qtty > 0
-                                    ) {
-                                    return true;
-                                }
-                                // else if (vx.stock.qtty > 0
-                                //     && vx.stock.id + '' == v.stock.id + ''
-                                //     && vx.position == v.position
-                                //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                //     // && vx.stock.qtty > 0
-                                //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
-                                //     //     return a + b.stock.qtty;
-                                //     // }, 0) <= vx.stock.qtty
-                                //     ) {
-                                //     return true;
-                                // }
-                                return false;
-                            });
-                            if (x) {
-                                const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-                                y.stock.qtty = 1;
-                                checkIds.push(y);
-                            }
-
-                            // return false;
+                            if (v['clientId'] == clientId)
+                                loggedin = true;
                         })
+                        if (!loggedin) throw new Error(EMessage.notloggedinyet);
 
-                        // console.log('checkIds', checkIds, 'ids', sale);
+                        else if (d.command == EClientCommand.list) {
+                            return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
+                        } else if (d.command == EClientCommand.buyMMoney) {
+                            const sale = d.data.ids as Array<IVendingMachineSale>; // item id
+                            const machineId = this.ssocket.findMachineIdToken(d.token);
+                            // const position = d.data.position;
+                            if (!machineId) throw new Error('Invalid token');
+                            if (!Array.isArray(sale)) throw new Error('Invalid array id');
+                            // console.log('this.vendingOnSale', this.vendingOnSale);
+                            const checkIds = Array<IVendingMachineSale>();
 
-                        // if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
+                            sale.forEach(v => {
+                                // v.stock.qtty=1;
+                                const x = this.vendingOnSale.find(vx => {
+                                    if (
+                                        // !checkIds.length &&
+                                        vx.stock.id + '' == v.stock.id + '' &&
+                                        vx.position == v.position
+                                        // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                        // && vx.stock.qtty > 0
+                                    ) {
+                                        return true;
+                                    }
+                                    // else if (vx.stock.qtty > 0
+                                    //     && vx.stock.id + '' == v.stock.id + ''
+                                    //     && vx.position == v.position
+                                    //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                    //     // && vx.stock.qtty > 0
+                                    //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
+                                    //     //     return a + b.stock.qtty;
+                                    //     // }, 0) <= vx.stock.qtty
+                                    //     ) {
+                                    //     return true;
+                                    // }
+                                    return false;
+                                });
+                                if (x) {
+                                    const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+                                    y.stock.qtty = 1;
+                                    checkIds.push(y);
+                                }
 
-                        const value = checkIds.reduce((a, b) => {
-                            return a + (b.stock.price * b.stock.qtty);
-                        }, 0);
-                        // console.log('qtty', checkIds);
-                        // console.log('ids', sale.length);
+                                // return false;
+                            })
 
-                        console.log(' value' + d.data.value + ' ' + value);
+                            // console.log('checkIds', checkIds, 'ids', sale);
 
-                        if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
+                            // if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
 
-                        const transactionID = new Date().getTime();
-                        const qr = await this.generateBillMMoney(value, transactionID + '');
-                        if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
-                        const bill = {
-                            uuid: uuid4(),
-                            clientId,
-                            qr: qr.qrCode,
-                            transactionID,
-                            machineId: machineId.machineId,
-                            hashM: '',
-                            hashP: '',
-                            paymentmethod: d.command,
-                            paymentref: qr.name,
-                            paymentstatus: 'pending',
-                            paymenttime: new Date(),
-                            requestpaymenttime: new Date(),
-                            totalvalue: value,
-                            vendingsales: sale
-                        };
-                        this.vendingBill.push(bill);
+                            const value = checkIds.reduce((a, b) => {
+                                return a + (b.stock.price * b.stock.qtty);
+                            }, 0);
+                            // console.log('qtty', checkIds);
+                            // console.log('ids', sale.length);
 
-                        return res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
-                    } else {
-                        return res.send(PrintError(d.command, [], EMessage.notsupport));
+                            console.log(' value' + d.data.value + ' ' + value);
+
+                            if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
+
+                            const transactionID = new Date().getTime();
+                            const qr = await this.generateBillMMoney(value, transactionID + '');
+                            if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
+                            const bill = {
+                                uuid: uuid4(),
+                                clientId,
+                                qr: qr.qrCode,
+                                transactionID,
+                                machineId: machineId.machineId,
+                                hashM: '',
+                                hashP: '',
+                                paymentmethod: d.command,
+                                paymentref: qr.name,
+                                paymentstatus: 'pending',
+                                paymenttime: new Date(),
+                                requestpaymenttime: new Date(),
+                                totalvalue: value,
+                                vendingsales: sale
+                            };
+                            this.vendingBill.push(bill);
+
+                             res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
+                        } else {
+                             res.send(PrintError(d.command, [], EMessage.notsupport));
+                        }
                     }
+
+
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError(d.command, error, EMessage.error));
@@ -177,7 +180,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             /// 0. init for demo 
 
-            router.get(this.path+'/init', async (req, res) => {
+            router.get(this.path + '/init', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];
                     if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline)
@@ -189,11 +192,11 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get(this.path+'/refresh', async (req, res) => {
+            router.get(this.path + '/refresh', async (req, res) => {
                 try {
-                    this.wss.clients.forEach(v=>{
-                        if(v.OPEN){
-                            v.send(JSON.stringify(PrintSucceeded('refresh',true , EMessage.succeeded)));
+                    this.wss.clients.forEach(v => {
+                        if (v.OPEN) {
+                            v.send(JSON.stringify(PrintSucceeded('refresh', true, EMessage.succeeded)));
                         }
                     })
 
@@ -203,7 +206,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get(this.path+'/getPaidBills', async (req, res) => {
+            router.get(this.path + '/getPaidBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
                 } catch (error) {
@@ -211,7 +214,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get(this.path+'/getBills', async (req, res) => {
+            router.get(this.path + '/getBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
                 } catch (error) {
@@ -219,7 +222,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get(this.path+'/getOnlineMachines', async (req, res) => {
+            router.get(this.path + '/getOnlineMachines', async (req, res) => {
                 try {
                     console.log(' WS getOnlineMachines');
                     res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
@@ -230,7 +233,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
 
-            router.get(this.path+'/submit_command', async (req, res) => {
+            router.get(this.path + '/submit_command', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'] + '';
                     const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
@@ -303,19 +306,19 @@ export class InventoryZDM8 implements IBaseClass {
             );
             let x = 5;
             let y = 0;
-            const exception =new Array<number>();
+            const exception = new Array<number>();
             new Array(60).fill(0).forEach((v, i) => {
                 const c = x > i ? i : (i - (x * y) - 1);
                 !(i % x) && i >= x ? y++ : '';
-                if(!exception.includes(i))
-                this.vendingOnSale.push({
-                    machineId,
-                    stock: this.stock[c],
-                    position: i, // for ZDM8 only
-                    hashP: '',
-                    hashM: '',
-                    max:5
-                })
+                if (!exception.includes(i))
+                    this.vendingOnSale.push({
+                        machineId,
+                        stock: this.stock[c],
+                        position: i, // for ZDM8 only
+                        hashP: '',
+                        hashM: '',
+                        max: 5
+                    })
             });
         } catch (error) {
             console.log(error);
@@ -329,14 +332,14 @@ export class InventoryZDM8 implements IBaseClass {
                 if (r) {
                     const qr = {
                         amount: value,
-                        phonenumber:this.production? this.phonenumber:'2055220199',// '2055220199',
+                        phonenumber: this.production ? this.phonenumber : '2055220199',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
                     axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
                         qr,
                         { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(rx => {
-                             console.log('generateBillMMoney',rx);
+                            console.log('generateBillMMoney', rx);
                             if (rx.status) {
                                 resolve(rx.data as IMMoneyGenerateQRRes);
                             } else {
@@ -359,8 +362,8 @@ export class InventoryZDM8 implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = this.production?this.mmoneyusername:'test';
-        const password = this.production?this.mmoneypassword:'12345';
+        const username = this.production ? this.mmoneyusername : 'test';
+        const password = this.production ? this.mmoneypassword : '12345';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
@@ -369,7 +372,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
                 axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
-                     console.log(r);
+                    console.log(r);
                     if (r.status) {
                         this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
                         this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT' + this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(), 'milliseconds') + '';
@@ -424,27 +427,27 @@ export class InventoryZDM8 implements IBaseClass {
 
                 const cbill = bill.vendingsales.length;
                 bill.vendingsales.forEach((p, i) => {
-                    let x ='';
-                    let y :WebSocketServer.WebSocket=null as any;
+                    let x = '';
+                    let y: WebSocketServer.WebSocket = null as any;
                     this.wss.clients.forEach(v => {
-                         x = v['clientId'] as string;
-                         if (x) {
+                        x = v['clientId'] as string;
+                        if (x) {
                             if (x == bill.clientId) {
-                               y=v;
+                                y = v;
                             }
                         }
                     })
-                   if(y){
-                    this.setTask(bill,p,y,cbill,i).then(()=>{
-                        if(i==bill.vendingsales.length-1){
-                            resolve(bill);
-                        }
-                    })
-                  
-                   }
+                    if (y) {
+                        this.setTask(bill, p, y, cbill, i).then(() => {
+                            if (i == bill.vendingsales.length - 1) {
+                                resolve(bill);
+                            }
+                        })
+
+                    }
                 })
-                
-                
+
+
             } catch (error) {
                 console.log(error);
                 reject(error);
@@ -453,8 +456,8 @@ export class InventoryZDM8 implements IBaseClass {
         })
 
     }
-    setTask(bill:IVendingMachineBill,p:IVendingMachineSale,y:WebSocketServer.WebSocket,cbill:number,i:number){
-        return new Promise<any>((resolve,reject)=>{
+    setTask(bill: IVendingMachineBill, p: IVendingMachineSale, y: WebSocketServer.WebSocket, cbill: number, i: number) {
+        return new Promise<any>((resolve, reject) => {
             setTimeout(() => {
                 const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
                 const res = {} as IResModel;
@@ -481,7 +484,7 @@ export class InventoryZDM8 implements IBaseClass {
             }, this.delayTime * i);
             resolve(true);
         })
-       
+
     }
     checkMachineId(machineId: string): IMachineClientID | null {
         const x = this.ssocket.sclients.find(v => {
@@ -497,12 +500,12 @@ export class InventoryZDM8 implements IBaseClass {
     }
     initWs(wss: WebSocketServer.Server) {
         try {
-           
+
             setWsHeartbeat(wss, (ws, data, binary) => {
                 console.log('WS HEART BEAT');
 
                 if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping',production:this.production }, EMessage.succeeded)));
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping', production: this.production }, EMessage.succeeded)));
                 }
             }, 15000);
 
@@ -572,12 +575,12 @@ export class InventoryZDM8 implements IBaseClass {
 
         }
     }
-    close(){
+    close() {
         this.wss.close();
         this.ssocket.server.close();
         this.ssocket.sclients.forEach(v => {
             v.destroy();
-          });
+        });
     }
 }
 
