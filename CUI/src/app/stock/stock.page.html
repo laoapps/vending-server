@@ -12,7 +12,7 @@
   <ion-list>
     <ion-item *ngFor="let s of stock">
         <ion-item-divider>  
-        <ion-label><img style="width:360px ;height:360px;" [src]="s.image" (click)="select(s.id)"></ion-label>  
+        <ion-label><img style="width:360px ;height:360px;" [src]="this.url+'/public/'+s.image" (click)="select(s.id)"></ion-label>  
         <ion-label> {{s.name}}</ion-label>
         <ion-label> {{s.price}}</ion-label>
       </ion-item-divider> 

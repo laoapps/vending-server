@@ -11,9 +11,11 @@ export class TabsPage {
 
   constructor(public api:ApiService) {}
   count =6;
-  machineuuid=uuid.v4();
-
+  machineuuid=this.api.machineuuid;
+  t:any;
   showSetting(){
+   
+  
     if(--this.count<=0){
       this.count=6;
       const x =prompt('password');
@@ -23,6 +25,18 @@ export class TabsPage {
       this.api.showModal(SettingPage).then(r=>{
         r.present();
       })
+      if(this.t)clearTimeout(this.t);
+    }else{
+      if(!this.t){
+        this.t= setTimeout(() => {
+          this.count=6; 
+          console.log('re count');
+          if(this.t){
+            clearTimeout(this.t);
+            this.t =null
+          }
+        }, 3000);
+      }
     }
   }
   getPassword(){

@@ -7,7 +7,7 @@ import { ExploreContainerComponentModule } from '../explore-container/explore-co
 
 import { Tab1PageRoutingModule } from './tab1-routing.module';
 import { NotifierModule } from 'angular-notifier';
-
+import { OrderModule } from 'ngx-order-pipe';
 @NgModule({
   imports: [
     IonicModule,
@@ -15,7 +15,7 @@ import { NotifierModule } from 'angular-notifier';
     FormsModule,
     ExploreContainerComponentModule,
     Tab1PageRoutingModule,
-    NotifierModule
+    NotifierModule,OrderModule
   ],
   declarations: [Tab1Page]
 })

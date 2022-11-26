@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { ApiService } from '../services/api.service';
 import { IStock, IVendingMachineSale } from '../services/syste.model';
 
@@ -8,19 +9,24 @@ import { IStock, IVendingMachineSale } from '../services/syste.model';
   styleUrls: ['./stock.page.scss'],
 })
 export class StockPage implements OnInit {
- 
-  @Input()stock: Array<IStock>=[];
-  selectedItem:IStock;
-  constructor(public apiService:ApiService) {
-   }
 
-   select(id:number){
-    this.selectedItem = this.stock.find(v=>v.id==id);
-   }
-   close(){
-    if(!this.selectedItem) alert('Selecte on item please!');
-   this.apiService.dismissModal(this.selectedItem)
-   }
+  @Input() stock: Array<IStock> = [];
+  @Input() selectedItem: IStock;
+  url =this.apiService.url;
+  constructor(public apiService: ApiService) {
+
+  }
+
+  select(id: number) {
+    this.selectedItem = this.stock.find(v => v.id == id);
+    console.log(this.selectedItem);
+    this.apiService.dismissModal(this.selectedItem)
+  }
+  close() {
+    if (!this.selectedItem) return alert('Selecte on item please!');
+    console.log(this.selectedItem);
+    this.apiService.dismissModal(this.selectedItem)
+  }
   ngOnInit() {
   }
 
