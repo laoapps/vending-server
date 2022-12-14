@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
+
 @Injectable({
   providedIn: 'root'
 })
-export class IonicStorageService {
+export class IonicstorageService {
   dbStorage:Storage;
   constructor(private storage: Storage ) { 
     this.init()
@@ -14,36 +15,16 @@ export class IonicStorageService {
     this.dbStorage = storage;
   }
   set(k:string,v:any,dbname=''){
-    return new Promise<any>((resolve,reject)=>{
-      this.dbStorage.set(dbname+k,JSON.stringify({v,d:new Date()})).then(r=>{
-        resolve(r);
-      }).catch(e=>{
-        reject(e)
-      });
-    });
-    
+    return this.dbStorage.set(dbname+k,JSON.stringify({v,d:new Date()}));
   }
 
 
   setWithdate(k:string,v:any,d:Date){
-    return new Promise<any>((resolve,reject)=>{
-      this.dbStorage.set(k,JSON.stringify({v,d})).then(r=>{
-        resolve(r);
-      }).catch(e=>{
-        reject(e)
-      });
-    })
-  
+    return this.dbStorage.set(k,JSON.stringify({v,d}));
   }
 
   get(k:string,dbname=''){
-    return new Promise<{v:any,d:Date}>((resolve,reject)=>{
-      this.dbStorage.get(dbname+k).then(r=>{
-        resolve(JSON.parse(r) as {v:any,d:Date});
-      }).catch(e=>{
-        reject(e);
-      })
-    })
+    return this.dbStorage.get(dbname+k);
   }
   async sharding(k:string,v:any,dbname=''){
     let x =await this.dbStorage.get(dbname+k);

@@ -8,10 +8,12 @@ import { AlertController, LoadingController, ModalController, ToastController } 
 import { NotifierService } from 'angular-notifier';
 import * as moment from 'moment';
 import { IonicStorageService } from '../ionic-storage.service';
+import * as uuid from 'uuid';
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+  machineuuid=uuid.v4()
   url = localStorage.getItem('url') || environment.url;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   currentPaymentProvider = EPaymentProvider.mmoney;
@@ -131,17 +133,17 @@ export class ApiService {
   }
   async showModal(component: any, d: any = {}) {
     try {
-      let x = '{';
-      const l = Object.keys(d).length;
-      if (!l) {
-        Object.keys(d).forEach((v, i) => {
-          i < l ?
-            x += '"' + v + '":"' + d[v] + '",' : x += '"' + v + '":"' + d[v] + '"';
-        });
-      }
-      x += '}';
-      const data = JSON.parse(x);
-      return await this.modal.create({ component, componentProps: data });
+      // let x = '{';
+      // const l = Object.keys(d).length;
+      // if (!l) {
+      //   Object.keys(d).forEach((v, i) => {
+      //     i < l ?
+      //       x += '"' + v + '":"' + d[v] + '",' : x += '"' + v + '":"' + d[v] + '"';
+      //   });
+      // }
+      // x += '}';
+      // const data = JSON.parse(x);
+      return await this.modal.create({ component, componentProps: d });
     } catch (error) {
       console.log('ERROR', error);
       this.toast.create({ message: 'Error' }).then(r => {

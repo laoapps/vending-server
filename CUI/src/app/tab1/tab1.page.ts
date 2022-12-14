@@ -7,6 +7,9 @@ import { QrpayPage } from '../qrpay/qrpay.page';
 import qrlogo from 'qrcode-with-logos';
 import { StocksalePage } from '../stocksale/stocksale.page';
 import { IonicStorageService } from '../ionic-storage.service';
+import { CachingService } from '../services/caching.service';
+import { environment } from 'src/environments/environment';
+import { ShowcartPage } from '../showcart/showcart.page';
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
@@ -26,7 +29,7 @@ export class Tab1Page {
 
   machineId = {} as IMachineId;
 
-  url = 'http://localhost:9009'
+  url = environment.url;
   orders = new Array<IVendingMachineSale>();
   swidth = 0;
   sheight = 0;
@@ -35,20 +38,22 @@ export class Tab1Page {
   summarizeOrder = new Array<IVendingMachineSale>();
   getTotalSale = { q: 0, t: 0 };
 
-  saleList = new Array<Array<IVendingMachineSale>>();
+  saleList = new Array<IVendingMachineSale>();
   timeoutHandler: any;
   count: any;
+  compensation = 0;
   constructor(private ref: ChangeDetectorRef,
     public apiService: ApiService,
     platform: Platform,
     private scanner: BarcodeScanner,
-    public storage: IonicStorageService) {
+    public storage: IonicStorageService,
+    public appCaching: CachingService) {
     // alert('V1_'+this.mmLogo);      
 
     // ref.detach();
     // this.zone.runOutsideAngular(()=>{
     this.machineId = this.apiService.machineId;
-    this.url = this.apiService.url
+    this.url = this.apiService.url;
     this.initDemo();
 
     platform.ready().then(() => {
@@ -87,29 +92,37 @@ export class Tab1Page {
     this.apiService.initDemo().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.storage.get('saleStock','stock').then(s=>{
-          console.log('storage',s);
-          const storage = JSON.parse(s)?.v as Array<IVendingMachineSale>
-          const sale = storage ? storage  : [] as Array<IVendingMachineSale>;
+        this.storage.get('saleStock', 'stock').then(s => {
+          const storage = s.v as Array<IVendingMachineSale>
+          const sale = storage ? storage : [] as Array<IVendingMachineSale>;
           const saley = r.data as Array<IVendingMachineSale>;
-          console.log('storage',storage);
-          saley.forEach(v => {
-            const x = sale.find(x => x.stock.id == v.id);
-            if (x) {
-              v.stock.qtty = x.stock?.qtty || 0;
-              // v.stock.price = x.stock?.price || 0;
-            } else {
-              v.stock.qtty = 0;
-              // v.stock.price = 0;
-            }
+
+          const arrdel = [];
+          const arrnew = [];
+          sale.forEach(v => {
+            saley.forEach(x =>
+              !sale.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '')
+
+            sale.forEach(v =>
+              !saley.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '')
           })
-          this.vendingOnSale.push(...saley);
-          this.saleList.push(...this.getSaleList());
+
+          if (arrnew.length)
+            sale.push(...arrnew);
+          if (arrdel.length)
+            arrdel.forEach((v) => {
+              const i = sale.findIndex(vx => vx.stock.id == v.stock.id);
+              sale.splice(i, 1);
+            })
+
+          this.vendingOnSale.push(...sale);
+          this.saleList.push(...this.vendingOnSale);
+          if (this.vendingOnSale[0].position == 0) this.compensation = 1;
         })
-       
+
 
         // window.location.reload();
-      }else{
+      } else {
         alert(r.message)
       }
     })
@@ -130,16 +143,25 @@ export class Tab1Page {
     }, 1000);
   }
   async manageStock() {
+    const x = prompt('password');
+    console.log(x, this.getPassword());
+
+    // if (!this.getPassword().endsWith(x) || x.length < 6) return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then(r => {
       r.data;
-      console.log('manageStock',r.data);
-      this.storage.set('saleStock',this.vendingOnSale,'stock').then(r=>{
-        console.log('SAVE',r);
-        
-      }).catch(e=>{
-        console.log('Error',e);
-      })
+      console.log('manageStock', r.data);
+      if (r.data) {
+        this.storage.set('saleStock', this.vendingOnSale, 'stock').then(r => {
+          console.log('SAVE saleStock', r);
+        }).catch(e => {
+          console.log('Error', e);
+        })
+      } else {
+        console.log('Canceled');
+
+      }
+      // window.location.reload();
     })
     m.present();
 
@@ -213,13 +235,15 @@ export class Tab1Page {
       }
       this.apiService.dismissLoading();
     })
-    this.orders.length = 0;
+    this.orders=[];
+    this.summarizeOrder=[];
   }
   buyManyMMoney() {
-    if (!this.orders.length) alert('Please add any items first');
+    if (!this.orders.length) return alert('Please add any items first');
     const amount = this.orders.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
-    console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
+    // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
     this.apiService.showLoading();
+    console.log(this.orders,amount);
     this.apiService.buyMMoney(this.orders, amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
@@ -243,20 +267,36 @@ export class Tab1Page {
       }
       this.apiService.dismissLoading();
     });
-    this.orders.length = 0;
+    this.orders=[];
+    this.summarizeOrder=[];
   }
 
   addOrder(x: IVendingMachineSale) {
     // this.zone.runOutsideAngular(() => {
+    // const ord = this.orders.find(v=>v.stock.id==x.stock.id);
+    if (this.orders.find(v => v.position == x.position)) {
+      const mx = x.max;
+      const summ = this.getSummarizeOrder();
+      const re = summ.find(v => (v.stock.qtty + 1) > mx && v.position == x.position);
+      console.log(summ, mx, re);
+      if (re)
+        return alert('Out of Stock 1');
+    }
+    if (x.stock.qtty < 1) return alert('Out of Stock 2');
     console.log('ID', x);
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
+    this.apiService.showLoading();
     const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
     y.stock.qtty = 1;
     console.log('y', y);
 
     this.orders.push(y);
     this.getSummarizeOrder();
+    setTimeout(() => {
+      this.apiService.dismissLoading();
+    }, 1500);
+
     // });
   }
   getSummarizeOrder() {
@@ -272,6 +312,7 @@ export class Tab1Page {
     Object.keys(this.getTotalSale).forEach(k => {
       this.getTotalSale[k] = t[k];
     })
+    return this.summarizeOrder;
   }
   getTotal() {
     const o = this.summarizeOrder;
@@ -291,9 +332,10 @@ export class Tab1Page {
     this.vendingOnSale.forEach((v, i) => {
       if (i == this.smode) {
         x.push(this.vendingOnSale.slice(0, i));
-      } else if (!(i % this.smode)){ x.push(this.vendingOnSale.slice(i - this.smode, i))
-      }else if(i==this.vendingOnSale.length-1){
-        x.push(this.vendingOnSale.slice(this.vendingOnSale.length- this.smode))
+      } else if (!(i % this.smode)) {
+        x.push(this.vendingOnSale.slice(i - this.smode, i))
+      } else if (i == this.vendingOnSale.length - 1) {
+        x.push(this.vendingOnSale.slice(this.vendingOnSale.length - this.smode))
       }
 
     })
@@ -301,6 +343,19 @@ export class Tab1Page {
 
     return x;
   }
-
-
+  handleRefresh(ev: any) {
+    this.refresh();
+  }
+  showCart() {
+    this.apiService.showModal(ShowcartPage, { orders: this.orders, compensation: this.compensation }).then(r => {
+      r.present();
+    })
+  }
+  getPassword() {
+    let x = '';
+    this.apiService.machineuuid.split('').forEach(v => {
+      !Number.isNaN(Number.parseInt(v)) ? x += v : '';
+    })
+    return x;
+  }
 }

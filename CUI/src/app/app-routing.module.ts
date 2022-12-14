@@ -25,6 +25,10 @@ const routes: Routes = [
   {
     path: 'stocksale',
     loadChildren: () => import('./stocksale/stocksale.module').then( m => m.StocksalePageModule)
+  },
+  {
+    path: 'showcart',
+    loadChildren: () => import('./showcart/showcart.module').then( m => m.ShowcartPageModule)
   }
 ];
 @NgModule({

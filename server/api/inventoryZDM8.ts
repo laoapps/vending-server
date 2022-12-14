@@ -96,34 +96,35 @@ export class InventoryZDM8 implements IBaseClass {
 
                             sale.forEach(v => {
                                 // v.stock.qtty=1;
-                                const x = this.vendingOnSale.find(vx => {
-                                    if (
-                                        // !checkIds.length &&
-                                        vx.stock.id + '' == v.stock.id + '' &&
-                                        vx.position == v.position
-                                        // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                        // && vx.stock.qtty > 0
-                                    ) {
-                                        return true;
-                                    }
-                                    // else if (vx.stock.qtty > 0
-                                    //     && vx.stock.id + '' == v.stock.id + ''
-                                    //     && vx.position == v.position
-                                    //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                    //     // && vx.stock.qtty > 0
-                                    //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
-                                    //     //     return a + b.stock.qtty;
-                                    //     // }, 0) <= vx.stock.qtty
-                                    //     ) {
-                                    //     return true;
-                                    // }
-                                    return false;
-                                });
-                                if (x) {
-                                    const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+                                // const x = this.vendingOnSale.find(vx => {
+                                //     if (
+                                //         // !checkIds.length &&
+                                //         vx.stock.id + '' == v.stock.id + '' &&
+                                //         vx.position == v.position
+                                //         // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                //         // && vx.stock.qtty > 0
+                                //     ) {
+                                //         return true;
+                                //     }
+                                //     // else if (vx.stock.qtty > 0
+                                //     //     && vx.stock.id + '' == v.stock.id + ''
+                                //     //     && vx.position == v.position
+                                //     //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
+                                //     //     // && vx.stock.qtty > 0
+                                //     //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
+                                //     //     //     return a + b.stock.qtty;
+                                //     //     // }, 0) <= vx.stock.qtty
+                                //     //     ) {
+                                //     //     return true;
+                                //     // }
+                                //     return false;
+                                // });
+                                // if (x) {
+                                    v.stock.qtty=1;
+                                    const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
                                     y.stock.qtty = 1;
                                     checkIds.push(y);
-                                }
+                                // }
 
                                 // return false;
                             })

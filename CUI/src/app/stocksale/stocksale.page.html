@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>stocksale</ion-title>
+    <ion-title><ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>stocksale<ion-icon name="save-outline" (click)="close()"></ion-icon></ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -8,8 +8,8 @@
   <ion-grid>
     <ion-row *ngFor="let s of saleStock">
       <ion-col size="8">
-        <ion-label>{{s.position==0?s.position+1:s.position|number}}</ion-label>
-        <img style="width:180px ;height:180px;" [src]="s.stock.image" (click)="changeStock(s.position)">
+        <ion-label>{{s.position+compensation|number}}</ion-label>
+        <img style="width:180px ;height:180px;" [src]="this.url+'/public/'+s.stock.image" (click)="changeStock(s.position)">
       </ion-col>
       <ion-col size="4">
         <div>
