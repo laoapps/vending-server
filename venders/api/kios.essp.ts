@@ -68,18 +68,18 @@ export class KiosESSP {
             //     clearInterval(this.t);
             //     this.t = null;
             // }
-            if (this.transactionID != -1) {
-                this.eSSP.command('ENABLE').then(result => {
-                    console.log('ENABLED', transactionID);
-                    this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' }, EMACHINE_COMMAND.status);
-                })
+            // if (this.transactionID != -1) {
+            //     this.eSSP.command('ENABLE').then(result => {
+            //         console.log('ENABLED', transactionID);
+            //         this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' }, EMACHINE_COMMAND.status);
+            //     })
 
-            } else {
-                this.eSSP.command('DISABLE').then(result => {
-                    console.log('DISABLE',transactionID); 
-                    this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
-                })
-            }
+            // } else {
+            //     this.eSSP.command('DISABLE').then(result => {
+            //         console.log('DISABLE',transactionID); 
+            //         this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
+            //     })
+            // }
         })
 
 

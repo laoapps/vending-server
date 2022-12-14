@@ -40,6 +40,8 @@ export class CashNV9 implements IBaseClass {
 
     mmMoneyLogin: IMMoneyLoginCashin | null = null;
 
+    lastOperation = Array<{machineId:string,time:Date}>();
+
     /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
     //     Cash In Production :
     // Create account requester success.
@@ -182,7 +184,12 @@ export class CashNV9 implements IBaseClass {
                     console.log(' REST validateMmoneyCashIn');
                     const { n, token } = req.body;
                     const machineId = this.ssocket.findMachineIdToken(token);
-                    if (!machineId) throw new Error(EMessage.MachineIdNotFound)
+                    if (!machineId) throw new Error(EMessage.MachineIdNotFound);
+
+                    if(this.checkTooFast(machineId.machineId))throw new Error(EMessage.TooFast);
+                   
+                    
+
                     const sock = this.ssocket.findOnlneMachine(machineId.machineId);
                     if (!sock) throw new Error(EMessage.MachineIsNotOnline);
                     this.validateMmoneyCashIn(n, 1000, JSON.stringify(machineId)).then(r => {
@@ -213,6 +220,20 @@ export class CashNV9 implements IBaseClass {
         }
 
     }
+    checkTooFast(machineId:string){
+        const existO =this.lastOperation.find(v=>v.machineId==machineId);
+
+        if(existO){
+            if(moment.duration(moment().diff(moment(existO.time))).asMilliseconds()<5000)
+                return true;
+            existO.time = new Date();
+        }else{
+            this.lastOperation.push({machineId:machineId,time:new Date()})
+        }
+        return false;
+    }
+
+
     wsSend(clientId: Array<string>, data: any) {
         try {
             console.log('CLIENT ID', clientId, data);

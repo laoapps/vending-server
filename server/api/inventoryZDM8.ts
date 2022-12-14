@@ -120,10 +120,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 //     return false;
                                 // });
                                 // if (x) {
-                                    v.stock.qtty=1;
-                                    const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
-                                    y.stock.qtty = 1;
-                                    checkIds.push(y);
+                                v.stock.qtty = 1;
+                                const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
+                                y.stock.qtty = 1;
+                                checkIds.push(y);
                                 // }
 
                                 // return false;
@@ -234,13 +234,33 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
 
-            router.get(this.path + '/submit_command', async (req, res) => {
+            // router.get(this.path + '/submit_command', async (req, res) => {
+            //     try {
+            //         const machineId = req.query['machineId'] + '';
+            //         const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
+            //         console.log(' WS submit command', machineId, position);
+
+            //         res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
+            //     } catch (error) {
+            //         console.log(error);
+            //         res.send(PrintError('init', error, EMessage.error));
+            //     }
+            // });
+          
+
+            router.post(this.path + '/getFreeProduct', async (req, res) => {
                 try {
-                    const machineId = req.query['machineId'] + '';
-                    const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
+                   
+                    const {token,data:{id, position,clientId}} = req.body;
+                    const machineId  = this.ssocket.findMachineIdToken(token);
+                    const s =this.stock.find(v=>v.id==id);
+                    if(s?.price!==0) throw new Error(EMessage.getFreeProductFailed);
+
+                    // const position =p ? p : 0;
+                    ///TODO: NEXT WORK ON CLIENT....
                     console.log(' WS submit command', machineId, position);
 
-                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
+                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId?.machineId+'', position, new Date().getTime()), EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError('init', error, EMessage.error));
@@ -315,7 +335,17 @@ export class InventoryZDM8 implements IBaseClass {
                 qtty: 1,
                 hashP: '',
                 hashM: ''
-            }]
+            }
+            , {
+                id: 5,
+                name: 'LTC water',
+                image: 'ltcwater.png',
+                price: 0,
+                qtty: 1,
+                hashP: '',
+                hashM: ''
+            }
+        ]
             );
             let x = 5;
             let y = 0;

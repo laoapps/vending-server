@@ -107,7 +107,7 @@ export class ApiServiceService {
           console.log('x', x);
           this.billCashIn.push(x);
         
-          // this.setCounter();
+           this.setCounter(30);
         }
       }
 
@@ -138,25 +138,24 @@ export class ApiServiceService {
     this.wsapi.closeWS();
   }
   setCounter(t:number) {
-    this.timer.t = t;
-    // if (this.t) {
-    //   clearInterval(this.t);
-    //   this.t = null;
-    //   this.timer.t = 30;
-    // }
-    // this.t = setInterval(() => {
-    //   if (this.timer.t == 0) {
-    //     clearInterval(this.t);
-    //     this.t = null;
-    //     return this.timer.t = 30;
-    //     // setTimeout(() => {
-    //       // window.location.reload();
-    //     // }, 100);
+    if (this.t) {
+      clearInterval(this.t);
+      this.t = null;
+      this.timer.t = t;
+    }
+    this.t = setInterval(() => {
+      if (this.timer.t == 0) {
+        clearInterval(this.t);
+        this.t = null;
+        this.timer.t = t;
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
 
-    //   }
+      }
 
-    //    this.timer.t--;
-    // }, 1000);
+      this.timer.t--;
+    }, 1000);
   }
 
   showModal(component: any) {
