@@ -7,13 +7,13 @@ import { environment } from 'src/environments/environment';
 import { AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { NotifierService } from 'angular-notifier';
 import * as moment from 'moment';
-import { IonicStorageService } from '../ionic-storage.service';
 import * as uuid from 'uuid';
+import { IonicStorageService } from '../ionic-storage.service';
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  machineuuid=uuid.v4()
+  machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   currentPaymentProvider = EPaymentProvider.mmoney;
@@ -192,6 +192,20 @@ export class ApiService {
     return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
   }
 
+  getFreeProduct(position: number,id:number) {
+    this.currentPaymentProvider = EPaymentProvider.mmoney;
+    const req = {} as IReqModel;
+    req.data = {
+      position,
+      clientId: this.clientId.clientId,
+      id
+    };
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
+    // req.data.clientId = this.clientId.clientId;
+    return this.http.post<IResModel>(this.url + '/getFreeProduct', req, { headers: this.headerBase() });
+  }
   showLoading(message = 'loading...') {
     this.load.create({ message, duration: 15000 }).then(r => {
       r.present();

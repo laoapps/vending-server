@@ -93,19 +93,18 @@ export class Tab1Page {
       console.log(r);
       if (r.status) {
         this.storage.get('saleStock', 'stock').then(s => {
-          const storage = s.v as Array<IVendingMachineSale>
+
+          const storage = s?.v as Array<IVendingMachineSale>;
           const sale = storage ? storage : [] as Array<IVendingMachineSale>;
           const saley = r.data as Array<IVendingMachineSale>;
 
           const arrdel = [];
           const arrnew = [];
-          sale.forEach(v => {
-            saley.forEach(x =>
-              !sale.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '')
-
-            sale.forEach(v =>
-              !saley.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '')
+          saley.forEach(v => {
+            !sale.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '';
           })
+          sale.forEach(v =>
+            !saley.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
 
           if (arrnew.length)
             sale.push(...arrnew);
@@ -115,8 +114,12 @@ export class Tab1Page {
               sale.splice(i, 1);
             })
 
+
           this.vendingOnSale.push(...sale);
           this.saleList.push(...this.vendingOnSale);
+          if(arrdel.length||arrnew.length)
+          this.storage.set('saleStock',this.saleList,'stock');
+          
           if (this.vendingOnSale[0].position == 0) this.compensation = 1;
         })
 
@@ -202,48 +205,66 @@ export class Tab1Page {
   //     }
   //   })
   // }
+
   buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
-    const amount = x.stock.price * 1;
-    this.apiService.showLoading();
-    this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.bills = r.data as IVendingMachineBill;
-        localStorage.setItem('order', JSON.stringify(this.bills));
-        new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
-          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } }).then(r => {
+    if (x.stock.price == 0) {
+      this.apiService.getFreeProduct(x.position, x.stock.id).subscribe(r => {
+        console.log(r);
+        if (r.status) {
+          this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
             r.present();
           })
-        })
+        } else {
+          this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
+            r.present();
+          })
+        }
+        this.apiService.dismissLoading();
+      });
+    } else {
+      const amount = x.stock.price * 1;
+      this.apiService.showLoading();
+      this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
+        console.log(r);
+        if (r.status) {
+          this.bills = r.data as IVendingMachineBill;
+          localStorage.setItem('order', JSON.stringify(this.bills));
+          new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
+            this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } }).then(r => {
+              r.present();
+            })
+          })
 
-        // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
-        //   res => {
-        //     console.log(res);
-        //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
-        //       r.present();
-        //     })
-        //   }, error => {
-        //     alert(error);
-        //   }
-        // );
-      } else {
-        this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
-          r.present();
-        })
-      }
-      this.apiService.dismissLoading();
-    })
-    this.orders=[];
-    this.summarizeOrder=[];
+          // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
+          //   res => {
+          //     console.log(res);
+          //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
+          //       r.present();
+          //     })
+          //   }, error => {
+          //     alert(error);
+          //   }
+          // );
+        } else {
+          this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
+            r.present();
+          })
+        }
+        this.apiService.dismissLoading();
+      })
+    }
+
+    this.orders = [];
+    this.summarizeOrder = [];
   }
   buyManyMMoney() {
     if (!this.orders.length) return alert('Please add any items first');
     const amount = this.orders.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
     // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
     this.apiService.showLoading();
-    console.log(this.orders,amount);
+    console.log(this.orders, amount);
     this.apiService.buyMMoney(this.orders, amount, this.machineId.machineId).subscribe(r => {
       console.log(r);
       if (r.status) {
@@ -267,8 +288,8 @@ export class Tab1Page {
       }
       this.apiService.dismissLoading();
     });
-    this.orders=[];
-    this.summarizeOrder=[];
+    this.orders = [];
+    this.summarizeOrder = [];
   }
 
   addOrder(x: IVendingMachineSale) {
@@ -280,9 +301,9 @@ export class Tab1Page {
       const re = summ.find(v => (v.stock.qtty + 1) > mx && v.position == x.position);
       console.log(summ, mx, re);
       if (re)
-        return alert('Out of Stock 1');
+        return alert('Out of Stock');
     }
-    if (x.stock.qtty < 1) return alert('Out of Stock 2');
+    if (x.stock.qtty < 1) return alert('Out of Stock');
     console.log('ID', x);
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
