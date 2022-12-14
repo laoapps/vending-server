@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { NotifierService } from 'angular-notifier';
 import * as moment from 'moment';
+import { IonicStorageService } from '../ionic-storage.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -33,7 +34,8 @@ export class ApiService {
     public toast: ToastController,
     public modal: ModalController,
     public notifyService: NotifierService,
-
+    public storage: IonicStorageService,
+    
     public load: LoadingController,
     public alert: AlertController) {
     this.wsapi = wsapi;
@@ -96,7 +98,7 @@ export class ApiService {
         }).then(v => v.present());
       }
       this.dismissModal();
-
+      this.storage.set('saleStock',this.vendingOnSale,'stock');
 
       // });
     })
