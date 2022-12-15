@@ -1,53 +1,81 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar>
-    <ion-title>numberpad</ion-title>
+    <ion-title>Login</ion-title>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
-<ion-content style="top:25%">
-<ion-input [(ngModel)]="api.pn" type="number" style="width:100%; background-color:bisque; font-size:64px">
 
-</ion-input>
-<ion-grid>
+
+<ion-content class="ion-padding">
+  <div class="fullheight xc">
+  <ion-card  style="padding: 5%; background-color: whitesmoke;">
+    <img  style="border-radius: 15px; height:'500px'" alt="Silhouette of mountains" src="../../assets/icon/mmoneyaward.jpeg" />
+    <br/>
+  <br/>
+    <ion-card-header>
+      <ion-card-title>WALLET ACCOUNT</ion-card-title>
+      <ion-card-subtitle>input phone number</ion-card-subtitle>
+    </ion-card-header>
+  
+    <ion-card-content >
+      <ion-item >
+        <ion-icon style="font-size: 70px;color:gray; " name="wallet-outline"></ion-icon>
+        
+        <ion-input [(ngModel)]="api.pn" type="number" style="width:100%;  font-size:70px; text-align: center; border-bottom: 1px solid rgb(46, 46, 46) !important"> 
+         </ion-input>
+      </ion-item>
+     
+    </ion-card-content>
+ 
+
+
+<ion-grid style="margin-top: 5%"> 
   <ion-row>
     <ion-col size="4">
-      <ion-button (click)="click(1)" style="width: 100%;" class="pad-button">1</ion-button>
+      <ion-button (click)="click(1)" style="width: 100%;" color="light" class="pad-button">1</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(2)" style="width: 100%;" class="pad-button">2</ion-button>
+      <ion-button (click)="click(2)" style="width: 100%;" color="light"  class="pad-button">2</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(3)" style="width: 100%;" class="pad-button">3</ion-button>
+      <ion-button (click)="click(3)" style="width: 100%;" color="light"  class="pad-button">3</ion-button>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="4">
-      <ion-button (click)="click(4)" style="width: 100%;" class="pad-button">4</ion-button>
+      <ion-button (click)="click(4)" style="width: 100%;" color="light"  class="pad-button">4</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(5)" style="width: 100%;" class="pad-button">5</ion-button>
+      <ion-button (click)="click(5)" style="width: 100%;" color="light"  class="pad-button">5</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(6)" style="width: 100%;" class="pad-button">6</ion-button>
+      <ion-button (click)="click(6)" style="width: 100%;" color="light"  class="pad-button">6</ion-button>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="4">
-      <ion-button (click)="click(7)" style="width: 100%;" class="pad-button">7</ion-button>
+      <ion-button (click)="click(7)" style="width: 100%;" color="light" class="pad-button">7</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(8)" style="width: 100%;" class="pad-button">8</ion-button>
+      <ion-button (click)="click(8)" style="width: 100%;" color="light" class="pad-button">8</ion-button>
     </ion-col> <ion-col size="4">
-      <ion-button (click)="click(9)" style="width: 100%;" class="pad-button">9</ion-button>
+      <ion-button (click)="click(9)" style="width: 100%;" color="light" class="pad-button">9</ion-button>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="12">
-      <ion-button (click)="click(0)" style="width: 100%;" class="pad-button">0</ion-button>
+      <ion-button (click)="click(0)" style="width: 100%;" color="light" class="pad-button">0</ion-button>
     </ion-col> 
   </ion-row>
+  <br/>
+  <br/>
+  <br/>
   <ion-row>
     <ion-col size="6">
-      <ion-button (click)="back()" style="width: 100%;" class="pad-button"><ion-icon name="backspace-sharp"  class="pad-button"></ion-icon></ion-button>
+      <ion-button (click)="back()" style="width: 100%;" color="danger" class="pad-button2"><ion-icon name="backspace-outline"></ion-icon>&nbsp; DELETE</ion-button>
     </ion-col> 
     <ion-col size="6">
-      <ion-button (click)="close()" style="width: 100%;" class="pad-button"><ion-icon name="arrow-forward-circle-sharp"  class="pad-button"></ion-icon></ion-button>
+      <ion-button (click)="close()" style="width: 100%;" color="success" class="pad-button2"><ion-icon name="enter-outline"></ion-icon>&nbsp; ENTER</ion-button>
     </ion-col> 
   </ion-row>
 </ion-grid>
+
+
+</ion-card>
+</div>
 </ion-content>

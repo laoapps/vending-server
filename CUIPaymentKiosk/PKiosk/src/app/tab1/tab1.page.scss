@@ -8,6 +8,7 @@
     align-items: center;
     justify-content: center;
     background-color: white;
+    padding: 5%;
 }
 .money{
     width: 280px;
@@ -27,19 +28,22 @@
     font-size: 90px;
 }
 .pad-button{
-    font-size: 60px;
+    font-size: 40px;
     height: 100px;
 }
 
 
 
 .desc{
-    font-size: x-large;
+    font-size: xx-large;
+    color: darkgrey;
+    
 }
 .title{
-    font-size: xx-large;
+    font-size: 30px;
 }
 .moneyimg{
-    width: 230px;
-    height: 230px;
+    width: 250px;
+    height: 210px;
+    border-radius: 25px;
 }

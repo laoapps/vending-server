@@ -1,30 +1,41 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Phonenumber</ion-title>
-  </ion-toolbar>
-</ion-header>
 
-<ion-content  style="top:35%">
-  <div
-  class="border d-flex align-items-center justify-content-center"
-  style="height: 350px;"
->
-<div class="watermark" *ngIf="test.test">
-  TEST MODE 
-</div>
-<ion-input type="number" [(ngModel)]="api.pn"  style="font-size: 64px;" placeholder="2056789012" (click)="showPad()"></ion-input>
-<ion-grid>
-<ion-row>
-  <ion-col size="6">
-    <ion-button (click)="close()" style="width: 100%;" class="pad-button"><ion-icon name="close-circle-sharp"></ion-icon></ion-button>
-    </ion-col>
-    <ion-col size="6">
-    <ion-button  (click)="start()" style="width: 100%;" class="pad-button"><ion-icon name="arrow-forward-circle-sharp"></ion-icon></ion-button>
-  </ion-col>
-</ion-row>
-</ion-grid>
-  
-</div>
 
+<ion-content class="ion-padding">
+  <div class="fullheight xc">
+      <ion-card  style="padding: 5%; background-color: whitesmoke;">
+             
+              <ion-card-header style="text-align: center;">
+                <ion-card-title style="font-size: 5em !important;">M-MONEY</ion-card-title>
+                <ion-card-subtitle style="font-size: 2em !important;">wallet Account</ion-card-subtitle>
+              </ion-card-header>
+              <br/>
+              <br/>
+              <ion-card-content >
+                <ion-item >
+             
+                  <ion-icon style="font-size: 70px;color:gray;" name="wallet-outline"></ion-icon>
+                  
+                  <ion-input [(ngModel)]="api.pn" type="number" placeholder="20XXXXXXXX"  (click)="showPad()" style="width:100%; border-color: transparent; font-size:70px; text-align: center;"> 
+                   </ion-input>
+                </ion-item>
+               
+              </ion-card-content>
+
+              <!-- <ion-input type="number" [(ngModel)]="api.pn"  style="font-size: 64px;" placeholder="2056789012" (click)="showPad()"></ion-input> -->
+              <ion-grid>
+              <ion-row style="margin-top: 10%;">
+                <ion-col size="6">
+                  <ion-button (click)="close()" style="width: 100%;" color="danger" class="pad-button2"><ion-icon style="font-size: 80px;" name="close-circle-outline"></ion-icon>&nbsp; CANCEL</ion-button>
+                </ion-col> 
+                <ion-col size="6">
+                  <ion-button (click)="start()" style="width: 100%;" color="success" class="pad-button2"><ion-icon style="font-size: 80px;"  name="checkmark-circle-outline"></ion-icon>&nbsp;CONFIRM</ion-button>
+                </ion-col> 
+
+              </ion-row>
+              </ion-grid>
+              
+        </ion-card>
+              
+  </div>
 
 </ion-content>

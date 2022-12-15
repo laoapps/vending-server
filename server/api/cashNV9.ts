@@ -225,12 +225,12 @@ export class CashNV9 implements IBaseClass {
 
         if(existO){
             if(moment.duration(moment().diff(moment(existO.time))).asMilliseconds()<5000)
-                return true;
+                return false;
             existO.time = new Date();
         }else{
             this.lastOperation.push({machineId:machineId,time:new Date()})
         }
-        return false;
+        return true;
     }
 
 
