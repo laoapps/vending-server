@@ -291,9 +291,8 @@ export class InventoryZDM8 implements IBaseClass {
             this.stock.push(...[{
                 id: 0,
                 name: 'Coke can 330ml',
-                image: 'cokecan.jpg'
-                ,
-                price: 9000,
+                image: 'cokecan.jpg',
+                price: 1000,
                 qtty: 1,
                 hashP: '',
                 hashM: ''
@@ -302,7 +301,7 @@ export class InventoryZDM8 implements IBaseClass {
                 name: 'Pepsi can 330ml',
                 image: 'pepsican.jpeg'
                 ,
-                price: 9000,
+                price: 1000,
                 qtty: 1,
                 hashP: '',
                 hashM: ''
@@ -312,7 +311,7 @@ export class InventoryZDM8 implements IBaseClass {
                 name: 'Oishi green tea 450ml',
                 image: 'oishiteabottle.png'
                 ,
-                price: 12000,
+                price: 1000,
                 qtty: 1,
                 hashP: '',
                 hashM: ''
@@ -321,7 +320,7 @@ export class InventoryZDM8 implements IBaseClass {
                 id: 3,
                 name: 'Chinese tea 330ml',
                 image: 'chineseteacan.jpg',
-                price: 8000,
+                price: 1000,
                 qtty: 1,
                 hashP: '',
                 hashM: ''
@@ -331,7 +330,7 @@ export class InventoryZDM8 implements IBaseClass {
                 id: 4,
                 name: 'Water tiger head 380ml',
                 image: 'tigerheadbottle.png',
-                price: 9000,
+                price: 1000,
                 qtty: 1,
                 hashP: '',
                 hashM: ''
