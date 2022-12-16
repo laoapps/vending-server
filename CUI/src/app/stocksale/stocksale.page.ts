@@ -51,6 +51,13 @@ export class StocksalePage implements OnInit {
     
     if(this.saleStock[0].position==0)this.compensation=1;
   }
+  reset(){
+   const c =  confirm('Clear all data');
+   if(c){
+    this.storage.clear();
+    window.location.reload();
+   }
+  }
   close() {
     console.log('CLOSE');
 

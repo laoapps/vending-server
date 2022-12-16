@@ -101,8 +101,24 @@ export class Tab1Page {
           const arrdel = [];
           const arrnew = [];
           saley.forEach(v => {
-            !sale.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '';
+            const x= sale.find(vs => vs.stock.id == v.stock.id);
+            if(!x) {
+              arrnew.push(v)
+            } else{
+              console.log('update X',x);
+              
+              Object.keys(v).forEach(k=>{
+                if(Array.isArray(x[k])){
+                  Object.keys(x[k]).forEach(j=>{
+                    x[k][j]=v[k][j]
+                  })
+                }else
+                x[k] =v[k];
+              })
+              console.log('update X1',x);
+            };
           })
+
           sale.forEach(v =>
             !saley.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
 

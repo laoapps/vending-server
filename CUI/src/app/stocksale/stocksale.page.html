@@ -1,11 +1,18 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title><ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>stocksale<ion-icon name="save-outline" (click)="close()"></ion-icon></ion-title>
+    <ion-title><ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>stock sale<ion-icon name="save-outline" (click)="close()"></ion-icon></ion-title>
+
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  
   <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-icon name="refresh-circle-sharp" (click)="reset()"></ion-icon>
+      </ion-col>
+    </ion-row>
     <ion-row *ngFor="let s of saleStock">
       <ion-col size="8">
         <ion-label>{{s.position+compensation|number}}</ion-label>
