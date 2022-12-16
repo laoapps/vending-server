@@ -81,8 +81,13 @@ const host = req.get('Host') // localhost:4000
           console.log(r.data);
           res.send(PrintSucceeded(d.command, r.data,EMessage.succeeded));
         })
+      }else{
+        return res.send(PrintError(d?.command, [], EMessage.error));
       }
+    }else {
+      return res.send(PrintError(d?.command, [], EMessage.error));
     }
+
   } catch (error) {
     return res.send(PrintError(d.command, error, EMessage.error));
 

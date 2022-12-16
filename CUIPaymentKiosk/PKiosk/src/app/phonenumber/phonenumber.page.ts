@@ -11,7 +11,7 @@ import { EMessage } from '../syste.model';
 export class PhonenumberPage implements OnInit {
   phonenumber={phonenumber:'2055516321'};
   test={test:false}
-  sent=true;
+  sent=false;
   constructor(public api:ApiServiceService) {
     this.phonenumber.phonenumber=api.pn;
    }
@@ -22,6 +22,8 @@ export class PhonenumberPage implements OnInit {
 
   start(){
     if(this.sent)return;
+
+    this.sent= true;
     this.phonenumber.phonenumber=this.api.pn
     console.log(this.phonenumber);
     
@@ -49,7 +51,7 @@ export class PhonenumberPage implements OnInit {
         }
        
       }
-      
+      this.sent =false;
     })
   }
   close(){
