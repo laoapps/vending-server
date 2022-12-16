@@ -64,6 +64,7 @@ const host = req.get('Host') // localhost:4000
     console.log('POST Data', d);
     const c = d.data as IMMoneyConfirm;
     if (d.command == EClientCommand.confirmMMoney) {
+      console.log('confirmMMoney');
       
       if(c.PhoneNumber== invZDM8.phonenumber&&c.wallet_ids==invVMC.walletId){
         invZDM8.confirmMMoneyOder(c).then(r=>{
