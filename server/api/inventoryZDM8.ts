@@ -373,10 +373,11 @@ export class InventoryZDM8 implements IBaseClass {
             this.loginMmoney().then(r => {
                 if (r) {
                     const qr = {
-                        amount: value,
+                        amount: value+'',
                         phonenumber: this.phonenumber,// '2055220199',
                         transactionID
-                    } as IMMoneyGenerateQR;
+                    } 
+                    // as IMMoneyGenerateQR;
                     console.log('QR',qr);
                     
                     axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
