@@ -4994,7 +4994,7 @@ export interface IMMoneyLoginCashin {
 export interface IMMoneyGenerateQR {
     transactionID: string,
     phonenumber: string,
-    amount: number
+    amount: string;
 }
 export interface IMMoneyGenerateQRRes {
 
@@ -5005,7 +5005,7 @@ export interface IMMoneyGenerateQRRes {
 
 }
 export interface IMMoneyConfirm {
-    amount: number,
+    amount: string,
     wallet_ids: string,
     password: string,
     channel: string,//POS

@@ -101,21 +101,21 @@ export class Tab1Page {
           const arrdel = [];
           const arrnew = [];
           saley.forEach(v => {
-            const x= sale.find(vs => vs.stock.id == v.stock.id);
-            if(!x) {
+            const x = sale.find(vs => vs.stock.id == v.stock.id);
+            if (!x) {
               arrnew.push(v)
-            } else{
-              console.log('update X',x);
-              
-              Object.keys(v).forEach(k=>{
-                if(Array.isArray(x[k])){
-                  Object.keys(x[k]).forEach(j=>{
-                    x[k][j]=v[k][j]
-                  })
-                }else
-                x[k] =v[k];
-              })
-              console.log('update X1',x);
+            } else {
+              // console.log('update X', x);
+
+              // Object.keys(v).forEach(k => {
+              //   // if (Array.isArray(x[k])) {
+              //   //   Object.keys(x[k]).forEach(j => {
+              //   //     x[k][j] = v[k][j]
+              //   //   })
+              //   // } else
+              //   x[k] = v[k];
+              // })
+              // console.log('update X1', x);
             };
           })
 
@@ -130,13 +130,22 @@ export class Tab1Page {
               sale.splice(i, 1);
             })
 
+          sale.sort((a, b) => {
+            if (b.position - a.position) return -1;
+          })
 
           this.vendingOnSale.push(...sale);
           this.saleList.push(...this.vendingOnSale);
-          if(arrdel.length||arrnew.length)
-          this.storage.set('saleStock',this.saleList,'stock');
-          
-          if (this.vendingOnSale[0].position == 0) this.compensation = 1;
+
+          this.saleList.sort((a, b) => {
+            if (a.position < b.position) return -1;
+          })
+          console.log(this.saleList);
+
+          if (arrdel.length || arrnew.length)
+            this.storage.set('saleStock', this.saleList, 'stock');
+
+          if (this.saleList[0].position == 0) this.compensation = 1;
         })
 
 

@@ -51,7 +51,7 @@ export class InventoryM102 implements IBaseClass {
                         console.log('CB COMFIRM', d);
                         const c = d.data as IMMoneyConfirm;
                         // c.wallet_ids
-                        this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+                        this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
                             res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
                         }).catch(e => {
                             console.log('error confirmMMoney');
@@ -251,7 +251,7 @@ export class InventoryM102 implements IBaseClass {
     confirmMMoneyOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
-            this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+            this.callBackConfirm(c.tranid_client,Number(c.amount)).then(r => {
                 return { bill: r, transactionID: c.tranid_client };
             }).catch(e => {
                 console.log('error confirmMMoney');
@@ -341,7 +341,7 @@ export class InventoryM102 implements IBaseClass {
             this.loginMmoney().then(r => {
                 if (r) {
                     const qr = {
-                        amount: value,
+                        amount: value+'',
                         phonenumber: this.production?this.phonenumber:'2055516321',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;

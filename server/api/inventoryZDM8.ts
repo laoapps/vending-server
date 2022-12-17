@@ -23,7 +23,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     delayTime = 3000;
     path = '/zdm8';
-    production = true;
+    production = false;
     public phonenumber = this.production ? '2052899515' : '2054445447'; //LTC. 2058623333 
     public walletId = this.production ? '2599087166' : '2843759248';// LTC
     mmoneyusername = 'dbk';
@@ -53,7 +53,7 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log('CB COMFIRM', d);
                         const c = d.data as IMMoneyConfirm;
                         // c.wallet_ids
-                        this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+                        this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
                             res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
                         }).catch(e => {
                             console.log('error confirmMMoney');
@@ -275,7 +275,7 @@ export class InventoryZDM8 implements IBaseClass {
     confirmMMoneyOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
-            this.callBackConfirm(c.tranid_client, c.amount).then(r => {
+            this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
                 return { bill: r, transactionID: c.tranid_client };
             }).catch(e => {
                 console.log('error confirmMMoney');
@@ -376,8 +376,7 @@ export class InventoryZDM8 implements IBaseClass {
                         amount: value+'',
                         phonenumber: this.phonenumber,// '2055220199',
                         transactionID
-                    } 
-                    // as IMMoneyGenerateQR;
+                    }  as IMMoneyGenerateQR;
                     console.log('QR',qr);
                     
                     axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
