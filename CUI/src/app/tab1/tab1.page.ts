@@ -83,6 +83,16 @@ export class Tab1Page {
     });
     // });
 
+    this.apiService.onDeductOrderUpdate((position)=>{
+      try {
+        const ind = this.orders.findIndex(v=>v.position==position);
+        if(ind!=-1)
+        this.orders.splice(ind,1);
+      } catch (error) {
+        console.log(' error on event emitter');
+      }
+     
+    })
 
   }
   refresh() {
@@ -255,10 +265,12 @@ export class Tab1Page {
         console.log(r);
         if (r.status) {
           this.bills = r.data as IVendingMachineBill;
-          localStorage.setItem('order', JSON.stringify(this.bills));
+          // localStorage.setItem('order', JSON.stringify(this.bills));
+          this.storage.set('order_'+new Date().getTime(),this.bills,'orders')
           new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
-            this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } }).then(r => {
+            this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } ,cssClass:'dialog-fullscreen'},).then(r => {
               r.present();
+
             })
           })
 
@@ -313,7 +325,9 @@ export class Tab1Page {
       }
       this.apiService.dismissLoading();
     });
-    this.orders = [];
+   this.getTotalSale.q=0;
+   this.getTotalSale.t=0;
+    // this.orders = [];
     this.summarizeOrder = [];
   }
 
@@ -341,9 +355,12 @@ export class Tab1Page {
     this.getSummarizeOrder();
     setTimeout(() => {
       this.apiService.dismissLoading();
-    }, 1500);
+    }, 1000);
 
     // });
+  }
+  checkCartCount(position:number){
+    return this.orders.find(v => v.position == position)?.stock?.qtty||0;
   }
   getSummarizeOrder() {
     this.summarizeOrder.length = 0;
@@ -392,16 +409,25 @@ export class Tab1Page {
   handleRefresh(ev: any) {
     this.refresh();
   }
-  showCart() {
-    this.apiService.showModal(ShowcartPage, { orders: this.orders, compensation: this.compensation }).then(r => {
-      r.present();
-    })
-  }
+  // showCart() {
+  //   this.apiService.showModal(ShowcartPage, { orders: this.orders, compensation: this.compensation }).then(r => {
+  //     r.present();
+  //   })
+  // }
   getPassword() {
     let x = '';
     this.apiService.machineuuid.split('').forEach(v => {
       !Number.isNaN(Number.parseInt(v)) ? x += v : '';
     })
     return x;
+  }
+
+  removeCart(i:number){
+   const x = this.summarizeOrder.splice(i,1);
+    const y =this.orders.findIndex(v=>x[0]?.position==v.position);
+    if(y!=-1){
+      this.orders.splice(y,1);
+      this.getSummarizeOrder();
+    }
   }
 }

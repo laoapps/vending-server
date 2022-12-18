@@ -9,10 +9,13 @@ import { NotifierService } from 'angular-notifier';
 import * as moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
+import { EventEmitter } from 'events';
+
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+  eventEmitter=new EventEmitter();
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
@@ -73,11 +76,14 @@ export class ApiService {
       const message = 'processing slot ' + r.position.position + `==>${r.position.status}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
 
 
-      const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
+      // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
+      const x  = this.vendingOnSale.find(v=>v.position == r.position.position);
       console.log('X', x, r.position, x && r.position.status);
 
       if (x && r.position.status) {
+        this.deductOrderUpdate(x.position);
         x.stock.qtty--;
+        this.storage.set('bill_'+new Date().getTime(),x,'bills')
         // PLAY SOUNDS
         this.audio = new Audio('assets/khopchay.mp3');
         this.audio.play();
@@ -104,8 +110,12 @@ export class ApiService {
 
       // });
     })
-
-
+  }
+  public onDeductOrderUpdate(cb:(position:number)=>void){
+    this.eventEmitter.on('deductOrderUpdate',cb);
+  }
+  public deductOrderUpdate(position:number){
+    this.eventEmitter.emit('deductOrderUpdate',position);
   }
   public checkOnlineStatus() {
     if (this.wsAlive) {
@@ -119,7 +129,12 @@ export class ApiService {
       r ? this.modal.dismiss({ data }) : null
     })
   }
-
+  public updateOnlineStatus(){
+    this.wsAlive.isAlive = this.checkOnlineStatus();
+    console.log(this.wsAlive.time);
+    
+    return this.wsAlive.time;
+  }
   private headerBase(): any {
     const token = localStorage.getItem('token');
     //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
