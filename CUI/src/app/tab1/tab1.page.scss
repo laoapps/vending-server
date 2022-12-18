@@ -8,9 +8,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url('../../assets/background/1910.jpg') no-repeat center fixed;
+    background: url('../../assets/background/1910.jpg') rgb(255, 255, 255) no-repeat center fixed;
     background-size: contain;
     height: 300px;
+    width: 100%;
 }
 
 .spacious-container {
@@ -20,15 +21,11 @@
     background-color: #FF95C5;
 }
 
-.footer {
-    height: 250px;
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #3B0000;
-    text-align: center;
-    z-index: 3000;
+.footer img {
+    display: block;
+  margin-left: auto;
+  margin-right: auto;
+
 
 
 }
