@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineClientID, IMachineId, IReqModel, IResModel, IVendingMachineBill, IVendingMachineSale } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineClientID, IMachineId, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
@@ -15,6 +15,7 @@ import { EventEmitter } from 'events';
   providedIn: 'root'
 })
 export class ApiService {
+  stock=new Array<IStock>();
   eventEmitter=new EventEmitter();
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
@@ -146,6 +147,15 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
+  createStockItems(){
+    this.vendingOnSale.map(vs => vs.stock).forEach(v => {
+      // console.log('stock',v);
+      
+      if (! this.stock.find(y => y.id == v.id))
+        this.stock.push(v);
+    });
+  }
+
   async showModal(component: any, d: any = {}) {
     try {
       // let x = '{';

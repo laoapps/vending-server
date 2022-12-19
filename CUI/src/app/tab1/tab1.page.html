@@ -37,18 +37,20 @@
         <ion-item>
           <label>{{sl.stock.name}}</label>
         </ion-item>
-        <ion-item>
+        <ion-item >
           <div *ngIf="sl.stock.price==0;else elsebuystock">
-            <img style="width: 200px;height:200px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
+            <img style="width: 230px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </div>
           <ng-template #elsebuystock>
-            <img style="width: 200px;height:200px" [src]="this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
+            <img style="width: 230px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
           </ng-template>
         </ion-item>
         <ion-item>
           <div *ngIf="sl.stock.price==0;else elsestock">
-            <img src="assets/icon/free.png" style="width:18px;height:18px">/<ion-icon name="cube-sharp" color="danger">
-            </ion-icon>: {{sl.stock.qtty}}
+            <!-- <img src="assets/icon/free.png" style="width:18px;height:18px">
+             -->
+             <ion-label color="danger">FREE/<ion-icon name="cube-sharp" color="danger">
+            </ion-icon>: {{sl.stock.qtty}}</ion-label>
           </div>
           <ng-template #elsestock>
             <label>

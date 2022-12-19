@@ -18,20 +18,22 @@ export class StocksalePage implements OnInit {
   constructor(public apiService: ApiService,
     public storage: IonicStorageService) {
     this.saleStock = apiService.vendingOnSale;
-  
+    this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
   }
   async changeStock(position: number) {
     console.log('stock ', this.stock);
     
     if (!this.stock.length) return alert('no stock')
-    const s = await this.apiService.showModal(StockPage, {stock:this.stock,selectedItem:this.saleStock.find(v=>position==position)?.stock});
+    const s = await this.apiService.showModal(StockPage);
     s.onDidDismiss().then(r => {
       if (r.data) {
-        console.log('r.data',r.data);
+        const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
+        // console.log('r.data',r.data);
+        // console.log('s',s);
         
         const x = this.saleStock.find(v => v.position == position);
         const qtt = x.stock.qtty;
-         if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=r.data.data[k]);
+         if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
         x.stock.qtty=qtt;
         if(this.saleStock[0].position==0)this.compensation=1;
       }

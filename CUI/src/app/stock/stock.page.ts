@@ -10,11 +10,11 @@ import { IStock, IVendingMachineSale } from '../services/syste.model';
 })
 export class StockPage implements OnInit {
 
-  @Input() stock: Array<IStock> = [];
-  @Input() selectedItem: IStock;
+  stock: Array<IStock> = [];
+  selectedItem: IStock;
   url =this.apiService.url;
   constructor(public apiService: ApiService) {
-
+    this.stock=apiService.stock;
   }
 
   select(id: number) {

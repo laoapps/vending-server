@@ -158,6 +158,8 @@ export class Tab1Page {
             this.storage.set('saleStock', this.saleList, 'stock');
 
           if (this.saleList[0].position == 0) this.compensation = 1;
+
+          this.apiService.createStockItems();
         })
 
 
@@ -306,9 +308,6 @@ export class Tab1Page {
         this.apiService.dismissLoading();
       })
     }
-
-    this.orders = [];
-    this.summarizeOrder = [];
   }
   buyManyMMoney() {
     if (!this.orders.length) return alert('Please add any items first');
