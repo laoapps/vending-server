@@ -288,55 +288,57 @@ export class InventoryZDM8 implements IBaseClass {
         this.stock = [];
         this.vendingOnSale = [];
         try {
-            this.stock.push(...[{
+            this.stock.push(...[
+            //     {
+            //     id: 0,
+            //     name: 'Coke can 330ml',
+            //     image: 'cokecan.jpg',
+            //     price: 1000,
+            //     qtty: 1,
+            //     hashP: '',
+            //     hashM: ''
+            // }, {
+            //     id: 1,
+            //     name: 'Pepsi can 330ml',
+            //     image: 'pepsican.jpeg'
+            //     ,
+            //     price: 1000,
+            //     qtty: 1,
+            //     hashP: '',
+            //     hashM: ''
+
+            // }, {
+            //     id: 2,
+            //     name: 'Oishi green tea 450ml',
+            //     image: 'oishiteabottle.png'
+            //     ,
+            //     price: 1000,
+            //     qtty: 1,
+            //     hashP: '',
+            //     hashM: ''
+            // }
+            //     , {
+            //     id: 3,
+            //     name: 'Chinese tea 330ml',
+            //     image: 'chineseteacan.jpg',
+            //     price: 1000,
+            //     qtty: 1,
+            //     hashP: '',
+            //     hashM: ''
+
+            // }
+            //     , {
+            //     id: 4,
+            //     name: 'Water tiger head 380ml',
+            //     image: 'tigerheadbottle.png',
+            //     price: 1000,
+            //     qtty: 1,
+            //     hashP: '',
+            //     hashM: ''
+            // }
+            // , 
+            {
                 id: 0,
-                name: 'Coke can 330ml',
-                image: 'cokecan.jpg',
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-            }, {
-                id: 1,
-                name: 'Pepsi can 330ml',
-                image: 'pepsican.jpeg'
-                ,
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-
-            }, {
-                id: 2,
-                name: 'Oishi green tea 450ml',
-                image: 'oishiteabottle.png'
-                ,
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-            }
-                , {
-                id: 3,
-                name: 'Chinese tea 330ml',
-                image: 'chineseteacan.jpg',
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-
-            }
-                , {
-                id: 4,
-                name: 'Water tiger head 380ml',
-                image: 'tigerheadbottle.png',
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-            }
-            , {
-                id: 5,
                 name: 'LTC water',
                 image: 'ltc_water.jpeg',
                 price: 0,
@@ -346,7 +348,7 @@ export class InventoryZDM8 implements IBaseClass {
             }
         ]
             );
-            let x = 5;
+            let x = 1;
             let y = 0;
             const exception = new Array<number>();
             new Array(60).fill(0).forEach((v, i) => {
