@@ -12,13 +12,14 @@ import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { QrCodeModule } from 'ng-qrcode';
 import { NotifierModule } from 'angular-notifier';
 import { Storage } from '@ionic/storage-angular';
-// import { OrderModule } from 'ngx-order-pipe';
+import { OrderModule } from 'ngx-order-pipe';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,NotifierModule,
-    // OrderModule
+     OrderModule
   ],
-  providers: [ BarcodeScanner,{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage],
+  providers: [ BarcodeScanner,{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage,AppVersion],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

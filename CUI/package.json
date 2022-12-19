@@ -1,8 +1,8 @@
 {
   "name": "cui",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "author": "Vending Platform UI",
+  "homepage": "https://laoapps.com/",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -19,6 +19,8 @@
     "@angular/platform-browser": "^15.0.4",
     "@angular/platform-browser-dynamic": "^15.0.4",
     "@angular/router": "^15.0.4",
+    "@awesome-cordova-plugins/app-version": "^6.2.0",
+    "@awesome-cordova-plugins/core": "^6.2.0",
     "@capacitor/app": "4.0.1",
     "@capacitor/core": "4.3.0",
     "@capacitor/haptics": "4.0.1",
@@ -38,7 +40,7 @@
     "crypto-js": "^4.1.1",
     "ionicons": "^6.0.3",
     "momment": "^0.0.1",
-    "ng-qrcode": "^7.0.0",
+    "ng-qrcode": "^8.0.1",
     "ngx-order-pipe": "^2.2.0",
     "qrcode-with-logos": "^1.0.3",
     "rxjs": "~6.6.0",
@@ -62,6 +64,7 @@
     "@types/node": "^12.11.1",
     "@typescript-eslint/eslint-plugin": "5.3.0",
     "@typescript-eslint/parser": "5.3.0",
+    "cordova-plugin-app-version": "^0.1.14",
     "cordova-plugin-device": "2.0.2",
     "cordova-plugin-geolocation": "^4.0.2",
     "cordova-plugin-ionic-keyboard": "^2.0.5",
@@ -100,7 +103,8 @@
       "cordova-plugin-whitelist": {},
       "cordova-plugin-geolocation": {
         "GPS_REQUIRED": "true"
-      }
+      },
+      "cordova-plugin-app-version": {}
     },
     "platforms": [
       "android"

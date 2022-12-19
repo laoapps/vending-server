@@ -16,7 +16,7 @@ import { OrderModule } from 'ngx-order-pipe';
     ExploreContainerComponentModule,
     Tab1PageRoutingModule,
     NotifierModule,
-    // OrderModule
+     OrderModule
   ],
   declarations: [Tab1Page]
 })
