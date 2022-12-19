@@ -24,133 +24,84 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-grid>
-    <ion-row>
-      <!-- <ion-col  size="6" style="overflow-x:auto; overflow-y:auto;">
-        <ion-icon name="cart"></ion-icon>:{{getTotalSale?.q|number}}:<ion-icon name="cash-outline"></ion-icon>:{{getTotalSale?.t|number}}
-        <ion-chip *ngFor="let o of summarizeOrder" color="primary">
-          {{o.stock.name}}/{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})</ion-chip>
-      </ion-col> -->
-      <ion-col size="6">
-        <!-- <ion-button (click)="buyManyMMoney()">
-          Buy All
-        </ion-button>
-        <ion-button (click)="clearOrder()">
-          Clear
-        </ion-button> -->
-        <!-- <ion-button (click)="refresh()">
-          Refresh
-        </ion-button> -->
-      </ion-col>
-    </ion-row>
-    <!-- <ion-row *ngFor="let sl of saleList; index as i">
-      <ion-col size="{{smode==2?6:4}}" *ngFor="let s of sl  ; index as  sl_i  ">
-        <div *ngIf="s.stock.qtty">
-          <ion-item-divider>
-            <ion-label>{{s.position+compensation}}#. {{s.machineId}} </ion-label>
-          </ion-item-divider>
-          <ion-card>
-            <ion-item>
-              <label>{{s.stock.name}}</label>
-            </ion-item>
-            <ion-item>
-              <img style="width: 200px;height:200px" [src]="this.url+'/public/'+s.stock.image" (click)="addOrder(s)">
-            </ion-item>
-            <ion-item>
-              <label>{{s.stock.price}}/{{s.stock.qtty}}</label>
-            </ion-item>
-            <ion-item>
-              <ion-button (click)="buyMMoney(s)" type="button">Buy</ion-button>
-              <ion-button (click)="addOrder(s)" type="button">Add</ion-button>
-            </ion-item> 
-          </ion-card>
-        </div>
-       
-
-      </ion-col>
-    </ion-row> -->
-    <ion-row>
-      <ion-col>
-        <ng-container *ngFor="let sl of saleList; index as i">
-          <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
-            <ion-item-divider class="item-header">
-              <ion-label><ion-badge style="font-size: 20px;">
-                {{sl.position+compensation}}#.
-              </ion-badge> {{sl.machineId}} </ion-label>
-            </ion-item-divider>
-            <ion-card>
-              <ion-item>
-                <label>{{sl.stock.name}}</label>
-              </ion-item>
-              <ion-item>
-                <div *ngIf="sl.stock.price==0;else elsebuystock">
-                  <img style="width: 200px;height:200px" [src]="this.url+'/public/'+sl.stock.image"
-                    (click)="buyMMoney(sl)">
-                </div>
-                <ng-template #elsebuystock>
-                  <img style="width: 200px;height:200px" [src]="this.url+'/public/'+sl.stock.image"
-                    (click)="addOrder(sl)">
-                </ng-template>
-              </ion-item>
-              <ion-item>
-                <div *ngIf="sl.stock.price==0;else elsestock">
-                  <img src="assets/icon/free.png" style="width:64px;height:64px">/{{sl.stock.qtty}}
-                </div>
-                <ng-template #elsestock>
-                  <label><ion-icon name="pricetags-sharp" color="danger"></ion-icon>: {{sl.stock.price}} / <ion-icon name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}</label>
-                </ng-template>
-
-              </ion-item>
-            </ion-card>
+  <div *ngFor="let sl of saleList; index as i" style="display:inline-block">
+    <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
+      <ion-item-divider class="item-header">
+        <ion-label>
+          <ion-badge style="font-size: 20px;">
+            {{sl.position+compensation}}#.
+          </ion-badge> {{sl.machineId}}
+        </ion-label>
+      </ion-item-divider>
+      <ion-card>
+        <ion-item>
+          <label>{{sl.stock.name}}</label>
+        </ion-item>
+        <ion-item>
+          <div *ngIf="sl.stock.price==0;else elsebuystock">
+            <img style="width: 200px;height:200px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </div>
-        </ng-container>
+          <ng-template #elsebuystock>
+            <img style="width: 200px;height:200px" [src]="this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
+          </ng-template>
+        </ion-item>
+        <ion-item>
+          <div *ngIf="sl.stock.price==0;else elsestock">
+            <img src="assets/icon/free.png" style="width:18px;height:18px">/<ion-icon name="cube-sharp" color="danger">
+            </ion-icon>: {{sl.stock.qtty}}
+          </div>
+          <ng-template #elsestock>
+            <label>
+              <ion-icon name="pricetags-sharp" color="danger"></ion-icon>: {{sl.stock.price}} / <ion-icon
+                name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}
+            </label>
+          </ng-template>
+
+        </ion-item>
+      </ion-card>
+    </div>
+  </div>
+  <div>
+    <img src="../../assets/background/soda.jpg">
+  </div>
 
 
-      </ion-col>
-     
-    </ion-row>
-    <ion-row >
-      <ion-col class="footer">
-     <img src="../../assets/background/soda.jpg">
-      </ion-col>
-    </ion-row>
-   
-  </ion-grid>
+
   <notifier-container></notifier-container>
   <div *ngIf="getTotalSale?.t">
     <div class="spacious-container" class="glasspanel">
       <ion-grid>
         <ion-row>
           <ion-col>
-              <div class="button-wrapper"  style="float: right;" (click)="buyManyMMoney()">
+            <div class="button-wrapper" style="float: right;" (click)="buyManyMMoney()">
 
-                <div class="background-button xbutton" href="#" title="GO"></div>
-              </div>
-              <div style="float: right;">
-                <ion-icon name="cart-sharp" color="primary" style="font-size: 30px;"></ion-icon>
-                :{{getTotalSale?.q|number}}:
-                <ion-icon name="wallet-sharp" color="primary" style="font-size: 30px;"></ion-icon>
-                :{{getTotalSale?.t|number}}
-              </div>
-                
-             
+              <div class="background-button xbutton" href="#" title="GO"></div>
+            </div>
+            <div style="float: right;">
+              <ion-icon name="cart-sharp" color="primary" style="font-size: 30px;"></ion-icon>
+              :{{getTotalSale?.q|number}}:
+              <ion-icon name="wallet-sharp" color="primary" style="font-size: 30px;"></ion-icon>
+              :{{getTotalSale?.t|number}}
+            </div>
+
+
           </ion-col>
         </ion-row>
-      
+
         <ion-row>
           <ion-col>
 
-            <div class="scrollmenu" >
-              <div class="order-item"
-                *ngFor="let o of summarizeOrder; let i=index;" color="primary">
-                <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> <img [src]="this.url+'/public/'+o.stock.image" style="width: 120px;height:120px">
+            <div class="scrollmenu">
+              <div class="order-item" *ngFor="let o of summarizeOrder; let i=index;" color="primary">
+                <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> <img
+                  [src]="this.url+'/public/'+o.stock.image" style="width: 120px;height:120px">
                 <div>
                   {{o.stock.name}}/{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})
                 </div>
 
               </div>
             </div>
-           
+
 
           </ion-col>
         </ion-row>

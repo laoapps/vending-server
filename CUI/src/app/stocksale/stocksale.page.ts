@@ -54,8 +54,15 @@ export class StocksalePage implements OnInit {
   reset(){
    const c =  confirm('Clear all data');
    if(c){
-    this.storage.clear();
-    window.location.reload();
+    // this.storage.clear();
+    this.storage.set('saleStock',[], 'stock').then(r=>{
+      console.log('reset',r);
+      window.location.reload();
+    }).catch(e=>{
+      console.log('reset error',e);
+      
+    });
+  
    }
   }
   close() {

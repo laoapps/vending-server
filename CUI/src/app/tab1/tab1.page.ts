@@ -18,6 +18,8 @@ var host = window.location.protocol + "//" + window.location.host;
 })
 export class Tab1Page {
 
+  audio = new Audio('assets/khopchay.mp3');
+
   mmLogo = 'assets/icon/mmoney.png';
 
   vendingOnSale = new Array<IVendingMachineSale>();
@@ -184,7 +186,7 @@ export class Tab1Page {
     const x = prompt('password');
     console.log(x, this.getPassword());
 
-    // if (!this.getPassword().endsWith(x) || x.length < 6) return;
+    if (!this.getPassword().endsWith(x) || x.length < 6) return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then(r => {
       r.data;
@@ -244,19 +246,31 @@ export class Tab1Page {
   buyMMoney(x: IVendingMachineSale) {
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
+    this.apiService.showLoading();
     if (x.stock.price == 0) {
       this.apiService.getFreeProduct(x.position, x.stock.id).subscribe(r => {
         console.log(r);
         if (r.status) {
           this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
             r.present();
+            const y  = this.apiService.vendingOnSale.find(v=>v.position == x.position);
+            y.stock.qtty--;
+            console.log('yyyyy',y,x);
+            
+            this.storage.set('bill_'+new Date().getTime(),y,'bills')
+            // PLAY SOUNDS
+            this.storage.set('saleStock',this.apiService.vendingOnSale,'stock');
           })
         } else {
           this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
             r.present();
           })
         }
+       setTimeout(() => {
+        this.audio = new Audio('assets/khopchay.mp3');
+        this.audio.play();
         this.apiService.dismissLoading();
+       }, 3000);
       });
     } else {
       const amount = x.stock.price * 1;
