@@ -335,8 +335,7 @@ export class InventoryZDM8 implements IBaseClass {
                 qtty: 1,
                 hashP: '',
                 hashM: ''
-            }
-            , 
+            }, 
             {
                 id: 5,
                 name: 'LTC water',
