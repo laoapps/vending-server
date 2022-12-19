@@ -339,7 +339,7 @@ export class InventoryZDM8 implements IBaseClass {
             {
                 id: 5,
                 name: 'LTC water',
-                image: 'ltc_water.jpeg',
+                image: 'ltc_water.png',
                 price: 0,
                 qtty: 1,
                 hashP: '',
