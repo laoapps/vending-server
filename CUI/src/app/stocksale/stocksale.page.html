@@ -1,31 +1,69 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title><ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>stock sale<ion-icon name="save-outline" (click)="close()"></ion-icon></ion-title>
-
+    <ion-title>
+      <ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>
+    </ion-title>
+    <ion-icon name="refresh-circle-sharp" color="danger" (click)="reset()"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  
+
   <ion-grid>
     <ion-row>
       <ion-col>
-        <ion-icon name="refresh-circle-sharp" (click)="reset()"></ion-icon>
+        <ion-button (click)="refillAll()">Refill</ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <div class="scrollmenu">
+          <div *ngFor="let s of saleStock">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="8">
+                 
+                  <img style="width: 200px;height:480px" [src]="this.url+'/public/'+s.stock.image"
+                    (click)="changeStock(s.position)">
+                </ion-col>
+                <ion-col size="4">
+                  <div>
+                    <ion-label><ion-badge color="warning">{{s.position+compensation|number}}</ion-badge></ion-label>
+                  </div>
+                  <div>
+                    <ion-label>Price:</ion-label>
+                    <ion-label>{{s.stock.price|number}}</ion-label>
+                  </div>
+                  <div>
+                    <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
+                    <ion-range [ticks]="true" [snaps]="true" [min]="0" [max]="s.max" [(ngModel)]="s.stock.qtty"
+                      (ionChange)="save()"></ion-range>
+                  </div>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+
+          </div>
+        </div>
+
       </ion-col>
     </ion-row>
     <ion-row *ngFor="let s of saleStock">
       <ion-col size="8">
         <ion-label>{{s.position+compensation|number}}</ion-label>
-        <img style="width:180px ;height:180px;" [src]="this.url+'/public/'+s.stock.image" (click)="changeStock(s.position)">
+        <img style="width: 200px;height:480px" [src]="this.url+'/public/'+s.stock.image"
+          (click)="changeStock(s.position)">
       </ion-col>
       <ion-col size="4">
         <div>
-           <ion-label>Price:</ion-label><ion-label>{{s.stock.price|number}}</ion-label>
+          <ion-label>Price:</ion-label>
+          <ion-label>{{s.stock.price|number}}</ion-label>
         </div>
-       <div>
-        <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
-        <ion-range [ticks]="true" [snaps]="true" [min]="0" [max]="s.max" [(ngModel)]="s.stock.qtty"></ion-range>
-       </div>
+        <div>
+          <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
+          <ion-range [ticks]="true" [snaps]="true" [min]="0" [max]="s.max" [(ngModel)]="s.stock.qtty"
+            (ionChange)="save()"></ion-range>
+        </div>
       </ion-col>
     </ion-row>
   </ion-grid>

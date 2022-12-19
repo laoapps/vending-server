@@ -9,14 +9,15 @@
     <ion-icon name="close-circle-outline" (click)="close()"></ion-icon>
     </ion-item-divider>
  
-  <ion-list>
-    <ion-item *ngFor="let s of stock">
+    <div class="scrollmenu">
+      <ion-item *ngFor="let s of stock">
         <ion-item-divider>  
-        <ion-label><img style="width:360px ;height:360px;" [src]="this.url+'/public/'+s.image" (click)="select(s.id)"></ion-label>  
+        <ion-label><img style="width: 200px;height:480px" [src]="this.url+'/public/'+s.image" (click)="select(s.id)"></ion-label>  
         <ion-label> {{s.name}}</ion-label>
         <ion-label> {{s.price}}</ion-label>
       </ion-item-divider> 
       
     </ion-item>
-  </ion-list>
+    </div>
+
 </ion-content>

@@ -39,10 +39,10 @@
         </ion-item>
         <ion-item >
           <div *ngIf="sl.stock.price==0;else elsebuystock">
-            <img style="width: 230px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
+            <img style="width: 200px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </div>
           <ng-template #elsebuystock>
-            <img style="width: 230px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
+            <img style="width: 200px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
           </ng-template>
         </ion-item>
         <ion-item>

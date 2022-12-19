@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { ApiService } from '../services/api.service';
-import { IMachineClientID, IMachineId, IMMoneyQRRes, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
+import { IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
 import { ModalController, Platform } from '@ionic/angular';
 import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
@@ -85,15 +85,15 @@ export class Tab1Page {
     });
     // });
 
-    this.apiService.onDeductOrderUpdate((position)=>{
+    this.apiService.onDeductOrderUpdate((position) => {
       try {
-        const ind = this.orders.findIndex(v=>v.position==position);
-        if(ind!=-1)
-        this.orders.splice(ind,1);
+        const ind = this.orders.findIndex(v => v.position == position);
+        if (ind != -1)
+          this.orders.splice(ind, 1);
       } catch (error) {
         console.log(' error on event emitter');
       }
-     
+
     })
 
   }
@@ -104,63 +104,79 @@ export class Tab1Page {
     this.apiService.initDemo().subscribe(r => {
       console.log(r);
       if (r.status) {
-        this.storage.get('saleStock', 'stock').then(s => {
+        this.storage.get('stockitems_', 'item').then(rx => {
+          const items = JSON.parse(JSON.stringify(rx?.v)) as Array<IStock>;
+          const sitems = items ? items : [];
+          this.storage.get('saleStock', 'stock').then(s => {
+            console.log('stock', s);
 
-          const storage = s?.v as Array<IVendingMachineSale>;
-          const sale = storage ? storage : [] as Array<IVendingMachineSale>;
-          const saley = r.data as Array<IVendingMachineSale>;
+            const storage = JSON.parse(JSON.stringify(s?.v)) as Array<IVendingMachineSale>;
+            const saleStorage = storage ? storage : [] as Array<IVendingMachineSale>;
+            const saleServer = r.data as Array<IVendingMachineSale>;
 
-          const arrdel = [];
-          const arrnew = [];
-          saley.forEach(v => {
-            const x = sale.find(vs => vs.stock.id == v.stock.id);
-            if (!x) {
-              arrnew.push(v)
+            const arrdel = [] as Array<IVendingMachineSale>;;
+            const arrnew = [] as Array<IVendingMachineSale>;;
+            if (!saleStorage.length) {
+              saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
+              saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
+
+              if (arrnew.length)
+                saleStorage.push(...arrnew);
+              if (arrdel.length)
+                arrdel.forEach((v) => {
+                  const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
+                  saleStorage.splice(i, 1);
+                })
+
+              saleStorage.sort((a, b) => {
+                if (b.position < a.position) return -1;
+              })
+              console.log(saleStorage);
+              this.vendingOnSale.push(...saleStorage);
+              console.log(this.vendingOnSale);
+              this.saleList.push(...this.vendingOnSale);
+
+              this.saleList.sort((a, b) => {
+                if (a.position < b.position) return -1;
+              })
+              console.log(this.saleList);
+
+              if (arrdel.length || arrnew.length)
+                this.storage.set('saleStock', this.saleList, 'stock');
+
+             
+
+              this.apiService.createStockItems(this.vendingOnSale);
             } else {
-              // console.log('update X', x);
+              saleServer.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrnew.push(v) : '');
+              saleStorage.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrdel.push(v) : '');
 
-              // Object.keys(v).forEach(k => {
-              //   // if (Array.isArray(x[k])) {
-              //   //   Object.keys(x[k]).forEach(j => {
-              //   //     x[k][j] = v[k][j]
-              //   //   })
-              //   // } else
-              //   x[k] = v[k];
-              // })
-              // console.log('update X1', x);
-            };
+              if (arrnew.length)
+                sitems.push(...arrnew.map(v => v.stock));
+              if (arrdel.length)
+                arrdel.forEach((v) => {
+                  const i = sitems.findIndex(vx => vx.id == v.stock.id);
+                  saleStorage.splice(i, 1);
+                })
+              this.apiService.updateStockItems(sitems);
+
+              saleStorage.sort((a, b) => {
+                if (b.position < a.position) return -1;
+              })
+              console.log(saleStorage);
+              this.vendingOnSale.push(...saleStorage);
+              console.log(this.vendingOnSale);
+              this.saleList.push(...this.vendingOnSale);
+
+              this.saleList.sort((a, b) => {
+                if (a.position < b.position) return -1;
+              })
+              console.log(this.saleList);
+            }
+            if (this.saleList[0].position == 0) this.compensation = 1;
           })
-
-          sale.forEach(v =>
-            !saley.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
-
-          if (arrnew.length)
-            sale.push(...arrnew);
-          if (arrdel.length)
-            arrdel.forEach((v) => {
-              const i = sale.findIndex(vx => vx.stock.id == v.stock.id);
-              sale.splice(i, 1);
-            })
-
-          sale.sort((a, b) => {
-            if (b.position - a.position) return -1;
-          })
-
-          this.vendingOnSale.push(...sale);
-          this.saleList.push(...this.vendingOnSale);
-
-          this.saleList.sort((a, b) => {
-            if (a.position < b.position) return -1;
-          })
-          console.log(this.saleList);
-
-          if (arrdel.length || arrnew.length)
-            this.storage.set('saleStock', this.saleList, 'stock');
-
-          if (this.saleList[0].position == 0) this.compensation = 1;
-
-          this.apiService.createStockItems();
         })
+
 
 
         // window.location.reload();
@@ -193,16 +209,16 @@ export class Tab1Page {
     m.onDidDismiss().then(r => {
       r.data;
       console.log('manageStock', r.data);
-      if (r.data) {
-        this.storage.set('saleStock', this.vendingOnSale, 'stock').then(r => {
-          console.log('SAVE saleStock', r);
-        }).catch(e => {
-          console.log('Error', e);
-        })
-      } else {
-        console.log('Canceled');
+      // if (r.data) {
+      //   this.storage.set('saleStock', this.vendingOnSale, 'stock').then(r => {
+      //     console.log('SAVE saleStock', r);
+      //   }).catch(e => {
+      //     console.log('Error', e);
+      //   })
+      // } else {
+      //   console.log('Canceled');
 
-      }
+      // }
       // window.location.reload();
     })
     m.present();
@@ -255,24 +271,24 @@ export class Tab1Page {
         if (r.status) {
           this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
             r.present();
-            const y  = this.apiService.vendingOnSale.find(v=>v.position == x.position);
+            const y = this.apiService.vendingOnSale.find(v => v.position == x.position);
             y.stock.qtty--;
-            console.log('yyyyy',y,x);
-            
-            this.storage.set('bill_'+new Date().getTime(),y,'bills')
+            console.log('yyyyy', y, x);
+
+            this.storage.set('bill_' + new Date().getTime(), y, 'bills')
             // PLAY SOUNDS
-            this.storage.set('saleStock',this.apiService.vendingOnSale,'stock');
+            this.storage.set('saleStock', this.apiService.vendingOnSale, 'stock');
           })
         } else {
           this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
             r.present();
           })
         }
-       setTimeout(() => {
-        this.audio = new Audio('assets/khopchay.mp3');
-        this.audio.play();
-        this.apiService.dismissLoading();
-       }, 3000);
+        setTimeout(() => {
+          this.audio = new Audio('assets/khopchay.mp3');
+          this.audio.play();
+          this.apiService.dismissLoading();
+        }, 3000);
       });
     } else {
       const amount = x.stock.price * 1;
@@ -282,9 +298,9 @@ export class Tab1Page {
         if (r.status) {
           this.bills = r.data as IVendingMachineBill;
           // localStorage.setItem('order', JSON.stringify(this.bills));
-          this.storage.set('order_'+new Date().getTime(),this.bills,'orders')
+          this.storage.set('order_' + new Date().getTime(), this.bills, 'orders')
           new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
-            this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } ,cssClass:'dialog-fullscreen'},).then(r => {
+            this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref }, cssClass: 'dialog-fullscreen' },).then(r => {
               r.present();
 
             })
@@ -338,8 +354,8 @@ export class Tab1Page {
       }
       this.apiService.dismissLoading();
     });
-   this.getTotalSale.q=0;
-   this.getTotalSale.t=0;
+    this.getTotalSale.q = 0;
+    this.getTotalSale.t = 0;
     // this.orders = [];
     this.summarizeOrder = [];
   }
@@ -372,8 +388,8 @@ export class Tab1Page {
 
     // });
   }
-  checkCartCount(position:number){
-    return this.orders.find(v => v.position == position)?.stock?.qtty||0;
+  checkCartCount(position: number) {
+    return this.orders.find(v => v.position == position)?.stock?.qtty || 0;
   }
   getSummarizeOrder() {
     this.summarizeOrder.length = 0;
@@ -435,11 +451,11 @@ export class Tab1Page {
     return x;
   }
 
-  removeCart(i:number){
-   const x = this.summarizeOrder.splice(i,1);
-    const y =this.orders.findIndex(v=>x[0]?.position==v.position);
-    if(y!=-1){
-      this.orders.splice(y,1);
+  removeCart(i: number) {
+    const x = this.summarizeOrder.splice(i, 1);
+    const y = this.orders.findIndex(v => x[0]?.position == v.position);
+    if (y != -1) {
+      this.orders.splice(y, 1);
       this.getSummarizeOrder();
     }
   }

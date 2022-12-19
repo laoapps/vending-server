@@ -20,6 +20,11 @@ export class StocksalePage implements OnInit {
     this.saleStock = apiService.vendingOnSale;
     this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
   }
+  refillAll(){
+    this.saleStock.forEach(v=>{
+      v.stock.qtty=v.max;
+    })
+  }
   async changeStock(position: number) {
     console.log('stock ', this.stock);
     
@@ -36,6 +41,7 @@ export class StocksalePage implements OnInit {
          if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
         x.stock.qtty=qtt;
         if(this.saleStock[0].position==0)this.compensation=1;
+        this.save();
       }
     })
     s.present();
@@ -77,5 +83,13 @@ export class StocksalePage implements OnInit {
     console.log('CLOSE');
 
     this.apiService.closeModal(false);
+  }
+
+  save(){
+    this.storage.set('saleStock', this.saleStock, 'stock').then(r => {
+      // console.log('SAVE saleStock', r);
+    }).catch(e => {
+      console.log('Error', e);
+    })
   }
 }

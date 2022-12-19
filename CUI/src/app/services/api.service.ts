@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IAlive, IClientId, IMachineClientID, IMachineId, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IMachineClientID, IMachineId, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
@@ -15,8 +15,8 @@ import { EventEmitter } from 'events';
   providedIn: 'root'
 })
 export class ApiService {
-  stock=new Array<IStock>();
-  eventEmitter=new EventEmitter();
+  stock = new Array<IStock>();
+  eventEmitter = new EventEmitter();
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
@@ -41,7 +41,7 @@ export class ApiService {
     public modal: ModalController,
     public notifyService: NotifierService,
     public storage: IonicStorageService,
-    
+
     public load: LoadingController,
     public alert: AlertController) {
     this.wsapi = wsapi;
@@ -78,19 +78,29 @@ export class ApiService {
 
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-      const x  = this.vendingOnSale.find(v=>v.position == r.position.position);
+      const x = this.vendingOnSale.find(v => v.position == r.position.position);
       console.log('X', x, r.position, x && r.position.status);
 
       if (x && r.position.status) {
         this.deductOrderUpdate(x.position);
+
         x.stock.qtty--;
-        this.storage.set('bill_'+new Date().getTime(),x,'bills')
         // PLAY SOUNDS
         this.audio = new Audio('assets/khopchay.mp3');
         this.audio.play();
         this.toast.create({ message, duration: 2000 }).then(r => {
           r.present();
+        });
+
+        
+        this.storage.get('bill_', 'bills').then(rx => {
+          const b = rx.v as Array<IBillProcess>;
+          const bills = b ? b : [];
+          bills.push(r);
+          this.storage.set('bill_', bills, 'bills')
         })
+
+
       } else if (!r.position.status) {
         // PLAY SOUNDS
         this.audio = new Audio('assets/labob.mp3');
@@ -107,16 +117,16 @@ export class ApiService {
         }).then(v => v.present());
       }
       this.dismissModal();
-      this.storage.set('saleStock',this.vendingOnSale,'stock');
+      this.storage.set('saleStock', this.vendingOnSale, 'stock');
 
       // });
     })
   }
-  public onDeductOrderUpdate(cb:(position:number)=>void){
-    this.eventEmitter.on('deductOrderUpdate',cb);
+  public onDeductOrderUpdate(cb: (position: number) => void) {
+    this.eventEmitter.on('deductOrderUpdate', cb);
   }
-  public deductOrderUpdate(position:number){
-    this.eventEmitter.emit('deductOrderUpdate',position);
+  public deductOrderUpdate(position: number) {
+    this.eventEmitter.emit('deductOrderUpdate', position);
   }
   public checkOnlineStatus() {
     if (this.wsAlive) {
@@ -130,10 +140,10 @@ export class ApiService {
       r ? this.modal.dismiss({ data }) : null
     })
   }
-  public updateOnlineStatus(){
+  public updateOnlineStatus() {
     this.wsAlive.isAlive = this.checkOnlineStatus();
     console.log(this.wsAlive.time);
-    
+
     return this.wsAlive.time;
   }
   private headerBase(): any {
@@ -147,13 +157,23 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
-  createStockItems(){
-    this.vendingOnSale.map(vs => vs.stock).forEach(v => {
+  createStockItems(s: Array<IVendingMachineSale>) {
+    s.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
-      
-      if (! this.stock.find(y => y.id == v.id))
-        this.stock.push(v);
+
+      if (!this.stock.find(y => y.id == v.id))
+        this.stock.push(JSON.parse(JSON.stringify(v)));
     });
+    this.storage.set('stockitems_', this.stock, 'item')
+  }
+  updateStockItems(s: Array<IStock>) {
+    s.forEach(v => {
+      // console.log('stock',v);
+
+      if (!this.stock.find(y => y.id == v.id))
+        this.stock.push(JSON.parse(JSON.stringify(v)));
+    });
+    this.storage.set('stockitems_', this.stock, 'item')
   }
 
   async showModal(component: any, d: any = {}) {
@@ -217,7 +237,7 @@ export class ApiService {
     return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
   }
 
-  getFreeProduct(position: number,id:number) {
+  getFreeProduct(position: number, id: number) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;
     const req = {} as IReqModel;
     req.data = {
