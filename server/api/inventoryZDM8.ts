@@ -24,12 +24,17 @@ export class InventoryZDM8 implements IBaseClass {
     delayTime = 3000;
     path = '/zdm8';
     production = true;
+    disabled = true; //
     public phonenumber = this.production ? '2052899515' : '2054445447'; //LTC. 2058623333 
     public walletId = this.production ? '2599087166' : '2843759248';// LTC
     mmoneyusername = 'dbk';
     mmoneypassword = 'dbk@2022';
-
-
+    checkDisabled(req,res,next){
+        if(this.disabled){
+            return res.send(PrintError('Disabled', [], EMessage.error));
+        }else next();
+    }
+    
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerZDM8();;
         this.wss = wss;
@@ -41,7 +46,7 @@ export class InventoryZDM8 implements IBaseClass {
                 console.log('TEST IS WORKING');
                 res.send({ data: 'test is working' })
             });
-            router.post(this.path + '/', async (req, res) => {
+            router.post(this.path + '/',this.checkDisabled, async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
                     console.log('POST Data', d);
@@ -181,7 +186,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             /// 0. init for demo 
 
-            router.get(this.path + '/init', async (req, res) => {
+            router.get(this.path + '/init',this.checkDisabled, async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];
                     if (!this.ssocket.findOnlneMachine(machineId + '')&&this.production) throw new Error(EMessage.MachineIsNotOnline);
@@ -193,7 +198,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get(this.path + '/refresh', async (req, res) => {
+            router.get(this.path + '/refresh',this.checkDisabled, async (req, res) => {
                 try {
                     this.wss.clients.forEach(v => {
                         if (v.OPEN) {
@@ -207,7 +212,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get(this.path + '/getPaidBills', async (req, res) => {
+            router.get(this.path + '/getPaidBills',this.checkDisabled, async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
                 } catch (error) {
@@ -215,7 +220,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get(this.path + '/getBills', async (req, res) => {
+            router.get(this.path + '/getBills',this.checkDisabled, async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
                 } catch (error) {
@@ -223,7 +228,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get(this.path + '/getOnlineMachines', async (req, res) => {
+            router.get(this.path + '/getOnlineMachines',this.checkDisabled, async (req, res) => {
                 try {
                     console.log(' WS getOnlineMachines');
                     res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
@@ -248,10 +253,10 @@ export class InventoryZDM8 implements IBaseClass {
             // });
           
 
-            router.post(this.path + '/getFreeProduct', async (req, res) => {
+            router.post(this.path + '/getFreeProduct',this.checkDisabled, async (req, res) => {
                 try {
                     // return res.send(PrintError('getFreeProduct', [], EMessage.error));
-                    return res.send(PrintError('getFreeProduct', [], EMessage.error));
+                   
 
                     const {token,data:{id, position,clientId}} = req.body;
                     const machineId  = this.ssocket.findMachineIdToken(token);
