@@ -6,8 +6,8 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./setting.page.scss'],
 })
 export class SettingPage implements OnInit {
-  wsurl = localStorage.getItem('wsurl') || 'ws://laoapps.com:9009';
-  url = localStorage.getItem('url') || 'http://laoapps.com:9009';
+  wsurl = localStorage.getItem('wsurl') || 'ws://laoapps.com:9009/zdm8';
+  url = localStorage.getItem('url') || 'http://laoapps.com:9009/zdm8';
   machineId = localStorage.getItem('machineId') || '12345678';
   otp = localStorage.getItem('otp') || '111111';
   constructor() { }

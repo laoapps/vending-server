@@ -105,12 +105,12 @@ export class Tab1Page {
       console.log(r);
       if (r.status) {
         this.storage.get('stockitems_', 'item').then(rx => {
-          const items = JSON.parse(JSON.stringify(rx?.v)) as Array<IStock>;
+          const items = JSON.parse(JSON.stringify(rx?.v?rx?.v:[])) as Array<IStock>;
           const sitems = items ? items : [];
           this.storage.get('saleStock', 'stock').then(s => {
             console.log('stock', s);
 
-            const storage = JSON.parse(JSON.stringify(s?.v)) as Array<IVendingMachineSale>;
+            const storage = JSON.parse(JSON.stringify(s?.v?s.v:[])) as Array<IVendingMachineSale>;
             const saleStorage = storage ? storage : [] as Array<IVendingMachineSale>;
             const saleServer = r.data as Array<IVendingMachineSale>;
 

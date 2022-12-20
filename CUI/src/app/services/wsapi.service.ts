@@ -67,7 +67,8 @@ export class WsapiService {
       // }, 5000)
     }
     this.webSocket.onmessage = (ev) => {
-      const res = JSON.parse(ev.data) as IResModel;
+      try {
+        const res = JSON.parse(ev.data) as IResModel;
       if (res) {
 
         const data = res.data;
@@ -84,6 +85,8 @@ export class WsapiService {
             break;
           case 'login':
             if (data.data)
+            console.log('LOGIN',data);
+            
               this.loginSubscription.next(data.data)
             break;
           case 'refresh':
@@ -93,6 +96,11 @@ export class WsapiService {
             break;
         }
       }
+      } catch (error) {
+        console.log('WS MESSAGE',error);
+        
+      }
+      
     }
   }
   send(data: IReqModel | IResModel) {

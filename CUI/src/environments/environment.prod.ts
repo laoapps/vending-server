@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  url : 'http://laoapps.com:9009',
-  wsurl : 'ws://laoapps.com:9009',
+  url : 'http://laoapps.com:9009/zdm8',
+  wsurl : 'ws://laoapps.com:9009/zdm8',
 };
