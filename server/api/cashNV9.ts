@@ -186,7 +186,7 @@ export class CashNV9 implements IBaseClass {
                     const machineId = this.ssocket.findMachineIdToken(token);
                     if (!machineId) throw new Error(EMessage.MachineIdNotFound);
 
-                    if(this.checkTooFast(machineId.machineId))throw new Error(EMessage.TooFast);
+                    // if(this.checkTooFast(machineId.machineId))throw new Error(EMessage.TooFast);
                    
                     
 
@@ -224,7 +224,7 @@ export class CashNV9 implements IBaseClass {
         const existO =this.lastOperation.find(v=>v.machineId==machineId);
 
         if(existO){
-            console.log(moment.duration(moment().diff(moment(existO.time))).asMilliseconds());
+            console.log('too fast',moment.duration(moment().diff(moment(existO.time))).asMilliseconds());
             console.log('diff',moment().diff(moment(existO.time)));
             console.log(existO);
             
