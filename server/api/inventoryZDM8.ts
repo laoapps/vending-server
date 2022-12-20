@@ -250,7 +250,9 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/getFreeProduct', async (req, res) => {
                 try {
-                   
+                    // return res.send(PrintError('getFreeProduct', [], EMessage.error));
+                    return res.send(PrintError('getFreeProduct', [], EMessage.error));
+
                     const {token,data:{id, position,clientId}} = req.body;
                     const machineId  = this.ssocket.findMachineIdToken(token);
                     const s =this.stock.find(v=>v.id==id);
@@ -263,7 +265,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId?.machineId+'', position, new Date().getTime()), EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
-                    res.send(PrintError('init', error, EMessage.error));
+                    res.send(PrintError('getFreeProduct', error, EMessage.error));
                 }
             });
         } catch (error) {
