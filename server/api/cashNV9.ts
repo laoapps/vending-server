@@ -224,7 +224,12 @@ export class CashNV9 implements IBaseClass {
         const existO =this.lastOperation.find(v=>v.machineId==machineId);
 
         if(existO){
-            if(moment.duration(moment().diff(moment(existO.time))).asMilliseconds()<5000)
+            console.log(moment.duration(moment().diff(moment(existO.time))).asMilliseconds());
+            console.log('diff',moment().diff(moment(existO.time)));
+            console.log(existO);
+            
+            
+            if(moment.duration(moment().diff(moment(existO.time))).asMilliseconds()<3000)
                 return false;
             existO.time = new Date();
         }else{
