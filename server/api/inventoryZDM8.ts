@@ -184,7 +184,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.get(this.path + '/init', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];
-                    // if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline);
+                    if (!this.ssocket.findOnlneMachine(machineId + '')&&this.production) throw new Error(EMessage.MachineIsNotOnline);
                     this.init(machineId + '');
 
                     res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
