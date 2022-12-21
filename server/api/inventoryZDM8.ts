@@ -24,7 +24,7 @@ export class InventoryZDM8 implements IBaseClass {
     delayTime = 3000;
     path = '/zdm8';
     production = true;
-    disabled = true; //
+    disabled = false; //
     public phonenumber = this.production ? '2052899515' : '2054445447'; //LTC. 2058623333 
     public walletId = this.production ? '2599087166' : '2843759248';// LTC
     mmoneyusername = 'dbk';
@@ -50,9 +50,6 @@ export class InventoryZDM8 implements IBaseClass {
                 const d = req.body as IReqModel;
                 try {
                     console.log('POST Data', d);
-
-
-
 
                     if (d.command == EClientCommand.confirmMMoney) {
                         console.log('CB COMFIRM', d);
