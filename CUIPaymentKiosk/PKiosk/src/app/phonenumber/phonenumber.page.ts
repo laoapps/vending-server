@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ApiServiceService } from '../api-service.service';
 import { NumberpadPage } from '../numberpad/numberpad.page';
 import { EMessage } from '../syste.model';
+import { loadingController } from '@ionic/core';
 
 @Component({
   selector: 'app-phonenumber',
@@ -20,10 +21,12 @@ export class PhonenumberPage implements OnInit {
     this.test=this.api.test;
   }
 
-  start(){
+ async start(){
     if(this.sent)return;
 
     this.sent= true;
+    const l = await loadingController.create({duration:10000});
+    l.present();
     this.phonenumber.phonenumber=this.api.pn
     console.log(this.phonenumber);
     
@@ -31,6 +34,8 @@ export class PhonenumberPage implements OnInit {
       this.api.toast.create({message:EMessage.phonenumberisempty,duration:3000}).then(x=>{
         x.present();
       })
+      this.sent =false;
+      l.dismiss();
       return;
     }
     this.api.validateMMoney(this.phonenumber.phonenumber).subscribe(r=>{
@@ -49,13 +54,15 @@ export class PhonenumberPage implements OnInit {
           this.api.closeModal();
           
         }
-       
       }
+      this.api.pn='';
+      l.dismiss();
       this.sent =false;
     })
   }
   close(){
     this.api.closeModal();
+    this.api.pn='';
   }
   showPad(){
     this.api.showModal(NumberpadPage).then(r=>{

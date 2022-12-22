@@ -91,7 +91,7 @@ export class ApiServiceService {
     this.wsapi.setCounterSubscription.subscribe(v => {
       console.log('setCounterSubscription', v);
       if (v) {
-       this.setCounter(v.t);
+      //  this.setCounter(v.t);
       //  if(v.t==0){
       //   window.location.reload();
       //  }
@@ -148,9 +148,10 @@ export class ApiServiceService {
         clearInterval(this.t);
         this.t = null;
         this.timer.t = t;
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+        return this.billCashIn.length=0;
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 2000);
 
       }
 
