@@ -4,8 +4,10 @@
 
 export const environment = {
   production: false,
-  url : 'http://localhost:9009/cashNV9',
-  wsurl : 'ws://localhost:9009/cashNV9'
+  // url : 'http://localhost:9009/cashNV9',
+  // wsurl : 'ws://localhost:9009/cashNV9'
+  url : 'http://laoapps.com:9009/cashNV9',
+  wsurl : 'ws://laoapps.com:9009/cashNV9'
 };
 
 /*

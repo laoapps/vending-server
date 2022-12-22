@@ -300,7 +300,8 @@ export class InventoryZDM8 implements IBaseClass {
                 price: 1000,
                 qtty: 1,
                 hashP: '',
-                hashM: ''
+                hashM: '',
+                isActive:true
             }, {
                 id: 1,
                 name: 'Pepsi can 330ml',
@@ -309,7 +310,8 @@ export class InventoryZDM8 implements IBaseClass {
                 price: 1000,
                 qtty: 1,
                 hashP: '',
-                hashM: ''
+                hashM: '',
+                isActive:true
 
             }, {
                 id: 2,
@@ -319,7 +321,8 @@ export class InventoryZDM8 implements IBaseClass {
                 price: 1000,
                 qtty: 1,
                 hashP: '',
-                hashM: ''
+                hashM: '',
+                isActive:true
             }
                 , {
                 id: 3,
@@ -328,7 +331,8 @@ export class InventoryZDM8 implements IBaseClass {
                 price: 1000,
                 qtty: 1,
                 hashP: '',
-                hashM: ''
+                hashM: '',
+                isActive:true
 
             }
                 , {
@@ -338,7 +342,8 @@ export class InventoryZDM8 implements IBaseClass {
                 price: 1000,
                 qtty: 1,
                 hashP: '',
-                hashM: ''
+                hashM: '',
+                isActive:true
             }, 
             {
                 id: 5,
@@ -347,7 +352,18 @@ export class InventoryZDM8 implements IBaseClass {
                 price: 0,
                 qtty: 1,
                 hashP: '',
-                hashM: ''
+                hashM: '',
+                isActive:false
+            } , 
+            {
+                id: 6,
+                name: 'LTC water (MMoney)',
+                image: 'ltc_water.png',
+                price: 0,
+                qtty: 1,
+                hashP: '',
+                hashM: '',
+                isActive:true
             }
         ]
             );

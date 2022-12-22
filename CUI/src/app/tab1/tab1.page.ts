@@ -176,9 +176,6 @@ export class Tab1Page {
             if (this.saleList[0].position == 0) this.compensation = 1;
           })
         })
-
-
-
         // window.location.reload();
       } else {
         alert(r.message)

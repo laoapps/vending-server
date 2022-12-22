@@ -38,7 +38,8 @@ export class CashNV9 implements IBaseClass {
     badBillCashIn = new Array<IBillCashIn>();
     requestors = new Array<IMMoneyRequestRes>();
 
-    mmMoneyLogin: IMMoneyLoginCashin | null = null;
+    // mmMoneyLogin: IMMoneyLoginCashin | null = null;
+    loginTokenList=new Array<{m:IMMoneyLoginCashin,t:number}>();
 
     lastOperation = Array<{machineId:string,time:Date}>();
 
@@ -493,10 +494,11 @@ export class CashNV9 implements IBaseClass {
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             try {
                 // const mySum = this.checkSum(msisdn, amount, description, remark1, remark2, remark3, remark4);
-                if (moment(this.mmMoneyLogin?.expiry).isBefore(moment()) || !this.mmMoneyLogin) {
+                // if (moment(this.mmMoneyLogin?.expiry).isBefore(moment()) || !this.mmMoneyLogin) {
                     this.loginMmoney().then(r => {
-                        this.mmMoneyLogin = r;
-                        console.log('DATA mmMoneyLogin', this.mmMoneyLogin);
+                        // this.mmMoneyLogin = r;
+                        this.loginTokenList.push({m:r,t:transID});
+                        console.log('DATA mmMoneyLogin', r);
 
                         this.requestMmoneyCashin(msisdn, transID, amount, description).then(r => {
                             console.log('DATA requestMmoneyCashin', r);
@@ -510,15 +512,15 @@ export class CashNV9 implements IBaseClass {
                         console.log('ERROR loginMmoney', e);
                         reject(e)
                     })
-                } else {
-                    this.requestMmoneyCashin(msisdn, transID, amount, description).then(r => {
-                        console.log('DATA requestMmoneyCashin', r);
-                        resolve(r)
-                    }).catch(e => {
-                        console.log('ERROR requestMmoneyCashin', e);
-                        reject(e)
-                    });
-                }
+                // } else {
+                //     this.requestMmoneyCashin(msisdn, transID, amount, description).then(r => {
+                //         console.log('DATA requestMmoneyCashin', r);
+                //         resolve(r)
+                //     }).catch(e => {
+                //         console.log('ERROR requestMmoneyCashin', e);
+                //         reject(e)
+                //     });
+                // }
             } catch (error) {
                 console.log('ERROR refillMMoney', error);
                 reject(error)
@@ -532,10 +534,10 @@ export class CashNV9 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             try {
                 const mySum = this.checkSum(msisdn, amount, description, remark1, remark2, remark3, remark4);
-                if (moment(this.mmMoneyLogin?.expiry).isBefore(moment()) || !this.mmMoneyLogin) {
+                // if (moment(this.mmMoneyLogin?.expiry).isBefore(moment()) || !this.mmMoneyLogin) {
                     this.loginMmoney().then(r => {
-                        this.mmMoneyLogin = r;
-                        console.log('DATA mmMoneyLogin', this.mmMoneyLogin);
+                        this.loginTokenList.push({m:r,t:transID});
+                        console.log('DATA mmMoneyLogin', r);
 
                         this.processRefillMmoney(msisdn, transID, amount, description).then(r => {
                             console.log('DATA processRefillMmoney', r);
@@ -549,15 +551,15 @@ export class CashNV9 implements IBaseClass {
                         console.log('ERROR loginMmoney', e);
                         reject(e)
                     })
-                } else {
-                    this.processRefillMmoney(msisdn, transID, amount, description).then(r => {
-                        console.log('DATA processRefillMmoney', r);
-                        resolve(r)
-                    }).catch(e => {
-                        console.log('ERROR processRefillMmoney', e);
-                        reject(e)
-                    });
-                }
+                // } else {
+                //     this.processRefillMmoney(msisdn, transID, amount, description).then(r => {
+                //         console.log('DATA processRefillMmoney', r);
+                //         resolve(r)
+                //     }).catch(e => {
+                //         console.log('ERROR processRefillMmoney', e);
+                //         reject(e)
+                //     });
+                // }
             } catch (error) {
                 console.log('ERROR refillMMoney', error);
                 reject(error)
@@ -647,7 +649,7 @@ export class CashNV9 implements IBaseClass {
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             let data = {
                 apiKey: "b7b7ef0830ff278262c72e57bc43d11f",
-                apiToken: this.mmMoneyLogin?.accessToken,
+                apiToken: this.loginTokenList.find(v=>v.t==transID)?.m?.accessToken,
                 transID,
                 requestorID: this.production ? this.MMoneyRequesterId : 69,
                 toAccountOption: "REF",
@@ -750,7 +752,7 @@ export class CashNV9 implements IBaseClass {
             const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_'+this.production+'_' + machineId, dbConnection);
             mEnt.sync().then(r => {
                 mEnt.create({
-                    logintoken: this.mmMoneyLogin?.accessToken + '',
+                    logintoken: this.loginTokenList.find(v=>v.t==transactionID)?.m?.accessToken + '',
                     machineCommands: '',
                     machineId: mId?.machineId + '_' + mId?.otp,
                     machineIp: '',
@@ -784,7 +786,7 @@ export class CashNV9 implements IBaseClass {
             const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_'+this.production+'_' + machineId, dbConnection);
             mEnt.sync().then(r => {
                 mEnt.create({
-                    logintoken: this.mmMoneyLogin?.accessToken + '',
+                    logintoken: this.loginTokenList.find(v=>v.t==transactionID)?.m?.accessToken + '',
                     machineCommands: '',
                     machineId: mId?.machineId + '_' + mId?.otp,
                     machineIp: '',
@@ -820,6 +822,7 @@ export class CashNV9 implements IBaseClass {
 
             // }
             if (!x) throw new Error('Confirm FAILED  bill not found' + command + transactionID);
+            
             const res = {} as IResModel;
             if (command == EMACHINE_COMMAND.ENABLE) {
                 res.command = EMACHINE_COMMAND.start;
@@ -862,6 +865,9 @@ export class CashNV9 implements IBaseClass {
                         if (y.ttl == 0) {
                             console.log('setcounter time out');
                             const i = that.timers.findIndex(v => v.clientId == x.clientId);
+                            const xi =this.loginTokenList.findIndex(v=>v.t==x.transactionID);
+                            if(xi!=-1)
+                            this.loginTokenList.splice(xi,1);
                             if (i != -1) {
                                 console.log('setcounter response WS');
                                 clearInterval(that.timers[i].t);
@@ -939,7 +945,7 @@ export class CashNV9 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
-                apiToken: this.mmMoneyLogin?.accessToken,
+                apiToken: this.loginTokenList.find(v=>v.t==Number(transID+''))?.m?.accessToken,
                 transID,
                 requestorID: this.production ? this.MMoneyRequesterId : 69,
                 transCashInID
@@ -974,7 +980,7 @@ export class CashNV9 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
-                apiToken: this.mmMoneyLogin?.accessToken,
+                apiToken: this.loginTokenList.find(v=>v.t==Number(transID+''))?.m?.accessToken,
                 transID,
                 requestorID: this.production ? this.MMoneyRequesterId : 69,
                 transCashInID

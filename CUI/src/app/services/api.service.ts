@@ -57,12 +57,15 @@ export class ApiService {
       this.wsAlive.time = new Date();
       this.wsAlive.isAlive = this.checkOnlineStatus();
       this.test.test = r?.test;
-      if (!this.vendingOnSale.length) {
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 3000);
-      }
+      // if (!this.vendingOnSale.length) {
+      //   setTimeout(() => {
+      //     window.location.reload();
+      //   }, 3000);
+      //   this.validateDB();
+      // }
+
     });
+  
     this.wsapi.refreshSubscription.subscribe(r => {
       if (r) {
         setTimeout(() => {
@@ -121,6 +124,9 @@ export class ApiService {
 
       // });
     })
+  }
+  public   validateDB(){
+      
   }
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);
