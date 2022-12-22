@@ -76,15 +76,15 @@ export class InventoryZDM8 implements IBaseClass {
                         const clientId = d.data.clientId;
                         let loggedin = false;
                         // console.log(' WS client length', this.wss.clients);
-
+                        
                         this.wss.clients.forEach(v => {
                             console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
 
                             if (v['clientId'] == clientId)
                                 loggedin = true;
                         })
-                        if (!loggedin) throw new Error(EMessage.notloggedinyet);
-
+                        if(this.disabled) throw new Error(EMessage.Disabled);
+                        else if (!loggedin) throw new Error(EMessage.notloggedinyet);
                         else if (d.command == EClientCommand.list) {
                             return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
                         } else if (d.command == EClientCommand.buyMMoney) {
@@ -95,7 +95,6 @@ export class InventoryZDM8 implements IBaseClass {
                             if (!Array.isArray(sale)) throw new Error('Invalid array id');
                             // console.log('this.vendingOnSale', this.vendingOnSale);
                             const checkIds = Array<IVendingMachineSale>();
-
                             sale.forEach(v => {
                                 // v.stock.qtty=1;
                                 // const x = this.vendingOnSale.find(vx => {
@@ -173,9 +172,9 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
 
-                } catch (error) {
+                } catch (error:any) {
                     console.log(error);
-                    res.send(PrintError(d.command, error, EMessage.error));
+                    res.send(PrintError(d.command, error, error.message));
                 }
             });
 
