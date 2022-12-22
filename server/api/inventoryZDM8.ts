@@ -367,7 +367,7 @@ export class InventoryZDM8 implements IBaseClass {
             }
         ]
             );
-            let x = 6;
+            let x = 7;
             let y = 0;
             const exception = new Array<number>();
             new Array(60).fill(0).forEach((v, i) => {
