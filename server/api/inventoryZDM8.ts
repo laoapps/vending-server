@@ -25,7 +25,7 @@ export class InventoryZDM8 implements IBaseClass {
     path = '/zdm8';
     production = true;
     disabled = false; //
-    public phonenumber = this.production ? '2052899515' : '2054445447'; //LTC. 2058623333 
+    public phonenumber = this.production ? '2058623333' : '2054445447'; //LTC. 2058623333 //2052899515
     public walletId = this.production ? '2599087166' : '2843759248';// LTC
     mmoneyusername = 'dbk';
     mmoneypassword = 'dbk@2022';
