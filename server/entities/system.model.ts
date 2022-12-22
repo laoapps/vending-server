@@ -732,7 +732,8 @@ export enum EMessage {
     setcounter = "setcounter",
     TransactionTimeOut = "TransactionTimeOut",
     TooFast = "TooFast",
-    getFreeProductFailed = "getFreeProductFailed"
+    getFreeProductFailed = "getFreeProductFailed",
+    Disabled = "Disabled"
 }
 export interface IBase {
     id?: number;
