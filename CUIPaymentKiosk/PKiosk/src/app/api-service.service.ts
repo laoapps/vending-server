@@ -148,10 +148,13 @@ export class ApiServiceService {
         clearInterval(this.t);
         this.t = null;
         this.timer.t = t;
-        // return this.billCashIn.length=0;
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+        this.closeWS();
+        return this.billCashIn.length=0; //==> for app
+
+        /// for WEB
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 2000);
 
       }
 
