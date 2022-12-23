@@ -58,6 +58,7 @@ export class PhonenumberPage implements OnInit {
       this.api.pn='';
       l.dismiss();
       this.sent =false;
+      
     })
   }
   close(){
