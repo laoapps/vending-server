@@ -260,6 +260,9 @@ export class InventoryZDM8 implements IBaseClass {
                     const {token,data:{id, position,clientId}} = req.body;
                     const machineId  = this.ssocket.findMachineIdToken(token);
                     const s =this.stock.find(v=>v.id==id);
+                    console.log('s',s);
+                    console.log('token',token,'data,data');
+                    
                     if(s?.price!==0) throw new Error(EMessage.getFreeProductFailed);
 
                     // const position =p ? p : 0;
