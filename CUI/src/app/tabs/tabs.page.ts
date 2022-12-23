@@ -30,7 +30,16 @@ export class TabsPage {
   t: any;
   showSetting() {
 
-
+    if (!this.t) {
+      this.t = setTimeout(() => {
+        this.count = 6;
+        console.log('re count');
+        if (this.t) {
+          clearTimeout(this.t);
+          this.t = null;
+        }
+      }, 1500);
+    }
     if (--this.count <= 0) {
       this.count = 6;
       const x = prompt('password');
@@ -41,18 +50,19 @@ export class TabsPage {
           r.present();
         })
       if (this.t) clearTimeout(this.t);
-    } else {
-      if (!this.t) {
-        this.t = setTimeout(() => {
-          this.count = 6;
-          console.log('re count');
-          if (this.t) {
-            clearTimeout(this.t);
-            this.t = null
-          }
-        }, 1500);
-      }
-    }
+    } 
+    // else {
+    //   if (!this.t) {
+    //     this.t = setTimeout(() => {
+    //       this.count = 6;
+    //       console.log('re count');
+    //       if (this.t) {
+    //         clearTimeout(this.t);
+    //         this.t = null;
+    //       }
+    //     }, 1500);
+    //   }
+    // }
   }
   getPassword() {
     let x = '';

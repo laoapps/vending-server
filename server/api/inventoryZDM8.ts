@@ -267,9 +267,12 @@ export class InventoryZDM8 implements IBaseClass {
 
                     // const position =p ? p : 0;
                     ///TODO: NEXT WORK ON CLIENT....
-                    console.log(' WS submit command', machineId, position);
+                   
+                    const x = this.ssocket.processOrder(machineId?.machineId+'', position, new Date().getTime());
 
-                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId?.machineId+'', position, new Date().getTime()), EMessage.succeeded));
+                    console.log(' WS submit command', machineId, position,x);
+
+                    res.send(PrintSucceeded('submit command',x , EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError('getFreeProduct', error, EMessage.error));
