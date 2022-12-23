@@ -176,7 +176,10 @@ export class ApiServiceService {
     }
   }
   refresh() {
-    window.location.reload();
+    this.closeWS();
+    setTimeout(() => {
+      window.location.reload();
+    }, 5000);
   }
   loadBankNotes() {
     return this.http.get<IResModel>(this.url + '/loadBankNotes');
