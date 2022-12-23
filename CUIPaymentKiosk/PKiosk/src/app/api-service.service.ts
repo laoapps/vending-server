@@ -91,7 +91,7 @@ export class ApiServiceService {
     this.wsapi.setCounterSubscription.subscribe(v => {
       console.log('setCounterSubscription', v);
       if (v) {
-      //  this.setCounter(v.t);
+       this.setCounter(v.t);
       //  if(v.t==0){
       //   window.location.reload();
       //  }
