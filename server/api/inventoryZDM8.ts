@@ -83,8 +83,9 @@ export class InventoryZDM8 implements IBaseClass {
                             if (v['clientId'] == clientId)
                                 loggedin = true;
                         })
-                        if(this.disabled) throw new Error(EMessage.Disabled);
-                        else if (!loggedin) throw new Error(EMessage.notloggedinyet);
+                        // if(this.disabled) throw new Error(EMessage.Disabled);
+                        // else
+                         if (!loggedin) throw new Error(EMessage.notloggedinyet);
                         else if (d.command == EClientCommand.list) {
                             return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
                         } else if (d.command == EClientCommand.buyMMoney) {
@@ -249,7 +250,9 @@ export class InventoryZDM8 implements IBaseClass {
             // });
           
 
-            router.post(this.path + '/getFreeProduct',this.checkDisabled.bind(this), async (req, res) => {
+            router.post(this.path + '/getFreeProduct',
+            // this.checkDisabled.bind(this),
+             async (req, res) => {
                 try {
                     // return res.send(PrintError('getFreeProduct', [], EMessage.error));
                    
