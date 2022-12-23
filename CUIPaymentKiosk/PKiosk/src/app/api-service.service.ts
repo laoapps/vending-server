@@ -178,6 +178,7 @@ export class ApiServiceService {
   }
   refresh() {
     this.closeWS();
+    // delay refreshing 15 seconds
     this.loading.create().then(r=>{
       r.present();
     })
