@@ -48,6 +48,7 @@ export class ApiServiceService {
       if(!this.billCashIn.length){
         this.modal.getTop().then(r=>{
           if(!r){
+            // if( this.mMoneyRequestor?.transID==-1)
             this.showModal(AdsPage).then(v=>{
               v.present();
             })
@@ -136,6 +137,7 @@ export class ApiServiceService {
     this.wsapi.connect(this.wsurl, transID, this.machineId.machineId, this.machineId.otp);
   }
   closeWS() {
+    this.mMoneyRequestor.transID=-1;
     this.wsapi.closeWS();
   }
   setCounter(t:number) {

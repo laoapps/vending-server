@@ -51,14 +51,20 @@ export class PhonenumberPage implements OnInit {
           })
           this.api.accountInfoSubcription.next({accountNameEN:this.api.mMoneyRequestor.transData[0].accountNameEN,accountRef:this.api.mMoneyRequestor.transData[0].accountRef})
           this.api.connectWS();
-          this.api.closeModal();
-          
+          setTimeout(() => {
+            this.api.closeModal();
+          }, 1500);
+         
         }
       }
-      this.api.pn='';
-      l.dismiss();
-      this.sent =false;
+     
+      setTimeout(() => {
+        this.api.pn='';
+        this.sent =false;
+        l.dismiss();
+      }, 2000);
       
+
     })
   }
   close(){
