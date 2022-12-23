@@ -50,7 +50,7 @@ export class TabsPage {
             clearTimeout(this.t);
             this.t = null
           }
-        }, 3000);
+        }, 1500);
       }
     }
   }
