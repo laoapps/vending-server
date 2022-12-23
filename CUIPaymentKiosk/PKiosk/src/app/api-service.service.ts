@@ -48,6 +48,7 @@ export class ApiServiceService {
       if(!this.billCashIn.length){
         this.modal.getTop().then(r=>{
           if(!r){
+            if(!this.billCashIn.length)
             this.showModal(AdsPage).then(v=>{
               v.present();
             })

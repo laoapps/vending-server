@@ -18,8 +18,8 @@ export class AdsPage implements OnInit {
     'Data Browling 1080x1920.png',
     'FTTH 1080x1920.png',
     'Pay EAON & Kurngsi 1080x1920.png',
-    'Thatluang Fest 1080x1920.png',
-    'Thatluang Give a way.png'
+    // 'Thatluang Fest 1080x1920.png',
+    // 'Thatluang Give a way.png'
   ]
   t: any;
   constructor(public api: ApiServiceService, private animationCtrl: AnimationController) {
