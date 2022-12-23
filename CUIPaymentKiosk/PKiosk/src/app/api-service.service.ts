@@ -4,7 +4,7 @@ import { IAlive, IBankNote, IBillBankNote, IBillCashIn, IClientId, IMachineId, I
 import { WsapiServiceService } from './wsapi-service.service';
 import * as moment from 'moment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { ModalController, ToastController } from '@ionic/angular';
+import { LoadingController, ModalController, ToastController } from '@ionic/angular';
 import * as cryptojs from 'crypto-js'
 import { BehaviorSubject } from 'rxjs';
 import { AdsPage } from './ads/ads.page';
@@ -31,7 +31,8 @@ export class ApiServiceService {
   constructor(public wsapi: WsapiServiceService,
     public http: HttpClient,
     public toast: ToastController,
-    public modal: ModalController) {
+    public modal: ModalController,
+    public loading:LoadingController) {
 
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = '88888888';
@@ -177,9 +178,12 @@ export class ApiServiceService {
   }
   refresh() {
     this.closeWS();
+    this.loading.create().then(r=>{
+      r.present();
+    })
     setTimeout(() => {
       window.location.reload();
-    }, 5000);
+    }, 15000);
   }
   loadBankNotes() {
     return this.http.get<IResModel>(this.url + '/loadBankNotes');
