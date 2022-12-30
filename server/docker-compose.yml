@@ -27,6 +27,8 @@ services:
       - back-notused:/opt/app/node_modules
     networks:
       - venderserverservice
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # depends_on:
     #   - etl-topup-service
       #- postgresql
