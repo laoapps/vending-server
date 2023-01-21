@@ -1,0 +1,60 @@
+import { NgModule } from '@angular/core';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+
+const routes: Routes = [
+  {
+    path: '',
+    loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
+  },
+  {
+    path: 'tabs',
+    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+  },
+  {
+    path: 'login',
+    loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
+  },
+  {
+    path: 'machine',
+    loadChildren: () => import('./machine/machine.module').then( m => m.MachinePageModule)
+  },
+  {
+    path: 'products',
+    loadChildren: () => import('./products/products.module').then( m => m.ProductsPageModule)
+  },
+  {
+    path: 'sale',
+    loadChildren: () => import('./sale/sale.module').then( m => m.SalePageModule)
+  },
+  {
+    path: 'product-add',
+    loadChildren: () => import('./products/product-add/product-add.module').then( m => m.ProductAddPageModule)
+  },
+  {
+    path: 'product-details',
+    loadChildren: () => import('./products/product-details/product-details.module').then( m => m.ProductDetailsPageModule)
+  },
+  {
+    path: 'machine-details',
+    loadChildren: () => import('./machine/machine-details/machine-details.module').then( m => m.MachineDetailsPageModule)
+  },
+  {
+    path: 'machine-add',
+    loadChildren: () => import('./machine/machine-add/machine-add.module').then( m => m.MachineAddPageModule)
+  },
+  {
+    path: 'sale-add',
+    loadChildren: () => import('./sale/sale-add/sale-add.module').then( m => m.SaleAddPageModule)
+  },
+  {
+    path: 'sale-details',
+    loadChildren: () => import('./sale/sale-details/sale-details.module').then( m => m.SaleDetailsPageModule)
+  }
+];
+@NgModule({
+  imports: [
+    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
+  ],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {}

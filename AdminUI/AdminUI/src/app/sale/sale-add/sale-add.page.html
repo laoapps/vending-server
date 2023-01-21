@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>sale-add</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+=
+    <ion-item>
+      <ion-label>MachineId:</ion-label>
+      <ion-label  slot="end" [(ngModel)]="s.machineId">{{s.machineId}}</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label>Position</ion-label>
+      <ion-input  slot="end" [(ngModel)]="s.position" type="number"></ion-input>
+    </ion-item>
+    <ion-item>
+      
+    </ion-item>
+    <ion-item>
+      <ion-label>Active</ion-label>
+      <ion-toggle slot="end" [(ngModel)]="s!.isActive" ></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-button slot="first" (click)="save()">Save</ion-button> <ion-button slot="end" (click)="close()">Close</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

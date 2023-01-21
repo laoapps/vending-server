@@ -13,7 +13,7 @@ export type VendingMachineBillStatic = typeof Model & {
     new(values?: object, options?: BuildOptions): VendingMachineBillModel;
 };
 
-export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):any => {
+export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):VendingMachineBillStatic => {
     const attributes: ModelAttributes<VendingMachineBillModel> = {
         id: {
             type: DataTypes.INTEGER,
@@ -97,5 +97,5 @@ export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):an
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
-    return x;
+    return x as unknown as VendingMachineBillStatic;
 }

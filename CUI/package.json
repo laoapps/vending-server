@@ -39,12 +39,16 @@
     "cordova-sqlite-storage": "^6.0.0",
     "crypto-js": "^4.1.1",
     "ionicons": "^6.0.3",
+    "js-confetti": "^0.11.0",
     "momment": "^0.0.1",
+    "ng-particles": "^3.7.1",
     "ng-qrcode": "^8.0.1",
     "ngx-order-pipe": "^2.2.0",
     "qrcode-with-logos": "^1.0.3",
-    "rxjs": "~6.6.0",
+    "rxjs": "^7.8.0",
     "tslib": "^2.2.0",
+    "tsparticles": "^2.7.1",
+    "tsparticles-engine": "^2.7.1",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {

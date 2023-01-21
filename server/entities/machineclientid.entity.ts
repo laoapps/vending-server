@@ -1,20 +1,20 @@
-import { BuildOptions, DataTypes, DATE, JSONB, Model, ModelAttributes, Sequelize, UUIDV4 } from "sequelize";
+import { BuildOptions, DataTypes, DATE, json, JSONB, Model, ModelAttributes, Sequelize, UUIDV4 } from "sequelize";
 import * as uuid from 'uuid';
-import { IVendingMachineSale } from "./system.model";
+import { IMachineClientID } from "./system.model";
 
-interface IVendingMachineSaleAttribute extends IVendingMachineSale {
+interface IMachineClientIDAttribute extends IMachineClientID {
 }
-export interface VendingMachineSaleModel extends Model<IVendingMachineSaleAttribute>, IVendingMachineSaleAttribute {
+export interface MachineClientIDModel extends Model<IMachineClientIDAttribute>, IMachineClientIDAttribute {
 
 }
-export class VendingMachineSale extends Model<VendingMachineSaleModel, IVendingMachineSaleAttribute> { }
+export class MachineClientID extends Model<MachineClientIDModel, IMachineClientIDAttribute> { }
 
-export type VendingMachineSaleStatic = typeof Model & {
-    new(values?: object, options?: BuildOptions): VendingMachineSaleModel;
+export type MachineClientIDStatic = typeof Model & {
+    new(values?: object, options?: BuildOptions): MachineClientIDModel;
 };
 
-export const VendingMachineSaleFactory = (name: string, sequelize: Sequelize):any => {
-    const attributes: ModelAttributes<VendingMachineSaleModel> = {
+export const MachineClientIDFactory = (name: string, sequelize: Sequelize): MachineClientIDStatic => {
+    const attributes: ModelAttributes<MachineClientIDModel> = {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -40,14 +40,26 @@ export const VendingMachineSaleFactory = (name: string, sequelize: Sequelize):an
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
         },
-        hasM: {
+         photo: {
             type: DataTypes.TEXT,
         },
-        hashP: {
-            type: DataTypes.TEXT,
-        }
+        // hasM: {
+        //     type: DataTypes.TEXT,
+        // },
+        // hashP: {
+        //     type: DataTypes.TEXT,
+        // },
+        machineId: {
+            type: DataTypes.STRING,
+        },
+        otp: {
+            type: DataTypes.STRING,
+        },
+        ownerUuid:{
+            type: DataTypes.STRING,
+        },
 
-    } as ModelAttributes<VendingMachineSaleModel>;
+    } as ModelAttributes<MachineClientIDModel>;
 
     const x = sequelize.define(name, attributes, { tableName: name, freezeTableName: true });
     x.beforeUpdate(async (o, options) => {
@@ -64,5 +76,5 @@ export const VendingMachineSaleFactory = (name: string, sequelize: Sequelize):an
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
-    return x;
+    return x as unknown as MachineClientIDStatic;
 }

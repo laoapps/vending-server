@@ -1,5 +1,5 @@
 import net from 'net';
-import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/system.model';
+import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID } from '../entities/system.model';
 import cryptojs from 'crypto-js';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
@@ -7,7 +7,7 @@ export class SocketServerZDM8 {
     sclients = Array<net.Socket>();
     ports = 31223;
 
-    private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }];
+    public machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' ,ownerUuid:'',photo:''}, { machineId: '11111111', otp: '111111',ownerUuid:'',photo:'' }];
 
     constructor() {
         try {
@@ -318,6 +318,11 @@ export class SocketServerZDM8 {
             console.log(error);
 
         }
+    }
+    initMachineId(m:Array<IMachineClientID>){
+        this.machineIds.length=0;
+        this.machineIds.push(...m)
+
     }
     listOnlineMachine() {
         try {

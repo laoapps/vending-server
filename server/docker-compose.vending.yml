@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+  vender-server-service:
+    build: . 
+    restart: always
+    container_name: vender-server-service
+    # image: touyara/orderbillingapi:v1
+    # command: npm start
+    environment:
+      - DATABASE_HOST=host.docker.internal
+      - DATABASE_USER=dbvenderserveradmin
+      - DATABASE_DB=dbvenderservice
+      - DATABASE_PASSWORD=2Grg7Dith14P
+      - VENDING=true
+      - PORT=9008
+    ports:
+      - 31221:31221
+      - 31222:31222
+      - 31223:31223
+      - 31224:31224
+      - 31225:31225
+      - 9008:9008
+    volumes:
+      - .:/app
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - back-notused:/opt/app/node_modules
+    networks:
+      - venderserverservice
+    # depends_on:
+    #   - etl-topup-service
+      #- postgresql
+      #- redis
+
+  
+volumes:
+  back-notused:
+networks:
+  venderserverservice:

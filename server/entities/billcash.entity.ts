@@ -13,7 +13,7 @@ export type BillCashInStatic = typeof Model & {
     new(values?: object, options?: BuildOptions): BillCashInModel;
 };
 
-export const BillCashInFactory = (name: string, sequelize: Sequelize):any => {
+export const BillCashInFactory = (name: string, sequelize: Sequelize):BillCashInStatic => {
     const attributes: ModelAttributes<BillCashInModel> = {
         id: {
             type: DataTypes.INTEGER,
@@ -76,5 +76,5 @@ export const BillCashInFactory = (name: string, sequelize: Sequelize):any => {
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
-    return x;
+    return x as unknown as BillCashInStatic;
 }

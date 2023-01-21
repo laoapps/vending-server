@@ -1,9 +1,9 @@
 version: "3.7"
 services:
-  vender-server-service:
+  pkiosk-service:
     build: . 
     restart: always
-    container_name: vender-server-service
+    container_name: pkiosk-service
     # image: touyara/orderbillingapi:v1
     # command: npm start
     environment:
@@ -11,13 +11,9 @@ services:
       - DATABASE_USER=dbvenderserveradmin
       - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=2Grg7Dith14P
-     
+      - VENDING=false
+      - PORT=9009
     ports:
-      - 31221:31221
-      - 31222:31222
-      - 31223:31223
-      - 31224:31224
-      - 31225:31225
       - 9009:9009
 
     volumes:
@@ -26,7 +22,7 @@ services:
       - ./package-lock.json:/app/package-lock.json
       - back-notused:/opt/app/node_modules
     networks:
-      - venderserverservice
+      - pkiosk-service
     # depends_on:
     #   - etl-topup-service
       #- postgresql
@@ -36,4 +32,4 @@ services:
 volumes:
   back-notused:
 networks:
-  venderserverservice:
+  pkiosk-service:

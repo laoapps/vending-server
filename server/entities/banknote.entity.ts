@@ -13,7 +13,7 @@ export type BankNoteStatic = typeof Model & {
     new(values?: object, options?: BuildOptions): BankNoteModel;
 };
 
-export const BankNoteFactory = (name: string, sequelize: Sequelize):any => {
+export const BankNoteFactory = (name: string, sequelize: Sequelize):BankNoteModel => {
     const attributes: ModelAttributes<BankNoteModel> = {
         id: {
             type: DataTypes.INTEGER,
@@ -76,5 +76,5 @@ export const BankNoteFactory = (name: string, sequelize: Sequelize):any => {
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
-    return x;
+    return x as unknown as BankNoteModel;
 }

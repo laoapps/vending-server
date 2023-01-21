@@ -29,6 +29,14 @@ const routes: Routes = [
   {
     path: 'showcart',
     loadChildren: () => import('./showcart/showcart.module').then( m => m.ShowcartPageModule)
+  },
+  {
+    path: 'dice',
+    loadChildren: () => import('./dice/dice.module').then( m => m.DicePageModule)
+  },
+  {
+    path: 'prizelist',
+    loadChildren: () => import('./prizelist/prizelist.module').then( m => m.PrizelistPageModule)
   }
 ];
 @NgModule({

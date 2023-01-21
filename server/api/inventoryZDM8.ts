@@ -1,14 +1,19 @@
 import axios from 'axios';
-import { Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
-import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass } from '../entities/system.model';
+import { broadCast, findRealDB, PrintError, PrintSucceeded } from '../services/service';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass, EEntity, IMachineClientID } from '../entities/system.model';
 import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { SocketServerZDM8 } from './socketServerZDM8';
+import { MachineIDFactory } from '../entities/machineid.entity';
+import { dbConnection, stockEntity } from '../entities';
+import { MachineClientIDFactory } from '../entities/machineclientid.entity';
+import { StockFactory } from '../entities/stock.entity';
+import { VendingMachineSaleFactory } from '../entities/vendingmachinesale.entity';
 export class InventoryZDM8 implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
@@ -19,7 +24,7 @@ export class InventoryZDM8 implements IBaseClass {
     vendingOnSale = new Array<IVendingMachineSale>();
     vendingBill = new Array<IVendingMachineBill>();
     vendingBillPaid = new Array<IVendingMachineBill>();
-    clients = new Array<IMachineID>();
+    // clients = new Array<IMachineID>();
 
     delayTime = 3000;
     path = '/zdm8';
@@ -29,19 +34,27 @@ export class InventoryZDM8 implements IBaseClass {
     public walletId = this.production ? '2599087166' : '2843759248';// LTC
     mmoneyusername = 'dbk';
     mmoneypassword = 'dbk@2022';
-    checkDisabled(req,res,next){
-        if(this.disabled){
+
+
+    machineClientlist = MachineClientIDFactory(EEntity.machineclientid, dbConnection);
+
+    checkDisabled(req, res, next) {
+        if (this.disabled) {
             return res.send(PrintError('Disabled', [], EMessage.error));
-        }else next();
+        } else next();
     }
-    
+
     constructor(router: Router, wss: WebSocketServer.Server) {
-        this.ssocket = new SocketServerZDM8();;
+        this.machineClientlist.sync();
+        this.ssocket = new SocketServerZDM8();
+
         this.wss = wss;
         this.initWs(wss);
         try {
-
-
+            // load machine Id
+            this.ssocket.initMachineId([]);
+            // load production for each machine id
+            this.init();
             router.get(this.path + '/', async (req, res) => {
                 console.log('TEST IS WORKING');
                 res.send({ data: 'test is working' })
@@ -76,7 +89,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const clientId = d.data.clientId;
                         let loggedin = false;
                         // console.log(' WS client length', this.wss.clients);
-                        
+
                         this.wss.clients.forEach(v => {
                             console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
 
@@ -85,7 +98,7 @@ export class InventoryZDM8 implements IBaseClass {
                         })
                         // if(this.disabled) throw new Error(EMessage.Disabled);
                         // else
-                         if (!loggedin) throw new Error(EMessage.notloggedinyet);
+                        if (!loggedin) throw new Error(EMessage.notloggedinyet);
                         else if (d.command == EClientCommand.list) {
                             return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
                         } else if (d.command == EClientCommand.buyMMoney) {
@@ -173,7 +186,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
 
-                } catch (error:any) {
+                } catch (error: any) {
                     console.log(error);
                     res.send(PrintError(d.command, error, error.message));
                 }
@@ -186,8 +199,8 @@ export class InventoryZDM8 implements IBaseClass {
             router.get(this.path + '/init', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];
-                    if (!this.ssocket.findOnlneMachine(machineId + '')&&this.production) throw new Error(EMessage.MachineIsNotOnline);
-                    this.init(machineId + '');
+                    if (!this.ssocket.findOnlneMachine(machineId + '') && this.production) throw new Error(EMessage.MachineIsNotOnline);
+                    this.initDemo(machineId + '');
 
                     res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
                 } catch (error: any) {
@@ -248,132 +261,456 @@ export class InventoryZDM8 implements IBaseClass {
             //         res.send(PrintError('init', error, EMessage.error));
             //     }
             // });
-          
+
 
             router.post(this.path + '/getFreeProduct',
-            // this.checkDisabled.bind(this),
-             async (req, res) => {
-                try {
-                    // return res.send(PrintError('getFreeProduct', [], EMessage.error));
-                   
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        // return res.send(PrintError('getFreeProduct', [], EMessage.error));
 
-                    const {token,data:{id, position,clientId}} = req.body;
-                    const machineId  = this.ssocket.findMachineIdToken(token);
-                    const s =this.stock.find(v=>v.id==id);
-                    console.log('s',s);
-                    console.log('token',token,'data,data');
-                    
-                    if(s?.price!==0) throw new Error(EMessage.getFreeProductFailed);
 
-                    // const position =p ? p : 0;
-                    ///TODO: NEXT WORK ON CLIENT....
-                   
-                    const x = this.ssocket.processOrder(machineId?.machineId+'', position, new Date().getTime());
+                        const { token, data: { id, position, clientId } } = req.body;
+                        const machineId = this.ssocket.findMachineIdToken(token);
+                        const s = this.stock.find(v => v.id == id);
+                        console.log('s', s);
+                        console.log('token', token, 'data,data');
 
-                    console.log(' WS submit command', machineId, position,x);
+                        if (s?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
+                        const m = this.vendingOnSale.find(v => v.machineId == machineId?.machineId && v.stock.id == s?.id);
+                        if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
+                        const x = this.ssocket.processOrder(machineId?.machineId + '', position, new Date().getTime());
 
-                    res.send(PrintSucceeded('submit command',x , EMessage.succeeded));
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError('getFreeProduct', error, EMessage.error));
-                }
-            });
+                        console.log(' WS submit command', machineId, position, x);
+
+                        res.send(PrintSucceeded('submit command', x, EMessage.succeeded));
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError('getFreeProduct', error, EMessage.error));
+                    }
+                });
+
+            router.post(this.path + '/addProduct',
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        try {
+                            const ownerUuid = res.locals['ownerUuid'];
+                            const sEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
+                            await sEnt.sync()
+                            const o = req.body as IStock;
+                            if (!o.name || !o.price) return res.send(PrintError('addProduct', [], EMessage.bodyIsEmpty));
+                            sEnt.create(o).then(r => {
+                                res.send(PrintSucceeded('addProduct', r, EMessage.succeeded));
+                            }).catch(e => {
+                                res.send(PrintError('addProduct', e, EMessage.error));
+                            })
+                        }
+                        catch (error) {
+                            console.log(error);
+                            res.send(PrintError('addProduct', error, EMessage.error));
+                        }
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('addProduct', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/disableProduct',
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const id = Number(req.query['id']);
+                        const isActive =req.query['isActive']==''?null:Boolean(req.query['isActive']);
+                        const sEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync()
+                        sEnt.findByPk(id).then(async r => {
+                            if (!r) return res.send(PrintError('disableProduct', [], EMessage.error));
+                            if(isActive!=null)
+                            r.isActive = isActive;
+                            res.send(PrintSucceeded('disableProduct', await r.save(), EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('disableProduct', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('disableProduct', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/listProduct',
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const sEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync();
+                        sEnt.findAll().then(r => {
+                            res.send(PrintSucceeded('listProduct', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('listProduct', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('listProduct', error, EMessage.error));
+                    }
+                });
+
+            router.post(this.path + '/addSale',
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    const ownerUuid = res.locals['ownerUuid'];
+                    const o = req.body as IVendingMachineSale;
+                    const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
+                    await sEnt.sync()
+                    this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r => {
+                        if (!r) return res.send(PrintError('addSale', [], EMessage.notfound));
+                        if (!o.machineId || Number(o.position) == Number.NaN) return res.send(PrintError('addSale', [], EMessage.bodyIsEmpty));
+                        const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
+                        pEnt.findByPk(o.id).then(p => {
+                            if (!p) return res.send(PrintError('addSale', [], EMessage.productNotFound));
+                            o.stock = p;
+                            sEnt.findOne({ where: { position: o.position } }).then(rx => {
+                                if (rx) return res.send(PrintError('addSale', [], EMessage.duplicatedPosition));
+                                sEnt.create(o).then(r => {
+                                    res.send(PrintSucceeded('addSale', r, EMessage.succeeded));
+                                }).catch(e => {
+                                    console.log(e);
+                                    res.send(PrintError('addSale', e, EMessage.error));
+                                })
+                            }).catch(e => {
+                                console.log(e);
+
+                                res.send(PrintError('addSale', e, EMessage.error));
+                            })
+
+                        })
+
+                    })
+
+
+                });
+            router.post(this.path + '/updateSale',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const o = req.body as IVendingMachineSale;
+                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync();
+
+                        sEnt.findByPk(o.id).then(async r => {
+                            if (!r) return res.send(PrintError('updateSale', [], EMessage.notfound));
+                            const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
+                            pEnt.findByPk(o.id).then(async p => {
+                                if (!p) return res.send(PrintError('updateSale', [], EMessage.productNotFound));
+                                r.stock = p;
+                                r.changed('stock', true);
+                                res.send(PrintSucceeded('updateSale', await r.save(), EMessage.succeeded));
+                            }).catch(e => {
+                                console.log(e);
+                                res.send(PrintError('updateSale', e, EMessage.error));
+                            });
+
+                        }).catch(e => {
+                            res.send(PrintError('updateSale', e, EMessage.error));
+                        })
+
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('updateSale', error, EMessage.error));
+                    }
+                });
+
+
+            router.post(this.path + '/listSale',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync()
+                        sEnt.findAll().then(r => {
+                            res.send(PrintSucceeded('listSale', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('listSale', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('listSale', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/listSaleByMachine',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const machineId = req.query['machineId'] + '';
+                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync()
+                        sEnt.findAll({ where: { machineId } }).then(r => {
+                            res.send(PrintSucceeded('listSale', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('listSale', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('listSale', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/reportStock',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('reportStock', error, EMessage.error));
+                    }
+                });
+
+
+            router.post(this.path + '/addMachine',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const o = req.body as IMachineClientID;
+                        if (!o.otp || !o.machineId) return res.send(PrintError('addMachine', [], EMessage.bodyIsEmpty));
+
+                        // r.changed('isActive',true);
+                        res.send(PrintSucceeded('addMachine', await this.machineClientlist.create(), EMessage.succeeded));
+
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('addProduct', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/updateMachine',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const id = req.query['id'] + '';
+                        const o = req.body as IMachineClientID;
+                        this.machineClientlist.findOne({ where: { ownerUuid, id } }).then(async r => {
+                            if (!r) return res.send(PrintError('disableMachine', [], EMessage.notfound));
+                            r.otp = o.otp ? o.otp : r.otp;
+                            // r.machineId = o.machineId ? o.machineId : r.machineId;
+                            r.photo = o.photo ? o.photo : r.photo;
+                            // r.changed('isActive',true);
+                            res.send(PrintSucceeded('disableMachine', await r?.save(), EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('disableMachine', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('updateMachine', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/disableMachine',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid'];
+                        const isActive = Boolean(req.query['isActive']);
+                        const id = req.query['id'] + '';
+                        this.machineClientlist.findOne({ where: { ownerUuid, id } }).then(async r => {
+                            if (!r) return res.send(PrintError('disableMachine', [], EMessage.notfound));
+                            r.isActive = isActive;
+                            // r.changed('isActive',true);
+                            res.send(PrintSucceeded('disableMachine', await r?.save(), EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('disableMachine', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('disableMachine', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/listMachine',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid']
+                        this.machineClientlist.findAll({ where: { ownerUuid } }).then(r => {
+                            res.send(PrintSucceeded('listMachine', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('listMachine', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('listMachine', error, EMessage.error));
+                    }
+                });
+            router.post(this.path + '/super_listMachine',
+                // this.checkToken.bind(this),
+                // this.isSuper.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        this.machineClientlist.findAll().then(r => {
+                            res.send(PrintSucceeded('listMachine', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('listMachine', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('listMachine', error, EMessage.error));
+                    }
+                });
+
+
         } catch (error) {
             console.log(error);
 
         }
-
     }
-    confirmMMoneyOder(c: IMMoneyConfirm) {
-        return new Promise<any>((resolve, reject) => {
-            // c.wallet_ids
-            this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
-                return { bill: r, transactionID: c.tranid_client };
+
+
+    checkToken(req: Request, res: Response, next: NextFunction) {
+        try {
+            const o = req.body as IReqModel;
+            if (!o.token) throw new Error(EMessage.tokenNotFound)
+            findRealDB(o.token).then(r => {
+                const ownerUuid = r;
+                if (!ownerUuid) throw new Error(EMessage.notfound);
+                // req['gamerUuid'] = gamerUuid;
+                res.locals['ownerUuid'] = ownerUuid;
+                next();
             }).catch(e => {
-                console.log('error confirmMMoney');
-                return e;
-            })
-        })
+                console.log(e);
+                res.status(400).end();
+            });
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).end();
+        }
+
+
+
 
     }
-    init(machineId: string) {
+    init() {
+        // load machines
+
+        // load products from all machines
+        // const stock = new Array<IStock>();
+
+        // let x = stock.length;
+        // let y = 0;
+        // const exception = new Array<number>();
+        // new Array(60).fill(0).forEach((v, i) => {
+        //     const c = x > i ? i : (i - (x * y) - 1);
+        //     !(i % x) && i >= x ? y++ : '';
+        //     if (!exception.includes(i))
+        //         this.vendingOnSale.push({
+        //             machineId,
+        //             stock: this.stock[c],
+        //             position: i, // for ZDM8 only
+        //             hashP: '',
+        //             hashM: '',
+        //             max: 5
+        //         })
+        // });
+    }
+    initDemo(machineId: string) {
         this.stock = [];
         this.vendingOnSale = [];
         try {
             this.stock.push(...[
                 {
-                id: 0,
-                name: 'Coke can 330ml',
-                image: 'cokecan.jpg',
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: '',
-                isActive:true
-            }, {
-                id: 1,
-                name: 'Pepsi can 330ml',
-                image: 'pepsican.jpeg'
-                ,
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: '',
-                isActive:true
+                    id: 0,
+                    name: 'Coke can 330ml',
+                    image: 'cokecan.jpg',
+                    price: 1000,
+                    qtty: 1,
+                    hashP: '',
+                    hashM: '',
+                    isActive: true
+                }, {
+                    id: 1,
+                    name: 'Pepsi can 330ml',
+                    image: 'pepsican.jpeg'
+                    ,
+                    price: 1000,
+                    qtty: 1,
+                    hashP: '',
+                    hashM: '',
+                    isActive: true
 
-            }, {
-                id: 2,
-                name: 'Oishi green tea 450ml',
-                image: 'oishiteabottle.png'
-                ,
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: '',
-                isActive:true
-            }
+                }, {
+                    id: 2,
+                    name: 'Oishi green tea 450ml',
+                    image: 'oishiteabottle.png'
+                    ,
+                    price: 1000,
+                    qtty: 1,
+                    hashP: '',
+                    hashM: '',
+                    isActive: true
+                }
                 , {
-                id: 3,
-                name: 'Chinese tea 330ml',
-                image: 'chineseteacan.jpg',
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: '',
-                isActive:true
+                    id: 3,
+                    name: 'Chinese tea 330ml',
+                    image: 'chineseteacan.jpg',
+                    price: 1000,
+                    qtty: 1,
+                    hashP: '',
+                    hashM: '',
+                    isActive: true
 
-            }
+                }
                 , {
-                id: 4,
-                name: 'Water tiger head 380ml',
-                image: 'tigerheadbottle.png',
-                price: 1000,
-                qtty: 1,
-                hashP: '',
-                hashM: '',
-                isActive:true
-            }, 
-            {
-                id: 5,
-                name: 'LTC water',
-                image: 'ltc_water.png',
-                price: 0,
-                qtty: 1,
-                hashP: '',
-                hashM: '',
-                isActive:false
-            } , 
-            {
-                id: 6,
-                name: 'LTC water (MMoney)',
-                image: 'ltc_water_m.png',
-                price: 500,
-                qtty: 1,
-                hashP: '',
-                hashM: '',
-                isActive:true
-            }
-        ]
+                    id: 4,
+                    name: 'Water tiger head 380ml',
+                    image: 'tigerheadbottle.png',
+                    price: 1000,
+                    qtty: 1,
+                    hashP: '',
+                    hashM: '',
+                    isActive: true
+                },
+                {
+                    id: 5,
+                    name: 'LTC water',
+                    image: 'ltc_water.png',
+                    price: 0,
+                    qtty: 1,
+                    hashP: '',
+                    hashM: '',
+                    isActive: false
+                },
+                {
+                    id: 6,
+                    name: 'LTC water (MMoney)',
+                    image: 'ltc_water_m.png',
+                    price: 500,
+                    qtty: 1,
+                    hashP: '',
+                    hashM: '',
+                    isActive: true
+                }
+            ]
             );
             let x = 7;
             let y = 0;
@@ -395,6 +732,19 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
+    confirmMMoneyOder(c: IMMoneyConfirm) {
+        return new Promise<any>((resolve, reject) => {
+            // c.wallet_ids
+            this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
+                return { bill: r, transactionID: c.tranid_client };
+            }).catch(e => {
+                console.log('error confirmMMoney');
+                return e;
+            })
+        })
+
+    }
+
 
     generateBillMMoney(value: number, transactionID: string) {
         return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
@@ -402,16 +752,16 @@ export class InventoryZDM8 implements IBaseClass {
             this.loginMmoney().then(r => {
                 if (r) {
                     const qr = {
-                        amount: value+'',
+                        amount: value + '',
                         phonenumber: this.phonenumber,// '2055220199',
                         transactionID
-                    }  as IMMoneyGenerateQR;
-                    console.log('QR',qr);
-                    
+                    } as IMMoneyGenerateQR;
+                    console.log('QR', qr);
+
                     axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
                         qr,
                         { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(rx => {
-                             console.log('generateBillMMoney', rx);
+                            console.log('generateBillMMoney', rx);
                             if (rx.status) {
                                 resolve(rx.data as IMMoneyGenerateQRRes);
                             } else {

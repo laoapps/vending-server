@@ -343,7 +343,7 @@ export class CashNV9 implements IBaseClass {
                                 if (!machineId) throw new Error('machine is not exist');
                                 const sock = this.ssocket.findOnlneMachine(machineId.machineId);
                                 if (!sock) throw new Error('machine is not online');
-                                this.ssocket.terminateByClientClose(machineId.machineId);
+                                this.ssocket.terminateByClientClose(machineId.machineId)
                                 const requestor = this.requestors.find(v => v.transID == d.data.transID);
                                 if (!requestor) throw new Error('Requestor is not exist');
 

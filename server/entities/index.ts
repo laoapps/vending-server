@@ -5,7 +5,7 @@ import * as pg from 'pg';
 import { BankNoteFactory, BankNoteModel, BankNoteStatic } from "./banknote.entity";
 import { BillCashInFactory, BillCashInStatic } from "./billcash.entity";
 import { EEntity } from "./system.model";
-import { VendingMachineSaleFactory, VendingMachineSaleStatic } from "./machinesale.entity";
+import { VendingMachineSaleFactory, VendingMachineSaleStatic } from "./vendingmachinesale.entity";
 import { StockFactory, StockStatic } from "./stock.entity";
 import { VendingMachineBillFactory, VendingMachineBillStatic } from "./vendingmachinebill.entity";
 import { MachineIDFactory, MachineIDStatic } from "./machineid.entity";
@@ -30,7 +30,7 @@ export const initDB =()=>{
     billCashEntity = BillCashInFactory(EEntity.billcash+'_',dbConnection); // private for user
 
     vendingMachineSaleEntity = VendingMachineSaleFactory(EEntity.vendingmachinesale+'_',dbConnection);// private for shop
-    stockEntity = StockFactory(EEntity.stock+'_',dbConnection);// private for shop
+    stockEntity = StockFactory(EEntity.product+'_',dbConnection);// private for shop
     vendingMachineBillEntity = VendingMachineBillFactory(EEntity.vendingmachinebill+'_',dbConnection);// private for user
 
 

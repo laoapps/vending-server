@@ -13,7 +13,7 @@ export type StockStatic = typeof Model & {
     new(values?: object, options?: BuildOptions): StockModel;
 };
 
-export const StockFactory = (name: string, sequelize: Sequelize):any => {
+export const StockFactory = (name: string, sequelize: Sequelize):StockStatic => {
     const attributes: ModelAttributes<StockModel> = {
         id: {
             type: DataTypes.INTEGER,
@@ -76,5 +76,5 @@ export const StockFactory = (name: string, sequelize: Sequelize):any => {
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
-    return x;
+    return x as unknown as StockStatic;
 }

@@ -11,6 +11,8 @@ import { setWsHeartbeat } from 'ws-heartbeat/server';
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
+
+
 // export const redisClient = redis.createClient({ url: process.env.DATABASE_HOST + '' || 'localhost' });
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
@@ -69,3 +71,173 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
 //       checksum ^= byteArray[i]
 //     return Number(checksum.toString(16))
 //   }
+
+export function signinOnUserManager(data: { phonenumber: string, password: string }): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            const findUserNameByPhonenumberParams: any = {
+                object: "authorize",
+                method: "findUserNameByPhoneNumber",
+                data: {
+                    phoneNumber: data.phonenumber,
+                    service: process.env.name
+                }
+            }
+
+            const getUsername = await axios.post(USERMANAGER_URL, findUserNameByPhonenumberParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            if (getUsername.data.status != 1) return resolve(EMessage.notfound);
+
+            let loginParams: any = {
+                object: "authorize",
+                method: "login",
+                data: {
+                    username: getUsername.data.data[0].username,
+                    password: data.password,
+                    service: process.env.name
+                }
+            }
+
+            const login = await axios.post(USERMANAGER_URL, loginParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            if (login.data.status != 1) return reject(EMessage.loginfailed);
+
+            const userInfo: any = {
+                uuid: login.data.data.user.uuid,
+                phonenumber: login.data.data.user.phoneNumber,
+                token: login.data.data.token,
+                status: 1
+            }
+
+            resolve(userInfo);
+
+
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function checkPhoneNumberOnUserManager(phoneNumber: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            const validateParams: any = {
+                object: "authorize",
+                method: "checkPhoneNumber",
+                data: {
+                    service: process.env.name,
+                    phoneNumber
+                }
+            }
+            console.log('param', validateParams);
+
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            console.log('phoneNumber', validated.data);//
+
+            if (validated.data.status != 1) return resolve('');
+            resolve(validated.data.data[0]);//{uuid:string,phoneNumber:string}
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function findUuidByPhoneNumberOnUserManager(phoneNumber: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            const validateParams: any = {
+                object: "authorize",
+                method: "findUuidByPhoneNumber",
+                data: {
+                    service: process.env.name,
+                    phoneNumber
+                }
+            }
+            console.log('param', validateParams);
+
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            console.log('phoneNumber', validated.data);//
+
+            if (validated.data.status != 1) return resolve('');
+            resolve(validated.data.data[0]);//{uuid:string,phoneNumber:string}
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function findPhoneNumberByUuidOnUserManager(uuid: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            const validateParams: any = {
+                object: "authorize",
+                method: "findPhoneNumberByUuid",
+                data: {
+                    service: process.env.name,
+                    uuid
+                }
+            }
+            console.log('param', validateParams);
+
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            console.log('phoneNumber', validated.data);//
+
+            if (validated.data.status != 1) return resolve('');
+            resolve(validated.data.data[0]);//{uuid:string,phoneNumber:string}
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function validateTokenOnUserManager(token: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            const validateParams: any = {
+                object: "authorize",
+                method: "validateToken",
+                data: {
+                    service: process.env.name,
+                    token
+                }
+            }
+            console.log('param', validateParams);
+
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            console.log('validated', validated.data);
+
+            if (validated.data.status != 1) return resolve('');
+            resolve(validated.data.data);//uuid
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function isTokenValidOnUserManager(token: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            const validateParams: any = {
+                object: "authorize",
+                method: "isTokenValid",
+                data: {
+                    token
+                }
+            }
+            const validated = await axios.post(USERMANAGER_URL, validateParams);
+            if (validated.data.status != 1) return resolve(EMessage.notfound);
+            resolve(validated.data.data); // true or false
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function findRealDB(token: string): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+        console.log('validate token on usermanager');
+
+        validateTokenOnUserManager(token).then(r => {
+            console.log('validate token on usermanager', r[0]);
+            resolve(r[0]);
+        }).catch(e => {
+            resolve('')
+        })
+    })
+}
+export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
+
+export const LAAB_URL = 'http://localhost:30000';

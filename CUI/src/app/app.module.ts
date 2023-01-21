@@ -14,10 +14,11 @@ import { NotifierModule } from 'angular-notifier';
 import { Storage } from '@ionic/storage-angular';
 import { OrderModule } from 'ngx-order-pipe';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+import { NgParticlesModule } from "ng-particles";
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,NotifierModule,
-     OrderModule
+     OrderModule,NgParticlesModule
   ],
   providers: [ BarcodeScanner,{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage,AppVersion],
   bootstrap: [AppComponent],

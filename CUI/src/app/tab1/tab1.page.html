@@ -96,7 +96,7 @@
             <div class="scrollmenu">
               <div class="order-item" *ngFor="let o of summarizeOrder; let i=index;" color="primary">
                 <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> <img
-                  [src]="this.url+'/public/'+o.stock.image" style="width: 120px;height:120px">
+                  [src]="this.url+'/public/'+o.stock.image" style="width: 180px;height:180px">
                 <div>
                   {{o.stock.name}}/{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})
                 </div>
