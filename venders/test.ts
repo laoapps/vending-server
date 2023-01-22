@@ -1,4 +1,4 @@
-import { initWs } from "./services/service";
+#import { initWs } from "./services/service";
 
 const sspLib = require('encrypted-smiley-secure-protocol');
 var eSSP = new sspLib({
@@ -8,8 +8,8 @@ var eSSP = new sspLib({
     fixedKey: '0123456701234567'
 });
 init();
-eSSP.open('/dev/tty.usbserial-AB0PVS8I').then(r => {
-    console.log('OPEN //dev/tty.usbserial-AB0PVS8I', r);
+eSSP.open('/dev/ttyUSB0').then(r => {
+    console.log('OPEN', r);
 
 }).catch(e => {
     console.log('ERROR OPEN COM1', e);
