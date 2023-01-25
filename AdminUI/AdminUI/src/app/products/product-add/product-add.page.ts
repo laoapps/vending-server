@@ -8,7 +8,7 @@ import { IStock } from 'src/app/services/syste.model';
   styleUrls: ['./product-add.page.scss'],
 })
 export class ProductAddPage implements OnInit {
-  showImage!: (p: string) => string;
+  showImage: (p: string) => string;
   s = {} as IStock;
   loaded: boolean = false;
   imageSrc: string = '';

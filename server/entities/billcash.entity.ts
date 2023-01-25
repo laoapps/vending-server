@@ -73,6 +73,7 @@ export const BillCashInFactory = (name: string, sequelize: Sequelize):BillCashIn
         o.updatedAt = new Date();
     });
     x.beforeCreate(async (o) => {
+        if(!o.uuid)
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });

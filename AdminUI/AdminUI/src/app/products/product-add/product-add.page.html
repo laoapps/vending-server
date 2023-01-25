@@ -7,7 +7,7 @@
 <ion-content>
   <ion-list>
     <ion-item>
-      <ion-img [src]="showImage(s!.image)"></ion-img>
+      <ion-img [src]="showImage(s.image)"></ion-img>
       <input type="file" name="file" accept="image/*"
       (change)="handleInputChange($event)">
         <button 
@@ -27,7 +27,7 @@
     </ion-item>
     <ion-item>
       <ion-label>Active</ion-label>
-      <ion-toggle slot="end" [(ngModel)]="s!.isActive" ></ion-toggle>
+      <ion-toggle slot="end" [(ngModel)]="s.isActive" ></ion-toggle>
     </ion-item>
     <ion-item>
       <ion-button slot="first" (click)="save()">Save</ion-button> <ion-button slot="end" (click)="close()">Close</ion-button>

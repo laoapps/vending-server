@@ -1,5 +1,5 @@
 
-import { SocketKiosClient } from './api/socketClient.kios';
+import { SocketKiosClient } from './api/socketClient.kiosk';
 import { SocketClientM102 } from './api/socketClient.m102';
 import { SocketClientVMC } from './api/socketClient.vmc';
 import { SocketClientZDM8 } from './api/socketClient.zdm8';

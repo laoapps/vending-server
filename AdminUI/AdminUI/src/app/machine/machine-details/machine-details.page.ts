@@ -11,8 +11,8 @@ import { IMachineClientID } from 'src/app/services/syste.model';
 export class MachineDetailsPage implements OnInit {
 
 
-  showImage!: (p: string) => string;
-  @Input()s!:IMachineClientID;
+  showImage: (p: string) => string;
+  @Input()s={} as IMachineClientID;
   loaded: boolean = false;
   imageSrc: string = '';
   constructor(public apiService: ApiService) {

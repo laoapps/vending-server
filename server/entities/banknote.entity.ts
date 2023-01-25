@@ -13,7 +13,7 @@ export type BankNoteStatic = typeof Model & {
     new(values?: object, options?: BuildOptions): BankNoteModel;
 };
 
-export const BankNoteFactory = (name: string, sequelize: Sequelize):BankNoteModel => {
+export const BankNoteFactory = (name: string, sequelize: Sequelize):BankNoteStatic => {
     const attributes: ModelAttributes<BankNoteModel> = {
         id: {
             type: DataTypes.INTEGER,
@@ -73,8 +73,9 @@ export const BankNoteFactory = (name: string, sequelize: Sequelize):BankNoteMode
         o.updatedAt = new Date();
     });
     x.beforeCreate(async (o) => {
+        if(!o.uuid)
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
-    return x as unknown as BankNoteModel;
+    return x as unknown as BankNoteStatic;
 }

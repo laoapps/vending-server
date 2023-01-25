@@ -738,11 +738,11 @@ export enum EMessage {
     duplicatedPosition = "duplicatedPosition"
 }
 export interface IBase {
-    id?: number;
-    uuid?: string;
-    isActive?: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
+    id: number;
+    uuid: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
     // deletedAt?:Date;
 }
 export interface IBC {

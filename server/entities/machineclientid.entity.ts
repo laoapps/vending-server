@@ -73,6 +73,7 @@ export const MachineClientIDFactory = (name: string, sequelize: Sequelize): Mach
         o.updatedAt = new Date();
     });
     x.beforeCreate(async (o) => {
+        if(!o.uuid)
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });

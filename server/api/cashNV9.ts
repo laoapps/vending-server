@@ -9,7 +9,7 @@ import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { SocketServerZDM8 } from './socketServerZDM8';
-import { SocketServerESSP } from './socketServerNV9';
+import { SocketServerESSPKiosk } from './socketServerNV9_Kiosk';
 import crypto from 'crypto';
 import cryptojs from 'crypto-js'
 import os from 'os';
@@ -21,8 +21,8 @@ export class CashNV9 implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
-    ssocket: SocketServerESSP = {} as SocketServerESSP;
-
+    ssocket: SocketServerESSPKiosk = {} as SocketServerESSPKiosk;
+    wsClients = new Array<WebSocket>();
 
     clients = new Array<IMachineID>();
 
@@ -39,9 +39,9 @@ export class CashNV9 implements IBaseClass {
     requestors = new Array<IMMoneyRequestRes>();
 
     // mmMoneyLogin: IMMoneyLoginCashin | null = null;
-    loginTokenList=new Array<{m:IMMoneyLoginCashin,t:number}>();
+    loginTokenList = new Array<{ m: IMMoneyLoginCashin, t: number }>();
 
-    lastOperation = Array<{machineId:string,time:Date}>();
+    lastOperation = Array<{ machineId: string, time: Date }>();
 
     /// <<<<<<<<< PRODUCTION >>>>>>>>>>>>>>>
     //     Cash In Production :
@@ -62,7 +62,7 @@ export class CashNV9 implements IBaseClass {
 
     path = '/cashNV9'
     constructor(router: Router, wss: WebSocketServer.Server) {
-        this.ssocket = new SocketServerESSP();
+        this.ssocket = new SocketServerESSPKiosk();
         this.ssocket.setCashInstant(this);
         this.wss = wss;
         this.initWs(wss);
@@ -118,7 +118,7 @@ export class CashNV9 implements IBaseClass {
                     res.send(PrintError('WS getClientWS', error, EMessage.error));
                 }
             });
-          
+
             router.post(this.path + '/getBillCashIn', async (req, res) => {
                 try {
                     let { msisdn, limit, skip } = req.body;
@@ -188,8 +188,8 @@ export class CashNV9 implements IBaseClass {
                     if (!machineId) throw new Error(EMessage.MachineIdNotFound);
 
                     // if(this.checkTooFast(machineId.machineId))throw new Error(EMessage.TooFast);
-                   
-                    
+
+
 
                     const sock = this.ssocket.findOnlneMachine(machineId.machineId);
                     if (!sock) throw new Error(EMessage.MachineIsNotOnline);
@@ -221,33 +221,46 @@ export class CashNV9 implements IBaseClass {
         }
 
     }
-    checkTooFast(machineId:string){
-        const existO =this.lastOperation.find(v=>v.machineId==machineId);
+    checkTooFast(machineId: string) {
+        const existO = this.lastOperation.find(v => v.machineId == machineId);
 
-        if(existO){
-            console.log('too fast',moment.duration(moment().diff(moment(existO.time))).asMilliseconds());
-            console.log('diff',moment().diff(moment(existO.time)));
+        if (existO) {
+            console.log('too fast', moment.duration(moment().diff(moment(existO.time))).asMilliseconds());
+            console.log('diff', moment().diff(moment(existO.time)));
             console.log(existO);
-            
-            
-            if(moment.duration(moment().diff(moment(existO.time))).asMilliseconds()<3000)
+
+
+            if (moment.duration(moment().diff(moment(existO.time))).asMilliseconds() < 3000)
                 return false;
             existO.time = new Date();
-        }else{
-            this.lastOperation.push({machineId:machineId,time:new Date()})
+        } else {
+            this.lastOperation.push({ machineId: machineId, time: new Date() })
         }
         return true;
     }
 
-
+    findProvider(clientId:string){
+         const x = this.wsClients.find(v=>v['clientId']==clientId) as any;
+         return x?.provider ;
+    }
     wsSend(clientId: Array<string>, data: any) {
         try {
             console.log('CLIENT ID', clientId, data);
             console.log('CLIENT ID', clientId, data);
             if (clientId.length) {
-                this.wss.clients.forEach(v => {
-                    console.log('CLIENT ID', v['clientId']);
+                // this.wss.clients.forEach(v => {
+                //     console.log('CLIENT ID', v['clientId']);
 
+                //     if (v.OPEN) {
+                //         if (clientId.includes(v['clientId'] + '')) {
+                //             v.send(JSON.stringify(data));
+                //             console.log('SENDING ', v['clientId'], data);
+
+                //         }
+                //     }
+                // })
+                this.wsClients.forEach(v=>{
+                    console.log('CLIENT ID', v['clientId']);
                     if (v.OPEN) {
                         if (clientId.includes(v['clientId'] + '')) {
                             v.send(JSON.stringify(data));
@@ -266,20 +279,25 @@ export class CashNV9 implements IBaseClass {
     listOnlineWSClients() {
         return new Promise<Array<string>>((resolve, reject) => {
             const clientIds = Array<string>();
-            this.wss.clients.forEach(v => {
-                console.log('CLIENT ID', v['clientId']);
+            // this.wss.clients.forEach(v => {
+            //     console.log('CLIENT ID', v['clientId']);
 
-                clientIds.push(v['clientId'])
+            //     clientIds.push(v['clientId'])
 
-                if (clientIds.length == this.wss.clients.size) {
-                    resolve(clientIds);
-                }
-            });
+            //     if (clientIds.length == this.wss.clients.size) {
+            //         resolve(clientIds);
+            //     }
+            // });
+
+
+
+            clientIds.push(...this.wsClients.map(v => v['clientId']));
+            resolve(clientIds);
         });
 
 
     }
-    prePareForMaintenance(){
+    prePareForMaintenance() {
         //TODO:
         // from REST API , admin can set the maintenance schedule
         // broadCast for all client WS with counter
@@ -294,7 +312,7 @@ export class CashNV9 implements IBaseClass {
                 console.log('WS HEART BEAT');
 
                 if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping',production:this.production }, EMessage.succeeded)));
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping', production: this.production }, EMessage.succeeded)));
                 }
             }, 15000);
 
@@ -310,12 +328,13 @@ export class CashNV9 implements IBaseClass {
                 // ws['isAlive'] = true;
                 ws.onclose = (ev: CloseEvent) => {
                     console.log(' WS CLOSE');
-                    const x = this.billCashIn.find(v=>v.clientId=ws['clientId']);
-                    if(x){
-                       
+                    const x = this.billCashIn.find(v => v.clientId == ws['clientId']);
+                    if (x) {
+                        const i = this.wsClients.findIndex(v => v['clientId'] == ws['clientId']);
+                        this.wsClients.splice(i, 1);
                         this.ssocket.terminateByClientClose(x.machineId)
                     }
-                   
+
                 }
                 ws.onerror = (ev: Event) => {
                     console.log(' WS error');
@@ -350,6 +369,7 @@ export class CashNV9 implements IBaseClass {
 
                                 ws['machineId'] = machineId.machineId;
                                 ws['clientId'] = uuid4();
+                                this.wsClients.push(ws);
                                 const bsi = {} as IBillCashIn;
                                 bsi.clientId = ws['clientId'];
                                 bsi.createdAt = new Date();
@@ -385,6 +405,10 @@ export class CashNV9 implements IBaseClass {
                             } else throw new Error(EMessage.MachineIdNotFound)
                         } else if (d.command == 'ping') {
                             console.log('WS PING');
+                            return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+                        } else if (d.command == 'setprovider') {
+                            console.log('WS setprovider', d.command);
+                            ws['provider'] = d.data.provider;
                             return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
                         }
                         console.log('WS CLOSE');
@@ -495,23 +519,23 @@ export class CashNV9 implements IBaseClass {
             try {
                 // const mySum = this.checkSum(msisdn, amount, description, remark1, remark2, remark3, remark4);
                 // if (moment(this.mmMoneyLogin?.expiry).isBefore(moment()) || !this.mmMoneyLogin) {
-                    this.loginMmoney().then(r => {
-                        // this.mmMoneyLogin = r;
-                        this.loginTokenList.push({m:r,t:transID});
-                        console.log('DATA mmMoneyLogin', r);
+                this.loginMmoney().then(r => {
+                    // this.mmMoneyLogin = r;
+                    this.loginTokenList.push({ m: r, t: transID });
+                    console.log('DATA mmMoneyLogin', r);
 
-                        this.requestMmoneyCashin(msisdn, transID, amount, description).then(r => {
-                            console.log('DATA requestMmoneyCashin', r);
-                            resolve(r)
-                        }).catch(e => {
-                            console.log('ERROR requestMmoneyCashin', r);
-                            reject(e)
-                        });
-
+                    this.requestMmoneyCashin(msisdn, transID, amount, description).then(r => {
+                        console.log('DATA requestMmoneyCashin', r);
+                        resolve(r)
                     }).catch(e => {
-                        console.log('ERROR loginMmoney', e);
+                        console.log('ERROR requestMmoneyCashin', r);
                         reject(e)
-                    })
+                    });
+
+                }).catch(e => {
+                    console.log('ERROR loginMmoney', e);
+                    reject(e)
+                })
                 // } else {
                 //     this.requestMmoneyCashin(msisdn, transID, amount, description).then(r => {
                 //         console.log('DATA requestMmoneyCashin', r);
@@ -535,22 +559,22 @@ export class CashNV9 implements IBaseClass {
             try {
                 const mySum = this.checkSum(msisdn, amount, description, remark1, remark2, remark3, remark4);
                 // if (moment(this.mmMoneyLogin?.expiry).isBefore(moment()) || !this.mmMoneyLogin) {
-                    this.loginMmoney().then(r => {
-                        this.loginTokenList.push({m:r,t:transID});
-                        console.log('DATA mmMoneyLogin', r);
+                this.loginMmoney().then(r => {
+                    this.loginTokenList.push({ m: r, t: transID });
+                    console.log('DATA mmMoneyLogin', r);
 
-                        this.processRefillMmoney(msisdn, transID, amount, description).then(r => {
-                            console.log('DATA processRefillMmoney', r);
-                            resolve(r)
-                        }).catch(e => {
-                            console.log('ERROR processRefillMmoney', r);
-                            reject(e)
-                        });
-
+                    this.processRefillMmoney(msisdn, transID, amount, description).then(r => {
+                        console.log('DATA processRefillMmoney', r);
+                        resolve(r)
                     }).catch(e => {
-                        console.log('ERROR loginMmoney', e);
+                        console.log('ERROR processRefillMmoney', r);
                         reject(e)
-                    })
+                    });
+
+                }).catch(e => {
+                    console.log('ERROR loginMmoney', e);
+                    reject(e)
+                })
                 // } else {
                 //     this.processRefillMmoney(msisdn, transID, amount, description).then(r => {
                 //         console.log('DATA processRefillMmoney', r);
@@ -649,7 +673,7 @@ export class CashNV9 implements IBaseClass {
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             let data = {
                 apiKey: "b7b7ef0830ff278262c72e57bc43d11f",
-                apiToken: this.loginTokenList.find(v=>v.t==transID)?.m?.accessToken,
+                apiToken: this.loginTokenList.find(v => v.t == transID)?.m?.accessToken,
                 transID,
                 requestorID: this.production ? this.MMoneyRequesterId : 69,
                 toAccountOption: "REF",
@@ -689,10 +713,12 @@ export class CashNV9 implements IBaseClass {
         })
 
     }
-    confirmCredit(machineId: string, channel: number, transactionID: number) {
+    confirmCredit_MMoney(machineId: string, channel: number, transactionID: number) {
 
         const x = this.billCashIn.find(v => v.transactionID == transactionID && v.machineId == machineId);
+        const provider = this.findProvider(x?.clientId+'');
         try {
+            
             if (!x) throw new Error('Confirm FAILED  bill not found' + channel + transactionID);
             const n = this.notes.find(v => v.channel == channel);
             if (!n) throw new Error('Confirm FAILED  note not found' + channel + transactionID);
@@ -710,7 +736,7 @@ export class CashNV9 implements IBaseClass {
                 res.message = EMessage.confirmsucceeded;
                 res.status = 1;
                 res.data = x;
-                this.updateBillCash(x, machineId, transactionID);
+                this.updateBillCash(x, machineId, transactionID, provider);
 
                 this.wsSend([x?.clientId + ''], res);
                 this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
@@ -731,7 +757,7 @@ export class CashNV9 implements IBaseClass {
             console.log(error);
             // save to database 
             // this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
-            this.updateBadBillCash(x as any, machineId, transactionID);
+            this.updateBadBillCash(x as any, machineId, transactionID, provider);
             const res = {} as IResModel;
             res.command = EMACHINE_COMMAND.status;
             res.message = error.message;
@@ -740,26 +766,26 @@ export class CashNV9 implements IBaseClass {
 
         }
     }
-    updateBillCash(billCash: IBillCashIn, machineId: string, transactionID: number) {
+    updateBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, provider = '') {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.billcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory(provider + '_' + EEntity.billcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
-                    console.log('SAVED BILL CASH-IN', EEntity.billcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef);
+                    console.log('SAVED BILL CASH-IN', provider + '_', EEntity.billcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef);
                 })
             })
             const mId = this.ssocket.findMachineId(machineId);
-            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_'+this.production+'_' + machineId, dbConnection);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + this.production + '_' + machineId, dbConnection);
             mEnt.sync().then(r => {
                 mEnt.create({
-                    logintoken: this.loginTokenList.find(v=>v.t==transactionID)?.m?.accessToken + '',
+                    logintoken: this.loginTokenList.find(v => v.t == transactionID)?.m?.accessToken + '',
                     machineCommands: '',
                     machineId: mId?.machineId + '_' + mId?.otp,
                     machineIp: '',
                     bill: billCash
                 }).then(rx => {
-                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_'+this.production+'_' + mId?.machineId);
-                    
+                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_' + this.production + '_' + mId?.machineId);
+
                 }).catch(e => {
                     console.log('  mEnt.create', e);
                 })
@@ -770,12 +796,12 @@ export class CashNV9 implements IBaseClass {
         }
 
     }
-    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number) {
+    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, provider = '') {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory(provider + '_' + EEntity.badbillcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
-                    console.log('SAVED BILL CASH-IN', EEntity.badbillcash + '_'+this.production+'_' + billCash?.requestor?.transData[0]?.accountRef);
+                    console.log('SAVED BILL CASH-IN', provider + '_', EEntity.badbillcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef);
 
                 })
             }).catch(e => {
@@ -783,10 +809,10 @@ export class CashNV9 implements IBaseClass {
 
             })
             const mId = this.ssocket.findMachineId(machineId);
-            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_'+this.production+'_' + machineId, dbConnection);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + this.production + '_' + machineId, dbConnection);
             mEnt.sync().then(r => {
                 mEnt.create({
-                    logintoken: this.loginTokenList.find(v=>v.t==transactionID)?.m?.accessToken + '',
+                    logintoken: this.loginTokenList.find(v => v.t == transactionID)?.m?.accessToken + '',
                     machineCommands: '',
                     machineId: mId?.machineId + '_' + mId?.otp,
                     machineIp: '',
@@ -822,7 +848,7 @@ export class CashNV9 implements IBaseClass {
 
             // }
             if (!x) throw new Error('Confirm FAILED  bill not found' + command + transactionID);
-            
+
             const res = {} as IResModel;
             if (command == EMACHINE_COMMAND.ENABLE) {
                 res.command = EMACHINE_COMMAND.start;
@@ -865,9 +891,9 @@ export class CashNV9 implements IBaseClass {
                         if (y.ttl == 0) {
                             console.log('setcounter time out');
                             const i = that.timers.findIndex(v => v.clientId == x.clientId);
-                            const xi =this.loginTokenList.findIndex(v=>v.t==x.transactionID);
-                            if(xi!=-1)
-                            this.loginTokenList.splice(xi,1);
+                            const xi = this.loginTokenList.findIndex(v => v.t == x.transactionID);
+                            if (xi != -1)
+                                this.loginTokenList.splice(xi, 1);
                             if (i != -1) {
                                 console.log('setcounter response WS');
                                 clearInterval(that.timers[i].t);
@@ -945,7 +971,7 @@ export class CashNV9 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
-                apiToken: this.loginTokenList.find(v=>v.t==Number(transID+''))?.m?.accessToken,
+                apiToken: this.loginTokenList.find(v => v.t == Number(transID + ''))?.m?.accessToken,
                 transID,
                 requestorID: this.production ? this.MMoneyRequesterId : 69,
                 transCashInID
@@ -980,7 +1006,7 @@ export class CashNV9 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             const data = {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
-                apiToken: this.loginTokenList.find(v=>v.t==Number(transID+''))?.m?.accessToken,
+                apiToken: this.loginTokenList.find(v => v.t == Number(transID + ''))?.m?.accessToken,
                 transID,
                 requestorID: this.production ? this.MMoneyRequesterId : 69,
                 transCashInID

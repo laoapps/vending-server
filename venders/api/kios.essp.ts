@@ -3,7 +3,7 @@ import { EMACHINE_COMMAND } from '../entities/syste.model';
 import os from 'os';
 const sspLib = require('encrypted-smiley-secure-protocol');
 
-import { SocketKiosClient } from './socketClient.kios';
+import { SocketKiosClient } from './socketClient.kiosk';
 import fs from 'fs';
 
 export class KiosESSP {
@@ -19,18 +19,18 @@ export class KiosESSP {
         timeout: 3000,
         fixedKey: '0123456701234567'
     });
-    constructor(sock: SocketKiosClient) {
+    constructor(sock: SocketKiosClient,port='COM1') {
         this.sock = sock;
         const that = this;
-
+        const f = fs.readFileSync(__dirname + '/config.json', 'utf8');
+        const env = JSON.parse(f);
+        process.env.channels =env.channels;
         that.initSSP();
-        this.eSSP.open('COM1').then(r => {
-            console.log('OPEN COM1', r);
-
+        this.eSSP.open(port).then(r => {
+            console.log('OPEN '+port, r);
         }).catch(e => {
-            console.log('ERROR OPEN COM1', e);
+            console.log('ERROR OPEN '+port, e);
         });
-
     }
     // isReading=false;
     counter = 0;
@@ -81,11 +81,7 @@ export class KiosESSP {
             //     })
             // }
         })
-
-
     }
-
-
     initSSP() {
         // this.eSSP.close();
         this.eSSP.on('OPEN', () => {
@@ -136,7 +132,7 @@ export class KiosESSP {
                         return;
                     })
 
-                    .then(() => this.eSSP.command('SET_CHANNEL_INHIBITS', { channels: [1, 1, 1, 1, 1, 1, 1] })
+                    .then(() => this.eSSP.command('SET_CHANNEL_INHIBITS', { channels: process.env.channels||[1, 1, 1, 1, 1, 1, 1] })
                         .then(result => {
                             if (result) if (result.status == 'OK') {
                                 console.log('SET_CHANNEL_INHIBITS', result.info)

@@ -10,8 +10,8 @@ import { IVendingMachineSale } from 'src/app/services/syste.model';
 export class SaleDetailsPage implements OnInit {
 
  
-  showImage!: (p: string) => string;
-  @Input()s!:IVendingMachineSale;
+  showImage: (p: string) => string;
+  @Input()s={} as IVendingMachineSale;
   loaded: boolean = false;
   imageSrc: string = '';
   constructor(public apiService: ApiService) {

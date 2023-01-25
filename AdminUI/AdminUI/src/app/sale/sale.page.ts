@@ -10,7 +10,7 @@ import { SaleDetailsPage } from './sale-details/sale-details.page';
   styleUrls: ['./sale.page.scss'],
 })
 export class SalePage implements OnInit {
-  @Input()s!:string;
+  @Input()s='';
   _l = new Array<IVendingMachineSale>();
   constructor(public apiService: ApiService) { }
 

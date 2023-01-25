@@ -7,7 +7,7 @@
 <ion-content>
 <ion-list>
   <ion-item>
-    <ion-img [src]="showImage(s!.image)"></ion-img>
+    <ion-img [src]="showImage(s.image)"></ion-img>
   </ion-item>
   <ion-item>
     <ion-label>Name:</ion-label>
@@ -23,7 +23,7 @@
   </ion-item>
   <ion-item>
     <ion-label>Active</ion-label>
-    <ion-toggle slot="end" [(ngModel)]="s!.isActive" ></ion-toggle>
+    <ion-toggle slot="end" [(ngModel)]="s.isActive" ></ion-toggle>
   </ion-item>
   <ion-item>
     <ion-button (click)="save()">Save</ion-button>   <ion-button (click)="close()">Close</ion-button>

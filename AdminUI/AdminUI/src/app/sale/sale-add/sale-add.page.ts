@@ -9,7 +9,7 @@ import { IVendingMachineSale } from 'src/app/services/syste.model';
 })
 export class SaleAddPage implements OnInit {
 
-  showImage!: (p: string) => string;
+  showImage: (p: string) => string;
   s = {} as IVendingMachineSale;
   loaded: boolean = false;
   imageSrc: string = '';

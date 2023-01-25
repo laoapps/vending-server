@@ -2,7 +2,7 @@
 
 
 import { KiosESSP } from './api/kios.essp';
-import { SocketKiosClient } from './api/socketClient.kios';
+import { SocketKiosClient } from './api/socketClient.kiosk';
 
 
 try {

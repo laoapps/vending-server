@@ -37,8 +37,15 @@ export class WsapiService {
       // }, 30000 + 1000);
       this.machineId = machineId;
       this.otp = otp;
-
-      this.send({ command: EMACHINE_COMMAND.login, data: '', ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex) });
+      const req = {} as IReqModel;
+      req.command= EMACHINE_COMMAND.login;
+      // req. data= '', 
+      // req. ip= '', 
+      // req.  message: '',
+      // req.   status: -1, 
+      req.  time=new Date().toString(), 
+      req.   token=cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex) 
+      this.send(req);
 
       this.webSocket.onclose = (ev): void => {
         // this.timerId = setInterval(() => {

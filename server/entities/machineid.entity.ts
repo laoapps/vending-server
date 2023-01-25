@@ -13,7 +13,7 @@ export type MachineIDStatic = typeof Model & {
     new(values?: object, options?: BuildOptions): MachineIDModel;
 };
 
-export const MachineIDFactory = (name: string, sequelize: Sequelize): MachineIDModel => {
+export const MachineIDFactory = (name: string, sequelize: Sequelize): MachineIDStatic => {
     const attributes: ModelAttributes<MachineIDModel> = {
         id: {
             type: DataTypes.INTEGER,
@@ -76,8 +76,9 @@ export const MachineIDFactory = (name: string, sequelize: Sequelize): MachineIDM
         o.updatedAt = new Date();
     });
     x.beforeCreate(async (o) => {
+        if(!o.uuid)
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
-    return x as unknown as MachineIDModel;
+    return x as unknown as MachineIDStatic;
 }

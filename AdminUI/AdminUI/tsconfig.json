@@ -23,13 +23,14 @@
       "dom"
     ],
     "useDefineForClassFields": false,
-    "ignoreDeprecations": "5.0",
+      
+  
     "suppressImplicitAnyIndexErrors": true,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": true,
   }
 }

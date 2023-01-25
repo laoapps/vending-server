@@ -14,8 +14,9 @@ export class SocketKiosClient {
     token = '';
     t: any;
     m: KiosESSP;
-    constructor() {
-        this.m = new KiosESSP(this);
+    constructor(serverPort=31225,port='COM1') {
+        this.port = serverPort;
+        this.m = new KiosESSP(this,port);
         this.init();
         this.token = cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex)
     }
@@ -89,14 +90,14 @@ export class SocketKiosClient {
                     that.client.end();
                     that.client.destroy();
                     that.init();
-                }, 3000)
+                }, 100)
             });
             this.client.on('end', function (data) {
                 console.log('Data from server:' + data);
                 that.client.destroy();
                 setTimeout(() => {
                     that.init();
-                }, 3000)
+                }, 100)
             });
 
             this.t = setInterval(function () {
@@ -104,7 +105,7 @@ export class SocketKiosClient {
                 console.log('PING from vender');
 
                 that.send(null, EMACHINE_COMMAND.ping)
-            }, 10000);
+            }, 5000);
         } catch (error) {
             console.log(error);
 

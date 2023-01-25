@@ -73,6 +73,7 @@ export const VendingMachineSaleFactory = (name: string, sequelize: Sequelize): V
         o.updatedAt = new Date();
     });
     x.beforeCreate(async (o) => {
+        if(!o.uuid)
         o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });

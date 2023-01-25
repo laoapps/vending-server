@@ -13,7 +13,7 @@ import { SocketServerVMC } from './api/socketServerVMC';
 import { InventoryVMC } from './api/inventoryVMC';
 import { InventoryM102 } from './api/inventoryM102';
 import { SocketServerM102 } from './api/socketServerM102';
-import { SocketServerESSP } from './api/socketServerNV9';
+import { SocketServerESSPKiosk } from './api/socketServerNV9_Kiosk';
 import { CashNV9 } from './api/cashNV9';
 import axios from 'axios';
 import { EClientCommand, EMessage, IBaseClass, IMMoneyConfirm, IReqModel } from './entities/system.model';

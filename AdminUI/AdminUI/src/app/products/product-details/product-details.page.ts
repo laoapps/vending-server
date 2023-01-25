@@ -8,9 +8,9 @@ import { IStock } from 'src/app/services/syste.model';
   styleUrls: ['./product-details.page.scss'],
 })
 export class ProductDetailsPage implements OnInit {
-  @Input()s!:IStock;
-  showImage!:(p:string)=>string;
-  defaultS!:IStock;
+  @Input()s={}as IStock;
+  showImage:(p:string)=>string;
+  defaultS={}as IStock;
   constructor(public apiService:ApiService) { 
     this.showImage= this.apiService.showImage;
     this.defaultS= JSON.parse(JSON.stringify(this.s));

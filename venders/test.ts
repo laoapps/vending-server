@@ -1,4 +1,4 @@
-#import { initWs } from "./services/service";
+//import { initWs } from "./services/service";
 
 const sspLib = require('encrypted-smiley-secure-protocol');
 var eSSP = new sspLib({
@@ -8,7 +8,7 @@ var eSSP = new sspLib({
     fixedKey: '0123456701234567'
 });
 init();
-eSSP.open('/dev/ttyUSB0').then(r => {
+eSSP.open('/dev/tty.usbserial-A10LOXD6').then(r => {
     console.log('OPEN', r);
 
 }).catch(e => {
@@ -21,7 +21,7 @@ function init() {
 
         eSSP.command('SYNC')
             .then(() => eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
-            .then(() => eSSP.initEncryption())
+            // .then(() => eSSP.initEncryption())
             .then(() => eSSP.command('GET_SERIAL_NUMBER'))
             .then(result => {
                 console.log('SERIAL NUMBER:', result.info.serial_number)
@@ -316,14 +316,14 @@ function init() {
     eSSP.on('NOTE_REJECTED', result => {
         console.log('NOTE_REJECTED', result);
 
-        eSSP.command('LAST_REJECT_CODE')
-            .then(result => {
-                console.log(result)
-                eSSP.disable();
-            setTimeout(() => {
-                eSSP.enable();
-            }, 3000);
-            })
+        // eSSP.command('LAST_REJECT_CODE')
+        //     .then(result => {
+        //         console.log(result)
+        //         eSSP.disable();
+        //     setTimeout(() => {
+        //         eSSP.enable();
+        //     }, 3000);
+        //     })
             
     })
 

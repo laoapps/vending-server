@@ -14,7 +14,7 @@ import { SalePage } from '../sale/sale.page';
 })
 export class MachinePage implements OnInit {
   _l = new Array<IMachineClientID>();    
-  showImage!:(p:string)=>string;
+  showImage:(p:string)=>string;
 
   constructor(public apiService:ApiService) {
     this.showImage= this.apiService.showImage;
@@ -88,7 +88,7 @@ export class MachinePage implements OnInit {
     const s = this._l.find(v=>v.id==id);
     if(!s) return alert('Not found')
 
-          this.apiService.disableMachine(s.isActive!,id).subscribe(rx=>{
+          this.apiService.disableMachine(s.isActive,id).subscribe(rx=>{
             console.log(rx);
             if(rx.status){
               this._l.find((v,i)=>{

@@ -3,7 +3,7 @@ import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachine
 import cryptojs from 'crypto-js';
 import { CashNV9 } from './cashNV9';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
-export class SocketServerESSP {
+export class SocketServerESSPKiosk {
     server = net.createServer();
     sclients = Array<net.Socket>();
     ports = 31225;
@@ -12,10 +12,10 @@ export class SocketServerESSP {
 
 
     cashNV9: CashNV9 | null = null;
-    constructor() {
+    constructor(port=31225) {
 
         try {
-
+            this.ports=port
             //creates the server
 
 
@@ -179,7 +179,7 @@ export class SocketServerESSP {
 
                                     console.log(' CREDIT_NOTE', dx);
 
-                                    that.cashNV9?.confirmCredit(socket['machineId'].machineId, dx.channel, dx.transactionID);
+                                    that.cashNV9?.confirmCredit_MMoney(socket['machineId'].machineId, dx.channel, dx.transactionID);
 
                                     return;
                                 }
