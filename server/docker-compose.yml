@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  pkiosk-redis-service :configs:
+  pkiosk-redis-service:
     image: redis
     restart: always
     container_name: pkiosk-redis-service
@@ -50,11 +50,12 @@ services:
       - back-notused:/opt/app/node_modules
     networks:
       - pkioskservice
-    
-    # depends_on:
-    #   - etl-topup-service
-      #- postgresql
-      #- redis
+    depends_on:
+      - pkiosk-db
+      - pkiosk-redis-service
+    links:
+      - vending-db
+      - pkiosk-redis-service
 
   
 volumes:
