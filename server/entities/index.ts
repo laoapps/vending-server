@@ -53,7 +53,8 @@ export const initDB =()=>{
 }
 
 export const CreateDatabase = (prefix: string) => {
-    try {
+    return new Promise<boolean>((resolve,reject)=>{
+       try {
         let user = process.env.DATABASE_USER|| 'postgres',
             password = process.env.DATABASE_PASSWORD|| '5martH67',
             host = process.env.DATABASE_HOST ||'localhost', //0.0.0.0
@@ -95,13 +96,17 @@ export const CreateDatabase = (prefix: string) => {
                 );
                 // dbConnection.sync();
                 initDB();
+                resolve(true);
             }
-            if (!prefix) return console.log('prefix must be set!');
+                else resolve(true);
         }).catch(e => {
-            throw e;
+            reject(e)
         });
     } catch (error) {
         console.error(error);
-    }
+        reject(error)
+    } 
+    })
+    
 
 }
