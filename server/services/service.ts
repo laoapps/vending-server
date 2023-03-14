@@ -13,6 +13,8 @@ const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
 
 
+console.log('process.env.REDIS_HOST',process.env.REDIS_HOST);
+
 export const redisClient = redis.createClient({ url: process.env.REDIS_HOST + '' || 'localhost' });
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
