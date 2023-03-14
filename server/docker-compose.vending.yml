@@ -54,10 +54,12 @@ services:
       - back-notused:/opt/app/node_modules
     networks:
       - venderserverservice
-    # depends_on:
-    #   - etl-topup-service
-      #- postgresql
-      #- redis
+    depends_on:
+      - vending-db
+      - vending-redis-service
+    links:
+      - vending-db
+      - vending-redis-service
 
   
 volumes:
