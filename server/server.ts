@@ -21,6 +21,9 @@ import { PrintError, PrintSucceeded } from './services/service';
 import { parse } from 'url';
 import { CreateDatabase } from './entities';
 
+
+CreateDatabase('');
+
 const isVending = process.env.VENDING;
 const app = express();
 const router = express.Router();
@@ -41,6 +44,7 @@ const f = fs.readFileSync(__dirname + '/.env', 'utf8');
         process.env.backendKey = env.backendKey;
         process.env.production = env.production;
         process.env.name = env.name;
+
 if(isVending){
   const wss1 = new WebSocket.Server({ noServer: true });
   const wss2 = new WebSocket.Server({ noServer: true });
@@ -62,7 +66,7 @@ if(isVending){
   app.use('/vmc/public', express.static(path.resolve(__dirname,'..', 'public')))
   app.use('/zdm8/public', express.static(path.join(__dirname,'..', 'public')))
   app.use('/m102/public', express.static(path.join(__dirname,'..', 'public')))
-  CreateDatabase('');
+ 
   app.post('/', (req, res) => {
    const http= req.protocol; // http
   const host = req.get('Host') // localhost:4000
@@ -162,7 +166,6 @@ if(isVending){
   const sss =Array<IBaseClass>();
   sss.push(cashNV9);
   app.use('/cashNV9/public', express.static(path.join(__dirname, 'public')))
-  CreateDatabase('');
   app.post('/', (req, res) => {
    const http= req.protocol; // http
   const host = req.get('Host') // localhost:4000
