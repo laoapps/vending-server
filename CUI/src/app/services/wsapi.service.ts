@@ -15,7 +15,7 @@ export class WsapiService {
   public loginSubscription = new BehaviorSubject<IClientId>(null);
   public aliveSubscription = new BehaviorSubject<IAlive>(null);
   public billProcessSubscription = new BehaviorSubject<IBillProcess>(null);
-
+  public waitingDelivery = new BehaviorSubject<IBillProcess>(null);
 
   public refreshSubscription = new BehaviorSubject<boolean>(false);
 
@@ -83,6 +83,11 @@ export class WsapiService {
 
             this.billProcessSubscription.next(data)
             break;
+          case 'waitingt':
+            console.log('Start waiting');
+            this.waitingDelivery.next(data)
+            break;
+            
           case 'login':
             if (data.data)
             console.log('LOGIN',data);
@@ -92,6 +97,11 @@ export class WsapiService {
           case 'refresh':
             this.refreshSubscription.next(data.data);
             break;
+
+          // query today bill
+          // query all bills
+          // query today refill
+          // query all refill
           default:
             break;
         }

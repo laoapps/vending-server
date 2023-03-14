@@ -5,8 +5,8 @@ import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
 import { AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
-import { NotifierService } from 'angular-notifier';
-import * as moment from 'moment';
+// import { NotifierService } from 'angular-notifier';
+import moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
@@ -20,6 +20,7 @@ export class ApiService {
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
+  contact = localStorage.getItem('contact') || '55516321';
   currentPaymentProvider = EPaymentProvider.mmoney;
   machineId = {} as IMachineId;
 
@@ -32,14 +33,15 @@ export class ApiService {
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
   test = { test: false };
-
+  static __T: any;
+  static waiting_T: any
   audio = new Audio('assets/khopchay.mp3');
 
   constructor(public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
     public modal: ModalController,
-    public notifyService: NotifierService,
+    // public notifyService: NotifierService,
     public storage: IonicStorageService,
 
     public load: LoadingController,
@@ -65,7 +67,7 @@ export class ApiService {
       // }
 
     });
-  
+
     this.wsapi.refreshSubscription.subscribe(r => {
       if (r) {
         setTimeout(() => {
@@ -73,7 +75,7 @@ export class ApiService {
         }, 3000);
       }
 
-    })
+    });
     this.wsapi.billProcessSubscription.subscribe(r => {
       if (!r) return console.log('empty');
       console.log('ws process subscription', r);
@@ -86,8 +88,11 @@ export class ApiService {
 
       if (x && r.position.status) {
         this.deductOrderUpdate(x.position);
-
         x.stock.qtty--;
+
+
+        this.clearWaitingT();
+
         // PLAY SOUNDS
         this.audio = new Audio('assets/khopchay.mp3');
         this.audio.play();
@@ -95,14 +100,13 @@ export class ApiService {
           r.present();
         });
 
-        
+        r.bill.updatedAt = new Date();
         this.storage.get('bill_', 'bills').then(rx => {
           const b = rx.v as Array<IBillProcess>;
           const bills = b ? b : [];
-          bills.push(r);
+          bills.unshift(r);
           this.storage.set('bill_', bills, 'bills')
         })
-
 
       } else if (!r.position.status) {
         // PLAY SOUNDS
@@ -123,10 +127,100 @@ export class ApiService {
       this.storage.set('saleStock', this.vendingOnSale, 'stock');
 
       // });
+    });
+    this.wsapi.waitingDelivery.subscribe(r => {
+      console.log('WAITING FOR DELIVERY 10 seconds');
+      if(r)
+      this.startWaitingT([r]);
     })
+
+
+    if (!ApiService.__T)
+      setInterval(() => {
+        this.storage.get('bill_', 'bills').then(rx => {
+          const b = rx.v as Array<IBillProcess>;
+          const bll = b ? b.filter(v => moment(v.bill.paymenttime).diff(new Date(), 'days') == 0) : [];
+
+          this.wsapi.send({ command: 'ping', data: { m: this.machineId, bll }, } as IReqModel)
+        })
+      }, 60000);
+    if (this.checkWaitingT())
+      this.startWaitingT([]);
   }
-  public   validateDB(){
+  public checkWaitingT() {
+    try {
+      const a = localStorage.getItem('waiting_T');
+      console.log('aaaa',a,a=='null');
       
+      let ax = [];
+      !a||a=='null' ?
+        localStorage.setItem('waiting_T', JSON.stringify([])) :
+        ax.push(...JSON.parse(a));
+      localStorage.setItem('waiting_T', JSON.stringify(ax));
+      return !!ax.length;
+    } catch (error) {
+      console.log('ERROR', error);
+      return false;
+    }
+  }
+  retryWaitingT = 3;
+  public startWaitingT(t = new Array<IBillProcess>()) {
+    try {
+      this.showLoading();
+      // process retry
+      const a = JSON.parse(localStorage.getItem('waiting_T'));
+      t.push(...a);
+      t.forEach((v, i) => {
+        setTimeout(() => {
+          this.retryProcessBill(v.bill.transactionID + '').subscribe(r => {
+            if (r.status) {
+              this.toast.create({ message: r.message, duration: 3000 }).then(rx => rx.present());
+            } else {
+              this.toast.create({ message: r.message, duration: 3000 }).then(rx => rx.present());
+            }
+          })
+        }, 10000 * i);
+
+        ApiService.waiting_T = setTimeout(() => {
+          this.dismissLoading();
+          // auto retry
+          if (--this.retryWaitingT <= 0) {
+            const cf = confirm('Retry ?');
+            if (cf) this.startWaitingT(t);
+            else {
+              const cf = confirm('Are you sure ?');
+              if (!cf) this.startWaitingT(t);
+              else this.alert.create({
+                message: 'PLEASE REPORT THIS TRANSACTION ID ' + t, buttons: [
+                  {
+                    text: 'OK',
+                    role: 'confirm',
+                    handler: () => {
+
+                    },
+                  },
+                ]
+              }).then(r => r.present());
+            }
+          } else {
+            this.startWaitingT(t);
+          }
+        }, 10000 * i);
+      })
+
+    } catch (error) {
+      console.log('error',error);
+      
+    }
+
+  }
+  public clearWaitingT() {
+    localStorage.setItem('waiting_T', '[]');
+    ApiService.waiting_T ? clearTimeout(ApiService.waiting_T) : '';
+    ApiService.waiting_T = null;
+  }
+  public validateDB() {
+
   }
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);
@@ -194,7 +288,7 @@ export class ApiService {
       // }
       // x += '}';
       // const data = JSON.parse(x);
-      return await this.modal.create({ component, componentProps: d });
+      return await this.modal.create({ component, componentProps: d, cssClass: 'dialog-fullscreen' });
     } catch (error) {
       console.log('ERROR', error);
       this.toast.create({ message: 'Error' }).then(r => {
@@ -215,10 +309,13 @@ export class ApiService {
     return this.http.get<IResModel>(this.url + '/getOnlineMachines', { headers: this.headerBase() });
   }
   loadPaidBills() {
-    return this.http.get<IResModel>(this.url + '/getPaidBills', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/getPaidBills', { headers: this.headerBase() });
   }
   loadBills() {
-    return this.http.get<IResModel>(this.url + '/getBills', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/getBills', { headers: this.headerBase() });
+  }
+  retryProcessBill(T: string) {
+    return this.http.post<IResModel>(this.url + '/retryProcessBill?T=' + T, { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
   loadSaleList() {
     const req = {} as IReqModel;

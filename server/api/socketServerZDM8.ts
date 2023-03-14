@@ -1,16 +1,22 @@
 import net from 'net';
-import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID } from '../entities/system.model';
+import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess } from '../entities/system.model';
 import cryptojs from 'crypto-js';
+import { redisClient, writeLogs } from '../services/service';
+import { EventEmitter } from 'ws';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
     server = net.createServer();
     sclients = Array<net.Socket>();
     ports = 31223;
 
-    public machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' ,ownerUuid:'',photo:''}, { machineId: '11111111', otp: '111111',ownerUuid:'',photo:'' }];
+    public machineIds = new Array<IMachineClientID>();
+    eventEmitter = new EventEmitter();
 
-    constructor() {
+    constructor(ports: number) {
         try {
+            this.sclients = Array<net.Socket>();
+            this.ports = this.ports || ports;
+            this.machineIds = new Array<IMachineClientID>();
             //creates the server
 
 
@@ -176,9 +182,10 @@ export class SocketServerZDM8 {
                                 return;
                             }
                         } else if (Object.keys(EZDM8_COMMAND).includes(d.command)) {
-                            console.log('DATA response from the machine');
+                            console.log('DATA response from the machine', d);
                             console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
-
+                            writeLogs(d, d.command);
+                            that.eventEmitter.emit('MachineResponse',d)
                             return;
                         }
                         socket.end();
@@ -301,6 +308,10 @@ export class SocketServerZDM8 {
         }
 
     }
+
+    onMachineResponse(cb:(r:IReqModel)=>void){
+        this.eventEmitter.on('MachineResponse',cb);
+    }
     findMachineId(machineId: string) {
         try {
             return this.machineIds.find(v => v.machineId == machineId);
@@ -319,12 +330,12 @@ export class SocketServerZDM8 {
 
         }
     }
-    initMachineId(m:Array<IMachineClientID>){
-        this.machineIds.length=0;
+    initMachineId(m: Array<IMachineClientID>) {
+        this.machineIds.length = 0;
         this.machineIds.push(...m)
 
     }
-    listOnlineMachine() {
+    listOnlineMachines() {
         try {
             console.log('count online machine', this.sclients.length);
 
@@ -372,7 +383,7 @@ export class SocketServerZDM8 {
                 res.transactionID = transactionID;
                 res.status = 1;
                 res.data = { slot: position };
-                console.log('writing...', x['machineId']);
+                console.log('writing...', x['machineId'], 'POSITION', position);
                 return { position, status: x.write(JSON.stringify(res) + '\n') };
             } else {
                 console.log('client id socket not found');

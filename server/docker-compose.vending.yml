@@ -1,5 +1,31 @@
 version: "3.7"
 services:
+  vending-redis-service:
+    image: redis
+    restart: always
+    container_name: vending-redis-service
+    #port:
+    networks:
+      - venderserverservice
+  vending-db:
+    container_name: vending-db
+    image: postgres
+    restart: always
+    # secrets:
+    #   - db-password
+    
+    volumes:
+      - vending-data:/var/lib/postgresql/data
+      # - ./initdb.sql:/docker-entrypoint-initdb.d/1-initdb.sql
+      # - ./initdb.sh:/docker-entrypoint-initdb.d/initdb.sh
+    environment:
+      - POSTGRES_DB=dbvenderservice
+      - POSTGRES_USER=dbvenderserveradmin
+      - POSTGRES_PASSWORD=2Grg7Dith14P
+    ports:
+      -  53432:5432
+    networks:
+      - venderserverservice
   vender-server-service:
     build: . 
     restart: always
@@ -7,7 +33,8 @@ services:
     # image: touyara/orderbillingapi:v1
     # command: npm start
     environment:
-      - DATABASE_HOST=host.docker.internal
+      - DATABASE_HOST=vending-db
+      - REDIS_HOST=vending-redis-service
       - DATABASE_USER=dbvenderserveradmin
       - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=2Grg7Dith14P
@@ -35,5 +62,6 @@ services:
   
 volumes:
   back-notused:
+  vending-data:
 networks:
   venderserverservice:

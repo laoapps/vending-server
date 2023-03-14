@@ -171,3 +171,18 @@ div.scrollmenu {
     white-space: nowrap;
   }
   
+  .floatingBtn {
+     background: white;
+   
+    // transform: rotate(-90deg);
+    width: 90px;
+    right: 3%; /* From JQuery we know scroll bar width is 17px */
+    top: 30%;
+    position: fixed;
+    z-index: 1000;
+}
+.floatingBtn ion-icon{
+    font-size: 50px !important;
+    color:green !important;
+   
+}

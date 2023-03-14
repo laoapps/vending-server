@@ -7,7 +7,7 @@ export class SocketServerM102 {
     sclients = Array<net.Socket>();
     ports = 31224;
 
-    private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111' }, { machineId: '11111111', otp: '111111' }];
+    private machineIds=new  Array<IMachineClientID> ();
 
     constructor() {
         try {

@@ -6,7 +6,7 @@ import { Tab1Page } from './tab1.page';
 import { ExploreContainerComponentModule } from '../explore-container/explore-container.module';
 
 import { Tab1PageRoutingModule } from './tab1-routing.module';
-import { NotifierModule } from 'angular-notifier';
+// import { NotifierModule } from 'angular-notifier';
 import { OrderModule } from 'ngx-order-pipe';
 @NgModule({
   imports: [
@@ -15,7 +15,7 @@ import { OrderModule } from 'ngx-order-pipe';
     FormsModule,
     ExploreContainerComponentModule,
     Tab1PageRoutingModule,
-    NotifierModule,
+    // NotifierModule,
      OrderModule
   ],
   declarations: [Tab1Page]

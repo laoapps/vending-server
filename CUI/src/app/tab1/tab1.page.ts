@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone } from '@
 import { ApiService } from '../services/api.service';
 import { IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
 import { ModalController, Platform } from '@ionic/angular';
-import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
+// import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
 import qrlogo from 'qrcode-with-logos';
 import { StocksalePage } from '../stocksale/stocksale.page';
@@ -44,10 +44,11 @@ export class Tab1Page {
   timeoutHandler: any;
   count: any;
   compensation = 0;
+  
   constructor(private ref: ChangeDetectorRef,
     public apiService: ApiService,
     platform: Platform,
-    private scanner: BarcodeScanner,
+    // private scanner: @ionic-native/serial,
     public storage: IonicStorageService,
     public appCaching: CachingService) {
     // alert('V1_'+this.mmLogo);      
@@ -110,8 +111,8 @@ export class Tab1Page {
           this.storage.get('saleStock', 'stock').then(s => {
             console.log('stock', s);
 
-            const storage = JSON.parse(JSON.stringify(s?.v?s.v:[])) as Array<IVendingMachineSale>;
-            const saleStorage = storage ? storage : [] as Array<IVendingMachineSale>;
+            const saleitems = JSON.parse(JSON.stringify(s?.v?s.v:[])) as Array<IVendingMachineSale>;
+            const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
             const saleServer = r.data as Array<IVendingMachineSale>;
 
             const arrdel = [] as Array<IVendingMachineSale>;;
@@ -207,11 +208,16 @@ export class Tab1Page {
       r.data;
       console.log('manageStock', r.data);
       // if (r.data) {
-      //   this.storage.set('saleStock', this.vendingOnSale, 'stock').then(r => {
-      //     console.log('SAVE saleStock', r);
-      //   }).catch(e => {
-      //     console.log('Error', e);
-      //   })
+        const k ='refillSaleStock';
+        this.storage.get(k+'_', k).then(rx => {
+          const b = rx.v as Array<IVendingMachineSale>;
+          const s = b ? b : [];
+          const u = new Date();
+          this.vendingOnSale.forEach(v=>v.updatedAt=u);
+          s.unshift(...this.vendingOnSale);
+          this.storage.set(k+'_', s, k)
+        })
+       
       // } else {
       //   console.log('Canceled');
 
@@ -289,7 +295,6 @@ export class Tab1Page {
       });
     } else {
       const amount = x.stock.price * 1;
-      this.apiService.showLoading();
       this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
         console.log(r);
         if (r.status) {
@@ -299,8 +304,8 @@ export class Tab1Page {
           new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
             this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref }, cssClass: 'dialog-fullscreen' },).then(r => {
               r.present();
-
-            })
+             
+            });
           })
 
           // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
@@ -318,7 +323,9 @@ export class Tab1Page {
             r.present();
           })
         }
-        this.apiService.dismissLoading();
+        setTimeout(() => {
+          this.apiService.dismissLoading();
+        }, 1000);
       })
     }
   }
@@ -334,7 +341,7 @@ export class Tab1Page {
         this.bills = r.data as IVendingMachineBill;
         localStorage.setItem('order', JSON.stringify(this.bills));
         new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
-          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref } }).then(r => {
+          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref },cssClass: 'dialog-fullscreen' }).then(r => {
             r.present();
           })
         })

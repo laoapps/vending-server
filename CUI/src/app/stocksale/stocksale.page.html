@@ -14,8 +14,14 @@
       <ion-col>
         <ion-button (click)="refillAll()">Refill</ion-button>
       </ion-col>
+      <ion-col>
+        <ion-button (click)="reportBills()">Report bills</ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button (click)="reportSale()">Report sale</ion-button>
+      </ion-col>
     </ion-row>
-    <ion-row>
+    <!-- <ion-row>
       <ion-col>
         <div class="scrollmenu">
           <div *ngFor="let s of saleStock">
@@ -47,11 +53,11 @@
         </div>
 
       </ion-col>
-    </ion-row>
-    <ion-row *ngFor="let s of saleStock">
+    </ion-row> -->
+    <!-- <ion-row *ngFor="let s of saleStock">
       <ion-col size="8">
         <ion-label>{{s.position+compensation|number}}</ion-label>
-        <img style="width: 200px;height:480px" [src]="this.url+'/public/'+s.stock.image"
+        <img style="width: 100px;height:240px" [src]="this.url+'/public/'+s.stock.image"
           (click)="changeStock(s.position)">
       </ion-col>
       <ion-col size="4">
@@ -65,6 +71,27 @@
             (ionChange)="save()"></ion-range>
         </div>
       </ion-col>
-    </ion-row>
+      <ion-item-divider></ion-item-divider>
+    </ion-row> -->
   </ion-grid>
+  <ion-input [(ngModel)]="search" (ngModelChange)="doFilter()"></ion-input>
+  <div *ngFor="let s of saleStock" style="display:inline;float:left" (click)="selectItem(s.position+'')">
+    <ion-card>
+      <ion-label>{{s.position+compensation|number}}</ion-label>
+      <img style="width: 100px;height:240px" [src]="this.url+'/public/'+s.stock.image"
+        (click)="changeStock(s.position)">
+    </ion-card>
+    <ion-card >
+      <div>
+        <ion-label>Price:</ion-label>
+        <ion-label>{{s.stock.price|number}}</ion-label>
+      </div>
+      <div>
+        <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
+        <ion-range [disabled]="isDisabled!=s.position+''" [ticks]="true" [snaps]="true" [min]="0" [max]="s.max" [(ngModel)]="s.stock.qtty"
+          (ionChange)="save()"></ion-range>
+      </div>
+    </ion-card>
+    <ion-item-divider></ion-item-divider>
+  </div>
 </ion-content>

@@ -35,7 +35,7 @@ export class TabsPage {
         this.count = 6;
         console.log('re count');
         if (this.t) {
-          clearTimeout(this.t);
+          // clearTimeout(this.t);
           this.t = null;
         }
       }, 1500);
@@ -49,7 +49,10 @@ export class TabsPage {
         this.api.showModal(SettingPage).then(r => {
           r.present();
         })
-      if (this.t) clearTimeout(this.t);
+      if (this.t) {
+        clearTimeout(this.t);
+        this.t = null;
+      }
     } 
     // else {
     //   if (!this.t) {

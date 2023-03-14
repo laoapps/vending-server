@@ -120,16 +120,25 @@ ion-item {
 
 
 
-  .modal-wrapper, .modal-shadow{
-	align-items: center;
-	justify-content: center; 
-	--height: 100%; 
-	--width: 100%; 
-  }
+//   .modal-wrapper, .modal-shadow{
+// 	align-items: center;
+// 	justify-content: center; 
+// 	--height: 100%; 
+// 	--width: 100%; 
+//   }
 
-  .dialog-fullscreen .modal-wrapper {
+//   .dialog-fullscreen .modal-wrapper {
+// 	align-items: center;
+// 	justify-content: center; 
+// 	--height: 100%; 
+// 	--width: 100%; 
+//   }
+
+  .dialog-fullscreen {
 	align-items: center;
 	justify-content: center; 
-	--height: 100%; 
-	--width: 100%; 
+	&::part(content){
+	  width: 90%;
+	  height: 80%; 
+	}
   }

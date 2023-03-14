@@ -13,19 +13,19 @@ const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
 
 
-// export const redisClient = redis.createClient({ url: process.env.DATABASE_HOST + '' || 'localhost' });
+export const redisClient = redis.createClient({ url: process.env.REDIS_HOST + '' || 'localhost' });
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
 
-export function PrintSucceeded(command: string, data: any, message: string,transactionID:number=-1, code: string = '0'): IResModel {
+export function PrintSucceeded(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
     return {
-        command, data, message, code, status: 1,transactionID
+        command, data, message, code, status: 1, transactionID
     } as IResModel;
 }
-export function PrintError(command: string, data: any, message: string,transactionID:number=-1, code: string = '0'): IResModel {
+export function PrintError(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
     return {
-        command, data: data, message, code, status: 0,transactionID
+        command, data: data, message, code, status: 0, transactionID
     } as IResModel;
 }
 export function broadCast(wss: WebSocketServer.WebSocketServer, comm: string, r: any, delay: boolean = false) {
@@ -237,6 +237,22 @@ export function findRealDB(token: string): Promise<string> {
             resolve('')
         })
     })
+}
+export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
+    
+    const logs = __dirname + `/logs/results_${da}.json`;
+    return fs.readFileSync(logs).toString();
+}
+export function writeSucceededRecordLog(m, position) {
+    const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = __dirname + `/logs/results_${da}.json`;
+    fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+}
+export function writeLogs(m, position,name='g_') {
+    const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = __dirname + `/logs/${name}_${da}.json`;
+
+    fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
 export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
 

@@ -10,6 +10,7 @@
     <!-- <img src="assets/icon/favicon.png"/> -->
 
 
+   
   </div>
 
 
@@ -20,6 +21,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <div class="floatingBtn"><ion-icon name="logo-whatsapp"></ion-icon><div>ມີບັນຫາໂທWA:<div>{{apiService.contact}}</div></div></div>
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -42,7 +44,7 @@
             <img style="width: 200px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </div>
           <ng-template #elsebuystock>
-            <img style="width: 200px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
+            <img style="width: 200px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </ng-template>
         </ion-item>
         <ion-item>
@@ -62,14 +64,16 @@
         </ion-item>
       </ion-card>
     </div>
+  
   </div>
+
   <div>
     <img src="../../assets/background/soda.jpg">
   </div>
 
 
 
-  <notifier-container></notifier-container>
+  <!-- <notifier-container></notifier-container> -->
   <div *ngIf="getTotalSale?.t">
     <div class="spacious-container" class="glasspanel">
       <ion-grid>
@@ -96,7 +100,7 @@
             <div class="scrollmenu">
               <div class="order-item" *ngFor="let o of summarizeOrder; let i=index;" color="primary">
                 <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> <img
-                  [src]="this.url+'/public/'+o.stock.image" style="width: 180px;height:180px">
+                  [src]="this.url+'/public/'+o.stock.image" style="height:100px;width: 240px">
                 <div>
                   {{o.stock.name}}/{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})
                 </div>

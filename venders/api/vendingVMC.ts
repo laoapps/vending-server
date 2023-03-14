@@ -17,8 +17,7 @@ export class VendingVMC {
     sock: SocketClientVMC | null = null
     path = '/dev/ttyS1';
     commands = Array<{b:Buffer,transactionID:number}>();
-    isACK = false;
-    retry = 5;
+
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         // Read data that is available but keep the stream in "paused mode"
@@ -52,23 +51,20 @@ export class VendingVMC {
                         that.port.write(buff.b, (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
-                                that.sock?.send(buff?.b.toString("hex"), buff?.transactionID||-1);
+                               that.sock?.send(buff?.b.toString("hex"), 
+                               //buff?.transactionID||
+                               -1);
                             } else {
                                 console.log('WRITE COMMAND succeeded', new Date().getTime());
-                                that.sock?.send(buff?.b.toString("hex"), buff?.transactionID||-1);
+                               that.sock?.send(buff?.b.toString("hex"), 
+                            //    buff?.transactionID||
+                               -1);
                                 // confirm by socket
                             }
                         })
-                        that.retry--;
-                        if (that.retry <= 0) {
-                            const t = that.clearTransactionID();
-                            that.sock?.send(b, t?.transactionID||-1);
-                        }
-                
-                   
                 }
                 else if (b == 'fafb420043') {// ACK 
-                    that.retry = 5;
+                    //that.retry = 5;
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
                     console.log('shift the current command and add new command for demo');
                     const t = that.clearTransactionID();

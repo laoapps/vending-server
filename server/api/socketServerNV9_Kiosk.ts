@@ -8,7 +8,7 @@ export class SocketServerESSPKiosk {
     sclients = Array<net.Socket>();
     ports = 31225;
 
-    private machineIds: Array<IMachineClientID> = [{ machineId: '12345678', otp: '111111',ownerUuid:'',photo:'' }, { machineId: '11111111', otp: '111111',ownerUuid:'',photo:'' }, { machineId: '88888888', otp: '111111',ownerUuid:'',photo:'' }];
+    private machineIds=new  Array<IMachineClientID> ();
 
 
     cashNV9: CashNV9 | null = null;
@@ -178,7 +178,7 @@ export class SocketServerESSPKiosk {
                                     console.log('CREDIT_NOTE need to confirm the ORDER has been completed or not, TODO LATER');
 
                                     console.log(' CREDIT_NOTE', dx);
-
+                                    
                                     that.cashNV9?.confirmCredit_MMoney(socket['machineId'].machineId, dx.channel, dx.transactionID);
 
                                     return;

@@ -1,5 +1,31 @@
 version: "3.7"
 services:
+  pkiosk-redis-service :configs:
+    image: redis
+    restart: always
+    container_name: pkiosk-redis-service
+    #port:
+    networks:
+      - pkioskservice
+  pkiosk-db:
+    container_name: pkiosk-db
+    image: postgres
+    restart: always
+    # secrets:
+    #   - db-password
+    
+    volumes:
+      - pkiosk-data:/var/lib/postgresql/data
+      # - ./initdb.sql:/docker-entrypoint-initdb.d/1-initdb.sql
+      # - ./initdb.sh:/docker-entrypoint-initdb.d/initdb.sh
+    environment:
+      - POSTGRES_DB=dbvenderservice
+      - POSTGRES_USER=pkiosadmin
+      - POSTGRES_PASSWORD=18HF0B5MT6aD
+    ports:
+      -  51432:5432
+    networks:
+      - pkioskservice
   pkiosk-service:
     build: . 
     restart: always
@@ -7,14 +33,15 @@ services:
     # image: touyara/orderbillingapi:v1
     # command: npm start
     environment:
-      - DATABASE_HOST=host.docker.internal
-      - DATABASE_USER=dbvenderserveradmin
+      - DATABASE_HOST=pkiosk-db
+      - REDIS_HOST=pkiosk-redis-service
+      - DATABASE_USER=pkiosadmin
       - DATABASE_DB=dbvenderservice
-      - DATABASE_PASSWORD=2Grg7Dith14P
+      - DATABASE_PASSWORD=18HF0B5MT6aD
       - VENDING=false
-      - PORT=9009
+      - PORT=9010
     ports:
-      - 9009:9009
+      - 9010:9010
 
     volumes:
       - .:/app
@@ -22,9 +49,8 @@ services:
       - ./package-lock.json:/app/package-lock.json
       - back-notused:/opt/app/node_modules
     networks:
-      - venderserverservice
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - pkioskservice
+    
     # depends_on:
     #   - etl-topup-service
       #- postgresql
@@ -33,5 +59,6 @@ services:
   
 volumes:
   back-notused:
+  pkiosk-data:
 networks:
-  venderserverservice:
+  pkioskservice:

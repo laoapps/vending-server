@@ -10,6 +10,7 @@ export class QrpayPage implements OnInit {
   @Input() encodedData:string;
   @Input() amount:number;
   @Input() ref:string;
+  contact = localStorage.getItem('contact') || '55516321';
   constructor(public modal:ModalController) { }
 
   ngOnInit() {

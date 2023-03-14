@@ -8,19 +8,24 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 
-import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+// import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { QrCodeModule } from 'ng-qrcode';
-import { NotifierModule } from 'angular-notifier';
+// import { NotifierModule } from 'angular-notifier';
 import { Storage } from '@ionic/storage-angular';
 import { OrderModule } from 'ngx-order-pipe';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { NgParticlesModule } from "ng-particles";
+import {NgPipesModule} from 'ngx-pipes';
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,NotifierModule,
-     OrderModule,NgParticlesModule
+  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,
+    // NotifierModule,
+     OrderModule,NgParticlesModule,
+     NgPipesModule
   ],
-  providers: [ BarcodeScanner,{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage,AppVersion],
+  providers: [ 
+    // BarcodeScanner,
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage,AppVersion],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

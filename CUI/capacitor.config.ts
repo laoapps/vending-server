@@ -2,9 +2,25 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.laoapps.vendingmachine',
-  appName: 'VENDING MACHINE PLATFORM',
+  appName: 'cui',
   webDir: 'www',
-  bundledWebRuntime: false
+  bundledWebRuntime: false,
+  cordova: {
+    preferences: {
+      ScrollEnabled: 'false',
+      'android-minSdkVersion': '19',
+      'android-targetSdkVersion': '30',
+      'android-compileSdkVersion': '30',
+      BackupWebStorage: 'none',
+      SplashMaintainAspectRatio: 'true',
+      FadeSplashScreenDuration: '300',
+      SplashShowOnlyFirstTime: 'false',
+      SplashScreen: 'screen',
+      SplashScreenDelay: '3000',
+      WKWebViewOnly: 'true',
+      AndroidXEnabled: 'false'
+    }
+  }
 };
 
 export default config;

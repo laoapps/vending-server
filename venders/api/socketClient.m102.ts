@@ -55,9 +55,18 @@ export class SocketClientM102 {
 
             const param = d.data;
 
-            const c = await that.m.command(d.command as any, param,d.transactionID)
-            this.send(c, d.command as any);
-            console.log(d.command, d);
+            that.m.command(d.command as any, param,d.transactionID).then(r=>{
+                console.log('DATA command completed');
+                
+                this.send(r,d.transactionID, d.command as any);
+            }).catch(e=>{
+                if(e){
+                    console.log('DATA command error',e);
+                
+                    this.send(e,d.transactionID, d.command as any);
+                }
+                
+            })
         });
         this.client.on('error', function (data) {
             console.log('on error:' + data);

@@ -59,9 +59,9 @@ if(isVending){
   
   const sss =Array<IBaseClass>();
   sss.push(invM102,invVMC,invZDM8);
-  app.use('/vmc/public', express.static(path.join(__dirname, 'public')))
-  app.use('/zdm8/public', express.static(path.join(__dirname, 'public')))
-  app.use('/m102/public', express.static(path.join(__dirname, 'public')))
+  app.use('/vmc/public', express.static(path.resolve(__dirname,'..', 'public')))
+  app.use('/zdm8/public', express.static(path.join(__dirname,'..', 'public')))
+  app.use('/m102/public', express.static(path.join(__dirname,'..', 'public')))
   CreateDatabase('');
   app.post('/', (req, res) => {
    const http= req.protocol; // http
