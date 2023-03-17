@@ -39,9 +39,10 @@ services:
       - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=18HF0B5MT6aD
       - VENDING=false
-      - PORT=9010
+      - PORT=9005
     ports:
-      - 9010:9010
+      - 9005:9005
+      - 51225:31225
 
     volumes:
       - .:/app

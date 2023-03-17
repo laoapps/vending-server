@@ -53,6 +53,18 @@ const routes: Routes = [
   {
     path: 'myaccount',
     loadChildren: () => import('./myaccount/myaccount.module').then( m => m.MyaccountPageModule)
+  },
+  {
+    path: 'todaybill',
+    loadChildren: () => import('./todaybill/todaybill.module').then( m => m.TodaybillPageModule)
+  },
+  {
+    path: 'billhistory',
+    loadChildren: () => import('./billhistory/billhistory.module').then( m => m.BillhistoryPageModule)
+  },
+  {
+    path: 'refillsale',
+    loadChildren: () => import('./refillsale/refillsale.module').then( m => m.RefillsalePageModule)
   }
 ];
 @NgModule({

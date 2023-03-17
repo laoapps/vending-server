@@ -1,21 +1,21 @@
 <ion-tabs>
 
   <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="myaccount">
+    <ion-tab-button (click)="show(1)">
       <ion-icon name="business-sharp"></ion-icon>
       <ion-label>My Account</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="machine">
-      <ion-icon name="business-sharp"></ion-icon>
+    <ion-tab-button  (click)="show(2)">
+      <ion-icon name="laptop-outline"></ion-icon>
       <ion-label>My Machine</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="products">
+    <ion-tab-button  (click)="show(3)">
       <ion-icon name="storefront-sharp"></ion-icon>
       <ion-label>My Products</ion-label>
     </ion-tab-button>
-    <ion-tab-button tab="sale">
+    <ion-tab-button  (click)="show(4)">
       <ion-icon name="pricetags-sharp"></ion-icon>
       <ion-label>My Sale</ion-label>
     </ion-tab-button>

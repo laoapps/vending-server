@@ -22,8 +22,8 @@ services:
       - POSTGRES_DB=dbvenderservice
       - POSTGRES_USER=dbvenderserveradmin
       - POSTGRES_PASSWORD=2Grg7Dith14P
-    ports:
-      -  53432:5432
+    # ports:
+    #   -  53432:5432
     networks:
       - venderserverservice
   vender-server-service:
@@ -39,14 +39,14 @@ services:
       - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=2Grg7Dith14P
       - VENDING=true
-      - PORT=9008
+      - PORT=9006
     ports:
-      - 31221:31221
-      - 31222:31222
-      - 31223:31223
-      - 31224:31224
-      - 31225:31225
-      - 9008:9008
+      - 51221:31221
+      - 51222:31222
+      - 51223:31223
+      - 51224:31224
+      # - 51225:31225
+      - 9006:9006
     volumes:
       - .:/app
       - ./package.json:/app/package.json

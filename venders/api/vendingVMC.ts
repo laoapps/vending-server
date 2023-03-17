@@ -20,16 +20,7 @@ export class VendingVMC {
 
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
-        // Read data that is available but keep the stream in "paused mode"
-        // this.port.on('readable', function () {
-        //     console.log('Data:', this.port.read())
-        // })
 
-        // Switches the port into "flowing mode"
-        // this.port.on('data', function (data) {
-        //     console.log('Data:', data)
-        // })
-        let buffer = '';
         const that = this;
 
     
@@ -74,7 +65,7 @@ export class VendingVMC {
                 else if (b != 'fafb410040') {// POLL only with no commands in the queue
                     
                     let x = that.getACK().join('')
-                    console.log('X ACK', x, (Buffer.from(x, 'hex')));
+                    console.log('X  POLL only with no commands', x, (Buffer.from(x, 'hex')));
                     that.port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
                             console.log('Error: ACK ', e.message);

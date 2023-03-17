@@ -182,7 +182,7 @@ export class ApiService {
     this.storage.set('stockitems_', this.stock, 'item')
   }
 
-  async showModal(component: any, d: any = {}) {
+  async showModal(component: any, d: any = {},cssClass='dialog-fullscreen') {
     try {
       // let x = '{';
       // const l = Object.keys(d).length;
@@ -194,7 +194,7 @@ export class ApiService {
       // }
       // x += '}';
       // const data = JSON.parse(x);
-      return await this.modal.create({ component, componentProps: d });
+      return await this.modal.create({ component, componentProps: d ,cssClass});
     } catch (error) {
       console.log('ERROR', error);
       this.toast.create({ message: 'Error' }).then(r => {

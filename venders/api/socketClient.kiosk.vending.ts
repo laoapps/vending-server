@@ -6,7 +6,7 @@ import { SocketKiosClient } from './socketClient.kiosk';
 export class SocketKiosClientVending extends SocketKiosClient {
     //---------------------client----------------------
 
-    constructor(serverPort=31236,port='COM1') {
+    constructor(serverPort=51236,port='COM1') {
         super(serverPort,port);
     }
 

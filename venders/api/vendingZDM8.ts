@@ -30,35 +30,11 @@ export class VendingZDM8 {
                 sock.send(buffer, that.transactionID);
                 that.transactionID = -1;
                 buffer = '';
-
-                // // }
-                // that.processCoolingSystemTask(buffer);
             });
         });
-        // setInterval(() => {
-        //     this.coolingSystemTask();
-        // }, 30000)
-    }
-    // coolingSystemTask() {
-    //     this.command('hutemp', null, -1);
-    // }
-    // processCoolingSystemTask(resBuffer:any, minTemp = 3, maxTemp = 10) {
-    //     console.log('CHECK BUFFER',resBuffer[0],resBuffer[1],resBuffer[1]=='03');
         
-    //     if(resBuffer[1]!='03') return;
-    //     const slot = '00'; // relay number;
-    //     let state = '00';// on 01 off
-    //     const temp = this.getTemp(resBuffer).t;
-    //     const hum = this.getTemp(resBuffer).h;
-    //     if (temp >= maxTemp)
-    //         state = '00';
-    //     else if (temp <= minTemp)
-    //         state = '01'
-    //     this.command('relaycommand', { slot, state }, -1)
-    // }
-    // getTemp(buff: string) {
-    //     return { t: 10, h: 0.5 }
-    // }
+    }
+   
 
 
     checkSum(buff: any) {
