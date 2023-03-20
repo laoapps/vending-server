@@ -584,7 +584,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const o = req.body as IMachineClientID;
                         o.ownerUuid=ownerUuid;
                         if (!o.otp || !o.machineId) return res.send(PrintError('addMachine', [], EMessage.bodyIsEmpty));
@@ -603,7 +603,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const id = req.query['id'] + '';
                         const o = req.body as IMachineClientID;
                         this.machineClientlist.findOne({ where: { ownerUuid, id } }).then(async r => {
@@ -628,7 +628,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const isActive = Boolean(req.query['isActive']);
                         const id = req.query['id'] + '';
                         this.machineClientlist.findOne({ where: { ownerUuid, id } }).then(async r => {
@@ -651,7 +651,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid']
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         this.machineClientlist.findAll({ where: { ownerUuid } }).then(r => {
                             res.send(PrintSucceeded('listMachine', r, EMessage.succeeded));
                         }).catch(e => {
