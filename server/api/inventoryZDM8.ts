@@ -383,7 +383,7 @@ export class InventoryZDM8 implements IBaseClass {
                 });
 
             router.post(this.path + '/addProduct',
-                this.checkToken,
+                // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
                     try {
@@ -412,7 +412,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
             router.post(this.path + '/disableProduct',
-                this.checkToken,
+                // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
                     try {
@@ -438,7 +438,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
             router.post(this.path + '/listProduct',
-                this.checkToken,
+                // this.checkToken,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
@@ -460,7 +460,7 @@ export class InventoryZDM8 implements IBaseClass {
                 });
 
             router.post(this.path + '/addSale',
-                this.checkToken,
+                // this.checkToken,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     const ownerUuid = res.locals['ownerUuid']||'';
