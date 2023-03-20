@@ -607,14 +607,15 @@ export class InventoryZDM8 implements IBaseClass {
                         const id = req.query['id'] + '';
                         const o = req.body as IMachineClientID;
                         this.machineClientlist.findOne({ where: { ownerUuid, id } }).then(async r => {
-                            if (!r) return res.send(PrintError('disableMachine', [], EMessage.notfound));
+                            if (!r) return res.send(PrintError('updateMachine', [], EMessage.notfound));
                             r.otp = o.otp ? o.otp : r.otp;
                             // r.machineId = o.machineId ? o.machineId : r.machineId;
                             r.photo = o.photo ? o.photo : r.photo;
                             // r.changed('isActive',true);
-                            res.send(PrintSucceeded('disableMachine', await r.save(), EMessage.succeeded));
+                            res.send(PrintSucceeded('updateMachine', await r.save(), EMessage.succeeded));
                         }).catch(e => {
-                            res.send(PrintError('disableMachine', e, EMessage.error));
+                            console.log('Error updateMachine',e);
+                            res.send(PrintError('updateMachine', e, EMessage.error));
                         })
                     }
                     catch (error) {
@@ -636,6 +637,7 @@ export class InventoryZDM8 implements IBaseClass {
                             // r.changed('isActive',true);
                             res.send(PrintSucceeded('disableMachine', await r?.save(), EMessage.succeeded));
                         }).catch(e => {
+                            console.log('Error disableMachine',e);
                             res.send(PrintError('disableMachine', e, EMessage.error));
                         })
                     }
@@ -653,6 +655,8 @@ export class InventoryZDM8 implements IBaseClass {
                         this.machineClientlist.findAll({ where: { ownerUuid } }).then(r => {
                             res.send(PrintSucceeded('listMachine', r, EMessage.succeeded));
                         }).catch(e => {
+                            console.log('Error list machine',e);
+                            
                             res.send(PrintError('listMachine', e, EMessage.error));
                         })
                     }
@@ -670,6 +674,7 @@ export class InventoryZDM8 implements IBaseClass {
                         this.machineClientlist.findAll().then(r => {
                             res.send(PrintSucceeded('listMachine', r, EMessage.succeeded));
                         }).catch(e => {
+                            console.log('Error list machine',e);
                             res.send(PrintError('listMachine', e, EMessage.error));
                         })
                     }
