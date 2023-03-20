@@ -388,7 +388,7 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         try {
-                            const ownerUuid = res.locals['ownerUuid'];
+                            const ownerUuid = res.locals['ownerUuid']||'';
                             const sEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
                             // await sEnt.sync();
                             const o = req.body as IStock;
@@ -396,6 +396,8 @@ export class InventoryZDM8 implements IBaseClass {
                             sEnt.create(o).then(r => {
                                 res.send(PrintSucceeded('addProduct', r, EMessage.succeeded));
                             }).catch(e => {
+                                console.log('error add product',e);
+                                
                                 res.send(PrintError('addProduct', e, EMessage.error));
                             })
                         }
@@ -414,7 +416,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkMachineDisabled,
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const id = Number(req.query['id']);
                         const isActive = req.query['isActive'] == '' ? null : Boolean(req.query['isActive']);
                         const sEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
@@ -425,6 +427,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 r.isActive = isActive;
                             res.send(PrintSucceeded('disableProduct', await r.save(), EMessage.succeeded));
                         }).catch(e => {
+                            console.log('error disable product',e);
+                            
                             res.send(PrintError('disableProduct', e, EMessage.error));
                         })
                     }
@@ -438,12 +442,14 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const sEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
                         await sEnt.sync();
                         sEnt.findAll().then(r => {
                             res.send(PrintSucceeded('listProduct', r, EMessage.succeeded));
                         }).catch(e => {
+                            console.log('error list product',e);
+                            
                             res.send(PrintError('listProduct', e, EMessage.error));
                         })
                     }
@@ -457,7 +463,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkToken,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
-                    const ownerUuid = res.locals['ownerUuid'];
+                    const ownerUuid = res.locals['ownerUuid']||'';
                     const o = req.body as IVendingMachineSale;
                     const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
                     await sEnt.sync()
@@ -474,7 +480,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 sEnt.create(o).then(r => {
                                     res.send(PrintSucceeded('addSale', r, EMessage.succeeded));
                                 }).catch(e => {
-                                    console.log(e);
+                                    console.log('error add sale',e);
                                     res.send(PrintError('addSale', e, EMessage.error));
                                 })
                             }).catch(e => {
@@ -494,7 +500,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const o = req.body as IVendingMachineSale;
                         const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
                         await sEnt.sync();
@@ -511,17 +517,19 @@ export class InventoryZDM8 implements IBaseClass {
                                 r.changed('stock', true);
                                 res.send(PrintSucceeded('updateSale', await r.save(), EMessage.succeeded));
                             }).catch(e => {
-                                console.log(e);
+                                console.log('error updatesale',e);
                                 res.send(PrintError('updateSale', e, EMessage.error));
                             });
 
                         }).catch(e => {
+                            console.log('error updatesale',e);
+                            
                             res.send(PrintError('updateSale', e, EMessage.error));
                         })
 
                     }
                     catch (error) {
-                        console.log(error);
+                        console.log('error update sale',error);
                         res.send(PrintError('updateSale', error, EMessage.error));
                     }
                 });
@@ -532,12 +540,14 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
                         await sEnt.sync()
                         sEnt.findAll().then(r => {
                             res.send(PrintSucceeded('listSale', r, EMessage.succeeded));
                         }).catch(e => {
+                            console.log('error list sale',e);
+                            
                             res.send(PrintError('listSale', e, EMessage.error));
                         })
                     }
@@ -551,19 +561,20 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'];
+                        const ownerUuid = res.locals['ownerUuid']||'';
                         const machineId = req.query['machineId'] + '';
                         const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
                         await sEnt.sync()
                         sEnt.findAll({ where: { machineId } }).then(r => {
-                            res.send(PrintSucceeded('listSale', r, EMessage.succeeded));
+                            res.send(PrintSucceeded('listSaleByMachine', r, EMessage.succeeded));
                         }).catch(e => {
-                            res.send(PrintError('listSale', e, EMessage.error));
+                            console.log('error listSaleByMachine',e);
+                            res.send(PrintError('listSaleByMachine', e, EMessage.error));
                         })
                     }
                     catch (error) {
                         console.log(error);
-                        res.send(PrintError('listSale', error, EMessage.error));
+                        res.send(PrintError('listSaleByMachine', error, EMessage.error));
                     }
                 });
             router.post(this.path + '/reportStock',
