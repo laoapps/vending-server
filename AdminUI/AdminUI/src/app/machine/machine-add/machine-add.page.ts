@@ -24,6 +24,7 @@ export class MachineAddPage implements OnInit {
     this.apiService.closeModal()
   }
   save() {
+    this.s.photo=this.imageSrc;
     this.apiService.closeModal({ s: this.s })
   }
 
@@ -50,9 +51,13 @@ export class MachineAddPage implements OnInit {
     var reader = e.target;
     this.imageSrc = reader.result;
     this.loaded = true;
+    console.log(this.imageSrc);
+    
   }
   cancel() {
     this.imageSrc = '';
   }
+
+  
 
 }

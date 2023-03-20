@@ -586,6 +586,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals['ownerUuid'];
                         const o = req.body as IMachineClientID;
+                        o.ownerUuid=ownerUuid;
                         if (!o.otp || !o.machineId) return res.send(PrintError('addMachine', [], EMessage.bodyIsEmpty));
 
                         // r.changed('isActive',true);

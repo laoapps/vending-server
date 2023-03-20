@@ -294,4 +294,6 @@ export class ApiService {
   showImage(p:string){
     return p;
   }
+
+  
 }
