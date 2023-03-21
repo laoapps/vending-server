@@ -231,7 +231,7 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/listMachine', { headers: this.headerBase() });
   }
   disableMachine(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive${isActive}`, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive}`, { headers: this.headerBase() });
   }
   updateMachine(o:IMachineClientID,id:number) {
     return this.http.post<IResModel>(this.url + `/updateMachine?id=${id}`,o, { headers: this.headerBase() });
@@ -258,7 +258,7 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/listProduct', { headers: this.headerBase() });
   }
   disableProduct(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableProduct?isActive${isActive}&id=${id}`, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive}&id=${id}`, { headers: this.headerBase() });
   }
   addProduct(o:IStock) {
     console.log(o);

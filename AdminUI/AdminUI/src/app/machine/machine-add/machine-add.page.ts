@@ -10,7 +10,7 @@ import { ApiService } from '../../services/api.service';
 export class MachineAddPage implements OnInit {
 
   showImage: (p: string) => string;
-  s = {} as IMachineClientID;
+  s = {isActive:false} as IMachineClientID;
   loaded: boolean = false;
   imageSrc: string = '';
   constructor(public apiService: ApiService) {

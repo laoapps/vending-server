@@ -106,14 +106,16 @@ export class MachinePage implements OnInit {
     })
   }
   sale(s:string){
-    this.apiService.showModal(SalePage,{s}).then(ro=>{
+    this.apiService.showModal(SalePage,{machineId:s}).then(ro=>{
       ro?.present();
       ro?.onDidDismiss().then(r=>{
         console.log(r);
       })
     });
   }
- 
+  close() {
+    this.apiService.closeModal()
+  }
 }
 
 

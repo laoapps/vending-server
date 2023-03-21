@@ -19,7 +19,7 @@ export class ProductsPage implements OnInit {
       if (r.status) {
         this._l.push(...r.data);
       }
-      this.apiService.toast.create({ message: r.message, duration: 5000 }).then(ry => {
+      this.apiService.toast.create({ message: r.message, duration: 2000 }).then(ry => {
         ry.present();
       })
     })
@@ -35,7 +35,7 @@ export class ProductsPage implements OnInit {
             if (rx.status) {
               this._l.unshift(rx.data);
             }
-            this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+            this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
               ry.present();
             })
 
@@ -64,7 +64,7 @@ export class ProductsPage implements OnInit {
                 return false;
               })
             }
-            this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+            this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
               ry.present();
             })
 
@@ -91,10 +91,14 @@ export class ProductsPage implements OnInit {
           return false;
         })
       }
-      this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+      this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
         ry.present();
       })
 
     })
   }
+  close() {
+    this.apiService.closeModal()
+  }
+
 }

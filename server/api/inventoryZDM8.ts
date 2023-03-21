@@ -472,7 +472,7 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!r) return res.send(PrintError('addSale', [], EMessage.notfound));
                         if (!o.machineId || Number(o.position) == Number.NaN) return res.send(PrintError('addSale', [], EMessage.bodyIsEmpty));
                         const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
-                        pEnt.findByPk(o.id).then(p => {
+                        pEnt.findByPk(o.stock.id).then(p => {
                             if (!p) return res.send(PrintError('addSale', [], EMessage.productNotFound));
                             o.stock = p;
                             p.qtty = 0;

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-myaccount',
@@ -7,9 +8,11 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MyaccountPage implements OnInit {
 
-  constructor() { }
+  constructor(public apiService: ApiService) { }
 
   ngOnInit() {
   }
-
+  close() {
+    this.apiService.closeModal()
+  }
 }

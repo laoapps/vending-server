@@ -65,6 +65,14 @@ const routes: Routes = [
   {
     path: 'refillsale',
     loadChildren: () => import('./refillsale/refillsale.module').then( m => m.RefillsalePageModule)
+  },
+  {
+    path: 'productlist',
+    loadChildren: () => import('./products/productlist/productlist.module').then( m => m.ProductlistPageModule)
+  },
+  {
+    path: 'positionlist',
+    loadChildren: () => import('./positionlist/positionlist.module').then( m => m.PositionlistPageModule)
   }
 ];
 @NgModule({

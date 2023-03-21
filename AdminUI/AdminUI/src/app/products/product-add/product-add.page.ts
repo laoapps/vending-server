@@ -9,7 +9,7 @@ import { IStock } from 'src/app/services/syste.model';
 })
 export class ProductAddPage implements OnInit {
   showImage: (p: string) => string;
-  s = {} as IStock;
+  s = {isActive:false} as IStock;
   loaded: boolean = false;
   imageSrc: string = '';
   constructor(public apiService: ApiService) {

@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { PositionlistPage } from 'src/app/positionlist/positionlist.page';
+import { ProductlistPage } from 'src/app/products/productlist/productlist.page';
 import { ApiService } from 'src/app/services/api.service';
 import { IVendingMachineSale } from 'src/app/services/syste.model';
 
@@ -8,53 +10,68 @@ import { IVendingMachineSale } from 'src/app/services/syste.model';
   styleUrls: ['./sale-add.page.scss'],
 })
 export class SaleAddPage implements OnInit {
-
+  @Input()machineId='';
+  @Input()sales=new Array<IVendingMachineSale>();
   showImage: (p: string) => string;
   s = {} as IVendingMachineSale;
   loaded: boolean = false;
   imageSrc: string = '';
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
+    this.s.max=5;
   }
 
   ngOnInit() {
-
+    this.s.machineId=this.machineId;
+    this.s.isActive=false;
   }
   close() {
     this.apiService.closeModal()
   }
   save() {
+    if(this.sales.find(v=>v.position==this.s.position&&this.s.position>0))return alert('Position was duplicated');
     this.apiService.closeModal({ s: this.s })
   }
 
-  handleInputChange(e:any) {
-    console.log("input change")
-    var file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
 
-    var pattern = /image-*/;
-    var reader = new FileReader();
-
-    if (!file.type.match(pattern)) {
-      alert('invalid format');
-      return;
-    }
-
-    this.loaded = false;
-
-    reader.onload = this._handleReaderLoaded.bind(this);
-    reader.readAsDataURL(file);
-  }
-
-  _handleReaderLoaded(e:any) {
-    console.log("_handleReaderLoaded")
-    var reader = e.target;
-    this.imageSrc = reader.result;
-    this.loaded = true;
-  }
   cancel() {
     this.imageSrc = '';
   }
+  showProductList(){
+    this.apiService.showModal(ProductlistPage).then(ro => {
+      ro?.present();
+      ro?.onDidDismiss().then(r => {
+        console.log(r);
 
+        if (r.data) {
+          
+          this.s.stock=r.data.data;
+        }
+      }).catch(e => {
+        console.log(e);
+
+      })
+    })
+  }
+  showPosition(){
+    const position =this.sales.map(v=>v.position).length?this.sales.map(v=>v.position):[]
+    this.apiService.showModal(PositionlistPage,{position}).then(ro => {
+      ro?.present();
+      ro?.onDidDismiss().then(r => {
+        console.log(r);
+
+        if (r.data) {
+          
+          this.s.position=r.data;
+          console.log(this.s);
+          
+        }
+      }).catch(e => {
+        console.log(e);
+
+      })
+    })
+  }
 
 
 
