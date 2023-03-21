@@ -19,6 +19,7 @@ export class SaleAddPage implements OnInit {
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
     this.s.max=5;
+    this.s.position=1;
   }
 
   ngOnInit() {

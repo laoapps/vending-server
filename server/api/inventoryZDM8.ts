@@ -496,6 +496,33 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                 });
+                router.post(this.path + '/disableSale',
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals['ownerUuid']||'';
+                        const id = Number(req.query['id']);
+                        const isActive = req.query['isActive'] == '' ? null : Boolean(req.query['isActive']);
+                        const sEnt = StockFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync()
+                        sEnt.findByPk(id).then(async r => {
+                            if (!r) return res.send(PrintError('disableSale', [], EMessage.error));
+                            if (isActive != null)
+                                r.isActive = isActive;
+                            r.changed('isActive',true)
+                            res.send(PrintSucceeded('disableSale', await r.save(), EMessage.succeeded));
+                        }).catch(e => {
+                            console.log('error disable product',e);
+                            
+                            res.send(PrintError('disableSale', e, EMessage.error));
+                        })
+                    }
+                    catch (error) {
+                        console.log(error);
+                        res.send(PrintError('disableSale', error, EMessage.error));
+                    }
+                });
             router.post(this.path + '/updateSale',
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),

@@ -9,7 +9,7 @@ import { IVendingMachineSale } from 'src/app/services/syste.model';
 })
 export class SaleDetailsPage implements OnInit {
 
- 
+  @Input()machineId='';
   showImage: (p: string) => string;
   @Input()s={} as IVendingMachineSale;
   loaded: boolean = false;
@@ -25,33 +25,26 @@ export class SaleDetailsPage implements OnInit {
     this.apiService.closeModal()
   }
   save() {
+    this.apiService.disableSale(this.s.isActive,this.s.id).subscribe(rx => {
+      console.log(rx);
+      if (rx.status) {
+        // this._l.find((v, i) => {
+        //   if (v.id == rx.data.id) {
+        //     this._l.splice(i, 1, ...[rx.data]);
+        //     return true;
+        //   }
+        //   return false;
+        // })
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
+        ry.present();
+      })
+
+    })
     this.apiService.closeModal({ s: this.s })
   }
 
-  handleInputChange(e:any) {
-    console.log("input change")
-    var file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
 
-    var pattern = /image-*/;
-    var reader = new FileReader();
-
-    if (!file.type.match(pattern)) {
-      alert('invalid format');
-      return;
-    }
-
-    this.loaded = false;
-
-    reader.onload = this._handleReaderLoaded.bind(this);
-    reader.readAsDataURL(file);
-  }
-
-  _handleReaderLoaded(e:any) {
-    console.log("_handleReaderLoaded")
-    var reader = e.target;
-    this.imageSrc = reader.result;
-    this.loaded = true;
-  }
   cancel() {
     this.imageSrc = '';
   }

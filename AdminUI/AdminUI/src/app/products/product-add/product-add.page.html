@@ -9,7 +9,7 @@
 <ion-content>
   <ion-list>
     <ion-item>
-      <ion-img [src]="showImage(s.image)"></ion-img>
+      <ion-img class="product_image"[src]="showImage(s.image)"></ion-img>
       <input type="file" name="file" accept="image/*"
       (change)="handleInputChange($event)">
         <button 

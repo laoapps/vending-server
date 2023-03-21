@@ -53,7 +53,7 @@ export class SalePage implements OnInit {
   edit(id: number | undefined) {
     const s = this._l.find(v => v.id == id);
     if (!s) return alert('Not found')
-    this.apiService.showModal(SaleDetailsPage, { s ,sales:this._l}).then(ro => {
+    this.apiService.showModal(SaleDetailsPage, {machineId:this.machineId, s ,sales:this._l}).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         console.log(r);
