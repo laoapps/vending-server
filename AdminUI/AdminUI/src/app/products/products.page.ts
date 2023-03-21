@@ -80,7 +80,7 @@ export class ProductsPage implements OnInit {
     const s = this._l.find(v => v.id == id);
     if (!s) return alert('Not found')
 
-    this.apiService.disableMachine(s.isActive!, id).subscribe(rx => {
+    this.apiService.disableProduct(s.isActive, id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
         this._l.find((v, i) => {

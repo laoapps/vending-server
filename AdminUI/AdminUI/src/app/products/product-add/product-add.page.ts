@@ -23,6 +23,7 @@ export class ProductAddPage implements OnInit {
     this.apiService.closeModal()
   }
   save() {
+    this.s.image =this.imageSrc 
     this.apiService.closeModal({ s: this.s })
   }
 

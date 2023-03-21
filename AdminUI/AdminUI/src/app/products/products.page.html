@@ -20,7 +20,7 @@
     <ion-col><ion-label>{{p.name}}</ion-label></ion-col>
     <ion-col><ion-label>{{p.price|number}}</ion-label></ion-col>
     <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
-    <ion-col> <ion-toggle slot="end" [(ngModel)]="p.isActive" (ionchange)="disable(p.id)" ></ion-toggle></ion-col>
+    <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ionChange)="disable(p.id)" ></ion-toggle></ion-col>
 
     <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>
   </ion-row>

@@ -425,6 +425,7 @@ export class InventoryZDM8 implements IBaseClass {
                             if (!r) return res.send(PrintError('disableProduct', [], EMessage.error));
                             if (isActive != null)
                                 r.isActive = isActive;
+                            r.changed('isActive',true)
                             res.send(PrintSucceeded('disableProduct', await r.save(), EMessage.succeeded));
                         }).catch(e => {
                             console.log('error disable product',e);
