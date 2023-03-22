@@ -546,6 +546,8 @@ export class InventoryZDM8 implements IBaseClass {
                                     }
                                 })
                                 // r.changed('stock', true);
+                                console.log('update Sale',r);
+                                
                                 res.send(PrintSucceeded('updateSale', await r.save(), EMessage.succeeded));
                             }).catch(e => {
                                 console.log('error updatesale',e);
