@@ -540,6 +540,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 if (!p) return res.send(PrintError('updateSale', [], EMessage.productNotFound));
                                 
                                 Object.keys(r).forEach(k => {
+                                    console.log('changing',r[k]);
                                     if (['stock','max'].includes(k)){
                                         r[k] = o[k];
                                         r.changed('stock', true);
