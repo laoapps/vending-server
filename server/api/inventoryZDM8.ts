@@ -538,10 +538,12 @@ export class InventoryZDM8 implements IBaseClass {
                             const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
                             pEnt.findByPk(o.id).then(async p => {
                                 if (!p) return res.send(PrintError('updateSale', [], EMessage.productNotFound));
+                                
                                 Object.keys(r).forEach(k => {
-                                    // if (k == 'stock')
+                                    if (['stock','max'].includes(k)){
                                         r[k] = o[k];
-                                        r.changed(k as any,true);
+                                        r.changed('stock', true);
+                                    }
                                 })
                                 // r.changed('stock', true);
                                 res.send(PrintSucceeded('updateSale', await r.save(), EMessage.succeeded));
