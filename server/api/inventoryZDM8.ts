@@ -31,7 +31,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     delayTime = 5000;
     path = '/zdm8';
-    production = true;
+    production = false;
 
     // public phonenumber = this.production ? '2052396969':'2054445447'// '2058623333' : '2054445447'; //LTC. 2058623333 //2052899515
     // public walletId = this.production ? '2599087166' : '2843759248';// LTC
