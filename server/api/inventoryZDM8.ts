@@ -543,6 +543,8 @@ export class InventoryZDM8 implements IBaseClass {
                                     if (['stock','max'].includes(k)){
                                         r[k] = o[k];
                                         r.changed('stock', true);
+                                        console.log('changed',r[k]);
+                                        
                                     }
                                 })
                                 // r.changed('stock', true);
