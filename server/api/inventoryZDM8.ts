@@ -185,6 +185,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const m = await machineClientIDEntity.findOne({ where: { machineId: this.ssocket.findMachineIdToken(d.token)?.machineId } })
                             const ownerUuid = m?.ownerUuid||'';
                             const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+                            await ent.sync();
                             ent.create(bill).then(r => {
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
                             });
