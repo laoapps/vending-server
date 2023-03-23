@@ -305,6 +305,19 @@ export class ApiService {
   initDemo() {
     return this.http.get<IResModel>(this.url + '/init?machineId=' + this.machineId.machineId, { headers: this.headerBase() });
   }
+  loadVendingSale() {
+    const req = {} as IReqModel;
+    req.command = EClientCommand.list;
+    req.data = {
+      clientId: this.clientId.clientId
+    };
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
+    // req.data.clientId = this.clientId.clientId;
+    return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
+  }
+  
   loadOnlineMachine() {
     return this.http.get<IResModel>(this.url + '/getOnlineMachines', { headers: this.headerBase() });
   }
@@ -317,12 +330,12 @@ export class ApiService {
   retryProcessBill(T: string) {
     return this.http.post<IResModel>(this.url + '/retryProcessBill?T=' + T, { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
-  loadSaleList() {
-    const req = {} as IReqModel;
-    req.command = EClientCommand.list;
-    req.data = { clientId: this.clientId.clientId };
-    return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
-  }
+  // loadSaleList() {
+  //   const req = {} as IReqModel;
+  //   req.command = EClientCommand.list;
+  //   req.data = { clientId: this.clientId.clientId };
+  //   return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
+  // }
 
   buyMMoney(ids: Array<IVendingMachineSale>, value: number, machineId: string) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;
