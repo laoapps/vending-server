@@ -182,7 +182,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 vendingsales: sale
                             };
                             const m = await machineClientIDEntity.findOne({ where: { machineId: this.ssocket.findMachineIdToken(d.token)?.machineId } })
-                            const ownerUuid = m?.ownerUuid;
+                            const ownerUuid = m?.ownerUuid||'';
                             const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                             ent.create(bill).then(r => {
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
@@ -217,7 +217,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(this.path + '/getPaidBills', this.checkMachineIdToken, async (req, res) => {
                 try {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
-                    const ownerUuid = m?.ownerUuid;
+                    const ownerUuid = m?.ownerUuid||'';
                     const machineId = m?.machineId;
                     const entx = VendingMachineBillFactory(EEntity.vendingmachinebillpaid + '_' + ownerUuid, dbConnection);
                     entx.findAll({ where: { machineId } }).then(r => {
@@ -235,7 +235,7 @@ export class InventoryZDM8 implements IBaseClass {
                 try {
                     const { token } = req.body;
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
-                    const ownerUuid = m?.ownerUuid;
+                    const ownerUuid = m?.ownerUuid||'';
                     const machineId = m?.machineId;
                     const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                     entx.findAll({ where: { machineId } }).then(r => {
@@ -252,7 +252,7 @@ export class InventoryZDM8 implements IBaseClass {
                 try {
                     const transactionID = req.query['T'];
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
-                    const ownerUuid = m?.ownerUuid;
+                    const ownerUuid = m?.ownerUuid||'';
                     const machineId = m?.machineId;
                     const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                     entx.findAll({ where: { machineId } }).then(async rx => {
@@ -296,7 +296,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.get(this.path + '/getAllPaidBills', this.checkMachineIdToken, async (req, res) => {
                 try {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
-                    const ownerUuid = m?.ownerUuid;
+                    const ownerUuid = m?.ownerUuid||'';
                     const machineId = m?.machineId;
                     const entx = VendingMachineBillFactory(EEntity.vendingmachinebillpaid + '_' + ownerUuid, dbConnection);
                     entx.findAll().then(r => {
@@ -313,7 +313,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.get(this.path + '/getAllBills', this.checkMachineIdToken, async (req, res) => {
                 try {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
-                    const ownerUuid = m?.ownerUuid;
+                    const ownerUuid = m?.ownerUuid||'';
                     const machineId = m?.machineId;
                     const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                     entx.findAll().then(r => {
@@ -361,7 +361,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const { token, data: { id, position, clientId } } = req.body;
                         const machineId = res.locals['machineId'];
                         const mc = await machineClientIDEntity.findOne({ where: { machineId: machineId?.machineId } })
-                        const ownerUuid = mc?.ownerUuid;
+                        const ownerUuid = mc?.ownerUuid||'';
                         const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
                         await sEnt.sync()
                         const sm = await sEnt.findAll({ where: { stock: { id, price: 0, qtty: { [Op.gt]: [0] } }, position, isActive: true } });
@@ -636,7 +636,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals['ownerUuid']||'';
                         const o = req.body as IMachineClientID;
-                        o.ownerUuid=ownerUuid;
+                        o.ownerUuid=ownerUuid||'';
                         if (!o.otp || !o.machineId) return res.send(PrintError('addMachine', [], EMessage.bodyIsEmpty));
 
                         // r.changed('isActive',true);
@@ -808,7 +808,7 @@ export class InventoryZDM8 implements IBaseClass {
                 yy.forEach(y => {
                     y.send(JSON.stringify(res), e => {
                         if (e) console.log('ERROR SEND WS', e);
-                        const ownerUuid = m?.ownerUuid;
+                        const ownerUuid = m?.ownerUuid||'';
                         const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                         // find vending machine bill
                         ent.findOne({ where: { uuid: ib.bill?.uuid } }).then(async r => {
