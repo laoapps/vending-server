@@ -7,7 +7,7 @@ import { EventEmitter } from 'ws';
 export class SocketServerZDM8 {
     server = net.createServer();
     sclients = Array<net.Socket>();
-    ports = 31223;
+    ports = 51223;
 
     public machineIds = new Array<IMachineClientID>();
     eventEmitter = new EventEmitter();

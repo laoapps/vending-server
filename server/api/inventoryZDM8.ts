@@ -41,7 +41,7 @@ export class InventoryZDM8 implements IBaseClass {
     mmoneyusername = 'dbk';
     mmoneypassword = 'dbk@2022';
     // mmoneyusername= '2c7eb4906d4ab65f72fc3d3c8eebeb65';
-    ports = 31223;
+    ports = 51223;
 
     machineClientlist = MachineClientIDFactory(EEntity.machineclientid, dbConnection);
     checkMachineIdToken(req: Request, res: Response, next: NextFunction) {
