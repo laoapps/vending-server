@@ -145,6 +145,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
                                 y.stock.qtty = 1;
                                 checkIds.push(y);
+                                y.stock.image='';
                             })
 
                             // console.log('checkIds', checkIds, 'ids', sale);
@@ -393,6 +394,8 @@ export class InventoryZDM8 implements IBaseClass {
                             // await sEnt.sync();
                             const o = req.body as IStock;
                             if (!o.name || !o.price) return res.send(PrintError('addProduct', [], EMessage.bodyIsEmpty));
+                            // let base64Image = o.image.split(';base64,').pop();
+                            // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
                             sEnt.create(o).then(r => {
                                 res.send(PrintSucceeded('addProduct', r, EMessage.succeeded));
                             }).catch(e => {

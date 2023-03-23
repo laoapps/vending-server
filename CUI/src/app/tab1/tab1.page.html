@@ -41,10 +41,10 @@
         </ion-item>
         <ion-item >
           <div *ngIf="sl.stock.price==0;else elsebuystock">
-            <img style="width: 200px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
+            <img style="width: 200px;height:480px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </div>
           <ng-template #elsebuystock>
-            <img style="width: 200px;height:480px" [src]="this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
+            <img style="width: 200px;height:480px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </ng-template>
         </ion-item>
         <ion-item>
@@ -100,7 +100,7 @@
             <div class="scrollmenu">
               <div class="order-item" *ngFor="let o of summarizeOrder; let i=index;" color="primary">
                 <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> <img
-                  [src]="this.url+'/public/'+o.stock.image" style="height:100px;width: 240px">
+                  [src]="o.stock.image.includes(';base64,')?o.stock.image:this.url+'/public/'+o.stock.image" style="height:100px;width: 240px">
                 <div>
                   {{o.stock.name}}/{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})
                 </div>
