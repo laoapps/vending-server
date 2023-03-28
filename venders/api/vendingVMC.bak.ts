@@ -17,10 +17,20 @@ export class VendingVMC {
     sock: SocketClientVMC | null = null
     path = '/dev/ttyS1';
     commands = Array<{b:Buffer,transactionID:number}>();
-    retry=5;
+    isACK = false;
+    retry = 5;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
+        // Read data that is available but keep the stream in "paused mode"
+        // this.port.on('readable', function () {
+        //     console.log('Data:', this.port.read())
+        // })
 
+        // Switches the port into "flowing mode"
+        // this.port.on('data', function (data) {
+        //     console.log('Data:', data)
+        // })
+        let buffer = '';
         const that = this;
 
     
@@ -189,21 +199,7 @@ export class VendingVMC {
                         reject(PrintError(command as any, params, e.message));
                     })
                     break;
-                case EZDM8_COMMAND.hutemp:
 
-                break;
-
-                case EZDM8_COMMAND.status:
-
-                break;
-
-                case EZDM8_COMMAND.dropdetectstatus:
-
-                break;
-
-                case EZDM8_COMMAND.relaycommand:
-
-                break;
                 default:
                     reject(PrintError(command as any, params, EMessage.commandnotfound));
                     break;
