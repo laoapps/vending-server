@@ -75,19 +75,19 @@ export class VendingVMC {
                         // that.sock?.send(b, -1);
                     })
                 }
-                else{
-                    // update status to the server
-                    let x = that.getACK().join('')
-                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
-                    that.port.write(Buffer.from(x, 'hex'), (e) => {
-                        if (e) {
-                            console.log('Error: ACK ', e.message);
-                        } else {
-                            console.log('write ACK succeeded');
-                        }
-                    })
-                    that.sock?.send(b,-4);
-                }
+                // else{
+                //     // update status to the server
+                //     let x = that.getACK().join('')
+                //     console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                //     that.port.write(Buffer.from(x, 'hex'), (e) => {
+                //         if (e) {
+                //             console.log('Error: ACK ', e.message);
+                //         } else {
+                //             console.log('write ACK succeeded');
+                //         }
+                //     })
+                //     that.sock?.send(b,-4);
+                // }
                 b = '';
             });
         });
