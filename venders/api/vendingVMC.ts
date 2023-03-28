@@ -42,14 +42,14 @@ export class VendingVMC {
                         that.port.write(buff.b, (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
-                               that.sock?.send(buff?.b.toString("hex"), 
+                               that.sock?.send(b, 
                                //buff?.transactionID||
-                               -1);
+                               -3);
                             } else {
                                 console.log('WRITE COMMAND succeeded', new Date().getTime());
-                               that.sock?.send(buff?.b.toString("hex"), 
+                               that.sock?.send(b, 
                             //    buff?.transactionID||
-                               -1);
+                               -2);
                                 // confirm by socket
                             }
                         })
@@ -72,23 +72,22 @@ export class VendingVMC {
                         } else {
                             console.log('write ACK succeeded');
                         }
-                        that.sock?.send(b, -1);
+                        // that.sock?.send(b, -1);
                     })
                 }
-                // else{
-                //     // update status to the server
-                //     buff = that.getACK();
-                //     let x = buff.join('')
-                //     console.log('X ACK', x,(Buffer.from(x, 'hex')));
-                //     that.port.write(Buffer.from(x, 'hex'), (e) => {
-                //         if (e) {
-                //             console.log('Error: ACK ', e.message);
-                //         } else {
-                //             console.log('write ACK succeeded');
-                //         }
-                //     })
-                //     that.sock?.send(b,-1);
-                // }
+                else{
+                    // update status to the server
+                    let x = that.getACK().join('')
+                    console.log('X ACK', x,(Buffer.from(x, 'hex')));
+                    that.port.write(Buffer.from(x, 'hex'), (e) => {
+                        if (e) {
+                            console.log('Error: ACK ', e.message);
+                        } else {
+                            console.log('write ACK succeeded');
+                        }
+                    })
+                    that.sock?.send(b,-4);
+                }
                 b = '';
             });
         });
@@ -186,7 +185,21 @@ export class VendingVMC {
                         reject(PrintError(command as any, params, e.message));
                     })
                     break;
+                case EZDM8_COMMAND.hutemp:
 
+                break;
+
+                case EZDM8_COMMAND.status:
+
+                break;
+
+                case EZDM8_COMMAND.dropdetectstatus:
+
+                break;
+
+                case EZDM8_COMMAND.relaycommand:
+
+                break;
                 default:
                     reject(PrintError(command as any, params, EMessage.commandnotfound));
                     break;
