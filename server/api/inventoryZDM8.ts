@@ -339,18 +339,18 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
 
-            // router.get(this.path + '/submit_command', async (req, res) => {
-            //     try {
-            //         const machineId = req.query['machineId'] + '';
-            //         const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
-            //         console.log(' WS submit command', machineId, position);
+            router.get(this.path + '/submit_command', async (req, res) => {
+                try {
+                    const machineId = req.query['machineId'] + '';
+                    const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
+                    console.log(' WS submit command', machineId, position);
 
-            //         res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
-            //     } catch (error) {
-            //         console.log(error);
-            //         res.send(PrintError('init', error, EMessage.error));
-            //     }
-            // });
+                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('init', error, EMessage.error));
+                }
+            });
 
 
 
