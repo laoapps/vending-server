@@ -42,7 +42,7 @@ export class InventoryZDM8 implements IBaseClass {
     mmoneypassword = 'dbk@2022';
     // mmoneyusername= '2c7eb4906d4ab65f72fc3d3c8eebeb65';
     ports = 31223;
-    clientRespose = new Array<{res:Response,position:number,bill:IVendingMachineBill}>();
+    clientRespose = new Array<{res:Response,transactionID:number,position:number,bill:IVendingMachineBill}>();
     machineClientlist = MachineClientIDFactory(EEntity.machineclientid, dbConnection);
     checkMachineIdToken(req: Request, res: Response, next: NextFunction) {
         const { token } = req.body;
@@ -278,7 +278,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     // if (!ind) throw new Error('Bill not found');
                                     const bill = rx.find(v => v.transactionID == Number(transactionID));
                                     if (bill) {
-                                        that.clientRespose.push({res,position,bill});
+                                        that.clientRespose.push({res,position,bill,transactionID});
                                         const pos =this.ssocket.processOrder(machineId,position,transactionID);
                                     } else throw new Error('Transaction Not Found');
 
@@ -350,8 +350,9 @@ export class InventoryZDM8 implements IBaseClass {
                     const machineId = req.query['machineId'] + '';
                     const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
                     console.log(' WS submit command', machineId, position);
-
-                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
+                    const transactionID=22331;
+                    this.clientRespose.push({res,position,bill:{} as IVendingMachineBill,transactionID});
+                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, transactionID), EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError('init', error, EMessage.error));
@@ -380,7 +381,9 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
                         if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
                         if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
-                        const x = this.ssocket.processOrder(machineId?.machineId + '', position, new Date().getTime());
+                        const transactionID=-10;
+                        this.clientRespose.push({res,position,bill:{} as IVendingMachineBill,transactionID});
+                        const x = this.ssocket.processOrder(machineId?.machineId + '', position,transactionID);
                         writeSucceededRecordLog(m, position);
                         console.log(' WS submit command', machineId, position, x);
 
@@ -794,9 +797,9 @@ export class InventoryZDM8 implements IBaseClass {
                 // we should use drop detect to audit 
                
                 // redisClient.del(xy);
-                const cres =that.clientRespose.find(v=>v.bill.transactionID==re.transactionID);
+                const cres =that.clientRespose.find(v=>v.transactionID==re.transactionID);
 
-                const idx = cres?.bill.vendingsales.findIndex(v=>v.position==cres?.position);
+                const idx = cres?.bill?.vendingsales.findIndex(v=>v.position==cres?.position);
 
                 idx==-1?cres?.bill.vendingsales.splice(idx,1):'';
 
