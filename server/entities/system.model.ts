@@ -736,7 +736,8 @@ export enum EMessage {
     freeProductNotFoundInThisMachine = "freeProductNotFoundInThisMachine",
     productNotFound = "productNotFound",
     duplicatedPosition = "duplicatedPosition",
-    qttyistoolow = "qttyistoolow"
+    qttyistoolow = "qttyistoolow",
+    waitingt = "waitingt"
 }
 export interface IBase {
     id?: number;
@@ -796,8 +797,13 @@ export interface IMachineID extends IBase, IBC {
     bill: any;
 }
 
-export enum ERedisCommand{
-    waiting_transactionID='waiting_transactionID'
+
+
+
+export enum ERedisCommand {
+    waiting_transactionID = 'waiting_transactionID',
+    processing = "processing",
+    machineprocessing = "machineprocessing"
 }
 
 

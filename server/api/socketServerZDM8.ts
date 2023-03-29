@@ -309,7 +309,8 @@ export class SocketServerZDM8 {
 
     }
 
-    onMachineResponse(cb:(r:IReqModel)=>void){
+    onMachineResponse(cb:(r:IReqModel)=>void,removeAll=true){
+        // !removeAll||this.eventEmitter.removeAllListeners();
         this.eventEmitter.on('MachineResponse',cb);
     }
     findMachineId(machineId: string) {
