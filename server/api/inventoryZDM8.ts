@@ -279,7 +279,10 @@ export class InventoryZDM8 implements IBaseClass {
                                     const bill = rx.find(v => v.transactionID == Number(transactionID));
                                     if (bill) {
                                         that.clientRespose.push({res,position,bill,transactionID});
+                                        
                                         const pos =this.ssocket.processOrder(machineId,position,transactionID);
+                                        console.log('retryProcessBill',transactionID,pos);
+                                        writeSucceededRecordLog(m, position);
                                     } else throw new Error('Transaction Not Found');
 
                                 // }
@@ -352,6 +355,7 @@ export class InventoryZDM8 implements IBaseClass {
                     console.log(' WS submit command', machineId, position);
                     const transactionID=22331;
                     this.clientRespose.push({res,position,bill:{} as IVendingMachineBill,transactionID});
+                    console.log('submit_command',transactionID,position);
                     res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, transactionID), EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
@@ -383,6 +387,8 @@ export class InventoryZDM8 implements IBaseClass {
                         if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
                         const transactionID=-10;
                         this.clientRespose.push({res,position,bill:{} as IVendingMachineBill,transactionID});
+                        console.log('getFreeProduct',transactionID,position);
+
                         const x = this.ssocket.processOrder(machineId?.machineId + '', position,transactionID);
                         writeSucceededRecordLog(m, position);
                         console.log(' WS submit command', machineId, position, x);
