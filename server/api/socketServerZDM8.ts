@@ -173,7 +173,8 @@ export class SocketServerZDM8 {
                                     return;
                                 }
                                 console.log('DATA  Update status here ');
-
+                                writeLogs(d, d.command);
+                                that.eventEmitter.emit('MachineResponse',d)
                                 return;
                             } else {
                                 socket.end();
