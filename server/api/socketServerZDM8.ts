@@ -2,7 +2,7 @@ import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess } from '../entities/system.model';
 import cryptojs from 'crypto-js';
 import { redisClient, writeLogs } from '../services/service';
-import { EventEmitter } from 'ws';
+import { EventEmitter } from 'events';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
     server = net.createServer();
