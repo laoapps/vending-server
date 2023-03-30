@@ -1158,7 +1158,19 @@ export class InventoryZDM8 implements IBaseClass {
         }
     }
     sendWS(clientId:string,resx:IResModel){
-        this.wsClient.find(v=>{
+        // this.wsClient.find(v=>{
+        //     const x = v['clientId'] as string;
+        //     if (x) {
+        //         if (x == clientId) {
+        //             // yy.push(v);
+        //             console.log('WS SENDING',x,v.readyState);
+                    
+        //             v.send(JSON.stringify(resx));
+        //         }
+        //     }
+        // });
+
+        this.wss.clients.forEach(v=>{
             const x = v['clientId'] as string;
             if (x) {
                 if (x == clientId) {
