@@ -65,6 +65,7 @@ CreateDatabase('').then(r => {
     const sss = Array<IBaseClass>();
     sss.push(invM102, invVMC, invZDM8);
     process.env._image_path=path.join(__dirname, '..', 'public');
+    process.env._log_path=path.join(__dirname, '..', 'logs');
     app.use('/vmc/public', express.static(process.env._image_path))
     app.use('/zdm8/public', express.static(process.env._image_path))
     app.use('/m102/public', express.static(process.env._image_path))
