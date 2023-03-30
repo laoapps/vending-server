@@ -282,7 +282,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         
                                         const pos =this.ssocket.processOrder(machineId,position,transactionID);
                                         console.log('retryProcessBill',transactionID,pos);
-                                        writeSucceededRecordLog(m, position);
+                                        writeSucceededRecordLog(bill, position);
                                     } else throw new Error('Transaction Not Found');
 
                                 // }
