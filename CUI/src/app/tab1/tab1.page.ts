@@ -107,7 +107,8 @@ export class Tab1Page {
   }
   initStock(){
 
-   
+    this.saleList.length>0
+    ||
     this.apiService.loadVendingSale().subscribe(r => {
       console.log(r);
       if (r.status) {
