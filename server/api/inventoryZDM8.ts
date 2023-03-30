@@ -825,6 +825,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const resx = {} as IResModel;
                     resx.command = EMACHINE_COMMAND.confirm;
                     resx.message = EMessage.confirmsucceeded;
+                    
                     if ([22331, 1000].includes(re.transactionID)) {
                        
                         resx.status = 1;
@@ -832,6 +833,7 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.transactionID = re.transactionID || -1;
                         resx.data = { bill: cres?.bill, position: cres?.position };
                         //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+                        
 
                     } else {
                         const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position)||-1;
@@ -841,7 +843,7 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.transactionID = re.transactionID || -1;
                         resx.data = { bill: cres?.bill, position: cres?.position };
                     }
-
+                    const clientId=cres?.bill.clientId+'';
                     
                     // this.wss.clients.forEach(v => {
                     //     const x = v['clientId'] as string;
@@ -856,6 +858,8 @@ export class InventoryZDM8 implements IBaseClass {
                     //         }
                     //     }
                     // });
+                    console.log('send',clientId,cres?.bill?.clientId,resx);
+                    
                     this.sendWS(cres?.bill?.clientId+'',resx);
                     // redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify(a));
                     // cres?.res.send(PrintSucceeded('onMachineResponse', resx, EMessage.succeeded));

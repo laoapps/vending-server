@@ -29,7 +29,7 @@
               <ion-row>
                 <ion-col size="8">
                  
-                  <img style="width: 200px;height:480px" [src]="this.url+'/public/'+s.stock.image"
+                  <img style="width: 200px;height:480px" [src]="s.stock.image.includes(';base64,')?s.stock.image:this.url+'/public/'+s.stock.image"
                     (click)="changeStock(s.position)">
                 </ion-col>
                 <ion-col size="4">
@@ -57,7 +57,7 @@
     <!-- <ion-row *ngFor="let s of saleStock">
       <ion-col size="8">
         <ion-label>{{s.position+compensation|number}}</ion-label>
-        <img style="width: 100px;height:240px" [src]="this.url+'/public/'+s.stock.image"
+        <img style="width: 100px;height:240px" [src]="s.stock.image.includes(';base64,')?s.stock.image:this.url+'/public/'+s.stock.image"
           (click)="changeStock(s.position)">
       </ion-col>
       <ion-col size="4">
@@ -78,7 +78,7 @@
   <div *ngFor="let s of saleStock" style="display:inline;float:left" (click)="selectItem(s.position+'')">
     <ion-card>
       <ion-label>{{s.position+compensation|number}}</ion-label>
-      <img style="width: 100px;height:240px" [src]="this.url+'/public/'+s.stock.image"
+      <img style="width: 100px;height:240px" [src]="s.stock.image.includes(';base64,')?s.stock.image:this.url+'/public/'+s.stock.image"
         (click)="changeStock(s.position)">
     </ion-card>
     <ion-card >

@@ -58,7 +58,7 @@ export class Tab1Page {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url;
     // this.initVendingSale();
-    this.initStock();
+    
 
     platform.ready().then(() => {
       console.log('Width: ' + (this.swidth = platform.width()));
@@ -83,7 +83,10 @@ export class Tab1Page {
         this.apiService.wsAlive.time = new Date();
         this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
         // this.loadSaleList();
+        this.initStock();
       })
+
+    
     });
     // });
 
