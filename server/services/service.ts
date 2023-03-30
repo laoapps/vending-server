@@ -242,17 +242,17 @@ export function findRealDB(token: string): Promise<string> {
 }
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
     
-    const logs = process.env._log_path + `/logs/results_${da}.json`;
+    const logs = process.env._log_path + `/results_${da}.json`;
     return fs.readFileSync(logs).toString();
 }
 export function writeSucceededRecordLog(m, position) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path + `/logs/results_${da}.json`;
+    const logs = process.env._log_path + `/results_${da}.json`;
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
 export function writeLogs(m, position,name='g_') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path + `/logs/${name}_${da}.json`;
+    const logs = process.env._log_path + `/${name}_${da}.json`;
 
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
