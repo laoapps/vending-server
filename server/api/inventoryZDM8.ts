@@ -1183,7 +1183,7 @@ export class InventoryZDM8 implements IBaseClass {
     sendWSToMachine(machineId: string, resx: IResModel) {
         this.wsClient.find(v => {
             const x = v['machineId'] as string;
-            console.log('WS SENDING id', x,x==machineId, v.readyState);
+            console.log('WS SENDING id', x,machineId,x==machineId, v.readyState);
             if (x && x == machineId) {
                 // yy.push(v);
                 console.log('WS SENDING machine id', x, v.readyState);
