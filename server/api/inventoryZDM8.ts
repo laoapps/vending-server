@@ -213,7 +213,8 @@ export class InventoryZDM8 implements IBaseClass {
                 try {
                     this.wsClient.find(v=>{
                         if (v.OPEN && v['machineId'] == res.locals['machineId']?.machineId && v['machineId']) {
-                            v.send(JSON.stringify(PrintSucceeded('refresh', true, EMessage.succeeded)));
+                            // v.send(JSON.stringify(PrintSucceeded('refresh', true, EMessage.succeeded)));
+                            this.sendWSToMachine(v['machineId'],PrintSucceeded('refresh', true, EMessage.succeeded))
                         }
                     })
                     // this.wss.clients.forEach(v => {
@@ -855,15 +856,7 @@ export class InventoryZDM8 implements IBaseClass {
                     //         }
                     //     }
                     // });
-                    this.wsClient.find(v=>{
-                        const x = v['clientId'] as string;
-                        if (x) {
-                            if (x == cres?.bill.clientId) {
-                                // yy.push(v);
-                                v.send(JSON.stringify(resx));
-                            }
-                        }
-                    })
+                    this.sendWS(cres?.bill?.clientId+'',resx);
                     // redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify(a));
                     // cres?.res.send(PrintSucceeded('onMachineResponse', resx, EMessage.succeeded));
                 } catch (error) {
@@ -982,15 +975,16 @@ export class InventoryZDM8 implements IBaseClass {
                 res.data = bill;
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
-                this.wsClient.find(v=>{
-                    const x = v['clientId'] as string;
-                    if (x) {
-                        if (x == bill.clientId) {
-                            // yy.push(v);
-                            v.send(JSON.stringify(res));
-                        }
-                    }
-                })
+                this.sendWS(bill?.clientId+'',res);
+                // this.wsClient.find(v=>{
+                //     const x = v['clientId'] as string;
+                //     if (x) {
+                //         if (x == bill.clientId) {
+                //             // yy.push(v);
+                //             v.send(JSON.stringify(res));
+                //         }
+                //     }
+                // })
                 // this.wss.clients.forEach(v => {
                 //     const x = v['clientId'] as string;
                 //     if (x) {
@@ -1158,6 +1152,28 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
 
         }
+    }
+    sendWS(clientId:string,resx:IResModel){
+        this.wsClient.find(v=>{
+            const x = v['clientId'] as string;
+            if (x) {
+                if (x == clientId) {
+                    // yy.push(v);
+                    v.send(JSON.stringify(resx));
+                }
+            }
+        });
+    }
+    sendWSToMachine(machineId:string,resx:IResModel){
+        this.wsClient.find(v=>{
+            const x = v['machineId'] as string;
+            if (x) {
+                if (x == machineId) {
+                    // yy.push(v);
+                    v.send(JSON.stringify(resx));
+                }
+            }
+        });
     }
     close() {
         this.wss.close();
