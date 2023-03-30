@@ -859,7 +859,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // });
                     console.log('send', clientId, cres?.bill?.clientId, resx);
 
-                    that.sendWS(cres?.bill?.clientId + '', resx);
+                    that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                     // redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify(a));
                     // cres?.res.send(PrintSucceeded('onMachineResponse', resx, EMessage.succeeded));
                 } catch (error) {
@@ -978,7 +978,7 @@ export class InventoryZDM8 implements IBaseClass {
                 res.data = bill;
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
-                this.sendWS(bill?.clientId + '', res);
+                this.sendWSToMachine(bill?.machineId + '', res);
                 // this.wsClient.find(v=>{
                 //     const x = v['clientId'] as string;
                 //     if (x) {
@@ -1183,11 +1183,11 @@ export class InventoryZDM8 implements IBaseClass {
     sendWSToMachine(machineId: string, resx: IResModel) {
         this.wsClient.find(v => {
             const x = v['machineId'] as string;
-            if (x) {
-                if (x == machineId) {
-                    // yy.push(v);
-                    v.send(JSON.stringify(resx));
-                }
+            console.log('WS SENDING id', x,x==machineId, v.readyState);
+            if (x && x == machineId) {
+                // yy.push(v);
+                console.log('WS SENDING machine id', x, v.readyState);
+                v.send(JSON.stringify(resx));
             }
         });
     }
