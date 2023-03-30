@@ -368,7 +368,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const transactionID = 22331;
                     const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
                     const clientId = ws.clientId;
-                    this.clientResponse.push({ position, bill: { clientId: clientId } as IVendingMachineBill, transactionID });
+                    this.clientResponse.push({ position, bill: { clientId,machineId } as IVendingMachineBill, transactionID });
                     console.log('submit_command', transactionID, position);
                     this.ssocket.processOrder(machineId, position, transactionID)
                     res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, transactionID), EMessage.succeeded));
@@ -403,7 +403,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const transactionID = 1000;
                         const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
                         // const clientId = ws.clientId;
-                        this.clientResponse.push({ position, bill: { clientId } as IVendingMachineBill, transactionID });
+                        this.clientResponse.push({ position, bill: { clientId ,machineId} as IVendingMachineBill, transactionID });
                         console.log('getFreeProduct', transactionID, position);
 
                         const x = this.ssocket.processOrder(machineId?.machineId + '', position, transactionID);
