@@ -51,7 +51,7 @@ export class VendingVMC {
                         })
                         that.retry--;
                         if (that.retry <= 0) {
-                            // const t = that.clearTransactionID();
+                            const t = that.clearTransactionID();
                             that.sock?.send(b, -1);
                         }
                 
