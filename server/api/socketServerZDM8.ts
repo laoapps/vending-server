@@ -186,7 +186,7 @@ export class SocketServerZDM8 {
                             console.log('DATA response from the machine', d);
                             console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
                             writeLogs(d, d.command);
-                            that.eventEmitter.emit('MachineResponse',d)
+                            // that.eventEmitter.emit('MachineResponse',d)
                             return;
                         }
                         socket.end();
