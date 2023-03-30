@@ -825,7 +825,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const resx = {} as IResModel;
                     resx.command = EMACHINE_COMMAND.confirm;
                     resx.message = EMessage.confirmsucceeded;
-                    
+                    if(re.transactionID<0) return console.log('onMachineResponse ignore', re);
                     if ([22331, 1000].includes(re.transactionID)) {
                        
                         resx.status = 1;
@@ -834,7 +834,6 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.data = { bill: cres?.bill, position: cres?.position };
                         //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
                         
-
                     } else {
                         const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position)||-1;
                         idx == -1||!idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
@@ -860,7 +859,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // });
                     console.log('send',clientId,cres?.bill?.clientId,resx);
                     
-                    this.sendWS(cres?.bill?.clientId+'',resx);
+                    that.sendWS(cres?.bill?.clientId+'',resx);
                     // redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify(a));
                     // cres?.res.send(PrintSucceeded('onMachineResponse', resx, EMessage.succeeded));
                 } catch (error) {
@@ -1158,19 +1157,7 @@ export class InventoryZDM8 implements IBaseClass {
         }
     }
     sendWS(clientId:string,resx:IResModel){
-        // this.wsClient.find(v=>{
-        //     const x = v['clientId'] as string;
-        //     if (x) {
-        //         if (x == clientId) {
-        //             // yy.push(v);
-        //             console.log('WS SENDING',x,v.readyState);
-                    
-        //             v.send(JSON.stringify(resx));
-        //         }
-        //     }
-        // });
-
-        this.wss.clients.forEach(v=>{
+        this.wsClient.find(v=>{
             const x = v['clientId'] as string;
             if (x) {
                 if (x == clientId) {
@@ -1181,6 +1168,18 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             }
         });
+
+        // this.wss.clients.forEach(v=>{
+        //     const x = v['clientId'] as string;
+        //     if (x) {
+        //         if (x == clientId) {
+        //             // yy.push(v);
+        //             console.log('WS SENDING',x,v.readyState);
+                    
+        //             v.send(JSON.stringify(resx));
+        //         }
+        //     }
+        // });
     }
     sendWSToMachine(machineId:string,resx:IResModel){
         this.wsClient.find(v=>{
