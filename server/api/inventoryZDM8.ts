@@ -1163,7 +1163,7 @@ export class InventoryZDM8 implements IBaseClass {
             if (x) {
                 if (x == clientId) {
                     // yy.push(v);
-                    console.log('WS SENDING',x,);
+                    console.log('WS SENDING',x,v.readyState);
                     
                     v.send(JSON.stringify(resx));
                 }
