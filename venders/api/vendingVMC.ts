@@ -42,17 +42,17 @@ export class VendingVMC {
                         that.port.write(buff.b, (e) => {
                             if (e) {
                                 console.log('Error command', e.message);
-                                that.sock?.send(buff?.b.toString("hex"), buff?.transactionID||-5);
+                                that.sock?.send(buff?.b.toString("hex"),-5);
                             } else {
                                 console.log('WRITE COMMAND succeeded', new Date().getTime());
-                                that.sock?.send(buff?.b.toString("hex"), buff?.transactionID||-6);
+                                that.sock?.send(buff?.b.toString("hex"),-6);
                                 // confirm by socket
                             }
                         })
                         that.retry--;
                         if (that.retry <= 0) {
-                            const t = that.clearTransactionID();
-                            that.sock?.send(b, t?.transactionID||-1);
+                            // const t = that.clearTransactionID();
+                            that.sock?.send(b, -1);
                         }
                 
                    
