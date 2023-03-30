@@ -835,6 +835,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 // yy.push(v);
                                 v.send(JSON.stringify(resx), e => {
                                     if (e) console.log('ERROR SEND WS', e);
+                                    console.log('Send to WS ',cres?.bill.clientId);
+                                    
                                 });
                             }
                         }
