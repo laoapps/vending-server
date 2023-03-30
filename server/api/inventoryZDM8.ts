@@ -356,7 +356,8 @@ export class InventoryZDM8 implements IBaseClass {
                     const transactionID = 22331;
                     this.clientRespose.push({ res, position, bill: {} as IVendingMachineBill, transactionID });
                     console.log('submit_command', transactionID, position);
-                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, transactionID), EMessage.succeeded));
+                    this.ssocket.processOrder(machineId, position, transactionID)
+                    // res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, transactionID), EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError('init', error, EMessage.error));
@@ -385,7 +386,7 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
                         if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
                         if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
-                        const transactionID = -10;
+                        const transactionID = 1000;
                         this.clientRespose.push({ res, position, bill: {} as IVendingMachineBill, transactionID });
                         console.log('getFreeProduct', transactionID, position);
 
@@ -794,6 +795,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             const that = this;
             this.ssocket.onMachineResponse((re: IReqModel) => {
+                const cres = that.clientRespose.find(v => v.transactionID == re.transactionID);
                 try {
                     // vmc response with transactionId and buffer data
                     // zdm8 reponse with transactionId
@@ -804,7 +806,17 @@ export class InventoryZDM8 implements IBaseClass {
                     // we should use drop detect to audit 
 
                     // redisClient.del(xy);
-                    const cres = that.clientRespose.find(v => v.transactionID == re.transactionID);
+                    if(![22331,1000].includes(re.transactionID)){
+                        const resx = {} as IResModel;
+                        resx.command = EMACHINE_COMMAND.confirm;
+                        resx.message = EMessage.confirmsucceeded;
+                        resx.status = 1;
+                        console.log('onMachineResponse', re);
+                        resx.transactionID = cres?.bill.transactionID || -1;
+                        resx.data = { bill: cres?.bill, position: cres?.position };
+                       return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+
+                    }
 
                     const idx = cres?.bill?.vendingsales.findIndex(v => v.position == cres?.position);
 
@@ -821,7 +833,7 @@ export class InventoryZDM8 implements IBaseClass {
                     cres?.res.send(PrintSucceeded('onMachineResponse', resx, EMessage.succeeded));
                 } catch (error) {
                     console.log('error onMachineResponse',error);
-                    
+                    cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
                 }
 
 
