@@ -843,25 +843,9 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.data = { bill: cres?.bill, position: cres?.position };
                     }
                     const clientId = cres?.bill.clientId + '';
-
-                    // this.wss.clients.forEach(v => {
-                    //     const x = v['clientId'] as string;
-                    //     if (x) {
-                    //         if (x == cres?.bill.clientId) {
-                    //             // yy.push(v);
-                    //             v.send(JSON.stringify(resx), e => {
-                    //                 if (e) console.log('ERROR SEND WS', e);
-                    //                 console.log('Send to WS ',cres?.bill.clientId);
-
-                    //             });
-                    //         }
-                    //     }
-                    // });
                     console.log('send', clientId, cres?.bill?.clientId, resx);
-
+                    that.clientResponse=that.clientResponse.filter(v => v.transactionID !== re.transactionID);
                     that.sendWSToMachine(cres?.bill?.machineId + '', resx);
-                    // redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify(a));
-                    // cres?.res.send(PrintSucceeded('onMachineResponse', resx, EMessage.succeeded));
                 } catch (error) {
                     console.log('error onMachineResponse', error);
                     // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
