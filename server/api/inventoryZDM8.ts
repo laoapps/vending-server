@@ -18,6 +18,7 @@ import { VendingMachineBillFactory, VendingMachineBillModel } from '../entities/
 import { Op } from 'sequelize';
 import fs from 'fs';
 export class InventoryZDM8 implements IBaseClass {
+   
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -1149,6 +1150,18 @@ export class InventoryZDM8 implements IBaseClass {
         //         }
         //     }
         // });
+    }
+    confirmMMoneyOder(c: IMMoneyConfirm) {
+        return new Promise<any>((resolve, reject) => {
+            // c.wallet_ids
+            this.callBackConfirmMmoney(c.tranid_client,Number( c.amount)).then(r => {
+                return { bill: r, transactionID: c.tranid_client };
+            }).catch(e => {
+                console.log('error confirmMMoney');
+                return e;
+            })
+        })
+
     }
     sendWSToMachine(machineId: string, resx: IResModel) {
         this.wsClient.find(v => {
