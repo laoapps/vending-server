@@ -572,6 +572,11 @@ export enum EZDM8_COMMAND {
     liftoutput = 'liftoutput',
     positionliftmotor = "positionliftmotor"
 }
+export enum EPaymentStatus{
+    paid='paid',
+    pending='pending',
+    delivered='delivered'
+}
 export enum EMessage {
     loginfailed = 'login failed',
     succeeded = 'succeeded',
