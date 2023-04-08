@@ -293,7 +293,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 const pos = this.ssocket.processOrder(machineId, position, transactionID);
                                 console.log('retryProcessBill', transactionID, pos);
-                                writeSucceededRecordLog(bill, position);
+                                // writeSucceededRecordLog(bill, position);
                                 res.send(PrintSucceeded('retryProcessBill', { position, bill, transactionID }, EMessage.succeeded));
                             } else throw new Error('Transaction Not Found');
 
@@ -370,7 +370,6 @@ export class InventoryZDM8 implements IBaseClass {
                     const clientId = ws.clientId;
                     this.clientResponse.push({ position, bill: { clientId,machineId } as IVendingMachineBill, transactionID });
                     console.log('submit_command', transactionID, position);
-                    this.ssocket.processOrder(machineId, position, transactionID)
                     res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, transactionID), EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
@@ -407,7 +406,7 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log('getFreeProduct', transactionID, position);
 
                         const x = this.ssocket.processOrder(machineId?.machineId + '', position, transactionID);
-                        writeSucceededRecordLog(m, position);
+                        // writeSucceededRecordLog(m, position);
                         console.log(' WS submit command', machineId, position, x);
 
                         res.send(PrintSucceeded('submit command', x, EMessage.succeeded));
@@ -845,6 +844,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const clientId = cres?.bill.clientId + '';
                     console.log('send', clientId, cres?.bill?.clientId, resx);
                     that.clientResponse=that.clientResponse.filter(v => v.transactionID !== re.transactionID);
+                    writeSucceededRecordLog(cres?.bill,  cres?.position);
                     that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                 } catch (error) {
                     console.log('error onMachineResponse', error);
