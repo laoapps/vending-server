@@ -10,11 +10,13 @@ import moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
+import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+  _billEvents = new EventEmitter();
   stock = new Array<IStock>();
   eventEmitter = new EventEmitter();
   machineuuid = uuid.v4()
@@ -79,19 +81,19 @@ export class ApiService {
     this.wsapi.billProcessSubscription.subscribe(r => {
       if (!r) return console.log('empty');
       console.log('ws process subscription', r);
-      const message = 'processing slot ' + r.position.position + `==>${r.position.status}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
+      const message = 'processing slot ' + r.position + `==>${r.position}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
 
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-      const x = this.vendingOnSale.find(v => v.position == r.position.position);
-      console.log('X', x, r.position, x && r.position.status);
+      const x = this.vendingOnSale.find(v => v.position == r.position);
+      console.log('X', x, r.position, x && r.position);
 
-      if (x && r.position.status) {
+      if (x && r.position) {
         this.deductOrderUpdate(x.position);
         x.stock.qtty--;
 
 
-        this.clearWaitingT();
+        // this.clearWaitingT();
 
         // PLAY SOUNDS
         this.audio = new Audio('assets/khopchay.mp3');
@@ -101,14 +103,22 @@ export class ApiService {
         });
 
         r.bill.updatedAt = new Date();
-        this.storage.get('bill_', 'bills').then(rx => {
-          const b = rx.v as Array<IBillProcess>;
-          const bills = b ? b : [];
-          bills.unshift(r);
-          this.storage.set('bill_', bills, 'bills')
+
+        this.loadDeliveryingBills().subscribe(r => {
+          if (r.status) {
+            this.dismissModal();
+            const pb = r.data as Array<IBillProcess>;
+            if(pb.length)
+            this.showModal(RemainingbillsPage, { r:pb });
+          }
+          else {
+            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
+              r.present();
+            })
+          }
         })
 
-      } else if (!r.position.status) {
+      } else if (!r.position) {
         // PLAY SOUNDS
         this.audio = new Audio('assets/labob.mp3');
         this.audio.play();
@@ -129,96 +139,18 @@ export class ApiService {
       // });
     });
     this.wsapi.waitingDelivery.subscribe(r => {
-      console.log('WAITING FOR DELIVERY 10 seconds');
-      if(r)
-      this.startWaitingT([r]);
+      console.log('WAITING FOR DELIVERY');
+      // available bills
+
+      if (r) {
+        this.dismissModal();
+        this.showModal(RemainingbillsPage, { r });
+      }
     })
 
 
-    if (!ApiService.__T)
-      setInterval(() => {
-        this.storage.get('bill_', 'bills').then(rx => {
-          const b = rx.v as Array<IBillProcess>;
-          const bll = b ? b.filter(v => moment(v.bill.paymenttime).diff(new Date(), 'days') == 0) : [];
-
-          this.wsapi.send({ command: 'ping', data: { m: this.machineId, bll }, } as IReqModel)
-        })
-      }, 60000);
-    if (this.checkWaitingT())
-      this.startWaitingT([]);
   }
-  public checkWaitingT() {
-    try {
-      const a = localStorage.getItem('waiting_T');
-      console.log('aaaa',a,a=='null');
-      
-      let ax = [];
-      !a||a=='null' ?
-        localStorage.setItem('waiting_T', JSON.stringify([])) :
-        ax.push(...JSON.parse(a));
-      localStorage.setItem('waiting_T', JSON.stringify(ax));
-      return !!ax.length;
-    } catch (error) {
-      console.log('ERROR', error);
-      return false;
-    }
-  }
-  retryWaitingT = 3;
-  public startWaitingT(t = new Array<IBillProcess>()) {
-    try {
-      this.showLoading();
-      // process retry
-      const a = JSON.parse(localStorage.getItem('waiting_T'));
-      t.push(...a);
-      t.forEach((v, i) => {
-        setTimeout(() => {
-          this.retryProcessBill(v.bill.transactionID + '').subscribe(r => {
-            if (r.status) {
-              this.toast.create({ message: r.message, duration: 3000 }).then(rx => rx.present());
-            } else {
-              this.toast.create({ message: r.message, duration: 3000 }).then(rx => rx.present());
-            }
-          })
-        }, 10000 * i);
 
-        ApiService.waiting_T = setTimeout(() => {
-          this.dismissLoading();
-          // auto retry
-          if (--this.retryWaitingT <= 0) {
-            const cf = confirm('Retry ?');
-            if (cf) this.startWaitingT(t);
-            else {
-              const cf = confirm('Are you sure ?');
-              if (!cf) this.startWaitingT(t);
-              else this.alert.create({
-                message: 'PLEASE REPORT THIS TRANSACTION ID ' + t, buttons: [
-                  {
-                    text: 'OK',
-                    role: 'confirm',
-                    handler: () => {
-
-                    },
-                  },
-                ]
-              }).then(r => r.present());
-            }
-          } else {
-            this.startWaitingT(t);
-          }
-        }, 10000 * i);
-      })
-
-    } catch (error) {
-      console.log('error',error);
-      
-    }
-
-  }
-  public clearWaitingT() {
-    localStorage.setItem('waiting_T', '[]');
-    ApiService.waiting_T ? clearTimeout(ApiService.waiting_T) : '';
-    ApiService.waiting_T = null;
-  }
   public validateDB() {
 
   }
@@ -317,18 +249,22 @@ export class ApiService {
     // req.data.clientId = this.clientId.clientId;
     return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
   }
-  
+
   loadOnlineMachine() {
     return this.http.get<IResModel>(this.url + '/getOnlineMachines', { headers: this.headerBase() });
   }
+  loadDeliveryingBills() {
+    return this.http.post<IResModel>(this.url + '/getDeliveryingBills', { headers: this.headerBase() });
+  }
+
   loadPaidBills() {
     return this.http.post<IResModel>(this.url + '/getPaidBills', { headers: this.headerBase() });
   }
   loadBills() {
     return this.http.post<IResModel>(this.url + '/getBills', { headers: this.headerBase() });
   }
-  retryProcessBill(T: string) {
-    return this.http.post<IResModel>(this.url + '/retryProcessBill?T=' + T, { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
+  retryProcessBill(T: string,position:number) {
+    return this.http.post<IResModel>(this.url + '/retryProcessBill?T=' + T+'&position='+position, { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
   // loadSaleList() {
   //   const req = {} as IReqModel;

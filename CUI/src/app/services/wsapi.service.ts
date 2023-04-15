@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
-import { EMACHINE_COMMAND, IAlive, IBillProcess, IClientId, IReqModel, IResModel } from './syste.model';
+import { EMACHINE_COMMAND, IAlive, IBillProcess, IClientId, IReqModel, IResModel, IVendingMachineBill } from './syste.model';
 import * as cryptojs from 'crypto-js';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 @Injectable({
@@ -80,9 +80,9 @@ export class WsapiService {
             break;
           case 'confirm':
             console.log('confirm', data);
-
             this.billProcessSubscription.next(data)
             break;
+            
           case 'waitingt':
             console.log('Start waiting');
             this.waitingDelivery.next(data)

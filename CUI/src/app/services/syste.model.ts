@@ -802,7 +802,9 @@ export interface IAlive{
 export interface IClientId{
     clientId:string;
 }
-export interface IBillProcess{
-    bill:IVendingMachineBill,
-    position:any
+export interface IBillProcess {
+    ownerUuid: string;
+    transactionID: number;
+    position: number;
+    bill: IVendingMachineBill;
 }

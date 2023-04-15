@@ -157,7 +157,12 @@
     overflow-x: scroll;
     overflow-y: hidden;
     white-space: nowrap;
-    float: left;margin-left:15px; border: 2px solid;border-radius: 10px 10px; background-color:white;
+    float: left;
+    border: 2px solid;
+    left:15px;
+    border-radius: 10px 10px; 
+    background-color:white;
+    height: 200px;
 }
 
 .item-header {
@@ -169,6 +174,7 @@ div.scrollmenu {
     display: -webkit-box;
     overflow-x: auto;
     white-space: nowrap;
+    margin-top: -40px;
   }
   
   .floatingBtn {

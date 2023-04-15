@@ -943,8 +943,10 @@ export interface IMMoneyConfirm {
     PhoneNumber: string
 }
 export interface IBillProcess {
-    bill: IVendingMachineBill,
-    position: any
+    ownerUuid: string;
+    transactionID: number;
+    position: number;
+    bill: IVendingMachineBill;
 }
 
 export interface IBankNote extends IBase {

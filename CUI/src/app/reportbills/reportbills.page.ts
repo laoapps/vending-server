@@ -25,7 +25,7 @@ export class ReportbillsPage implements OnInit {
     this.storage.get('bill_', 'bills').then(rx => {
       const b = rx.v as Array<IBillProcess>;
       const bll = b ? b : [];
-      bll.forEach(v=>v.position=JSON.stringify(v.position));
+      bll.forEach(v=>v.position=v.position);
       this.bills.push(...bll);
       this.todayBills(bll);
       this.summarize(this.bills.map(v => v.bill.vendingsales[0].stock));
