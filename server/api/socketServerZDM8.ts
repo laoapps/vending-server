@@ -155,23 +155,23 @@ export class SocketServerZDM8 {
                             const x = that.findMachineIdToken(token);
                             if (x) {
                                 console.log('DATA ping found token');
-                                const mx = that.sclients.filter(v => {
-                                    const m = v['machineId'] as IMachineClientID;
-                                    if (m) {
-                                        return m.machineId == x.machineId
-                                    }
-                                    return false;
-                                });
-                                if (mx.length > 1) {
-                                    mx.forEach(v => v.end());
-                                    socket.end();
-                                    console.log('DATA duplicated !');
-                                    return;
-                                } else if (!mx.length) {
-                                    socket.end();
-                                    console.log('DATA re-login PLEASE!');
-                                    return;
-                                }
+                                // const mx = that.sclients.filter(v => {
+                                //     const m = v['machineId'] as IMachineClientID;
+                                //     if (m) {
+                                //         return m.machineId == x.machineId
+                                //     }
+                                //     return false;
+                                // });
+                                // if (mx.length > 1) {
+                                //     mx.forEach(v => v.end());
+                                //     socket.end();
+                                //     console.log('DATA duplicated !');
+                                //     return;
+                                // } else if (!mx.length) {
+                                //     socket.end();
+                                //     console.log('DATA re-login PLEASE!');
+                                //     return;
+                                // }
                                 console.log('DATA  Update status here ');
                                 writeLogs(d, d.command);
                                 that.eventEmitter.emit('MachineResponse',d)

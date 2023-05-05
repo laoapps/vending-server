@@ -900,6 +900,7 @@ export interface IMachineClientID extends IBase {
     machineId: string;
     ownerUuid: string;
     photo: string;
+    data: Array<any>;
 }
 
 export interface IMMoneyLogInRes {

@@ -58,6 +58,9 @@ export const MachineClientIDFactory = (name: string, sequelize: Sequelize): Mach
         ownerUuid:{
             type: DataTypes.STRING,
         },
+        data:{
+            type: DataTypes.JSONB,
+        },
 
     } as ModelAttributes<MachineClientIDModel>;
 

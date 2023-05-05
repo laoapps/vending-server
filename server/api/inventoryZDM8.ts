@@ -290,7 +290,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = m?.ownerUuid || '';
                         const machineId = m?.machineId || '';
                         const that = this;
-                        let x = that.clientResponse.find(v => v.position == position && v.transactionID == Number(transactionID + ''));
+                        let x = that.clientResponse.find(v => v.position == position && v.transactionID == Number(transactionID + '')&& v.ownerUuid==ownerUuid);
 
                         const pos = this.ssocket.processOrder(machineId, position, transactionID);
                         writeSucceededRecordLog(x?.bill, position);
@@ -348,7 +348,7 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             });
 
-
+/// demo
             router.get(this.path + '/submit_command', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'] + '';
