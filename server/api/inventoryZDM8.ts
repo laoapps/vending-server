@@ -119,6 +119,8 @@ export class InventoryZDM8 implements IBaseClass {
                         //     if (v['clientId'] == clientId)
                         //         loggedin = true;
                         // })
+                        console.log('Command',d);
+                        
                         this.wsClient.find(v => {
                             if (v['clientId'] == clientId)
                                 return loggedin = true;
