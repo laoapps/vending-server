@@ -13,7 +13,7 @@ import { ReportrefillsalePage } from '../reportrefillsale/reportrefillsale.page'
 })
 export class StocksalePage implements OnInit {
 
-  saleStock: IVendingMachineSale[];
+  saleStock=new Array <IVendingMachineSale>();
   stock = new Array<IStock>();
   compensation=0;
   url = this.apiService.url;

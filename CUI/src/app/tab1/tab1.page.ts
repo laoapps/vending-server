@@ -107,255 +107,207 @@ export class Tab1Page {
   }
   initStock() {
 
-    this.saleList.length > 0
-      ||
+
       this.apiService.loadVendingSale().subscribe(r => {
         console.log(r);
         if (r.status) {
-          this.storage.get('stockitems_', 'item').then(rx => {
-            const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
-            const sitems = items ? items : [];
-            this.storage.get('saleStock', 'stock').then(s => {
-              console.log('stock', s);
-
-              const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
-              const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
-              const saleServer = r.data as Array<IVendingMachineSale>;
-
-              const arrdel = [] as Array<IVendingMachineSale>;;
-              const arrnew = [] as Array<IVendingMachineSale>;;
-              if (!saleStorage.length) {
-                saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
-                saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
-
-                if (arrnew.length)
-                  saleStorage.push(...arrnew);
-                if (arrdel.length)
-                  arrdel.forEach((v) => {
-                    const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
-                    saleStorage.splice(i, 1);
-                  })
-
-                saleStorage.sort((a, b) => {
-                  if (b.position < a.position) return -1;
-                })
-                console.log(saleStorage);
-                this.vendingOnSale.push(...saleStorage);
-                console.log(this.vendingOnSale);
-                this.saleList.push(...this.vendingOnSale);
-
-                this.saleList.sort((a, b) => {
-                  if (a.position < b.position) return -1;
-                })
-                console.log(this.saleList);
-
-                if (arrdel.length || arrnew.length)
-                  this.storage.set('saleStock', this.saleList, 'stock');
-
-
-
-                this.apiService.createStockItems(this.vendingOnSale);
-              } else {
-                saleServer.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrnew.push(v) : '');
-                saleStorage.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrdel.push(v) : '');
-
-                if (arrnew.length)
-                  sitems.push(...arrnew.map(v => v.stock));
-                if (arrdel.length)
-                  arrdel.forEach((v) => {
-                    const i = sitems.findIndex(vx => vx.id == v.stock.id);
-                    saleStorage.splice(i, 1);
-                  })
-                this.apiService.updateStockItems(sitems);
-
-                saleStorage.sort((a, b) => {
-                  if (b.position < a.position) return -1;
-                })
-                console.log(saleStorage);
-                this.vendingOnSale.push(...saleStorage);
-                console.log(this.vendingOnSale);
-                this.saleList.push(...this.vendingOnSale);
-
-                this.saleList.sort((a, b) => {
-                  if (a.position < b.position) return -1;
-                })
-                console.log(this.saleList);
-              }
-              if (this.saleList[0].position == 0) this.compensation = 1;
-            })
-          })
+          const saleServer = r.data as Array<IVendingMachineSale>;
+          console.log('saleServer',saleServer);
+          
+          this.apiService.newStockItems(saleServer);
           // window.location.reload();
+          this.storage.get('saleStock', 'stock').then(s => {
+            const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
+            this.saleList.push(...saleitems);
+          })
         } else {
           alert(r.message)
         }
       })
   }
-  initVendingSale() {
+  // initStock() {
 
-    /// NOT IMPLEMENT YET
-    this.apiService.loadVendingSale().subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.storage.get('stockitems_', 'item').then(rx => {
-          const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
-          const sitems = items ? items : [];
-          this.storage.get('saleStock', 'stock').then(s => {
-            console.log('stock', s);
+  //   this.saleList.length > 0
+  //     ||
+  //     this.apiService.loadVendingSale().subscribe(r => {
+  //       console.log(r);
+  //       if (r.status) {
+  //         this.storage.get('stockitems_', 'item').then(rx => {
+  //           const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
+  //           const sitems = items ? items : [];
+  //           this.storage.get('saleStock', 'stock').then(s => {
+  //             console.log('stock', s);
 
-            const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
-            const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
-            const saleServer = r.data as Array<IVendingMachineSale>;
+  //             const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
+  //             const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
+  //             const saleServer = r.data as Array<IVendingMachineSale>;
 
-            const arrdel = [] as Array<IVendingMachineSale>;;
-            const arrnew = [] as Array<IVendingMachineSale>;;
-            if (!saleStorage.length) {
-              saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
-              saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
+  //             const arrdel = [] as Array<IVendingMachineSale>;;
+  //             const arrnew = [] as Array<IVendingMachineSale>;;
+  //             if (!saleStorage.length) {
+  //               saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
+  //               saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
 
-              if (arrnew.length)
-                saleStorage.push(...arrnew);
-              if (arrdel.length)
-                arrdel.forEach((v) => {
-                  const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
-                  saleStorage.splice(i, 1);
-                })
+  //               if (arrnew.length)
+  //                 saleStorage.push(...arrnew);
+  //               if (arrdel.length)
+  //                 arrdel.forEach((v) => {
+  //                   const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
+  //                   saleStorage.splice(i, 1);
+  //                 })
 
-              saleStorage.sort((a, b) => {
-                if (b.position < a.position) return -1;
-              })
-              console.log(saleStorage);
-              this.vendingOnSale.push(...saleStorage);
-              console.log(this.vendingOnSale);
-              this.saleList.push(...this.vendingOnSale);
+  //               saleStorage.sort((a, b) => {
+  //                 if (b.position < a.position) return -1;
+  //               })
+  //               console.log(saleStorage);
+  //               this.vendingOnSale.push(...saleStorage);
+  //               console.log(this.vendingOnSale);
+  //               this.saleList.push(...this.vendingOnSale);
 
-              this.saleList.sort((a, b) => {
-                if (a.position < b.position) return -1;
-              })
-              console.log(this.saleList);
+  //               this.saleList.sort((a, b) => {
+  //                 if (a.position < b.position) return -1;
+  //               })
+  //               console.log(this.saleList);
 
-              if (arrdel.length || arrnew.length)
-                this.storage.set('saleStock', this.saleList, 'stock');
-
-
-
-              this.apiService.createStockItems(this.vendingOnSale);
-            } else {
-              saleServer.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrnew.push(v) : '');
-              saleStorage.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrdel.push(v) : '');
-
-              if (arrnew.length)
-                sitems.push(...arrnew.map(v => v.stock));
-              if (arrdel.length)
-                arrdel.forEach((v) => {
-                  const i = sitems.findIndex(vx => vx.id == v.stock.id);
-                  saleStorage.splice(i, 1);
-                })
-              this.apiService.updateStockItems(sitems);
-
-              saleStorage.sort((a, b) => {
-                if (b.position < a.position) return -1;
-              })
-              console.log(saleStorage);
-              this.vendingOnSale.push(...saleStorage);
-              console.log(this.vendingOnSale);
-              this.saleList.push(...this.vendingOnSale);
-
-              this.saleList.sort((a, b) => {
-                if (a.position < b.position) return -1;
-              })
-              console.log(this.saleList);
-            }
-            if (this.saleList[0].position == 0) this.compensation = 1;
-          })
-        })
-        // window.location.reload();
-      } else {
-        alert(r.message)
-      }
-    })
-  }
-  initDemo() {
-    this.apiService.initDemo().subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.storage.get('stockitems_', 'item').then(rx => {
-          const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
-          const sitems = items ? items : [];
-          this.storage.get('saleStock', 'stock').then(s => {
-            console.log('stock', s);
-
-            const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
-            const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
-            const saleServer = r.data as Array<IVendingMachineSale>;
-
-            const arrdel = [] as Array<IVendingMachineSale>;;
-            const arrnew = [] as Array<IVendingMachineSale>;;
-            if (!saleStorage.length) {
-              saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
-              saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
-
-              if (arrnew.length)
-                saleStorage.push(...arrnew);
-              if (arrdel.length)
-                arrdel.forEach((v) => {
-                  const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
-                  saleStorage.splice(i, 1);
-                })
-
-              saleStorage.sort((a, b) => {
-                if (b.position < a.position) return -1;
-              })
-              console.log(saleStorage);
-              this.vendingOnSale.push(...saleStorage);
-              console.log(this.vendingOnSale);
-              this.saleList.push(...this.vendingOnSale);
-
-              this.saleList.sort((a, b) => {
-                if (a.position < b.position) return -1;
-              })
-              console.log(this.saleList);
-
-              if (arrdel.length || arrnew.length)
-                this.storage.set('saleStock', this.saleList, 'stock');
+  //               if (arrdel.length || arrnew.length)
+  //                 this.storage.set('saleStock', this.saleList, 'stock');
 
 
 
-              this.apiService.createStockItems(this.vendingOnSale);
-            } else {
-              saleServer.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrnew.push(v) : '');
-              saleStorage.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrdel.push(v) : '');
+  //               this.apiService.createStockItems(this.vendingOnSale);
+  //             } else {
+  //               saleServer.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrnew.push(v) : '');
+  //               saleStorage.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrdel.push(v) : '');
 
-              if (arrnew.length)
-                sitems.push(...arrnew.map(v => v.stock));
-              if (arrdel.length)
-                arrdel.forEach((v) => {
-                  const i = sitems.findIndex(vx => vx.id == v.stock.id);
-                  saleStorage.splice(i, 1);
-                })
-              this.apiService.updateStockItems(sitems);
+  //               if (arrnew.length)
+  //                 sitems.push(...arrnew.map(v => v.stock));
+  //               if (arrdel.length)
+  //                 arrdel.forEach((v) => {
+  //                   const i = sitems.findIndex(vx => vx.id == v.stock.id);
+  //                   saleStorage.splice(i, 1);
+  //                 })
+  //               this.apiService.updateStockItems(sitems);
 
-              saleStorage.sort((a, b) => {
-                if (b.position < a.position) return -1;
-              })
-              console.log(saleStorage);
-              this.vendingOnSale.push(...saleStorage);
-              console.log(this.vendingOnSale);
-              this.saleList.push(...this.vendingOnSale);
+  //               saleStorage.sort((a, b) => {
+  //                 if (b.position < a.position) return -1;
+  //               })
+  //               console.log(saleStorage);
+  //               this.vendingOnSale.push(...saleStorage);
+  //               console.log(this.vendingOnSale);
+  //               this.saleList.push(...this.vendingOnSale);
 
-              this.saleList.sort((a, b) => {
-                if (a.position < b.position) return -1;
-              })
-              console.log(this.saleList);
-            }
-            if (this.saleList[0].position == 0) this.compensation = 1;
-          })
-        })
-        // window.location.reload();
-      } else {
-        alert(r.message)
-      }
-    })
-  }
+  //               this.saleList.sort((a, b) => {
+  //                 if (a.position < b.position) return -1;
+  //               })
+  //               console.log(this.saleList);
+  //             }
+  //             if (this.saleList[0].position == 0) this.compensation = 1;
+  //           })
+  //         })
+  //         // window.location.reload();
+  //       } else {
+  //         alert(r.message)
+  //       }
+  //     })
+  // }
+  // initVendingSale() {
+
+  //   /// NOT IMPLEMENT YET
+  //   this.apiService.loadVendingSale().subscribe(r => {
+  //     console.log(r);
+  //     if (r.status) {
+  //       this.storage.get('stockitems_', 'item').then(rx => {
+  //         const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
+  //         const sitems = items ? items : [];
+  //       })
+  //       // window.location.reload();
+  //     } else {
+  //       alert(r.message)
+  //     }
+  //   })
+  // }
+  // initDemo() {
+  //   this.apiService.initDemo().subscribe(r => {
+  //     console.log(r);
+  //     if (r.status) {
+  //       this.storage.get('stockitems_', 'item').then(rx => {
+  //         const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
+  //         const sitems = items ? items : [];
+  //         this.storage.get('saleStock', 'stock').then(s => {
+  //           console.log('stock', s);
+
+  //           const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
+  //           const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
+  //           const saleServer = r.data as Array<IVendingMachineSale>;
+
+  //           const arrdel = [] as Array<IVendingMachineSale>;;
+  //           const arrnew = [] as Array<IVendingMachineSale>;;
+  //           if (!saleStorage.length) {
+  //             saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
+  //             saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
+
+  //             if (arrnew.length)
+  //               saleStorage.push(...arrnew);
+  //             if (arrdel.length)
+  //               arrdel.forEach((v) => {
+  //                 const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
+  //                 saleStorage.splice(i, 1);
+  //               })
+
+  //             saleStorage.sort((a, b) => {
+  //               if (b.position < a.position) return -1;
+  //             })
+  //             console.log(saleStorage);
+  //             this.vendingOnSale.push(...saleStorage);
+  //             console.log(this.vendingOnSale);
+  //             this.saleList.push(...this.vendingOnSale);
+
+  //             this.saleList.sort((a, b) => {
+  //               if (a.position < b.position) return -1;
+  //             })
+  //             console.log(this.saleList);
+
+  //             if (arrdel.length || arrnew.length)
+  //               this.storage.set('saleStock', this.saleList, 'stock');
+
+
+
+  //             this.apiService.createStockItems(this.vendingOnSale);
+  //           } else {
+  //             saleServer.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrnew.push(v) : '');
+  //             saleStorage.forEach(v => !sitems.find(vs => vs.id == v.stock.id) ? arrdel.push(v) : '');
+
+  //             if (arrnew.length)
+  //               sitems.push(...arrnew.map(v => v.stock));
+  //             if (arrdel.length)
+  //               arrdel.forEach((v) => {
+  //                 const i = sitems.findIndex(vx => vx.id == v.stock.id);
+  //                 saleStorage.splice(i, 1);
+  //               })
+  //             this.apiService.updateStockItems(sitems);
+
+  //             saleStorage.sort((a, b) => {
+  //               if (b.position < a.position) return -1;
+  //             })
+  //             console.log(saleStorage);
+  //             this.vendingOnSale.push(...saleStorage);
+  //             console.log(this.vendingOnSale);
+  //             this.saleList.push(...this.vendingOnSale);
+
+  //             this.saleList.sort((a, b) => {
+  //               if (a.position < b.position) return -1;
+  //             })
+  //             console.log(this.saleList);
+  //           }
+  //           if (this.saleList[0].position == 0) this.compensation = 1;
+  //         })
+  //       })
+  //       // window.location.reload();
+  //     } else {
+  //       alert(r.message)
+  //     }
+  //   })
+  // }
   endCount() {
     if (this.timeoutHandler) {
       clearTimeout(this.timeoutHandler);

@@ -189,7 +189,8 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
-  createStockItems(s: Array<IVendingMachineSale>) {
+  newStockItems(s: Array<IVendingMachineSale>) {
+    this.stock.length=0;
     s.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
 
@@ -198,6 +199,7 @@ export class ApiService {
     });
     this.storage.set('stockitems_', this.stock, 'item')
   }
+
   updateStockItems(s: Array<IStock>) {
     s.forEach(v => {
       // console.log('stock',v);
