@@ -108,22 +108,29 @@ export class Tab1Page {
   initStock() {
 
 
-      this.apiService.loadVendingSale().subscribe(r => {
-        console.log(r);
-        if (r.status) {
-          const saleServer = r.data as Array<IVendingMachineSale>;
-          console.log('saleServer',saleServer);
-          
-          this.apiService.newStockItems(saleServer);
-          // window.location.reload();
-          this.storage.get('saleStock', 'stock').then(s => {
-            const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
-            this.saleList.push(...saleitems);
-          })
-        } else {
-          alert(r.message)
-        }
-      })
+    this.apiService.loadVendingSale().subscribe(r => {
+      console.log(r);
+      if (r.status) {
+        const saleServer = r.data as Array<IVendingMachineSale>;
+        console.log('saleServer', saleServer);
+
+        this.apiService.newStockItems(saleServer);
+        
+        // window.location.reload();
+        this.storage.get('saleStock', 'stock').then(s => {
+          const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
+          this.saleList.sort((a, b) => {
+            if (a.position < b.position) return -1;
+          });
+          this.vendingOnSale.push(...saleitems);
+          this.saleList.push(...this.vendingOnSale);
+          if (this.saleList[0].position == 0) this.compensation = 1;
+         
+        })
+      } else {
+        alert(r.message)
+      }
+    })
   }
   // initStock() {
 
@@ -487,7 +494,7 @@ export class Tab1Page {
       // this.orders = [];
       this.summarizeOrder = [];
     });
-  
+
   }
 
   addOrder(x: IVendingMachineSale) {

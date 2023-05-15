@@ -1223,10 +1223,10 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
             this.callBackConfirmMmoney(c.tranid_client, Number(c.amount)).then(r => {
-                return { bill: r, transactionID: c.tranid_client };
+                resolve( { bill: r, transactionID: c.tranid_client });
             }).catch(e => {
                 console.log('error confirmMMoney');
-                return e;
+                reject(e);
             })
         })
 

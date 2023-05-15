@@ -144,6 +144,7 @@ export class ApiService {
 
       if (r) {
         this.dismissModal();
+        this.dismissLoading();
         this.showModal(RemainingbillsPage, { r });
       }
     })

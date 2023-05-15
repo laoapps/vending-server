@@ -23,6 +23,7 @@ export class StocksalePage implements OnInit {
     public storage: IonicStorageService) {
     this.saleStock = apiService.vendingOnSale;
     this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
+    // this.stock=apiService.stock;
   }
   refillAll(){
     const conf =confirm('Are you sure ?');
@@ -80,6 +81,17 @@ export class StocksalePage implements OnInit {
 
   ngOnInit() {
     this.stock=[];
+    const maxPosition=Number(localStorage.getItem('maxPosition'))||60;
+    !(this.saleStock.length<maxPosition)||Array.from(Array(maxPosition), (_, i) => i+1).forEach(v=>this.saleStock.find(vx=>vx.position==v)||this.saleStock.push({
+      machineId:this.apiService.machineId.machineId,
+      position:v,
+      isActive:true,
+      id:-1,
+      max:5,
+      stock:{image:'',name:'',price:-1,qtty:0} as IStock
+    } as IVendingMachineSale));
+    console.log('saleStock',this.saleStock);
+    
     this.saleStock.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
       
