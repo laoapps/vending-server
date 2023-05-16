@@ -829,12 +829,12 @@ export class InventoryZDM8 implements IBaseClass {
                 cb ? cb(JSON.parse(r) as IBillProcess[]) : cb([]);
                 !cb ? writeErrorLogs('error', { m: 'call back empty' }) : ''
             }).catch(e => {
-                console.log('error redis');
+                console.log('error redis1',e);
                 cb([])
                 writeErrorLogs('error', e);
             })
         } catch (error) {
-            console.log('error redis');
+            console.log('error redis3',error);
             cb([])
             writeErrorLogs('error', error);
         }
@@ -850,7 +850,7 @@ export class InventoryZDM8 implements IBaseClass {
                 }
                 else redisClient.set(k, JSON.stringify([b]))
             } catch (error) {
-                console.log('error redis');
+                console.log('error redis 2',error);
                 writeErrorLogs('error', error);
             }
 
