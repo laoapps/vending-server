@@ -826,8 +826,11 @@ export class InventoryZDM8 implements IBaseClass {
         const k = 'clientResponse';
         try {
             redisClient.get(k).then(r => {
-                cb ? cb(JSON.parse(r) as IBillProcess[]) : cb([]);
-                !cb ? writeErrorLogs('error', { m: 'call back empty' }) : ''
+                if(r){
+                    cb ? cb(JSON.parse(r) as IBillProcess[]) : cb([]);
+                    !cb ? writeErrorLogs('error', { m: 'call back empty' }) : ''
+                }else cb([])
+                
             }).catch(e => {
                 console.log('error redis1',e);
                 cb([])
