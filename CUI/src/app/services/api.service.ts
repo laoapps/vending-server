@@ -257,7 +257,7 @@ export class ApiService {
     return this.http.get<IResModel>(this.url + '/getOnlineMachines', { headers: this.headerBase() });
   }
   loadDeliveryingBills() {
-    return this.http.post<IResModel>(this.url + '/getDeliveryingBills', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/getDeliveryingBills',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
   }
 
   loadPaidBills() {

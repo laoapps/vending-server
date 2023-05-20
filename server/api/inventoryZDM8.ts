@@ -216,8 +216,8 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                 } catch (error: any) {
-                    console.log(error);
-                    res.send(PrintError(d.command, error, error.message));
+                    console.log('error',error);
+                    res.send(PrintError(d.command,this.production|| error, error.message));
                 }
             });
 
@@ -241,7 +241,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.post(this.path + '/getDeliveryingBills', this.checkMachineIdToken, async (req, res) => {
+            router.post(this.path + '/getDeliveryingBills', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
                     const ownerUuid = m?.ownerUuid || '';
@@ -256,7 +256,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('getDeliveryingBills', error, EMessage.error));
                 }
             });
-            router.post(this.path + '/getPaidBills', this.checkMachineIdToken, async (req, res) => {
+            router.post(this.path + '/getPaidBills', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
                     const ownerUuid = m?.ownerUuid || '';
@@ -273,7 +273,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('getPaidBills', error, EMessage.error));
                 }
             });
-            router.post(this.path + '/getBills', this.checkMachineIdToken, async (req, res) => {
+            router.post(this.path + '/getBills', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
                     const { token } = req.body;
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
