@@ -1,0 +1,32 @@
+@Host= laoapps.com
+
+@path= zdm8
+
+@port= 9006
+
+
+
+
+
+POST http://{{Host}}:{{port}}/{{path}} HTTP/1.1
+Content-Type: application/json
+
+{
+    "data":{
+        "tranid_client":"",
+        "amount":""
+    },
+    "command":"confirmMMoney"
+}
+
+###
+get http://{{Host}}:{{port}}/{{path}}/submit_command?machineId=11111111&position=1 HTTP/1.1
+Content-Type: application/json
+
+{
+    "data":{
+        "tranid_client":"",
+        "amount":""
+    },
+    "command":"confirmMMoney"
+}
