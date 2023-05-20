@@ -290,7 +290,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('getBills', error, EMessage.error));
                 }
             });
-            router.post(this.path + '/retryProcessBill', this.checkMachineIdToken, async (req, res) => {
+            router.post(this.path + '/retryProcessBill', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
                     setTimeout(async () => {
 
@@ -318,7 +318,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('retryProcessBill', error, EMessage.error));
                 }
             });
-            router.get(this.path + '/getAllPaidBills', this.checkMachineIdToken, async (req, res) => {
+            router.get(this.path + '/getAllPaidBills', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
                     const ownerUuid = m?.ownerUuid || '';
@@ -335,7 +335,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError('getAllPaidBills', error, EMessage.error));
                 }
             });
-            router.get(this.path + '/getAllBills', this.checkMachineIdToken, async (req, res) => {
+            router.get(this.path + '/getAllBills', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
                     const ownerUuid = m?.ownerUuid || '';
@@ -388,7 +388,7 @@ export class InventoryZDM8 implements IBaseClass {
 
 
             /// TODO : HERE
-            router.post(this.path + '/getFreeProduct', this.checkMachineIdToken,
+            router.post(this.path + '/getFreeProduct', this.checkMachineIdToken.bind(this),
                 //  this.checkMachineDisabled,
                 async (req, res) => {
                     try {
