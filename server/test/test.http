@@ -37,9 +37,9 @@ Content-Type: application/json
 
 {
     "data":{
-        "position":"",
-        "id":"",
-        "clientId":""
+        "position":"1",
+        "id":1,
+        "clientId":"b88eac3c-9ec0-48ac-8b46-d2f7758a07ed"
     },
-    "token":"getFreeProduct"
+    "token":"79f7928f3deb7436d6e110dfae37e8f80ea9c65f55ea84eb449895b63bc5909e"
 }

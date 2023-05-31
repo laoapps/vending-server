@@ -37,7 +37,9 @@ export class InventoryZDM8 implements IBaseClass {
     // public phonenumber = this.production ? '2052396969':'2054445447'// '2058623333' : '2054445447'; //LTC. 2058623333 //2052899515
     // public walletId = this.production ? '2599087166' : '2843759248';// LTC
     public phonenumber = this.production ? '2052396969' : '2054445447';
-    public walletId = '2142374475';
+    public walletId = '2843759248';
+ 
+
 
     mmoneyusername = 'dbk';
     mmoneypassword = 'dbk@2022';
@@ -388,6 +390,52 @@ export class InventoryZDM8 implements IBaseClass {
 
 
             /// TODO : HERE
+            router.post(this.path + '/getSample', this.checkMachineIdToken.bind(this),
+                //  this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        // return res.send(PrintError('getFreeProduct', [], EMessage.error));
+                        const { token, data: { id, position, clientId } } = req.body;
+                        const machineId = res.locals['machineId'];
+                        const mc = await machineClientIDEntity.findOne({ where: { machineId: machineId?.machineId } })
+                        const ownerUuid = mc?.ownerUuid || '';
+                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync()
+                        const sm = await sEnt.findAll({
+                            where: {
+                                stock: {
+                                    id, price: 0
+                                    // qtty: { [Op.gt]: [0] } 
+                                }, position, isActive: true
+                            }
+                        });
+                        console.log('sm', sm.length);
+                        const m = sm.find(v => v.stock.id == id)?.stock;
+                        console.log('s', m);
+                        console.log('token', token, 'data,data');
+                        if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
+                        if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
+                        if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
+                        const transactionID = 1000;
+                        // const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
+                        // const clientId = ws.clientId;
+                        this.getBillProcess(b => {
+                            b.push({ ownerUuid, position, bill: { clientId, machineId } as IVendingMachineBill, transactionID });
+                            this.setBillProces(b);
+                            console.log('getFreeProduct', transactionID, position);
+
+                            const x = this.ssocket.processOrder(machineId?.machineId + '', position, transactionID);
+                            // writeSucceededRecordLog(m, position);
+                            console.log(' WS submit command', machineId, position, x);
+
+                            res.send(PrintSucceeded('submit command', x, EMessage.succeeded));
+                        });
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError('getFreeProduct', error, EMessage.error));
+                    }
+                });
             router.post(this.path + '/getFreeProduct', this.checkMachineIdToken.bind(this),
                 //  this.checkMachineDisabled,
                 async (req, res) => {
@@ -988,8 +1036,8 @@ export class InventoryZDM8 implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = this.production ? this.mmoneyusername : 'test';
-        const password = this.production ? this.mmoneypassword : '12345';
+        const username = this.production ? this.mmoneyusername : '41f7c324712b46f08a939c4609a1d2e1';
+        const password = this.production ? this.mmoneypassword : '112233';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
