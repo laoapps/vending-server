@@ -307,11 +307,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const pos = this.ssocket.processOrder(machineId, position, transactionID);
                             writeSucceededRecordLog(x?.bill, position);
                             res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
-
                         })
-
-
-
                     }, 500);
 
 
@@ -1036,8 +1032,10 @@ export class InventoryZDM8 implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = this.production ? this.mmoneyusername : '41f7c324712b46f08a939c4609a1d2e1';
-        const password = this.production ? this.mmoneypassword : '112233';
+        // mmoneyusername='41f7c324712b46f08a939c4609a1d2e1';
+        // mmoneypassword='112233'
+        const username = this.production ? this.mmoneyusername : 'test';
+        const password = this.production ? this.mmoneypassword : '12345';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {

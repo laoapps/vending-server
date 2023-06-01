@@ -104,19 +104,7 @@ export class ApiService {
 
         r.bill.updatedAt = new Date();
 
-        this.loadDeliveryingBills().subscribe(r => {
-          if (r.status) {
-            this.dismissModal();
-            const pb = r.data as Array<IBillProcess>;
-            if(pb.length)
-            this.showModal(RemainingbillsPage, { r:pb });
-          }
-          else {
-            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
-              r.present();
-            })
-          }
-        })
+   
 
       } else if (!r.position) {
         // PLAY SOUNDS
@@ -145,7 +133,20 @@ export class ApiService {
       if (r) {
         this.dismissModal();
         this.dismissLoading();
-        this.showModal(RemainingbillsPage, { r });
+        this.loadDeliveryingBills().subscribe(r => {
+          if (r.status) {
+            this.dismissModal();
+            const pb = r.data as Array<IBillProcess>;
+            if(pb.length)
+            this.showModal(RemainingbillsPage, { r:pb });
+          }
+          else {
+            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
+              r.present();
+            })
+          }
+        })
+        // this.showModal(RemainingbillsPage, { r });
       }
     })
 

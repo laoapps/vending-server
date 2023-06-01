@@ -9,6 +9,7 @@ import { ApiService } from '../services/api.service';
 })
 export class RemainingbillsPage implements OnInit {
   @Input()r=new Array<IBillProcess>();
+  url = this.apiService.url;
   constructor(public apiService:ApiService) { }
 
   ngOnInit() {

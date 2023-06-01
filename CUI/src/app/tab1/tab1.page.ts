@@ -487,6 +487,7 @@ export class Tab1Page {
         //     alert(error);
         //   }
         // );
+        
       }
       this.apiService.dismissLoading();
       this.getTotalSale.q = 0;
