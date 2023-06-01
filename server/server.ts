@@ -82,6 +82,9 @@ CreateDatabase('').then(r => {
       const host = req.get('Host') // localhost:4000
       const server = http + host;
       const d = req.body as IReqModel;
+      console.log('debug HOST',server,d);
+      
+      
       try {
         console.log('POST Data', d);
         const c = d.data as IMMoneyConfirm;
