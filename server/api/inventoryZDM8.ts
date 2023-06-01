@@ -953,6 +953,8 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         const clientId = cres?.bill.clientId + '';
                         console.log('send', clientId, cres?.bill?.clientId, resx);
+                        console.log('onMachineResponse');
+                        
                         that.setBillProces(b.filter(v => v.transactionID !== re.transactionID));
                         writeSucceededRecordLog(cres?.bill, cres?.position);
                         that.sendWSToMachine(cres?.bill?.machineId + '', resx);
@@ -1103,6 +1105,8 @@ export class InventoryZDM8 implements IBaseClass {
                     bill.vendingsales.forEach(v => {
                         b.push({ ownerUuid, position: v.position, bill, transactionID: Number(transactionID) });
                     });
+                    console.log('callBackConfirmMmoney',b);
+                    
                     this.setBillProces(b);
                     res.data = b.filter(v => v.ownerUuid == ownerUuid);
                     this.sendWSToMachine(bill?.machineId + '', res);
