@@ -207,7 +207,7 @@ export class InventoryZDM8 implements IBaseClass {
                             await ent.sync();
 
                             ent.create(bill).then(r => {
-                                redisClient.setEx(transactionID + '--_', 60 * 5, ownerUuid);
+                                redisClient.setEx(transactionID + '--_', 60 * 15, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
                             });
 
