@@ -202,7 +202,7 @@ export class InventoryZDM8 implements IBaseClass {
                             } as VendingMachineBillModel;
 
                             const m = await machineClientIDEntity.findOne({ where: { machineId: this.ssocket.findMachineIdToken(d.token)?.machineId } });
-                            const ownerUuid = m?.ownerUuid || '';
+                            const ownerUuid = m?.ownerUuid || 'demo';
                             const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                             await ent.sync();
 
@@ -1073,6 +1073,7 @@ export class InventoryZDM8 implements IBaseClass {
             
                 const ownerUuid = await redisClient.get(transactionID + '--_') + '';
                 console.log('GET transactionID by owner',ownerUuid);
+                if(ownerUuid!='demo')
                 if (!ownerUuid) throw new Error(EMessage.TransactionTimeOut);
                 const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                 const bill = await ent.findOne({ where: { transactionID, totalvalue: amount } });
