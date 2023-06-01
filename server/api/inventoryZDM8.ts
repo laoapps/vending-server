@@ -207,6 +207,8 @@ export class InventoryZDM8 implements IBaseClass {
                             await ent.sync();
 
                             ent.create(bill).then(r => {
+                                console.log('SET transactionID by owner',ownerUuid);
+                                
                                 redisClient.setEx(transactionID + '--_', 60 * 15, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
                             });
@@ -1068,7 +1070,9 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
                 console.log('transactionID', transactionID, 'value', amount);
+            
                 const ownerUuid = await redisClient.get(transactionID + '--_') + '';
+                console.log('GET transactionID by owner',ownerUuid);
                 if (!ownerUuid) throw new Error(EMessage.TransactionTimeOut);
                 const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
                 const bill = await ent.findOne({ where: { transactionID, totalvalue: amount } });
