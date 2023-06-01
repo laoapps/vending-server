@@ -872,6 +872,7 @@ export class InventoryZDM8 implements IBaseClass {
         const k = 'clientResponse';
         try {
             redisClient.get(k).then(r => {
+                console.log('clientResponse','getBillProcess',r);
                 if (r) {
                     cb ? cb(JSON.parse(r) as IBillProcess[]) : cb([]);
                     !cb ? writeErrorLogs('error', { m: 'call back empty' }) : ''
@@ -892,6 +893,8 @@ export class InventoryZDM8 implements IBaseClass {
         const k = 'clientResponse';
         redisClient.get(k).then(r => {
             try {
+                console.log('clientResponse','setBillProces',r);
+                
                 if (r) {
                     const c = JSON.parse(r) as IBillProcess[];
                     c ? c.push(...b) : '';
