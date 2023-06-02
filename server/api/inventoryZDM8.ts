@@ -306,6 +306,8 @@ export class InventoryZDM8 implements IBaseClass {
                         const that = this;
                         this.getBillProcess(b => {
                             let x = b.find(v => v.position == position && v.transactionID == Number(transactionID + '') && v.ownerUuid == ownerUuid);
+                            console.log('processOrder',machineId, position, transactionID);
+                            console.log('found x ',x.ownerUuid, x.position, x.transactionID);
                             const pos = this.ssocket.processOrder(machineId, position, transactionID);
                             writeSucceededRecordLog(x?.bill, position);
                             res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
