@@ -52,8 +52,8 @@ Content-Type: application/json
 {
     "command":"confirmMMoney",
     "data":{
-        "tranid_client":"1685698895634",
-        "amount":"15000"
+        "tranid_client":"1685701365900",
+        "amount":"36000"
     }
     
 }
