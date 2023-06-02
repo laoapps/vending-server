@@ -138,7 +138,9 @@ export class ApiService {
             this.dismissModal();
             const pb = r.data as Array<IBillProcess>;
             if(pb.length)
-            this.showModal(RemainingbillsPage, { r:pb });
+            this.showModal(RemainingbillsPage, { r:pb }).then(r=>{
+              r.present();
+            });
           }
           else {
             this.toast.create({ message: r.message, duration: 5000 }).then(r => {
