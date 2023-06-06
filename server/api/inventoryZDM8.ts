@@ -250,7 +250,10 @@ export class InventoryZDM8 implements IBaseClass {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
                     const ownerUuid = m?.ownerUuid || '';
                     // const machineId = m?.machineId;
+                    console.log('getDeliveryingBills',m,ownerUuid);
+                    
                     this.getBillProcess((b) => {
+                        console.log('getDeliveryingBills',b,b.filter(v => v.ownerUuid == ownerUuid));
                         res.send(PrintSucceeded('getDeliveryingBills', b.filter(v => v.ownerUuid == ownerUuid), EMessage.succeeded));
                     })
 
