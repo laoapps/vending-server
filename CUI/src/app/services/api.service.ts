@@ -121,7 +121,23 @@ export class ApiService {
           ]
         }).then(v => v.present());
       }
-      this.dismissModal();
+      this.loadDeliveryingBills().subscribe(r=>{
+        this.dismissModal();
+        this.dismissLoading();
+          if (r.status) {
+            const pb = r.data as Array<IBillProcess>;
+            if(pb.length)
+            this.showModal(RemainingbillsPage, { r:pb }).then(r=>{
+              r.present();
+            });
+          }
+          else {
+            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
+              r.present();
+            })
+          }
+      })
+      // this.dismissModal();
       this.storage.set('saleStock', this.vendingOnSale, 'stock');
 
       // });

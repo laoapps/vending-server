@@ -895,7 +895,7 @@ export class InventoryZDM8 implements IBaseClass {
         }
     }
     setBillProces(b: IBillProcess[]) {
-        b.forEach(v=>v.bill.vendingsales.forEach(vx=>vx.stock.image=''));
+      
         const k = 'clientResponse';
         redisClient.get(k).then(r => {
             try {
@@ -1109,8 +1109,9 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
                 this.getBillProcess(async b => {
-                    bill.vendingsales.forEach(v => {
-                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: Number(transactionID) });
+                    bill.vendingsales.forEach((v,i) => {
+                        v.stock.image='';
+                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: moment.now() });
                     });
                     await bill.save();
                     console.log('callBackConfirmMmoney',b);
