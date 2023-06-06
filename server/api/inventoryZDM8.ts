@@ -876,18 +876,18 @@ export class InventoryZDM8 implements IBaseClass {
             redisClient.get(k).then(r => {
                 console.log('clientResponse','getBillProcess');
                 if (r) {
-                    cb ? cb(JSON.parse(r) as IBillProcess[]) : cb([]);
+                    cb ? cb(JSON.parse(r) as Array<IBillProcess>) : cb(new   Array<IBillProcess>());
                     !cb ? writeErrorLogs('error', { m: 'call back empty' }) : ''
-                } else cb([])
+                } else cb(new  Array<IBillProcess>())
 
             }).catch(e => {
                 console.log('error redis1', e);
-                cb([])
+                cb(new   Array<IBillProcess>())
                 writeErrorLogs('error', e);
             })
         } catch (error) {
             console.log('error redis3', error);
-            cb([])
+            cb(new  Array<IBillProcess>())
             writeErrorLogs('error', error);
         }
     }
@@ -1105,16 +1105,17 @@ export class InventoryZDM8 implements IBaseClass {
                 res.status = 1;
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
-                this.getBillProcess(b => {
+                this.getBillProcess(async b => {
                     bill.vendingsales.forEach(v => {
                         b.push({ ownerUuid, position: v.position, bill, transactionID: Number(transactionID) });
                     });
+                    await bill.save();
                     console.log('callBackConfirmMmoney',b);
                     
                     this.setBillProces(b);
                     res.data = b.filter(v => v.ownerUuid == ownerUuid);
                     this.sendWSToMachine(bill?.machineId + '', res);
-                    bill.save();
+                   
                     resolve(bill);
                 });
 
