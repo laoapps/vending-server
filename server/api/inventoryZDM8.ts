@@ -312,7 +312,7 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log('processOrder',machineId, position, transactionID);
                             console.log('found x ',x.ownerUuid, x.position, x.transactionID);
                             const pos = this.ssocket.processOrder(machineId, position, transactionID);
-                            writeSucceededRecordLog(x?.bill, position);
+                            // writeSucceededRecordLog(x?.bill, position);
                             res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
                         })
                     }, 500);
@@ -926,7 +926,7 @@ export class InventoryZDM8 implements IBaseClass {
             const that = this;
             this.ssocket.onMachineResponse((re: IReqModel) => {
                 console.log('onMachineResponse',re);
-                
+                console.log('onMachineResponse transactionID',re.transactionID);
                 this.getBillProcess(b => {
                     const cres = b.find(v => v.transactionID == re.transactionID);
                     try {
