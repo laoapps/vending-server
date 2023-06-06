@@ -1091,7 +1091,6 @@ export class InventoryZDM8 implements IBaseClass {
 
                 if (!bill) throw new Error(EMessage.billnotfound);
                 await redisClient.del(transactionID + '--_');
-                if (!bill) throw new Error(EMessage.billnotfound);
 
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed('paymentstatus', true);
@@ -1110,7 +1109,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // let yy = new Array<WebSocketServer.WebSocket>();
                 this.getBillProcess(async b => {
                     bill.vendingsales.forEach(v => {
-                        b.push({ ownerUuid, position: v.position, bill, transactionID: Number(transactionID) });
+                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: Number(transactionID) });
                     });
                     await bill.save();
                     console.log('callBackConfirmMmoney',b);
