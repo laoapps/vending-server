@@ -1083,7 +1083,7 @@ export class InventoryZDM8 implements IBaseClass {
             try {
                 console.log('transactionID', transactionID, 'value', amount);
 
-                const ownerUuid = await redisClient.get(transactionID + '--_') + '';
+                const ownerUuid = await redisClient.get(transactionID + '--_') || '';
                 console.log('GET transactionID by owner', ownerUuid);
                 if (!ownerUuid && this.production) throw new Error(EMessage.TransactionTimeOut);
                 const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
