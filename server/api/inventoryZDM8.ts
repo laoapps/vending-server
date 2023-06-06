@@ -897,22 +897,23 @@ export class InventoryZDM8 implements IBaseClass {
     setBillProces(b: IBillProcess[]) {
       
         const k = 'clientResponse';
-        redisClient.get(k).then(r => {
-            try {
-                console.log('clientResponse','setBillProces');
+        redisClient.set(k, JSON.stringify(b))
+        // redisClient.get(k).then(r => {
+        //     try {
+        //         console.log('clientResponse','setBillProces');
                 
-                if (r) {
-                    const c = JSON.parse(r) as IBillProcess[];
-                    c ? c.push(...b) : '';
-                    c ? redisClient.set(k, JSON.stringify(c)) : '';
-                }
-                else redisClient.set(k, JSON.stringify(b))
-            } catch (error) {
-                console.log('error redis 2', error);
-                writeErrorLogs('error', error);
-            }
+        //         if (r) {
+        //             const c = JSON.parse(r) as IBillProcess[];
+        //             c ? c.push(...b) : '';
+        //             c ? redisClient.set(k, JSON.stringify(c)) : '';
+        //         }
+        //         else redisClient.set(k, JSON.stringify(b))
+        //     } catch (error) {
+        //         console.log('error redis 2', error);
+        //         writeErrorLogs('error', error);
+        //     }
 
-        })
+        // })
     }
     init() {
         // load machines
@@ -969,24 +970,25 @@ export class InventoryZDM8 implements IBaseClass {
                         /// DEDUCT STOCK AT THE SERVER HERE
 
 
-                        const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
-                        entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
-                            try {
-                                const bill = rx.find(v => v.transactionID == Number((cres?.transactionID + '').substring(0, (cres?.transactionID + '').length - 1)));
-                                if (bill) {
-                                    bill.paymentstatus = EPaymentStatus.delivered;
-                                    bill.changed('paymentstatus', true);
-                                    bill.save();
-                                } else throw new Error(EMessage.transactionnotfound);
+                        // No need To update delivering status
+                        // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
+                        // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
+                        //     try {
+                        //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
+                        //         if (bill) {
+                        //             bill.paymentstatus = EPaymentStatus.delivered;
+                        //             bill.changed('paymentstatus', true);
+                        //             bill.save();
+                        //         } else throw new Error(EMessage.transactionnotfound);
 
-                                // }
-                            } catch (error) {
-                                console.log(error);
-                            }
-                        }).catch(e => {
-                            console.log('ERROR', e);
+                        //         // }
+                        //     } catch (error) {
+                        //         console.log(error);
+                        //     }
+                        // }).catch(e => {
+                        //     console.log('ERROR', e);
 
-                        })
+                        // })
 
 
 
@@ -1113,6 +1115,7 @@ export class InventoryZDM8 implements IBaseClass {
                         v.stock.image='';
                         b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: moment.now() });
                     });
+                    
                     await bill.save();
                     console.log('callBackConfirmMmoney',b);
                     

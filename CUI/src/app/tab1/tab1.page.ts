@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { ApiService } from '../services/api.service';
-import { IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
+import { IBillProcess, IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
 import { ModalController, Platform } from '@ionic/angular';
 // import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
@@ -10,6 +10,7 @@ import { IonicStorageService } from '../ionic-storage.service';
 import { CachingService } from '../services/caching.service';
 import { environment } from 'src/environments/environment';
 import { ShowcartPage } from '../showcart/showcart.page';
+import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
@@ -596,5 +597,20 @@ export class Tab1Page {
       this.orders.splice(y, 1);
       this.getSummarizeOrder();
     }
+  }
+  showBills(){
+    this.apiService.loadDeliveryingBills().subscribe(r => {
+      if (r.status) {
+        this.apiService.dismissModal();
+        const pb = r.data as Array<IBillProcess>;
+        if(pb.length)
+        this.apiService.showModal(RemainingbillsPage, { r:pb }).then(r=>r.present());
+      }
+      else {
+        this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
+          r.present();
+        })
+      }
+    })
   }
 }
