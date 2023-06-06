@@ -897,23 +897,38 @@ export class InventoryZDM8 implements IBaseClass {
     setBillProces(b: IBillProcess[]) {
       
         const k = 'clientResponse';
-        redisClient.set(k, JSON.stringify(b))
-        // redisClient.get(k).then(r => {
-        //     try {
-        //         console.log('clientResponse','setBillProces');
+        redisClient.get(k).then(r => {
+            try {
+                console.log('clientResponse','setBillProces');
                 
-        //         if (r) {
-        //             const c = JSON.parse(r) as IBillProcess[];
-        //             c ? c.push(...b) : '';
-        //             c ? redisClient.set(k, JSON.stringify(c)) : '';
-        //         }
-        //         else redisClient.set(k, JSON.stringify(b))
-        //     } catch (error) {
-        //         console.log('error redis 2', error);
-        //         writeErrorLogs('error', error);
-        //     }
-
-        // })
+                if (r) {
+                    const c = JSON.parse(r) as IBillProcess[];
+                    c ? c.push(...b) : '';
+                    c ? redisClient.set(k, JSON.stringify(c)) : '';
+                }
+                else redisClient.set(k, JSON.stringify(b))
+            } catch (error) {
+                console.log('error redis 2', error);
+                writeErrorLogs('error', error);
+            }
+        })
+    }
+    deleteBillProces(t:Array<number>) {
+      
+        const k = 'clientResponse';
+        redisClient.get(k).then(r => {
+            try {
+                console.log('clientResponse','deleteBillProces');
+                
+                if (r) {
+                    const c = JSON.parse(r) as IBillProcess[];
+                    c ? redisClient.set(k, JSON.stringify(c.filter(v=>t.includes(v.transactionID)))) : '';
+                }
+            } catch (error) {
+                console.log('error redis 2', error);
+                writeErrorLogs('error', error);
+            }
+        })
     }
     init() {
         // load machines
@@ -964,11 +979,11 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log('send', clientId, cres?.bill?.clientId, resx);
                         console.log('onMachineResponse');
                         
-                        that.setBillProces(b.filter(v => v.transactionID !== re.transactionID));
+                        that.deleteBillProces(b.filter(v => v.transactionID !== re.transactionID).map(v=>v.transactionID));
                         writeSucceededRecordLog(cres?.bill, cres?.position);
                         that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                         /// DEDUCT STOCK AT THE SERVER HERE
-
+                        
 
                         // No need To update delivering status
                         // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
