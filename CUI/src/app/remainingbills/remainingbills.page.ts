@@ -25,4 +25,7 @@ export class RemainingbillsPage implements OnInit {
       })
     })
   }
+  getStock(position:number){
+    return this.r.map(v=>v.bill.vendingsales)[0].find(v=>v.position==position)?.stock;
+  }
 }

@@ -7,15 +7,15 @@
 <ion-content>
 <ion-list>
   <ion-item *ngFor="let s of r" (click)="retryProcessBill(s.transactionID+'',s.position)">
-    <ion-card>
+    <ion-card >
       <ion-item>
-        <label>{{s.bill?.vendingsales[0]?.stock?.name}}</label>
+        <label>{{getStock(s.position).name}}</label>
       </ion-item>
       <ion-item>
-        <img style="width: 200px;height:200px" [src]="s.bill?.vendingsales[0]?.stock?.image.includes(';base64,')?s.bill?.vendingsales[0]?.stock?.image:this.url+'/public/'+s.bill?.vendingsales[0]?.stock.image" >
+        <img style="width: 200px;height:200px" [src]="getStock(s.position).image.includes(';base64,')?getStock(s.position).image:this.url+'/public/'+s.bill?.vendingsales[0]?.stock.image" >
       </ion-item>
       <ion-item>
-        <label>{{s.bill?.vendingsales[0]?.stock?.price}}/<ion-label type="number"  ></ion-label>{{s.bill?.vendingsales[0]?.stock.qtty}}</label>
+        <label>{{getStock(s.position).price}}/<ion-label type="number"  ></ion-label>{{s.bill?.vendingsales[0]?.stock.qtty}}</label>
       </ion-item>
       <!-- <ion-item>
         <ion-button (click)="buyMMoney(s)" type="button">Buy</ion-button>

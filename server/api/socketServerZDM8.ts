@@ -388,7 +388,7 @@ export class SocketServerZDM8 {
                 console.log('writing...', x['machineId'], 'POSITION', position);
                 return { position, status: x.write(JSON.stringify(res) + '\n') };
             } else {
-                console.log('client id socket not found');
+                console.log('client id socket not found','pos',position,'t',transactionID);
                 const data = `${machineId}-${position}-${transactionID}`
                 return { position, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
             }
