@@ -905,7 +905,7 @@ export class InventoryZDM8 implements IBaseClass {
                     c ? c.push(...b) : '';
                     c ? redisClient.set(k, JSON.stringify(c)) : '';
                 }
-                else redisClient.set(k, JSON.stringify([b]))
+                else redisClient.set(k, JSON.stringify(b))
             } catch (error) {
                 console.log('error redis 2', error);
                 writeErrorLogs('error', error);
