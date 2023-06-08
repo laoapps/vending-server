@@ -895,8 +895,8 @@ export class InventoryZDM8 implements IBaseClass {
         }
     }
     setBillProces(b: IBillProcess[]) {
-      
         const k = 'clientResponse';
+        b.forEach(v=>v.bill.vendingsales.forEach(v=>v.stock.image=''));
         redisClient.get(k).then(r => {
             try {
                 console.log('clientResponse','setBillProces');
