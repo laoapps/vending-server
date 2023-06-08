@@ -150,9 +150,9 @@ export class InventoryZDM8 implements IBaseClass {
                             if (!machineId) throw new Error('Invalid token');
                             console.log(' passed token', machineId);
                             if (!Array.isArray(sale)) throw new Error('Invalid array id');
-                            console.log(' sale is  id', sale);
+                            // console.log(' sale is  id', sale);
                             if (await this.isMachineDisabled(machineId.machineId)) throw new Error('machine was disabled');
-                            console.log(' machine was enabled', sale);
+                            // console.log(' machine was enabled', sale);
                             const checkIds = Array<IVendingMachineSale>();
                             sale.forEach(v => {
                                 v.stock.qtty = 1;
@@ -162,7 +162,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 checkIds.push(y);
 
                             })
-                            console.log(' checkids', sale);
+                            // console.log(' checkids', sale);
 
                             // console.log('checkIds', checkIds, 'ids', sale);
 
@@ -171,7 +171,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const value = checkIds.reduce((a, b) => {
                                 return a + (b.stock.price * b.stock.qtty);
                             }, 0);
-                            console.log(' sum by ids', sale);
+                            // console.log(' sum by ids', sale);
                             // console.log('qtty', checkIds);
                             // console.log('ids', sale.length);
 
@@ -179,7 +179,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
 
-                            console.log(' value is valid', sale);
+                            // console.log(' value is valid', sale);
                             const transactionID = new Date().getTime();
                             const qr = await this.generateBillMMoney(value, transactionID + '');
                             if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
