@@ -897,21 +897,7 @@ export class InventoryZDM8 implements IBaseClass {
     setBillProces(b: IBillProcess[]) {
         const k = 'clientResponse';
         b.forEach(v=>v.bill?.vendingsales?.forEach(v=>v.stock?v.stock.image='':''));
-        redisClient.get(k).then(r => {
-            try {
-                console.log('clientResponse','setBillProces');
-                
-                if (r) {
-                    const c = JSON.parse(r) as IBillProcess[];
-                    c ? c.push(...b) : '';
-                    c ? redisClient.set(k, JSON.stringify(c)) : '';
-                }
-                else redisClient.set(k, JSON.stringify(b))
-            } catch (error) {
-                console.log('error redis 2', error);
-                writeErrorLogs('error', error);
-            }
-        })
+        redisClient.set(k, JSON.stringify(b))
     }
     deleteBillProces(t:Array<number>) {
       
