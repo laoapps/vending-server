@@ -1115,12 +1115,9 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
                 this.getBillProcess(async b => {
-                    let nt = getNanoSecTime();
                     bill.vendingsales.forEach((v,i) => {
                         v.stock.image='';
-                        nt++;
-                        console.log('callBackConfirmMmoney nt',nt);
-                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: nt });
+                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: getNanoSecTime() });
                     });
                     
                     await bill.save();
