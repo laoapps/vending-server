@@ -900,23 +900,23 @@ export class InventoryZDM8 implements IBaseClass {
         b.forEach(v=>v.bill?.vendingsales?.forEach(v=>v.stock?v.stock.image='':''));
         redisClient.set(k, JSON.stringify(b))
     }
-    keepBillProces(t:Array<number>) {
+    // keepBillProces(t:Array<number>) {
       
-        const k = 'clientResponse';
-        redisClient.get(k).then(r => {
-            try {
-                console.log('clientResponse','deleteBillProces',t);
+    //     const k = 'clientResponse';
+    //     redisClient.get(k).then(r => {
+    //         try {
+    //             console.log('clientResponse','deleteBillProces',t);
                 
-                if (r) {
-                    const c = JSON.parse(r) as IBillProcess[];
-                    c ? redisClient.set(k, JSON.stringify(c.filter(v=>t.includes(v.transactionID)))) : '';
-                }
-            } catch (error) {
-                console.log('error redis 2', error);
-                writeErrorLogs('error', error);
-            }
-        })
-    }
+    //             if (r) {
+    //                 const c = JSON.parse(r) as IBillProcess[];
+    //                 c ? redisClient.set(k, JSON.stringify(c.filter(v=>t.includes(v.transactionID)))) : '';
+    //             }
+    //         } catch (error) {
+    //             console.log('error redis 2', error);
+    //             writeErrorLogs('error', error);
+    //         }
+    //     })
+    // }
     init() {
         // load machines
         return new Promise<Array<IMachineClientID>>((resolve, reject) => {
@@ -965,8 +965,10 @@ export class InventoryZDM8 implements IBaseClass {
                         const clientId = cres?.bill.clientId + '';
                         console.log('send', clientId, cres?.bill?.clientId, resx);
                         console.log('onMachineResponse',re.transactionID);
+                        console.log('keep',b.filter(v => v.transactionID != re.transactionID).map(v=>v.transactionID));
                         
-                        that.keepBillProces(b.filter(v => v.transactionID !== re.transactionID).map(v=>v.transactionID));
+                        
+                        that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
                         writeSucceededRecordLog(cres?.bill, cres?.position);
                         that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                         /// DEDUCT STOCK AT THE SERVER HERE
