@@ -264,6 +264,10 @@ export function writeErrorLogs(m:string,e:any) {
     
     fs.appendFileSync(logs, JSON.stringify({ m,e, time: new Date() }), { flag: 'a+' });
 }
+export function getNanoSecTime() {
+    var hrTime = process.hrtime();
+    return hrTime[0] * 1000000000 + hrTime[1];
+  }
 export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
 
 export const LAAB_URL = 'http://localhost:30000';

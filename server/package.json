@@ -32,7 +32,6 @@
     "jstoxml": "^3.2.3",
     "modbus-serial": "^8.0.5",
     "moment": "^2.29.4",
-    "nano-time": "^1.0.0",
     "node-crc16": "^2.0.7",
     "pg": "^8.7.3",
     "redis": "^4.2.0",

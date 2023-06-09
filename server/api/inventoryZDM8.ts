@@ -17,7 +17,7 @@ import { VendingMachineSaleFactory } from '../entities/vendingmachinesale.entity
 import { VendingMachineBillFactory, VendingMachineBillModel } from '../entities/vendingmachinebill.entity';
 import { Op } from 'sequelize';
 import fs from 'fs';
-const nanotime = require('nano-time');
+import  {getNanoSecTime} from '../services/service';
 export class InventoryZDM8 implements IBaseClass {
 
     // websocket server for vending controller only
@@ -1115,7 +1115,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
                 this.getBillProcess(async b => {
-                    let nt = Number(nanotime());
+                    let nt = getNanoSecTime();
                     bill.vendingsales.forEach((v,i) => {
                         v.stock.image='';
                         nt++;
