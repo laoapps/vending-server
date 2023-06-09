@@ -125,7 +125,7 @@ export class Tab1Page {
           });
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
-          if (this.saleList[0].position == 0) this.compensation = 1;
+          if (this.saleList[0]?.position == 0) this.compensation = 1;
          
         })
       } else {

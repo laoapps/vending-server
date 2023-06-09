@@ -900,12 +900,12 @@ export class InventoryZDM8 implements IBaseClass {
         b.forEach(v=>v.bill?.vendingsales?.forEach(v=>v.stock?v.stock.image='':''));
         redisClient.set(k, JSON.stringify(b))
     }
-    deleteBillProces(t:Array<number>) {
+    keepBillProces(t:Array<number>) {
       
         const k = 'clientResponse';
         redisClient.get(k).then(r => {
             try {
-                console.log('clientResponse','deleteBillProces');
+                console.log('clientResponse','deleteBillProces',t);
                 
                 if (r) {
                     const c = JSON.parse(r) as IBillProcess[];
@@ -964,9 +964,9 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         const clientId = cres?.bill.clientId + '';
                         console.log('send', clientId, cres?.bill?.clientId, resx);
-                        console.log('onMachineResponse');
+                        console.log('onMachineResponse',re.transactionID);
                         
-                        that.deleteBillProces(b.filter(v => v.transactionID !== re.transactionID).map(v=>v.transactionID));
+                        that.keepBillProces(b.filter(v => v.transactionID !== re.transactionID).map(v=>v.transactionID));
                         writeSucceededRecordLog(cres?.bill, cres?.position);
                         that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                         /// DEDUCT STOCK AT THE SERVER HERE
@@ -1113,9 +1113,10 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
                 this.getBillProcess(async b => {
+                    let nt = Number(nanotime());
                     bill.vendingsales.forEach((v,i) => {
                         v.stock.image='';
-                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: nanotime() });
+                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: nt++ });
                     });
                     
                     await bill.save();
