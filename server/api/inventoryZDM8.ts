@@ -1118,7 +1118,9 @@ export class InventoryZDM8 implements IBaseClass {
                     let nt = Number(nanotime());
                     bill.vendingsales.forEach((v,i) => {
                         v.stock.image='';
-                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: nt++ });
+                        nt++;
+                        console.log('callBackConfirmMmoney nt',nt);
+                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: nt });
                     });
                     
                     await bill.save();
