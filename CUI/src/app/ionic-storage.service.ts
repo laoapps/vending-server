@@ -42,11 +42,6 @@ export class IonicStorageService {
         // console.log('storage GET',r);
         
         const rx = r?r:'{}';
-<<<<<<< HEAD
-        // console.log(rx,JSON.parse(rx)); 
-=======
-        // console.log(rx,JSON.parse(rx));
->>>>>>> 3b6f2a6c1691c1c969f3fb8e851fe5c727aa2a23
         
         resolve(JSON.parse(rx) as {v:any,d:Date});
       }).catch(e=>{

@@ -10,6 +10,17 @@ import { IonicStorageService } from '../ionic-storage.service';
 import { CachingService } from '../services/caching.service';
 import { environment } from 'src/environments/environment';
 import { ShowcartPage } from '../showcart/showcart.page';
+
+import { VendingAPIService } from '../services/vending-api.service';
+import { LoadVendingWalletCoinBalanceProcess } from './processes/loadVendingWalletCoinBalance.process';
+import { IENMessage } from '../models/base.model';
+import { CashValidationProcess } from './processes/cashValidation.process';
+import { CashinValidationProcess } from './processes/cashinValidation.process';
+import { LaabGoPage } from './LAAB/laab-go/laab-go.page';
+import { EpinCashOutPage } from './LAAB/epin-cash-out/epin-cash-out.page';
+
+import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
@@ -225,47 +236,63 @@ export class Tab1Page {
   //               console.log(this.vendingOnSale);
   //               this.saleList.push(...this.vendingOnSale);
 
-              this.saleList.sort((a, b) => {
-                if (a.position < b.position) return -1;
-              })
-              console.log(this.saleList);
-            }
-            if (this.saleList[0].position == 0) this.compensation = 1;
-          })
-        })
-        // window.location.reload();
-      } else {
-        alert(r.message)
-      }
-    })
-  }
-  initDemo() {
-    this.apiService.initDemo().subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.storage.get('stockitems_', 'item').then(rx => {
-          const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
-          const sitems = items ? items : [];
-          this.storage.get('saleStock', 'stock').then(s => {
-            console.log('stock', s);
+  //               this.saleList.sort((a, b) => {
+  //                 if (a.position < b.position) return -1;
+  //               })
+  //               console.log(this.saleList);
+  //             }
+  //             if (this.saleList[0].position == 0) this.compensation = 1;
+  //           })
+  //         })
+  //         // window.location.reload();
+  //       } else {
+  //         alert(r.message)
+  //       }
+  //     })
+  // }
+  // initVendingSale() {
 
-            const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
-            const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
-            const saleServer = r.data as Array<IVendingMachineSale>;
+  //   /// NOT IMPLEMENT YET
+  //   this.apiService.loadVendingSale().subscribe(r => {
+  //     console.log(r);
+  //     if (r.status) {
+  //       this.storage.get('stockitems_', 'item').then(rx => {
+  //         const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
+  //         const sitems = items ? items : [];
+  //       })
+  //       // window.location.reload();
+  //     } else {
+  //       alert(r.message)
+  //     }
+  //   })
+  // }
+  // initDemo() {
+  //   this.apiService.initDemo().subscribe(r => {
+  //     console.log(r);
+  //     if (r.status) {
+  //       this.storage.get('stockitems_', 'item').then(rx => {
+  //         const items = JSON.parse(JSON.stringify(rx?.v ? rx?.v : [])) as Array<IStock>;
+  //         const sitems = items ? items : [];
+  //         this.storage.get('saleStock', 'stock').then(s => {
+  //           console.log('stock', s);
 
-            const arrdel = [] as Array<IVendingMachineSale>;;
-            const arrnew = [] as Array<IVendingMachineSale>;;
-            if (!saleStorage.length) {
-              saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
-              saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
+  //           const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
+  //           const saleStorage = saleitems ? saleitems : [] as Array<IVendingMachineSale>;
+  //           const saleServer = r.data as Array<IVendingMachineSale>;
 
-              if (arrnew.length)
-                saleStorage.push(...arrnew);
-              if (arrdel.length)
-                arrdel.forEach((v) => {
-                  const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
-                  saleStorage.splice(i, 1);
-                })
+  //           const arrdel = [] as Array<IVendingMachineSale>;;
+  //           const arrnew = [] as Array<IVendingMachineSale>;;
+  //           if (!saleStorage.length) {
+  //             saleServer.forEach(v => !saleStorage.find(vs => vs.stock.id == v.stock.id) ? arrnew.push(v) : '');
+  //             saleStorage.forEach(v => !saleServer.find(vs => vs.stock.id == v.stock.id) ? arrdel.push(v) : '');
+
+  //             if (arrnew.length)
+  //               saleStorage.push(...arrnew);
+  //             if (arrdel.length)
+  //               arrdel.forEach((v) => {
+  //                 const i = saleStorage.findIndex(vx => vx.stock.id == v.stock.id);
+  //                 saleStorage.splice(i, 1);
+  //               })
 
   //             saleStorage.sort((a, b) => {
   //               if (b.position < a.position) return -1;
@@ -610,5 +637,204 @@ export class Tab1Page {
       this.orders.splice(y, 1);
       this.getSummarizeOrder();
     }
+  }
+
+
+
+
+
+  
+  initVendingWalletCoinBalance(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        const params = {
+          machineId: machineId
+        }
+        const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.apiService.cash = run.data[0].vendingWalletCoinBalance;
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  cashin(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        let params: any = {
+          machineId: machineId
+        }
+        let run: any = await this.cashValidationProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.acceptcash = run.data[0].acceptcash;
+        const cashList = await this.cashList();
+
+        params = {
+          machineId: machineId,
+          cash: cashList,
+          description: 'VENDING CASH IN'
+        }
+        run = await this.cashinValidationProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.apiService.cash = Number(this.apiService.cash) + Number(cashList);
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  cashList(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+       
+        let message: any = {} as any;
+        let inputs: Array<any> = [
+          {
+            type: 'radio',
+            label: '1,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(1000);
+            },
+          },
+          {
+            type: 'radio',
+            label: '5,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(5000);
+            },
+          },
+          {
+            type: 'radio',
+            label: '10,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(10000);
+              
+            },
+          },
+          {
+            type: 'radio',
+            label: '20,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(20000);
+                
+            },
+          },
+          {
+            type: 'radio',
+            label: '50,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(50000);
+                
+            },
+          },
+          {
+            type: 'radio',
+            label: '100,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(100000);
+                
+            },
+          },
+        ];
+        if (this.acceptcash == 100000) {
+          inputs.splice(inputs.length - 0, 0);
+        } else if (this.acceptcash == 50000) {
+          inputs.splice(inputs.length - 1, 1);
+        } else if (this.acceptcash == 20000) {
+          inputs.splice(inputs.length - 2, 2);
+        } else if (this.acceptcash == 10000) {
+          inputs.splice(inputs.length - 3, 3);
+        } else if (this.acceptcash == 5000) {
+          inputs.splice(inputs.length - 4, 4);
+        } else {
+          inputs = [];
+        }
+
+        message = await this.apiService.alert.create({
+          header: 'Cash In',
+          inputs: inputs
+        });
+        message.present();
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  laabGo(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        let sum_quantity: number = 0;
+        let sum_total: number = 0;
+        for(let i = 0; i < this.summarizeOrder.length; i++) {
+          sum_quantity += this.summarizeOrder[i].stock.qtty;
+          sum_total += this.summarizeOrder[i].stock.qtty * this.summarizeOrder[i].stock.price;
+        }
+        if (this.apiService.cash < sum_total) throw new Error(IENMessage.notEnoughtCashBalance);
+        const sum_refund = this.apiService.cash - sum_total;
+
+        const props = {
+          machineId: localStorage.getItem('machineId') || '12345678',
+          cash: this.apiService.cash,
+          quantity: sum_quantity,
+          total: sum_total,
+          refund: sum_refund
+        }
+
+        this.apiService.modal.create({ component: LaabGoPage, componentProps: props }).then(r => {
+          r.present();
+        });
+        
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  epinCashOut(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        this.apiService.modal.create({ component: EpinCashOutPage, componentProps: {} }).then(r => {
+          r.present();
+        });
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  showBills(){
+    this.apiService.loadDeliveryingBills().subscribe(r => {
+      if (r.status) {
+        this.apiService.dismissModal();
+        this.apiService. pb = r.data as Array<IBillProcess>;
+        if( this.apiService. pb.length)
+        this.apiService.showModal(RemainingbillsPage, { r: this.apiService. pb }).then(r=>r.present());
+      }
+      else {
+        this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
+          r.present();
+        })
+      }
+    })
+
   }
 }
