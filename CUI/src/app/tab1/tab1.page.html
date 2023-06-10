@@ -8,12 +8,50 @@
     </div>
 
     <!-- <img src="assets/icon/favicon.png"/> -->
-
-
    
   </div>
 
+  <div class="menu-options">
 
+    <div class="left">
+      <div class="cash-balance">{{ apiService.cash | number }}</div>
+      <div class="item-group">
+        <a (click)="cashin()" href="javascript:void(0)" class="item">
+
+          <div class="icon">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          </div>
+          <div class="text">Cash In</div>
+        </a>
+        <a href="javascript:void(0)" class="item">
+
+          <div class="icon">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          </div>
+          <div class="text">LAAB Cash In</div>
+        </a>
+      </div>
+
+
+    </div>
+    <div class="right">
+      <a href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="text">LAAB Cash Out</div>
+      </a>
+      <a (click)="epinCashOut()"  href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="fa-solid fa-qrcode"></i>
+        </div>
+        <div class="text">EPIN Cash Out</div>
+      </a>
+
+      
+    </div>
+
+  </div>
 
   <!-- </ion-title> -->
 
@@ -80,6 +118,10 @@
       <ion-grid>
         <ion-row>
           <ion-col>
+            <div class="button-wrapper" style="float: right;" (click)="laabGo()">
+
+              <div class="background-button xbutton" href="#" title="LAAB GO"></div>
+            </div>
             <div class="button-wrapper" style="float: right;" (click)="buyManyMMoney()">
 
               <div class="background-button xbutton" href="#" title="GO"></div>
@@ -89,6 +131,7 @@
               :{{getTotalSale?.q|number}}:
               <ion-icon name="wallet-sharp" color="primary" style="font-size: 30px;"></ion-icon>
               :{{getTotalSale?.t|number}}
+
             </div>
 
 

@@ -142,3 +142,11 @@ ion-item {
 	  height: 80%; 
 	}
   }
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #DA0037;
+}
+.form-control:read-only {
+    background: #fff;
+}

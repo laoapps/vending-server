@@ -10,6 +10,7 @@ import { StockFactory, StockStatic } from "./stock.entity";
 import { VendingMachineBillFactory, VendingMachineBillStatic } from "./vendingmachinebill.entity";
 import { MachineIDFactory, MachineIDStatic } from "./machineid.entity";
 import { MachineClientID, MachineClientIDFactory, MachineClientIDStatic } from "./machineclientid.entity";
+import { VendingWalletFactory, VendingWalletStatic } from "./vw.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -22,6 +23,12 @@ export let vendingMachineBillEntity:VendingMachineBillStatic;
 export let machineIDEntity:MachineIDStatic;
 export let machineClientIDEntity:MachineClientIDStatic;
 export let machineIDHistoryEntity:MachineIDStatic;
+
+
+
+// LAAB
+export let vendingWallet: VendingWalletStatic;
+
 export const initDB =()=>{
     bankNoteEntity = BankNoteFactory(EEntity.banknote,dbConnection); // public 
     bankNoteEntity.sync().then(r=>{
@@ -50,6 +57,11 @@ export const initDB =()=>{
 
     machineIDHistoryEntity = MachineIDFactory(EEntity.machineIDHistory+'_',dbConnection); // private for machine
 
+
+
+
+
+    vendingWallet = VendingWalletFactory(EEntity.vendingwallet, dbConnection).sync().then(r=>console.log(`vending wallet sync`));
 }
 
 export const CreateDatabase = (prefix: string) => {

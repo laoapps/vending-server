@@ -16,6 +16,16 @@ import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
   providedIn: 'root'
 })
 export class ApiService {
+
+  cash: number;
+  coinListId: string;
+  coinCode: string;
+  coinName: string;
+  name: string;
+
+
+
+
   _billEvents = new EventEmitter();
   stock = new Array<IStock>();
   eventEmitter = new EventEmitter();
@@ -312,5 +322,15 @@ export class ApiService {
     this.load.getTop().then(v => {
       v ? this.load.dismiss() : null
     })
+  }
+
+
+
+
+
+
+
+  simpleMessage(text: string) {
+    this.toast.create({ message: text, duration: 2000 }).then(r => r.present());
   }
 }

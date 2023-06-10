@@ -464,7 +464,15 @@ export const EESSP_COMMANDS = {
         description: 'Resets the fixed encryption key to the device default. The device may have extra security requirements before it will accept this command (e.g. The Hopper must be empty) if these requirements are not met, the device will reply with Command Cannot be Processed. If successful, the device will reply OK, then reset. When it starts up the fixed key will be the default.'
     }
 }
-
+export interface IVendingWallet{
+    ownerUuid:string;
+    walletUuid:string;
+    walletType:string;// limitter, Merchant, machine
+    machineClientId:string; // 
+    passkeys:string;
+    username:string;
+    platform:string;
+}
 export enum EPaymentProvider {
     mmoney = 'mmoney',
     umoney = 'umoney',
@@ -2933,6 +2941,7 @@ export enum EEntity {
     machineIDHistory = "machineIDHistory",
     badbillcash = "badbillcash",
     machineclientid = "machineclientid",
-    vendingmachinebillpaid = "vendingmachinebillpaid"
+    vendingmachinebillpaid = "vendingmachinebillpaid",
+    vendingwallet = 'vendingwallet'
 }
 

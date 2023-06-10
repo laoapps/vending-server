@@ -1,0 +1,80 @@
+<ion-content>
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">EPIN cash out</div>
+      <!-- <div class="sub-title">Receive cash by using LAAB EPIN service</div> -->
+
+      <div class="cash-balance">{{ apiService.cash | number }}</div>
+    </div>
+    <div class="laab-card-body">
+
+    </div>
+    <div class="laab-card-footer">
+      <div *ngIf="btnCreateSMC == true" class="btn-options">
+        <a (click)="smcList()" href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-receipt" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">SMC List</div>
+            <div class="sub-text">view all smart contract list</div>
+          </div>
+        </a>
+        <div class=""></div>
+        <a href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-ban" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">Cancel</div>
+            <div class="sub-text">cancel cashout </div>
+          </div>
+        </a>
+        <a (click)="createSMC()" href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Create SMC</div>
+            <div class="sub-text">create smart contract</div>
+          </div>
+          <div class="right">
+            <i class="fa-solid fa-circle-check" style="color: #fff;"></i>
+          </div>
+        </a>
+      </div>
+
+
+
+
+
+      <div *ngIf="btnCreateSMC == false" class="btn-options">
+        <a (click)="smcList()" href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-receipt" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">SMC List</div>
+            <div class="sub-text">view all smart contract list</div>
+          </div>
+        </a>
+        <a href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Cancel</div>
+            <div class="sub-text">cancel cashout </div>
+          </div>
+          <div class="right">
+            <i class="fa-solid fa-ban" style="color: #fff;"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

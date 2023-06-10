@@ -4,7 +4,10 @@ import { IMachineClientID } from '../services/syste.model';
 import { MachineAddPage } from './machine-add/machine-add.page';
 import { MachineDetailsPage } from './machine-details/machine-details.page';
 import { SalePage } from '../sale/sale.page';
-
+import { LaabApiService } from '../services/laab-api.service';
+import { LAAB_FindMachineLimiter, LAAB_FindMachineWallet, LAAB_RegisterMachineLimiter, LAAB_RegisterMachineWallet, LAAB_ShowMachineCoinWalletBalance, LAAB_ShowMachineCoinWalletByGroup, LAAB_ShowMachineLimiterBalance, LAAB_ShowMachineWalletBalance } from '../models/laab.model';
+import { IENMessage, IVendingRoles } from '../models/base.model';
+import { MachineWalletPage } from './machine-wallet/machine-wallet.page';
 
 
 @Component({
@@ -13,12 +16,23 @@ import { SalePage } from '../sale/sale.page';
   styleUrls: ['./machine.page.scss'],
 })
 export class MachinePage implements OnInit {
+
+  fakeList: Array<any> = [
+    {
+      uuid: 'c18ee036-ce2f-4723-95cf-f29481f91150'
+    },
+    {
+      uuid: 'c30819b4-692c-4279-93da-92f5961a0405'
+    }
+  ];
+
+
   _l = new Array<IMachineClientID>();    
   showImage:(p:string)=>string;
 
-  constructor(public apiService:ApiService) {
+  constructor(public apiService:ApiService, private laabAPIService: LaabApiService) {
     this.showImage= this.apiService.showImage;
-   }
+  }
 
   ngOnInit() {
     this.apiService.listMachine().subscribe(r=>{
@@ -26,9 +40,9 @@ export class MachinePage implements OnInit {
       if(r.status){
         this._l.push(...r.data);
       }
-      this.apiService.toast.create({message:r.message,duration:5000}).then(ry=>{
-        ry.present();
-      })
+      // this.apiService.toast.create({message:r.message,duration:5000}).then(ry=>{
+      //   ry.present();
+      // })
     })
   }
   new(){
@@ -116,6 +130,22 @@ export class MachinePage implements OnInit {
   close() {
     this.apiService.closeModal()
   }
+
+  machineWallet(id:number) {
+    const s = this._l.find(v=>v.id==id);
+    if(!s) return alert('Not found');
+    this.apiService.currentMachineId = s.machineId;
+    this.apiService.showModal(MachineWalletPage, { s }).then(r => {
+      r.present();
+      r.onDidDismiss().then(() => {
+        this.apiService.currentMachineId = '';
+        this.apiService.currentVendingWalletUUID = '';
+        this.apiService.currentVendingWalletCoinName = '';
+        this.apiService.currentVendingWalletCoinBalance = null;
+      });
+    });
+  }
+
 }
 
 

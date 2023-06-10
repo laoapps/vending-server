@@ -20,12 +20,14 @@ import { EClientCommand, EMessage, IBaseClass, IMMoneyConfirm, IReqModel } from 
 import { PrintError, PrintSucceeded } from './services/service';
 import { parse } from 'url';
 import { CreateDatabase } from './entities';
+import { LaabAPI } from './api/laab';
 
 
 CreateDatabase('').then(r => {
   console.log('DATABASE CREATED OK',r);
   
   const isVending = process.env.VENDING;
+  console.log(`is vending`, isVending);
   const app = express();
   const router = express.Router();
   app.use(express.json({ limit: '50mb' }));
@@ -60,6 +62,12 @@ CreateDatabase('').then(r => {
     // const ssM102 = new SocketServerM102();
     const invM102 = new InventoryM102(app, wss3);
 
+    // laab
+    const laab = new LaabAPI(router);
+    app.get('/', (req,res) => {
+      console.log(`in`);
+    });
+    app.use('/laab', router);
 
 
     const sss = Array<IBaseClass>();
@@ -76,6 +84,8 @@ CreateDatabase('').then(r => {
     app.use('/vmc/public', express.static(process.env._image_path))
     app.use('/zdm8/public', express.static(process.env._image_path))
     app.use('/m102/public', express.static(process.env._image_path))
+
+
 
     app.post('/', (req, res) => {
       const http = req.protocol; // http

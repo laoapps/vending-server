@@ -73,6 +73,72 @@ const routes: Routes = [
   {
     path: 'positionlist',
     loadChildren: () => import('./positionlist/positionlist.module').then( m => m.PositionlistPageModule)
+  },
+
+
+
+  // my account
+  {
+    path: 'generate-cqr',
+    loadChildren: () => import('./myaccount/shares/components/generate-cqr/generate-cqr.module').then( m => m.GenerateCqrPageModule)
+  },
+  {
+    path: 'coin-transfer-bill',
+    loadChildren: () => import('./myaccount/shares/components/coin-transfer-bill/coin-transfer-bill.module').then( m => m.CoinTransferBillPageModule)
+  },
+  {
+    path: 'cqr-scan',
+    loadChildren: () => import('./myaccount/shares/components/cqr-scan/cqr-scan.module').then( m => m.CqrScanPageModule)
+  },
+  {
+    path: 'cqr-payment',
+    loadChildren: () => import('./myaccount/shares/components/cqr-payment/cqr-payment.module').then( m => m.CqrPaymentPageModule)
+  },
+  {
+    path: 'hash-verify',
+    loadChildren: () => import('./myaccount/shares/components/hash-verify/hash-verify.module').then( m => m.HashVerifyPageModule)
+  },
+  {
+    path: 'show-qrhash-verify',
+    loadChildren: () => import('./myaccount/shares/components/show-qrhash-verify/show-qrhash-verify.module').then( m => m.ShowQrhashVerifyPageModule)
+  },
+  {
+    path: 'machine-wallet',
+    loadChildren: () => import('./machine/machine-wallet/machine-wallet.module').then( m => m.MachineWalletPageModule)
+  },
+
+
+
+
+  //  my machine
+
+  {
+    path: 'generate-cqr',
+    loadChildren: () => import('./machine/machine-wallet/shares/components/generate-cqr/generate-cqr.module').then( m => m.GenerateCqrPageModule)
+  },
+  {
+    path: 'coin-transfer-bill',
+    loadChildren: () => import('./machine/machine-wallet/shares/components/coin-transfer-bill/coin-transfer-bill.module').then( m => m.CoinTransferBillPageModule)
+  },
+  {
+    path: 'cqr-scan',
+    loadChildren: () => import('./machine/machine-wallet/shares/components/cqr-scan/cqr-scan.module').then( m => m.CqrScanPageModule)
+  },
+  {
+    path: 'cqr-payment',
+    loadChildren: () => import('./machine/machine-wallet/shares/components/cqr-payment/cqr-payment.module').then( m => m.CqrPaymentPageModule)
+  },
+  {
+    path: 'hash-verify',
+    loadChildren: () => import('./machine/machine-wallet/shares/components/hash-verify/hash-verify.module').then( m => m.HashVerifyPageModule)
+  },
+  {
+    path: 'show-qrhash-verify',
+    loadChildren: () => import('./machine/machine-wallet/shares/components/show-qrhash-verify/show-qrhash-verify.module').then( m => m.ShowQrhashVerifyPageModule)
+  },
+  {
+    path: 'machine-wallet',
+    loadChildren: () => import('./machine/machine-wallet/machine-wallet.module').then( m => m.MachineWalletPageModule)
   }
 ];
 @NgModule({

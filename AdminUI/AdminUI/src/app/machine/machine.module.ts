@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { MachinePageRoutingModule } from './machine-routing.module';
 
 import { MachinePage } from './machine.page';
+import { SharesModule } from '../myaccount/shares/shares.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    MachinePageRoutingModule
+    MachinePageRoutingModule,
+    SharesModule
   ],
   declarations: [MachinePage]
 })

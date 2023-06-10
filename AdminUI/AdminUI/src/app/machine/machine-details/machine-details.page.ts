@@ -20,7 +20,7 @@ export class MachineDetailsPage implements OnInit {
   }
 
   ngOnInit() {
-
+    console.log(`-->`, this.s);
   }
   close() {
     this.apiService.closeModal()

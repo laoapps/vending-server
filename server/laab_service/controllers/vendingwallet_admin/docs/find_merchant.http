@@ -1,0 +1,6 @@
+POST http://localhost:30777/vending/api/find_merchant HTTP/1.1
+Content-Type: application/json
+
+{
+    "ownerUuid": "+85620565381009"
+}

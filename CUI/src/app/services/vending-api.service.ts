@@ -1,0 +1,39 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
+import { VENDING_CashValidation, VENDING_CashinValidation, VENDING_CreateEPIN, VENDING_CreateSMC, VENDING_LoadSMC, VENDING_PaidValidation, VENDING_ShowVendingWalletCoinBalance } from '../models/vending.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class VendingAPIService {
+
+  private url: string = environment.testVending;
+
+  constructor(
+    private http: HttpClient
+  ) { }
+
+  showVendingWalletCoinBalance(params: VENDING_ShowVendingWalletCoinBalance): Observable<any> {
+    return this.http.post(this.url + 'client/show_vending_wallet_coin_balance', params);
+  }
+  cashValidation(params: VENDING_CashValidation): Observable<any> {
+    return this.http.post(this.url + 'client/cash_validation', params);
+  }
+  cashinValidation(params: VENDING_CashinValidation): Observable<any> {
+    return this.http.post(this.url + 'client/cash_in_validation', params);
+  }
+  paidValidation(params: VENDING_PaidValidation): Observable<any> {
+    return this.http.post(this.url + 'client/paid_validation', params);
+  }
+  createSMC(params: VENDING_CreateSMC): Observable<any> {
+    return this.http.post(this.url + 'client/create_smart_contract', params);
+  }
+  loadSMC(params: VENDING_LoadSMC): Observable<any> {
+    return this.http.post(this.url + 'client/load_smart_contract', params);
+  }
+  createEPIN(params: VENDING_CreateEPIN): Observable<any> {
+    return this.http.post(this.url + 'client/create_epin', params);
+  }
+}

@@ -7,7 +7,9 @@ export const environment = {
   // url : 'http://localhost.com:9009',
   // wsurl : 'ws://localhost.com:9009'
   url : 'http://laoapps.com:9009/zdm8',
-  wsurl : 'ws://laoapps.com:9009/zdm8'
+  wsurl : 'ws://laoapps.com:9009/zdm8',
+  testVending: 'http://localhost:30777/vending/api/',
+
 };
 
 /*

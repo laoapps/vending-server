@@ -1,0 +1,53 @@
+<ion-content>
+
+  <div class="laab-card">
+    <div class="laab-card-header">
+      <div class="title">LAAB Go</div>
+      <div class="sub-title">Paid your order by using vending coin</div>
+    </div>
+    <div class="laab-card-body">
+      <div class="form-group">
+        <div class="left">Cash</div>
+        <div class="right">{{ cash | number }}</div>
+      </div>
+      <div class="line"></div>
+      <div class="form-group">
+        <div class="left">Quantity</div>
+        <div class="right">{{ quantity | number }}</div>
+      </div>
+      <div class="form-group">
+        <div class="left">Total</div>
+        <div class="right">{{ total | number }}</div>
+      </div>
+      <div class="line"></div>
+      <div class="form-group">
+        <div class="left">Refund</div>
+        <div class="right">{{ refund | number }}</div>
+      </div>
+    </div>
+    <div class="laab-card-footer">
+      <div class="btn-options">
+        <a (click)="close()" href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-ban" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">Cancel</div>
+            <div class="sub-text">cancel paid </div>
+          </div>
+        </a>
+        <a (click)="paidValidation()"  href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Go</div>
+            <div class="sub-text">submit your order </div>
+          </div>
+          <div class="right">
+            <i class="fa-solid fa-bag-shopping" style="color: #fff;"></i>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</ion-content>

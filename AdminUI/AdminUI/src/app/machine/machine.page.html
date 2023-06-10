@@ -1,4 +1,4 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar>
     <ion-icon name="close-circle-sharp" (click)="close()"></ion-icon>
 
@@ -27,4 +27,80 @@
 
   </ion-row>
 </ion-grid>
+</ion-content> -->
+
+
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">My Machine</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <ion-grid class="ion-no-padding">
+    <ion-row>
+      <ion-col size="12">
+
+        <div class="item-card">
+          
+          <div class="item-card-header">
+            <div class="left">
+              <a (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i> Create new machine</a>
+            </div>
+            <div class="right">
+              <a href="javascript:void(0)" class="btn-item-reload"><i class="fa-solid fa-arrows-rotate"></i> Reload</a>
+            </div>
+          </div>
+
+          <div class="item-card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <td>No</td>
+                    <td>Image</td>
+                    <td>Machince ID</td>
+                    <td>OTP</td>
+                    <td>Time</td>
+                    <td>Active</td>
+                    <td>Action</td>
+                  </tr>
+                </thead>
+                <tbody *ngFor="let p of _l; let i = index">
+                  <tr>
+                    <td>{{ i+1 }}</td>
+                    <td><ion-img class="product_image"[src]="showImage(p.photo)"></ion-img></td>
+                    <td>{{p.machineId}}</td>
+                    <td>{{p.otp}}</td>
+                    <td>{{p.updatedAt|date}}</td>
+                    <td><ion-toggle  [(ngModel)]="p.isActive" (click)="disable(p.id)" ></ion-toggle></td>
+                    <td>
+                      <button (click)="machineWallet(p.id)" class="btn btn-light border border-1 "><i class="fa-solid fa-wallet"></i> Machine Wallet</button>
+                      <button (click)="edit(p.id)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Edit</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
 </ion-content>
+
+<!-- <ion-content>
+
+  <button *ngFor="let list of fakeList; let i = index;" class="btn btn-primary">{{ list.uuid }}</button>
+
+</ion-content> -->

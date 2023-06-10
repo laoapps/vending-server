@@ -5,8 +5,13 @@
 export const environment = {
   production: false,
   url:'http://localhost:9008',
-  wsurl:''
+  wsurl:'',
+  laaburl: 'http://localhost:30000/api/v1/laoapps_ewallet/',
+  testVending: 'http://localhost:30777/vending/api/',
 };
+
+// ws://laoapps.com:9006/zdm8
+// http://laoapps.com:9006/zdm8
 
 /*
  * For easier debugging in development mode, you can import the following file

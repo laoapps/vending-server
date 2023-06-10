@@ -39,10 +39,10 @@ export class IonicStorageService {
   get(k:string,dbname=''){
     return new Promise<{v:any,d:Date}>((resolve,reject)=>{
       this.dbStorage.get(dbname+k).then(r=>{
-        console.log('storage GET',r);
+        // console.log('storage GET',r);
         
         const rx = r?r:'{}';
-        console.log(rx,JSON.parse(rx));
+        // console.log(rx,JSON.parse(rx)); 
         
         resolve(JSON.parse(rx) as {v:any,d:Date});
       }).catch(e=>{

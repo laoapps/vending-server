@@ -10,11 +10,40 @@ import * as moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from './ionic-storage.service';
 import { EventEmitter } from 'events';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+
+  passkeys: string;
+  ownerUuid: string;
+  name: string;
+
+  ownerCoinListId: string;
+  ownerCoinCode: string;
+  ownerCoinName: string;
+
+  merchantUUID: string;
+  merchantCoinName: string;
+  merchanteCoinBalance: number;
+
+  vendingLimiterUUID: string;
+  vendingLimiterCoinName: string;
+  vendingLimiterCoinBalance: number;
+
+  vendingWalletUUID: Array<{ machineId: string, uuid: string }> = [];
+  vendingWalletCoinName: Array<{ machineId: string, uuid: string, balance: number }> = [];
+
+  currentcard: string;
+  currentMachineId: string;
+  currentVendingWalletUUID: string;
+  currentVendingWalletCoinName: string;
+  currentVendingWalletCoinBalance: number;
+
+
+
   stock = new Array<IStock>();
   eventEmitter = new EventEmitter();
   machineuuid = uuid.v4()
@@ -36,6 +65,7 @@ export class ApiService {
   audio = new Audio('assets/khopchay.mp3');
 
   constructor(public http: HttpClient,
+    public router: Router,
     public wsapi: WsapiService,
     public toast: ToastController,
     public modal: ModalController,
@@ -53,7 +83,7 @@ export class ApiService {
 
     this.wsapi.aliveSubscription.subscribe(r => {
       if (!r) return console.log('empty');
-      console.log('ws alive subscription', r);
+      // console.log('ws alive subscription', r);
       this.wsAlive.time = new Date();
       this.wsAlive.isAlive = this.checkOnlineStatus();
       this.test.test = r?.test;
@@ -299,6 +329,75 @@ export class ApiService {
   showImage(p:string){
     return p;
   }
+  
 
+
+
+
+
+
+  simpleMessage(text: string) {
+    this.toast.create({ message: text, duration: 2000 }).then(r => r.present());
+  }
+
+  public paginations(pages: number, totalPage: number) {
+    let previous_page = pages - 1;
+    let pageingtation: any[] = [];
+    if (totalPage > 1) {
+      if (pages == 1) {
+        previous_page = 1;
+      }
+      if (totalPage < 7) {
+        for (let index = 1; index < totalPage + 1; index++) {
+          if (index == pages) {
+            const page = { page: index, name: index, active: 1 }
+            pageingtation.push(page);
+          } else {
+            const page = { page: index, name: index, active: 0 }
+            pageingtation.push(page);
+          }
+        }
+      } else if (totalPage > 5) {
+        if (pages < 4) {
+          for (let index = 1; index < 7; index++) {
+            if (index == pages) {
+              const page = { page: index, name: index, active: 1 }
+              pageingtation.push(page);
+            } else {
+              const page = { page: index, name: index, active: 0 }
+              pageingtation.push(page);
+            }
+          }
+        } else if (totalPage - 3 > pages) {
+
+          for (let index = pages - 3; index < pages + 3; index++) {
+
+            if (index == pages) {
+              const page = { page: index, name: index, active: 1 }
+              pageingtation.push(page);
+            } else {
+              const page = { page: index, name: index, active: 0 }
+              pageingtation.push(page);
+            }
+          }
+        } else {
+          const pages_let = (totalPage - pages) - 3;
+
+          for (let index = (pages - 3) + pages_let; index < totalPage + 1; index++) {
+
+            if (index == pages) {
+              const page = { page: index, name: index, active: 1 }
+              pageingtation.push(page);
+            } else {
+              const page = { page: index, name: index, active: 0 }
+              pageingtation.push(page);
+            }
+          }
+        }
+      }
+    }
+
+    return pageingtation;
+  }
   
 }

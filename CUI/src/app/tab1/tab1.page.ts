@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
 import { ModalController, Platform } from '@ionic/angular';
@@ -10,6 +10,13 @@ import { IonicStorageService } from '../ionic-storage.service';
 import { CachingService } from '../services/caching.service';
 import { environment } from 'src/environments/environment';
 import { ShowcartPage } from '../showcart/showcart.page';
+import { VendingAPIService } from '../services/vending-api.service';
+import { LoadVendingWalletCoinBalanceProcess } from './processes/loadVendingWalletCoinBalance.process';
+import { IENMessage } from '../models/base.model';
+import { CashValidationProcess } from './processes/cashValidation.process';
+import { CashinValidationProcess } from './processes/cashinValidation.process';
+import { LaabGoPage } from './LAAB/laab-go/laab-go.page';
+import { EpinCashOutPage } from './LAAB/epin-cash-out/epin-cash-out.page';
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
   selector: 'app-tab1',
@@ -17,6 +24,16 @@ var host = window.location.protocol + "//" + window.location.host;
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page {
+
+  private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
+  private cashValidationProcess: CashValidationProcess;
+  private cashinValidationProcess: CashinValidationProcess;
+
+  acceptcash: number;
+
+
+
+
   production = environment.production;
   audio = new Audio('assets/khopchay.mp3');
 
@@ -50,58 +67,70 @@ export class Tab1Page {
     platform: Platform,
     // private scanner: @ionic-native/serial,
     public storage: IonicStorageService,
-    public appCaching: CachingService) {
-    // alert('V1_'+this.mmLogo);      
+    public appCaching: CachingService,
+    private vendingAPIService: VendingAPIService
+    ) 
+    { 
 
-    // ref.detach();
-    // this.zone.runOutsideAngular(()=>{
-    this.machineId = this.apiService.machineId;
-    this.url = this.apiService.url;
-    // this.initVendingSale();
+      this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
+      this.cashValidationProcess = new CashValidationProcess(this.apiService, this.vendingAPIService);
+      this.cashinValidationProcess = new CashinValidationProcess(this.apiService, this.vendingAPIService);
 
+      this.initVendingWalletCoinBalance().then(() => {});
+      // alert('V1_'+this.mmLogo);      
 
-    platform.ready().then(() => {
-      console.log('Width: ' + (this.swidth = platform.width()));
-      console.log('Height: ' + (this.sheight = platform.height()));
-      console.log('screen width', this.swidth, 'screen height', this.sheight);
-      if (this.swidth > 550) this.smode = 3;
-      else this.smode = 2;
-      // setTimeout(() => {
-      console.log('loading sale list');
-
-
-      // }, 1000);
-      this.vendingOnSale = this.apiService.vendingOnSale;
-      this.vendingBillPaid = this.apiService.vendingBillPaid;
-      this.vendingBill = this.apiService.vendingBill;
-      this.onlineMachines = this.apiService.onlineMachines;
-
-      this.apiService.wsapi.loginSubscription.subscribe(r => {
-        if (!r) return console.log('empty')
-        console.log('ws login subscription', r);
-        this.apiService.clientId.clientId = r.clientId;
-        this.apiService.wsAlive.time = new Date();
-        this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
-        // this.loadSaleList();
-        this.initStock();
-      })
+      // ref.detach();
+      // this.zone.runOutsideAngular(()=>{
+      this.machineId = this.apiService.machineId;
+      this.url = this.apiService.url;
+      // this.initVendingSale();
 
 
-    });
-    // });
+      platform.ready().then(() => {
+          console.log('Width: ' + (this.swidth = platform.width()));
+          console.log('Height: ' + (this.sheight = platform.height()));
+          console.log('screen width', this.swidth, 'screen height', this.sheight);
+          if (this.swidth > 550) this.smode = 3;
+          else this.smode = 2;
+          // setTimeout(() => {
+          console.log('loading sale list');
 
-    this.apiService.onDeductOrderUpdate((position) => {
-      try {
-        const ind = this.orders.findIndex(v => v.position == position);
-        if (ind != -1)
-          this.orders.splice(ind, 1);
-      } catch (error) {
-        console.log(' error on event emitter');
-      }
 
-    })
+          // }, 1000);
+          this.vendingOnSale = this.apiService.vendingOnSale;
+          this.vendingBillPaid = this.apiService.vendingBillPaid;
+          this.vendingBill = this.apiService.vendingBill;
+          this.onlineMachines = this.apiService.onlineMachines;
+
+          this.apiService.wsapi.loginSubscription.subscribe(r => {
+            if (!r) return console.log('empty')
+            console.log('ws login subscription', r);
+            this.apiService.clientId.clientId = r.clientId;
+            this.apiService.wsAlive.time = new Date();
+            this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
+            // this.loadSaleList();
+            this.initStock();
+          })
+
+
+        });
+      // });
+
+      this.apiService.onDeductOrderUpdate((position) => {
+        try {
+          const ind = this.orders.findIndex(v => v.position == position);
+          if (ind != -1)
+            this.orders.splice(ind, 1);
+        } catch (error) {
+          console.log(' error on event emitter');
+        }
+
+      });
+
+
 
   }
+
   refresh() {
     window.location.reload();
   }
@@ -636,5 +665,187 @@ export class Tab1Page {
       this.orders.splice(y, 1);
       this.getSummarizeOrder();
     }
+  }
+
+
+
+
+  
+  initVendingWalletCoinBalance(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        const params = {
+          machineId: machineId
+        }
+        const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.apiService.cash = run.data[0].vendingWalletCoinBalance;
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  cashin(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        let params: any = {
+          machineId: machineId
+        }
+        let run: any = await this.cashValidationProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.acceptcash = run.data[0].acceptcash;
+        const cashList = await this.cashList();
+
+        params = {
+          machineId: machineId,
+          cash: cashList,
+          description: 'VENDING CASH IN'
+        }
+        run = await this.cashinValidationProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.apiService.cash = Number(this.apiService.cash) + Number(cashList);
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  cashList(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+       
+        let message: any = {} as any;
+        let inputs: Array<any> = [
+          {
+            type: 'radio',
+            label: '1,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(1000);
+            },
+          },
+          {
+            type: 'radio',
+            label: '5,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(5000);
+            },
+          },
+          {
+            type: 'radio',
+            label: '10,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(10000);
+              
+            },
+          },
+          {
+            type: 'radio',
+            label: '20,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(20000);
+                
+            },
+          },
+          {
+            type: 'radio',
+            label: '50,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(50000);
+                
+            },
+          },
+          {
+            type: 'radio',
+            label: '100,000',
+            handler: async () => {
+              await message.dismiss();
+              resolve(100000);
+                
+            },
+          },
+        ];
+        if (this.acceptcash == 100000) {
+          inputs.splice(inputs.length - 0, 0);
+        } else if (this.acceptcash == 50000) {
+          inputs.splice(inputs.length - 1, 1);
+        } else if (this.acceptcash == 20000) {
+          inputs.splice(inputs.length - 2, 2);
+        } else if (this.acceptcash == 10000) {
+          inputs.splice(inputs.length - 3, 3);
+        } else if (this.acceptcash == 5000) {
+          inputs.splice(inputs.length - 4, 4);
+        } else {
+          inputs = [];
+        }
+
+        message = await this.apiService.alert.create({
+          header: 'Cash In',
+          inputs: inputs
+        });
+        message.present();
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  laabGo(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        let sum_quantity: number = 0;
+        let sum_total: number = 0;
+        for(let i = 0; i < this.summarizeOrder.length; i++) {
+          sum_quantity += this.summarizeOrder[i].stock.qtty;
+          sum_total += this.summarizeOrder[i].stock.qtty * this.summarizeOrder[i].stock.price;
+        }
+        if (this.apiService.cash < sum_total) throw new Error(IENMessage.notEnoughtCashBalance);
+        const sum_refund = this.apiService.cash - sum_total;
+
+        const props = {
+          machineId: localStorage.getItem('machineId') || '12345678',
+          cash: this.apiService.cash,
+          quantity: sum_quantity,
+          total: sum_total,
+          refund: sum_refund
+        }
+
+        this.apiService.modal.create({ component: LaabGoPage, componentProps: props }).then(r => {
+          r.present();
+        });
+        
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  epinCashOut(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        this.apiService.modal.create({ component: EpinCashOutPage, componentProps: {} }).then(r => {
+          r.present();
+        });
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
   }
 }

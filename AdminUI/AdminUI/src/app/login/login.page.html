@@ -1,4 +1,4 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar>
     <ion-title>login</ion-title>
   </ion-toolbar>
@@ -8,4 +8,39 @@
 <ion-button (click)="go()">
 Go
 </ion-button>
+</ion-content> -->
+
+
+<ion-content>
+
+  <div class="login-card">
+    <div class="title">LAAB Vending</div>
+    <div class="text">Sign in for access your vending data</div>
+    
+    <div class="image">
+      <img src="../../assets/vending.png" alt="">
+
+    </div>
+
+    <div class="form-group">
+      <label for="">Phone number</label>
+      <div class="input-group">
+        <input [(ngModel)]="phonenumber" type="text" maxlength="8" class="form-control" placeholder="Enter phone number here">
+        <span class="input-group-text"><i class="fa-solid fa-mobile-screen-button"></i></span>
+      </div>
+    </div>
+
+    <div class="form-group mt-2">
+      <label for="">Password</label>
+      <div class="input-group">
+        <input [(ngModel)]="password" type="password" class="form-control" placeholder="Enter password here">
+        <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+      </div>
+    </div>
+
+    <a (click)="login()" href="javascript:void(0)" class="btn-login">Login</a>
+
+
+  </div>
+
 </ion-content>
