@@ -92,6 +92,9 @@ CreateDatabase('').then(r => {
       const host = req.get('Host') // localhost:4000
       const server = http + host;
       const d = req.body as IReqModel;
+      console.log('debug HOST',server,d);
+      
+      
       try {
         console.log('POST Data', d);
         const c = d.data as IMMoneyConfirm;
@@ -184,47 +187,47 @@ CreateDatabase('').then(r => {
 
 
     // const ssNV9 = new SocketServerESSP();
-    const cashNV9 = new CashNV9(app, wss4);
+    // const cashNV9 = new CashNV9(app, wss4);
 
-    const sss = Array<IBaseClass>();
-    sss.push(cashNV9);
-    app.use('/cashNV9/public', express.static(path.join(__dirname, 'public')))
-    app.post('/', (req, res) => {
-      const http = req.protocol; // http
-      const host = req.get('Host') // localhost:4000
-      const server = http + host;
-      const d = req.body as IReqModel;
-      try {
-        console.log('POST Data', d);
-        res.send(PrintSucceeded(d?.command, d, EMessage.succeeded));
+    // const sss = Array<IBaseClass>();
+    // sss.push(cashNV9);
+    // app.use('/cashNV9/public', express.static(path.join(__dirname, 'public')))
+    // app.post('/', (req, res) => {
+    //   const http = req.protocol; // http
+    //   const host = req.get('Host') // localhost:4000
+    //   const server = http + host;
+    //   const d = req.body as IReqModel;
+    //   try {
+    //     console.log('POST Data', d);
+    //     res.send(PrintSucceeded(d?.command, d, EMessage.succeeded));
 
-      } catch (error) {
-        return res.send(PrintError(d.command, error, EMessage.error));
+    //   } catch (error) {
+    //     return res.send(PrintError(d.command, error, EMessage.error));
 
-      }
+    //   }
 
-    })
+    // })
 
-    server.on('upgrade', function upgrade(request, socket, head) {
-      try {
-        const { pathname } = parse(request.url || '');
-        console.log('pathname', pathname);
+    // server.on('upgrade', function upgrade(request, socket, head) {
+    //   try {
+    //     const { pathname } = parse(request.url || '');
+    //     console.log('pathname', pathname);
 
-        if (pathname === '/cashNV9') {
-          wss4.handleUpgrade(request, socket, head, function done(ws) {
-            wss4.emit('connection', ws, request);
-          });
-        }
-        else {
-          socket.destroy();
-        }
-      } catch (error) {
-        console.log(error);
+    //     if (pathname === '/cashNV9') {
+    //       wss4.handleUpgrade(request, socket, head, function done(ws) {
+    //         wss4.emit('connection', ws, request);
+    //       });
+    //     }
+    //     else {
+    //       socket.destroy();
+    //     }
+    //   } catch (error) {
+    //     console.log(error);
 
-        socket.destroy();
-      }
+    //     socket.destroy();
+    //   }
 
-    });
+    // });
 
     server.listen(process.env.PORT || 9009, async function () {
       console.log('HTTP listening on port ' + process.env.PORT || 9009);
@@ -233,9 +236,9 @@ CreateDatabase('').then(r => {
 
     process.on('exit', (code: number) => {
       console.log('exit code', code);
-      sss.forEach(v => {
-        v.close();
-      });
+      // sss.forEach(v => {
+      //   v.close();
+      // });
     });
   }
 }).catch(e => {

@@ -386,11 +386,11 @@ export class SocketServerZDM8 {
                 res.status = 1;
                 res.data = { slot: position };
                 console.log('writing...', x['machineId'], 'POSITION', position);
-                return { position, status: x.write(JSON.stringify(res) + '\n') };
+                return { position, status: x.write(JSON.stringify(res) + '\n'),code:1};
             } else {
-                console.log('client id socket not found');
+                console.log('client id socket not found','pos',position,'t',transactionID);
                 const data = `${machineId}-${position}-${transactionID}`
-                return { position, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+                return { position, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients),code:0 };
             }
         } catch (error: any) {
             console.log('client id socket not found');

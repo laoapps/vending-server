@@ -29,6 +29,7 @@ export class ApiService {
   _billEvents = new EventEmitter();
   stock = new Array<IStock>();
   eventEmitter = new EventEmitter();
+  pb = Array<IBillProcess>();
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
@@ -114,19 +115,7 @@ export class ApiService {
 
         r.bill.updatedAt = new Date();
 
-        this.loadDeliveryingBills().subscribe(r => {
-          if (r.status) {
-            this.dismissModal();
-            const pb = r.data as Array<IBillProcess>;
-            if(pb.length)
-            this.showModal(RemainingbillsPage, { r:pb });
-          }
-          else {
-            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
-              r.present();
-            })
-          }
-        })
+   
 
       } else if (!r.position) {
         // PLAY SOUNDS
@@ -143,7 +132,23 @@ export class ApiService {
           ]
         }).then(v => v.present());
       }
-      this.dismissModal();
+      this.loadDeliveryingBills().subscribe(r=>{
+        this.dismissModal();
+        this.dismissLoading();
+          if (r.status) {
+            const pb = r.data as Array<IBillProcess>;
+            if(pb.length)
+            this.showModal(RemainingbillsPage, { r:pb }).then(r=>{
+              r.present();
+            });
+          }
+          else {
+            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
+              r.present();
+            })
+          }
+      })
+      // this.dismissModal();
       this.storage.set('saleStock', this.vendingOnSale, 'stock');
 
       // });
@@ -154,7 +159,23 @@ export class ApiService {
 
       if (r) {
         this.dismissModal();
-        this.showModal(RemainingbillsPage, { r });
+        this.dismissLoading();
+        this.loadDeliveryingBills().subscribe(r => {
+          if (r.status) {
+            this.dismissModal();
+            const pb = r.data as Array<IBillProcess>;
+            if(pb.length)
+            this.showModal(RemainingbillsPage, { r:pb }).then(r=>{
+              r.present();
+            });
+          }
+          else {
+            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
+              r.present();
+            })
+          }
+        })
+        // this.showModal(RemainingbillsPage, { r });
       }
     })
 
@@ -199,7 +220,8 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
-  createStockItems(s: Array<IVendingMachineSale>) {
+  newStockItems(s: Array<IVendingMachineSale>) {
+    this.stock.length=0;
     s.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
 
@@ -208,6 +230,7 @@ export class ApiService {
     });
     this.storage.set('stockitems_', this.stock, 'item')
   }
+
   updateStockItems(s: Array<IStock>) {
     s.forEach(v => {
       // console.log('stock',v);
@@ -264,7 +287,7 @@ export class ApiService {
     return this.http.get<IResModel>(this.url + '/getOnlineMachines', { headers: this.headerBase() });
   }
   loadDeliveryingBills() {
-    return this.http.post<IResModel>(this.url + '/getDeliveryingBills', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/getDeliveryingBills',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
   }
 
   loadPaidBills() {

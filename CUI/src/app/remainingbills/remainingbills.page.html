@@ -6,6 +6,22 @@
 
 <ion-content>
 <ion-list>
-  <ion-item *ngFor="let b of r" (click)="retryProcessBill(b.transactionID+'',b.position)">{{b.position}}</ion-item>
+  <ion-item *ngFor="let s of r" (click)="retryProcessBill(s.transactionID+'',s.position)">
+    <ion-card >
+      <ion-item>
+        <label>{{getStock(s.position).name}}</label>
+      </ion-item>
+      <ion-item>
+        <img style="width: 200px;height:200px" [src]="getStock(s.position).image.includes(';base64,')?getStock(s.position).image:this.url+'/public/'+s.bill?.vendingsales[0]?.stock.image" >
+      </ion-item>
+      <ion-item>
+        <label>{{getStock(s.position).price}}/<ion-label type="number"  ></ion-label>{{s.bill?.vendingsales[0]?.stock.qtty}}</label>
+      </ion-item>
+      <!-- <ion-item>
+        <ion-button (click)="buyMMoney(s)" type="button">Buy</ion-button>
+        <ion-button (click)="addOrder(s)" type="button">Add</ion-button>
+      </ion-item> -->
+    </ion-card>
+  </ion-item>
 </ion-list>
 </ion-content>

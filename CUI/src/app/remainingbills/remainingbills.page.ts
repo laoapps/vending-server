@@ -9,6 +9,7 @@ import { ApiService } from '../services/api.service';
 })
 export class RemainingbillsPage implements OnInit {
   @Input()r=new Array<IBillProcess>();
+  url = this.apiService.url;
   constructor(public apiService:ApiService) { }
 
   ngOnInit() {
@@ -23,5 +24,8 @@ export class RemainingbillsPage implements OnInit {
         r.present();
       })
     })
+  }
+  getStock(position:number){
+    return this.r.map(v=>v.bill.vendingsales)[0].find(v=>v.position==position)?.stock;
   }
 }

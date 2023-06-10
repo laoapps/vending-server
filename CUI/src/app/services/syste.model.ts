@@ -780,8 +780,11 @@ export enum EMACHINE_COMMAND{
 }
 
 export interface IMachineClientID{
-    otp:string;
-    machineId:string;
+    otp: string;
+    machineId: string;
+    ownerUuid: string;
+    photo: string;
+    data: Array<any>;
 }
 export enum EClientCommand {
     list='list',

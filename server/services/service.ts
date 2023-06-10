@@ -254,9 +254,20 @@ export function writeSucceededRecordLog(m, position) {
 export function writeLogs(m, position,name='g_') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path + `/${name}_${da}.json`;
-
+    console.log('m',m);
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
+export function writeErrorLogs(m:string,e:any) {
+    const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = process.env._log_path + `/e_${da}.json`;
+    console.log('error',m);
+    
+    fs.appendFileSync(logs, JSON.stringify({ m,e, time: new Date() }), { flag: 'a+' });
+}
+export function getNanoSecTime() {
+    var hrTime = process.hrtime();
+    return hrTime[0] * 1000000000 + hrTime[1];
+  }
 export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
 
 export const LAAB_URL = 'http://localhost:30000';

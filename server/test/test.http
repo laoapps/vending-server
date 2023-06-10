@@ -1,0 +1,59 @@
+@Host= laoapps.com
+
+@path= zdm8
+
+@port= 9006
+
+
+
+
+
+POST http://{{Host}}:{{port}}/{{path}} HTTP/1.1
+Content-Type: application/json
+
+{
+    "data":{
+        "tranid_client":"",
+        "amount":""
+    },
+    "command":"confirmMMoney"
+}
+
+###
+get http://{{Host}}:{{port}}/{{path}}/submit_command?machineId=11111111&position=1 HTTP/1.1
+Content-Type: application/json
+
+{
+    "data":{
+        "tranid_client":"",
+        "amount":""
+    },
+    "command":"submit_command"
+}
+
+###
+post http://{{Host}}:{{port}}/{{path}}/getFreeProduct?machineId=11111111&position=1 HTTP/1.1
+Content-Type: application/json
+
+{
+    "data":{
+        "position":"1",
+        "id":1,
+        "clientId":"b88eac3c-9ec0-48ac-8b46-d2f7758a07ed"
+    },
+    "token":"79f7928f3deb7436d6e110dfae37e8f80ea9c65f55ea84eb449895b63bc5909e"
+}
+
+
+###1685635186310
+post http://{{Host}}:{{port}}/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "command":"confirmMMoney",
+    "data":{
+        "tranid_client":"1686392786260",
+        "amount":"15000"
+    }
+    
+}
