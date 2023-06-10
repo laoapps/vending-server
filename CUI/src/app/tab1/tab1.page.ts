@@ -502,6 +502,12 @@ export class Tab1Page {
   addOrder(x: IVendingMachineSale) {
     // this.zone.runOutsideAngular(() => {
     // const ord = this.orders.find(v=>v.stock.id==x.stock.id);
+    if (x.stock.qtty < 1) return alert('Out of Stock');
+    console.log('ID', x);
+    if (!x) return alert('not found');
+
+    this.apiService.showLoading();
+
     if (this.orders.find(v => v.position == x.position)) {
       const mx = x.max;
       const summ = this.getSummarizeOrder();
@@ -510,20 +516,19 @@ export class Tab1Page {
       if (re)
         return alert('Out of Stock');
     }
-    if (x.stock.qtty < 1) return alert('Out of Stock');
-    console.log('ID', x);
-    if (!x) return alert('not found');
+   
     // if (x.stock.qtty <= 0) alert('Out Of order');
-    this.apiService.showLoading();
+   
     const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
     y.stock.qtty = 1;
     console.log('y', y);
-
     this.orders.push(y);
-    this.getSummarizeOrder();
+    
     setTimeout(() => {
       this.apiService.dismissLoading();
     }, 1000);
+    console.log('sum',this.getSummarizeOrder());
+    
 
     // });
   }
@@ -531,13 +536,16 @@ export class Tab1Page {
     return this.orders.find(v => v.position == position)?.stock?.qtty || 0;
   }
   getSummarizeOrder() {
-    this.summarizeOrder.length = 0;
+    this.summarizeOrder=new Array<IVendingMachineSale>();
     const o = new Array<IVendingMachineSale>();
-    this.orders.forEach(v => {
+    const ord = JSON.parse(JSON.stringify( this.orders)) as Array<IVendingMachineSale>;
+    ord.forEach(v => {
       const x = o.find(x => x.stock.id == v.stock.id);
-      if (!x) o.push(JSON.parse(JSON.stringify(v)));
+      if (!x) o.push(v);
       else x.stock.qtty += 1
-    })
+    });
+    console.log('OOOO',o);
+    
     this.summarizeOrder.push(...o);
     const t = this.getTotal();
     Object.keys(this.getTotalSale).forEach(k => {
@@ -602,9 +610,9 @@ export class Tab1Page {
     this.apiService.loadDeliveryingBills().subscribe(r => {
       if (r.status) {
         this.apiService.dismissModal();
-        const pb = r.data as Array<IBillProcess>;
-        if(pb.length)
-        this.apiService.showModal(RemainingbillsPage, { r:pb }).then(r=>r.present());
+        this.apiService. pb = r.data as Array<IBillProcess>;
+        if( this.apiService. pb.length)
+        this.apiService.showModal(RemainingbillsPage, { r: this.apiService. pb }).then(r=>r.present());
       }
       else {
         this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {

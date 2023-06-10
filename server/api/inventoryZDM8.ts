@@ -181,7 +181,7 @@ export class InventoryZDM8 implements IBaseClass {
                             if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
 
                             // console.log(' value is valid', sale);
-                            const transactionID = new Date().getTime();
+                            const transactionID = Number(Number(machineId.machineId.substring(machineId.machineId.length-5))+''+(new Date().getTime()));
                             const qr = await this.generateBillMMoney(value, transactionID + '');
                             if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
                             const bill = {
@@ -313,8 +313,22 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log('processOrder',machineId, position, transactionID);
                             console.log('found x ',x.ownerUuid, x.position, x.transactionID);
                             const pos = this.ssocket.processOrder(machineId, position, transactionID);
-                            // writeSucceededRecordLog(x?.bill, position);
-                            res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
+
+                            const retry=1; // set config and get config at redis and deduct the retry times;
+
+                            if(pos.code){
+                                //*** 1 time retry only for MMONEY ONly*/
+                                that.setBillProces(b.filter(v => v.transactionID != transactionID));
+                                writeSucceededRecordLog(x?.bill, position);
+                                res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
+                            }else{
+                                res.send(PrintError('retryProcessBill', pos, EMessage.error));
+
+                            }
+                          
+
+
+                            
                         })
                     }, 500);
 
@@ -967,9 +981,14 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log('onMachineResponse',re.transactionID);
                         console.log('keep',b.filter(v => v.transactionID != re.transactionID).map(v=>v.transactionID));
                         
-                        
-                        that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
-                        writeSucceededRecordLog(cres?.bill, cres?.position);
+                        ///** always retry */
+                        const retry=-1; // set config and get config at redis and deduct the retry times;
+                        // if retry == -1 , it always retry 
+                        /// TODO
+                        // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
+                        // writeSucceededRecordLog(cres?.bill, cres?.position);
+
+
                         that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                         /// DEDUCT STOCK AT THE SERVER HERE
                         

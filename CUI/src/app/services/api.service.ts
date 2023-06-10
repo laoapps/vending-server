@@ -19,6 +19,7 @@ export class ApiService {
   _billEvents = new EventEmitter();
   stock = new Array<IStock>();
   eventEmitter = new EventEmitter();
+  pb = Array<IBillProcess>();
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
