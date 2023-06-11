@@ -300,7 +300,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
             router.post(this.path + '/retryProcessBill', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
-                    setTimeout(async () => {
+
 
                         const position = Number(req.query['position']);
                         const transactionID = Number(req.query['T'] + '');
@@ -309,9 +309,11 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = m?.machineId || '';
                         const that = this;
                         this.getBillProcess(b => {
-                            let x = b.find(v => v.position == position && v.transactionID == Number(transactionID + '') && v.ownerUuid == ownerUuid);
+                            try {
+                                  let x = b.find(v => v.position == position && v.transactionID == Number(transactionID + '') && v.ownerUuid == ownerUuid);
                             console.log('processOrder', machineId, position, transactionID);
                             console.log('found x ', x.ownerUuid, x.position, x.transactionID);
+                            //*** 1 time retry only for MMONEY ONly*/
                             that.setBillProces(b.filter(v => v.transactionID != transactionID));
                             setTimeout(() => {
                                 const pos = this.ssocket.processOrder(machineId, position, transactionID);
@@ -319,7 +321,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const retry = 1; // set config and get config at redis and deduct the retry times;
 
                                 if (pos.code) {
-                                    //*** 1 time retry only for MMONEY ONly*/
+                                    
                                     that.setBillProces(b.filter(v => v.transactionID != transactionID));
                                     writeSucceededRecordLog(x?.bill, position);
                                     res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
@@ -328,8 +330,13 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 }
                             }, 500);
+                            } catch (error) {
+                                console.log('error retryProcessBill',error);
+                                
+                                res.send(PrintError('retryProcessBill',error, EMessage.error));
+                            }
+                          
                         })
-                    }, 500);
 
 
                 } catch (error) {
