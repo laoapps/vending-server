@@ -114,6 +114,7 @@ export class Tab1Page {
             this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
             // this.loadSaleList();
             this.initStock();
+            this.showBills();
           })
 
 
@@ -367,6 +368,7 @@ export class Tab1Page {
     const x = prompt('password');
     console.log(x, this.getPassword());
 
+    if(environment.production)
     if (!this.getPassword().endsWith(x) || x.length < 6) return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then(r => {
@@ -532,6 +534,8 @@ export class Tab1Page {
   }
 
   addOrder(x: IVendingMachineSale) {
+    console.log('xxxxxxxx',x);
+    
     // this.zone.runOutsideAngular(() => {
     // const ord = this.orders.find(v=>v.stock.id==x.stock.id);
     if (x.stock.qtty < 1) return alert('Out of Stock');
@@ -542,11 +546,22 @@ export class Tab1Page {
 
     if (this.orders.find(v => v.position == x.position)) {
       const mx = x.max;
-      const summ = this.getSummarizeOrder();
-      const re = summ.find(v => (v.stock.qtty + 1) > mx && v.position == x.position);
-      console.log(summ, mx, re);
-      if (re)
+      // const summ = this.getSummarizeOrder();
+      // const summ  = this.summarizeOrder;
+      const re = this.orders.find(v => {
+        const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
+        console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
+        
+        return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
+      });
+       console.log('0x0r',this.orders, mx, re);
+      if (re){
+         setTimeout(() => {
+        this.apiService.dismissLoading();
+      }, 1000);
         return alert('Out of Stock');
+      }
+     
     }
    
     // if (x.stock.qtty <= 0) alert('Out Of order');
@@ -555,11 +570,12 @@ export class Tab1Page {
     y.stock.qtty = 1;
     console.log('y', y);
     this.orders.push(y);
-    
+    //  console.log('sum',this.getSummarizeOrder());
+    this.getSummarizeOrder();
     setTimeout(() => {
       this.apiService.dismissLoading();
     }, 1000);
-    console.log('sum',this.getSummarizeOrder());
+   
     
 
     // });
@@ -568,7 +584,7 @@ export class Tab1Page {
     return this.orders.find(v => v.position == position)?.stock?.qtty || 0;
   }
   getSummarizeOrder() {
-    this.summarizeOrder=new Array<IVendingMachineSale>();
+    // this.summarizeOrder=new Array<IVendingMachineSale>();
     const o = new Array<IVendingMachineSale>();
     const ord = JSON.parse(JSON.stringify( this.orders)) as Array<IVendingMachineSale>;
     ord.forEach(v => {
@@ -578,15 +594,15 @@ export class Tab1Page {
     });
     console.log('OOOO',o);
     
-    this.summarizeOrder.push(...o);
+    // this.summarizeOrder.push(...o);
     const t = this.getTotal();
     Object.keys(this.getTotalSale).forEach(k => {
       this.getTotalSale[k] = t[k];
     })
-    return this.summarizeOrder;
+    // return this.summarizeOrder;
   }
   getTotal() {
-    const o = this.summarizeOrder;
+    const o = this.orders;
     const q = o.reduce((a, b) => { return a + b.stock.qtty }, 0);
     const t = o.reduce((a, b) => { return a + b.stock.qtty * b.stock.price }, 0);
     return { q, t };

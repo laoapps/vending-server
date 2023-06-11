@@ -144,7 +144,7 @@
           <ion-col>
 
             <div class="scrollmenu">
-              <div class="order-item" *ngFor="let o of summarizeOrder; let i=index;" color="primary">
+              <div class="order-item" *ngFor="let o of orders; let i=index;" color="primary">
                 <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> <img
                   [src]="o.stock.image.includes(';base64,')?o.stock.image:this.url+'/public/'+o.stock.image" style="width:50px;height:120px; margin:0px">
                 <div>
