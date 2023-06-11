@@ -39,7 +39,7 @@ export class Tab1Page {
 
 
   production = environment.production;
-  audio = new Audio('assets/khopchay.mp3');
+  audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
 
   mmLogo = 'assets/icon/mmoney.png';
 
@@ -114,7 +114,7 @@ export class Tab1Page {
             this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
             // this.loadSaleList();
             this.initStock();
-            this.showBills();
+           
           })
 
 
@@ -160,6 +160,10 @@ export class Tab1Page {
           this.saleList.push(...this.vendingOnSale);
           if (this.saleList[0]?.position == 0) this.compensation = 1;
          
+          setTimeout(() => {
+            this.showBills();
+          }, 1000);
+          
         })
       } else {
         alert(r.message)
@@ -455,7 +459,7 @@ export class Tab1Page {
           })
         }
         setTimeout(() => {
-          this.audio = new Audio('assets/khopchay.mp3');
+          this.audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
           this.audio.play();
           this.apiService.dismissLoading();
         }, 3000);
@@ -647,12 +651,13 @@ export class Tab1Page {
   }
 
   removeCart(i: number) {
-    const x = this.summarizeOrder.splice(i, 1);
-    const y = this.orders.findIndex(v => x[0]?.position == v.position);
-    if (y != -1) {
-      this.orders.splice(y, 1);
-      this.getSummarizeOrder();
-    }
+    const x = this.orders.splice(i, 1);
+    this.getSummarizeOrder();
+    // const y = this.orders.findIndex(v => x[0]?.position == v.position);
+    // if (y != -1) {
+    //   this.orders.splice(y, 1);
+    //   this.getSummarizeOrder();
+    // }
   }
 
 

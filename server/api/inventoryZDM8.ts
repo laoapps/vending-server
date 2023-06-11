@@ -17,7 +17,7 @@ import { VendingMachineSaleFactory } from '../entities/vendingmachinesale.entity
 import { VendingMachineBillFactory, VendingMachineBillModel } from '../entities/vendingmachinebill.entity';
 import { Op } from 'sequelize';
 import fs from 'fs';
-import  {getNanoSecTime} from '../services/service';
+import { getNanoSecTime } from '../services/service';
 export class InventoryZDM8 implements IBaseClass {
 
     // websocket server for vending controller only
@@ -181,7 +181,7 @@ export class InventoryZDM8 implements IBaseClass {
                             if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
 
                             // console.log(' value is valid', sale);
-                            const transactionID = Number(Number(machineId.machineId.substring(machineId.machineId.length-5))+''+(new Date().getTime()));
+                            const transactionID = Number(Number(machineId.machineId.substring(machineId.machineId.length - 5)) + '' + (new Date().getTime()));
                             const qr = await this.generateBillMMoney(value, transactionID + '');
                             if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
                             const bill = {
@@ -251,10 +251,10 @@ export class InventoryZDM8 implements IBaseClass {
                     const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
                     const ownerUuid = m?.ownerUuid || '';
                     // const machineId = m?.machineId;
-                    console.log('getDeliveryingBills',m,ownerUuid);
-                    
+                    console.log('getDeliveryingBills', m, ownerUuid);
+
                     this.getBillProcess((b) => {
-                        console.log('getDeliveryingBills',b,b.filter(v => v.ownerUuid == ownerUuid));
+                        console.log('getDeliveryingBills', b, b.filter(v => v.ownerUuid == ownerUuid));
                         res.send(PrintSucceeded('getDeliveryingBills', b.filter(v => v.ownerUuid == ownerUuid), EMessage.succeeded));
                     })
 
@@ -310,25 +310,24 @@ export class InventoryZDM8 implements IBaseClass {
                         const that = this;
                         this.getBillProcess(b => {
                             let x = b.find(v => v.position == position && v.transactionID == Number(transactionID + '') && v.ownerUuid == ownerUuid);
-                            console.log('processOrder',machineId, position, transactionID);
-                            console.log('found x ',x.ownerUuid, x.position, x.transactionID);
-                            const pos = this.ssocket.processOrder(machineId, position, transactionID);
+                            console.log('processOrder', machineId, position, transactionID);
+                            console.log('found x ', x.ownerUuid, x.position, x.transactionID);
+                            that.setBillProces(b.filter(v => v.transactionID != transactionID));
+                            setTimeout(() => {
+                                const pos = this.ssocket.processOrder(machineId, position, transactionID);
 
-                            const retry=1; // set config and get config at redis and deduct the retry times;
+                                const retry = 1; // set config and get config at redis and deduct the retry times;
 
-                            if(pos.code){
-                                //*** 1 time retry only for MMONEY ONly*/
-                                that.setBillProces(b.filter(v => v.transactionID != transactionID));
-                                writeSucceededRecordLog(x?.bill, position);
-                                res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
-                            }else{
-                                res.send(PrintError('retryProcessBill', pos, EMessage.error));
+                                if (pos.code) {
+                                    //*** 1 time retry only for MMONEY ONly*/
+                                    that.setBillProces(b.filter(v => v.transactionID != transactionID));
+                                    writeSucceededRecordLog(x?.bill, position);
+                                    res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
+                                } else {
+                                    res.send(PrintError('retryProcessBill', pos, EMessage.error));
 
-                            }
-                          
-
-
-                            
+                                }
+                            }, 500);
                         })
                     }, 500);
 
@@ -892,35 +891,35 @@ export class InventoryZDM8 implements IBaseClass {
         const k = 'clientResponse';
         try {
             redisClient.get(k).then(r => {
-                console.log('clientResponse','getBillProcess');
+                console.log('clientResponse', 'getBillProcess');
                 if (r) {
-                    cb ? cb(JSON.parse(r) as Array<IBillProcess>) : cb(new   Array<IBillProcess>());
+                    cb ? cb(JSON.parse(r) as Array<IBillProcess>) : cb(new Array<IBillProcess>());
                     !cb ? writeErrorLogs('error', { m: 'call back empty' }) : ''
-                } else cb(new  Array<IBillProcess>())
+                } else cb(new Array<IBillProcess>())
 
             }).catch(e => {
                 console.log('error redis1', e);
-                cb(new   Array<IBillProcess>())
+                cb(new Array<IBillProcess>())
                 writeErrorLogs('error', e);
             })
         } catch (error) {
             console.log('error redis3', error);
-            cb(new  Array<IBillProcess>())
+            cb(new Array<IBillProcess>())
             writeErrorLogs('error', error);
         }
     }
     setBillProces(b: IBillProcess[]) {
         const k = 'clientResponse';
-        b.forEach(v=>v.bill?.vendingsales?.forEach(v=>v.stock?v.stock.image='':''));
+        b.forEach(v => v.bill?.vendingsales?.forEach(v => v.stock ? v.stock.image = '' : ''));
         redisClient.set(k, JSON.stringify(b))
     }
     // keepBillProces(t:Array<number>) {
-      
+
     //     const k = 'clientResponse';
     //     redisClient.get(k).then(r => {
     //         try {
     //             console.log('clientResponse','deleteBillProces',t);
-                
+
     //             if (r) {
     //                 const c = JSON.parse(r) as IBillProcess[];
     //                 c ? redisClient.set(k, JSON.stringify(c.filter(v=>t.includes(v.transactionID)))) : '';
@@ -942,8 +941,8 @@ export class InventoryZDM8 implements IBaseClass {
 
             const that = this;
             this.ssocket.onMachineResponse((re: IReqModel) => {
-                console.log('onMachineResponse',re);
-                console.log('onMachineResponse transactionID',re.transactionID);
+                console.log('onMachineResponse', re);
+                console.log('onMachineResponse transactionID', re.transactionID);
                 this.getBillProcess(b => {
                     const cres = b.find(v => v.transactionID == re.transactionID);
                     try {
@@ -978,11 +977,11 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         const clientId = cres?.bill.clientId + '';
                         console.log('send', clientId, cres?.bill?.clientId, resx);
-                        console.log('onMachineResponse',re.transactionID);
-                        console.log('keep',b.filter(v => v.transactionID != re.transactionID).map(v=>v.transactionID));
-                        
+                        console.log('onMachineResponse', re.transactionID);
+                        console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
+
                         ///** always retry */
-                        const retry=-1; // set config and get config at redis and deduct the retry times;
+                        const retry = -1; // set config and get config at redis and deduct the retry times;
                         // if retry == -1 , it always retry 
                         /// TODO
                         // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
@@ -991,7 +990,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                         /// DEDUCT STOCK AT THE SERVER HERE
-                        
+
 
                         // No need To update delivering status
                         // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
@@ -1134,18 +1133,18 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
                 this.getBillProcess(async b => {
-                    bill.vendingsales.forEach((v,i) => {
-                        v.stock.image='';
-                        b.push({ ownerUuid, position: v.position, bill:bill.toJSON(), transactionID: getNanoSecTime() });
+                    bill.vendingsales.forEach((v, i) => {
+                        v.stock.image = '';
+                        b.push({ ownerUuid, position: v.position, bill: bill.toJSON(), transactionID: getNanoSecTime() });
                     });
-                    
+
                     await bill.save();
-                    console.log('callBackConfirmMmoney',b);
-                    
+                    console.log('callBackConfirmMmoney', b);
+
                     this.setBillProces(b);
                     res.data = b.filter(v => v.ownerUuid == ownerUuid);
                     this.sendWSToMachine(bill?.machineId + '', res);
-                   
+
                     resolve(bill);
                 });
 
