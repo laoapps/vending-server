@@ -118,6 +118,11 @@ export class LoadDefaultProcess {
 
 
     private InitParams(params: any): void {
+        this.myMerchant = false;
+        this.myMerchantCoin = false;
+        this.myVendingWallet = false;
+        this.myVendingWalletCoin = false;
+
         this.ownerUuid = params.ownerUuid;
         this.machineId = params.machineId;
     }

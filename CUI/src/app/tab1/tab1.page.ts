@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
-import { IBillProcess, IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
+import { EClientCommand, IBillProcess, IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
 import { ModalController, Platform } from '@ionic/angular';
 // import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
@@ -18,6 +18,7 @@ import { CashValidationProcess } from './processes/cashValidation.process';
 import { CashinValidationProcess } from './processes/cashinValidation.process';
 import { LaabGoPage } from './LAAB/laab-go/laab-go.page';
 import { EpinCashOutPage } from './LAAB/epin-cash-out/epin-cash-out.page';
+import * as cryptojs from 'crypto-js';
 
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 
@@ -459,7 +460,11 @@ export class Tab1Page {
         }, 3000);
       });
     } else {
+
+      
+
       const amount = x.stock.price * 1;
+      
       this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
         console.log(r);
         if (r.status) {
@@ -532,6 +537,7 @@ export class Tab1Page {
   }
 
   addOrder(x: IVendingMachineSale) {
+    console.log(`add order --->`, x);
     // this.zone.runOutsideAngular(() => {
     // const ord = this.orders.find(v=>v.stock.id==x.stock.id);
     if (x.stock.qtty < 1) return alert('Out of Stock');
@@ -790,12 +796,24 @@ export class Tab1Page {
         if (this.apiService.cash < sum_total) throw new Error(IENMessage.notEnoughtCashBalance);
         const sum_refund = this.apiService.cash - sum_total;
 
+        const paidLAAB = {
+          command: EClientCommand.paidLAAB,
+          data: {
+            ids: this.summarizeOrder,
+            value: sum_total,
+            clientId: this.apiService.clientId.clientId
+          },
+          ip: '',
+          time: new Date().toString(),
+        }
+
         const props = {
           machineId: localStorage.getItem('machineId') || '12345678',
           cash: this.apiService.cash,
           quantity: sum_quantity,
           total: sum_total,
-          refund: sum_refund
+          refund: sum_refund,
+          paidLAAB: paidLAAB
         }
 
         this.apiService.modal.create({ component: LaabGoPage, componentProps: props }).then(r => {

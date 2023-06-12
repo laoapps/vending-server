@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  url:'http://localhost:9008',
+  url:'http://localhost:9006',
   wsurl:'',
   laaburl: 'http://localhost:30000/api/v1/laoapps_ewallet/',
   testVending: 'http://localhost:30777/vending/api/',

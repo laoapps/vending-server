@@ -9,31 +9,31 @@ import { VENDING_CashValidation, VENDING_CashinValidation, VENDING_CreateEPIN, V
 })
 export class VendingAPIService {
 
-  private url: string = environment.testVending;
+  private url: string = environment.vending;
 
   constructor(
     private http: HttpClient
   ) { }
 
   showVendingWalletCoinBalance(params: VENDING_ShowVendingWalletCoinBalance): Observable<any> {
-    return this.http.post(this.url + 'client/show_vending_wallet_coin_balance', params);
+    return this.http.post(this.url + '/laab/client/show_vending_wallet_coin_balance', params);
   }
   cashValidation(params: VENDING_CashValidation): Observable<any> {
-    return this.http.post(this.url + 'client/cash_validation', params);
+    return this.http.post(this.url + '/laab/client/cash_validation', params);
   }
   cashinValidation(params: VENDING_CashinValidation): Observable<any> {
-    return this.http.post(this.url + 'client/cash_in_validation', params);
+    return this.http.post(this.url + '/laab/client/cash_in_validation', params);
   }
   paidValidation(params: VENDING_PaidValidation): Observable<any> {
-    return this.http.post(this.url + 'client/paid_validation', params);
+    return this.http.post(this.url + '/laab/client/paid_validation', params);
   }
   createSMC(params: VENDING_CreateSMC): Observable<any> {
-    return this.http.post(this.url + 'client/create_smart_contract', params);
+    return this.http.post(this.url + '/laab/client/create_smart_contract', params);
   }
   loadSMC(params: VENDING_LoadSMC): Observable<any> {
-    return this.http.post(this.url + 'client/load_smart_contract', params);
+    return this.http.post(this.url + '/laab/client/load_smart_contract', params);
   }
   createEPIN(params: VENDING_CreateEPIN): Observable<any> {
-    return this.http.post(this.url + 'client/create_epin', params);
+    return this.http.post(this.url + '/laab/client/create_epin', params);
   }
 }

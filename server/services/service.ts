@@ -13,13 +13,29 @@ const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
 
 
-console.log('process.env.REDIS_HOST',process.env.REDIS_HOST);
 
-export const redisClient = redis.createClient({ url: process.env.REDIS_HOST + '' || 'redis://localhost:6379',});
+// REDIS SERVER
+export const redisHost= process.env.REDIS_SERVER_HOST ? process.env.REDIS_SERVER_HOST : 'localhost';
+export const redisPort = process.env.REDIS_SERVER_PORT ? Number(process.env.REDIS_SERVER_PORT) : 6379;
+
+// REDIS LOCAL
+// export const redisHost= process.env.REDIS_LOCAL_HOST ? process.env.REDIS_LOCAL_HOST : 'localhost';
+// export const redisPort = process.env.REDIS_LOCAL_PORT ? Number(process.env.REDIS_LOCAL_PORT) : 6379;
+
+// **** 2 ***
+export const redisClient = redis.createClient({url:'redis://'+redisHost+':'+redisPort});
+
+
+// **** 1 ***
+// export const redisClient = redis.createClient({ url: process.env.REDIS_HOST + '' || 'redis://localhost:6379' });
+
 redisClient.connect();
+
+
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
+
 
 export function PrintSucceeded(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
     return {

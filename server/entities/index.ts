@@ -30,6 +30,11 @@ export let machineIDHistoryEntity:MachineIDStatic;
 export let vendingWallet: VendingWalletStatic;
 
 export const initDB =()=>{
+    vendingWallet = VendingWalletFactory(EEntity.vendingwallet, dbConnection).sync().then(() => {
+        console.log(`vending wallet sync`);
+        vendingWallet = VendingWalletFactory(EEntity.vendingwallet, dbConnection);
+    });
+
     bankNoteEntity = BankNoteFactory(EEntity.banknote,dbConnection); // public 
     bankNoteEntity.sync().then(r=>{
         console.log('bankNoteEntity synced',r);
@@ -61,7 +66,6 @@ export const initDB =()=>{
 
 
 
-    vendingWallet = VendingWalletFactory(EEntity.vendingwallet, dbConnection).sync().then(r=>console.log(`vending wallet sync`));
 }
 
 export const CreateDatabase = (prefix: string) => {

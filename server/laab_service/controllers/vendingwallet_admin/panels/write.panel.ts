@@ -17,7 +17,9 @@ export class WritePanel {
     public CreateMerchant(req: Request, res: Response) {
         try {
             const data = req.body;
+            console.log(`init create`, req.body);
             this.queues.QCreateMerchant.add({ data }).then(job => {
+                console.log(`here`);
                 job.finished().then(run => {
                     if (run.message != IENMessage.success) {
                         message([], run, IStatus.unsuccess, res);
@@ -139,8 +141,10 @@ export class WritePanel {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
+                console.log(`init process`);
                 const func = new CreateMerchantFunc();
                 const run = await func.Init(params);
+                console.log(`_CreateMerchant`, run);
                 resolve(run);
 
             } catch (error) {

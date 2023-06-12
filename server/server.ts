@@ -26,7 +26,7 @@ import { LaabAPI } from './api/laab';
 CreateDatabase('').then(r => {
   console.log('DATABASE CREATED OK',r);
   
-  const isVending = process.env.VENDING;
+  const isVending = process.env.VENDING || true;
   console.log(`is vending`, isVending);
   const app = express();
   const router = express.Router();
@@ -63,11 +63,8 @@ CreateDatabase('').then(r => {
     const invM102 = new InventoryM102(app, wss3);
 
     // laab
-    const laab = new LaabAPI(router);
-    app.get('/', (req,res) => {
-      console.log(`in`);
-    });
-    app.use('/laab', router);
+    const laab = new LaabAPI(app);
+    
 
 
     const sss = Array<IBaseClass>();

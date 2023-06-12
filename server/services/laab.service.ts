@@ -6,8 +6,8 @@ import { compareSync, hashSync } from 'bcryptjs';
 const short = require('short-uuid');
 const translate = short();
 
-const LAABbase: string = 'http://localhost:30000/api/v1/laoapps_ewallet/';
-const EPINBase: string = 'http://localhost:30001/api/';
+const LAABbase: string = process.env.LAAB_URL + '/api/v1/laoapps_ewallet/' || 'http://localhost:30000/api/v1/laoapps_ewallet/';
+const EPINBase: string =  process.env.EPIN_URL + '/api/' || 'http://localhost:30001/api/';
 
 export const LAAB_Register2: string = LAABbase + 'user/register2';
 export const LAAB_FindMyWallet: string = LAABbase + 'user/find_my_wallet';
@@ -34,14 +34,17 @@ export const EPIN_Generate: string = EPINBase + 'topup/generate';
 
 
 
-export const redisHost=process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost';
-export const redisPort = 6379;
+// export const redisHost=process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost';
+// export const redisPort = 6379;
 
 export const message = (data: any, message: string, status: number, res: Response) => {
     res.send({ info: data, message: message, status: status });
 }
 
 export enum IENMessage {
+    validateValueFail = 'validate value fail',
+    addCheckIdsFail = 'add check ids fail',
+    invalidValue = 'invalid value',
     invalidCoin = 'invalid coin',
     cashValidationFail = 'cash validation fail',
     cashValidationFail001 = 'cash validation fail #001',

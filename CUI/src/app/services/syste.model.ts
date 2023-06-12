@@ -789,7 +789,8 @@ export interface IMachineClientID{
 export enum EClientCommand {
     list='list',
     buyMMoney ='buyMMoney',
-    confirmMMoney = 'confirmMMoney'
+    confirmMMoney = 'confirmMMoney',
+    paidLAAB = 'paidLAAB'
 }
 export interface IMachineId{
     machineId:string;

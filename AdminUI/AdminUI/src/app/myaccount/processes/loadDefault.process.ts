@@ -113,6 +113,11 @@ export class LoadDefaultProcess {
 
 
     private InitParams(params: any): void {
+        this.myMerchant = false;
+        this.myMerchantCoin = false;
+        this.myVendingLimiter = false;
+        this.myVendingLimiterCoin = false;
+        
         this.ownerUuid = params.ownerUuid;
     }
 
@@ -164,7 +169,6 @@ export class LoadDefaultProcess {
     private CreateMerchant(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                
                 if (this.myMerchant == true) return resolve(IENMessage.success);
                 
                 let params: any = {

@@ -54,19 +54,6 @@ export class SmcListPage implements OnInit {
           }
         }
       }
-
-      // if (window.scrollY >= target) {
-      //   if (this.lists != undefined && Object.entries(this.lists).length != this.count) {
-      //     this.currentScroll += 345;
-      //     this.page += 1;
-      //     console.log(`page`, this.page);
-      //     const run = await this.loadSMC();
-      //     if (run != IENMessage.success) {
-      //       this.apiService.simpleMessage(run);
-      //     }
-      //   }
-      // }
-      console.log(Math.ceil(elm.scrollTop));
     });
   }
 

@@ -81,6 +81,7 @@ export class LoginProcess {
                 }
                 this.vendingAPIService.login(params).subscribe(r => {
                     const response: any = r;
+                    console.log(`response`, response);
                     if (response.status != 1) return resolve(response.message);
                     this.token = response.info.token;
                     this.owneruuid = response.info.ownerUuid;

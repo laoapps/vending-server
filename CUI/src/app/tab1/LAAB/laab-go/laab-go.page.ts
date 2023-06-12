@@ -16,6 +16,7 @@ export class LaabGoPage implements OnInit {
   @Input() quantity: number;
   @Input() total: number;
   @Input() refund: number;
+  @Input() paidLAAB: any;
 
   private paidValidationProcess: PaidValidationProcess;
 
@@ -36,7 +37,8 @@ export class LaabGoPage implements OnInit {
         const params = {
           machineId: this.machineId,
           cash: this.total,
-          description: 'VENDING WALLET COMMIT ORDER'
+          description: 'VENDING WALLET COMMIT ORDER',
+          paidLAAB: this.paidLAAB
         }
 
         const run = await this.paidValidationProcess.Init(params);

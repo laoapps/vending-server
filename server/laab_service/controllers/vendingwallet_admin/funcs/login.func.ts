@@ -16,13 +16,21 @@ export class LoginFunc {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
+                console.log(`login`, 1);
+
                 this.InitParams(params);
+
+                console.log(`login`, 2);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
+                console.log(`login`, 3);
+
                 const LAABLogin = await this.LAABLogin();
                 if (LAABLogin != IENMessage.success) throw new Error(LAABLogin);
+
+                console.log(`login`, 4 );
 
                 resolve(this.response);
                 
@@ -50,8 +58,9 @@ export class LoginFunc {
                    phonenumber: this.phonenumber,
                    password: this.password
                 }
-
+                console.log(`-->`, LAAB_Login);
                 const run = await axios.post(LAAB_Login, params);
+                console.log(`response`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
 
                 this.response = {
