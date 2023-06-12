@@ -804,13 +804,18 @@ export class Tab1Page {
   laabGo(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
+        this.summarizeOrder = JSON.parse(JSON.stringify(this.orders));
 
+        this.summarizeOrder.forEach(item => item.stock.image = '');
+        
+        console.log(`summarizeOrder`, this.summarizeOrder);
         let sum_quantity: number = 0;
         let sum_total: number = 0;
         for(let i = 0; i < this.summarizeOrder.length; i++) {
           sum_quantity += this.summarizeOrder[i].stock.qtty;
           sum_total += this.summarizeOrder[i].stock.qtty * this.summarizeOrder[i].stock.price;
         }
+        console.log(`sum total`, sum_total);
         if (this.apiService.cash < sum_total) throw new Error(IENMessage.notEnoughtCashBalance);
         const sum_refund = this.apiService.cash - sum_total;
 
@@ -823,6 +828,7 @@ export class Tab1Page {
           },
           ip: '',
           time: new Date().toString(),
+          token:  cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
         }
 
         const props = {
@@ -831,8 +837,9 @@ export class Tab1Page {
           quantity: sum_quantity,
           total: sum_total,
           refund: sum_refund,
-          paidLAAB: paidLAAB
+          paidLAAB: paidLAAB,
         }
+        console.log(`props`, props);
 
         this.apiService.modal.create({ component: LaabGoPage, componentProps: props }).then(r => {
           r.present();

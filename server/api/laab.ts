@@ -4,6 +4,7 @@ import events from "events";
 import { ReadPanel as AdminReadPanel } from "../laab_service/controllers/vendingwallet_admin/panels/read.panel";
 import { WritePanel as AdminWritePanel } from "../laab_service/controllers/vendingwallet_admin/panels/write.panel";
 import { ReadPanel as ClientReadPanel } from "../laab_service/controllers/vendingwallet_client/panels/read.panel";
+import { WritePanel as ClientWritePanel } from "../laab_service/controllers/vendingwallet_client/panels/write.panel";
 import { redisHost, redisPort } from '../services/service';
 
 events.defaultMaxListeners = 100;
@@ -17,11 +18,12 @@ export let QCreateVendingLimiter = new Queue('QCreateVendingLimiter', { defaultJ
 export let QCreateVendingLimiterCoin = new Queue('QCreateVendingLimiterCoin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateVendingWallet = new Queue('QCreateVendingWallet', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateVendingWalletCoin = new Queue('QCreateVendingWalletCoin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QPaidValidation = new Queue('QPaidValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
 
 export class LaabAPI {
 
-    private queues: any = {
+    private adminQueues: any = {
         QCreateMerchant:QCreateMerchant,
         QCreateMerchantCoin: QCreateMerchantCoin,
         QCreateVendingLimiter: QCreateVendingLimiter,
@@ -32,14 +34,20 @@ export class LaabAPI {
     private adminReadPanel: AdminReadPanel;
     private adminWritePanel: AdminWritePanel;
 
+    private clientQueues: any = {
+        QPaidValidation: QPaidValidation
+    }
     private clientReadPanel: ClientReadPanel;
+    private clientWritePanel: ClientWritePanel;
 
     constructor(router: Router) {
 
         this.adminReadPanel = new AdminReadPanel();
-        this.adminWritePanel = new AdminWritePanel(this.queues);
+        this.adminWritePanel = new AdminWritePanel(this.adminQueues);
 
         this.clientReadPanel = new ClientReadPanel();
+        this.clientWritePanel = new ClientWritePanel(this.clientQueues);
+
 
         // merchant
         router.post('/laab/admin/create_merchant', this.adminWritePanel.CreateMerchant.bind(this.adminWritePanel));
@@ -91,10 +99,10 @@ export class LaabAPI {
 
 
         // vending client
+        router.post('/laab/client/paid_validation', this.clientWritePanel.PaidValidation.bind(this.clientWritePanel));
         router.post('/laab/client/show_vending_wallet_coin_balance', this.clientReadPanel.ShowVendinWalletCoinBalance.bind(this.clientReadPanel));
         router.post('/laab/client/cash_validation', this.clientReadPanel.CashValidation.bind(this.clientReadPanel));
         router.post('/laab/client/cash_in_validation', this.clientReadPanel.CashinValidation.bind(this.clientReadPanel));
-        router.post('/laab/client/paid_validation', this.clientReadPanel.PaidValidation.bind(this.clientReadPanel));
         router.post('/laab/client/create_smart_contract', this.clientReadPanel.CreateSMC.bind(this.clientReadPanel));
         router.post('/laab/client/load_smart_contract', this.clientReadPanel.LoadSMC.bind(this.clientReadPanel));
         router.post('/laab/client/create_epin', this.clientReadPanel.CreateEPIN.bind(this.clientReadPanel));
@@ -142,6 +150,13 @@ export class LaabAPI {
             const d = job.data;
             const data = d.data;
             this.adminWritePanel._CreateVendingWalletCoin(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QPaidValidation.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.clientWritePanel._PaidValidation(data).then(r => {
                 done(null, r);
             }).catch(error => done(error, null));
         });

@@ -10,6 +10,7 @@ export const environment = {
   wsurl : 'ws://laoapps.com:9009/zdm8',
   testVending: 'http://localhost:30777/vending/api/',
   vending: 'http://localhost:9006',
+  vending_server: 'http://laoapps.com:9006',
 };
 
 /*

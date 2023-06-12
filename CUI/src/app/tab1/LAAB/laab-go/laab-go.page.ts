@@ -40,17 +40,18 @@ export class LaabGoPage implements OnInit {
           description: 'VENDING WALLET COMMIT ORDER',
           paidLAAB: this.paidLAAB
         }
-
+        console.log(`params`, params);
         const run = await this.paidValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
         //
 
         this.apiService.cash = this.refund;
-        this.apiService.modal.dismiss();
+        // this.apiService.modal.dismiss();
         resolve(IENMessage.success);
         
       } catch (error) {
+        this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
     });

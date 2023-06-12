@@ -161,7 +161,6 @@ export class InventoryZDM8 implements IBaseClass {
                                 y.stock.qtty = 1;
                                 y.stock.image = '';
                                 checkIds.push(y);
-
                             })
                             // console.log(' checkids', sale);
 
@@ -1166,6 +1165,63 @@ export class InventoryZDM8 implements IBaseClass {
 
     }
 
+    callBackConfirmLAAB(transactionID: string, amount: number) {
+        return new Promise<IVendingMachineBill>(async (resolve, reject) => {
+            try {
+                console.log('transactionID', transactionID, 'value', amount);
+
+                const ownerUuid = await redisClient.get(transactionID + '--_') || '';
+                console.log('GET transactionID by owner', ownerUuid);
+                if (!ownerUuid) throw new Error(EMessage.TransactionTimeOut);
+                const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+                const bill = await ent.findOne({ where: { transactionID, totalvalue: amount } });
+
+                if (!bill) throw new Error(EMessage.billnotfound);
+                await redisClient.del(transactionID + '--_');
+
+                bill.paymentstatus = EPaymentStatus.paid;
+                bill.changed('paymentstatus', true);
+                bill.paymentref = transactionID;
+                bill.changed('paymentref', true);
+                bill.paymenttime = new Date();
+                bill.changed('paymenttime', true);
+
+                const res = {} as IResModel;
+                res.command = EMACHINE_COMMAND.waitingt;
+                res.message = EMessage.waitingt;
+                res.status = 1;
+
+                // let yy = new Array<WebSocketServer.WebSocket>();
+                this.getBillProcess(async b => {
+                    bill.vendingsales.forEach((v, i) => {
+                        v.stock.image = '';
+                        b.push({ ownerUuid, position: v.position, bill: bill.toJSON(), transactionID: getNanoSecTime() });
+                    });
+
+                    await bill.save();
+                    console.log('callBackConfirmLAAB', b);
+                    console.log(`bill?.machineId`, bill?.machineId, `owneruuid`, ownerUuid);
+
+                    console.log(`s`);
+
+                    this.setBillProces(b);
+                    res.data = b.filter(v => v.ownerUuid == ownerUuid);
+                    this.sendWSToMachine(bill?.machineId + '', res);
+
+                    resolve(bill);
+                });
+
+
+
+            } catch (error) {
+                console.log(error);
+                reject(error);
+            }
+
+        })
+
+    }
+
 
     // }
     // setTask(bill: IVendingMachineBill, p: IVendingMachineSale, cbill: number, i: number) {
@@ -1341,7 +1397,21 @@ export class InventoryZDM8 implements IBaseClass {
         })
 
     }
+    confirmLAABOder(c: IMMoneyConfirm) {
+        return new Promise<any>((resolve, reject) => {
+            // c.wallet_ids
+            this.callBackConfirmLAAB(c.tranid_client, Number(c.amount)).then(r => {
+                resolve({ bill: r, transactionID: c.tranid_client });
+            }).catch(e => {
+                console.log('error confirmMMoney');
+                reject(e);
+            })
+        })
+
+    }
     sendWSToMachine(machineId: string, resx: IResModel) {
+        console.log('wsclient',this.wsClient.length);
+        
         this.wsClient.find(v => {
             const x = v['machineId'] as string;
             console.log('WS SENDING id', x, machineId, x == machineId, v.readyState);

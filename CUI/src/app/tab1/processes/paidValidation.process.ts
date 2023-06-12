@@ -12,6 +12,7 @@ export class PaidValidationProcess {
     private machineId: string;
     private cash: number;
     private description: string;
+    private paidLAAB: any = {} as any;
 
     constructor(
         apiService: ApiService,
@@ -27,26 +28,26 @@ export class PaidValidationProcess {
                 
 
 
-                console.log(`cash validation`, 1);
+                console.log(`paid validation`, 1);
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
-                console.log(`cash validation`, 2);
+                console.log(`paid validation`, 2);
 
                 this.InitParams(params);
 
-                console.log(`cash validation`, 3);
+                console.log(`paid validation`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`cash validation`, 4);
+                console.log(`paid validation`, 4);
                 
                 const PaidValidation = await this.PaidValidation();
                 if (PaidValidation != IENMessage.success) throw new Error(PaidValidation);
 
-                console.log(`cash validation`, 5);
+                console.log(`paid validation`, 5);
 
                 (await this.workload).dismiss();
                 resolve(this.Commit());
@@ -66,10 +67,11 @@ export class PaidValidationProcess {
         this.machineId = params.machineId;
         this.cash = params.cash;
         this.description = params.description;
+        this.paidLAAB = params.paidLAAB;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.cash && this.description)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.cash && this.description && this.paidLAAB)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -80,7 +82,8 @@ export class PaidValidationProcess {
                 const params = {
                     machineId: this.machineId,
                     cash: this.cash,
-                    description: this.description
+                    description: this.description,
+                    paidLAAB: this.paidLAAB
                 }
 
                 this.vendingAPIService.paidValidation(params).subscribe(r => {

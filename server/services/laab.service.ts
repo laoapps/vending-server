@@ -42,6 +42,11 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    laabConfirmBillFail = 'laab confirm bill fail',
+    laabConfirmBillSuccess = 'laab confirm bill success',
+    confirmBillFail = 'confirm bill fail',
+    notFoundTransactionID = 'not found transaction ID',
+    transactionTimeOut = 'transaction time out',
     validateValueFail = 'validate value fail',
     addCheckIdsFail = 'add check ids fail',
     invalidValue = 'invalid value',

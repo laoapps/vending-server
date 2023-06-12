@@ -47,6 +47,7 @@ services:
       - DATABASE_PASSWORD=2Grg7Dith14P
       - LAAB_URL=http://host.docker.internal:30000
       - EPIN_URL=http://host.docker.internal:30001
+      - TEST_CALLBACK:http://host.docker.internal:9006
       - VENDING=true
       - PORT=9006
     ports:

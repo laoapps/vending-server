@@ -780,7 +780,8 @@ export interface IMMoneyQRRes {
 export enum EClientCommand {
     list = 'list',
     buyMMoney = 'buyMMoney',
-    confirmMMoney = 'confirmMMoney'
+    confirmMMoney = 'confirmMMoney',
+    confirmLAAB = 'confirmLAAB'
 }
 export interface IVendingMachineSale extends IBase, IBC {
     machineId: string;

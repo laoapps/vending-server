@@ -50,17 +50,17 @@ CreateDatabase('').then(r => {
 
   if (isVending) {
     const wss1 = new WebSocket.Server({ noServer: true });
-    const wss2 = new WebSocket.Server({ noServer: true });
-    const wss3 = new WebSocket.Server({ noServer: true });
+    // const wss2 = new WebSocket.Server({ noServer: true });
+    // const wss3 = new WebSocket.Server({ noServer: true });
 
     // const ssZDM8 = new SocketServerZDM8();
     const invZDM8 = new InventoryZDM8(app, wss1);
 
     // const ssVMC = new SocketServerVMC();
-    const invVMC = new InventoryVMC(app, wss2);
+    // const invVMC = new InventoryVMC(app, wss2);
 
-    // const ssM102 = new SocketServerM102();
-    const invM102 = new InventoryM102(app, wss3);
+    // // const ssM102 = new SocketServerM102();
+    // const invM102 = new InventoryM102(app, wss3);
 
     // laab
     const laab = new LaabAPI(app);
@@ -68,7 +68,10 @@ CreateDatabase('').then(r => {
 
 
     const sss = Array<IBaseClass>();
-    sss.push(invM102, invVMC, invZDM8);
+    sss.push(
+      // invM102,
+      //  invVMC, 
+       invZDM8);
     process.env._image_path=path.join(__dirname, '..', 'public');
     process.env._log_path=path.join(__dirname, '..', 'logs');
     fs.existsSync(process.env._log_path)
@@ -126,7 +129,17 @@ CreateDatabase('').then(r => {
           // } else {
           //   return res.send(PrintError(d?.command, [], EMessage.error));
           // }
-        } else {
+        } 
+        else  if (d.command == EClientCommand.confirmLAAB) {
+          console.log('confirmMMoney');
+          invZDM8.confirmLAABOder(c).then(r => {
+            console.log(r.data);
+            res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
+          })
+         
+        } 
+        
+        else {
           return res.send(PrintError(d?.command, [], EMessage.error));
         }
 
@@ -146,16 +159,17 @@ CreateDatabase('').then(r => {
           wss1.handleUpgrade(request, socket, head, function done(ws) {
             wss1.emit('connection', ws, request);
           });
-        } else if (pathname === '/vmc') {
-          wss2.handleUpgrade(request, socket, head, function done(ws) {
-            wss2.emit('connection', ws, request);
-          });
-        }
-        else if (pathname === '/m102') {
-          wss3.handleUpgrade(request, socket, head, function done(ws) {
-            wss3.emit('connection', ws, request);
-          });
-        }
+        } 
+        // else if (pathname === '/vmc') {
+        //   wss2.handleUpgrade(request, socket, head, function done(ws) {
+        //     wss2.emit('connection', ws, request);
+        //   });
+        // }
+        // else if (pathname === '/m102') {
+        //   wss3.handleUpgrade(request, socket, head, function done(ws) {
+        //     wss3.emit('connection', ws, request);
+        //   });
+        // }
         else {
           socket.destroy();
         }
