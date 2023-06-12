@@ -48,7 +48,7 @@ export class ApiService {
   test = { test: false };
   static __T: any;
   static waiting_T: any
-  audio = new Audio('assets/khopchay.mp3');
+  audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
 
   constructor(public http: HttpClient,
     public wsapi: WsapiService,
@@ -107,7 +107,7 @@ export class ApiService {
         // this.clearWaitingT();
 
         // PLAY SOUNDS
-        this.audio = new Audio('assets/khopchay.mp3');
+        this.audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
         this.audio.play();
         this.toast.create({ message, duration: 2000 }).then(r => {
           r.present();

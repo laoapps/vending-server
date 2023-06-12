@@ -65,12 +65,14 @@ export class StocksalePage implements OnInit {
       if (r.data) {
         const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
         // console.log('r.data',r.data);
-        // console.log('s',s);
+         console.log('s',s);
         
         const x = this.saleStock.find(v => v.position == position);
         const qtt = x.stock.qtty;
          if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
         x.stock.qtty=qtt;
+        console.log('x',x);
+        
         if(this.saleStock[0].position==0)this.compensation=1;
         this.save();
       }
@@ -82,13 +84,15 @@ export class StocksalePage implements OnInit {
   ngOnInit() {
     this.stock=[];
     const maxPosition=Number(localStorage.getItem('maxPosition'))||60;
-    !(this.saleStock.length<maxPosition)||Array.from(Array(maxPosition), (_, i) => i+1).forEach(v=>this.saleStock.find(vx=>vx.position==v)||this.saleStock.push({
+    !(this.saleStock.length<maxPosition)||
+    Array.from(Array(maxPosition), (_, i) => i+1).forEach(v=>this.saleStock.find(vx=>vx.position==v)||
+    this.saleStock.push({
       machineId:this.apiService.machineId.machineId,
       position:v,
       isActive:true,
       id:-1,
       max:5,
-      stock:{image:'',name:'',price:-1,qtty:0} as IStock
+      stock:{image:'',name:'',price:-1,qtty:0,id:-1} as IStock
     } as IVendingMachineSale));
     console.log('saleStock',this.saleStock);
     
@@ -128,8 +132,11 @@ export class StocksalePage implements OnInit {
   }
 
   save(){
+    // TODO:
+    // remove all  base64images , using image from server 
+    // this.saleStock.forEach(v=>v.stock.image='');
     this.storage.set('saleStock', this.saleStock, 'stock').then(r => {
-      // console.log('SAVE saleStock', r);
+      console.log('SAVE saleStock', r);
     }).catch(e => {
       console.log('Error', e);
     })

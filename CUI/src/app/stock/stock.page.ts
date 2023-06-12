@@ -20,7 +20,7 @@ export class StockPage implements OnInit {
 
   select(id: number) {
     this.selectedItem = this.stock.find(v => v.id == id);
-    console.log(this.selectedItem);
+    console.log('select',this.selectedItem);
     this.apiService.dismissModal(this.selectedItem)
   }
   close() {
