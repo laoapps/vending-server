@@ -38,9 +38,16 @@ services:
       - REDIS_SERVER_HOST=vending-redis-service
       - REDIS_SERVER_PORT=6379
 
+      - REDIS_HOST=host.docker.internal
+      - REDIS_LOCAL_HOST=host.docker.internal
+      - REDIS_LOCAL_PORT=6379
+
       - DATABASE_USER=dbvenderserveradmin
       - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=2Grg7Dith14P
+      - LAAB_URL=http://host.docker.internal:30000
+      - EPIN_URL=http://host.docker.internal:30001
+      - TEST_CALLBACK:http://host.docker.internal:9006
       - VENDING=true
       - PORT=9006
     ports:
