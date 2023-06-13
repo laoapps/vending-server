@@ -17,7 +17,7 @@ import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 })
 export class ApiService {
 
-  cash: number;
+  cash: number = 0;
   coinListId: string;
   coinCode: string;
   coinName: string;

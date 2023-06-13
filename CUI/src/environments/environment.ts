@@ -6,8 +6,8 @@ export const environment = {
   production: false,
   // url : 'http://localhost.com:9009',
   // wsurl : 'ws://localhost.com:9009'
-  url : 'http://laoapps.com:9009/zdm8',
-  wsurl : 'ws://laoapps.com:9009/zdm8',
+  url : 'http://laoapps.com:9006/zdm8',
+  wsurl : 'ws://laoapps.com:9006/zdm8',
   testVending: 'http://localhost:30777/vending/api/',
   vending: 'http://localhost:9006',
   vending_server: 'http://laoapps.com:9006',

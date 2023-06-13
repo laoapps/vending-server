@@ -21,6 +21,9 @@ import { EpinCashOutPage } from './LAAB/epin-cash-out/epin-cash-out.page';
 import * as cryptojs from 'crypto-js';
 
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+import * as QRCode from 'qrcode';
+import { LaabCashinShowCodePage } from './LAAB/laab-cashin-show-code/laab-cashin-show-code.page';
+
 
 var host = window.location.protocol + "//" + window.location.host;
 @Component({
@@ -81,7 +84,6 @@ export class Tab1Page {
       this.cashValidationProcess = new CashValidationProcess(this.apiService, this.vendingAPIService);
       this.cashinValidationProcess = new CashinValidationProcess(this.apiService, this.vendingAPIService);
 
-      this.initVendingWalletCoinBalance().then(() => {});
       // alert('V1_'+this.mmLogo);      
 
       // ref.detach();
@@ -144,7 +146,7 @@ export class Tab1Page {
 
 
     this.apiService.loadVendingSale().subscribe(r => {
-      console.log(r);
+      console.log(`load vending sale`, r);
       if (r.status) {
         const saleServer = r.data as Array<IVendingMachineSale>;
         console.log('saleServer', saleServer);
@@ -164,6 +166,9 @@ export class Tab1Page {
           setTimeout(() => {
             this.showBills();
           }, 1000);
+
+          this.initVendingWalletCoinBalance().then(() => {});
+
           
         })
       } else {
@@ -864,6 +869,60 @@ export class Tab1Page {
       }
     });
   }
+  laabCashin(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        let params: any = {
+          machineId: machineId
+        }
+        let run: any = await this.cashValidationProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.acceptcash = run.data[0].acceptcash;
+        const cashList = await this.cashList();
+
+        params = {
+          machineId: machineId,
+          cash: cashList,
+          description: 'VENDING CASH IN'
+        }
+        console.log(`params`, params);
+
+        let qrModel = {
+          type: 'CQR',
+          mode: 'COIN',
+          destination: this.apiService.name,
+          amount: cashList,
+          expire: '',
+          options: {
+            coinname: this.apiService.coinName,
+            name: this.apiService.name,
+          }
+        }
+        console.log(`@@@@`, qrModel);
+        QRCode.toDataURL(JSON.stringify(qrModel)).then(async r => {
+          const props = {
+            qrImage: r
+          }
+          this.apiService.modal.create({ component: LaabCashinShowCodePage, componentProps: props }).then(r => {
+            r.present();
+            resolve(IENMessage.success);
+          });
+        });
+
+        
+        // run = await this.cashinValidationProcess.Init(params);
+        // if (run.message != IENMessage.success) throw new Error(run);
+        // this.apiService.cash = Number(this.apiService.cash) + Number(cashList);
+
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
   showBills(){
     this.apiService.loadDeliveryingBills().subscribe(r => {
       if (r.status) {
@@ -877,7 +936,6 @@ export class Tab1Page {
           r.present();
         })
       }
-    })
-
+    });
   }
 }

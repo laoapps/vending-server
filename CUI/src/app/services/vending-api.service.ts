@@ -9,7 +9,7 @@ import { VENDING_CashValidation, VENDING_CashinValidation, VENDING_CreateEPIN, V
 })
 export class VendingAPIService {
 
-  private url: string = environment.vending_server;
+  private url: string = environment.vending;
 
   constructor(
     private http: HttpClient

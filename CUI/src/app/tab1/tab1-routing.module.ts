@@ -22,6 +22,10 @@ const routes: Routes = [
   {
     path: 'smc-list',
     loadChildren: () => import('./LAAB/smc-list/smc-list.module').then( m => m.SmcListPageModule)
+  },
+  {
+    path: 'laab-cashin-show-code',
+    loadChildren: () => import('./LAAB/laab-cashin-show-code/laab-cashin-show-code.module').then( m => m.LaabCashinShowCodePageModule)
   }
 ];
 

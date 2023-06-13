@@ -17,6 +17,7 @@ export const getNow = () => moment().format(_default_format);
 // REDIS SERVER
 export const redisHost= process.env.REDIS_SERVER_HOST ? process.env.REDIS_SERVER_HOST : 'localhost';
 export const redisPort = process.env.REDIS_SERVER_PORT ? Number(process.env.REDIS_SERVER_PORT) : 6379;
+console.log(`redis host`, redisHost, `redis port`, redisPort);
 
 // REDIS LOCAL
 // export const redisHost= process.env.REDIS_LOCAL_HOST ? process.env.REDIS_LOCAL_HOST : 'localhost';
