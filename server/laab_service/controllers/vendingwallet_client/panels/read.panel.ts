@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { CashinValidationFunc } from "../funcs/cashinValidation.func";
 import { ShowVendingWalletCoinBalanceFunc } from "../funcs/showVendingWalletCoinBalance.func";
 import { PaidValidationFunc } from "../funcs/paidValidation.func";
+import { TransferValidationFunc } from "../funcs/transferValidation.func";
 import { CreateSMCFunc } from "../funcs/createSMC.func";
 import { LoadSMCFunc } from "../funcs/loadSMC.func";
 import { CreateEPINFunc } from "../funcs/createEPIN.func";
@@ -129,6 +130,25 @@ export class ReadPanel {
     public CreateEPIN(req: Request, res: Response) {
         try {
             const func = new CreateEPINFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public TransferValidation(req: Request, res: Response) {
+        try {
+            const func = new TransferValidationFunc();
             const data = req.body;
             func.Init(data).then(run => {
                 if (run.message != IENMessage.success) {

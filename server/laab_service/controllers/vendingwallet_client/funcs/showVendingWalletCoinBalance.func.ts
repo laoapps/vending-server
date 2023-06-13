@@ -135,6 +135,7 @@ export class ShowVendingWalletCoinBalanceFunc {
 
                 this.response = {
                     balance: run.data.info.balance,
+                    uuid: this.suuid,
                     name: this.name,
                     coinName: this.coinName,
                     message: IENMessage.success

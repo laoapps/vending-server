@@ -22,6 +22,7 @@ export class ApiService {
   coinCode: string;
   coinName: string;
   name: string;
+  laabuuid: string;
 
 
 

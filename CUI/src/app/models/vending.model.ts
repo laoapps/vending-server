@@ -28,3 +28,9 @@ export interface VENDING_CreateEPIN {
     machineId: string,
     detail: any,
 }
+export interface VENDING_TransferValidation {
+    machineId: string,
+    receiver: string,
+    cash: number,
+    description: string
+}

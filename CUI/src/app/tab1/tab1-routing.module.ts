@@ -26,6 +26,10 @@ const routes: Routes = [
   {
     path: 'laab-cashin-show-code',
     loadChildren: () => import('./LAAB/laab-cashin-show-code/laab-cashin-show-code.module').then( m => m.LaabCashinShowCodePageModule)
+  },
+  {
+    path: 'laab-cashout',
+    loadChildren: () => import('./LAAB/laab-cashout/laab-cashout.module').then( m => m.LaabCashoutPageModule)
   }
 ];
 

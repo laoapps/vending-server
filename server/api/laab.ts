@@ -106,6 +106,7 @@ export class LaabAPI {
         router.post('/laab/client/create_smart_contract', this.clientReadPanel.CreateSMC.bind(this.clientReadPanel));
         router.post('/laab/client/load_smart_contract', this.clientReadPanel.LoadSMC.bind(this.clientReadPanel));
         router.post('/laab/client/create_epin', this.clientReadPanel.CreateEPIN.bind(this.clientReadPanel));
+        router.post('/laab/client/transfer_validation', this.clientReadPanel.TransferValidation.bind(this.clientReadPanel));
 
 
 

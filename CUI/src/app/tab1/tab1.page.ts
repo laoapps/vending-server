@@ -23,6 +23,7 @@ import * as cryptojs from 'crypto-js';
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import * as QRCode from 'qrcode';
 import { LaabCashinShowCodePage } from './LAAB/laab-cashin-show-code/laab-cashin-show-code.page';
+import { LaabCashoutPage } from './LAAB/laab-cashout/laab-cashout.page';
 
 
 var host = window.location.protocol + "//" + window.location.host;
@@ -677,7 +678,7 @@ export class Tab1Page {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        const machineId: string = localStorage.getItem('machineId');
         const params = {
           machineId: machineId
         }
@@ -696,7 +697,7 @@ export class Tab1Page {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        const machineId: string = localStorage.getItem('machineId');
         let params: any = {
           machineId: machineId
         }
@@ -873,7 +874,7 @@ export class Tab1Page {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        const machineId: string = localStorage.getItem('machineId') || '12345678';
+        const machineId: string = localStorage.getItem('machineId');
         let params: any = {
           machineId: machineId
         }
@@ -892,7 +893,7 @@ export class Tab1Page {
         let qrModel = {
           type: 'CQR',
           mode: 'COIN',
-          destination: this.apiService.name,
+          destination: this.apiService.laabuuid,
           amount: cashList,
           expire: '',
           options: {
@@ -900,7 +901,7 @@ export class Tab1Page {
             name: this.apiService.name,
           }
         }
-        console.log(`@@@@`, qrModel);
+
         QRCode.toDataURL(JSON.stringify(qrModel)).then(async r => {
           const props = {
             qrImage: r
@@ -911,17 +912,30 @@ export class Tab1Page {
           });
         });
 
-        
-        // run = await this.cashinValidationProcess.Init(params);
-        // if (run.message != IENMessage.success) throw new Error(run);
-        // this.apiService.cash = Number(this.apiService.cash) + Number(cashList);
-
-
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
     });
+  }
+  laabCashout(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
+
+        const props = {
+        }
+        this.apiService.modal.create({ component: LaabCashoutPage, componentProps: props }).then(r => {
+          r.present();
+          resolve(IENMessage.success);
+        });
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    })
   }
   showBills(){
     this.apiService.loadDeliveryingBills().subscribe(r => {
