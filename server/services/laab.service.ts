@@ -156,23 +156,29 @@ class VerifyToken {
             try {
 
 
+                console.log(`verify token`, 1);
+
                 this.InitParams(params);
         
+                console.log(`verify token`, 2);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
     
+                console.log(`verify token`, 3);
 
                 this.SetTypeOfParams();
     
+                console.log(`verify token`, 4);
 
                 const ConfirmOwnToken = await this.ConfirmOwnToken();
                 if (ConfirmOwnToken != IENMessage.success) throw new Error(ConfirmOwnToken);
     
+                console.log(`verify token`, 5);
 
                 const VerifyFromUsermanager = await this.VerifyFromUsermanager();
                 if (VerifyFromUsermanager.message != IENMessage.success) throw new Error(IENMessage.invalidToken)
-    
+                console.log(`verify token`, 6);
 
                 resolve(VerifyFromUsermanager);
                 
@@ -210,6 +216,7 @@ class VerifyToken {
                 const result = JSON.parse(payload.toString());
                 const phonenumber: string = result.data.phoneNumber;
                 this.phonenumber = phonenumber;
+                console.log(`phonenumber`, phonenumber);
                 
 
                 // if ownerUuid is phonenumber we will decrypt token for find phone number and compare
@@ -238,7 +245,9 @@ class VerifyToken {
                         service: 'LAABWALLET'
                     }
                 }
+                console.log(`--->`, validateTokenData);
                 const run = await axios.post(USERMANAGER_URL, validateTokenData, SetHeaders);
+                console.log(`response`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
 
                 const response = {

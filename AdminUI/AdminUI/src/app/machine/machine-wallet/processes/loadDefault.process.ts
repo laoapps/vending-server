@@ -28,6 +28,7 @@ export class LoadDefaultProcess {
     private myVendingWalletCoinName: string;
     private myVendingWalletCoin: boolean = false;
     private myVendingWalletCoinBalance: number;
+    private token: string;
 
     run_subscribe: Subscription;
 
@@ -125,6 +126,8 @@ export class LoadDefaultProcess {
 
         this.ownerUuid = params.ownerUuid;
         this.machineId = params.machineId;
+        this.token = localStorage.getItem('lva_token');
+
     }
 
     private ValidateParams(): string {
@@ -144,7 +147,8 @@ export class LoadDefaultProcess {
 
                 const params = {
                     ownerUuid: this.ownerUuid,
-                    machineId: this.machineId
+                    machineId: this.machineId,
+                    token: this.token
                 }
                 this.vendingAPIService.findMerchant(params).subscribe(r => {
                     const response: any = r;
@@ -183,7 +187,8 @@ export class LoadDefaultProcess {
                     ownerUuid: this.ownerUuid,
                     machineId: this.machineId,
                     username: this.ownerUuid,
-                    platform: 'vending'
+                    platform: 'vending',
+                    token: this.token
                 }
                 this.vendingAPIService.createMerchant(params).subscribe(r => {
                     const response: any = r;
@@ -217,7 +222,8 @@ export class LoadDefaultProcess {
                     ownerUuid :this.ownerUuid,
                     machineId: this.machineId,
                     coinCode: this.coinCode,
-                    coinListId: this.coinListId
+                    coinListId: this.coinListId,
+                    token: this.token
                 }
                 this.vendingAPIService.findMerchantCoin(params).subscribe(r => {
                     const response: any = r;
@@ -249,7 +255,8 @@ export class LoadDefaultProcess {
                     const params = {
                         ownerUuid: this.ownerUuid,
                         machineId: this.machineId,
-                        name: this.myMerchantCoinName
+                        name: this.myMerchantCoinName,
+                        token: this.token
                     }
                     this.vendingAPIService.showMerchantCoinBalance(params).subscribe(r => {
                         const response: any = r;
@@ -263,7 +270,8 @@ export class LoadDefaultProcess {
                         ownerUuid: this.ownerUuid,
                         machineId: this.machineId,
                         coinListId: this.coinListId,
-                        coinCode: this.coinCode
+                        coinCode: this.coinCode,
+                        token: this.token
                     }
                     this.vendingAPIService.createMerchantCoin(params).subscribe(r => {
                         const response: any = r;
@@ -274,7 +282,8 @@ export class LoadDefaultProcess {
                         params = {
                             ownerUuid: this.ownerUuid,
                             machineId: this.machineId,
-                            name: this.myMerchantCoinName
+                            name: this.myMerchantCoinName,
+                            token: this.token
                         }
                         this.vendingAPIService.showMerchantCoinBalance(params).subscribe(r => {
                             const response: any = r;
@@ -316,6 +325,7 @@ export class LoadDefaultProcess {
                 const params = {
                     ownerUuid: this.ownerUuid,
                     machineId: this.machineId,
+                    token: this.token
                 }
                 this.vendingAPIService.findVendingWallet(params).subscribe(r => {
                     const response: any = r;
@@ -362,7 +372,8 @@ export class LoadDefaultProcess {
                     ownerUuid: this.ownerUuid,
                     machineId: this.machineId,
                     username: this.ownerUuid,
-                    platform: 'vending'
+                    platform: 'vending',
+                    token: this.token
                 }
                 this.vendingAPIService.createVendingWallet(params).subscribe(r => {
                     const response: any = r;
@@ -419,7 +430,8 @@ export class LoadDefaultProcess {
                     ownerUuid :this.ownerUuid,
                     machineId: this.machineId,
                     coinCode: this.coinCode,
-                    coinListId: this.coinListId
+                    coinListId: this.coinListId,
+                    token: this.token
                 }
                 this.vendingAPIService.findVendingWalletCoin(params).subscribe(r => {
                     const response: any = r;
@@ -465,7 +477,8 @@ export class LoadDefaultProcess {
                     const params = {
                         ownerUuid: this.ownerUuid,
                         machineId: this.machineId,
-                        name: this.myVendingWalletCoinName
+                        name: this.myVendingWalletCoinName,
+                        token: this.token
                     }
                     this.vendingAPIService.showVendingWalletCoinBalance(params).subscribe(r => {
                         const response: any = r;
@@ -493,7 +506,8 @@ export class LoadDefaultProcess {
                         ownerUuid: this.ownerUuid,
                         machineId: this.machineId,
                         coinListId: this.coinListId,
-                        coinCode: this.coinCode
+                        coinCode: this.coinCode,
+                        token: this.token
                     }
                     this.vendingAPIService.createVendingWalletCoin(params).subscribe(r => {
                         const response: any = r;
@@ -504,7 +518,8 @@ export class LoadDefaultProcess {
                         params = {
                             ownerUuid: this.ownerUuid,
                             machineId: this.machineId,
-                            name: this.myVendingWalletCoinName
+                            name: this.myVendingWalletCoinName,
+                            token: this.token
                         }
                         this.vendingAPIService.showVendingWalletCoinBalance(params).subscribe(r => {
                             const response: any = r;

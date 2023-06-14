@@ -18,6 +18,7 @@ export class LoadVendingLimiterReportsProcess {
 
     private rows: Array<any> = [];
     private count: number;
+    private token: string;
 
     constructor(
         apiService: ApiService,
@@ -69,6 +70,7 @@ export class LoadVendingLimiterReportsProcess {
         this.page = params.page;
         this.limit = params.limit;
         this.statement = params.statement;
+        this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
@@ -85,7 +87,8 @@ export class LoadVendingLimiterReportsProcess {
                     sender: this.sender,
                     page: this.page,
                     limit: this.limit,
-                    statement: this.statement
+                    statement: this.statement,
+                    token: this.token
                 }
 
                 this.vendingAPIServgice.showVendingLimiterReport(params).subscribe(r => {

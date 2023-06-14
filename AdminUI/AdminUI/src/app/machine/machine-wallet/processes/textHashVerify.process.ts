@@ -16,6 +16,7 @@ export class TextHashVerifyProcess {
     private info: string;
 
     private result: any = {} as any;
+    private token: string;
 
     constructor(
         apiService: ApiService,
@@ -66,6 +67,7 @@ export class TextHashVerifyProcess {
         this.sender = params.sender;
         this.hashM = params.hashM;
         this.info = params.info;
+        this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
@@ -81,7 +83,8 @@ export class TextHashVerifyProcess {
                     ownerUuid: this.ownerUuid,
                     sender: this.sender,
                     hashM: this.hashM,
-                    info: this.info
+                    info: this.info,
+                    token: this.token
                 }
 
                 this.vendingAPIServgice.textHashVerify(params).subscribe(r => {

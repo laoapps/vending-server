@@ -68,7 +68,7 @@ export class LaabAPI {
 
 
 
-        router.post('/laab/admin/login', APIAdminAccess, this.adminReadPanel.Login.bind(this.adminReadPanel));
+        router.post('/laab/admin/login', this.adminReadPanel.Login.bind(this.adminReadPanel));
         router.post('/laab/admin/text_hash_verify', APIAdminAccess, this.adminReadPanel.TextHashVerify.bind(this.adminReadPanel));
         router.post('/laab/admin/qr_hash_verify', APIAdminAccess, this.adminReadPanel.QRHashVerify.bind(this.adminReadPanel));
 

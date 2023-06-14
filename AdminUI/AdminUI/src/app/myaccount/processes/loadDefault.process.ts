@@ -12,6 +12,8 @@ export class LoadDefaultProcess {
     
     private ownerUuid: string;
 
+    private token: string;
+
     private myMerchant: boolean = false;
     private myMerchantUUID: string;
     private myMerchantCoin: boolean = false;
@@ -119,6 +121,7 @@ export class LoadDefaultProcess {
         this.myVendingLimiterCoin = false;
         
         this.ownerUuid = params.ownerUuid;
+        this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
@@ -137,7 +140,8 @@ export class LoadDefaultProcess {
                 }
 
                 const params = {
-                    ownerUuid: this.ownerUuid
+                    ownerUuid: this.ownerUuid,
+                    token: this.token
                 }
                 this.vendingAPIService.findMerchant(params).subscribe(r => {
                     const response: any = r;
@@ -174,7 +178,8 @@ export class LoadDefaultProcess {
                 let params: any = {
                     ownerUuid: this.ownerUuid,
                     username: this.ownerUuid,
-                    platform: 'vending'
+                    platform: 'vending',
+                    token: this.token
                 }
                 this.vendingAPIService.createMerchant(params).subscribe(r => {
                     const response: any = r;
@@ -206,7 +211,8 @@ export class LoadDefaultProcess {
                 }
 
                 const params = {
-                    ownerUuid :this.ownerUuid
+                    ownerUuid :this.ownerUuid,
+                    token: this.token
                 }
                 this.vendingAPIService.findMerchantCoin(params).subscribe(r => {
                     const response: any = r;
@@ -238,7 +244,8 @@ export class LoadDefaultProcess {
                 if (this.myMerchantCoin == true) {
                     const params = {
                         ownerUuid: this.ownerUuid,
-                        name: this.myMerchantCoinName
+                        name: this.myMerchantCoinName,
+                        token: this.token
                     }
                     this.vendingAPIService.showMerchantCoinBalance(params).subscribe(r => {
                         const response: any = r;
@@ -259,7 +266,8 @@ export class LoadDefaultProcess {
                         this.apiService.merchantCoinName = response.info.name;
                         params = {
                             ownerUuid: this.ownerUuid,
-                            name: this.myMerchantCoinName
+                            name: this.myMerchantCoinName,
+                            token: this.token
                         }
                         this.vendingAPIService.showMerchantCoinBalance(params).subscribe(r => {
                             const response: any = r;
@@ -289,7 +297,8 @@ export class LoadDefaultProcess {
                 }
 
                 const params = {
-                    ownerUuid: this.ownerUuid
+                    ownerUuid: this.ownerUuid,
+                    token: this.token
                 }
                 this.vendingAPIService.findVendingLimiter(params).subscribe(r => {
                     const response: any = r;
@@ -324,7 +333,8 @@ export class LoadDefaultProcess {
                 let params: any = {
                     ownerUuid: this.ownerUuid,
                     username: this.ownerUuid,
-                    platform: 'vending'
+                    platform: 'vending',
+                    token: this.token
                 }
                 this.vendingAPIService.createVendingLimiter(params).subscribe(r => {
                     const response: any = r;
@@ -352,7 +362,8 @@ export class LoadDefaultProcess {
                 }
 
                 const params = {
-                    ownerUuid :this.ownerUuid
+                    ownerUuid :this.ownerUuid,
+                    token: this.token
                 }
                 this.vendingAPIService.findVendingLimiterCoin(params).subscribe(r => {
                     const response: any = r;
@@ -384,7 +395,8 @@ export class LoadDefaultProcess {
                 if (this.myVendingLimiterCoin == true) {
                     const params = {
                         ownerUuid: this.ownerUuid,
-                        name: this.myVendingLimiterCoinName
+                        name: this.myVendingLimiterCoinName,
+                        token: this.token
                     }
                     this.vendingAPIService.showVendingLimiterCoinBalance(params).subscribe(r => {
                         const response: any = r;
@@ -396,7 +408,8 @@ export class LoadDefaultProcess {
                     }, error => resolve(error.message));
                 } else {
                     let params: any = {
-                        ownerUuid: this.ownerUuid
+                        ownerUuid: this.ownerUuid,
+                        token: this.token
                     }
                     this.vendingAPIService.createVendingLimiterCoin(params).subscribe(r => {
                         const response: any = r;
@@ -407,7 +420,8 @@ export class LoadDefaultProcess {
                         this.apiService.vendingLimiterCoinName = response.info.name;
                         params = {
                             ownerUuid: this.ownerUuid,
-                            name: this.myVendingLimiterCoinName
+                            name: this.myVendingLimiterCoinName,
+                            token: this.token
                         }
                         this.vendingAPIService.showVendingLimiterCoinBalance(params).subscribe(r => {
                             const response: any = r;

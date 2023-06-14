@@ -99,7 +99,8 @@ export class LoginProcess {
         const response = {
             data: [{
                 owneruuid: this.owneruuid,
-                name: this.name
+                name: this.name,
+                token: this.token
             }],
             message: IENMessage.success
         }

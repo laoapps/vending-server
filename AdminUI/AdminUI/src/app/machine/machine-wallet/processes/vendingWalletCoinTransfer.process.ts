@@ -21,6 +21,7 @@ export class VendingWalletCoinTransferProcess {
     private limitBlock: number;
 
     private myBill: any = {} as any;
+    private token: string;
 
     constructor(
         apiService: ApiService,
@@ -76,6 +77,7 @@ export class VendingWalletCoinTransferProcess {
         this.coinListId = params.coinListId;
         this.coinCode = params.coinCode;
         this.limitBlock = params.limitBlock;
+        this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
@@ -98,6 +100,7 @@ export class VendingWalletCoinTransferProcess {
                     amount: this.amount,
                     description: this.description,
                     limitBlock: this.limitBlock,
+                    token: this.token
                 }
                 console.log(`params`, params);
                 this.vendingAPIServgice.vendingWalletCoinTransfer(params).subscribe(r => {

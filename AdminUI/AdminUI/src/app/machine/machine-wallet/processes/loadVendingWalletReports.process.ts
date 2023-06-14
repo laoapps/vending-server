@@ -19,6 +19,7 @@ export class LoadVendingWalletReportsProcess {
 
     private rows: Array<any> = [];
     private count: number;
+    private token: string;
 
     constructor(
         apiService: ApiService,
@@ -71,6 +72,7 @@ export class LoadVendingWalletReportsProcess {
         this.page = params.page;
         this.limit = params.limit;
         this.statement = params.statement;
+        this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
@@ -88,7 +90,8 @@ export class LoadVendingWalletReportsProcess {
                     sender: this.sender,
                     page: this.page,
                     limit: this.limit,
-                    statement: this.statement
+                    statement: this.statement,
+                    token: this.token
                 }
 
                 this.vendingAPIServgice.showVendingWalletReport(params).subscribe(r => {

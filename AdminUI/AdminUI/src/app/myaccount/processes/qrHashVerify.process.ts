@@ -17,6 +17,7 @@ export class QRHashVerifyProcess {
     private QRMode: string;
 
     private result: any = {} as any;
+    private token: string;
 
     constructor(
         apiService: ApiService,
@@ -68,6 +69,7 @@ export class QRHashVerifyProcess {
         this.hashM = params.hashM;
         this.info = params.info;
         this.QRMode = params.QRMode;
+        this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
@@ -84,7 +86,8 @@ export class QRHashVerifyProcess {
                     sender: this.sender,
                     hashM: this.hashM,
                     info: this.info,
-                    QRMode: this.QRMode
+                    QRMode: this.QRMode,
+                    token: this.token
                 }
 
                 this.vendingAPIServgice.qrHashVerify(params).subscribe(r => {
