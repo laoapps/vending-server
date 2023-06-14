@@ -1,6 +1,7 @@
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
+import * as cryptojs from 'crypto-js';
 
 export class LoadSMCProcess {
 
@@ -9,7 +10,6 @@ export class LoadSMCProcess {
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private machineId: string;
     private page: number;
     private limit: number;
 
@@ -66,13 +66,12 @@ export class LoadSMCProcess {
 
 
     private InitParams(params: any): void {
-        this.machineId = params.machineId;
         this.page = params.page;
         this.limit = params.limit;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.page && this.limit)) return IENMessage.parametersEmpty;
+        if (!(this.page && this.limit)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -81,9 +80,9 @@ export class LoadSMCProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId,
                     page: this.page,
-                    limit: this.limit
+                    limit: this.limit,
+                    token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
                 
                 this.vendingAPIService.loadSMC(params).subscribe(r => {

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import Queue from "bull";
 import events from "events";
 import { ReadPanel as AdminReadPanel } from "../laab_service/controllers/vendingwallet_admin/panels/read.panel";
@@ -6,6 +6,8 @@ import { WritePanel as AdminWritePanel } from "../laab_service/controllers/vendi
 import { ReadPanel as ClientReadPanel } from "../laab_service/controllers/vendingwallet_client/panels/read.panel";
 import { WritePanel as ClientWritePanel } from "../laab_service/controllers/vendingwallet_client/panels/write.panel";
 import { redisHost, redisPort } from '../services/service';
+import { SocketServerZDM8 } from './socketServerZDM8';
+import { IENMessage, IStatus, message } from '../services/laab.service';
 
 events.defaultMaxListeners = 100;
 events.EventEmitter.prototype.setMaxListeners(100);
@@ -22,6 +24,9 @@ export let QPaidValidation = new Queue('QPaidValidation', { defaultJobOptions: {
 
 
 export class LaabAPI {
+
+    private ports = 31223;
+    private ssocket: SocketServerZDM8 = {} as SocketServerZDM8;
 
     private adminQueues: any = {
         QCreateMerchant:QCreateMerchant,
@@ -41,6 +46,7 @@ export class LaabAPI {
     private clientWritePanel: ClientWritePanel;
 
     constructor(router: Router) {
+        this.ssocket = new SocketServerZDM8(this.ports);
 
         this.adminReadPanel = new AdminReadPanel();
         this.adminWritePanel = new AdminWritePanel(this.adminQueues);
@@ -99,14 +105,14 @@ export class LaabAPI {
 
 
         // vending client
-        router.post('/laab/client/paid_validation', this.clientWritePanel.PaidValidation.bind(this.clientWritePanel));
-        router.post('/laab/client/show_vending_wallet_coin_balance', this.clientReadPanel.ShowVendinWalletCoinBalance.bind(this.clientReadPanel));
-        router.post('/laab/client/cash_validation', this.clientReadPanel.CashValidation.bind(this.clientReadPanel));
-        router.post('/laab/client/cash_in_validation', this.clientReadPanel.CashinValidation.bind(this.clientReadPanel));
-        router.post('/laab/client/create_smart_contract', this.clientReadPanel.CreateSMC.bind(this.clientReadPanel));
-        router.post('/laab/client/load_smart_contract', this.clientReadPanel.LoadSMC.bind(this.clientReadPanel));
-        router.post('/laab/client/create_epin', this.clientReadPanel.CreateEPIN.bind(this.clientReadPanel));
-        router.post('/laab/client/transfer_validation', this.clientReadPanel.TransferValidation.bind(this.clientReadPanel));
+        router.post('/laab/client/paid_validation', this.APIMachineAccess, this.clientWritePanel.PaidValidation.bind(this.clientWritePanel));
+        router.post('/laab/client/show_vending_wallet_coin_balance', this.APIMachineAccess, this.clientReadPanel.ShowVendinWalletCoinBalance.bind(this.clientReadPanel));
+        router.post('/laab/client/cash_validation', this.APIMachineAccess, this.clientReadPanel.CashValidation.bind(this.clientReadPanel));
+        router.post('/laab/client/cash_in_validation', this.APIMachineAccess, this.clientReadPanel.CashinValidation.bind(this.clientReadPanel));
+        router.post('/laab/client/create_smart_contract', this.APIMachineAccess, this.clientReadPanel.CreateSMC.bind(this.clientReadPanel));
+        router.post('/laab/client/load_smart_contract', this.APIMachineAccess, this.clientReadPanel.LoadSMC.bind(this.clientReadPanel));
+        router.post('/laab/client/create_epin', this.APIMachineAccess, this.clientReadPanel.CreateEPIN.bind(this.clientReadPanel));
+        router.post('/laab/client/transfer_validation', this.APIMachineAccess, this.clientReadPanel.TransferValidation.bind(this.clientReadPanel));
 
 
 
@@ -161,6 +167,23 @@ export class LaabAPI {
                 done(null, r);
             }).catch(error => done(error, null));
         });
+    }
+
+    private APIMachineAccess = (req: Request, res: Response, next: NextFunction) => {
+        try {
+            
+            const data = req.body;
+            if (!(data.token)) throw new Error(IENMessage.needToken);
+
+            const run = this.ssocket.findMachineIdToken(data.token);
+            if (run == undefined || run != undefined && Object.entries(run).length == 0) throw new Error(IENMessage.invalidToken);
+            req.body.machineId = run[0].machineId;
+
+            next();
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
     }
     
 }

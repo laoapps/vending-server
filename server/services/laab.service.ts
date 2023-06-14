@@ -2,6 +2,7 @@ import { Response } from "express";
 import * as jwt from 'jsonwebtoken';
 import {createClient}from 'redis';
 import { compareSync, hashSync } from 'bcryptjs';
+import axios from "axios";
 
 const short = require('short-uuid');
 const translate = short();
@@ -37,11 +38,20 @@ export const EPIN_Generate: string = EPINBase + 'topup/generate';
 // export const redisHost=process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost';
 // export const redisPort = 6379;
 
+const usermanagerkey: string = '04573b1b-22f5-47f8-979c-fe4bc137a857';
+export const USERMANAGER_URL = process.env.USERMANAGER_HOST ? process.env.USERMANAGER_HOST : `http://localhost:4500`;
+export const SetHeaders = { headers: { 'Content-Type': 'application/json', 'BackendKey': usermanagerkey } };
+
+
 export const message = (data: any, message: string, status: number, res: Response) => {
     res.send({ info: data, message: message, status: status });
 }
 
 export enum IENMessage {
+    thisIsNotYourToken = 'this is not your token',
+    InvalidAuthorizeFormat = 'invalid authorize format',
+    invalidToken = 'invalid token',
+    needToken = 'need token!',
     laabConfirmBillFail = 'laab confirm bill fail',
     laabConfirmBillSuccess = 'laab confirm bill success',
     confirmBillFail = 'confirm bill fail',
@@ -118,3 +128,119 @@ export function hexToDecimal(value: string) {
 }
 
 
+export class UserLaabVerifyToken {
+
+    private token: string;
+    private sender: string;
+    private phonenumber: string;
+    private isAdmin: boolean = false;
+    
+    constructor() {}
+
+    public Init(params: any): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+
+                this.InitParams(params);
+        
+
+                const ValidateParams = this.ValidateParams();
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+    
+
+                this.SetTypeOfParams();
+    
+
+                const ConfirmOwnToken = await this.ConfirmOwnToken();
+                if (ConfirmOwnToken != IENMessage.success) throw new Error(ConfirmOwnToken);
+    
+
+                const VerifyFromUsermanager = await this.VerifyFromUsermanager();
+                if (VerifyFromUsermanager.message != IENMessage.success) throw new Error(IENMessage.invalidToken)
+    
+
+                resolve(VerifyFromUsermanager);
+                
+            } catch (error) {
+                
+                resolve(error.message);
+
+            }
+        });
+    }
+
+    private InitParams(params: any): void {
+        console.log(params);
+        
+        this.token = params.token;
+        this.sender = params.sender;
+    }
+
+    private ValidateParams(): string {
+        if (!(this.sender)) return IENMessage.InvalidAuthorizeFormat;
+        if (!(this.token)) return IENMessage.needToken;
+        return IENMessage.success;
+    }   
+    
+    private SetTypeOfParams(): void {
+        this.token = String(this.token);
+    }
+
+    private ConfirmOwnToken(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                const base64Payload = this.token.split('.')[1];
+                const payload = Buffer.from(base64Payload, 'base64');
+                const result = JSON.parse(payload.toString());
+                const phonenumber: string = result.data.phoneNumber;
+                this.phonenumber = phonenumber;
+                
+
+                // if sender is phonenumber we will decrypt token for find phone number and compare
+                if (this.sender != undefined && this.sender != phonenumber) return resolve(IENMessage.thisIsNotYourToken);
+
+                resolve(IENMessage.success);
+                
+    
+            } catch (error) {
+                
+                resolve(error.message);
+    
+            }
+        })
+    }
+
+    private VerifyFromUsermanager(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                let validateTokenData: any = {
+                    object: "authorize",
+                    method: "validateToken",
+                    data: {
+                        token: this.token,
+                        service: 'LAABWALLET'
+                    }
+                }
+                const run = await axios.post(USERMANAGER_URL, validateTokenData, SetHeaders);
+                if (run.data.status != 1) return resolve(run.data.message);
+
+                const response = {
+                    phonenumber: this.phonenumber,
+                    uuid: run.data.data[0],
+                    isAdmin: this.isAdmin,
+                    message: IENMessage.success
+                }
+                resolve(response);
+
+            } catch (error) {
+                
+                resolve(error.message);
+
+            }
+        });
+    }
+    
+}

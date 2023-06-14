@@ -23,7 +23,8 @@ services:
       - POSTGRES_USER=dbvenderserveradmin
       - POSTGRES_PASSWORD=2Grg7Dith14P
     ports:
-      -  57432:5432
+      # -  57432:5432
+      -  37432:5432
     networks:
       - venderserverservice
   vender-server-service:
@@ -48,6 +49,7 @@ services:
       - LAAB_URL=http://host.docker.internal:30000
       - EPIN_URL=http://host.docker.internal:30001
       - TEST_CALLBACK:http://host.docker.internal:9006
+      - USERMANAGER_HOST=http://host.docker.internal:4500
       - VENDING=true
       - PORT=9006
     ports:

@@ -1,6 +1,7 @@
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
+import * as cryptojs from 'crypto-js';
 
 export class PaidValidationProcess {
 
@@ -9,7 +10,6 @@ export class PaidValidationProcess {
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private machineId: string;
     private cash: number;
     private description: string;
     private paidLAAB: any = {} as any;
@@ -64,14 +64,13 @@ export class PaidValidationProcess {
 
 
     private InitParams(params: any): void {
-        this.machineId = params.machineId;
         this.cash = params.cash;
         this.description = params.description;
         this.paidLAAB = params.paidLAAB;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.cash && this.description && this.paidLAAB)) return IENMessage.parametersEmpty;
+        if (!(this.cash && this.description && this.paidLAAB)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -80,10 +79,10 @@ export class PaidValidationProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId,
                     cash: this.cash,
                     description: this.description,
-                    paidLAAB: this.paidLAAB
+                    paidLAAB: this.paidLAAB,
+                    token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
 
                 this.vendingAPIService.paidValidation(params).subscribe(r => {

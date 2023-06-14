@@ -1,6 +1,7 @@
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
+import * as cryptojs from 'crypto-js';
 
 export class CreateSMCProcess {
 
@@ -9,7 +10,6 @@ export class CreateSMCProcess {
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private machineId: string;
     private cash: number;
     private description: string;
 
@@ -66,13 +66,12 @@ export class CreateSMCProcess {
 
 
     private InitParams(params: any): void {
-        this.machineId = params.machineId;
         this.cash = params.cash;
         this.description = 'VENDING CASH OUT TO SMART CONTRACT';
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.cash)) return IENMessage.parametersEmpty;
+        if (!(this.cash)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -81,9 +80,9 @@ export class CreateSMCProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId,
                     cash: this.cash,
-                    description: this.description
+                    description: this.description,
+                    token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
                 
                 this.vendingAPIService.createSMC(params).subscribe(r => {

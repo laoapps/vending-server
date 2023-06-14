@@ -1,6 +1,7 @@
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
+import * as cryptojs from 'crypto-js';
 
 export class TransferValidationProcess {
 
@@ -9,7 +10,6 @@ export class TransferValidationProcess {
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private machineId: string;
     private receiver: string;
     private cash: number;
     private description: string;
@@ -66,14 +66,13 @@ export class TransferValidationProcess {
 
 
     private InitParams(params: any): void {
-        this.machineId = params.machineId;
         this.receiver = params.receiver;
         this.cash = params.cash;
         this.description = params.description;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
+        if (!(this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -82,10 +81,10 @@ export class TransferValidationProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId,
                     receiver: `+85620` + this.receiver,
                     cash: this.cash,
                     description: this.description,
+                    token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
 
                 this.vendingAPIService.transferValidation(params).subscribe(r => {

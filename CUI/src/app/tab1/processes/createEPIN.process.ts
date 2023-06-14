@@ -1,6 +1,7 @@
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
+import * as cryptojs from 'crypto-js';
 
 export class CreateEPINProcess {
 
@@ -9,7 +10,6 @@ export class CreateEPINProcess {
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private machineId: string;
     private detail: any = {} as any;
 
 
@@ -63,12 +63,11 @@ export class CreateEPINProcess {
 
 
     private InitParams(params: any): void {
-        this.machineId = params.machineId;
         this.detail = params.detail;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.detail)) return IENMessage.parametersEmpty;
+        if (!(this.detail)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -77,8 +76,8 @@ export class CreateEPINProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId,
-                    detail: this.detail
+                    detail: this.detail,
+                    token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
                 
                 this.vendingAPIService.createEPIN(params).subscribe(r => {

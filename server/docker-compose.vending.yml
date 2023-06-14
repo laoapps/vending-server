@@ -48,6 +48,7 @@ services:
       - LAAB_URL=http://host.docker.internal:30000
       - EPIN_URL=http://host.docker.internal:30001
       - TEST_CALLBACK:http://host.docker.internal:9006
+      - USERMANAGER_HOST=http://host.docker.internal:4500
       - VENDING=true
       - PORT=9006
     ports:
