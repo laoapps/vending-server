@@ -7,7 +7,7 @@ import { ReadPanel as ClientReadPanel } from "../laab_service/controllers/vendin
 import { WritePanel as ClientWritePanel } from "../laab_service/controllers/vendingwallet_client/panels/write.panel";
 import { redisHost, redisPort } from '../services/service';
 import { SocketServerZDM8 } from './socketServerZDM8';
-import { IENMessage, IStatus, message } from '../services/laab.service';
+import { APIAdminAccess, IENMessage, IStatus, message } from '../services/laab.service';
 
 events.defaultMaxListeners = 100;
 events.EventEmitter.prototype.setMaxListeners(100);
@@ -56,49 +56,49 @@ export class LaabAPI {
 
 
         // merchant
-        router.post('/laab/admin/create_merchant', this.adminWritePanel.CreateMerchant.bind(this.adminWritePanel));
-        router.post('/laab/admin/create_merchant_coin', this.adminWritePanel.CreateMerchantCoin.bind(this.adminWritePanel));
-        router.post('/laab/admin/find_merchant', this.adminReadPanel.FindMerchant.bind(this.adminReadPanel));
-        router.post('/laab/admin/find_merchant_coin', this.adminReadPanel.FindMerchantCoin.bind(this.adminReadPanel));
-        router.post('/laab/admin/show_merchant_coin_balance', this.adminReadPanel.ShowMerchantCoinBalance.bind(this.adminReadPanel));
-        router.post('/laab/admin/show_merchant_report', this.adminReadPanel.ShowMerchantReport.bind(this.adminReadPanel));
-        router.post('/laab/admin/merchant_coin_transfer', this.adminReadPanel.MerchantCoinTransfer.bind(this.adminReadPanel));
+        router.post('/laab/admin/create_merchant', APIAdminAccess, this.adminWritePanel.CreateMerchant.bind(this.adminWritePanel));
+        router.post('/laab/admin/create_merchant_coin', APIAdminAccess, this.adminWritePanel.CreateMerchantCoin.bind(this.adminWritePanel));
+        router.post('/laab/admin/find_merchant', APIAdminAccess, this.adminReadPanel.FindMerchant.bind(this.adminReadPanel));
+        router.post('/laab/admin/find_merchant_coin', APIAdminAccess, this.adminReadPanel.FindMerchantCoin.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_merchant_coin_balance', APIAdminAccess, this.adminReadPanel.ShowMerchantCoinBalance.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_merchant_report', APIAdminAccess, this.adminReadPanel.ShowMerchantReport.bind(this.adminReadPanel));
+        router.post('/laab/admin/merchant_coin_transfer', APIAdminAccess, this.adminReadPanel.MerchantCoinTransfer.bind(this.adminReadPanel));
 
 
 
 
 
-        router.post('/laab/admin/login', this.adminReadPanel.Login.bind(this.adminReadPanel));
-        router.post('/laab/admin/text_hash_verify', this.adminReadPanel.TextHashVerify.bind(this.adminReadPanel));
-        router.post('/laab/admin/qr_hash_verify', this.adminReadPanel.QRHashVerify.bind(this.adminReadPanel));
+        router.post('/laab/admin/login', APIAdminAccess, this.adminReadPanel.Login.bind(this.adminReadPanel));
+        router.post('/laab/admin/text_hash_verify', APIAdminAccess, this.adminReadPanel.TextHashVerify.bind(this.adminReadPanel));
+        router.post('/laab/admin/qr_hash_verify', APIAdminAccess, this.adminReadPanel.QRHashVerify.bind(this.adminReadPanel));
 
 
-
-
-
-
-        // vending limiter
-        router.post('/laab/admin/create_vending_limiter', this.adminWritePanel.CreateVendingLimiter.bind(this.adminWritePanel));
-        router.post('/laab/admin/create_vending_limiter_coin', this.adminWritePanel.CreateVendingLimiterCoin.bind(this.adminWritePanel));
-        router.post('/laab/admin/find_vending_limiter', this.adminReadPanel.FindVendingLimiter.bind(this.adminReadPanel));
-        router.post('/laab/admin/find_vending_limiter_coin', this.adminReadPanel.FindVendingLimiterCoin.bind(this.adminReadPanel));
-        router.post('/laab/admin/show_vending_limiter_coin_balance', this.adminReadPanel.ShowVendingLimiterCoinBalance.bind(this.adminReadPanel));
-        router.post('/laab/admin/vending_limiter_coin_transfer', this.adminReadPanel.VendingLimiterCoinTransfer.bind(this.adminReadPanel));
-        router.post('/laab/admin/show_vending_limiter_report', this.adminReadPanel.ShowVendingLimiterReport.bind(this.adminReadPanel));
-        router.post('/laab/admin/vending_limiter_coin_transfer', this.adminReadPanel.VendingLimiterCoinTransfer.bind(this.adminReadPanel));
 
 
 
 
         // vending limiter
-        router.post('/laab/admin/create_vending_wallet', this.adminWritePanel.CreateVendingWallet.bind(this.adminWritePanel));
-        router.post('/laab/admin/create_vending_wallet_coin', this.adminWritePanel.CreateVendingWalletCoin.bind(this.adminWritePanel));
-        router.post('/laab/admin/find_vending_wallet', this.adminReadPanel.FindVendingWallet.bind(this.adminReadPanel));
-        router.post('/laab/admin/find_vending_wallet_coin', this.adminReadPanel.FindVendingWalletCoin.bind(this.adminReadPanel));
-        router.post('/laab/admin/show_vending_wallet_coin_balance', this.adminReadPanel.ShowVendingWalletCoinBalance.bind(this.adminReadPanel));
-        router.post('/laab/admin/vending_wallet_coin_transfer', this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
-        router.post('/laab/admin/show_vending_wallet_report', this.adminReadPanel.ShowVendingWalletReport.bind(this.adminReadPanel));
-        router.post('/laab/admin/vending_wallet_coin_transfer', this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
+        router.post('/laab/admin/create_vending_limiter', APIAdminAccess, this.adminWritePanel.CreateVendingLimiter.bind(this.adminWritePanel));
+        router.post('/laab/admin/create_vending_limiter_coin', APIAdminAccess, this.adminWritePanel.CreateVendingLimiterCoin.bind(this.adminWritePanel));
+        router.post('/laab/admin/find_vending_limiter', APIAdminAccess, this.adminReadPanel.FindVendingLimiter.bind(this.adminReadPanel));
+        router.post('/laab/admin/find_vending_limiter_coin', APIAdminAccess, this.adminReadPanel.FindVendingLimiterCoin.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_vending_limiter_coin_balance', APIAdminAccess, this.adminReadPanel.ShowVendingLimiterCoinBalance.bind(this.adminReadPanel));
+        router.post('/laab/admin/vending_limiter_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingLimiterCoinTransfer.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_vending_limiter_report', APIAdminAccess, this.adminReadPanel.ShowVendingLimiterReport.bind(this.adminReadPanel));
+        router.post('/laab/admin/vending_limiter_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingLimiterCoinTransfer.bind(this.adminReadPanel));
+
+
+
+
+        // vending limiter
+        router.post('/laab/admin/create_vending_wallet', APIAdminAccess, this.adminWritePanel.CreateVendingWallet.bind(this.adminWritePanel));
+        router.post('/laab/admin/create_vending_wallet_coin', APIAdminAccess, this.adminWritePanel.CreateVendingWalletCoin.bind(this.adminWritePanel));
+        router.post('/laab/admin/find_vending_wallet', APIAdminAccess, this.adminReadPanel.FindVendingWallet.bind(this.adminReadPanel));
+        router.post('/laab/admin/find_vending_wallet_coin', APIAdminAccess, this.adminReadPanel.FindVendingWalletCoin.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_vending_wallet_coin_balance', APIAdminAccess, this.adminReadPanel.ShowVendingWalletCoinBalance.bind(this.adminReadPanel));
+        router.post('/laab/admin/vending_wallet_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_vending_wallet_report', APIAdminAccess, this.adminReadPanel.ShowVendingWalletReport.bind(this.adminReadPanel));
+        router.post('/laab/admin/vending_wallet_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
 
 
 

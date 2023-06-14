@@ -83,7 +83,24 @@ export class SalePage implements OnInit {
       })
     })
   }
- 
+  deletesale(s:IVendingMachineSale) {
+    this.apiService.disableSale(s.isActive,s.id).subscribe(rx => {
+      console.log(rx);
+      if (rx.status) {
+        // this._l.find((v, i) => {
+        //   if (v.id == rx.data.id) {
+        //     this._l.splice(i, 1, ...[rx.data]);
+        //     return true;
+        //   }
+        //   return false;
+        // })
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
+        ry.present();
+      })
+
+    })
+  }
   save(s:IVendingMachineSale) {
     this.apiService.disableSale(s.isActive,s.id).subscribe(rx => {
       console.log(rx);
@@ -109,7 +126,7 @@ export class SalePage implements OnInit {
     this.apiService.showModal(ProductlistPage).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
-        console.log(r.data.data);
+        console.log(r.data);
 
         if (r.data) {
           this._l.find((v, i) => {

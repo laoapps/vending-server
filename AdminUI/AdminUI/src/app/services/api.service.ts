@@ -293,6 +293,9 @@ export class ApiService {
   disableSale(isActive:boolean,id:number) {
     return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive}&id=${id}`, { headers: this.headerBase() });
   }
+  deleteSale(id:number) {
+    return this.http.post<IResModel>(this.url + `/deleteSale?id=${id}`, { headers: this.headerBase() });
+  }
   addProduct(o:IStock) {
     console.log(o);
     

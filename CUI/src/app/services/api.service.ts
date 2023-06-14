@@ -229,6 +229,7 @@ export class ApiService {
       if (!this.stock.find(y => y.id == v.id))
         this.stock.push(JSON.parse(JSON.stringify(v)));
     });
+    console.log(`new stock`, this.stock);
     this.storage.set('stockitems_', this.stock, 'item')
   }
 

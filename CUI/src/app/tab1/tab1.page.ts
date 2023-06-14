@@ -147,7 +147,7 @@ export class Tab1Page {
 
 
     this.apiService.loadVendingSale().subscribe(r => {
-      console.log(`load vending sale`, r);
+      console.log(`load vending sale`, r.data);
       if (r.status) {
         const saleServer = r.data as Array<IVendingMachineSale>;
         console.log('saleServer', saleServer);
@@ -156,7 +156,9 @@ export class Tab1Page {
         
         // window.location.reload();
         this.storage.get('saleStock', 'stock').then(s => {
+          console.log(`storage get`, s);
           const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
+          console.log(`saleitems`, saleitems);
           this.saleList.sort((a, b) => {
             if (a.position < b.position) return -1;
           });
@@ -170,8 +172,9 @@ export class Tab1Page {
 
           this.initVendingWalletCoinBalance().then(() => {});
 
-          
+          console.log(`sale list der`, this.saleList);
         })
+
       } else {
         alert(r.message)
       }
@@ -678,9 +681,9 @@ export class Tab1Page {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        const machineId: string = localStorage.getItem('machineId');
+        // const machineId: string = localStorage.getItem('machineId');
         const params = {
-          machineId: machineId
+          
         }
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
@@ -697,9 +700,9 @@ export class Tab1Page {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        const machineId: string = localStorage.getItem('machineId');
+        // const machineId: string = localStorage.getItem('machineId');
         let params: any = {
-          machineId: machineId
+          
         }
         let run: any = await this.cashValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
@@ -707,7 +710,7 @@ export class Tab1Page {
         const cashList = await this.cashList();
 
         params = {
-          machineId: machineId,
+
           cash: cashList,
           description: 'VENDING CASH IN'
         }
@@ -874,9 +877,8 @@ export class Tab1Page {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        const machineId: string = localStorage.getItem('machineId');
+        // const machineId: string = localStorage.getItem('machineId');
         let params: any = {
-          machineId: machineId
         }
         let run: any = await this.cashValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
@@ -884,7 +886,6 @@ export class Tab1Page {
         const cashList = await this.cashList();
 
         params = {
-          machineId: machineId,
           cash: cashList,
           description: 'VENDING CASH IN'
         }

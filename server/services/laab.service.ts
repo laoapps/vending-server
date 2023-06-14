@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import * as jwt from 'jsonwebtoken';
 import {createClient}from 'redis';
 import { compareSync, hashSync } from 'bcryptjs';
@@ -127,13 +127,27 @@ export function hexToDecimal(value: string) {
     return parseInt(value, 16);
 }
 
+export function APIAdminAccess(req: Request, res: Response, next: NextFunction) {
+    try {
+        
+        const func = new VerifyToken();
+        const data = req.body;
+        func.Init(data).then(run => {
+            if (run.message != IENMessage.success) throw new Error(run);
+            next();
+        }).catch(error => message([], error.message, IStatus.unsuccess, res));
 
-export class UserLaabVerifyToken {
+    } catch (error) {
+        message([], error.message, IStatus.unsuccess, res);
+    }
+}
+
+
+class VerifyToken {
 
     private token: string;
-    private sender: string;
+    private ownerUuid: string;
     private phonenumber: string;
-    private isAdmin: boolean = false;
     
     constructor() {}
 
@@ -174,11 +188,11 @@ export class UserLaabVerifyToken {
         console.log(params);
         
         this.token = params.token;
-        this.sender = params.sender;
+        this.ownerUuid = params.ownerUuid;
     }
 
     private ValidateParams(): string {
-        if (!(this.sender)) return IENMessage.InvalidAuthorizeFormat;
+        if (!(this.ownerUuid)) return IENMessage.InvalidAuthorizeFormat;
         if (!(this.token)) return IENMessage.needToken;
         return IENMessage.success;
     }   
@@ -198,8 +212,8 @@ export class UserLaabVerifyToken {
                 this.phonenumber = phonenumber;
                 
 
-                // if sender is phonenumber we will decrypt token for find phone number and compare
-                if (this.sender != undefined && this.sender != phonenumber) return resolve(IENMessage.thisIsNotYourToken);
+                // if ownerUuid is phonenumber we will decrypt token for find phone number and compare
+                if (this.ownerUuid != undefined && this.ownerUuid != phonenumber) return resolve(IENMessage.thisIsNotYourToken);
 
                 resolve(IENMessage.success);
                 
@@ -230,7 +244,6 @@ export class UserLaabVerifyToken {
                 const response = {
                     phonenumber: this.phonenumber,
                     uuid: run.data.data[0],
-                    isAdmin: this.isAdmin,
                     message: IENMessage.success
                 }
                 resolve(response);
