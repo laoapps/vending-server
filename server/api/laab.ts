@@ -45,9 +45,8 @@ export class LaabAPI {
     private clientReadPanel: ClientReadPanel;
     private clientWritePanel: ClientWritePanel;
 
-    constructor(router: Router) {
-        this.ssocket = new SocketServerZDM8(this.ports);
-
+    constructor(router: Router,ssocket:SocketServerZDM8) {
+        this.ssocket = ssocket;
         this.adminReadPanel = new AdminReadPanel();
         this.adminWritePanel = new AdminWritePanel(this.adminQueues);
 

@@ -63,7 +63,7 @@ CreateDatabase('').then(r => {
     // const invM102 = new InventoryM102(app, wss3);
 
     // laab
-    const laab = new LaabAPI(app);
+    const laab = new LaabAPI(app,invZDM8.ssocket);
     
 
 
