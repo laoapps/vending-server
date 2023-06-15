@@ -508,7 +508,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
-            router.post(this.path + '/addProduct',
+            router.post(this.path + '/addProduct', this.checkToken,
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -539,7 +539,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('addProduct', error, EMessage.error));
                     }
                 });
-            router.post(this.path + '/disableProduct',
+            router.post(this.path + '/disableProduct',this.checkToken,
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -566,7 +566,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('disableProduct', error, EMessage.error));
                     }
                 });
-            router.post(this.path + '/listProduct',
+            router.post(this.path + '/listProduct', this.checkToken,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -588,7 +588,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
-            router.post(this.path + '/addSale',
+            router.post(this.path + '/addSale',this.checkToken,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -624,7 +624,7 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                 });
-            router.post(this.path + '/deleteSale',
+            router.post(this.path + '/deleteSale',this.checkToken,
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -648,7 +648,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('deleteSale', error, EMessage.error));
                     }
                 });
-            router.post(this.path + '/disableSale',
+            router.post(this.path + '/disableSale',this.checkToken,
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -675,7 +675,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('disableSale', error, EMessage.error));
                     }
                 });
-            router.post(this.path + '/updateSale',
+            router.post(this.path + '/updateSale',this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -723,7 +723,7 @@ export class InventoryZDM8 implements IBaseClass {
                 });
 
 
-            router.post(this.path + '/listSale',
+            router.post(this.path + '/listSale',this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -744,7 +744,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('listSale', error, EMessage.error));
                     }
                 });
-            router.post(this.path + '/listSaleByMachine',
+            router.post(this.path + '/listSaleByMachine',this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -778,7 +778,7 @@ export class InventoryZDM8 implements IBaseClass {
                 });
 
 
-            router.post(this.path + '/addMachine',
+            router.post(this.path + '/addMachine',this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -798,7 +798,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('addProduct', error, EMessage.error));
                     }
                 });
-            router.post(this.path + '/updateMachine',
+            router.post(this.path + '/updateMachine',this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -825,7 +825,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
             router.post(this.path + '/disableMachine',
-                // this.checkToken.bind(this),
+                this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
@@ -849,8 +849,9 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
-            router.post(this.path + '/listMachine', APIAdminAccess,
-                // this.checkToken.bind(this),
+            router.post(this.path + '/listMachine', 
+            //APIAdminAccess,
+                this.checkToken,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {

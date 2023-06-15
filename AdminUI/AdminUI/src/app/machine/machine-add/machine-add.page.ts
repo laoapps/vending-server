@@ -18,13 +18,13 @@ export class MachineAddPage implements OnInit {
   }
 
   ngOnInit() {
-
   }
   close() {
     this.apiService.closeModal()
   }
   save() {
     this.s.photo=this.imageSrc;
+    this.s.token = localStorage.getItem('lva_token');
     this.apiService.closeModal({ s: this.s })
   }
 

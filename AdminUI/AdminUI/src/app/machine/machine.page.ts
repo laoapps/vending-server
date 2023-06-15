@@ -49,7 +49,7 @@ export class MachinePage implements OnInit {
     this.apiService.showModal(MachineAddPage).then(ro=>{
       ro?.present();
       ro?.onDidDismiss().then(r=>{
-        console.log(r);
+        console.log(`adddd`, r);
         if(r.data.s){
           this.apiService.addMachine(r.data.s)?.subscribe(rx=>{
             console.log(rx);

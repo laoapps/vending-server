@@ -743,6 +743,7 @@ export interface IBase {
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
+    token?: string
     // deletedAt?:Date;
 }
 export interface IBC {
@@ -980,10 +981,10 @@ export interface IMachineID extends IBase,IBC {
   }
 
   
-  export interface IMachineClientID{
-    otp:string;
-    machineId:string;
-  }
+//   export interface IMachineClientID{
+//     otp:string;
+//     machineId:string;
+//   }
 
   export interface IMachineId{
     machineId:string;

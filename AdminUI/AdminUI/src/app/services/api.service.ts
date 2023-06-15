@@ -190,6 +190,7 @@ export class ApiService {
     headers.append('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
     headers.append('Accept', 'application/json');
     headers.append('content-type', 'application/json');
+    // headers.append('token', token);
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
