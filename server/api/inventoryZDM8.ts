@@ -900,9 +900,9 @@ export class InventoryZDM8 implements IBaseClass {
 
     checkToken(req: Request, res: Response, next: NextFunction) {
         try {
-            const o = req.body as IReqModel;
-            if (!o.token) throw new Error(EMessage.tokenNotFound)
-            findRealDB(o.token).then(r => {
+            const token = req.headers['token'] + '';
+            if (!token) throw new Error(EMessage.tokenNotFound)
+            findRealDB(token).then(r => {
                 const ownerUuid = r;
                 if (!ownerUuid) throw new Error(EMessage.notfound);
                 // req['gamerUuid'] = gamerUuid;
