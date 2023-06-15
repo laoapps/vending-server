@@ -325,7 +325,8 @@ export class SocketServerZDM8 {
     }
     findMachineIdToken(token: string) {
         try {
-            // console.log(`machineIds der`, this.machineIds);
+            const list = this.machineIds.map(item => { return { machineid: item.machineId, otp: item.otp } });
+            console.log(`machineIds der`, list);
             return this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
 
         } catch (error) {
