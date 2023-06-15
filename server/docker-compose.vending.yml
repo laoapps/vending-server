@@ -41,6 +41,7 @@ services:
       - REDIS_HOST=host.docker.internal
       - REDIS_LOCAL_HOST=host.docker.internal
       - REDIS_LOCAL_PORT=6379
+      
 
 
       # - LAAB_URL=http://host.docker.internal:30000
@@ -58,6 +59,10 @@ services:
       - DATABASE_PASSWORD=2Grg7Dith14P
       - VENDING=true
       - PORT=9006
+
+
+      - SERVICE_NAME=ADMINVENDINGSERVICE
+      - SERVICE_BACKEND_KEY=cf4f51eb-c999-4077-b7ca-110a66d563e5
     ports:
       - 51221:31221
       - 51222:31222

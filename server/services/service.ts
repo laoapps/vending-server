@@ -100,11 +100,11 @@ export function signinOnUserManager(data: { phonenumber: string, password: strin
                 method: "findUserNameByPhoneNumber",
                 data: {
                     phoneNumber: data.phonenumber,
-                    service: process.env.name
+                    service: process.env.SERVICE_NAME
                 }
             }
 
-            const getUsername = await axios.post(USERMANAGER_URL, findUserNameByPhonenumberParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            const getUsername = await axios.post(USERMANAGER_URL, findUserNameByPhonenumberParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
             if (getUsername.data.status != 1) return resolve(EMessage.notfound);
 
             let loginParams: any = {
@@ -113,11 +113,11 @@ export function signinOnUserManager(data: { phonenumber: string, password: strin
                 data: {
                     username: getUsername.data.data[0].username,
                     password: data.password,
-                    service: process.env.name
+                    service: process.env.SERVICE_NAME
                 }
             }
 
-            const login = await axios.post(USERMANAGER_URL, loginParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            const login = await axios.post(USERMANAGER_URL, loginParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
             if (login.data.status != 1) return reject(EMessage.loginfailed);
 
             const userInfo: any = {
@@ -142,13 +142,13 @@ export function checkPhoneNumberOnUserManager(phoneNumber: string): Promise<any>
                 object: "authorize",
                 method: "checkPhoneNumber",
                 data: {
-                    service: process.env.name,
+                    service: process.env.SERVICE_NAME,
                     phoneNumber
                 }
             }
             console.log('param', validateParams);
 
-            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
             console.log('phoneNumber', validated.data);//
 
             if (validated.data.status != 1) return resolve('');
@@ -165,13 +165,13 @@ export function findUuidByPhoneNumberOnUserManager(phoneNumber: string): Promise
                 object: "authorize",
                 method: "findUuidByPhoneNumber",
                 data: {
-                    service: process.env.name,
+                    service: process.env.SERVICE_NAME,
                     phoneNumber
                 }
             }
             console.log('param', validateParams);
 
-            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
             console.log('phoneNumber', validated.data);//
 
             if (validated.data.status != 1) return resolve('');
@@ -188,13 +188,13 @@ export function findPhoneNumberByUuidOnUserManager(uuid: string): Promise<any> {
                 object: "authorize",
                 method: "findPhoneNumberByUuid",
                 data: {
-                    service: process.env.name,
+                    service: process.env.SERVICE_NAME,
                     uuid
                 }
             }
             console.log('param', validateParams);
 
-            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
             console.log('phoneNumber', validated.data);//
 
             if (validated.data.status != 1) return resolve('');
@@ -211,13 +211,13 @@ export function validateTokenOnUserManager(token: string): Promise<any> {
                 object: "authorize",
                 method: "validateToken",
                 data: {
-                    service: process.env.name,
+                    service: process.env.SERVICE_NAME,
                     token
                 }
             }
             console.log('param', validateParams);
 
-            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.backendKey + '' } });
+            const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
             console.log('validated', validated.data);
 
             if (validated.data.status != 1) return resolve('');
