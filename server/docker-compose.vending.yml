@@ -42,13 +42,20 @@ services:
       - REDIS_LOCAL_HOST=host.docker.internal
       - REDIS_LOCAL_PORT=6379
 
+
+      # - LAAB_URL=http://host.docker.internal:30000
+      # - EPIN_URL=http://host.docker.internal:30001
+      # - TEST_CALLBACK:http://host.docker.internal:9006
+      # - USERMANAGER_HOST=http://host.docker.internal:4500
+
+      - LAAB_URL=https://laab-api.laoapps.com
+      - EPIN_URL=https://epin-api.laoapps.com
+      - TEST_CALLBACK:http://laoapps.com:9006
+      - USERMANAGER_HOST=https://nocnoc-api.laoapps.com
+
       - DATABASE_USER=dbvenderserveradmin
       - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=2Grg7Dith14P
-      - LAAB_URL=http://host.docker.internal:30000
-      - EPIN_URL=http://host.docker.internal:30001
-      - TEST_CALLBACK:http://host.docker.internal:9006
-      - USERMANAGER_HOST=http://host.docker.internal:4500
       - VENDING=true
       - PORT=9006
     ports:

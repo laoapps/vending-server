@@ -18,6 +18,7 @@ import { VendingMachineBillFactory, VendingMachineBillModel } from '../entities/
 import { Op } from 'sequelize';
 import fs from 'fs';
 import { getNanoSecTime } from '../services/service';
+import { APIAdminAccess } from '../services/laab.service';
 export class InventoryZDM8 implements IBaseClass {
 
     // websocket server for vending controller only
@@ -847,11 +848,13 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
-            router.post(this.path + '/listMachine',
+            router.post(this.path + '/listMachine', APIAdminAccess,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
+                        
+
                         const ownerUuid = res.locals['ownerUuid'] || '';
                         this.machineClientlist.findAll({ where: { ownerUuid } }).then(r => {
                             res.send(PrintSucceeded('listMachine', r, EMessage.succeeded));

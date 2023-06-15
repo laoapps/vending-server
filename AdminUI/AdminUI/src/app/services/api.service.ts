@@ -183,7 +183,7 @@ export class ApiService {
     return this.wsAlive.time;
   }
   private headerBase(): any {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('lva_token');
     //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
     var headers = new HttpHeaders();
     headers.append('Access-Control-Allow-Origin', '*');
