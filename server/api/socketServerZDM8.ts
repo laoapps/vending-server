@@ -325,14 +325,14 @@ export class SocketServerZDM8 {
     }
     findMachineIdToken(token: string) {
         try {
-            const list = this.machineIds.map(item => { return { machineid: item.machineId, otp: item.otp } });
-            console.log(`machineIds der`, list);
+            // const list = this.machineIds.map(item => { return { machineid: item.machineId, otp: item.otp } });
+            // console.log(`machineIds der`, list);
 
-            const model = list.filter(item => item.machineid == '11111111' && item.otp == '111111');
-            const hash = cryptojs.SHA256(model[0].machineid + model[0].otp).toString(cryptojs.enc.Hex);
-            console.log(`compare hash`, token == hash, token, hash);
-            const a = this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
-            console.log(`a`, a);
+            // const model = list.filter(item => item.machineid == '11111111' && item.otp == '111111');
+            // const hash = cryptojs.SHA256(model[0].machineid + model[0].otp).toString(cryptojs.enc.Hex);
+            // console.log(`compare hash`, token == hash, token, hash);
+            // const a = this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
+            // console.log(`a`, a);
             return this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
 
         } catch (error) {
