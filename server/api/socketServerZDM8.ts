@@ -344,6 +344,7 @@ export class SocketServerZDM8 {
     }
     initMachineId(m: Array<IMachineClientID>) {
         this.machineIds.length = 0;
+        console.log(`initMachineId`, m);
         this.machineIds.push(...m)
 
     }
