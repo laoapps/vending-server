@@ -32,26 +32,26 @@ export class LoadVendingLimiterReportsProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                console.log(`merchant coin transfer`, 1);
+                console.log(`load vending limiter report`, 1);
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
-                console.log(`merchant coin transfer`, 2);
+                console.log(`load vending limiter report`, 2);
 
                 this.InitParams(params);
 
-                console.log(`merchant coin transfer`, 3);
+                console.log(`load vending limiter report`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`merchant coin transfer`, 4);
+                console.log(`load vending limiter report`, 4);
 
                 const ShowReport = await this.ShowReport();
                 if (ShowReport != IENMessage.success) throw new Error(ShowReport);
 
-                console.log(`merchant coin transfer`, 5);
+                console.log(`load vending limiter report`, 5);
 
                 (await this.workload).dismiss();
                 resolve(this.Commit());
@@ -93,7 +93,8 @@ export class LoadVendingLimiterReportsProcess {
 
                 this.vendingAPIServgice.showVendingLimiterReport(params).subscribe(r => {
                     const response: any = r;
-                    if (response.status != 1) return resolve(response.message);
+                    console.log(`response`, response);
+                    if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);
                     this.rows = response.info.rows;
                     this.count = response.info.count;
                     resolve(IENMessage.success);

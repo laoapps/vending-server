@@ -1,4 +1,5 @@
 export enum IENMessage {
+    notFoundAnyDataList = 'not found any data list',
     thisCQRIsNotVendingCoin = 'this CQR is not vending coin',
     notFoundYourVendingWalletCoin = 'not found your vending wallet coin',
     notFoundYourVendingWallet = 'not found your vending wallet',

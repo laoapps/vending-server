@@ -258,7 +258,11 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/super_listMachine', { headers: this.headerBase() });
   }
   listMachine() {
-    return this.http.post<IResModel>(this.url + '/listMachine', { headers: this.headerBase() });
+    const req = {
+      ownerUuid: localStorage.getItem('lva_ownerUuid'),
+      token: localStorage.getItem('lva_token')
+    }
+    return this.http.post<IResModel>(this.url + '/listMachine', req, { headers: this.headerBase() });
   }
   disableMachine(isActive:boolean,id:number) {
     return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive}`, { headers: this.headerBase() });

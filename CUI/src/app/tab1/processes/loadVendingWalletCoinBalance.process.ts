@@ -72,6 +72,7 @@ export class LoadVendingWalletCoinBalanceProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
+                console.log(this.apiService.machineId.machineId, this.apiService.machineId.otp);
                 const params = {
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }

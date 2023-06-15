@@ -256,7 +256,8 @@ export class LoadDefaultProcess {
                     }, error => resolve(error.message));
                 } else {
                     let params: any = {
-                        ownerUuid: this.ownerUuid
+                        ownerUuid: this.ownerUuid,
+                        token: this.token
                     }
                     this.vendingAPIService.createMerchantCoin(params).subscribe(r => {
                         const response: any = r;

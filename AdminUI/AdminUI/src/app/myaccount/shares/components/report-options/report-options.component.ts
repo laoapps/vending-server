@@ -44,6 +44,7 @@ export class ReportOptionsComponent implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
+        this.lists = [];
         this.statement = statement;
         this.currentPage = 1;
         const run = await this.loadReport();
@@ -62,7 +63,6 @@ export class ReportOptionsComponent implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
       
-
         
         let run: any = {} as any;
         if (this.apiService.currentcard == ICurrentCard.merchantCoinCard) {
