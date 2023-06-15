@@ -182,16 +182,17 @@ export class ApiService {
 
     return this.wsAlive.time;
   }
-  private headerBase(): any {
-    const token = localStorage.getItem('lva_token');
-    console.log(`headerBase`, token);
+  private headerBase() {
+    // const token = localStorage.getItem('lva_token');
+    // console.log(`headerBase`, token);
     //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
     var headers = new HttpHeaders();
     headers.append('Access-Control-Allow-Origin', '*');
     headers.append('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
     headers.append('Accept', 'application/json');
-    headers.append('content-type', 'application/json');
-    headers.append('Authorize', token);
+    headers.append('Content-type', 'application/json');
+    // headers.append('authorization', token);
+    console.log(`HHHH`, headers);
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
@@ -257,7 +258,8 @@ export class ApiService {
 
   
   super_listMachine() {
-    return this.http.post<IResModel>(this.url + '/super_listMachine', {}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + '/super_listMachine', {token}, { headers: this.headerBase() });
   }
   listMachine() {
     const req = {
@@ -267,46 +269,59 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/listMachine', req, { headers: this.headerBase() });
   }
   disableMachine(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive}`, {}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive}`, {token}, { headers: this.headerBase() });
   }
   updateMachine(o:IMachineClientID,id:number) {
-    return this.http.post<IResModel>(this.url + `/updateMachine?id=${id}`,o, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/updateMachine?id=${id}`,{token,data:o}, { headers: this.headerBase() });
   }
   addMachine(o:IMachineClientID) {
-    return this.http.post<IResModel>(this.url + '/addMachine',o, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + '/addMachine',{data:o,token}, { headers: this.headerBase() });
   }
   reportStock() {
-    return this.http.post<IResModel>(this.url + '/reportStock',{}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + '/reportStock',{token}, { headers: this.headerBase() });
   }
   listSaleByMachine(machineId:string) {
-    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}`, {}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}`, {token}, { headers: this.headerBase() });
   }
   listSale() {
-    return this.http.post<IResModel>(this.url + '/listSale',{}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + '/listSale',{token}, { headers: this.headerBase() });
   }
   updateSale(o:IVendingMachineSale) {
-    return this.http.post<IResModel>(this.url + '/updateSale',o, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + '/updateSale',{data:o,token}, { headers: this.headerBase() });
   }
   addSale(o:IVendingMachineSale) {
-    return this.http.post<IResModel>(this.url + '/addSale',o, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + '/addSale',{data:o,token}, { headers: this.headerBase() });
   }
   listProduct() {
-    return this.http.post<IResModel>(this.url + '/listProduct', {}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + '/listProduct', {token}, { headers: this.headerBase() });
   }
   disableProduct(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive}&id=${id}`, {}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive}&id=${id}`, {token}, { headers: this.headerBase() });
   }
   disableSale(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive}&id=${id}`, {}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive}&id=${id}`, {token}, { headers: this.headerBase() });
   }
   deleteSale(id:number) {
-    return this.http.post<IResModel>(this.url + `/deleteSale?id=${id}`, {}, { headers: this.headerBase() });
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/deleteSale?id=${id}`, {token,data:id}, { headers: this.headerBase() });
   }
   addProduct(o:IStock) {
     console.log(o);
-    // o.token = localStorage.getItem('lva_token');
+
+    const token = localStorage.getItem('lva_token');
     if (!o.name || !o.price) { alert('Body is empty');return null;}
-    return this.http.post<IResModel>(this.url + '/addProduct',o, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/addProduct',{data:o,token}, { headers: this.headerBase() });
   }
 
 

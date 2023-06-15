@@ -517,7 +517,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const ownerUuid = res.locals['ownerUuid'] || '';
                             const sEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
                             // await sEnt.sync();
-                            const o = req.body as IStock;
+                            const o = req.body.data as IStock;
                             if (!o.name || !o.price) return res.send(PrintError('addProduct', [], EMessage.bodyIsEmpty));
                             // let base64Image = o.image.split(';base64,').pop();
                             // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
@@ -593,7 +593,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     const ownerUuid = res.locals['ownerUuid'] || '';
-                    const o = req.body as IVendingMachineSale;
+                    const o = req.body.data as IVendingMachineSale;
                     const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
                     await sEnt.sync()
                     this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r => {
@@ -681,7 +681,7 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals['ownerUuid'] || '';
-                        const o = req.body as IVendingMachineSale;
+                        const o = req.body.data as IVendingMachineSale;
                         const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
                         await sEnt.sync();
 
@@ -784,7 +784,7 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals['ownerUuid'] || '';
-                        const o = req.body as IMachineClientID;
+                        const o = req.body.data as IMachineClientID;
                         o.ownerUuid = ownerUuid || '';
                         if (!o.otp || !o.machineId) return res.send(PrintError('addMachine', [], EMessage.bodyIsEmpty));
 
@@ -805,7 +805,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals['ownerUuid'] || '';
                         const id = req.query['id'] + '';
-                        const o = req.body as IMachineClientID;
+                        const o = req.body.data as IMachineClientID;
                         this.machineClientlist.findOne({ where: { ownerUuid, id } }).then(async r => {
                             if (!r) return res.send(PrintError('updateMachine', [], EMessage.notfound));
                             r.otp = o.otp ? o.otp : r.otp;
@@ -900,7 +900,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     checkToken(req: Request, res: Response, next: NextFunction) {
         try {
-            const token = req.headers['Authorization'] + '';
+            const token = req.body.token;
             if (!token) throw new Error(EMessage.tokenNotFound)
             findRealDB(token).then(r => {
                 const ownerUuid = r;
@@ -917,10 +917,6 @@ export class InventoryZDM8 implements IBaseClass {
 
             res.status(400).end();
         }
-
-
-
-
     }
     getBillProcess(cb: (b: IBillProcess[]) => void) {
         const k = 'clientResponse';
