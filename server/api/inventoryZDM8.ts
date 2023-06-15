@@ -1060,7 +1060,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     refreshMachines() {
         this.machineClientlist.findAll().then(rx => {
-            this.ssocket.initMachineId(rx.map(v=>v.toJSON()));
+            this.ssocket.initMachineId(rx);
         })
     }
 

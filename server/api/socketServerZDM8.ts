@@ -344,8 +344,9 @@ export class SocketServerZDM8 {
     }
     initMachineId(m: Array<IMachineClientID>) {
         this.machineIds.length = 0;
-        console.log(`initMachineId`, m);
-        this.machineIds.push(...m)
+        const data = JSON.parse(JSON.stringify(m));
+        console.log(`initMachineId`, data);
+        this.machineIds.push(...data)
 
     }
     listOnlineMachines() {
