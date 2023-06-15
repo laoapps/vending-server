@@ -248,7 +248,8 @@ export class InventoryZDM8 implements IBaseClass {
             });
             router.post(this.path + '/getDeliveryingBills', this.checkMachineIdToken.bind(this), async (req, res) => {
                 try {
-                    const m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
+                    let m = await machineClientIDEntity.findOne({ where: { machineId: res.locals['machineId']?.machineId } })
+                    m = JSON.parse(JSON.stringify(m));
                     const ownerUuid = m?.ownerUuid || '';
                     // const machineId = m?.machineId;
                     console.log('getDeliveryingBills', m, ownerUuid);
@@ -1430,7 +1431,7 @@ export class InventoryZDM8 implements IBaseClass {
             this.callBackConfirmLAAB(c.tranid_client, Number(c.amount)).then(r => {
                 resolve({ bill: r, transactionID: c.tranid_client });
             }).catch(e => {
-                console.log('error confirmMMoney');
+                console.log('error confirmLAABOder');
                 reject(e);
             })
         })

@@ -131,7 +131,7 @@ CreateDatabase('').then(r => {
           // }
         } 
         else  if (d.command == EClientCommand.confirmLAAB) {
-          console.log('confirmMMoney');
+          console.log('confirmLAAB');
           invZDM8.confirmLAABOder(c).then(r => {
             console.log(r.data);
             res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
