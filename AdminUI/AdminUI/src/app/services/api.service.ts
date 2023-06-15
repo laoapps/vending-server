@@ -184,13 +184,14 @@ export class ApiService {
   }
   private headerBase(): any {
     const token = localStorage.getItem('lva_token');
+    console.log(`headerBase`, token);
     //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
     var headers = new HttpHeaders();
     headers.append('Access-Control-Allow-Origin', '*');
     headers.append('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
     headers.append('Accept', 'application/json');
     headers.append('content-type', 'application/json');
-    headers.append('token', token);
+    headers.append('Authorize', token);
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
@@ -256,7 +257,7 @@ export class ApiService {
 
   
   super_listMachine() {
-    return this.http.post<IResModel>(this.url + '/super_listMachine', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/super_listMachine', {}, { headers: this.headerBase() });
   }
   listMachine() {
     const req = {
@@ -266,7 +267,7 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/listMachine', req, { headers: this.headerBase() });
   }
   disableMachine(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive}`, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive}`, {}, { headers: this.headerBase() });
   }
   updateMachine(o:IMachineClientID,id:number) {
     return this.http.post<IResModel>(this.url + `/updateMachine?id=${id}`,o, { headers: this.headerBase() });
@@ -275,13 +276,13 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/addMachine',o, { headers: this.headerBase() });
   }
   reportStock() {
-    return this.http.post<IResModel>(this.url + '/reportStock', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/reportStock',{}, { headers: this.headerBase() });
   }
   listSaleByMachine(machineId:string) {
-    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}`, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}`, {}, { headers: this.headerBase() });
   }
   listSale() {
-    return this.http.post<IResModel>(this.url + '/listSale', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/listSale',{}, { headers: this.headerBase() });
   }
   updateSale(o:IVendingMachineSale) {
     return this.http.post<IResModel>(this.url + '/updateSale',o, { headers: this.headerBase() });
@@ -290,16 +291,16 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/addSale',o, { headers: this.headerBase() });
   }
   listProduct() {
-    return this.http.post<IResModel>(this.url + '/listProduct', { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/listProduct', {}, { headers: this.headerBase() });
   }
   disableProduct(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive}&id=${id}`, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive}&id=${id}`, {}, { headers: this.headerBase() });
   }
   disableSale(isActive:boolean,id:number) {
-    return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive}&id=${id}`, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive}&id=${id}`, {}, { headers: this.headerBase() });
   }
   deleteSale(id:number) {
-    return this.http.post<IResModel>(this.url + `/deleteSale?id=${id}`, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/deleteSale?id=${id}`, {}, { headers: this.headerBase() });
   }
   addProduct(o:IStock) {
     console.log(o);
