@@ -174,7 +174,7 @@ export class LaabAPI {
             
             const data = req.body;
             if (!(data.token)) throw new Error(IENMessage.needToken);
-            
+            console.log(`token`, data.token);
             const run = this.ssocket.findMachineIdToken(data.token);
             console.log(`APIMachineAccess`, run);
             if (run == undefined || run != undefined && Object.entries(run).length == 0) throw new Error(IENMessage.invalidToken);
