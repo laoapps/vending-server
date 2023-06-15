@@ -136,7 +136,7 @@ export class StocksalePage implements OnInit {
     // remove all  base64images , using image from server 
     // this.saleStock.forEach(v=>v.stock.image='');
     this.storage.set('saleStock', this.saleStock, 'stock').then(r => {
-      console.log('SAVE saleStock', r);
+      // console.log('SAVE saleStock', r);
     }).catch(e => {
       console.log('Error', e);
     })
