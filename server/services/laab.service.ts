@@ -134,7 +134,8 @@ export function APIAdminAccess(req: Request, res: Response, next: NextFunction) 
         const data = req.body;
         func.Init(data).then(run => {
             if (run.message != IENMessage.success) throw new Error(run);
-            res.locals['ownerUuid'] = run.uuid;
+            req.body.ownerUuid = run.uuid;
+            // res.locals['ownerUuid'] = run.uuid;
             // res.locals['phonenumber'] = run.phonenumber;
             next();
         }).catch(error => message([], error.message, IStatus.unsuccess, res));
