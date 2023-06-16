@@ -9,13 +9,13 @@ export interface VENDING_FindVendingCoin extends IBase {
     ownerUuid: string
 }
 export interface VENDING_TextHashVerify extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     sender: string,
     hashM: string,
     info: string
 }
 export interface VENDING_QRHashVerify extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     sender: string,
     hashM: string,
     info: string,
@@ -31,27 +31,27 @@ export interface VENDING_FindMerchant extends IBase {
     ownerUuid: string
 }
 export interface VENDING_CreateMerchant extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     username: string,
     platform: string
 }
 
 export interface VENDING_FindMerchantCoin extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     // coinListId: string,
     // coinCode: string
 }
 export interface VENDING_CreateMerchantCoin extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     // coinListId: string,
     // coinCode: string
 }
 export interface VENDING_ShowMerchantCoinBalance extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     name: string
 }
 export interface VENDING_MerchantCoinTransfer extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     coinListId: string,
     coinCode: string,
     sender: string,
@@ -61,7 +61,7 @@ export interface VENDING_MerchantCoinTransfer extends IBase {
     limitBlock: number
 }
 export interface VENDING_ShowMerchantReport extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     sender: string,
     page: number,
     limit: number
@@ -77,27 +77,27 @@ export interface VENDING_FindVendingLimiter extends IBase {
     ownerUuid: string
 }
 export interface VENDING_CreateVendingLimiter extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     username: string,
     platform: string
 }
 
 export interface VENDING_FindVendingLimiterCoin extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     // coinListId: string,
     // coinCode: string
 }
 export interface VENDING_CreateVendingLimiterCoin extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     // coinListId: string,
     // coinCode: string
 }
 export interface VENDING_ShowVendingLimiterCoinBalance extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     name: string
 }
 export interface VENDING_VendingLimiterCoinTransfer extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     coinListId: string,
     coinCode: string,
     sender: string,
@@ -107,7 +107,7 @@ export interface VENDING_VendingLimiterCoinTransfer extends IBase {
     limitBlock: number
 }
 export interface VENDING_ShowVendingLimiterReport extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     sender: string,
     page: number,
     limit: number
@@ -119,33 +119,33 @@ export interface VENDING_ShowVendingLimiterReport extends IBase {
 
 
 export interface VENDING_FindVendingWallet extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     machineId: string,
 }
 export interface VENDING_CreateVendingWallet extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     username: string,
     platform: string,
 }
 export interface VENDING_FindVendingWalletCoin extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     machineId: string,
     // coinListId: string,
     // coinCode: string
 }
 export interface VENDING_CreateVendingWalletCoin extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     machineId: string,
     // coinListId: string,
     // coinCode: string
 }
 export interface VENDING_ShowVendingWalletCoinBalance extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     machineId: string,
     name: string
 }
 export interface VENDING_VendingWalletCoinTransfer extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     machineId: string,
     coinListId: string,
     coinCode: string,
@@ -156,7 +156,7 @@ export interface VENDING_VendingWalletCoinTransfer extends IBase {
     limitBlock: number
 }
 export interface VENDING_ShowVendingWalletReport extends IBase {
-    ownerUuid: string,
+    // ownerUuid: string,
     machineId: string,
     sender: string,
     page: number,
