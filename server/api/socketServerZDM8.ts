@@ -334,7 +334,7 @@ export class SocketServerZDM8 {
             // const a = this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
             // console.log(`a`, a);
             const result = this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
-            console.log(`result der`, result);
+            // console.log(`result der`, result);
             return result;
 
         } catch (error) {
