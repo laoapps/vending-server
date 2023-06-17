@@ -5,7 +5,7 @@ import { EMessage, EVMC_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../
 import { SerialPort } from 'serialport'
 
 
-import { broadCast, chk8xor, initWs, int2hex, PrintError, PrintSucceeded, wsSendToClient } from '../services/service';
+import { broadCast, chk8xor, initWs, int2hex, PrintError, PrintSucceeded, writeSucceededRecordLog, wsSendToClient } from '../services/service';
 import xor from 'buffer-xor'
 import { SocketClientVMC } from './socketClient.vmc';
 import { resolve } from 'path';
@@ -64,6 +64,37 @@ export class VendingVMC {
                     const t = that.clearTransactionID();
                     that.sock?.send(b, t?.transactionID||-2);
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
+                }
+                else if(b.startsWith('fafb0405')){// drop sensor
+                    //FA FB 04 05 packNo 03 00 19
+                    console.log('drop detect',b);
+                    // Command (0x71)
+                    // Length (1 byte)
+                    // PackNO+Text
+                    // Communication number+Command type(0x72)+Operation type(0x01) +Test status(0- Successful, 1-failed)
+                    that.sock?.send({b,token:that.sock.token}, -9);
+                    writeSucceededRecordLog(b,-1);
+                }
+                else if (b.startsWith('fafb21')) {// receive banknotes
+                    console.log('receive banknotes',b);
+                    //10RMB :  FA FB 21 06 packNo 01 00 00 03 e8 CRC
+                    //20RMB :  FA FB 21 06 packNo 01 00 00 07 d0 CRC
+
+                    console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
+                    console.log('shift the current command and add new command for demo');
+
+                    that.sock?.send({b,token:that.sock.token}, -11);
+                    writeSucceededRecordLog(b,-1);
+                    // 4.1.1 VMC receives money and notifies upper computer (VMC sends out)
+                    // Mode: 1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
+                    // If mode is 3 IC card or 4 Bank card, VMC needs to send card number.
+                    // Upper computer’s current amount has nothing to do with the VMC money notification. The VMC money notification is used for sending data to background system.
+                    // The upper computer returns ACK after it receives the data.
+                    // Command (0x21)
+                    // Length 6(1 byte)
+                    // PackNO+Text
+                    // Communication Number (1 byte)+Mode (1 byte)+Amount (4 byte)+Card Number (when Mode is 3 or 4)
+
                 }
                 else if (b != 'fafb410040') {// POLL only with no commands in the queue
                     

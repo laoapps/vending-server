@@ -113,6 +113,30 @@ export class InventoryZDM8 implements IBaseClass {
                             res.send(PrintError(d.command, e, EMessage.error));
                         })
                     }
+                    else  if (d.command == 'processorder') {
+                        console.log('process orders', d);
+                        // c.wallet_ids
+                        try {
+
+                            const {token,transactionID} = d.data;
+                            const machineId =this.ssocket.findMachineIdToken(token)?.machineId;
+                            this.getBillProcess(b => {
+                                const position = b.find(v=>v.transactionID==transactionID)?.position;
+                                if(position){
+                                    this.setBillProces(b.filter(v => v.transactionID != transactionID));
+                                    console.log('submit_command', transactionID, position);
+                                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, transactionID), EMessage.succeeded));
+                                }else{
+                                    res.send(PrintError('submit command',[],'position not found' ));
+
+                                }
+                          });
+        
+                        } catch (error) {
+                            console.log(error);
+                            res.send(PrintError('init', error, EMessage.error));
+                        }
+                    }
                     else {
                         const clientId = d.data.clientId + '';
                         let loggedin = false;

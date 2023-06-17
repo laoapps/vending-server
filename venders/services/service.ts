@@ -5,7 +5,8 @@ import axios from "axios";
 import { EMessage, IReqModel, IResModel } from '../entities/syste.model';
 
 import * as WebSocketServer from 'ws';
-
+import moment from "moment";
+import fs from 'fs';
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 
@@ -140,4 +141,23 @@ function fromHex(hex: string) {
         console.log('invalid hex input: ' + hex)
     }
     return str
+}
+
+export function writeSucceededRecordLog(m, position) {
+    const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = process.env._log_path + `/results_${da}.json`;
+    fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+}
+export function writeLogs(m, position,name='g_') {
+    const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = process.env._log_path + `/${name}_${da}.json`;
+    console.log('m',m);
+    fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+}
+export function writeErrorLogs(m:string,e:any) {
+    const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = process.env._log_path + `/e_${da}.json`;
+    console.log('error',m);
+    
+    fs.appendFileSync(logs, JSON.stringify({ m,e, time: new Date() }), { flag: 'a+' });
 }

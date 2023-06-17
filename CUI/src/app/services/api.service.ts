@@ -306,12 +306,11 @@ export class ApiService {
   retryProcessBill(T: string,position:number) {
     return this.http.post<IResModel>(this.url + '/retryProcessBill?T=' + T+'&position='+position, { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
-  // loadSaleList() {
-  //   const req = {} as IReqModel;
-  //   req.command = EClientCommand.list;
-  //   req.data = { clientId: this.clientId.clientId };
-  //   return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
-  // }
+  retryProcessBillLocal(T: string,position:number) {
+    const p = {data:{ slot: position },transactionID:T}
+    return this.http.post<IResModel>( 'http://localhost:19006/',p, { headers: this.headerBase() });
+  }
+
 
   buyMMoney(ids: Array<IVendingMachineSale>, value: number, machineId: string) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;

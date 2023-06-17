@@ -193,7 +193,7 @@ export class CashNV9 implements IBaseClass {
 
                     const sock = this.ssocket.findOnlneMachine(machineId.machineId);
                     if (!sock) throw new Error(EMessage.MachineIsNotOnline);
-                    this.validateMmoneyCashIn(n, 1000, JSON.stringify(machineId)).then(r => {
+                    this.validateMmoneyCashIn(n, 1001, JSON.stringify(machineId)).then(r => {
                         this.requestors.push(r);
                         res.send(PrintSucceeded('validateMmoneyCashIn', {
                             transID: r.transID,

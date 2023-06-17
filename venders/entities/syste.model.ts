@@ -747,6 +747,7 @@ export interface IBankNote{
     amount:number;
     currency:string;
     channel:number;
+    image:string;
 }
 export interface IBillCashIn extends IBase{
     bankNotes:Array<IBankNote>;
