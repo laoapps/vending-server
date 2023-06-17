@@ -149,7 +149,11 @@ export class SocketServerZDM8 {
                                 }
                                 return;
                             }
-                        } else if (d.command == EMACHINE_COMMAND.status) {
+                        } 
+                        else if(d.command == EMACHINE_COMMAND.CREDIT_NOTE){
+                            
+                        }
+                        else if (d.command == EMACHINE_COMMAND.status) {
                             console.log('DATA show status here', d.command, d.token, d.data);
                             const token = d.token;
                             const x = that.findMachineIdToken(token);

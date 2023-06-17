@@ -1,7 +1,7 @@
 import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IBankNote } from '../entities/system.model';
 import cryptojs from 'crypto-js';
-import { CashNV9 } from './cashNV9';
+import { CashNV9MMoney } from './cashNV9MMoney';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerESSPKiosk {
     server = net.createServer();
@@ -11,7 +11,7 @@ export class SocketServerESSPKiosk {
     private machineIds=new  Array<IMachineClientID> ();
 
 
-    cashNV9: CashNV9 | null = null;
+    cashNV9: CashNV9MMoney | null = null;
     constructor(port=31225) {
 
         try {
@@ -179,7 +179,7 @@ export class SocketServerESSPKiosk {
 
                                     console.log(' CREDIT_NOTE', dx);
                                     
-                                    that.cashNV9?.confirmCredit_MMoney(socket['machineId'].machineId, dx.channel, dx.transactionID);
+                                    that.cashNV9?.confirmCredit(socket['machineId'].machineId, dx.channel, dx.transactionID);
 
                                     return;
                                 }
@@ -349,7 +349,7 @@ export class SocketServerESSPKiosk {
         }
     }
 
-    setCashInstant(c: CashNV9) {
+    setCashInstant(c: CashNV9MMoney) {
         this.cashNV9 = c;
     }
 

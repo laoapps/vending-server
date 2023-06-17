@@ -17,7 +17,7 @@ import fs from 'fs';
 import { BillCashInFactory, BillCashInStatic } from '../entities/billcash.entity';
 import { dbConnection } from '../entities';
 import { MachineIDFactory, MachineIDStatic } from '../entities/machineid.entity';
-export class CashNV9 implements IBaseClass {
+export class CashNV9MMoney implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -713,7 +713,7 @@ export class CashNV9 implements IBaseClass {
         })
 
     }
-    confirmCredit_MMoney(machineId: string, channel: number, transactionID: number) {
+    confirmCredit(machineId: string, channel: number, transactionID: number) {
 
         const x = this.billCashIn.find(v => v.transactionID == transactionID && v.machineId == machineId);
         const provider = this.findProvider(x?.clientId+'');
@@ -737,7 +737,8 @@ export class CashNV9 implements IBaseClass {
                 res.status = 1;
                 res.data = x;
                 this.updateBillCash(x, machineId, transactionID, provider);
-
+                const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
+                this.billCashIn.splice(i, 1);
                 this.wsSend([x?.clientId + ''], res);
                 this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
                 this.ssocket.setMachineCounter(machineId);
@@ -900,6 +901,8 @@ export class CashNV9 implements IBaseClass {
                                 that.timers.splice(i, 1);
                                 that.ssocket.haltOrder(machineId);
                                 res.command = EMACHINE_COMMAND.stop;
+                                const ix = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
+                                this.billCashIn.splice(ix, 1);
                                 that.wsSend([x?.clientId + ''], res);
                             }
                         }
