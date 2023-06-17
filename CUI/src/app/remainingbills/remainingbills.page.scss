@@ -1,0 +1,256 @@
+ion-content {
+    --ion-background-color: #F5F5F5;
+}
+
+.hand-click.active {
+    display: block;
+    position: relative;
+    z-index: 999999;
+    margin-top: 370px;
+    margin-left: 100px;
+    width: 150px;
+    height: 150px;
+}
+.hand-click {
+    display: none;
+}
+.tooltip-background.active {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 999998;
+    display: flex;
+    flex-direction: column;
+
+
+    .item {
+        position: relative;
+        margin-top: 530px;
+        margin-left: 30px;
+        color: #333;
+        background: rgb(255,255,255);
+        background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 0%, rgba(203,203,203,1) 100%, rgba(0,0,0,1) 100%);
+
+        border-radius: 5px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+
+        width: 380px;
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+
+            i {
+                color: #DD3932;
+            }
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 300;
+            color: #333;
+        }
+
+        .control {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+
+            .right {
+
+                .btn-close-here {
+                    text-decoration: none;
+                    color: #fff;
+    
+                    background: rgb(255,255,255);
+                    background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgba(255,205,141,1) 0%, rgba(255,129,124,1) 100%, rgba(255,255,255,1) 100%);
+    
+                    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+                    border-radius: 5px;
+                    height: 40px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 14px;
+                    font-weight: 300;
+                    width: 120px;
+                }
+            }
+        }
+    }
+}
+.tooltip-background {
+    display: none;
+}
+
+.tooltip-background::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.5);
+}
+
+.laab-card {
+    margin: 10px;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #DD3932;
+
+    // background: rgb(255,255,255);
+    // background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(238,49,36,0.7161239495798319) 0%, rgba(214,43,31,1) 100%, rgba(255,255,255,1) 100%);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+    overflow: hidden;
+
+    .laab-card-options {
+        z-index: 999998;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+
+       .right {
+            .btn-close-modal {
+                color: #fff;
+                text-decoration: none;
+            }
+       }
+    }
+
+    .laab-card-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        color: #fff;
+
+
+        .title {
+            font-size: 35px;
+            font-weight: bold;
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 300;
+        }
+    }
+    .laab-card-body {
+        margin-top: 35px;
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        grid-column-gap: 20px;
+        grid-row-gap: 10px;
+        overflow-y: scroll;
+        height: 500px;
+        padding-bottom: 75px;
+        margin-left: 10px;
+        margin-right: 10px;
+
+        .item {
+            // background: rgb(255,255,255);
+            // background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,146,141,1) 0%, rgba(221,57,50,1) 100%, rgba(221,57,50,1) 100%);
+
+            // background: transparent;
+            background: rgb(255,255,255);
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 0%, rgba(203,203,203,1) 100%, rgba(0,0,0,1) 100%);
+
+            border: 1px solid #fff;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            padding-top: 20px;
+            overflow: hidden;
+            height: 300px;
+
+            .content {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                .icon {
+                    // background: #ffff;
+                    color: #fff;
+                    text-align: center;
+                    font-size: 16px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin: 0 auto;
+                    border-radius: 5px;
+                    font-weight: 300;
+
+                    img {
+                        width: 120px;
+                        height: 120px;
+                    }
+                }
+
+                .detail {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    text-align: center;
+                    margin-top: 20px;
+
+                    .text {
+                        margin-top: 10px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #fff;
+                    }
+
+                    .price {
+                        color: #333;
+                        margin-top: 15px;
+                    }
+                }
+
+                .btn-epin {
+                    margin-top: 10px;
+                    text-decoration: none;
+                    color: #333;
+
+                    // background: rgb(255,255,255);
+                    // background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgba(255,205,141,1) 0%, rgba(255,129,124,1) 100%, rgba(255,255,255,1) 100%);
+
+                    background: rgb(255,255,255);
+                    background: linear-gradient(280deg, rgba(255,255,255,1) 0%, rgba(237,237,237,1) 0%, rgba(208,208,208,1) 100%, rgba(0,0,0,1) 100%);
+
+                    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+                    border-radius: 5px;
+                    height: 40px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 14px;
+                    font-weight: 300;
+                }
+            }
+        }
+        .item:first-child {
+            // z-index: 999998;
+            // position: relative;
+        }
+        
+    }
+    .laab-card-body::-webkit-scrollbar {
+        height: 0;
+        width: 0;
+    }
+
+}
+
+.scroll {
+    // position: absolute;
+    // z-index: -1;
+}
+
+ion-infinite-scroll-content {
+    min-height: 1px;
+    background: #DD3932;
+}

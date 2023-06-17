@@ -11,11 +11,14 @@ import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+import { Tab1Page } from '../tab1/tab1.page';
+import { IENMessage } from '../models/base.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+  myTab1: Tab1Page;
 
   cash: number = 0;
   coinListId: string;
@@ -190,6 +193,7 @@ export class ApiService {
     this.eventEmitter.on('deductOrderUpdate', cb);
   }
   public deductOrderUpdate(position: number) {
+
     this.eventEmitter.emit('deductOrderUpdate', position);
   }
   public checkOnlineStatus() {
@@ -355,8 +359,85 @@ export class ApiService {
 
 
 
-
+  private audioElement: HTMLAudioElement = document.createElement('audio');
   simpleMessage(text: string) {
     this.toast.create({ message: text, duration: 2000 }).then(r => r.present());
+  }
+  openSoundPleaseSelect(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        this.audio.src = '../../assets/machine_sound/please_select.mp3';
+        this.audio.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  openSoundPleaseInsertBanknotes(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        this.audio.src = '../../assets/machine_sound/please_insert_banknotes.mp3';
+        this.audio.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  openSoundComplete(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        this.audio.src = '../../assets/machine_sound/complete.mp3';
+        this.audio.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  openSoundSystemError(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        this.audio.src = '../../assets/machine_sound/system_error.mp3';
+        this.audio.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  openSoundThankYour(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        this.audio.src = '../../assets/machine_sound/thank_you.mp3';
+        this.audio.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  openSoundReady(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        this.audio.src = '../../assets/machine_sound/ready.mp3';
+        this.audio.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
   }
 }

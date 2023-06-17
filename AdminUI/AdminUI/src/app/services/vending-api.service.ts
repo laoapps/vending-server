@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class VendingAPIService {
-  private url: string = environment.url;
+  private url: string = environment.baseurl;
   private token: string = localStorage.getItem('lva_token');
 
   constructor(

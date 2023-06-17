@@ -7,7 +7,7 @@
       <img [src]="mmLogo" (press)="holdCount()" (touchend)="endCount()" (click)="manageStock()" />
     </div>
     <div>
-      <ion-button (click)="showBills()">Bills</ion-button>
+      <!-- <ion-button (click)="showBills()">Bills</ion-button> -->
     </div>
     <!-- <img src="assets/icon/favicon.png"/> -->
    
@@ -37,6 +37,12 @@
 
     </div>
     <div class="right">
+      <a (click)="showBills()" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="fa-solid fa-ticket"></i>
+        </div>
+        <div class="text">Tickets</div>
+      </a>
       <a (click)="laabCashout()" href="javascript:void(0)" class="item">
         <div class="icon">
           <i class="fa-solid fa-wallet"></i>
@@ -81,10 +87,10 @@
         </ion-item>
         <ion-item >
           <div *ngIf="sl.stock.price==0;else elsebuystock">
-            <img style="width: 200px;height:480px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
+            <img style="width: 200px;height:300px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </div>
           <ng-template #elsebuystock>
-            <img style="width: 200px;height:480px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
+            <img style="width: 200px;height:300px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
 
           </ng-template>
         </ion-item>

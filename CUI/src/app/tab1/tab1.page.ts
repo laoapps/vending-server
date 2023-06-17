@@ -113,6 +113,7 @@ export class Tab1Page {
           this.apiService.wsapi.loginSubscription.subscribe(r => {
             if (!r) return console.log('empty')
             console.log('ws login subscription', r);
+            this.apiService.myTab1 = this;
             this.apiService.clientId.clientId = r.clientId;
             this.apiService.wsAlive.time = new Date();
             this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
@@ -556,6 +557,7 @@ export class Tab1Page {
     // const ord = this.orders.find(v=>v.stock.id==x.stock.id);
     if (x.stock.qtty < 1) return alert('Out of Stock');
     console.log('ID', x);
+    console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
     if (!x) return alert('not found');
 
     this.apiService.showLoading();
@@ -721,6 +723,7 @@ export class Tab1Page {
         resolve(IENMessage.success);
 
       } catch (error) {
+        await this.apiService.openSoundSystemError();
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -813,6 +816,7 @@ export class Tab1Page {
   laabGo(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
+
         this.summarizeOrder = JSON.parse(JSON.stringify(this.orders));
 
         this.summarizeOrder.forEach(item => item.stock.image = '');
@@ -825,7 +829,10 @@ export class Tab1Page {
           sum_total += this.summarizeOrder[i].stock.qtty * this.summarizeOrder[i].stock.price;
         }
         console.log(`sum total`, sum_total);
-        if (this.apiService.cash < sum_total) throw new Error(IENMessage.notEnoughtCashBalance);
+        if (this.apiService.cash < sum_total){
+          await this.apiService.openSoundReady();
+          throw new Error(IENMessage.notEnoughtCashBalance);
+        }
         const sum_refund = this.apiService.cash - sum_total;
 
         const paidLAAB = {
@@ -859,6 +866,11 @@ export class Tab1Page {
         resolve(error.message);
       }
     });
+  }
+  clearStockAfterLAABGo() {
+    this.orders = [];
+    this.getTotalSale.q = 0;
+    this.getTotalSale.t = 0;
   }
   epinCashOut(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
@@ -944,7 +956,9 @@ export class Tab1Page {
         this.apiService.dismissModal();
         this.apiService. pb = r.data as Array<IBillProcess>;
         if( this.apiService. pb.length)
-        this.apiService.showModal(RemainingbillsPage, { r: this.apiService. pb }).then(r=>r.present());
+        this.apiService.showModal(RemainingbillsPage, { r: this.apiService. pb}).then(r=>{
+          r.present();
+        });
       }
       else {
         this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
@@ -952,5 +966,29 @@ export class Tab1Page {
         })
       }
     });
+  }
+  public reshowBills(count: number): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        let loading = this.apiService.load.create({ message: 'Please wait...' });
+
+        if (count > 0) {
+          (await loading).present();
+          let i = setTimeout(async () => {
+            (await loading).dismiss();
+            this.showBills();
+          }, 1000);
+  
+        }
+
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    })
+    
   }
 }

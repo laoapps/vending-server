@@ -1,6 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { IBillProcess } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
+import { ModalController } from '@ionic/angular';
+import { Tab1Page } from '../tab1/tab1.page';
+import { IENMessage } from '../models/base.model';
 
 @Component({
   selector: 'app-remainingbills',
@@ -8,14 +11,19 @@ import { ApiService } from '../services/api.service';
   styleUrls: ['./remainingbills.page.scss'],
 })
 export class RemainingbillsPage implements OnInit {
+
+  canclick: boolean = false;
+
   @Input()r=new Array<IBillProcess>();
   url = this.apiService.url;
-  constructor(public apiService:ApiService) { 
+  constructor(public apiService:ApiService, private modal: ModalController) { 
 
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     console.log('R',this.r);
+    console.log(`here`);
+    await this.apiService.openSoundPleaseSelect();
     
     // this.r.forEach(v=>{
     //   v.bill.vendingsales.forEach(vx=>vx.stock.image=this.apiService.vendingOnSale.find(vy=>vy.stock.id==vx.stock.id)?.stock?.image)
@@ -25,18 +33,40 @@ export class RemainingbillsPage implements OnInit {
     return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
   }
   retryProcessBill(transactionID:string,position:number){
-    this.apiService.retryProcessBill(transactionID,position).subscribe(r=>{
-      console.log('retryProcessBill',r);
-      if(r.status){
-       console.log('retry ok',r.data);
-       
-      }
-      this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
-        r.present();
-      })
-    })
+    if (this.canclick == true) {
+      this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
+        console.log(`vending on sale`, this.apiService.vendingOnSale);
+        console.log('retryProcessBill',r);
+        if(r.status){
+          await this.apiService.openSoundComplete();
+          this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
+            r.present();
+          });
+          let count: number = 0;
+          console.log(`lleng`, this.r);
+          if (this.r != undefined && Object.entries(this.r).length > 1) {
+            count = this.r.length - 1;
+          } else {
+            count = 0;
+          }
+          
+          this.apiService.modal.dismiss();
+          this.apiService.myTab1.reshowBills(count);
+        }
+      }); 
+    }
   }
   getStock(position:number){
     return this.r.map(v=>v.bill.vendingsales)[0].find(v=>v.position==position)?.stock;
   }
+  closeToolTip(){
+    this.canclick = true;
+    (document.querySelector('.tooltip-background') as HTMLDivElement).classList.remove('active');
+    (document.querySelector('.hand-click') as HTMLDivElement).classList.remove('active');
+  }
+
+  close() {
+    this.apiService.modal.dismiss();
+  }
+  
 }

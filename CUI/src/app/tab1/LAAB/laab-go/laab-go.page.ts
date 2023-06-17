@@ -47,6 +47,8 @@ export class LaabGoPage implements OnInit {
         //
 
         this.apiService.cash = this.refund;
+        this.apiService.myTab1.clearStockAfterLAABGo();
+        // await this.apiService.openSoundReady();
         // this.apiService.modal.dismiss();
         resolve(IENMessage.success);
         
