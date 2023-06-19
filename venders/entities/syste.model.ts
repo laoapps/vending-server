@@ -573,6 +573,8 @@ export enum EZDM8_COMMAND {
     yaxisliftmotor = 'yaxisliftmotor',
     xaxisliftmotor = 'xaxisliftmotor',
     relaycommand = 'relaycommand',
+    disabled='disabled',
+    enable='enable',
     lifterreset = 'lifterreset',
     manualspeedmode = 'manualspeedmode',
     motortimeout = 'motortimeout',

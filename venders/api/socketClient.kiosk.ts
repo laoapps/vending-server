@@ -7,14 +7,14 @@ export class SocketKiosClient {
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
-    port = 51225;
+    port = 51224;
     host = 'laoapps.com';
     machineId = '88888888';
     otp = '111111';
     token = '';
     t: any;
     m: KiosESSP;
-    constructor(serverPort=51225,port='COM1') {
+    constructor(serverPort=51225,port='/dev/ttyS2') {
         this.port = serverPort;
         this.m = new KiosESSP(this,port);
         this.init();
