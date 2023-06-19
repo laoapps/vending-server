@@ -7,15 +7,16 @@ import { CashNV9LAAB } from './cashNV9LAAB';
 export class SocketServerESSPKiosk {
     server = net.createServer();
     sclients = Array<net.Socket>();
-    ports = 31225;
+    ports = 31225;///
+    ///mmoney 41225
+    //laab 31225
 
     private machineIds=new  Array<IMachineClientID> ();
 
 
     cashNV9: CashNV9MMoney | null = null;
 
-    // fix
-    cashNV9LAAB: CashNV9LAAB | null = null;
+
     constructor(port=31225) {
 
         try {
@@ -182,17 +183,11 @@ export class SocketServerESSPKiosk {
                                     console.log('CREDIT_NOTE need to confirm the ORDER has been completed or not, TODO LATER');
 
                                     console.log(' CREDIT_NOTE', dx);
-                                    
-                                    that.cashNV9?.confirmCredit(socket['machineId'].machineId, dx.channel, dx.transactionID);
-
+                                    that.cashNV9?.confirmCredit(socket['machineId'].machineId,  dx.channel, dx.transactionID);
+                                    that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
                                     return;
                                 }
-                                // fix ***** CREDIT LAAB NOTE *****
-                                else if (dx.command == EMACHINE_COMMAND.CREDIT_LAAB_NOTE) {
-                                    console.log('ENABLE');
-                                    that.cashNV9LAAB?.confirmCredit(socket['machineId'].machineId, socket['machineId'].otp,  dx.channel, dx.transactionID);
-                                    return;
-                                }
+                                
                                 else if (dx.command == EMACHINE_COMMAND.ENABLE) {
                                     console.log('ENABLE');
                                     that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
@@ -201,13 +196,14 @@ export class SocketServerESSPKiosk {
                                 else if (dx.command == EMACHINE_COMMAND.DISABLE) {
                                     console.log('DISABLE');
                                     that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
+                                    that.haltOrder(socket['machineId'].machineId)
                                     return;
                                 }
 
                                 else if (dx.command == EMACHINE_COMMAND.JAMMED) {
                                     console.log('JAMMED');
                                     that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
-
+                                    that.haltOrder(socket['machineId'].machineId)
                                     return;
                                 }
                                 else if (dx.command == EMACHINE_COMMAND.READ_NOTE) {

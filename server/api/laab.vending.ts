@@ -23,7 +23,7 @@ export let QCreateVendingWalletCoin = new Queue('QCreateVendingWalletCoin', { de
 export let QPaidValidation = new Queue('QPaidValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
 
-export class LaabAPI {
+export class LaabVendingAPI {
 
     private ports = 31223;
     private ssocket: SocketServerZDM8 = {} as SocketServerZDM8;

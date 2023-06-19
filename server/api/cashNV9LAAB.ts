@@ -18,6 +18,8 @@ import { BillCashInFactory, BillCashInStatic } from '../entities/billcash.entity
 import { dbConnection } from '../entities';
 import { MachineIDFactory, MachineIDStatic } from '../entities/machineid.entity';
 import { IENMessage, Self_CALLBACK_CashinValidation, Self_CALLBACK_CashValidation } from '../services/laab.service';
+import { CashinValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashinValidation.func';
+import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
 export class CashNV9LAAB
  implements IBaseClass {
     // websocket server for vending controller only
@@ -338,16 +340,17 @@ export class CashNV9LAAB
                                 console.log(' WS online machine', this.ssocket.listOnlineMachine());
                                 let machineId = this.ssocket.findMachineIdToken(x)
 
-                                
-
                                 if (!machineId) throw new Error('machine is not exist');
                                 const sock = this.ssocket.findOnlneMachine(machineId.machineId);
                                 if (!sock) throw new Error('machine is not online');
                                 this.ssocket.terminateByClientClose(machineId.machineId)
 
-                                const url: string = Self_CALLBACK_CashValidation;
-                                const params = { token: cryptojs.SHA256(machineId.machineId + machineId.otp).toString(cryptojs.enc.Hex) }
-                                axios.post(url, params).then(r => {
+                                const func = new CashValidationFunc();
+                                const params = {
+                                    machineId: machineId.machineId
+                                }
+
+                                func.Init(params).then(r => {
                                     const response: any = r;
                                     if (response.status != 1) throw new Error(response.message);
 
@@ -696,7 +699,7 @@ export class CashNV9LAAB
         }
     }
 
-    confirmCredit(machineId: string, otp: string, channel: number, transactionID: number) {
+    confirmCredit(machineId: string, channel: number, transactionID: number) {
 
         const x = this.billCashIn.find(v => v.transactionID == transactionID && v.machineId == machineId);
         const provider = this.findProvider(x?.clientId+'');
@@ -706,7 +709,7 @@ export class CashNV9LAAB
             const n = this.notes.find(v => v.channel == channel);
             if (!n) throw new Error('Confirm FAILED  note not found' + channel + transactionID);
             console.log('MACHINE ID', machineId);
-            this.refillLAAB(machineId, otp, n.value).then(rx => {
+            this.refillLAAB(machineId, n.value).then(rx => {
                 if (rx != IENMessage.success) throw new Error(rx);
                 
                 console.log('Succeeded confirmMmoneyCashin', rx);
@@ -753,18 +756,39 @@ export class CashNV9LAAB
         }
     }
 
-    refillLAAB(machineId: string, otp: string, cash: number): Promise<any> {
+    // refillLAAB(machineId: string, otp: string, cash: number): Promise<any> {
+    //     return new Promise<any> (async (resolve, reject) => {
+    //         try {
+                
+    //             const url: string = Self_CALLBACK_CashinValidation;
+    //             const params = { 
+    //                 cash: cash,
+    //                 description: 'VENDING LAAB CASH IN',
+    //                 token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
+    //              }
+    //             const run: any = await axios.post(url, params);
+    //             if (run.status != 1) return resolve(run.message);
+
+    //             resolve(IENMessage.success);
+
+    //         } catch (error) {
+    //             resolve(error.message);
+    //         }
+    //     });
+    // }
+
+    refillLAAB(machineId: string, cash: number): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                const url: string = Self_CALLBACK_CashinValidation;
+                const func = new CashinValidationFunc();
                 const params = { 
                     cash: cash,
                     description: 'VENDING LAAB CASH IN',
-                    token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
-                 }
-                const run: any = await axios.post(url, params);
-                if (run.status != 1) return resolve(run.message);
+                    machineId: machineId
+                }
+                const run = await func.Init(params);
+                if (run.message != IENMessage.success) throw new Error(run);
 
                 resolve(IENMessage.success);
 

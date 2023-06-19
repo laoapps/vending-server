@@ -57,9 +57,7 @@ services:
       - DATABASE_USER=dbvenderserveradmin
       - DATABASE_DB=dbvenderservice
       - DATABASE_PASSWORD=2Grg7Dith14P
-      - VENDING=true
-      - PORT=9006
-      - KIOSKLAABPORT=31224
+      - PORT=19006
 
 
       - SERVICE_NAME=ADMINVENDINGSERVICE
@@ -70,7 +68,7 @@ services:
       - 51223:31223
       - 51224:31224
       # - 51225:31225
-      - 9006:9006
+      - 19006:19006
     volumes:
       - .:/app
       - ./package.json:/app/package.json
