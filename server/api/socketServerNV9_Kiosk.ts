@@ -2,6 +2,7 @@ import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IBankNote } from '../entities/system.model';
 import cryptojs from 'crypto-js';
 import { CashNV9MMoney } from './cashNV9MMoney';
+import { CashNV9LAAB } from './cashNV9LAAB';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerESSPKiosk {
     server = net.createServer();
@@ -12,6 +13,9 @@ export class SocketServerESSPKiosk {
 
 
     cashNV9: CashNV9MMoney | null = null;
+
+    // fix
+    cashNV9LAAB: CashNV9LAAB | null = null;
     constructor(port=31225) {
 
         try {
@@ -183,7 +187,12 @@ export class SocketServerESSPKiosk {
 
                                     return;
                                 }
-
+                                // fix ***** CREDIT LAAB NOTE *****
+                                else if (dx.command == EMACHINE_COMMAND.CREDIT_LAAB_NOTE) {
+                                    console.log('ENABLE');
+                                    that.cashNV9LAAB?.confirmCredit(socket['machineId'].machineId, socket['machineId'].otp,  dx.channel, dx.transactionID);
+                                    return;
+                                }
                                 else if (dx.command == EMACHINE_COMMAND.ENABLE) {
                                     console.log('ENABLE');
                                     that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);

@@ -886,6 +886,7 @@ export interface IBaseClass {
 
 
 export enum EMACHINE_COMMAND {
+    CREDIT_LAAB_NOTE = 'CREDIT_LAAB_NOTE',
     login = 'login',
     ping = 'ping',
     status = 'status',
