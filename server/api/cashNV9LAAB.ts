@@ -17,6 +17,7 @@ import fs from 'fs';
 import { BillCashInFactory, BillCashInStatic } from '../entities/billcash.entity';
 import { dbConnection } from '../entities';
 import { MachineIDFactory, MachineIDStatic } from '../entities/machineid.entity';
+import { IENMessage, Self_CALLBACK_CashinValidation, Self_CALLBACK_CashValidation } from '../services/laab.service';
 export class CashNV9LAAB
  implements IBaseClass {
     // websocket server for vending controller only
@@ -109,7 +110,26 @@ export class CashNV9LAAB
                     res.send(PrintError('WS getClientWS', error, EMessage.error));
                 }
             });
+            router.post(this.path + '/getBadBillCashIn', async (req, res) => {
+                try {
+                    let { msisdn, limit, skip } = req.body;
+                    limit = limit > 0 ? limit : 5;
+                    const offset = limit * skip;
+                    console.log(' REST getBillCashIn');
+                    const bEnt = BillCashInFactory( EEntity.badbillcash + '_' + this.production , dbConnection);
+                    bEnt.sync().then(r => {
+                        bEnt.findAndCountAll({ order: ['updatedAt', 'DESC'], limit, offset }).then(async r => {
+                            res.send(PrintSucceeded('REST getBillCashIn', r, EMessage.succeeded));
+                        }).catch(e => {
+                            res.send(PrintError('REST getBillCashIn', e, EMessage.error));
+                        })
+                    })
 
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError('REST getBillCashIn', error, EMessage.error));
+                }
+            });
             router.post(this.path + '/getBillCashIn', async (req, res) => {
                 try {
                     let { msisdn, limit, skip } = req.body;
@@ -318,11 +338,55 @@ export class CashNV9LAAB
                                 console.log(' WS online machine', this.ssocket.listOnlineMachine());
                                 let machineId = this.ssocket.findMachineIdToken(x)
 
+                                
+
                                 if (!machineId) throw new Error('machine is not exist');
                                 const sock = this.ssocket.findOnlneMachine(machineId.machineId);
                                 if (!sock) throw new Error('machine is not online');
                                 this.ssocket.terminateByClientClose(machineId.machineId)
 
+                                const url: string = Self_CALLBACK_CashValidation;
+                                const params = { token: cryptojs.SHA256(machineId.machineId + machineId.otp).toString(cryptojs.enc.Hex) }
+                                axios.post(url, params).then(r => {
+                                    const response: any = r;
+                                    if (response.status != 1) throw new Error(response.message);
+
+                                    ws['machineId'] = machineId.machineId;
+                                    ws['clientId'] = uuid4();
+                                    this.wsClients.push(ws);
+                                    const bsi = {} as IBillCashIn;
+                                    bsi.clientId = ws['clientId'];
+                                    bsi.createdAt = new Date();
+                                    bsi.updatedAt = bsi.createdAt;
+                                    bsi.transactionID = d.data.transID;
+                                    bsi.uuid = uuid4();
+                                    bsi.userUuid; // later
+                                    bsi.id; // auto
+    
+                                    bsi.isActive = true;
+    
+                                    bsi.badBankNotes = []; // update from machine
+                                    bsi.bankNotes = []; // update from machine
+    
+                                    bsi.confirm; // update when cash has come
+                                    bsi.confirmTime; // update when cash has come
+    
+                                    bsi.requestTime = new Date();
+                                    // bsi.requestor = requestor;
+                                    bsi.machineId = machineId.machineId
+                                    res.data = { clientId: ws['clientId'], billCashIn: bsi };
+                                    console.log('billCashIn', res.data);
+    
+                                    ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+    
+                                    // bsi.requestor = requestor;
+                                    this.billCashIn.push(bsi);
+                                    //
+    
+                                    this.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
+                                    this.ssocket.processOrder(machineId.machineId, bsi.transactionID);
+                                    
+                                }).catch(error =>  ws.send(JSON.stringify(PrintError(d.command, [], error.message))))
 
                                 // const requestor = this.requestors.find(v => v.transID == d.data.transID);
 
@@ -330,41 +394,7 @@ export class CashNV9LAAB
                                 // if (!requestor) throw new Error('Requestor is not exist');
 
 
-                                ws['machineId'] = machineId.machineId;
-                                ws['clientId'] = uuid4();
-                                this.wsClients.push(ws);
-                                const bsi = {} as IBillCashIn;
-                                bsi.clientId = ws['clientId'];
-                                bsi.createdAt = new Date();
-                                bsi.updatedAt = bsi.createdAt;
-                                bsi.transactionID = d.data.transID;
-                                bsi.uuid = uuid4();
-                                bsi.userUuid; // later
-                                bsi.id; // auto
-
-                                bsi.isActive = true;
-
-                                bsi.badBankNotes = []; // update from machine
-                                bsi.bankNotes = []; // update from machine
-
-                                bsi.confirm; // update when cash has come
-                                bsi.confirmTime; // update when cash has come
-
-                                bsi.requestTime = new Date();
-                                // bsi.requestor = requestor;
-                                bsi.machineId = machineId.machineId
-                                res.data = { clientId: ws['clientId'], billCashIn: bsi };
-                                console.log('billCashIn', res.data);
-
-                                ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
-
-                                // bsi.requestor = requestor;
-                                this.billCashIn.push(bsi);
-                                //
-
-                                this.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
-                                this.ssocket.processOrder(machineId.machineId, bsi.transactionID);
-                                return;
+                                
                             } else throw new Error(EMessage.MachineIdNotFound)
                         } else if (d.command == 'ping') {
                             console.log('WS PING');
@@ -468,7 +498,7 @@ export class CashNV9LAAB
 
     updateBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, provider = '') {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(provider + '_' + EEntity.billcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory( EEntity.billcash + '_' + this.production , dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
                     console.log('SAVED BILL CASH-IN', provider + '_', EEntity.billcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef);
@@ -496,12 +526,12 @@ export class CashNV9LAAB
         }
 
     }
-    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, provider = '') {
+    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, ) {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(provider + '_' + EEntity.badbillcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_' + this.production , dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
-                    console.log('SAVED BILL CASH-IN', provider + '_', EEntity.badbillcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef);
+                    console.log('SAVED BILL CASH-IN',  EEntity.badbillcash + '_' + this.production );
 
                 })
             }).catch(e => {
@@ -666,7 +696,7 @@ export class CashNV9LAAB
         }
     }
 
-    confirmCredit(machineId: string, channel: number, transactionID: number) {
+    confirmCredit(machineId: string, otp: string, channel: number, transactionID: number) {
 
         const x = this.billCashIn.find(v => v.transactionID == transactionID && v.machineId == machineId);
         const provider = this.findProvider(x?.clientId+'');
@@ -676,7 +706,9 @@ export class CashNV9LAAB
             const n = this.notes.find(v => v.channel == channel);
             if (!n) throw new Error('Confirm FAILED  note not found' + channel + transactionID);
             console.log('MACHINE ID', machineId);
-            this.refillLAAB(x.requestor.transData[0].accountRef, n.value, machineId + '-' + transactionID).then(rx => {
+            this.refillLAAB(machineId, otp, n.value).then(rx => {
+                if (rx != IENMessage.success) throw new Error(rx);
+                
                 console.log('Succeeded confirmMmoneyCashin', rx);
                 // save to database
                 x.bankNotes.push(n);
@@ -696,7 +728,7 @@ export class CashNV9LAAB
                 this.setCounter(machineId, transactionID, EMACHINE_COMMAND.ENABLE);
                 this.ssocket.setMachineCounter(machineId);
             }).catch(e => {
-                console.log('ERROR confirm Mmoney Cashin', e);
+                console.log('ERROR confirm LAAB Cashin', e);
 
                 this.updateBadBillCash(x, machineId, transactionID);
                 // this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
@@ -711,7 +743,7 @@ export class CashNV9LAAB
             console.log(error);
             // save to database 
             // this.badBillCashIn.push({ transactionID, badBankNotes: [{ channel } as IBankNote], machineId } as IBillCashIn)
-            this.updateBadBillCash(x as any, machineId, transactionID, provider);
+            this.updateBadBillCash(x as any, machineId, transactionID);
             const res = {} as IResModel;
             res.command = EMACHINE_COMMAND.status;
             res.message = error.message;
@@ -719,6 +751,27 @@ export class CashNV9LAAB
             this.wsSend([x?.clientId + ''], res);
 
         }
+    }
+
+    refillLAAB(machineId: string, otp: string, cash: number): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const url: string = Self_CALLBACK_CashinValidation;
+                const params = { 
+                    cash: cash,
+                    description: 'VENDING LAAB CASH IN',
+                    token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
+                 }
+                const run: any = await axios.post(url, params);
+                if (run.status != 1) return resolve(run.message);
+
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
     }
 
 

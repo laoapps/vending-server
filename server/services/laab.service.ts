@@ -9,6 +9,8 @@ const translate = short();
 
 const LAABbase: string = process.env.LAAB_URL + '/api/v1/laoapps_ewallet/' || 'http://localhost:30000/api/v1/laoapps_ewallet/';
 const EPINBase: string =  process.env.EPIN_URL + '/api/' || 'http://localhost:30001/api/';
+export const Self_CALLBACK_CashValidation: string = `${process.env.TEST_CALLBACK}/laab/client/cash_validation` || `http://localhost:9006/laab/client/cash_validation`;
+export const Self_CALLBACK_CashinValidation: string = `${process.env.TEST_CALLBACK}/laab/client/cash_in_validation` || `http://localhost:9006/laab/client/cash_in_validation`;
 
 export const LAAB_Register2: string = LAABbase + 'user/register2';
 export const LAAB_FindMyWallet: string = LAABbase + 'user/find_my_wallet';
