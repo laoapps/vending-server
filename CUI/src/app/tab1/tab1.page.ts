@@ -95,6 +95,7 @@ export class Tab1Page {
 
 
       platform.ready().then(() => {
+          this.apiService.audioElement = document.createElement('audio');
           console.log('Width: ' + (this.swidth = platform.width()));
           console.log('Height: ' + (this.sheight = platform.height()));
           console.log('screen width', this.swidth, 'screen height', this.sheight);
@@ -830,7 +831,7 @@ export class Tab1Page {
         }
         console.log(`sum total`, sum_total);
         if (this.apiService.cash < sum_total){
-          await this.apiService.openSoundReady();
+          await this.apiService.openSoundPleaseInsertBanknotes();
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
         const sum_refund = this.apiService.cash - sum_total;
@@ -852,7 +853,7 @@ export class Tab1Page {
           cash: this.apiService.cash,
           quantity: sum_quantity,
           total: sum_total,
-          refund: sum_refund,
+          balance: sum_refund,
           paidLAAB: paidLAAB,
         }
         console.log(`props`, props);

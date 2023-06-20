@@ -29,8 +29,10 @@ export class RemainingbillsPage implements OnInit {
     //   v.bill.vendingsales.forEach(vx=>vx.stock.image=this.apiService.vendingOnSale.find(vy=>vy.stock.id==vx.stock.id)?.stock?.image)
     // })
   }
-  findImage(id:number){
-    return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
+  findImage(position:number){
+    // console.log('ooooooo',id,this.apiService.vendingOnSale);
+    
+    return this.apiService.vendingOnSale.find(vy=>vy.position==position)?.stock?.image;
   }
   retryProcessBill(transactionID:string,position:number){
     if (this.canclick == true) {

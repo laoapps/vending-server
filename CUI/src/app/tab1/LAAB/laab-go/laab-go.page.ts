@@ -15,7 +15,7 @@ export class LaabGoPage implements OnInit {
   @Input() cash: number;
   @Input() quantity: number;
   @Input() total: number;
-  @Input() refund: number;
+  @Input() balance: number;
   @Input() paidLAAB: any;
 
   private paidValidationProcess: PaidValidationProcess;
@@ -46,7 +46,7 @@ export class LaabGoPage implements OnInit {
 
         //
 
-        this.apiService.cash = this.refund;
+        this.apiService.cash = this.balance;
         this.apiService.myTab1.clearStockAfterLAABGo();
         // await this.apiService.openSoundReady();
         // this.apiService.modal.dismiss();

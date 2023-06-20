@@ -358,15 +358,15 @@ export class ApiService {
 
 
 
-  private audioElement: HTMLAudioElement = document.createElement('audio');
+  audioElement: HTMLAudioElement = {} as any;
   simpleMessage(text: string) {
     this.toast.create({ message: text, duration: 2000 }).then(r => r.present());
   }
   openSoundPleaseSelect(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        this.audio.src = '../../assets/machine_sound/please_select.mp3';
-        this.audio.play();
+        this.audioElement.src = '../../assets/machine_sound/please_select.mp3';
+        this.audioElement.play();
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -378,8 +378,8 @@ export class ApiService {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        this.audio.src = '../../assets/machine_sound/please_insert_banknotes.mp3';
-        this.audio.play();
+        this.audioElement.src = '../../assets/machine_sound/please_insert_banknotes.mp3';
+        this.audioElement.play();
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -391,8 +391,8 @@ export class ApiService {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        this.audio.src = '../../assets/machine_sound/complete.mp3';
-        this.audio.play();
+        this.audioElement.src = '../../assets/machine_sound/complete.mp3';
+        this.audioElement.play();
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -404,8 +404,8 @@ export class ApiService {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        this.audio.src = '../../assets/machine_sound/system_error.mp3';
-        this.audio.play();
+        this.audioElement.src = '../../assets/machine_sound/system_error.mp3';
+        this.audioElement.play();
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -417,8 +417,8 @@ export class ApiService {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        this.audio.src = '../../assets/machine_sound/thank_you.mp3';
-        this.audio.play();
+        this.audioElement.src = '../../assets/machine_sound/thank_you.mp3';
+        this.audioElement.play();
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -430,8 +430,8 @@ export class ApiService {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        this.audio.src = '../../assets/machine_sound/ready.mp3';
-        this.audio.play();
+        this.audioElement.src = '../../assets/machine_sound/ready.mp3';
+        this.audioElement.play();
 
         resolve(IENMessage.success);
       } catch (error) {

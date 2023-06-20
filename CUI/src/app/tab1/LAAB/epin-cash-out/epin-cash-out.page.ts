@@ -50,7 +50,7 @@ export class EpinCashOutPage implements OnInit {
       try {
        
         let params: any = {
-          machineId: localStorage.getItem('machineId') || '12345678',
+          machineId: localStorage.getItem('machineId'),
           cash: this.apiService.cash
         }
 
@@ -75,11 +75,12 @@ export class EpinCashOutPage implements OnInit {
         }
 
         params = {
-          machineId: localStorage.getItem('machineId') || '12345678',
+          machineId: localStorage.getItem('machineId'),
           detail: run.data[0].detail
         }
-        run = await this.createEPINProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        const createEPIN = await this.createEPINProcess.Init(params);
+        console.log(`ruunnn`, run);
+        if (createEPIN.message != IENMessage.success) throw new Error(run);
 
         localList = localList.filter(item => item.link !== run.data[0].detail.link);
         localStorage.setItem('smc_list', JSON.stringify(localList));

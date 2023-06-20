@@ -82,7 +82,7 @@ export class CreateEPINProcess {
                 
                 this.vendingAPIService.createEPIN(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response`, response);
+                    console.log(`response create epin`, response);
                     if (response.status != 1) return resolve(response.message);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));

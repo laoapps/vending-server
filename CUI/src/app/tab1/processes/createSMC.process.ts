@@ -87,7 +87,7 @@ export class CreateSMCProcess {
                 
                 this.vendingAPIService.createSMC(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response`, response);
+                    console.log(`response create smc`, response);
                     if (response.status != 1) return resolve(response.message);
                     this.detail = response.info.detail;
                     this.bill = response.info.bill;

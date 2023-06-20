@@ -5,6 +5,12 @@ const config: CapacitorConfig = {
   appName: 'cui',
   webDir: 'www',
   bundledWebRuntime: false,
+  server: {
+    allowNavigation: []
+  },
+  android: {
+    allowMixedContent: true
+  },
   cordova: {
     preferences: {
       ScrollEnabled: 'false',

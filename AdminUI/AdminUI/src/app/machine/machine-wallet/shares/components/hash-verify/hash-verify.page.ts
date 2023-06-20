@@ -1,12 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ICurrentCard, IENMessage } from 'src/app/models/base.model';
-import { QRHashVerifyProcess } from 'src/app/myaccount/processes/qrHashVerify.process';
-import { TextHashVerifyProcess } from 'src/app/myaccount/processes/textHashVerify.process';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as QRCode from 'qrcode';
 import { ShowQrhashVerifyPage } from '../show-qrhash-verify/show-qrhash-verify.page';
+import { TextHashVerifyProcess } from '../../../processes/textHashVerify.process';
+import { QRHashVerifyProcess } from '../../../processes/qrHashVerify.process';
 
 @Component({
   selector: 'app-hash-verify',
@@ -70,6 +70,8 @@ export class HashVerifyPage implements OnInit {
         const run = await this.textHashVerifyProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
+        this.setDetail(run);
+
         resolve(IENMessage.success);
         
       } catch (error) {
@@ -93,20 +95,11 @@ export class HashVerifyPage implements OnInit {
           QRMode: 'use'
         }
         console.log(`params`, params);
-        if (this.apiService.currentcard == ICurrentCard.merchantCoinCard) {
-
-          const run = await this.qrHashVerifyProcess.Init(params);
-          if (run.message != IENMessage.success) throw new Error(run);
-
-          this.setDetail(run);
-
-        } else if (this.apiService.currentcard == ICurrentCard.vendingLimtierCoinCard) {
-          params.QRMode = 'use';
-          const run = await this.qrHashVerifyProcess.Init(params);
-          if (run.message != IENMessage.success) throw new Error(run);
+        params.QRMode = 'use';
+        const run = await this.qrHashVerifyProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
 
           this.setDetail(run);
-        }
 
         resolve(IENMessage.success);
         

@@ -89,7 +89,7 @@ export class TextHashVerifyProcess {
 
                 this.vendingAPIServgice.textHashVerify(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response`, response);
+                    console.log(`response text hash`, response);
                     if (response.status != 1) return resolve(response.message);
                     this.result = response.info.result;
                     resolve(IENMessage.success);
