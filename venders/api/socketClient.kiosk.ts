@@ -2,21 +2,22 @@ import * as net from 'net';
 import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 import { KiosESSP } from './kios.essp';
+import { KiosESSP2 } from './kios.essp2';
 export class SocketKiosClient {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
-    port = 51225;
+    port = 51224;
     host = 'laoapps.com';
-    machineId = '88888888';
+    machineId = '111111111';
     otp = '111111';
     token = '';
     t: any;
     m: KiosESSP;
-    constructor(serverPort=51225,port='COM1') {
+    constructor(serverPort=51225,port='/dev/ttyS4') {
         this.port = serverPort;
-        this.m = new KiosESSP(this,port);
+        this.m = new KiosESSP2(this,port);
         this.init();
         this.token = cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex)
     }

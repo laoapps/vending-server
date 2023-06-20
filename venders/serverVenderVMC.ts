@@ -1,4 +1,6 @@
 
+import { KiosESSP2 } from './api/kios.essp2';
+import { SocketKiosClient } from './api/socketClient.kiosk';
 import { SocketClientM102 } from './api/socketClient.m102';
 import { SocketClientVMC } from './api/socketClient.vmc';
 import { SocketClientZDM8 } from './api/socketClient.zdm8';
@@ -22,7 +24,8 @@ var clients=new Array<any>();
 try {
   clients = [
 
-    new SocketClientVMC()];
+    new SocketClientVMC(),
+    new SocketKiosClient()];
 
   process.on('exit', (code: number) => {
     console.log('exit code', code);

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { EMessage, EVMC_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import { EMACHINE_COMMAND, EMessage, EVMC_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 
 import { SerialPort } from 'serialport'
 
@@ -18,6 +18,7 @@ export class VendingVMC {
     path = '/dev/ttyS1';
     commands = Array<{b:Buffer,transactionID:number}>();
     retry=5;
+    disabled=false;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
 
@@ -72,7 +73,7 @@ export class VendingVMC {
                     // Length (1 byte)
                     // PackNO+Text
                     // Communication number+Command type(0x72)+Operation type(0x01) +Test status(0- Successful, 1-failed)
-                    that.sock?.send({b,token:that.sock.token}, -9);
+                    that.sock?.send(b, -9);
                     writeSucceededRecordLog(b,-1);
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
@@ -83,7 +84,7 @@ export class VendingVMC {
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
                     console.log('shift the current command and add new command for demo');
 
-                    that.sock?.send({b,token:that.sock.token}, -11);
+                    // that.sock?.send(b, -11,EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b,-1);
                     // 4.1.1 VMC receives money and notifies upper computer (VMC sends out)
                     // Mode: 1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
@@ -234,6 +235,12 @@ export class VendingVMC {
 
                 case EZDM8_COMMAND.relaycommand:
 
+                break;
+                case EZDM8_COMMAND.enable:
+                    this.disabled=false;
+                break;
+                case EZDM8_COMMAND.disabled:
+                    this.disabled=true;
                 break;
                 default:
                     reject(PrintError(command as any, params, EMessage.commandnotfound));
