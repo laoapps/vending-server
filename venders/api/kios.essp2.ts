@@ -26,8 +26,9 @@ export class KiosESSP2 {
         timeout: 3000,
         fixedKey: '0123456701234567'
     });
-    constructor(sock: SocketKiosClient, port = '/dev/ttyS2') {
+    constructor(sock: SocketKiosClient, port = '/dev/ttyS4') {
         try {
+            
             this.sock = sock;
             const that = this;
             const f = fs.readFileSync(__dirname + '/config.json', 'utf8');

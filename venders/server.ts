@@ -6,7 +6,7 @@ import { SocketClientZDM8 } from './api/socketClient.zdm8';
 
 const env = process.env.pname;
 if(env=='nv9'){
-const x =new SocketKiosClient();
+// const x =new SocketKiosClient();
 process.on('exit', (code: number) => {
     // port.close();
 });

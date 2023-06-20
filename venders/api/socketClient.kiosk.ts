@@ -15,7 +15,7 @@ export class SocketKiosClient {
     token = '';
     t: any;
     m: KiosESSP;
-    constructor(serverPort=51225,port='/dev/ttyS2') {
+    constructor(serverPort=51225,port='/dev/ttyS4') {
         this.port = serverPort;
         this.m = new KiosESSP2(this,port);
         this.init();
