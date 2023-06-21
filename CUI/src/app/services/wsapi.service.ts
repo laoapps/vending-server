@@ -98,7 +98,7 @@ export class WsapiService {
             break;
 
           case 'CREDIT_NOTE':
-            this.balanceUpdateSubscription.next(data.data.bn);
+            this.balanceUpdateSubscription.next(data.data?.bn?.value);
 
             break;
           case 'refresh':
