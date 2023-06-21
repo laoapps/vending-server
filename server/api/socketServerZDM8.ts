@@ -99,7 +99,7 @@ export class SocketServerZDM8 {
                             const token = d.token;
                             const x = that.findMachineIdToken(token);
                             if (x) {
-                                console.log('DATA found machine id');
+                                console.log('DATA found machine id',x);
                                 socket['machineId'] = x;
                                 const mx = that.sclients.filter(v => {
                                     const m = v['machineId'] as IMachineClientID;
@@ -171,7 +171,7 @@ export class SocketServerZDM8 {
                                         return;
                                     }
 
-                                    that.updateBalance(m.machineId,0);
+                                    that.updateBalance(m.machineId, response.balance);
 
                                 }).catch(error => {
                                     console.log(`cash validation error`, error.message);
