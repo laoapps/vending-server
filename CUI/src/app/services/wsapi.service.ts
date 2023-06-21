@@ -12,7 +12,7 @@ export class WsapiService {
   retries = 1;
   machineId: string;
   otp: string;
-  public balanceUpdateSubscription = new BehaviorSubject<number>(-1);
+  public balanceUpdateSubscription = new BehaviorSubject<number>(0);
   public loginSubscription = new BehaviorSubject<IClientId>(null);
   public aliveSubscription = new BehaviorSubject<IAlive>(null);
   public billProcessSubscription = new BehaviorSubject<IBillProcess>(null);
@@ -98,7 +98,7 @@ export class WsapiService {
             break;
 
           case 'CREDIT_NOTE':
-            this.balanceUpdateSubscription.next(data.data?.bn?.value);
+            this.balanceUpdateSubscription.next(data?.bn?.value);
 
             break;
           case 'refresh':

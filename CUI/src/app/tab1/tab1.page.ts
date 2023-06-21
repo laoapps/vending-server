@@ -82,6 +82,7 @@ export class Tab1Page {
     private WSAPIService: WsapiService
     ) 
     { 
+      this.autoUpdateCash();
 
       this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
       this.cashValidationProcess = new CashValidationProcess(this.apiService, this.vendingAPIService);
@@ -145,8 +146,12 @@ export class Tab1Page {
   }
 
   autoUpdateCash() {
-    this.WSAPIService.balanceUpdateSubscription.subscribe(r => {
-      this.apiService.cash = r;
+    this.WSAPIService.balanceUpdateSubscription.subscribe(async r => {
+      console.log(r);
+      if (r != undefined && r > 0)
+      {
+        await this.initVendingWalletCoinBalance();
+      }
     });
   }
 
@@ -181,6 +186,7 @@ export class Tab1Page {
           }, 1000);
 
           this.initVendingWalletCoinBalance().then(() => {});
+          
 
           console.log(`sale list der`, this.saleList);
         })
@@ -687,7 +693,25 @@ export class Tab1Page {
 
 
 
-  
+  refreshVendingWalletCoinBalance(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        // const machineId: string = localStorage.getItem('machineId');
+        const params = {
+          
+        }
+        const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.apiService.cash = run.data[0].vendingWalletCoinBalance;
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
   initVendingWalletCoinBalance(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
