@@ -4,3 +4,17 @@ Content-Type: application/json
 {
     "ownerUuid": "+85620565381009"
 }
+
+
+###
+
+POST http://laoapps.com:9006/zdm8/credit HTTP/1.1
+Content-Type: application/json
+
+{
+    "command": "CREDIT_NOTE",
+    "token": "79f7928f3deb7436d6e110dfae37e8f80ea9c65f55ea84eb449895b63bc5909e",
+    "data": {
+        "channel":1
+    }
+}
