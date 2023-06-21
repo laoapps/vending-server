@@ -25,7 +25,8 @@ try {
   clients = [
 
     new SocketClientVMC(),
-    new SocketKiosClient()];
+    // new SocketKiosClient()
+  ];
 
   process.on('exit', (code: number) => {
     console.log('exit code', code);
