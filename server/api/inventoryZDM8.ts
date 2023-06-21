@@ -1192,6 +1192,7 @@ export class InventoryZDM8 implements IBaseClass {
                         bsi.bankNotes.push(bn);
                         res.data = { clientId: ws['clientId'], billCashIn: bsi,bn };
                         that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
+                        console.log(`sw sender`, d.command, res.data);
                         ws.send(JSON.stringify(PrintSucceeded(d.command, res.data, EMessage.succeeded)));
                    }).catch(error => { 
                     console.log(`error cash in validation`, error.message);
