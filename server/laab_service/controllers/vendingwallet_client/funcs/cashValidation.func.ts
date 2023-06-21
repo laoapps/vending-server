@@ -152,6 +152,7 @@ export class CashValidationFunc {
                 }
 
                 const run = await axios.post(LAAB_ShowMyCoinWalletBalance, params);
+                console.log(`ShowMyCoinWalletBalance`, run.data);
                 if (run.data.status != 1) return resolve(IENMessage.notFoundYourMerchantCoin);
 
                 this.balance = Number(run.data.info.balance);
