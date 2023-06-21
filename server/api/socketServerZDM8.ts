@@ -168,7 +168,6 @@ export class SocketServerZDM8 {
                                     if (response.message != IENMessage.success) {
                                         console.log(`cash validate fail`, response.message);
                                         socket.end();
-                                        return;
                                     }
 
                                     that.updateBalance(m.machineId, response.balance);
@@ -179,9 +178,11 @@ export class SocketServerZDM8 {
                                 });
 
                             }
+                            return;
                         } 
                         else if(d.command == EMACHINE_COMMAND.CREDIT_NOTE){
                            that.eventEmitter.emit('MachineCredit',d);
+                           return;
                         }
                         else if (d.command == EMACHINE_COMMAND.status) {
                             console.log('DATA show status here', d.command, d.token, d.data);
