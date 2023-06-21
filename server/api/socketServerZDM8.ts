@@ -158,7 +158,7 @@ export class SocketServerZDM8 {
 
                                 const func = new CashValidationFunc();
                                 const params = {
-                                    machineId: m
+                                    machineId: m.machineId
                                 }
                                 console.log(`machine der`, params);
 
