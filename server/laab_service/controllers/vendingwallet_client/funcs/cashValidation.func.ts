@@ -176,6 +176,7 @@ export class CashValidationFunc {
 
                 this.response = {
                     acceptcash: acceptcash,
+                    balance: this.balance,
                     message: IENMessage.success
                 }
 

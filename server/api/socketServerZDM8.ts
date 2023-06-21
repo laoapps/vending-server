@@ -8,6 +8,7 @@ import { v4 as uuid4 } from 'uuid';
 import { dbConnection } from '../entities';
 import { BillCashInStatic, BillCashInFactory } from '../entities/billcash.entity';
 import { MachineIDStatic, MachineIDFactory } from '../entities/machineid.entity';
+import { IENMessage } from '../services/laab.service';
 
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
@@ -164,7 +165,7 @@ export class SocketServerZDM8 {
 
                                 func.Init(params).then(run => {
                                     const response: any = run;
-                                    if (response.status != 1) {
+                                    if (response.message != IENMessage.success) {
                                         console.log(`cash validate fail`, response.message);
                                         socket.end();
                                         return;
