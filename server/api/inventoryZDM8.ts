@@ -323,7 +323,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError(d.command, this.production || error, error.message));
                 }
             }); 
-            router.post(this.path+'/credit',(req,res)=>{
+            router.post(this.path+'/credit', (req,res)=>{
                 const d = req.body as IReqModel;
                 this.creditMachine(d);
                 res.send({message:'wait',status:1});
