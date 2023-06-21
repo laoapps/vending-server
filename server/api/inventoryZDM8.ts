@@ -1125,7 +1125,7 @@ export class InventoryZDM8 implements IBaseClass {
     creditMachine(d:IReqModel){
         const that= this;
         const x = d.token as string;
-                console.log(' WS online machine', that.ssocket.listOnlineMachines());
+                console.log('creditMachine WS online machine', that.ssocket.listOnlineMachines());
                 let machineId = this.ssocket.findMachineIdToken(x)
 
                 if (!machineId) throw new Error('machine is not exist');
@@ -1182,16 +1182,19 @@ export class InventoryZDM8 implements IBaseClass {
                     const params = { 
                         cash: bn.value,
                         description: 'VENDING LAAB CASH IN',
-                        machineId: machineId
+                        machineId: machineId.machineId
                     }
+                    console.log(`cash in validation params`, params);
                     func.Init(params).then(run => {
+                        console.log(`response cash in validation`, run);
                         if (run.message != IENMessage.success) throw new Error(run);
                         bsi.bankNotes.push(bn);
                         that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                         ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
                    }).catch(error => { 
+                    console.log(`error cash in validation`, error.message);
                     bsi.badBankNotes.push(bn);
-                      that.updateBadBillCash(bsi,machineId?.machineId,bsi?.transactionID)
+                    that.updateBadBillCash(bsi,machineId?.machineId,bsi?.transactionID)
                     ws.send(JSON.stringify(PrintError(d.command, [], error.message)))})
 
 
