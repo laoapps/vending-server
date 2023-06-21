@@ -338,8 +338,8 @@ export class InventoryZDM8 implements IBaseClass {
                                   let x = b.find(v => v.position == position && v.transactionID == Number(transactionID + '') && v.ownerUuid == ownerUuid);
                             console.log('processOrder', machineId, position, transactionID);
                             console.log('found x ', x.ownerUuid, x.position, x.transactionID);
+                            if(!x) throw new Error('transaction not found or wrong position');
                             //*** 1 time retry only for MMONEY ONly*/
-                            that.setBillProces(b.filter(v => v.transactionID != transactionID));
                             setTimeout(() => {
                                 const pos = this.ssocket.processOrder(machineId, position, transactionID);
 
@@ -348,6 +348,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 if (pos.code) {
                                     
                                     that.setBillProces(b.filter(v => v.transactionID != transactionID));
+                                    that.deductStock(transactionID,x.bill,position)
                                     writeSucceededRecordLog(x?.bill, position);
                                     res.send(PrintSucceeded('retryProcessBill', { position, bill: x?.bill, transactionID, pos }, EMessage.succeeded));
                                 } else {
@@ -985,6 +986,64 @@ export class InventoryZDM8 implements IBaseClass {
     //         }
     //     })
     // }
+    deductStock(transactionID:number,bill:any,position:any){
+        const that = this;
+        const resx = {} as IResModel;
+        resx.command = EMACHINE_COMMAND.confirm;
+        resx.message = EMessage.confirmsucceeded;
+        if (transactionID < 0) return console.log('onMachineResponse ignore', transactionID);
+        if ([22331, 1000].includes(transactionID)) {
+
+            resx.status = 1;
+            console.log('onMachineResponse 22231', transactionID);
+            resx.transactionID = transactionID || -1;
+            resx.data = { bill, position };
+            //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+
+        } else {
+            const idx = bill?.vendingsales?.findIndex(v => v.position == position) || -1;
+            idx == -1 || !idx ? bill.vendingsales?.splice(idx, 1) : '';
+            resx.status = 1;
+            console.log('onMachineResponse xxx', transactionID);
+            resx.transactionID = transactionID || -1;
+            resx.data = { bill, position };
+        }
+        const clientId = bill.clientId + '';
+        console.log('send', clientId,bill?.clientId, resx);
+        console.log('onMachineResponse', transactionID);
+
+        ///** always retry */
+        const retry = -1; // set config and get config at redis and deduct the retry times;
+        // if retry == -1 , it always retry 
+        /// TODO
+        // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
+        // writeSucceededRecordLog(cres?.bill, cres?.position);
+
+
+        that.sendWSToMachine(bill?.machineId + '', resx);
+        /// DEDUCT STOCK AT THE SERVER HERE
+
+
+        // No need To update delivering status
+        // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
+        // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
+        //     try {
+        //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
+        //         if (bill) {
+        //             bill.paymentstatus = EPaymentStatus.delivered;
+        //             bill.changed('paymentstatus', true);
+        //             bill.save();
+        //         } else throw new Error(EMessage.transactionnotfound);
+
+        //         // }
+        //     } catch (error) {
+        //         console.log(error);
+        //     }
+        // }).catch(e => {
+        //     console.log('ERROR', e);
+
+        // })
+    }
     init() {
         // load machines
         return new Promise<Array<IMachineClientID>>((resolve, reject) => {
@@ -1008,64 +1067,64 @@ export class InventoryZDM8 implements IBaseClass {
 
                         // if need to confirm with drop detect
                         // we should use drop detect to audit 
+                        that.deductStock(re.transactionID,cres?.bill,cres?.position);
+
+                        // const resx = {} as IResModel;
+                        // resx.command = EMACHINE_COMMAND.confirm;
+                        // resx.message = EMessage.confirmsucceeded;
+                        // if (re.transactionID < 0) return console.log('onMachineResponse ignore', re);
+                        // if ([22331, 1000].includes(re.transactionID)) {
+
+                        //     resx.status = 1;
+                        //     console.log('onMachineResponse 22231', re);
+                        //     resx.transactionID = re.transactionID || -1;
+                        //     resx.data = { bill: cres?.bill, position: cres?.position };
+                        //     //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+
+                        // } else {
+                        //     const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position) || -1;
+                        //     idx == -1 || !idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
+                        //     resx.status = 1;
+                        //     console.log('onMachineResponse xxx', re);
+                        //     resx.transactionID = re.transactionID || -1;
+                        //     resx.data = { bill: cres?.bill, position: cres?.position };
+                        // }
+                        // const clientId = cres?.bill.clientId + '';
+                        // console.log('send', clientId, cres?.bill?.clientId, resx);
+                        // console.log('onMachineResponse', re.transactionID);
+                        // console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
+
+                        // ///** always retry */
+                        // const retry = -1; // set config and get config at redis and deduct the retry times;
+                        // // if retry == -1 , it always retry 
+                        // /// TODO
+                        // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
+                        // // writeSucceededRecordLog(cres?.bill, cres?.position);
 
 
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.confirm;
-                        resx.message = EMessage.confirmsucceeded;
-                        if (re.transactionID < 0) return console.log('onMachineResponse ignore', re);
-                        if ([22331, 1000].includes(re.transactionID)) {
-
-                            resx.status = 1;
-                            console.log('onMachineResponse 22231', re);
-                            resx.transactionID = re.transactionID || -1;
-                            resx.data = { bill: cres?.bill, position: cres?.position };
-                            //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
-
-                        } else {
-                            const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position) || -1;
-                            idx == -1 || !idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
-                            resx.status = 1;
-                            console.log('onMachineResponse xxx', re);
-                            resx.transactionID = re.transactionID || -1;
-                            resx.data = { bill: cres?.bill, position: cres?.position };
-                        }
-                        const clientId = cres?.bill.clientId + '';
-                        console.log('send', clientId, cres?.bill?.clientId, resx);
-                        console.log('onMachineResponse', re.transactionID);
-                        console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
-
-                        ///** always retry */
-                        const retry = -1; // set config and get config at redis and deduct the retry times;
-                        // if retry == -1 , it always retry 
-                        /// TODO
-                        // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
-                        // writeSucceededRecordLog(cres?.bill, cres?.position);
+                        // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
+                        // /// DEDUCT STOCK AT THE SERVER HERE
 
 
-                        that.sendWSToMachine(cres?.bill?.machineId + '', resx);
-                        /// DEDUCT STOCK AT THE SERVER HERE
+                        // // No need To update delivering status
+                        // // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
+                        // // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
+                        // //     try {
+                        // //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
+                        // //         if (bill) {
+                        // //             bill.paymentstatus = EPaymentStatus.delivered;
+                        // //             bill.changed('paymentstatus', true);
+                        // //             bill.save();
+                        // //         } else throw new Error(EMessage.transactionnotfound);
 
+                        // //         // }
+                        // //     } catch (error) {
+                        // //         console.log(error);
+                        // //     }
+                        // // }).catch(e => {
+                        // //     console.log('ERROR', e);
 
-                        // No need To update delivering status
-                        // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
-                        // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
-                        //     try {
-                        //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
-                        //         if (bill) {
-                        //             bill.paymentstatus = EPaymentStatus.delivered;
-                        //             bill.changed('paymentstatus', true);
-                        //             bill.save();
-                        //         } else throw new Error(EMessage.transactionnotfound);
-
-                        //         // }
-                        //     } catch (error) {
-                        //         console.log(error);
-                        //     }
-                        // }).catch(e => {
-                        //     console.log('ERROR', e);
-
-                        // })
+                        // // })
 
 
 

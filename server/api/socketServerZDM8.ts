@@ -1,8 +1,14 @@
 import net from 'net';
-import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess } from '../entities/system.model';
+import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess, IBillCashIn, EEntity } from '../entities/system.model';
 import cryptojs from 'crypto-js';
 import { redisClient, writeLogs } from '../services/service';
 import { EventEmitter } from 'events';
+import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
+import { v4 as uuid4 } from 'uuid';
+import { dbConnection } from '../entities';
+import { BillCashInStatic, BillCashInFactory } from '../entities/billcash.entity';
+import { MachineIDStatic, MachineIDFactory } from '../entities/machineid.entity';
+
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
     server = net.createServer();
@@ -148,13 +154,32 @@ export class SocketServerZDM8 {
                                     return;
                                 }
                                 /// update balance
-                                const m = mx[0]['machineId'] as IMachineClientID;;
-                                that.updateBalance(m.machineId,0);
-                                return;
+                                const m = mx[0]['machineId'] as IMachineClientID;
+
+                                const func = new CashValidationFunc();
+                                const params = {
+                                    machineId: m
+                                }
+
+                                func.Init(params).then(run => {
+                                    const response: any = run;
+                                    if (response.status != 1) {
+                                        console.log(`cash validate fail`, response.message);
+                                        socket.end();
+                                        return;
+                                    }
+
+                                    that.updateBalance(m.machineId,0);
+
+                                }).catch(error => {
+                                    console.log(`cash validation error`, error.message);
+                                    socket.end();
+                                });
+
                             }
                         } 
                         else if(d.command == EMACHINE_COMMAND.CREDIT_NOTE){
-
+                           
                         }
                         else if (d.command == EMACHINE_COMMAND.status) {
                             console.log('DATA show status here', d.command, d.token, d.data);
@@ -529,6 +554,10 @@ export class SocketServerZDM8 {
         }
 
     }
+
+
+
+
 
 
 }
