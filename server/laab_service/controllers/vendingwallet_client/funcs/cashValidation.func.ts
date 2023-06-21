@@ -129,6 +129,7 @@ export class CashValidationFunc {
                     passkeys: this.passkeys
                 }
                 const run = await axios.post(LAAB_FindMyWallet, params);
+                console.log(`FindVendingLimiterLAABWallet`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
                 this.name = this.coinListId + '_' + run.data.info.name + '__' + this.coinCode;
                 resolve(IENMessage.success);
