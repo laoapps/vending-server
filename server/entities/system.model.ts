@@ -715,6 +715,7 @@ export enum EPaymentStatus{
     delivered='delivered'
 }
 export enum EMessage {
+    invalidBankNote = 'invalid bank note',
     loginfailed = 'login failed',
     succeeded = 'succeeded',
     error = 'error',
