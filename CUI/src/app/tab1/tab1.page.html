@@ -16,7 +16,7 @@
   <div class="menu-options">
 
     <div class="left">
-      <div class="cash-balance">{{ apiService.cash | number }}</div>
+      <!-- <div class="cash-balance">{{ apiService.cash | number }}</div>
       <div class="item-group">
         <a (click)="cashin()" href="javascript:void(0)" class="item">
 
@@ -32,12 +32,39 @@
           </div>
           <div class="text">LAAB Cash In</div>
         </a>
-      </div>
+      </div> -->
 
 
     </div>
-    <div class="right">
+    <div class="center">
+      <a (click)="laabCashin()" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i>
+        </div>
+        <div class="text">LAAB Cash In</div>
+      </a>
       <a (click)="showBills()" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="fa-solid fa-ticket"></i>
+        </div>
+        <div class="text">Tickets</div>
+      </a>
+      <div class="cash-balance">{{ apiService.cash | number }}</div>
+      <a (click)="laabCashout()" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="text">LAAB Cash Out</div>
+      </a>
+      <a (click)="epinCashOut()"  href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="fa-solid fa-qrcode"></i>
+        </div>
+        <div class="text">EPIN Cash Out</div>
+      </a>
+    </div>
+    <div class="right">
+      <!-- <a (click)="showBills()" href="javascript:void(0)" class="item">
         <div class="icon">
           <i class="fa-solid fa-ticket"></i>
         </div>
@@ -54,9 +81,7 @@
           <i class="fa-solid fa-qrcode"></i>
         </div>
         <div class="text">EPIN Cash Out</div>
-      </a>
-
-      
+      </a> -->      
     </div>
 
   </div>

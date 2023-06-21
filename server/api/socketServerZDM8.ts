@@ -147,11 +147,14 @@ export class SocketServerZDM8 {
                                     console.log('DATA re-login PLEASE!');
                                     return;
                                 }
+                                /// update balance
+                                const m = mx[0]['machineId'] as IMachineClientID;;
+                                that.updateBalance(m.machineId,0);
                                 return;
                             }
                         } 
                         else if(d.command == EMACHINE_COMMAND.CREDIT_NOTE){
-                            
+
                         }
                         else if (d.command == EMACHINE_COMMAND.status) {
                             console.log('DATA show status here', d.command, d.token, d.data);
@@ -411,6 +414,118 @@ export class SocketServerZDM8 {
         } catch (error: any) {
             console.log('client id socket not found');
             return { position, status: false, message: error.message };
+        }
+
+    }
+    updateBalance(machineId: string, balance:number) {
+        try {
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
+                if (x) {
+                    return x.machineId == machineId;
+                }
+                return false;
+            });
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EZDM8_COMMAND.balance
+                res.message = EMessage.updatebalance;
+                res.status = 1;
+                res.data = balance;
+                console.log('writing...', x['machineId'], 'balance', balance);
+                return { balance, status: x.write(JSON.stringify(res) + '\n'),code:1};
+            } else {
+                console.log('client id socket not found','balance',balance);
+                const data = `${machineId}-${balance}`
+                return { balance, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients),code:0 };
+            }
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return { balance, status: false, message: error.message };
+        }
+
+    }
+    setLimiter(machineId: string, limiter:number) {
+        try {
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
+                if (x) {
+                    return x.machineId == machineId;
+                }
+                return false;
+            });
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EZDM8_COMMAND.limiter
+                res.message = EMessage.updatelimiter;
+                res.status = 1;
+                res.data = limiter;
+                console.log('writing...', x['machineId'], 'limiter', limiter);
+                return { limiter, status: x.write(JSON.stringify(res) + '\n'),code:1};
+            } else {
+                console.log('client id socket not found','limiter',limiter);
+                const data = `${machineId}-${limiter}`
+                return { limiter, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients),code:0 };
+            }
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return { limiter, status: false, message: error.message };
+        }
+
+    }
+
+    getReports(machineId: string) {
+        try {
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
+                if (x) {
+                    return x.machineId == machineId;
+                }
+                return false;
+            });
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EZDM8_COMMAND.reports
+                res.message = EMessage.requestReports;
+                res.status = 1;
+                console.log('writing...', x['machineId'], 'limiter');
+                return {  status: x.write(JSON.stringify(res) + '\n'),code:1};
+            } else {
+                console.log('client id socket not found');
+                const data = `${machineId}`
+                return {  status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients),code:0 };
+            }
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return {  status: false, message: error.message };
+        }
+
+    }
+
+    deleteReport(machineId: string,time:Array<string>) { // dd-MM-yy
+        try {
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
+                if (x) {
+                    return x.machineId == machineId;
+                }
+                return false;
+            });
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EZDM8_COMMAND.deleteReports
+                res.message = EMessage.deleteReport;
+                res.status = 1;
+                console.log('writing...', x['machineId'], 'limiter');
+                return { time, status: x.write(JSON.stringify(res) + '\n'),code:1};
+            } else {
+                console.log('client id socket not found');
+                const data = `${machineId}`
+                return {  status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients),code:0 };
+            }
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return {  status: false, message: error.message };
         }
 
     }
