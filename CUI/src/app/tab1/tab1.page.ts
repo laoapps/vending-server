@@ -24,6 +24,7 @@ import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import * as QRCode from 'qrcode';
 import { LaabCashinShowCodePage } from './LAAB/laab-cashin-show-code/laab-cashin-show-code.page';
 import { LaabCashoutPage } from './LAAB/laab-cashout/laab-cashout.page';
+import { WsapiService } from '../services/wsapi.service';
 
 
 var host = window.location.protocol + "//" + window.location.host;
@@ -77,7 +78,8 @@ export class Tab1Page {
     // private scanner: @ionic-native/serial,
     public storage: IonicStorageService,
     public appCaching: CachingService,
-    private vendingAPIService: VendingAPIService
+    private vendingAPIService: VendingAPIService,
+    private WSAPIService: WsapiService
     ) 
     { 
 
@@ -140,6 +142,12 @@ export class Tab1Page {
 
 
 
+  }
+
+  autoUpdateCash() {
+    this.WSAPIService.balanceUpdateSubscription.subscribe(r => {
+      this.apiService.cash = r;
+    });
   }
 
   refresh() {

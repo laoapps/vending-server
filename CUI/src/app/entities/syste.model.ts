@@ -743,10 +743,11 @@ export interface IBC {
     hashM: string;
 }
 export interface IBankNote{
-    value:number;
-    amount:number;
-    currency:string;
-    channel:number;
+    value: number;
+    amount: number;
+    currency: string;
+    channel: number;
+    image: string;
 }
 export interface IBillCashIn extends IBase{
     bankNotes:Array<IBankNote>;

@@ -1136,6 +1136,7 @@ export class InventoryZDM8 implements IBaseClass {
                 const ws =that.wsClient.find(v=>v['machineId']==machineId.machineId+'');
                 
                 const res = {} as IResModel
+                
                 res.command = d.command;
                 res.message = EMessage.machineCredit;
                 res.status = 1;
@@ -1162,7 +1163,7 @@ export class InventoryZDM8 implements IBaseClass {
                     bsi.requestTime = new Date();
                     // bsi.requestor = requestor;
                     bsi.machineId = machineId.machineId
-                    res.data = { clientId: ws['clientId'], billCashIn: bsi };
+                   
                     console.log('billCashIn', res.data);
 
                    
@@ -1176,7 +1177,7 @@ export class InventoryZDM8 implements IBaseClass {
                         return;
                     }
                     
-
+                  
                     // *** cash in here
                     const func = new CashinValidationFunc();
                     const params = { 
@@ -1189,11 +1190,13 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log(`response cash in validation`, run);
                         if (run.message != IENMessage.success) throw new Error(run);
                         bsi.bankNotes.push(bn);
+                        res.data = { clientId: ws['clientId'], billCashIn: bsi,bn };
                         that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                         ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
                    }).catch(error => { 
                     console.log(`error cash in validation`, error.message);
                     bsi.badBankNotes.push(bn);
+                    res.data = { clientId: ws['clientId'], billCashIn: bsi ,bn};
                     that.updateBadBillCash(bsi,machineId?.machineId,bsi?.transactionID)
                     ws.send(JSON.stringify(PrintError(d.command, [], error.message)))})
 
