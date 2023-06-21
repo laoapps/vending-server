@@ -952,7 +952,9 @@ export class Tab1Page {
     })
   }
   showBills(){
+    console.log(`here`);
     this.apiService.loadDeliveryingBills().subscribe(r => {
+      console.log(`response`, r);
       if (r.status) {
         this.apiService.dismissModal();
         this.apiService. pb = r.data as Array<IBillProcess>;

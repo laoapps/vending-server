@@ -883,7 +883,8 @@ export enum EMessage {
     updatebalance = "updatebalance",
     updatelimiter = "updatelimiter",
     requestReports = "requestReports",
-    deleteReport = "deleteReport"
+    deleteReport = "deleteReport",
+    machineCredit = "machineCredit"
 }
 export interface IBase {
     id?: number;

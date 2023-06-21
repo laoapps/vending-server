@@ -4,12 +4,12 @@ import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
 
 import { broadCast, findRealDB, PrintError, PrintSucceeded, redisClient, writeErrorLogs, writeLogs, writeSucceededRecordLog } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass, EEntity, IMachineClientID, ERedisCommand, EPaymentStatus } from '../entities/system.model';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass, EEntity, IMachineClientID, ERedisCommand, EPaymentStatus, IBillCashIn } from '../entities/system.model';
 import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { SocketServerZDM8 } from './socketServerZDM8';
-import { MachineIDFactory } from '../entities/machineid.entity';
+import { MachineIDFactory, MachineIDStatic } from '../entities/machineid.entity';
 import { dbConnection, machineClientIDEntity, machineIDEntity, stockEntity } from '../entities';
 import { MachineClientID, MachineClientIDFactory } from '../entities/machineclientid.entity';
 import { StockFactory } from '../entities/stock.entity';
@@ -19,6 +19,8 @@ import { Op } from 'sequelize';
 import fs from 'fs';
 import { getNanoSecTime } from '../services/service';
 import { APIAdminAccess } from '../services/laab.service';
+import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
+import { BillCashInFactory, BillCashInStatic } from '../entities/billcash.entity';
 export class InventoryZDM8 implements IBaseClass {
 
     // websocket server for vending controller only
@@ -1054,6 +1056,72 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
             const that = this;
+            this.ssocket.onMachineCredit((d:IReqModel)=>{
+                const res = {} as IResModel
+                res.command = d.command;
+                res.message = EMessage.machineCredit;
+                res.status = 1;
+                if (d.token) {
+                    const x = d.token as string;
+                    console.log(' WS online machine', that.ssocket.listOnlineMachines());
+                    let machineId = this.ssocket.findMachineIdToken(x)
+
+                    if (!machineId) throw new Error('machine is not exist');
+                    const sock = that.ssocket.findOnlneMachine(machineId.machineId);
+                    if (!sock) throw new Error('machine is not online');
+                    // that.ssocket.terminateByClientClose(machineId.machineId)
+
+                    const func = new CashValidationFunc();
+                    const params = {
+                        machineId: machineId.machineId
+                    }
+                    const ws =that.wsClient.find(v=>v['machineId']==machineId.machineId+'');
+
+                    const bsi = {} as IBillCashIn;
+                    bsi.clientId = ws['clientId'];
+                    bsi.createdAt = new Date();
+                    bsi.updatedAt = bsi.createdAt;
+                    bsi.transactionID = d.data.transID;
+                    bsi.uuid = uuid4();
+                    bsi.userUuid; // later
+                    bsi.id; // auto
+
+                    bsi.isActive = true;
+
+                    bsi.badBankNotes = []; // update from machine
+                    bsi.bankNotes = []; // update from machine
+
+                    bsi.confirm; // update when cash has come
+                    bsi.confirmTime; // update when cash has come
+
+                    bsi.requestTime = new Date();
+                    // bsi.requestor = requestor;
+                    bsi.machineId = machineId.machineId
+                    res.data = { clientId: ws['clientId'], billCashIn: bsi };
+                    console.log('billCashIn', res.data);
+
+                    ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
+
+                    // bsi.requestor = requestor;
+                    // that.push(bsi);
+                    //
+
+
+                    // *** cash in here
+                    
+
+
+                    that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
+
+                    // const requestor = this.requestors.find(v => v.transID == d.data.transID);
+
+
+                    // if (!requestor) throw new Error('Requestor is not exist');
+
+
+                    
+                } else throw new Error(EMessage.MachineIdNotFound)
+            })
             this.ssocket.onMachineResponse((re: IReqModel) => {
                 console.log('onMachineResponse', re);
                 console.log('onMachineResponse transactionID', re.transactionID);
@@ -1138,6 +1206,71 @@ export class InventoryZDM8 implements IBaseClass {
 
             })
         });
+    }
+    updateBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, provider = '') {
+        try {
+            const bEnt: BillCashInStatic = BillCashInFactory( EEntity.billcash + '_' + this.production , dbConnection);
+            bEnt.sync().then(r => {
+                bEnt.create(billCash).then(rx => {
+                    console.log('SAVED BILL CASH-IN', provider + '_', EEntity.billcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef);
+                })
+            })
+            const mId = this.ssocket.findMachineId(machineId);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + this.production + '_' + machineId, dbConnection);
+            mEnt.sync().then(r => {
+                mEnt.create({
+                    logintoken: '',
+                    machineCommands: '',
+                    machineId: mId?.machineId + '_' + mId?.otp,
+                    machineIp: '',
+                    bill: billCash
+                }).then(rx => {
+                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_' + this.production + '_' + mId?.machineId);
+
+                }).catch(e => {
+                    console.log('  mEnt.create', e);
+                })
+            })
+        } catch (error) {
+            console.log('Error updateBillCash');
+
+        }
+
+    }
+    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, ) {
+        try {
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_' + this.production , dbConnection);
+            bEnt.sync().then(r => {
+                bEnt.create(billCash).then(rx => {
+                    console.log('SAVED BILL CASH-IN',  EEntity.badbillcash + '_' + this.production );
+
+                })
+            }).catch(e => {
+                console.log(' bEnt.create', e);
+
+            })
+            const mId = this.ssocket.findMachineId(machineId);
+            const mEnt: MachineIDStatic = MachineIDFactory(EEntity.machineIDHistory + '_' + this.production + '_' + machineId, dbConnection);
+            mEnt.sync().then(r => {
+                mEnt.create({
+                    logintoken: '',
+                    machineCommands: '',
+                    machineId: mId?.machineId + '_' + mId?.otp,
+                    machineIp: '',
+                    bill: billCash
+                }).then(rx => {
+                    console.log('SAVED MachineIDStatic', EEntity.machineIDHistory + '_' + mId?.machineId);
+                    // const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
+                    // this.billCashIn.splice(i, 1);
+                }).catch(e => {
+                    console.log('  mEnt.create', e);
+                })
+            })
+        } catch (error) {
+            console.log('Error updateBillCash');
+
+        }
+
     }
     refreshMachines() {
         this.machineClientlist.findAll().then(rx => {
@@ -1437,7 +1570,7 @@ export class InventoryZDM8 implements IBaseClass {
                             if (d.token) {
                                 const x = d.token as string;
                                 console.log(' WS online machine', this.ssocket.listOnlineMachines());
-                                let machineId = this.ssocket.findMachineIdToken(x)
+                                let machineId = this.ssocket.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error('machine is not exit');
                                 ws['machineId'] = machineId.machineId;

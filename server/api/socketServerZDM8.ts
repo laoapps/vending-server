@@ -160,6 +160,7 @@ export class SocketServerZDM8 {
                                 const params = {
                                     machineId: m
                                 }
+                                console.log(`machine der`, params);
 
                                 func.Init(params).then(run => {
                                     const response: any = run;
@@ -179,7 +180,7 @@ export class SocketServerZDM8 {
                             }
                         } 
                         else if(d.command == EMACHINE_COMMAND.CREDIT_NOTE){
-                           
+                           that.eventEmitter.emit('MachineCredit',d);
                         }
                         else if (d.command == EMACHINE_COMMAND.status) {
                             console.log('DATA show status here', d.command, d.token, d.data);
@@ -345,6 +346,9 @@ export class SocketServerZDM8 {
     onMachineResponse(cb:(r:IReqModel)=>void,removeAll=true){
         // !removeAll||this.eventEmitter.removeAllListeners();
         this.eventEmitter.on('MachineResponse',cb);
+    }
+    onMachineCredit(cb:(r:IReqModel)=>void){
+        this.eventEmitter.on('MachineCredit',cb);
     }
     findMachineId(machineId: string) {
         try {
