@@ -150,8 +150,7 @@ export class VendingVMC {
             setTimeout(() => {
                 console.log('INITIALIZE.............................................................!');
                 
-                that.commandVMC(EVMC_COMMAND._51,{},-21);
-                that.commandVMC(EVMC_COMMAND._61,{},-22);
+                that.commandVMC(EVMC_COMMAND._51,{},-21,that.getNextNo());
             }, 2000);
         });
         // setInterval(() => {
@@ -162,8 +161,8 @@ export class VendingVMC {
 
     sycnVMC() {
         let buff = ['fa', 'fb'];
-        buff.push('31');
-        buff.push('01'); // default length 00
+        buff.push(this.int2hex(31));
+        buff.push(this.int2hex(1)); // default length 01
         buff.push('01');
         buff.push('00');
         buff[buff.length - 1] = chk8xor(buff)
@@ -173,10 +172,40 @@ export class VendingVMC {
                 console.log('Error: ACK ', e.message);
             } else {
                 console.log('write ACK succeeded');
-               
+               this.setPoll();
             }
         })
             ;
+    }
+    setPoll(ms:number=3){
+        let buff = ['fa', 'fb'];
+        buff.push(this.int2hex(16));
+        buff.push(this.int2hex(2)); // default length 01
+        buff.push(this.int2hex(this.getNextNo()));
+        buff.push(this.int2hex(ms));
+        buff.push('00');
+        buff[buff.length - 1] = chk8xor(buff)
+        let x = buff.join('')
+        this.port.write(Buffer.from(x, 'hex'), (e) => {
+            if (e) {
+                console.log('Error: ACK ', e.message);
+            } else {
+                console.log('write ACK succeeded');
+                console.log('INIT 7001');
+                
+               this.commandVMC(EVMC_COMMAND._7001,{},-7001,this.getNextNo());
+               console.log('INIT 7001');
+               this.commandVMC(EVMC_COMMAND._7017,{},-7017,this.getNextNo());
+               console.log('INIT 7018');
+               this.commandVMC(EVMC_COMMAND._7018,{},-7018,this.getNextNo());
+               console.log('INIT 7019');
+               this.commandVMC(EVMC_COMMAND._7019,{},-7019,this.getNextNo());
+               console.log('INIT 7020');
+               this.commandVMC(EVMC_COMMAND._7020,{},-7020,this.getNextNo());
+               console.log('INIT 7023');
+               this.commandVMC(EVMC_COMMAND._7023,{},-7023,this.getNextNo());
+            }
+        })
     }
     clearTransactionID() {
         return this.commands.length ? this.commands.shift() : null;
@@ -339,6 +368,8 @@ export class VendingVMC {
             }
             else if (command == EVMC_COMMAND.enable) {
                 // FA FB 70 len packNO 18 01 C8 crc 
+                // FA FB 70 03 44 19 00 2F
+                // FA FB 70 04 47 01 00 00 33
                 buff.push(int2hex(70));
                 buff.push(int2hex(4));//length
                 // p.push(parseInt(p.length+'', 16));
@@ -371,7 +402,7 @@ export class VendingVMC {
             //     // disable drop sensor [0x00,0x00,0x00] 
             //     buff.push(chk8xor(buff))
             // }
-            /// dispensing
+            /// check machine status
             else if (command == EVMC_COMMAND._51) {
                 buff.push(command);
                 buff.push(int2hex(1));//length
@@ -379,14 +410,89 @@ export class VendingVMC {
                 buff.push(int2hex(0));// checksum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
-            // // check drop sensor
+            // // c
+            
             else if (command == EVMC_COMMAND._61) {
                 buff.push(command);
                 buff.push(int2hex(1));
                 buff.push(int2hex(series));// 
                 buff.push(int2hex(0));// checksum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
+            } 
+            // coin system setting
+            else if (command == EVMC_COMMAND._7001) {
+                //FA FB 70 04 47 01 00 00 33
+                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(4));// 04 len
+                buff.push(int2hex(series));// // 47 series
+                buff.push(int2hex(1));//// coin system setting
+                buff.push(int2hex(0));// 00 read coin system type, 01 set coin system type
+                buff.push(int2hex(0));// 01  coin acceptor 02  hopper
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
+            // Enable Unionpay/POS
+            else if (command == EVMC_COMMAND._7017) {
+                //FA FB 70 03 42 17 00 27 
+                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(3));// 03 len
+                buff.push(int2hex(series));// // 42 series
+                buff.push(int2hex(17));//// 17  Enable Unionpay/POS
+                buff.push(int2hex(0));// 00  read 01  set
+                // buff.push(int2hex(2));// 00  enable 02  disable
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
+             // Bill Value Accepted Setting
+             else if (command == EVMC_COMMAND._7018) {
+                //FA FB 70 03 45 18 00 2F 
+                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(3));// 03 len
+                buff.push(int2hex(series));// // 45 series
+                buff.push(int2hex(18));//// 18  
+                buff.push(int2hex(0));// 00  read bill value 01 set value
+                // buff.push(int2hex(100));//01-100 set bill value accepted
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
+            // Bill accepting mode
+            else if (command == EVMC_COMMAND._7019) {
+                //FA FB 70 03 44 19 00 2F 
+                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(3));// 03 len
+                buff.push(int2hex(series));// // 44 series
+                buff.push(int2hex(19));//// 19 
+                buff.push(int2hex(0));// 00  read Bill accepting mode 
+                // buff.push(int2hex(1));// 01 always accept , 02 hold credit temperary, 03 force vend
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
+            // Bill Low-change Setting
+            else if (command == EVMC_COMMAND._7020) {
+                //FA FB 70 03 46 20 00 14
+                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(3));// 03 len
+                buff.push(int2hex(series));// // 46 series
+                buff.push(int2hex(20));//// 20 
+                buff.push(int2hex(0));// 00  read 01 set value
+                // buff.push(int2hex(1));// Low change: Range 0-100
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
+            // Bill Low-change Setting
+            else if (command == EVMC_COMMAND._7023) {
+                //FA FB 70 03 43 23 00 12 
+                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(3));// 03 len
+                buff.push(int2hex(series));// // 46 series
+                buff.push(int2hex(23));//// 23
+                buff.push(int2hex(0));// 00  read 01 set value
+                // buff.push(int2hex(1));// 01 holding , 02 return change 03 change first holding later
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
+
+
             // /// set drop sensor
             // else if (command == '24') {//0x24
             //     buff.push(command);
