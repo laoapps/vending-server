@@ -150,7 +150,8 @@ export class VendingVMC {
             setTimeout(() => {
                 console.log('INITIALIZE.............................................................!');
                 
-                that.commandVMC(EVMC_COMMAND._51,{},-18);
+                that.commandVMC(EVMC_COMMAND._51,{},-21);
+                that.commandVMC(EVMC_COMMAND._61,{},-22);
             }, 2000);
         });
         // setInterval(() => {
@@ -379,15 +380,12 @@ export class VendingVMC {
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
             // // check drop sensor
-            // else if (command == '') {
-            //     buff.push(command);
-            //     buff.push(0x05);//length
-            //     // p.push(parseInt(p.length+'', 16));
-            //     buff.push(series);// default communication number
-            //     buff.push(0x00);// read drop sensor
-            //     buff.push(...params) // enable drop sensor
-            //     buff.push(chk8xor(buff))
-            // }
+            else if (command == EVMC_COMMAND._61) {
+                buff.push(command);
+                buff.push(int2hex(1));
+                buff.push(int2hex(0));// checksum
+                buff.push(chk8xor(buff))
+            }
             // /// set drop sensor
             // else if (command == '24') {//0x24
             //     buff.push(command);

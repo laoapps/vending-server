@@ -471,7 +471,8 @@ export enum EVMC_COMMAND {
     _06 = "06",
     disable = "disable",
     enable = "enable",
-    _51 = "51"
+    _51 = "51",
+    _61 = "61"
 }
 export enum EMACHINE_COMMAND {
     login = 'login',
