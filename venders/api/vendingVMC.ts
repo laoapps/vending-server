@@ -384,7 +384,7 @@ export class VendingVMC {
                 buff.push(command);
                 buff.push(int2hex(1));
                 buff.push(int2hex(0));// checksum
-                buff.push(chk8xor(buff))
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
             // /// set drop sensor
             // else if (command == '24') {//0x24
