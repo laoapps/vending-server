@@ -480,7 +480,8 @@ export enum EVMC_COMMAND {
     _7020 = "0720",
     _7023 = "0723",
     sync = "sync",
-    setpoll = "setpoll"
+    setpoll = "setpoll",
+    acceptnote = "acceptnote"
 }
 export enum EMACHINE_COMMAND {
     login = 'login',

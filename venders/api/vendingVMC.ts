@@ -38,23 +38,25 @@ export class VendingVMC {
             that.setPoll();
             setTimeout(() => {
                 console.log('INITIALIZE.............................................................!');
-                console.log('INIT 51');
-                that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
-                console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
-                console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
-                console.log('INIT 7018');
-                that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
-                console.log('INIT 7019');
-                that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
-                console.log('INIT 7020');
-                that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
-                console.log('INIT 7023');
-                that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+                // console.log('INIT 51');
+                // that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
+                // console.log('INIT 7001');
+                // that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
+                // console.log('INIT 7001');
+                // that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
+                // console.log('INIT 7018');
+                // that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
+                // console.log('INIT 7019');
+                // that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
+                // console.log('INIT 7020');
+                // that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
+                // console.log('INIT 7023');
+                // that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
                 console.log('INIT enable');
                 that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+                console.log('INIT accept banknote');
+                that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 setTimeout(() => {
                     console.log('INIT disable');
                     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
@@ -473,6 +475,7 @@ export class VendingVMC {
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
+            // set sync
             else if (command == EVMC_COMMAND.sync) {
                 buff.push('31');
                 buff.push(this.int2hex(1)); // default length 01
@@ -481,11 +484,22 @@ export class VendingVMC {
                 buff.push(this.int2hex(0));
                 buff[buff.length - 1] = chk8xor(buff)
             }
+            // set poll
             else if (command == EVMC_COMMAND.setpoll) {
                 buff.push('16');
                 buff.push(this.int2hex(2)); // default length 01
-                buff.push(this.int2hex(this.getNextNo()));
+                buff.push(this.int2hex(series));
                 buff.push(this.int2hex(params.ms));
+                buff.push(this.int2hex(0));
+                buff[buff.length - 1] = chk8xor(buff)
+            }
+            else if (command == EVMC_COMMAND._28) {
+                buff.push('28');
+                buff.push(this.int2hex(4)); //? 6
+                buff.push(this.int2hex(series));
+                buff.push(this.int2hex(0));
+                buff.push('ff');
+                buff.push('ff');
                 buff.push(this.int2hex(0));
                 buff[buff.length - 1] = chk8xor(buff)
             }
