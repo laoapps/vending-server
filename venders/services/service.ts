@@ -145,18 +145,18 @@ function fromHex(hex: string) {
 
 export function writeSucceededRecordLog(m, position) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path + `/results_${da}.json`;
+    const logs = process.env._log_path||process.cwd() + `/results_${da}.json`;
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
 export function writeLogs(m, position,name='g_') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path + `/${name}_${da}.json`;
+    const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
     console.log('m',m);
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
 export function writeErrorLogs(m:string,e:any) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path + `/e_${da}.json`;
+    const logs = process.env._log_path||process.cwd() + `/e_${da}.json`;
     console.log('error',m);
     
     fs.appendFileSync(logs, JSON.stringify({ m,e, time: new Date() }), { flag: 'a+' });
