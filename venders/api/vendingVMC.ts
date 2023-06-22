@@ -360,7 +360,7 @@ export class VendingVMC {
                 buff.push(int2hex(series));// 
                 buff.push('18');// 
                 buff.push(int2hex(1));// 
-                buff.push(int2hex(100));//?
+                buff.push(int2hex(200));//?
                 buff.push(int2hex(0));// checksum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
