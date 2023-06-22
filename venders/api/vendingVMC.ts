@@ -39,32 +39,32 @@ export class VendingVMC {
             setTimeout(() => {
                 console.log('INITIALIZE.............................................................!');
                 console.log('INIT 51');
-                that.commandVMC(EVMC_COMMAND._51,{},-51,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
                 console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7001,{},-7001,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
                 console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7017,{},-7017,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
                 console.log('INIT 7018');
-                that.commandVMC(EVMC_COMMAND._7018,{},-7018,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
                 console.log('INIT 7019');
-                that.commandVMC(EVMC_COMMAND._7019,{},-7019,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
                 console.log('INIT 7020');
-                that.commandVMC(EVMC_COMMAND._7020,{},-7020,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
                 console.log('INIT 7023');
-                that.commandVMC(EVMC_COMMAND._7023,{},-7023,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
             }, 2000);
             var b = '';
 
-            setInterval(()=>{
-                console.log('check last update ',moment.now(),that.lastupdate);
-                
-                if(moment().diff(that.lastupdate)>=7000){
-                    if(!that.enable)return;
+            setInterval(() => {
+                console.log('check last update ', moment.now(), that.lastupdate);
+
+                if (moment().diff(that.lastupdate) >= 7000) {
+                    if (!that.enable) return;
                     // that.commandVMC(EVMC_COMMAND.disable,{},-18);
-                    that.enable=false;
+                    that.enable = false;
                     return;
                 }
-            },1000)
+            }, 1000)
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
@@ -116,7 +116,7 @@ export class VendingVMC {
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
                     console.log('shift the current command and add new command for demo');
 
-                    that.sock?.send(b, -11,EMACHINE_COMMAND.CREDIT_NOTE);
+                    that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
                     // 4.1.1 VMC receives money and notifies upper computer (VMC sends out)
                     // Mode: 1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
@@ -140,7 +140,7 @@ export class VendingVMC {
                     that.port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
                             console.log('Error: ACK ', e.message);
-                            writeErrorLogs(b,e);
+                            writeErrorLogs(b, e);
                         } else {
                             console.log('write ACK succeeded');
                             writeSucceededRecordLog(b, -1);
@@ -165,7 +165,7 @@ export class VendingVMC {
                 b = '';
             });
 
-            
+
         });
         // setInterval(() => {
         //     this.coolingSystemTask();
@@ -175,10 +175,10 @@ export class VendingVMC {
 
     sycnVMC() {
         //FA FB 31 01 02 33
-        this.commandVMC(EVMC_COMMAND.sync,{},-31);
+        this.commandVMC(EVMC_COMMAND.sync, {}, -31);
     }
-    setPoll(ms:number=3){
-        this.commandVMC(EVMC_COMMAND.setpoll,{ms:3},-16);
+    setPoll(ms: number = 3) {
+        this.commandVMC(EVMC_COMMAND.setpoll, { ms: 3 }, -16);
     }
     clearTransactionID() {
         return this.commands.length ? this.commands.shift() : null;
@@ -252,8 +252,8 @@ export class VendingVMC {
                     })
                     break;
                 case EZDM8_COMMAND.balance:
-                    this.balance = params?.balance||0;
-                    this.limiter = params?.limiter||100000;
+                    this.balance = params?.balance || 0;
+                    this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
                     // if(this.balance<this.limiter){
                     //     this.lastupdate = moment().add(-360,'days').milliseconds();
@@ -273,7 +273,7 @@ export class VendingVMC {
                     //         reject(PrintError(command as any, params, e.message));
                     //     })
                     // }
-                   
+
                     break;
 
                 case EZDM8_COMMAND.hutemp:
@@ -384,18 +384,18 @@ export class VendingVMC {
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
             // // c
-            
+
             else if (command == EVMC_COMMAND._61) {
                 buff.push(command);
                 buff.push(int2hex(1));
                 buff.push(int2hex(series));// 
                 buff.push(int2hex(0));// checksum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
-            } 
+            }
             // coin system setting
             else if (command == EVMC_COMMAND._7001) {
                 //FA FB 70 04 47 01 00 00 33
-                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(70));// 70 
                 buff.push(int2hex(4));// 04 len
                 buff.push(int2hex(series));// // 47 series
                 buff.push(int2hex(1));//// coin system setting
@@ -407,7 +407,7 @@ export class VendingVMC {
             // Enable Unionpay/POS
             else if (command == EVMC_COMMAND._7017) {
                 //FA FB 70 03 42 17 00 27 
-                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(70));// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 42 series
                 buff.push(int2hex(17));//// 17  Enable Unionpay/POS
@@ -416,10 +416,10 @@ export class VendingVMC {
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
-             // Bill Value Accepted Setting
-             else if (command == EVMC_COMMAND._7018) {
+            // Bill Value Accepted Setting
+            else if (command == EVMC_COMMAND._7018) {
                 //FA FB 70 03 45 18 00 2F 
-                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(70));// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 45 series
                 buff.push(int2hex(18));//// 18  
@@ -431,7 +431,7 @@ export class VendingVMC {
             // Bill accepting mode
             else if (command == EVMC_COMMAND._7019) {
                 //FA FB 70 03 44 19 00 2F 
-                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(70));// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 44 series
                 buff.push(int2hex(19));//// 19 
@@ -443,7 +443,7 @@ export class VendingVMC {
             // Bill Low-change Setting
             else if (command == EVMC_COMMAND._7020) {
                 //FA FB 70 03 46 20 00 14
-                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(70));// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 46 series
                 buff.push(int2hex(20));//// 20 
@@ -455,7 +455,7 @@ export class VendingVMC {
             // Bill Low-change Setting
             else if (command == EVMC_COMMAND._7023) {
                 //FA FB 70 03 43 23 00 12 
-                 buff.push(int2hex(70));// 70 
+                buff.push(int2hex(70));// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 46 series
                 buff.push(int2hex(23));//// 23
@@ -464,15 +464,15 @@ export class VendingVMC {
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
-            else if(command ==EVMC_COMMAND.sync){
+            else if (command == EVMC_COMMAND.sync) {
                 buff.push(this.int2hex(31));
                 buff.push(this.int2hex(1)); // default length 01
-                this.no=0;
+                this.no = 0;
                 buff.push(this.int2hex(this.getNextNo()));
                 buff.push(this.int2hex(0));
                 buff[buff.length - 1] = chk8xor(buff)
             }
-            else if(command ==EVMC_COMMAND.setpoll){
+            else if (command == EVMC_COMMAND.setpoll) {
                 buff.push(this.int2hex(16));
                 buff.push(this.int2hex(2)); // default length 01
                 buff.push(this.int2hex(this.getNextNo()));
@@ -535,7 +535,7 @@ export class VendingVMC {
             const x = buff.join('');
             this.commands.push({ b: Buffer.from(x, 'hex'), transactionID })
             // const x = buff.join('');
-            // console.log('X', x);
+             console.log('X', x,transactionID);
             // this.port.write(Buffer.from(x, 'hex'), (e) => {
             //     if (e) {
             //         reject(PrintError(command as any, params, e.message));
