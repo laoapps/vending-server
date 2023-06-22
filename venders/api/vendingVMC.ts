@@ -350,7 +350,7 @@ export class VendingVMC {
                 buff.push(int2hex(4));//length
                 // p.push(parseInt(p.length+'', 16));
                 buff.push(int2hex(series));// 
-                buff.push(int2hex(18));// 
+                buff.push('18');// 
                 buff.push(int2hex(1));// 
                 buff.push(int2hex(100));//?
                 buff.push(int2hex(0));// checksum
@@ -361,7 +361,7 @@ export class VendingVMC {
                 buff.push('70');
                 buff.push(int2hex(4));//length
                 buff.push(int2hex(series));// 
-                buff.push(int2hex(18));// 
+                buff.push('18');// 
                 buff.push(int2hex(1));// ?
                 buff.push(int2hex(0));// ?
                 buff.push(int2hex(0));// checksum
@@ -413,7 +413,7 @@ export class VendingVMC {
                 buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 42 series
-                buff.push(int2hex(17));//// 17  Enable Unionpay/POS
+                buff.push('17');//// 17  Enable Unionpay/POS
                 buff.push(int2hex(0));// 00  read 01  set
                 // buff.push(int2hex(2));// 00  enable 02  disable
                 buff.push(int2hex(0));// 27 check sum
@@ -425,7 +425,7 @@ export class VendingVMC {
                 buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 45 series
-                buff.push(int2hex(18));//// 18  
+                buff.push('18');//// 18  
                 buff.push(int2hex(0));// 00  read bill value 01 set value
                 // buff.push(int2hex(100));//01-100 set bill value accepted
                 buff.push(int2hex(0));// 27 check sum
@@ -437,7 +437,7 @@ export class VendingVMC {
                 buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 44 series
-                buff.push(int2hex(19));//// 19 
+                buff.push('19');//// 19 
                 buff.push(int2hex(0));// 00  read Bill accepting mode 
                 // buff.push(int2hex(1));// 01 always accept , 02 hold credit temperary, 03 force vend
                 buff.push(int2hex(0));// 27 check sum
@@ -449,7 +449,7 @@ export class VendingVMC {
                 buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 46 series
-                buff.push(int2hex(20));//// 20 
+                buff.push('20');//// 20 
                 buff.push(int2hex(0));// 00  read 01 set value
                 // buff.push(int2hex(1));// Low change: Range 0-100
                 buff.push(int2hex(0));// 27 check sum
@@ -461,7 +461,7 @@ export class VendingVMC {
                 buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 46 series
-                buff.push(int2hex(23));//// 23
+                buff.push('23');//// 23
                 buff.push(int2hex(0));// 00  read 01 set value
                 // buff.push(int2hex(1));// 01 holding , 02 return change 03 change first holding later
                 buff.push(int2hex(0));// 27 check sum
