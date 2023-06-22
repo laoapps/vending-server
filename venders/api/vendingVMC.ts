@@ -151,7 +151,7 @@ export class VendingVMC {
                 console.log('enable cash acceptor and initiallize');
                 
                 that.commandVMC(EVMC_COMMAND.enable,[],-18);
-            }, 1000);
+            }, 2000);
         });
         // setInterval(() => {
         //     this.coolingSystemTask();
@@ -338,19 +338,19 @@ export class VendingVMC {
             }
             else if (command == EVMC_COMMAND.enable) {
                 // FA FB 70 len packNO 18 01 C8 crc 
-                buff.push('70');
+                buff.push(int2hex(70));
                 buff.push(int2hex(4));//length
                 // p.push(parseInt(p.length+'', 16));
                 buff.push(int2hex(series));// 
                 buff.push(int2hex(18));// 
                 buff.push(int2hex(1));// 
-                buff.push('C8');
+                buff.push('C8');//?
                 buff.push(int2hex(0));// checksum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
             else if (command == EVMC_COMMAND.disable) {
                 //FA FB 70 len packNO 18 01 00 crc 
-                buff.push('70');
+                buff.push(int2hex(70));
                 buff.push(int2hex(4));//length
                 buff.push(int2hex(series));// 
                 buff.push(int2hex(18));// 
