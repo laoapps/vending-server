@@ -383,6 +383,7 @@ export class VendingVMC {
             else if (command == EVMC_COMMAND._61) {
                 buff.push(command);
                 buff.push(int2hex(1));
+                buff.push(int2hex(series));// 
                 buff.push(int2hex(0));// checksum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
