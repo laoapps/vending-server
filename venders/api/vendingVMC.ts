@@ -145,9 +145,9 @@ export class VendingVMC {
                     //fa fb 23 05 58 00 00 00 00 7f
                     //fa fb 23 05 34 00 00 00 00 13
 
-                    that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
-                    let x = that.getACK().join('')
-                    console.log('X ACK', x, (Buffer.from(x, 'hex')));
+                    that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
+                    let x = that.getCashACK().join('')
+                    console.log('X 23 ACK', x, (Buffer.from(x, 'hex')));
                     that.port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
                             console.log('Error: ACK ', e.message);
@@ -168,7 +168,7 @@ export class VendingVMC {
                 }
                 else if (b != 'fafb410040') {// POLL only with no commands in the queue
 
-                    let x = that.getACK().join('')
+                    let x = that.getPollACK().join('')
                     console.log('X ACK', x, (Buffer.from(x, 'hex')));
                     that.port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
@@ -216,8 +216,18 @@ export class VendingVMC {
     clearTransactionID() {
         return this.commands.length ? this.commands.shift() : null;
     }
+    getCashACK() {
 
-    getACK() {
+        let buff = ['fa', 'fb'];
+        buff.push('23');
+        buff.push(this.int2hex(1));
+        buff.push(this.int2hex(this.getNextNo())); // default length 00
+        buff.push(this.int2hex(0));
+        buff[buff.length - 1] = chk8xor(buff)
+        // fa fb 23 01 pckno crc
+        return buff;
+    }
+    getPollACK() {
 
         let buff = ['fa', 'fb'];
         buff.push('42');
