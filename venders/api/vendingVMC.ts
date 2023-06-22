@@ -42,7 +42,7 @@ export class VendingVMC {
                 
                 if(moment().diff(that.lastupdate)>=7000){
                     if(!that.enable)return;
-                    that.commandVMC(EVMC_COMMAND.disable,[],-18);
+                    // that.commandVMC(EVMC_COMMAND.disable,[],-18);
                     that.enable=false;
                     return;
                 }
