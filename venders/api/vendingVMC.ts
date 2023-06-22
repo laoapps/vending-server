@@ -35,7 +35,7 @@ export class VendingVMC {
             }
             console.log(`port ${that.path} accessed`);
             that.sycnVMC();
-            that.setPoll();
+            that.setPoll(10);
             setTimeout(() => {
                 console.log('INITIALIZE.............................................................!');
                 // console.log('INIT 51');
@@ -120,7 +120,7 @@ export class VendingVMC {
                     writeSucceededRecordLog(b, -1);
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
-                    console.log('receive banknotes', b);
+                    console.log('receive banknotes 21', b);
                     //10RMB :  FA FB 21 06 packNo 01 00 00 03 e8 CRC
                     //20RMB :  FA FB 21 06 packNo 01 00 00 07 d0 CRC
 
@@ -141,9 +141,7 @@ export class VendingVMC {
 
                 } 
                 else if (b.startsWith('fafb23')) {// receive banknotes
-                    console.log('receive banknotes', b);
-                    //10RMB :  FA FB 21 06 packNo 01 00 00 03 e8 CRC
-                    //20RMB :  FA FB 21 06 packNo 01 00 00 07 d0 CRC
+                    console.log('receive banknotes 23', b);
                     //fa fb 23 05 58 00 00 00 00 7f
 
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
@@ -213,7 +211,7 @@ export class VendingVMC {
         this.commandVMC(EVMC_COMMAND.sync, {}, -31);
     }
     setPoll(ms: number = 3) {
-        this.commandVMC(EVMC_COMMAND.setpoll, { ms: 3 }, -16);
+        this.commandVMC(EVMC_COMMAND.setpoll, { ms }, -16);
     }
     clearTransactionID() {
         return this.commands.length ? this.commands.shift() : null;
