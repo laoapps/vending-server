@@ -51,11 +51,11 @@ export class VendingVMC {
                 // console.log('INIT 7020');
                 // that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
                 // console.log('INIT 7023');
-                // that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
                 console.log('INIT enable');
-                that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
-                // console.log('INIT accept banknote');
+                // that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+                console.log('INIT accept banknote');
                 // that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
@@ -143,6 +143,7 @@ export class VendingVMC {
                 else if (b.startsWith('fafb23')) {// receive banknotes
                     console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
                     //fa fb 23 05 58 00 00 00 00 7f
+                    //fa fb 23 05 34 00 00 00 00 13
 
                     that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
