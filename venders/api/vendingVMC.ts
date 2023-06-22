@@ -104,7 +104,7 @@ export class VendingVMC {
                 else if (b == 'fafb420043') {// ACK 
                     that.retry = 5;
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
-                    console.log('shift the current command and add new command for demo');
+                    // console.log('shift the current command and add new command for demo');
                     const t = that.clearTransactionID();
                     that.sock?.send(b, t?.transactionID || -2);
                     // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
@@ -146,16 +146,18 @@ export class VendingVMC {
                     //fa fb 23 05 34 00 00 00 00 13
 
                     that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
-                    writeSucceededRecordLog(b, -1);
-                    // 4.1.1 VMC receives money and notifies upper computer (VMC sends out)
-                    // Mode: 1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
-                    // If mode is 3 IC card or 4 Bank card, VMC needs to send card number.
-                    // Upper computer’s current amount has nothing to do with the VMC money notification. The VMC money notification is used for sending data to background system.
-                    // The upper computer returns ACK after it receives the data.
-                    // Command (0x21)
-                    // Length 6(1 byte)
-                    // PackNO+Text
-                    // Communication Number (1 byte)+Mode (1 byte)+Amount (4 byte)+Card Number (when Mode is 3 or 4)
+                    let x = that.getACK().join('')
+                    console.log('X ACK', x, (Buffer.from(x, 'hex')));
+                    that.port.write(Buffer.from(x, 'hex'), (e) => {
+                        if (e) {
+                            console.log('Error: ACK ', e.message);
+                            writeErrorLogs(b, e);
+                        } else {
+                            console.log('write ACK succeeded');
+                            writeSucceededRecordLog(b, -1);
+                        }
+                        // that.sock?.send(b, -3);
+                    })
 
                 } 
                 else if (b.startsWith('fafb71')) {
