@@ -42,7 +42,7 @@ export class VendingVMC {
                 
                 if(moment().diff(that.lastupdate)>=7000){
                     if(!that.enable)return;
-                    // that.commandVMC(EVMC_COMMAND.disable,[],-18);
+                    // that.commandVMC(EVMC_COMMAND.disable,{},-18);
                     that.enable=false;
                     return;
                 }
@@ -150,7 +150,7 @@ export class VendingVMC {
             setTimeout(() => {
                 console.log('enable cash acceptor and initiallize');
                 
-                that.commandVMC(EVMC_COMMAND.enable,[],-18);
+                that.commandVMC(EVMC_COMMAND.enable,{},-18);
             }, 2000);
         });
         // setInterval(() => {
@@ -299,7 +299,7 @@ export class VendingVMC {
     commandVMC(command: EVMC_COMMAND, params: any, transactionID: number, series = 1) {
 
         return new Promise<IResModel>((resolve, reject) => {
-            const slot = params.slot;
+            const slot = params?.slot;
             //STX
             //Command
             // Length
