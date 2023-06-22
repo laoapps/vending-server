@@ -55,8 +55,8 @@ export class VendingVMC {
 
                 console.log('INIT enable');
                 that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
-                console.log('INIT accept banknote');
-                that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
+                // console.log('INIT accept banknote');
+                // that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
                 //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
