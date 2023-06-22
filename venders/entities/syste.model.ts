@@ -468,7 +468,9 @@ export enum EVMC_COMMAND {
     _41 = '41',
     _03 = '03',
     _28 = '28',
-    _06 = "06"
+    _06 = "06",
+    disable = "disable",
+    enable = "enable"
 }
 export enum EMACHINE_COMMAND {
     login = 'login',
@@ -558,6 +560,34 @@ export enum EMODBUS_ERROR {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export enum EZDM8_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
@@ -573,8 +603,8 @@ export enum EZDM8_COMMAND {
     yaxisliftmotor = 'yaxisliftmotor',
     xaxisliftmotor = 'xaxisliftmotor',
     relaycommand = 'relaycommand',
-    disabled='disabled',
-    enable='enable',
+    disabled = 'disabled',
+    enable = 'enable',
     lifterreset = 'lifterreset',
     manualspeedmode = 'manualspeedmode',
     motortimeout = 'motortimeout',
@@ -587,7 +617,10 @@ export enum EZDM8_COMMAND {
     xaxisliftmotorissue = 'xaxisliftmotorissue',
     arrayoutput = 'arrayoutput',
     liftoutput = 'liftoutput',
-    positionliftmotor = "positionliftmotor"
+    positionliftmotor = "positionliftmotor",
+    disable = "disable",
+    limiter = "limiter",
+    balance = "balance"
 }
 export enum EMessage {
     loginfailed = 'login failed',

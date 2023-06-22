@@ -45,28 +45,41 @@ export class SocketClientVMC {
             const d = req.body as IResModel;
 
             // { slot: position };
+            const command = req.query['command'];
             const param = d.data;
-            this.processorder(d.transactionID).then(r => {
-                if(r.data.transactionID==d.transactionID){
-                    this.m.command(d.command as any, param, d.transactionID).then(r => {
-                        console.log('DATA command completed');
-    
-                        this.send(r, d.transactionID, d.command as any);
-                    }).catch(e => {
-                        if (e) {
-                            console.log('DATA command error', e);
-    
-                            this.send(e, d.transactionID, d.command as any);
-                        }
-    
-                    })
-                    console.log('DATA response', d.command, d);
-                    res.send({status:1,message:'transactionID OK'});
-                }else{
-                    res.send({status:0,message:'transactionID not found'});
-                }
-                
-            })
+            if(command =='process'){
+               
+                this.processorder(d.transactionID).then(r => {
+                    if(r.data.transactionID==d.transactionID){
+                        this.m.command(d.command as any, param, d.transactionID).then(r => {
+                            console.log('DATA command completed');
+        
+                            this.send(r, d.transactionID, d.command as any);
+                        }).catch(e => {
+                            if (e) {
+                                console.log('DATA command error', e);
+        
+                                this.send(e, d.transactionID, d.command as any);
+                            }
+        
+                        })
+                        console.log('DATA response', d.command, d);
+                        res.send({status:1,message:'transactionID OK'});
+                    }else{
+                        res.send({status:0,message:'transactionID not found'});
+                    }
+                    
+                })
+
+            }
+            else if(command == 'enable'){
+                const isEnable =req.query['enable']||false;
+
+            }
+            else{
+                res.send({status:0,message:'command not found'});
+            }
+            
 
 
         })
@@ -128,8 +141,12 @@ export class SocketClientVMC {
 
             that.m.command(d.command as any, param, d.transactionID).then(r => {
                 console.log('DATA command completed');
-
-                this.send(r, d.transactionID, d.command as any);
+                if(d.command=='balance'){
+                    this.send(r,d.transactionID,EMACHINE_COMMAND.status);
+                }else{
+                    this.send(r, d.transactionID, d.command as any);
+                }
+               
             }).catch(e => {
                 if (e) {
                     console.log('DATA command error', e);
