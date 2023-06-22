@@ -343,19 +343,19 @@ export class VendingVMC {
                 // FA FB 70 len packNO 18 01 C8 crc 
                 // FA FB 70 03 44 19 00 2F
                 // FA FB 70 04 47 01 00 00 33
-                buff.push(int2hex(70));
+                buff.push('70');
                 buff.push(int2hex(4));//length
                 // p.push(parseInt(p.length+'', 16));
                 buff.push(int2hex(series));// 
                 buff.push(int2hex(18));// 
                 buff.push(int2hex(1));// 
-                buff.push('C8');//?
+                buff.push(int2hex(100));//?
                 buff.push(int2hex(0));// checksum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
             else if (command == EVMC_COMMAND.disable) {
                 //FA FB 70 len packNO 18 01 00 crc 
-                buff.push(int2hex(70));
+                buff.push('70');
                 buff.push(int2hex(4));//length
                 buff.push(int2hex(series));// 
                 buff.push(int2hex(18));// 
@@ -395,7 +395,7 @@ export class VendingVMC {
             // coin system setting
             else if (command == EVMC_COMMAND._7001) {
                 //FA FB 70 04 47 01 00 00 33
-                buff.push(int2hex(70));// 70 
+                buff.push('70');// 70 
                 buff.push(int2hex(4));// 04 len
                 buff.push(int2hex(series));// // 47 series
                 buff.push(int2hex(1));//// coin system setting
@@ -407,7 +407,7 @@ export class VendingVMC {
             // Enable Unionpay/POS
             else if (command == EVMC_COMMAND._7017) {
                 //FA FB 70 03 42 17 00 27 
-                buff.push(int2hex(70));// 70 
+                buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 42 series
                 buff.push(int2hex(17));//// 17  Enable Unionpay/POS
@@ -419,7 +419,7 @@ export class VendingVMC {
             // Bill Value Accepted Setting
             else if (command == EVMC_COMMAND._7018) {
                 //FA FB 70 03 45 18 00 2F 
-                buff.push(int2hex(70));// 70 
+                buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 45 series
                 buff.push(int2hex(18));//// 18  
@@ -431,7 +431,7 @@ export class VendingVMC {
             // Bill accepting mode
             else if (command == EVMC_COMMAND._7019) {
                 //FA FB 70 03 44 19 00 2F 
-                buff.push(int2hex(70));// 70 
+                buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 44 series
                 buff.push(int2hex(19));//// 19 
@@ -443,7 +443,7 @@ export class VendingVMC {
             // Bill Low-change Setting
             else if (command == EVMC_COMMAND._7020) {
                 //FA FB 70 03 46 20 00 14
-                buff.push(int2hex(70));// 70 
+                buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 46 series
                 buff.push(int2hex(20));//// 20 
@@ -455,7 +455,7 @@ export class VendingVMC {
             // Bill Low-change Setting
             else if (command == EVMC_COMMAND._7023) {
                 //FA FB 70 03 43 23 00 12 
-                buff.push(int2hex(70));// 70 
+                buff.push('70');// 70 
                 buff.push(int2hex(3));// 03 len
                 buff.push(int2hex(series));// // 46 series
                 buff.push(int2hex(23));//// 23
@@ -465,7 +465,7 @@ export class VendingVMC {
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
             else if (command == EVMC_COMMAND.sync) {
-                buff.push(this.int2hex(31));
+                buff.push('31');
                 buff.push(this.int2hex(1)); // default length 01
                 this.no = 0;
                 buff.push(this.int2hex(this.getNextNo()));
@@ -473,7 +473,7 @@ export class VendingVMC {
                 buff[buff.length - 1] = chk8xor(buff)
             }
             else if (command == EVMC_COMMAND.setpoll) {
-                buff.push(this.int2hex(16));
+                buff.push('16');
                 buff.push(this.int2hex(2)); // default length 01
                 buff.push(this.int2hex(this.getNextNo()));
                 buff.push(this.int2hex(params.ms));
