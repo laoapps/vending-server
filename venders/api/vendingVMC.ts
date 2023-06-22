@@ -148,9 +148,9 @@ export class VendingVMC {
             });
 
             setTimeout(() => {
-                console.log('enable cash acceptor and initiallize');
+                console.log('INITIALIZE.............................................................!');
                 
-                that.commandVMC(EVMC_COMMAND.enable,{},-18);
+                that.commandVMC(EVMC_COMMAND._51,{},-18);
             }, 2000);
         });
         // setInterval(() => {
@@ -371,17 +371,13 @@ export class VendingVMC {
             //     buff.push(chk8xor(buff))
             // }
             /// dispensing
-            // else if (command == 0x06) {
-            //     buff.push(command);
-            //     buff.push(0x05);//length
-            //     // p.push(parseInt(p.length+'', 16));
-            //     buff.push(series);// default communication number
-            //     buff.push(0x01);// text communication number 
-            //     buff.push(0x01) // enable drop sensor
-            //     buff.push(0x00) // disable elavator
-            //     buff.push(...params);// select slot
-            //     buff.push(chk8xor(buff))
-            // }
+            else if (command == EVMC_COMMAND._51) {
+                buff.push(command);
+                buff.push(int2hex(1));//length
+                buff.push(int2hex(series));// 
+                buff.push(int2hex(0));// checksum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
             // // check drop sensor
             // else if (command == '') {
             //     buff.push(command);
