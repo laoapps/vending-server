@@ -51,10 +51,10 @@ export class VendingVMC {
                 // console.log('INIT 7020');
                 // that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
                 // console.log('INIT 7023');
-                that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+                // that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
                 console.log('INIT enable');
-                // that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+                that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
                 console.log('INIT accept banknote');
                 // that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 // setTimeout(() => {
