@@ -245,24 +245,24 @@ export class VendingVMC {
                     this.balance = params?.balance||0;
                     this.limiter = params?.limiter||100000;
                     this.lastupdate = moment.now();
-                    if(this.balance<this.limiter){
-                        this.lastupdate = moment().add(-360,'days').milliseconds();
-                        if(!this.enable) return resolve(PrintSucceeded(command as any, params,''));
-                        this.enable=false;
-                        this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
-                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                        }).catch(e => {
-                            reject(PrintError(command as any, params, e.message));
-                        })
-                    }else{
-                        if(this.enable) return resolve(PrintSucceeded(command as any, params,''));
-                        this.enable=true;
-                        this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
-                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                        }).catch(e => {
-                            reject(PrintError(command as any, params, e.message));
-                        })
-                    }
+                    // if(this.balance<this.limiter){
+                    //     this.lastupdate = moment().add(-360,'days').milliseconds();
+                    //     if(!this.enable) return resolve(PrintSucceeded(command as any, params,''));
+                    //     this.enable=false;
+                    //     this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
+                    //         resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                    //     }).catch(e => {
+                    //         reject(PrintError(command as any, params, e.message));
+                    //     })
+                    // }else{
+                    //     if(this.enable) return resolve(PrintSucceeded(command as any, params,''));
+                    //     this.enable=true;
+                    //     this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
+                    //         resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                    //     }).catch(e => {
+                    //         reject(PrintError(command as any, params, e.message));
+                    //     })
+                    // }
                    
                     break;
 
