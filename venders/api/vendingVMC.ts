@@ -66,16 +66,16 @@ export class VendingVMC {
             }, 2000);
             var b = '';
 
-            setInterval(() => {
-                console.log('check last update ', moment.now(), that.lastupdate);
+            // setInterval(() => {
+            //     console.log('check last update ', moment.now(), that.lastupdate);
 
-                if (moment().diff(that.lastupdate) >= 7000) {
-                    if (!that.enable) return;
-                    // that.commandVMC(EVMC_COMMAND.disable,{},-18);
-                    that.enable = false;
-                    return;
-                }
-            }, 1000)
+            //     if (moment().diff(that.lastupdate) >= 7000) {
+            //         if (!that.enable) return;
+            //         // that.commandVMC(EVMC_COMMAND.disable,{},-18);
+            //         that.enable = false;
+            //         return;
+            //     }
+            // }, 1000)
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
@@ -141,11 +141,8 @@ export class VendingVMC {
 
                 } 
                 else if (b.startsWith('fafb23')) {// receive banknotes
-                    console.log('receive banknotes 23', b);
+                    console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
                     //fa fb 23 05 58 00 00 00 00 7f
-
-                    console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
-                    console.log('shift the current command and add new command for demo');
 
                     that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
