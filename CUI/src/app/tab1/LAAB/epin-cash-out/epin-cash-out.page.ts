@@ -21,8 +21,8 @@ export class EpinCashOutPage implements OnInit {
   btnCreateSMC: boolean = false;
 
   constructor(
-    private apiService: ApiService,
-    private vendingAPIService: VendingAPIService
+    public apiService: ApiService,
+    public vendingAPIService: VendingAPIService
   ) { 
     this.createSMCProcess = new CreateSMCProcess(this.apiService, this.vendingAPIService);
     this.createEPINProcess = new CreateEPINProcess(this.apiService, this.vendingAPIService);

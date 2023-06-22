@@ -21,8 +21,8 @@ export class LaabGoPage implements OnInit {
   private paidValidationProcess: PaidValidationProcess;
 
   constructor(
-    private apiService: ApiService,
-    private vendingAPIService: VendingAPIService
+    public apiService: ApiService,
+    public vendingAPIService: VendingAPIService
   ) { 
     this.paidValidationProcess = new PaidValidationProcess(this.apiService, this.vendingAPIService);
   }

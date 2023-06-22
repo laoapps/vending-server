@@ -160,7 +160,7 @@ export class Tab1Page {
   }
   initStock() {
 
-
+    if(this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().subscribe(r => {
       console.log(`load vending sale`, r.data);
       if (r.status) {

@@ -169,8 +169,8 @@ export class SocketServerZDM8 {
                                         console.log(`cash validate fail`, response.message);
                                         socket.end();
                                     }
-
-                                    that.updateBalance(m.machineId, response.balance);
+                                    const limiter =100000;
+                                    that.updateBalance(m.machineId, {balance:response.balance||0,limiter});
 
                                 }).catch(error => {
                                     console.log(`cash validation error`, error.message);
@@ -448,7 +448,7 @@ export class SocketServerZDM8 {
         }
 
     }
-    updateBalance(machineId: string, balance:number) {
+    updateBalance(machineId: string, balance:any) {
         try {
             const x = this.sclients.find(v => {
                 const x = v['machineId'] as IMachineClientID;

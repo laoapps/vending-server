@@ -18,8 +18,8 @@ export class LaabCashoutPage implements OnInit {
   phonenumber: string;
 
   constructor(
-    private apiService: ApiService,
-    private vendingAPIService: VendingAPIService
+    public apiService: ApiService,
+    public vendingAPIService: VendingAPIService
   ) { 
     this.transferValidationProcess = new TransferValidationProcess(this.apiService, this.vendingAPIService);
   }

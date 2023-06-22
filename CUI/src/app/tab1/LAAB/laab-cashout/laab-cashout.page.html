@@ -21,7 +21,7 @@
       <div class="left">
         <a *ngFor="let list of numberList; let i = index" (click)="processDigits(list)" href="javascript:void(0)" class="item">{{ list }}</a>
         <div class=""></div>
-        <a (click)="processDigits(0)" href="javascript:void(0)" class="item">0</a>
+        <a (click)="processDigits('0')" href="javascript:void(0)" class="item">0</a>
         <div class=""></div>
       </div>
       <div class="right">

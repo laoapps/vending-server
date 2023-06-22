@@ -22,8 +22,8 @@ export class LaabCashinShowCodePage implements OnInit {
   counterTimeClose: any = {} as any;
 
   constructor(
-    private apiService: ApiService,
-    private vendingAPIService: VendingAPIService
+    public apiService: ApiService,
+    public vendingAPIService: VendingAPIService
   ) { 
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
   }

@@ -28,8 +28,8 @@ export class SmcListPage implements OnInit {
   currentScroll: number = 345;
 
   constructor(
-    private apiService: ApiService,
-    private vendingAPIService: VendingAPIService
+    public apiService: ApiService,
+    public vendingAPIService: VendingAPIService
   ) { 
     this.loadSMCListProcess = new LoadSMCProcess(this.apiService, this.vendingAPIService);
     this.createEPINProcess = new CreateEPINProcess(this.apiService, this.vendingAPIService);
