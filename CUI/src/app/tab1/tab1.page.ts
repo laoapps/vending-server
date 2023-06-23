@@ -148,7 +148,7 @@ export class Tab1Page {
   autoUpdateCash() {
     this.WSAPIService.balanceUpdateSubscription.subscribe(async r => {
       console.log(r);
-      if (r != undefined && r > 0)
+      if (r)
       {
         await this.initVendingWalletCoinBalance();
       }
@@ -568,34 +568,36 @@ export class Tab1Page {
   }
 
   addOrder(x: IVendingMachineSale) {
-    // this.zone.runOutsideAngular(() => {
-    // const ord = this.orders.find(v=>v.stock.id==x.stock.id);
-    if (x.stock.qtty < 1) return alert('Out of Stock');
+    // this.zone.runOutsideAngular(() => { 
+      if (!x) return alert('not found')
+     const ord = this.orders.filter(v=>v.position==x.position);
+     if(ord.length)
+      if (ord.length >= ord[0]?.max) return alert('Out of Stock');
     console.log('ID', x);
     console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
-    if (!x) return alert('not found');
+   ;
 
-    this.apiService.showLoading();
+    this.apiService.showLoading('',500);
 
-    if (this.orders.find(v => v.position == x.position)) {
-      const mx = x.max;
-      // const summ = this.getSummarizeOrder();
-      // const summ  = this.summarizeOrder;
-      const re = this.orders.find(v => {
-        const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
-        console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
+    // if (this.orders.find(v => v.position == x.position)) {
+    //   const mx = x.max;
+    //   // const summ = this.getSummarizeOrder();
+    //   // const summ  = this.summarizeOrder;
+    //   const re = this.orders.find(v => {
+    //     const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
+    //     console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
         
-        return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
-      });
-       console.log('0x0r',this.orders, mx, re);
-      if (re){
-         setTimeout(() => {
-        this.apiService.dismissLoading();
-      }, 1000);
-        return alert('Out of Stock');
-      }
+    //     return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
+    //   });
+    //    console.log('0x0r',this.orders, mx, re);
+    //   if (re){
+    //      setTimeout(() => {
+    //     this.apiService.dismissLoading();
+    //   }, 1000);
+    //     return alert('Out of Stock');
+    //   }
      
-    }
+    // }
    
     // if (x.stock.qtty <= 0) alert('Out Of order');
    
@@ -605,9 +607,9 @@ export class Tab1Page {
     this.orders.push(y);
     //  console.log('sum',this.getSummarizeOrder());
     this.getSummarizeOrder();
-    setTimeout(() => {
+    // setTimeout(() => {
       this.apiService.dismissLoading();
-    }, 1000);
+    // }, 1000);
    
     
 

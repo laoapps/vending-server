@@ -1081,13 +1081,13 @@ export class InventoryZDM8 implements IBaseClass {
 
         } else {
             const idx = bill?.vendingsales?.findIndex(v => v.position == position) || -1;
-            idx == -1 || !idx ? bill.vendingsales?.splice(idx, 1) : '';
+            idx == -1 || !idx ? '':bill?.vendingsales?.splice(idx, 1) ;
             resx.status = 1;
             console.log('onMachineResponse xxx', transactionID);
             resx.transactionID = transactionID || -1;
             resx.data = { bill, position };
         }
-        const clientId = bill.clientId + '';
+        const clientId = bill?.clientId + '';
         console.log('send', clientId,bill?.clientId, resx);
         console.log('onMachineResponse', transactionID);
 

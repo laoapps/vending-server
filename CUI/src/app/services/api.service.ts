@@ -18,6 +18,9 @@ import { IENMessage } from '../models/base.model';
   providedIn: 'root'
 })
 export class ApiService {
+  bill_price: Array<number> = [];
+  bill_image: Array<string> = [];
+
   myTab1: Tab1Page;
 
   cash: number = 0;
@@ -136,22 +139,22 @@ export class ApiService {
           ]
         }).then(v => v.present());
       }
-      this.loadDeliveryingBills().subscribe(r=>{
-        this.dismissModal();
-        this.dismissLoading();
-          if (r.status) {
-            const pb = r.data as Array<IBillProcess>;
-            if(pb.length)
-            this.showModal(RemainingbillsPage, { r:pb }).then(r=>{
-              r.present();
-            });
-          }
-          else {
-            this.toast.create({ message: r.message, duration: 5000 }).then(r => {
-              r.present();
-            })
-          }
-      })
+      // this.loadDeliveryingBills().subscribe(r=>{
+      //   this.dismissModal();
+      //   this.dismissLoading();
+      //     if (r.status) {
+      //       const pb = r.data as Array<IBillProcess>;
+      //       if(pb.length)
+      //       this.showModal(RemainingbillsPage, { r:pb }).then(r=>{
+      //         r.present();
+      //       });
+      //     }
+      //     else {
+      //       this.toast.create({ message: r.message, duration: 5000 }).then(r => {
+      //         r.present();
+      //       })
+      //     }
+      // })
       // this.dismissModal();
       this.storage.set('saleStock', this.vendingOnSale, 'stock');
 
@@ -342,8 +345,8 @@ export class ApiService {
     // req.data.clientId = this.clientId.clientId;
     return this.http.post<IResModel>(this.url + '/getFreeProduct', req, { headers: this.headerBase() });
   }
-  showLoading(message = 'loading...') {
-    this.load.create({ message, duration: 15000 }).then(r => {
+  showLoading(message = 'loading...',t=15000) {
+    this.load.create({ message, duration: t }).then(r => {
       r.present();
     });
   }

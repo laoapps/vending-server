@@ -29,13 +29,15 @@ export class RemainingbillsPage implements OnInit {
     //   v.bill.vendingsales.forEach(vx=>vx.stock.image=this.apiService.vendingOnSale.find(vy=>vy.stock.id==vx.stock.id)?.stock?.image)
     // })
   }
-  findImage(position:number){
-    // console.log('ooooooo',id,this.apiService.vendingOnSale);
-    
-    return this.apiService.vendingOnSale.find(vy=>vy.position==position)?.stock?.image;
+  findImage(id:number){
+    return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
+  }
+  findPrice(id:number){
+    return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
   }
   retryProcessBill(transactionID:string,position:number){
     if (this.canclick == true) {
+      this.apiService.showLoading('',30000);
       this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
         console.log(`vending on sale`, this.apiService.vendingOnSale);
         console.log('retryProcessBill',r);
@@ -51,12 +53,27 @@ export class RemainingbillsPage implements OnInit {
           } else {
             count = 0;
           }
-          
-          this.apiService.modal.dismiss();
-          this.apiService.myTab1.reshowBills(count);
+          const i=this.r.findIndex(v=>v.position==position);
+          this.r.splice(i,1);
+         
+          if (this.r != undefined && this.r.length == 0) {
+            this.apiService,this.modal.dismiss();
+          }
+          // this.apiService.modal.dismiss();
+          // this.apiService.myTab1.reshowBills(count);
+        } else{
+          await this.apiService.openSoundSystemError();
         }
+        this.apiService.simpleMessage(r.message);
+        setTimeout(()=>{
+          this.apiService.dismissLoading();
+        },3000)
+        
       }); 
     }
+  }
+  getPrice() {
+    return this.r.find(item => item)
   }
   getStock(position:number){
     return this.r.map(v=>v.bill.vendingsales)[0].find(v=>v.position==position)?.stock;

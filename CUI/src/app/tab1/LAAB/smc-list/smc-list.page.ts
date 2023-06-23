@@ -144,6 +144,7 @@ export class SmcListPage implements OnInit {
         console.log(`params`, params);
         const run = await this.createEPINProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
+        this.lists = this.lists.filter(item => item.id !== data.id);
 
         const model = {
           type: 'EQR',
