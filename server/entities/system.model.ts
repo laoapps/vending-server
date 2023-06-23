@@ -1102,6 +1102,9 @@ export interface IBankNote extends IBase {
     channel: number;
     image: string;
 }
+export interface IHashBankNote extends IBankNote {
+    hash:string;
+}
 export interface IBillCashIn extends IBase {
     bankNotes: Array<IBankNote>;
     badBankNotes: Array<IBankNote>;
@@ -3077,6 +3080,7 @@ export enum EEntity {
     machineID = "machineID",
     machineIDHistory = "machineIDHistory",
     badbillcash = "badbillcash",
+    insuffbillcash = "insuffbillcash",
     machineclientid = "machineclientid",
     vendingmachinebillpaid = "vendingmachinebillpaid",
     vendingwallet = 'vendingwallet'

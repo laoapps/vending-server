@@ -2,9 +2,9 @@ import axios from 'axios';
 import { NextFunction, Request, Response, Router } from 'express';
 import * as WebSocketServer from 'ws';
 import { randomUUID } from 'crypto';
-
+import cryptojs from 'crypto-js';
 import { broadCast, findRealDB, PrintError, PrintSucceeded, redisClient, writeErrorLogs, writeLogs, writeSucceededRecordLog } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass, EEntity, IMachineClientID, ERedisCommand, EPaymentStatus, IBillCashIn, IBankNote } from '../entities/system.model';
+import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass, EEntity, IMachineClientID, ERedisCommand, EPaymentStatus, IBillCashIn, IBankNote, IHashBankNote } from '../entities/system.model';
 import moment from 'moment';
 import { v4 as uuid4 } from 'uuid';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
@@ -29,6 +29,7 @@ export class InventoryZDM8 implements IBaseClass {
     // socket server for vending controller only
     ssocket: SocketServerZDM8 = {} as SocketServerZDM8;
     notes = new Array<IBankNote>();
+    hashNotes = new Array<IHashBankNote>();
     // stock = new Array<IStock>();
     // vendingOnSale = new Array<IVendingMachineSale>();
     // vendingBill = new Array<IVendingMachineBill>();
@@ -1132,7 +1133,7 @@ export class InventoryZDM8 implements IBaseClass {
                 const sock = that.ssocket.findOnlneMachine(machineId.machineId);
                 if (!sock) throw new Error('machine is not online');
                 // that.ssocket.terminateByClientClose(machineId.machineId)
-
+                const hashnotes = this.initHashBankNotes(machineId.machineId);
                 const ws =that.wsClient.find(v=>v['machineId']==machineId.machineId+'');
                 
                 const res = {} as IResModel
@@ -1171,7 +1172,8 @@ export class InventoryZDM8 implements IBaseClass {
                     // bsi.requestor = requestor;
                     // that.push(bsi);
                     //
-                    const bn = this.notes.find(v => v.channel == d?.data?.channel);
+                    const hn = hashnotes.find(v=>v.hash==d?.data+'');
+                    const bn = this.notes.find(v => v.value == hn.value);
                     if(bn != undefined && Object.entries(bn).length == 0) {
                         ws.send(JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote)));
                         return;
@@ -1198,7 +1200,13 @@ export class InventoryZDM8 implements IBaseClass {
                     console.log(`error cash in validation`, error.message);
                     bsi.badBankNotes.push(bn);
                     res.data = { clientId: ws['clientId'], billCashIn: bsi ,bn};
-                    that.updateBadBillCash(bsi,machineId?.machineId,bsi?.transactionID)
+                    that.updateBadBillCash(bsi,machineId?.machineId,bsi?.transactionID);
+
+                    if (error.transferFail == true) {
+                        console.log(`error`, error.message);
+                        this.updateInsuffBillCash(bsi);
+                    }
+
                     ws.send(JSON.stringify(PrintError(d.command, [], error.message)))})
 
 
@@ -1215,6 +1223,16 @@ export class InventoryZDM8 implements IBaseClass {
                     ws.send(JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound)));
 
                 }
+    }
+   
+    initHashBankNotes(machineId:string){
+        const hashNotes = Array<IHashBankNote>();
+        for (let i = 0; i < this.notes.length; i++) {
+            const x = JSON.parse(JSON.stringify(this.notes[i])) as IHashBankNote;
+            x.hash = cryptojs.SHA256(machineId+(this.notes[i].value*100)).toString(cryptojs.enc.Hex)
+            hashNotes.push(x);
+        }
+        return hashNotes;
     }
     init() {
         // load machines
@@ -1372,6 +1390,24 @@ export class InventoryZDM8 implements IBaseClass {
                 }).catch(e => {
                     console.log('  mEnt.create', e);
                 })
+            })
+        } catch (error) {
+            console.log('Error updateBillCash');
+
+        }
+
+    }
+    updateInsuffBillCash(billCash: IBillCashIn) {
+        try {
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.insuffbillcash + '_' + this.production , dbConnection);
+            bEnt.sync().then(r => {
+                bEnt.create(billCash).then(rx => {
+                    console.log('SAVED BILL CASH-IN',  EEntity.insuffbillcash + '_' + this.production );
+
+                })
+            }).catch(e => {
+                console.log(' bEnt.create', e);
+
             })
         } catch (error) {
             console.log('Error updateBillCash');

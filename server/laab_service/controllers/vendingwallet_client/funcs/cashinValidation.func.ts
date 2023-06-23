@@ -23,6 +23,9 @@ export class CashinValidationFunc {
     private passkeys: string;
     private response: any = {} as any;
 
+    private transferFail: boolean = false;
+    private responseTransferFail: any = {} as any;
+
     constructor(){}
 
     public Init(params: any): Promise<any> {
@@ -69,7 +72,14 @@ export class CashinValidationFunc {
                 
             } catch (error) {
 
-                resolve(error.message);
+                if (this.transferFail == true)
+                {
+                    resolve(this.responseTransferFail);
+                }
+                else 
+                {
+                    resolve(error.message);
+                }
             }
         });
     }
@@ -192,7 +202,14 @@ export class CashinValidationFunc {
                 }
                 const run = await axios.post(LAAB_CoinTransfer, params);
                 console.log(`response`, run.data);
-                if (run.data.status != 1) return resolve(run.data.message);
+                if (run.data.status != 1) {
+                    this.transferFail = true;
+                    this.responseTransferFail = {
+                        transferFail: this.transferFail,
+                        message: run.data.message
+                    }
+                    return resolve(run.data.message);
+                }
 
                 const h ={
                     hash:run.data.info.hash,
