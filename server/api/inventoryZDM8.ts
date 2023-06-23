@@ -893,8 +893,21 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!o.otp || !o.machineId) return res.send(PrintError('addMachine', [], EMessage.bodyIsEmpty));
 
                         // r.changed('isActive',true);
-                        this.refreshMachines();
-                        res.send(PrintSucceeded('addMachine', await this.machineClientlist.create(o), EMessage.succeeded));
+                        const x =await this.machineClientlist.findOne({where:{machineId:o.machineId}});
+                        if(!x){
+                            this.machineClientlist.create(o).then(r=>{
+                                this.refreshMachines();
+                                res.send(PrintSucceeded('addMachine', r, EMessage.succeeded));
+                            }).catch(e=>{
+                                console.log(e);
+                                res.send(PrintError('addMachine', e, EMessage.error));
+                            });
+                        }else{
+                            res.send(PrintError('addMachine', 'Machine ID exist', EMessage.error));
+                        }
+                        
+                        
+                        
 
                     }
                     catch (error) {
