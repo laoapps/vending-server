@@ -55,7 +55,7 @@ export class VendingVMC {
 
                 console.log('INIT enable');
                 that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
-                console.log('INIT accept banknote');
+                // console.log('INIT accept banknote');
                 // that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
@@ -98,24 +98,16 @@ export class VendingVMC {
                         const t = that.clearTransactionID();
                         that.sock?.send(b, -1);
                     }
-
-
                 }
                 else if (b == 'fafb420043') {// ACK 
                     that.retry = 5;
                     console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
-                    // console.log('shift the current command and add new command for demo');
                     const t = that.clearTransactionID();
                     that.sock?.send(b, t?.transactionID || -2);
-                    // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
                 }
-                else if (b.startsWith('fafb0405')) {// drop sensor
+                else if (b.startsWith('fafb04')) {// drop sensor
                     //FA FB 04 05 packNo 03 00 19
                     console.log('drop detect', b);
-                    // Command (0x71)
-                    // Length (1 byte)
-                    // PackNO+Text
-                    // Communication number+Command type(0x72)+Operation type(0x01) +Test status(0- Successful, 1-failed)
                     that.sock?.send(b, -9);
                     writeSucceededRecordLog(b, -1);
                 }
@@ -129,15 +121,6 @@ export class VendingVMC {
 
                     that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
-                    // 4.1.1 VMC receives money and notifies upper computer (VMC sends out)
-                    // Mode: 1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
-                    // If mode is 3 IC card or 4 Bank card, VMC needs to send card number.
-                    // Upper computer’s current amount has nothing to do with the VMC money notification. The VMC money notification is used for sending data to background system.
-                    // The upper computer returns ACK after it receives the data.
-                    // Command (0x21)
-                    // Length 6(1 byte)
-                    // PackNO+Text
-                    // Communication Number (1 byte)+Mode (1 byte)+Amount (4 byte)+Card Number (when Mode is 3 or 4)
 
                 } 
                 else if (b.startsWith('fafb23')) {// receive banknotes
@@ -146,18 +129,8 @@ export class VendingVMC {
                     //fa fb 23 05 34 00 00 00 00 13
 
                     that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
-                    let x = that.getCashACK().join('')
-                    console.log('X 23 ACK', x, (Buffer.from(x, 'hex')));
-                    that.port.write(Buffer.from(x, 'hex'), (e) => {
-                        if (e) {
-                            console.log('Error: ACK ', e.message);
-                            writeErrorLogs(b, e);
-                        } else {
-                            console.log('write ACK succeeded');
-                            writeSucceededRecordLog(b, -1);
-                        }
-                        // that.sock?.send(b, -3);
-                    })
+                    writeSucceededRecordLog(b, -1);
+                    
 
                 } 
                 else if (b.startsWith('fafb71')) {
@@ -166,17 +139,19 @@ export class VendingVMC {
                     // writeSucceededRecordLog(b, -1);
 
                 }
-                else if (b != 'fafb410040') {// POLL only with no commands in the queue
+                
+                
+                if (b != 'fafb410040'&&b!='fafb420043') {// POLL only with no commands in the queue
 
-                    let x = that.getPollACK().join('')
+                    let x = that.getACK().join('')
                     console.log('X ACK', x, (Buffer.from(x, 'hex')));
                     that.port.write(Buffer.from(x, 'hex'), (e) => {
                         if (e) {
                             console.log('Error: ACK ', e.message);
-                            writeErrorLogs(b, e);
+                            // writeErrorLogs(b, e);
                         } else {
                             console.log('write ACK succeeded');
-                            writeSucceededRecordLog(b, -1);
+                            // writeSucceededRecordLog(b, -1);
                         }
                         that.sock?.send(b, -3);
                     })
@@ -216,18 +191,18 @@ export class VendingVMC {
     clearTransactionID() {
         return this.commands.length ? this.commands.shift() : null;
     }
-    getCashACK() {
+    // getCashACK() {
 
-        let buff = ['fa', 'fb'];
-        buff.push('23');
-        buff.push(this.int2hex(1));
-        buff.push(this.int2hex(this.getNextNo())); // default length 00
-        buff.push(this.int2hex(0));
-        buff[buff.length - 1] = chk8xor(buff)
-        // fa fb 23 01 pckno crc
-        return buff;
-    }
-    getPollACK() {
+    //     let buff = ['fa', 'fb'];
+    //     buff.push('23');
+    //     buff.push(this.int2hex(1));
+    //     buff.push(this.int2hex(this.getNextNo())); // default length 00
+    //     buff.push(this.int2hex(0));
+    //     buff[buff.length - 1] = chk8xor(buff)
+    //     // fa fb 23 01 pckno crc
+    //     return buff;
+    // }
+    getACK() {
 
         let buff = ['fa', 'fb'];
         buff.push('42');
