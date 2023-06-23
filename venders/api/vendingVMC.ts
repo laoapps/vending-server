@@ -38,25 +38,25 @@ export class VendingVMC {
             that.setPoll(10);
             setTimeout(() => {
                 console.log('INITIALIZE.............................................................!');
-                // console.log('INIT 51');
-                // that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
-                // console.log('INIT 7001');
-                // that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
-                // console.log('INIT 7001');
-                // that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
-                // console.log('INIT 7018');
-                // that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
-                // console.log('INIT 7019');
-                // that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
-                // console.log('INIT 7020');
-                // that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
-                // console.log('INIT 7023');
-                // that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+                console.log('INIT 51');
+                that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
+                console.log('INIT 7001');
+                that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
+                console.log('INIT 7001');
+                that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
+                console.log('INIT 7018');
+                that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
+                console.log('INIT 7019');
+                that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
+                console.log('INIT 7020');
+                that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
+                console.log('INIT 7023');
+                that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
                 console.log('INIT enable');
                 that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
-                // console.log('INIT accept banknote');
-                // that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
+                console.log('INIT accept banknote');
+                that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
                 //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
