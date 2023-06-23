@@ -68,7 +68,7 @@ export class VendingVMC {
             
             setTimeout(() => {
                 setInterval(() => {
-                    console.log('check last update ', moment.now()-that.lastupdate);
+                    console.log('check last update ', moment.now()-that.lastupdate,moment().diff(that.lastupdate));
     
                     if (moment().diff(that.lastupdate) >= 7000) {
                         if (!that.enable) return;
