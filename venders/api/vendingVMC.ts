@@ -128,8 +128,22 @@ export class VendingVMC {
                 } 
                 else if (b.startsWith('fafb23')) {// receive banknotes
                     console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
-                    //fa fb 23 05 58 00 00 00 00 7f
-                    //fa fb 23 05 34 00 00 00 00 13
+                    // fafb23052e
+                    // 0098968087 100k
+                    // fafb2305d0
+                    // 00e4e1c032 50k
+                    // fafb230529
+                    // 00e4e1c0cb 20k
+                    // fafb2305b1
+                    // 00e4e1c053 10k
+                    // fafb2305f9
+                    // 00e4e1c01b 5k
+                    // fafb23056f
+                    // 00e4e1c08d 2k
+                    // fafb2305bc
+                    // 00e6686075 1k ==3865600117
+                    // fafb23055c
+                    // 00e7ef0073 == 3891200115
 
                     that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
@@ -278,7 +292,7 @@ export class VendingVMC {
                     this.lastupdate = moment.now();
                     if(this.balance<this.limiter){
                         this.lastupdate = moment().add(-360,'days').milliseconds();
-                        if(!this.enable) return resolve(PrintSucceeded(command as any, params,''));
+                        // if(!this.enable) return resolve(PrintSucceeded(command as any, params,'')); alwasy activate every ping 
                         this.enable=false;
                         this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
                             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
@@ -286,7 +300,7 @@ export class VendingVMC {
                             reject(PrintError(command as any, params, e.message));
                         })
                     }else{
-                        if(this.enable) return resolve(PrintSucceeded(command as any, params,''));
+                        // if(this.enable) return resolve(PrintSucceeded(command as any, params,''));  alwasy activate every ping 
                         this.enable=true;
                         this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
                             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
