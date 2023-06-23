@@ -1,8 +1,9 @@
-import { Transaction } from "sequelize";
+import { Transaction, json } from "sequelize";
 import axios from "axios";
 import { IENMessage, LAAB_CoinTransfer, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
+import { stringify } from "uuid";
 
 export class CashValidationFunc {
 
@@ -138,7 +139,37 @@ export class CashValidationFunc {
                 resolve(error.message);
             }
         });
+        //forward center // messenging center
+        const callBackPartner=[{
+            ids:[], // specefic receiver
+
+            callbackurl:'', // laoapps.com:9006/zdm8/callbackfromlaab
+            params:{},
+            topic:'',// vending // title
+            provider:'',//laab, waiwa, hangmi.... ** sender
+            creator:'' // vending-service // ** receiver
+        },
+        {
+            ids:[], // 
+
+            callbackurl:'',
+            params:{},
+            topic:'',// vending
+            provider:'',//laab, waiwa, hangmi....
+            creator:'' // vending-service
+        }
+    ]
+    // 1.callback receiver
+    // 2.register callback
+    // 3. ping to check callbacks array return with checksum compare hash
+    ////////interval ==> ping
+
+
+    // callback sender
+    // 1.send data to cbct
+
     }
+    
 
     private ShowMyCoinWalletBalance(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {

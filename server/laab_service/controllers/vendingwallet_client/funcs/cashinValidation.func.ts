@@ -162,11 +162,8 @@ export class CashinValidationFunc {
                 if (run.data.status != 1) return resolve(IENMessage.notFoundYourMerchantCoin);
 
                 this.balance = Number(run.data.info.balance);
+                if (this.balance <= 100000) return resolve(IENMessage.cashValidationFail);
                 if (this.balance - this.cash <= 100000) return resolve(IENMessage.cashValidationFail);
-
-                this.response = {
-                    message: IENMessage.success
-                }
 
                 resolve(IENMessage.success);
 
