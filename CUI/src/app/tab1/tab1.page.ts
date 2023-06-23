@@ -573,11 +573,10 @@ export class Tab1Page {
      const ord = this.orders.filter(v=>v.position==x.position);
      if(ord.length)
       if (ord.length >= ord[0]?.max) return alert('Out of Stock');
-    console.log('ID', x);
-    console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
-   ;
+      console.log('ID', x);
+      console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 
-    this.apiService.showLoading('',500);
+      this.apiService.showLoading('',500);
 
     // if (this.orders.find(v => v.position == x.position)) {
     //   const mx = x.max;
