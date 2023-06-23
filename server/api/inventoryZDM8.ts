@@ -1173,7 +1173,11 @@ export class InventoryZDM8 implements IBaseClass {
                     // that.push(bsi);
                     //
                     const hn = hashnotes.find(v=>v.hash==d?.data+'');
-                    const bn = this.notes.find(v => v.value == hn.value);
+                    if(hn != undefined && Object.entries(hn).length == 0) {
+                        ws.send(JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote+' 0')));
+                        return;
+                    }
+                    const bn = this.notes.find(v => v.value == hn?.value);
                     if(bn != undefined && Object.entries(bn).length == 0) {
                         ws.send(JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote)));
                         return;
