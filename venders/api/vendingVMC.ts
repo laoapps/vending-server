@@ -65,20 +65,20 @@ export class VendingVMC {
                 // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
             }, 2000);
             var b = '';
-            
+
             setTimeout(() => {
                 setInterval(() => {
-                    console.log('check last update ',moment.now(),that.lastupdate,moment().diff(that.lastupdate));
-    
+                    console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate));
+
                     if (moment().diff(that.lastupdate) >= 7000) {
                         if (!that.enable) return;
-                        that.commandVMC(EVMC_COMMAND.disable,{},-118);
+                        that.commandVMC(EVMC_COMMAND.disable, {}, -118);
                         that.enable = false;
                         return;
                     }
                 }, 3000);
             }, 7000);
-            
+
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
@@ -131,7 +131,7 @@ export class VendingVMC {
                     that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
 
-                } 
+                }
                 else if (b.startsWith('fafb23')) {// receive banknotes
                     console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
                     // fafb23052e
@@ -153,18 +153,18 @@ export class VendingVMC {
 
                     // that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
-                    
 
-                } 
+
+                }
                 else if (b.startsWith('fafb71')) {
                     //FA FB 70 len packNO 18 01 00 crc 
                     // FA FB 70 len packNO 18 01 C8 crc 
                     // writeSucceededRecordLog(b, -1);
 
                 }
-                
-                
-                if (b != 'fafb410040'&&b!='fafb420043') {// POLL only with no commands in the queue
+
+
+                if (b != 'fafb410040' && b != 'fafb420043') {// POLL only with no commands in the queue
 
                     let x = that.getACK().join('')
                     console.log('X ACK', x, (Buffer.from(x, 'hex')));
@@ -203,8 +203,21 @@ export class VendingVMC {
         // }, 30000)
 
     }
-    getNoteValue(b:string){
-        return b?.substring(12,20);
+    getNoteValue(b: string) {
+        try {
+            return this.hex2dec(b?.substring(12, 20));
+        } catch (error) {
+            return -1;
+        }
+
+    }
+    hex2dec(hex: string) {
+        try {
+            return parseInt(hex, 16);
+        } catch (error) {
+            return -1;
+        }
+      
     }
     sycnVMC() {
         //FA FB 31 01 02 33
@@ -298,18 +311,18 @@ export class VendingVMC {
                     this.balance = params?.balance || 0;
                     this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
-                    if(this.balance<this.limiter){
-                        this.lastupdate = moment().add(-360,'days').milliseconds();
-                        if(!this.enable) return resolve(PrintSucceeded(command as any, params,''));
-                        this.enable=false;
+                    if (this.balance < this.limiter) {
+                        this.lastupdate = moment().add(-360, 'days').milliseconds();
+                        if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                        this.enable = false;
                         this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
                             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                         }).catch(e => {
                             reject(PrintError(command as any, params, e.message));
                         })
-                    }else{
-                        if(this.enable) return resolve(PrintSucceeded(command as any, params,''));
-                        this.enable=true;
+                    } else {
+                        if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                        this.enable = true;
                         this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
                             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                         }).catch(e => {
@@ -590,7 +603,7 @@ export class VendingVMC {
             const x = buff.join('');
             this.commands.push({ b: Buffer.from(x, 'hex'), transactionID })
             // const x = buff.join('');
-             console.log('X', x,transactionID);
+            console.log('X', x, transactionID);
             // this.port.write(Buffer.from(x, 'hex'), (e) => {
             //     if (e) {
             //         reject(PrintError(command as any, params, e.message));
