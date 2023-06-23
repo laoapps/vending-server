@@ -188,7 +188,7 @@ export class CashValidationFunc {
                 if (run.data.status != 1) return resolve(IENMessage.notFoundYourMerchantCoin);
 
                 this.balance = Number(run.data.info.balance);
-                if (this.balance <= 100000) return resolve(IENMessage.cashValidationFail);
+                // if (this.balance <= 100000) return resolve(IENMessage.cashValidationFail);
                 console.log(`balance`, this.balance);
 
                 let acceptcash: number = 0;
