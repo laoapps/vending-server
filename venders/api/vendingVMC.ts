@@ -10,7 +10,7 @@ import xor from 'buffer-xor'
 import { SocketClientVMC } from './socketClient.vmc';
 import { resolve } from 'path';
 import moment from 'moment';
-
+import cryptojs from 'crypto-js'
 export class VendingVMC {
 
     // port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
@@ -116,13 +116,19 @@ export class VendingVMC {
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
-                    //10RMB :  FA FB 21 06 packNo 01 00 00 03 e8 CRC
-                    //20RMB :  FA FB 21 06 packNo 01 00 00 07 d0 CRC
-
-                    console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
-                    console.log('shift the current command and add new command for demo');
-
-                    that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
+                    // fafb2106d501 000186a0 d5 == 100000 == 1000,00
+                    // fafb21069101 000186a0 91 == 100000 == 1000,00
+                    // fafb2106c301 00030d40 aa == 200000 == 2000,00
+                    // fafb21065401 0007a120 f5 == 500000 == 5000,00
+                    // fafb21065701 000f4240 7d == 1000000 == 10000,00
+                    // fafb21064a01 000f4240 60
+                    // fafb21060701 001e8480 3a == 2000000 == 20000,00
+                    // fafb2106bf01 001e8480 82
+                    // fafb21066001 004c4b40 00 == 5000000 == 50000,00
+                    // new 50k not working
+                    // fafb21067c01 00989680 d5 == 10000000 == 100000,00
+                    // new 100k not working
+                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
 
                 } 
@@ -141,11 +147,11 @@ export class VendingVMC {
                     // fafb23056f
                     // 00e4e1c08d 2k
                     // fafb2305bc
-                    // 00e6686075 1k ==3865600117
+                    // 00e6686075 1k 
                     // fafb23055c
-                    // 00e7ef0073 == 3891200115
+                    // 00e7ef0073 
 
-                    that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
+                    // that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
                     
 
@@ -197,7 +203,9 @@ export class VendingVMC {
         // }, 30000)
 
     }
-
+    getNoteValue(b:string){
+        return b?.substring(12,20);
+    }
     sycnVMC() {
         //FA FB 31 01 02 33
         this.commandVMC(EVMC_COMMAND.sync, {}, -31);
