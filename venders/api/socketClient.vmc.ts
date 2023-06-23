@@ -140,7 +140,7 @@ export class SocketClientVMC {
             const param = d.data;
 
             that.m.command(d.command as any, param, d.transactionID).then(r => {
-                console.log('DATA command completed');
+                // console.log('DATA command completed');
                 if(d.command=='balance'){
                     this.send(r,d.transactionID,EMACHINE_COMMAND.status);
                 }else{
@@ -156,7 +156,7 @@ export class SocketClientVMC {
 
             })
 
-            console.log('DATA response', d.command, d);
+            // console.log('DATA response', d.command, d);
         });
         this.client.on('error', function (e) {
             if (e)

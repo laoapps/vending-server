@@ -472,7 +472,16 @@ export enum EVMC_COMMAND {
     disable = "disable",
     enable = "enable",
     _51 = "51",
-    _61 = "61"
+    _61 = "61",
+    _7017 = "7017",
+    _7001 = "7001",
+    _7018 = "0718",
+    _7019 = "0719",
+    _7020 = "0720",
+    _7023 = "0723",
+    sync = "sync",
+    setpoll = "setpoll",
+    acceptnote = "acceptnote"
 }
 export enum EMACHINE_COMMAND {
     login = 'login',
