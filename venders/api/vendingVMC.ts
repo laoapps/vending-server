@@ -10,7 +10,7 @@ import xor from 'buffer-xor'
 import { SocketClientVMC } from './socketClient.vmc';
 import { resolve } from 'path';
 import moment from 'moment';
-
+import cryptojs from 'crypto-js'
 export class VendingVMC {
 
     // port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
@@ -65,20 +65,20 @@ export class VendingVMC {
                 // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
             }, 2000);
             var b = '';
-            
+
             setTimeout(() => {
                 setInterval(() => {
-                    console.log('check last update ', moment.now()-that.lastupdate,moment().diff(that.lastupdate));
-    
+                    console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate));
+
                     if (moment().diff(that.lastupdate) >= 7000) {
                         if (!that.enable) return;
-                        that.commandVMC(EVMC_COMMAND.disable,{},-118);
+                        that.commandVMC(EVMC_COMMAND.disable, {}, -118);
                         that.enable = false;
                         return;
                     }
                 }, 3000);
             }, 7000);
-            
+
             that.port.on('data', function (data: any) {
                 b = data.toString('hex');
                 console.log('===>BUFFER', b);
@@ -116,35 +116,55 @@ export class VendingVMC {
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
-                    //10RMB :  FA FB 21 06 packNo 01 00 00 03 e8 CRC
-                    //20RMB :  FA FB 21 06 packNo 01 00 00 07 d0 CRC
-
-                    console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
-                    console.log('shift the current command and add new command for demo');
-
-                    that.sock?.send(b, -11, EMACHINE_COMMAND.CREDIT_NOTE);
+                    // fafb2106d501 000186a0 d5 == 100000 == 1000,00
+                    // fafb21069101 000186a0 91 == 100000 == 1000,00
+                    // fafb2106c301 00030d40 aa == 200000 == 2000,00
+                    // fafb21065401 0007a120 f5 == 500000 == 5000,00
+                    // fafb21065701 000f4240 7d == 1000000 == 10000,00
+                    // fafb21064a01 000f4240 60
+                    // fafb21060701 001e8480 3a == 2000000 == 20000,00
+                    // fafb2106bf01 001e8480 82
+                    // fafb21066001 004c4b40 00 == 5000000 == 50000,00
+                    // new 50k not working
+                    // fafb21067c01 00989680 d5 == 10000000 == 100000,00
+                    // new 100k not working
+                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
 
-                } 
+                }
                 else if (b.startsWith('fafb23')) {// receive banknotes
                     console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
-                    //fa fb 23 05 58 00 00 00 00 7f
-                    //fa fb 23 05 34 00 00 00 00 13
+                    // fafb23052e
+                    // 0098968087 100k
+                    // fafb2305d0
+                    // 00e4e1c032 50k
+                    // fafb230529
+                    // 00e4e1c0cb 20k
+                    // fafb2305b1
+                    // 00e4e1c053 10k
+                    // fafb2305f9
+                    // 00e4e1c01b 5k
+                    // fafb23056f
+                    // 00e4e1c08d 2k
+                    // fafb2305bc
+                    // 00e6686075 1k 
+                    // fafb23055c
+                    // 00e7ef0073 
 
-                    that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
+                    // that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
                     writeSucceededRecordLog(b, -1);
-                    
 
-                } 
+
+                }
                 else if (b.startsWith('fafb71')) {
                     //FA FB 70 len packNO 18 01 00 crc 
                     // FA FB 70 len packNO 18 01 C8 crc 
                     // writeSucceededRecordLog(b, -1);
 
                 }
-                
-                
-                if (b != 'fafb410040'&&b!='fafb420043') {// POLL only with no commands in the queue
+
+
+                if (b != 'fafb410040' && b != 'fafb420043') {// POLL only with no commands in the queue
 
                     let x = that.getACK().join('')
                     console.log('X ACK', x, (Buffer.from(x, 'hex')));
@@ -183,7 +203,22 @@ export class VendingVMC {
         // }, 30000)
 
     }
+    getNoteValue(b: string) {
+        try {
+            return this.hex2dec(b?.substring(12, 20));
+        } catch (error) {
+            return -1;
+        }
 
+    }
+    hex2dec(hex: string) {
+        try {
+            return parseInt(hex, 16);
+        } catch (error) {
+            return -1;
+        }
+      
+    }
     sycnVMC() {
         //FA FB 31 01 02 33
         this.commandVMC(EVMC_COMMAND.sync, {}, -31);
@@ -276,18 +311,18 @@ export class VendingVMC {
                     this.balance = params?.balance || 0;
                     this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
-                    if(this.balance<this.limiter){
-                        this.lastupdate = moment().add(-360,'days').milliseconds();
-                        if(!this.enable) return resolve(PrintSucceeded(command as any, params,''));
-                        this.enable=false;
+                    if (this.balance < this.limiter) {
+                        this.lastupdate = moment().add(-360, 'days').milliseconds();
+                        if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                        this.enable = false;
                         this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
                             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                         }).catch(e => {
                             reject(PrintError(command as any, params, e.message));
                         })
-                    }else{
-                        if(this.enable) return resolve(PrintSucceeded(command as any, params,''));
-                        this.enable=true;
+                    } else {
+                        if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                        this.enable = true;
                         this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
                             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                         }).catch(e => {
@@ -568,7 +603,7 @@ export class VendingVMC {
             const x = buff.join('');
             this.commands.push({ b: Buffer.from(x, 'hex'), transactionID })
             // const x = buff.join('');
-             console.log('X', x,transactionID);
+            console.log('X', x, transactionID);
             // this.port.write(Buffer.from(x, 'hex'), (e) => {
             //     if (e) {
             //         reject(PrintError(command as any, params, e.message));
