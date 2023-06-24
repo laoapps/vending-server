@@ -147,7 +147,6 @@ export class Tab1Page {
 
   autoUpdateCash() {
     this.WSAPIService.balanceUpdateSubscription.subscribe(async r => {
-      console.log(r);
       if (r)
       {
         await this.initVendingWalletCoinBalance();
