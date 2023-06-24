@@ -48,7 +48,7 @@ export class ApiService {
   eventEmitter = new EventEmitter();
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
-  wsurl = localStorage.getItem('wsurl') || environment.wsurl;
+  // wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   currentPaymentProvider = EPaymentProvider.mmoney;
   machineId = {} as IMachineClientID;
 
@@ -78,7 +78,7 @@ export class ApiService {
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = localStorage.getItem('machineId') || '12345678';
     this.machineId.otp = localStorage.getItem('otp') || '111111';
-    this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
+    // this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
 
 
     this.wsapi.aliveSubscription.subscribe(r => {
