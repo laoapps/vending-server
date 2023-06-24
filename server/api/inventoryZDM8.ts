@@ -1681,7 +1681,7 @@ export class InventoryZDM8 implements IBaseClass {
           redisClient.set('_balance_'+ws['clientId'],bn.value);
           ws.send(
             JSON.stringify(
-              PrintSucceeded(d.command, res.data, EMessage.succeeded)
+              PrintSucceeded(d.command, res, EMessage.succeeded)
             )
           );
           
