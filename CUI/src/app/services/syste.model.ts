@@ -800,7 +800,8 @@ export interface IMachineId{
 export interface IAlive{
     time:Date
     isAlive:boolean;
-    test:boolean
+    test:boolean;
+    balance:number;
 }
 
 export interface IClientId{

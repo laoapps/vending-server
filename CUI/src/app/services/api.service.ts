@@ -85,7 +85,8 @@ export class ApiService {
       //   }, 3000);
       //   this.validateDB();
       // }
-
+      if(r.balance)
+      this.cash=r.balance;
     });
 
     this.wsapi.refreshSubscription.subscribe(r => {

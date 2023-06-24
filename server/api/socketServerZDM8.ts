@@ -162,15 +162,15 @@ export class SocketServerZDM8 {
                                     machineId: m.machineId
                                 }
                                 console.log(`machine der`, params);
-
+                                const limiter =100000;
                                 func.Init(params).then(run => {
                                     const response: any = run;
                                     if (response.message != IENMessage.success) {
-                                        console.log(`cash validate fail`, response.message);
-                                        socket.end();
+                                        console.log(`cash validate fail`, response?.message);
+                                        // socket.end();
                                     }
-                                    const limiter =100000;
-                                    that.updateBalance(m.machineId, {balance:response.balance||0,limiter});
+                                    
+                                    that.updateBalance(m.machineId, {balance:response?.balance||0,limiter});
 
                                 }).catch(error => {
                                     console.log(`cash validation error`, error.message);

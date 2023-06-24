@@ -95,6 +95,24 @@ ion-content {
             color: #fff;
         }
         
+        .btn-epin {
+            margin-top: 25px;
+            text-decoration: none;
+            color: #fff;
+
+            background: rgb(255,255,255);
+            background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgba(255,205,141,1) 0%, rgba(255,129,124,1) 100%, rgba(255,255,255,1) 100%);
+
+
+            box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+            border-radius: 5px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 300;
+        }
     }
 
 }

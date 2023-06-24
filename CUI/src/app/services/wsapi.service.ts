@@ -78,7 +78,7 @@ export class WsapiService {
         switch (res.command) {
           case 'ping':
             console.log('Ping');
-            this.aliveSubscription.next({test:data?.test} as IAlive)
+            this.aliveSubscription.next({test:data?.test,balance:res['balance']} as IAlive)
             break;
           case 'confirm':
             console.log('confirm', data);

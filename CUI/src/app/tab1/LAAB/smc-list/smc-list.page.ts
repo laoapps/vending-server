@@ -6,6 +6,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { CreateEPINProcess } from '../../processes/createEPIN.process';
 import * as QRCode from 'qrcode';
 import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
+import moment from 'moment';
 
 @Component({
   selector: 'app-smc-list',
@@ -26,6 +27,7 @@ export class SmcListPage implements OnInit {
   totalpage: number = 0;
 
   currentScroll: number = 345;
+  private hiddenList: Array<any> = [];
 
   constructor(
     public apiService: ApiService,
@@ -37,6 +39,7 @@ export class SmcListPage implements OnInit {
   }
 
   async ngOnInit() {
+    this.loadHideList();
     await this.loadSMC();
 
     const elm = (document.querySelector('#smc-list-scroll') as HTMLDivElement);
@@ -55,6 +58,13 @@ export class SmcListPage implements OnInit {
         }
       }
     });
+  }
+
+  loadHideList() {
+    const local = localStorage.getItem('epin_hide_list');
+    if (local != undefined && local != undefined) {
+      this.hiddenList = JSON.parse(local);
+    }
   }
 
   loadSMC(): Promise<any> {
@@ -77,7 +87,22 @@ export class SmcListPage implements OnInit {
         } else if (this.lists != undefined && Object.entries(this.lists).length > 0) {
           this.lists = this.lists.concat(run.data[0].rows);
         }
+        
+        console.log(`lists`, this.lists);
+        const c = this.lists.filter(v=>!this.hiddenList.find(vx=>vx.uuid==v.uuid));
+        console.log(`c`, c);
+        this.lists=
+        this.lists.filter(v=> this.hiddenList.find(vx=>vx.uuid==v.uuid&&moment().diff
+        (
+          moment(vx.time),'seconds'
+        )
+        >
+        24*60*60));
 
+        this.lists =this.lists.concat(c);
+        this.lists = this.lists.sort((a,b) => a.id-b.id);
+        
+        
         resolve(IENMessage.success);
         
       } catch (error) {
@@ -158,6 +183,7 @@ export class SmcListPage implements OnInit {
         console.log(`params`, model);
         QRCode.toDataURL(JSON.stringify(model)).then(async r => {
           const props = {
+            data: data,
             qrImage: r,
             code: findsave[0].detail.items[0].code[0] 
           }

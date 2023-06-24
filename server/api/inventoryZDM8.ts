@@ -2228,7 +2228,7 @@ export class InventoryZDM8 implements IBaseClass {
 
           if (data === '{"command":"ping"}') {
             // send pong if recieved a ping.
-            const balance =  redisClient.get('_balance_'+ws['clientId']).then(r=>{
+            redisClient.get('_balance_'+ws['clientId']).then(r=>{
                 ws.send(
                     JSON.stringify(
                       PrintSucceeded(
