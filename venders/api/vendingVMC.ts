@@ -76,7 +76,7 @@ export class VendingVMC {
                         that.enable = false;
                         return;
                     }
-                }, 3000);
+                }, 2000);
             }, 7000);
 
             that.port.on('data', function (data: any) {
