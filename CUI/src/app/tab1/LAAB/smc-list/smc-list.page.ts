@@ -102,7 +102,6 @@ export class SmcListPage implements OnInit {
         this.lists =this.lists.concat(c);
         this.lists = this.lists.sort((a,b) => a.id-b.id);
         
-        
         resolve(IENMessage.success);
         
       } catch (error) {

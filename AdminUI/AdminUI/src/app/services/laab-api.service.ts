@@ -9,58 +9,56 @@ import { environment } from 'src/environments/environment';
 })
 export class LaabApiService {
 
-  private url: string = environment.testVending;
-  private laaburl: string = environment.laaburl;
+  // private url: string = environment.testVending;
+  // private laaburl: string = environment.laaburl;
 
-  constructor(
-    private http: HttpClient
-  ) { }
+  // constructor(
+  //   private http: HttpClient
+  // ) { }
 
-  //  merchant
-  login(params: LAAB_Login): Observable<any> {
-    return this.http.post(this.laaburl + 'user/login', params);
-  }
-  findMerchantAccount(params: LAAB_FindMerchantAccount): Observable<any> {
-    return this.http.post(this.url + 'merchant/find_my_merchant', params);
-  }
-  registerMerchantAccount(params: LAAB_RegisterMerchantAccount): Observable<any> {
-    return this.http.post(this.url + 'merchant/register', params);
-  }
-  findVendingCoin(params: LAAB_FindVendingCoin): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/search_currency_list_page', params);
-  }
-  findMerchantCoinAccount(params: LAAB_FindMerchantCoinAccount): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
-  }
-  registerMerchantCoinAccount(params: LAAB_RegisterMerchantCoinAccount): Observable<any> {
-    return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
-  }
-  showMerchantCoinBalance(params: LAAB_ShowMerchantCoinBalance): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
-  }
-  coinTransfer(params: LAAB_ShowMerchantCoinBalance): Observable<any> {
-    return this.http.post(this.url + 'merchant/expend', params);
-  }
-  findVendingLimiterAccount(params: LAAB_FindMyVendingLimiterAccount): Observable<any> {
-    return this.http.post(this.url + 'merchant/find_my_vending_limiter', params);
-  }
-  registerVendingLimiterAccount(params: LAAB_FindMyVendingLimiterAccount): Observable<any> {
-    return this.http.post(this.url + 'merchant/create_vending_limiter', params);
-  }
-  findVendingLimiterCoinAccount(params: LAAB_FindVendingLimiterCoinAccount): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
-  }
-  showMVendingLimiterCoinBalance(params: LAAB_ShowMerchantCoinBalance): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
-  }
-  registerVendingLimiterCoinAccount(params: LAAB_RegisterVendingLimiterCoinAccount): Observable<any> {
-    return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
-  }
-  showVendingLimiterCoinBalance(params: LAAB_ShowVendingLimiterCoinBalance): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
-  }
-
-
+  // //  merchant
+  // login(params: LAAB_Login): Observable<any> {
+  //   return this.http.post(this.laaburl + 'user/login', params);
+  // }
+  // findMerchantAccount(params: LAAB_FindMerchantAccount): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/find_my_merchant', params);
+  // }
+  // registerMerchantAccount(params: LAAB_RegisterMerchantAccount): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/register', params);
+  // }
+  // findVendingCoin(params: LAAB_FindVendingCoin): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/search_currency_list_page', params);
+  // }
+  // findMerchantCoinAccount(params: LAAB_FindMerchantCoinAccount): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
+  // }
+  // registerMerchantCoinAccount(params: LAAB_RegisterMerchantCoinAccount): Observable<any> {
+  //   return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
+  // }
+  // showMerchantCoinBalance(params: LAAB_ShowMerchantCoinBalance): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
+  // }
+  // coinTransfer(params: LAAB_ShowMerchantCoinBalance): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/expend', params);
+  // }
+  // findVendingLimiterAccount(params: LAAB_FindMyVendingLimiterAccount): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/find_my_vending_limiter', params);
+  // }
+  // registerVendingLimiterAccount(params: LAAB_FindMyVendingLimiterAccount): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/create_vending_limiter', params);
+  // }
+  // findVendingLimiterCoinAccount(params: LAAB_FindVendingLimiterCoinAccount): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
+  // }
+  // showMVendingLimiterCoinBalance(params: LAAB_ShowMerchantCoinBalance): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
+  // }
+  // registerVendingLimiterCoinAccount(params: LAAB_RegisterVendingLimiterCoinAccount): Observable<any> {
+  //   return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
+  // }
+  // showVendingLimiterCoinBalance(params: LAAB_ShowVendingLimiterCoinBalance): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
+  // }
 
 
 
@@ -69,50 +67,52 @@ export class LaabApiService {
 
 
 
-  // vending wallet
-  findMachineWallet(params: LAAB_FindMachineWallet): Observable<any> {
-    return this.http.post(this.url + 'merchant/find_my_vending_wallet', params);
-  }
-  registerMachineWallet(params: LAAB_RegisterMachineWallet): Observable<any> {
-    return this.http.post(this.url + 'merchant/create_vending_wallet', params);
-  }
-  showMachineWalletBalance(params: LAAB_ShowMachineWalletBalance): Observable<any> {
-    return this.http.post(this.url + 'merchant/show_vending_wallet_balance', params);
-  }
-  findMachineCoinWallet(params: LAAB_FindMachineCoinWallet): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
-  }
-  registerMachineCoinWallet(params: LAAB_RegisterMachineCoinWallet): Observable<any> {
-    return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
-  }
-  showMachineCoinWalletBalance(params: LAAB_ShowMachineCoinWalletBalance): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
-  }
-  showMachineCoinWalletByGroup(params: LAAB_ShowMachineCoinWalletByGroup): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_currency_list_all', params);
-  }
 
 
-  // vending limiter
-  findMachineLimiter(params: LAAB_FindMachineLimiter): Observable<any> {
-    return this.http.post(this.url + 'merchant/find_my_vending_limiter', params);
-  }
-  registerMachineLimiter(params: LAAB_RegisterMachineLimiter): Observable<any> {
-    return this.http.post(this.url + 'merchant/create_vending_limiter', params);
-  }
-  showMachineLimiterBalance(params: LAAB_ShowMachineLimiterBalance): Observable<any> {
-    return this.http.post(this.url + 'merchant/show_vending_limiter_balance', params);
-  }
-  findMachineCoinLimiter(params: LAAB_FindMachineCoinLimiter): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
-  }
-  registerMachineCoinLimiter(params: LAAB_RegisterMachineCoinLimiter): Observable<any> {
-    return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
-  }
-  showMachineCoinLimiterBalance(params: LAAB_ShowMachineCoinLimiterBalance): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
-  }
-  showMachineCoinLimiterByGroup(params: LAAB_ShowMachineCoinLimiterByGroup): Observable<any> {
-    return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_currency_list_all', params);
-  }
+  // // vending wallet
+  // findMachineWallet(params: LAAB_FindMachineWallet): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/find_my_vending_wallet', params);
+  // }
+  // registerMachineWallet(params: LAAB_RegisterMachineWallet): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/create_vending_wallet', params);
+  // }
+  // showMachineWalletBalance(params: LAAB_ShowMachineWalletBalance): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/show_vending_wallet_balance', params);
+  // }
+  // findMachineCoinWallet(params: LAAB_FindMachineCoinWallet): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
+  // }
+  // registerMachineCoinWallet(params: LAAB_RegisterMachineCoinWallet): Observable<any> {
+  //   return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
+  // }
+  // showMachineCoinWalletBalance(params: LAAB_ShowMachineCoinWalletBalance): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
+  // }
+  // showMachineCoinWalletByGroup(params: LAAB_ShowMachineCoinWalletByGroup): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_currency_list_all', params);
+  // }
+
+
+  // // vending limiter
+  // findMachineLimiter(params: LAAB_FindMachineLimiter): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/find_my_vending_limiter', params);
+  // }
+  // registerMachineLimiter(params: LAAB_RegisterMachineLimiter): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/create_vending_limiter', params);
+  // }
+  // showMachineLimiterBalance(params: LAAB_ShowMachineLimiterBalance): Observable<any> {
+  //   return this.http.post(this.url + 'merchant/show_vending_limiter_balance', params);
+  // }
+  // findMachineCoinLimiter(params: LAAB_FindMachineCoinLimiter): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_my_coin_wallet', params);
+  // }
+  // registerMachineCoinLimiter(params: LAAB_RegisterMachineCoinLimiter): Observable<any> {
+  //   return this.http.post(this.url + 'pex/exchange_service/coin_register', params);
+  // }
+  // showMachineCoinLimiterBalance(params: LAAB_ShowMachineCoinLimiterBalance): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_to_coin_balance', params);
+  // }
+  // showMachineCoinLimiterByGroup(params: LAAB_ShowMachineCoinLimiterByGroup): Observable<any> {
+  //   return this.http.post(this.url + 'pex/coin_currency/show_sender_coin_currency_list_all', params);
+  // }
 }
