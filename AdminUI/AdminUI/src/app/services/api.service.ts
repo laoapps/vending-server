@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class ApiService {
-
+  offsettz =420;
   passkeys: string;
   ownerUuid: string;
   name: string;
@@ -74,6 +74,7 @@ export class ApiService {
 
     public load: LoadingController,
     public alert: AlertController) {
+    this.offsettz=new Date().getTimezoneOffset();
     this.wsapi = wsapi;
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = localStorage.getItem('machineId') || '12345678';

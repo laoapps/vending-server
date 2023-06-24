@@ -116,6 +116,9 @@ export class VendingVMC {
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
+                    // fafb2106ee01 00000002 cb
+                    // fafb2106f501 00000002 d0
+                    // fafb21061008 00000002 3c
                     // fafb2106d501 000186a0 d5 == 100000 == 1000,00
                     // fafb21069101 000186a0 91 == 100000 == 1000,00
                     // fafb2106c301 00030d40 aa == 200000 == 2000,00

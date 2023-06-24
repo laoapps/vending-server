@@ -88,7 +88,6 @@ export class MyaccountPage implements OnInit {
         (await loading).present();
         setTimeout(async () => {
           (await loading).dismiss();
-
           this.apiService.currentcard = card;
           this.currentcard = card;
           this.child_coinTransferComponent = false;
@@ -105,10 +104,10 @@ export class MyaccountPage implements OnInit {
     });
   }
 
-  switchMenu(component: string): Promise<any> {
+  switchMenu(component: string,card:string): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
+        await this.switchCard(card);
         let loading = this.apiService.load.create({ message: 'loading...' });
         (await loading).present();
         setTimeout(async () => {

@@ -16,7 +16,7 @@ const momenttimezone = require('moment-timezone');
 export class ReportOptionsComponent implements OnInit {
 
   defendClick: boolean = false;
-
+  offsettz = 420;
   private loadMerchantReportProcess: LoadMerchantReportsProcess;
   private loadVendingReportProcess: LoadVendingLimiterReportsProcess;
 
@@ -32,6 +32,7 @@ export class ReportOptionsComponent implements OnInit {
     private apiService: ApiService,
     private vendingAPIService: VendingAPIService
   ) { 
+    this.offsettz=this.apiService.offsettz;
     this.loadMerchantReportProcess = new LoadMerchantReportsProcess(this.apiService, this.vendingAPIService);
     this.loadVendingReportProcess = new LoadVendingLimiterReportsProcess(this.apiService, this.vendingAPIService);
   }
