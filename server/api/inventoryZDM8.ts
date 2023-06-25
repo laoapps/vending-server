@@ -2695,7 +2695,5 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 }
-function writeMachineBalance(machineId: string, value: number) {
-    throw new Error("Function not implemented.");
-}
+
 
