@@ -9,6 +9,7 @@ import {
     PrintError,
     PrintSucceeded,
     readMachineBalance,
+    readMachineLimiter,
     readMachineSetting,
     readMachineStatus,
     redisClient,
@@ -2541,6 +2542,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 let mymstatus = [];
                                 let mymsetting= [];
                                 let mymbalance =[];
+                                let mymlimiter =[];
                                 let setting = {} as any;
                                 try {
                                     
@@ -2564,6 +2566,9 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         const mb=JSON.parse((await readMachineBalance(element))||'0');
                                         mymbalance.push({machineId:element,balance:mb});
+
+                                        const ml=JSON.parse((await readMachineLimiter(element))||'100000');
+                                        mymlimiter.push({machineId:element,balance:ml});
                                     }
                                     console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
                                 } catch (error) {
@@ -2577,7 +2582,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
-                                            { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting},
+                                            { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
                                             EMessage.succeeded
                                         )
                                     )
