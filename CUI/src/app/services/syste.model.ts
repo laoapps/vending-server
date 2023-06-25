@@ -802,6 +802,7 @@ export interface IAlive{
     isAlive:boolean;
     test:boolean;
     balance:number;
+    data:any;
 }
 
 export interface IClientId{

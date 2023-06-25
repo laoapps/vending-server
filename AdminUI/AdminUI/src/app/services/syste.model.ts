@@ -999,7 +999,9 @@ export interface IMachineID extends IBase,IBC {
   export interface IAlive{
     time:Date
     isAlive:boolean;
-    test:boolean
+    test:boolean;
+    balance:number;
+    data:any;
   }
   
   export interface IClientId{
