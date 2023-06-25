@@ -2454,6 +2454,8 @@ export class InventoryZDM8 implements IBaseClass {
                             res.message = EMessage.adminloginok;
                             res.status = 1;
                             const token = d.token as string;
+                            console.log('ws[myMachineId]',ws['myMachineId']);
+                            
                             redisClient.get('_admintoken' + token).then(r => {
                                 if (r) {
                                     ws['myMachineId']=JSON.parse(r);
