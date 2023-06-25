@@ -23,7 +23,7 @@ export class VendingVMC {
     limiter = 100000;
     balance = 0;
     lastupdate = 0;
-    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
+    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 7, highTemp: 13, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
 
@@ -632,11 +632,11 @@ export class VendingVMC {
             // Defrosting period (Range 0-24 Hours) 
             // Defrosting time (Range 1-40 Minutes)
             // Protect (1-ON, 0-OFF)
-            else if (command == EVMC_COMMAND._7036) {
+            else if (command == EVMC_COMMAND._7037) {
                 buff.push('70');// 70 
                 buff.push(int2hex(12));// 04 len
                 buff.push(int2hex(series));// // 47 series
-                buff.push('36');//// temp setting
+                buff.push('37');//// temp setting
                 buff.push(int2hex(1));// setting 1 or read 0
                 buff.push(int2hex(0));// 0 as master 
                 buff.push(int2hex(this.setting?.lowTemp)); // low temp (Range 0-60) 
