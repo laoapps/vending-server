@@ -61,6 +61,8 @@ export class VendingVMC {
                 that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
                 console.log('INIT accept banknote');
                 that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
+                console.log('INIT temperature');
+                that.commandVMC(EVMC_COMMAND._7028,{},-7028,that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
                 //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
@@ -357,12 +359,24 @@ export class VendingVMC {
                         try {
                             //temp 
                         const setting = params.setting.find(v=>v.settingName=='setting');
-                        if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp||setting.allowCashIn!=this.setting.allowCashIn) {
-                            this.setting =setting;
+                        if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp) {
+                            this.setting.lowTemp =setting.lowTemp;
+                            this.setting.highTemp =setting.highTemp;
                             // this.setting.allowCashIn=false;
                             console.log('new setting',this.setting);
                             
-                            this.commandVMC(EVMC_COMMAND._7036, params, transactionID, this.getNextNo()).then(r => {
+                            this.commandVMC(EVMC_COMMAND._7037, params, transactionID, this.getNextNo()).then(r => {
+                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                            }).catch(e => {
+                                reject(PrintError(command as any, params, e.message));
+                            })
+                        }
+                        // disable
+                        if (setting.allowCashIn!=this.setting.allowCashIn) {
+                            this.setting.allowCashIn=setting.allowCashIn;
+                            console.log('new setting',this.setting);
+                            
+                            this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
                                 resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                             }).catch(e => {
                                 reject(PrintError(command as any, params, e.message));
