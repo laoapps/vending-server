@@ -2527,7 +2527,7 @@ export class InventoryZDM8 implements IBaseClass {
                             return;
                         }
                         else if (d.command == "ping") {
-                            console.log("WS PING");
+                            console.log("WS PING",ws['clientId'],ws['myMachineId']);
                             redisClient.get('_balance_' + ws['clientId']).then(async r => {
                                 console.log('clientid balance',r);
                                 
@@ -2535,8 +2535,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 let mstatus= await readMachineStatus(ws['machineId']);
     
                                 console.log('clientid  setting',x);
-                                console.log('clientid  status',x);
+                                console.log('clientid  status',mstatus);
                                 const mArray = ws['myMachineId'] as Array<string>;
+                                console.log('myMachineId',mArray);
                                 let mymstatus = [];
                                 let mymsetting= [];
                                 let mymbalance =[];
@@ -2566,7 +2567,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log('ready to pong');
                                 const limiter = 100000;
                                 const merchant = 0;
-                                return ws.send(
+                                 ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "pong",
@@ -2576,6 +2577,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     )
                                 );
                             });
+                            return;
                             
                         }
                         console.log("WS CLOSE");
