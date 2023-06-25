@@ -8,6 +8,7 @@ import {
     findRealDB,
     PrintError,
     PrintSucceeded,
+    readMachineBalance,
     readMachineSetting,
     readMachineStatus,
     redisClient,
@@ -2367,7 +2368,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     const element = mArray[index];
                                     mymstatus.push(await readMachineStatus(element));
                                     mymsetting.push(await readMachineSetting(element));
-                                    mymbalance.push(await readMachineSetting(element));
+                                    mymbalance.push(await readMachineBalance(element));
                                 }
                                 
                             } catch (error) {
