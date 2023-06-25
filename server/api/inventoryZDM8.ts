@@ -2456,22 +2456,26 @@ export class InventoryZDM8 implements IBaseClass {
                             const token = d.token as string;
                             console.log('ws[myMachineId]',ws['myMachineId']);
                             
-                            redisClient.get('_admintoken' + token).then(r => {
+                            redisClient.get('_admintoken_' + token).then(r => {
+                                console.log('admintoken',r);
+                                
                                 if (r) {
                                     ws['myMachineId']=JSON.parse(r);
                                     ws["clientId"] = uuid4();
                                 }
                                 else {
                                     findRealDB(token)
-                                        .then((r) => {
-                                            const ownerUuid = r;
+                                        .then((rx) => {
+                                            const ownerUuid = rx;
+                                            console.log('admintoken owneruuid',rx);
                                             if (!ownerUuid) throw new Error(EMessage.notfound);
                                             this.machineClientlist
                                                 .findAll({ where: { ownerUuid } })
-                                                .then((r) => {
-                                                    if (r) {
-                                                        const m = r.map(v=>v.machineId);
-                                                        redisClient.setEx('_admintoken'+token,60*60*24,JSON.stringify(r.map(v=>v.machineId)));
+                                                .then((ry) => {
+                                                    if (ry) {
+                                                        const m = ry.map(v=>v.machineId);
+                                                        console.log('admintoken owneruuid machines',m);
+                                                        redisClient.setEx('_admintoken_'+token,60*60*24,JSON.stringify(m));
                                                         ws['myMachineId']=m;
                                                         ws["clientId"] = uuid4();
                                                         ws.send(
@@ -2479,7 +2483,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                                 PrintSucceeded(d.command, res, EMessage.succeeded)
                                                             ));
                                                     }
-                                                    else ws.close();
+                                                    else ws.close(0);
                                                 })
                                                 .catch((e) => {
                                                     console.log("Error list machine", e);
@@ -2488,7 +2492,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         })
                                         .catch((e) => {
                                             console.log(e);
-                                            ws.close();
+                                            ws.close(0);
                                         });
                                 }
 
