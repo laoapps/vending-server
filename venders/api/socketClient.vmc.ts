@@ -84,7 +84,7 @@ export class SocketClientVMC {
 
         })
         const server = http.createServer(app);
-        server.listen('0.0.0.0',19006, async function () {
+        server.listen(19006, async function () {
             console.log('HTTP listening on port ' + 19006);
         });
     }
