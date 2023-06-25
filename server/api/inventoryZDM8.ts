@@ -2555,14 +2555,15 @@ export class InventoryZDM8 implements IBaseClass {
                                     
                                     for (let index = 0; index < mArray.length; index++) {
                                         const element = mArray[index];
+
                                         mymstatus.push(await readMachineStatus(element));
+
                                         const msetting = JSON.parse(await readMachineSetting(element));
-                                        msetting.machineId=element;
-                                        mymsetting.push(msetting);
+                                        mymsetting.push({msetting,machineId:element});
 
 
                                         const mb=JSON.parse((await readMachineBalance(element))||'0');
-                                        mymbalance.push(mb);
+                                        mymbalance.push({machineId:element,balance:mb});
                                     }
                                     console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
                                 } catch (error) {
@@ -2575,7 +2576,7 @@ export class InventoryZDM8 implements IBaseClass {
                                  ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(
-                                            "pong",
+                                            "ping",
                                             { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting},
                                             EMessage.succeeded
                                         )
