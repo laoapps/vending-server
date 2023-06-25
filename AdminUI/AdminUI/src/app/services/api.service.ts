@@ -85,17 +85,23 @@ export class ApiService {
     this.wsapi.aliveSubscription.subscribe(r => {
       console.log('ALIVE',r);
       
-      if (!r) return console.log('empty');
-      // console.log('ws alive subscription', r);
-      this.wsAlive.time = new Date();
-      this.wsAlive.isAlive = this.checkOnlineStatus();
-      this.test.test = r?.test;
-      // if (!this.vendingOnSale.length) {
-      //   setTimeout(() => {
-      //     window.location.reload();
-      //   }, 3000);
-      //   this.validateDB();
-      // }
+      try {
+        if (!r) return console.log('empty');
+        // console.log('ws alive subscription', r);
+        this.wsAlive.time = new Date();
+        this.wsAlive.isAlive = this.checkOnlineStatus();
+        this.test.test = r?.test;
+        // if (!this.vendingOnSale.length) {
+        //   setTimeout(() => {
+        //     window.location.reload();
+        //   }, 3000);
+        //   this.validateDB();
+        // }
+      } catch (error) {
+        console.log('error',error);
+        
+      }
+     
 
     });
   
