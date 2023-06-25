@@ -23,7 +23,7 @@ export class VendingVMC {
     limiter = 100000;
     balance = 0;
     lastupdate = 0;
-    setting = { settingName: 'setting', allowCashIn: true, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
+    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
 
@@ -357,10 +357,9 @@ export class VendingVMC {
                         try {
                             //temp 
                         const setting = params.setting.find(v=>v.settingName=='setting');
-                        if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp) {
-                            this.setting.lowTemp == params.setting.lowTemp;
-                            this.setting.highTemp == params.setting.highTemp;
-
+                        if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp||setting.allowCashIn!=this.setting.allowCashIn) {
+                            this.setting =setting;
+                            this.setting.allowCashIn=false;
                             this.commandVMC(EVMC_COMMAND._7036, params, transactionID, this.getNextNo()).then(r => {
                                 resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                             }).catch(e => {
