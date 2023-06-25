@@ -154,6 +154,48 @@ export function writeLogs(m, position,name='g_') {
     console.log('m',m);
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
+export function clearLogsDays(name='g_',duration=15){
+    try {
+        const hist= moment().subtract(duration,'days');
+        const  da = hist.year() + '_' + hist.month() + '_' + hist.date();
+        const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
+        const elogs = process.env._log_path||process.cwd() + `/e_${da}.json`;
+        const rlogs = process.env._log_path||process.cwd() + `/results_${da}.json`;
+        !fs.existsSync(logs)||
+        fs.unlinkSync(logs);
+        !fs.existsSync(elogs)||
+        fs.unlinkSync(elogs);
+        !fs.existsSync(rlogs)||
+        fs.unlinkSync(rlogs);
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+export function loadLogsDays(name='g_',duration=15){
+    try {
+        const hist= moment().subtract(duration,'days');
+        const  da = hist.year() + '_' + hist.month() + '_' + hist.date();
+        const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
+        const elogs = process.env._log_path||process.cwd() + `/e_${da}.json`;
+        const rlogs = process.env._log_path||process.cwd() + `/results_${da}.json`;
+
+        let content = '';
+        if(!fs.existsSync(logs))
+        content +=fs.readFileSync(logs,{ encoding: 'utf8', flag: 'r' })
+
+        if(!fs.existsSync(elogs))
+        content +=fs.readFileSync(elogs,{ encoding: 'utf8', flag: 'r' })
+
+        if(!fs.existsSync(rlogs))
+        content +=fs.readFileSync(rlogs,{ encoding: 'utf8', flag: 'r' });
+        return content;
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+
 export function writeErrorLogs(m:string,e:any) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path||process.cwd() + `/e_${da}.json`;

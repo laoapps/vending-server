@@ -481,7 +481,9 @@ export enum EVMC_COMMAND {
     _7023 = "0723",
     sync = "sync",
     setpoll = "setpoll",
-    acceptnote = "acceptnote"
+    acceptnote = "acceptnote",
+    _7036 = "7036",
+    _7016 = "7016"
 }
 export enum EMACHINE_COMMAND {
     login = 'login',
@@ -496,7 +498,8 @@ export enum EMACHINE_COMMAND {
     start = "start",
     stop = "stop",
     setcounter = "setcounter",
-    restart = "restart"
+    restart = "restart",
+    logs = "logs"
 }
 export interface IResModel {
     transactionID:number;
@@ -599,6 +602,102 @@ export enum EMODBUS_ERROR {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export enum EZDM8_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
@@ -631,7 +730,9 @@ export enum EZDM8_COMMAND {
     positionliftmotor = "positionliftmotor",
     disable = "disable",
     limiter = "limiter",
-    balance = "balance"
+    balance = "balance",
+    logs = "logs",
+    temp = "temp"
 }
 export enum EMessage {
     loginfailed = 'login failed',

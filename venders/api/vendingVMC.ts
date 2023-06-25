@@ -5,11 +5,11 @@ import { EMACHINE_COMMAND, EMessage, EVMC_COMMAND, EZDM8_COMMAND, IReqModel, IRe
 import { SerialPort } from 'serialport'
 
 
-import { broadCast, chk8xor, initWs, int2hex, PrintError, PrintSucceeded, writeErrorLogs, writeSucceededRecordLog, wsSendToClient } from '../services/service';
+import { broadCast, chk8xor, clearLogsDays, initWs, int2hex, loadLogsDays, PrintError, PrintSucceeded, writeErrorLogs, writeLogs, wsSendToClient } from '../services/service';
 import xor from 'buffer-xor'
 import { SocketClientVMC } from './socketClient.vmc';
 import { resolve } from 'path';
-import moment from 'moment';
+import moment, { duration } from 'moment';
 import cryptojs from 'crypto-js'
 export class VendingVMC {
 
@@ -23,6 +23,10 @@ export class VendingVMC {
     limiter = 100000;
     balance = 0;
     lastupdate = 0;
+    setting = { settingName: 'setting', allowCashIn: true, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
+    logduration = 15;
+    countProcessClearLog = 60 * 60 * 24;
+
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
 
@@ -70,12 +74,19 @@ export class VendingVMC {
                 setInterval(() => {
                     console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate));
 
-                    if (moment().diff(that.lastupdate) >= 7000) {
+                    if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
                         if (!that.enable) return;
                         that.commandVMC(EVMC_COMMAND.disable, {}, -118);
                         that.enable = false;
                         return;
                     }
+                    if (that.countProcessClearLog <= 0) {
+                        that.countProcessClearLog = 60 * 60 * 24;
+                    } else {
+                        clearLogsDays();
+                        that.countProcessClearLog -= 2;
+                    }
+
                 }, 2000);
             }, 7000);
 
@@ -112,7 +123,7 @@ export class VendingVMC {
                     //FA FB 04 05 packNo 03 00 19
                     console.log('drop detect', b);
                     that.sock?.send(b, -9);
-                    writeSucceededRecordLog(b, -1);
+                    writeLogs(b, -1);
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
@@ -132,7 +143,7 @@ export class VendingVMC {
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
                     that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE);
-                    writeSucceededRecordLog(b, -1);
+                    writeLogs(b, -1);
 
                 }
                 else if (b.startsWith('fafb23')) {// receive banknotes
@@ -155,14 +166,21 @@ export class VendingVMC {
                     // 00e7ef0073 
 
                     // that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
-                    writeSucceededRecordLog(b, -1);
+                    writeLogs(b, -1);
 
 
                 }
                 else if (b.startsWith('fafb71')) {
                     //FA FB 70 len packNO 18 01 00 crc 
                     // FA FB 70 len packNO 18 01 C8 crc 
-                    // writeSucceededRecordLog(b, -1);
+                    // writeLogs(b, -1);
+
+                }
+                else if (b.startsWith('fafb52')) {
+                    // report status to the server
+                    console.log('SEND REPORT',b);
+                    
+                    that.sock?.send(b, -52);
 
                 }
 
@@ -177,7 +195,7 @@ export class VendingVMC {
                             // writeErrorLogs(b, e);
                         } else {
                             console.log('write ACK succeeded');
-                            // writeSucceededRecordLog(b, -1);
+                            // writeLogs(b, -1);
                         }
                         that.sock?.send(b, -3);
                     })
@@ -220,7 +238,7 @@ export class VendingVMC {
         } catch (error) {
             return -1;
         }
-      
+
     }
     sycnVMC() {
         //FA FB 31 01 02 33
@@ -314,6 +332,7 @@ export class VendingVMC {
                     this.balance = params?.balance || 0;
                     this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
+                    this.setting = params?.setting ? params?.setting : this.setting;
                     if (this.balance < this.limiter) {
                         this.lastupdate = moment().add(-360, 'days').milliseconds();
                         if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
@@ -333,8 +352,47 @@ export class VendingVMC {
                         })
                     }
 
-                    break;
+                    if (params?.setting) {
+                        //temp 
+                        if (params.setting.lowTemp != this.setting.lowTemp || params.setting.highTemp != this.setting.highTemp) {
+                            this.setting.lowTemp == params.setting.lowTemp;
+                            this.setting.highTemp == params.setting.highTemp;
 
+                            this.commandVMC(EVMC_COMMAND._7036, params, transactionID, this.getNextNo()).then(r => {
+                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                            }).catch(e => {
+                                reject(PrintError(command as any, params, e.message));
+                            })
+                        }
+                        // light
+
+                        if (params.setting.light != this.setting.light) {
+
+                            this.setting.light == params.setting.light;
+                            this.commandVMC(EVMC_COMMAND._7016, params, transactionID, this.getNextNo()).then(r => {
+                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                            }).catch(e => {
+                                reject(PrintError(command as any, params, e.message));
+                            })
+                        }
+
+
+                    }
+
+                    break;
+                case EZDM8_COMMAND.logs:
+                    const duration = params?.duration || 15;
+
+                    for (let index = 0; index < duration; index++) {
+                        setTimeout(() => {
+                            const i = loadLogsDays();
+                            this.sock?.send(i, -3600, EMACHINE_COMMAND.logs);
+                        }, index * 5000);
+
+                    }
+
+
+                    break;
                 case EZDM8_COMMAND.hutemp:
 
                     break;
@@ -350,7 +408,9 @@ export class VendingVMC {
                 case EZDM8_COMMAND.relaycommand:
 
                     break;
+                case EZDM8_COMMAND.relaycommand:
 
+                    break;
                 default:
                     reject(PrintError(command as any, params, EMessage.commandnotfound));
                     break;
@@ -457,7 +517,7 @@ export class VendingVMC {
                 buff.push('70');// 70 
                 buff.push(int2hex(4));// 04 len
                 buff.push(int2hex(series));// // 47 series
-                buff.push(int2hex(1));//// coin system setting
+                buff.push('01');//// coin system setting
                 buff.push(int2hex(0));// 00 read coin system type, 01 set coin system type
                 buff.push(int2hex(0));// 01  coin acceptor 02  hopper
                 buff.push(int2hex(0));// 27 check sum
@@ -551,8 +611,51 @@ export class VendingVMC {
                 buff.push(this.int2hex(0));
                 buff[buff.length - 1] = chk8xor(buff)
             }
-
-
+            // // 0x70
+            // 0x36
+            // 0x01+Machine number+Temperature controller parameters
+            // Temperature controller parameters:
+            // Lowest temperature(Range 0-60) 
+            // Highest temperature (Range 0-60) 
+            // Return difference value (Range 2-8) 
+            // Delay Starting time (Range 0-8)
+            // Sensor correction (Range -10-10) 
+            // Defrosting period (Range 0-24 Hours) 
+            // Defrosting time (Range 1-40 Minutes)
+            // Protect (1-ON, 0-OFF)
+            else if (command == EVMC_COMMAND._7036) {
+                buff.push('70');// 70 
+                buff.push(int2hex(12));// 04 len
+                buff.push(int2hex(series));// // 47 series
+                buff.push('36');//// temp setting
+                buff.push(int2hex(1));// setting 1 or read 0
+                buff.push(int2hex(0));// 0 as master 
+                buff.push(int2hex(5)); // low temp (Range 0-60) 
+                buff.push(int2hex(15)); // Highest temperature (Range 0-60) 
+                buff.push(int2hex(5)); // Return difference value (Range 2-8) 
+                buff.push(int2hex(0)); // Delay Starting time (Range 0-8)
+                buff.push(int2hex(0)); // Sensor correction (Range -10-10) 
+                buff.push(int2hex(1)); // Defrosting period (Range 0-24 Hours) 
+                buff.push(int2hex(10)); // Defrosting time (Range 1-40 Minutes)
+                buff.push(int2hex(0)); // Protect (1-ON, 0-OFF)
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
+            // 0x70
+            // 0x16
+            // 0x01+ Start time+End time
+            // Start time: Hour End time: Hour (For example.: 20-7, set the lights on from 20:00pm to 7:00am.)
+            else if (command == EVMC_COMMAND._7016) {
+                buff.push('70');// 70 
+                buff.push(int2hex(5));// 04 len
+                buff.push(int2hex(series));// // 47 series
+                buff.push('16');//// light setting
+                buff.push(int2hex(1));// 00 read coin system type, 01 set coin system type
+                buff.push(int2hex(params.start||15));// 01  coin acceptor 02  hopper
+                buff.push(int2hex(params.end||10));
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
             // /// set drop sensor
             // else if (command == '24') {//0x24
             //     buff.push(command);
