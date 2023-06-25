@@ -1,4 +1,4 @@
-import { Component, OnInit ,Input} from '@angular/core';
+import { Component, OnInit ,Input, OnDestroy} from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { LoadVendingWalletCoinBalanceProcess } from '../../processes/loadVendingWalletCoinBalance.process';
@@ -8,7 +8,7 @@ import { VendingAPIService } from 'src/app/services/vending-api.service';
   templateUrl: './laab-cashin-show-code.page.html',
   styleUrls: ['./laab-cashin-show-code.page.scss'],
 })
-export class LaabCashinShowCodePage implements OnInit {
+export class LaabCashinShowCodePage implements OnInit,OnDestroy {
 
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
 
@@ -32,6 +32,10 @@ export class LaabCashinShowCodePage implements OnInit {
     this.loadQR();
     this.initTime();
     await this.balanceRefresh();
+  }
+  ngOnDestroy(): void {
+    clearInterval(this.counterRefreshBalance);
+    clearInterval(this.counterTimeClose);
   }
 
   loadQR() {

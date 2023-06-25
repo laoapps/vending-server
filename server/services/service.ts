@@ -15,7 +15,7 @@ export const getNow = () => moment().format(_default_format);
 
 
 // REDIS SERVER
-export const redisHost= process.env.REDIS_SERVER_HOST ? process.env.REDIS_SERVER_HOST : 'localhost';
+export const redisHost = process.env.REDIS_SERVER_HOST ? process.env.REDIS_SERVER_HOST : 'localhost';
 export const redisPort = process.env.REDIS_SERVER_PORT ? Number(process.env.REDIS_SERVER_PORT) : 6379;
 console.log(`redis host`, redisHost, `redis port`, redisPort);
 
@@ -24,7 +24,7 @@ console.log(`redis host`, redisHost, `redis port`, redisPort);
 // export const redisPort = process.env.REDIS_LOCAL_PORT ? Number(process.env.REDIS_LOCAL_PORT) : 6379;
 
 // **** 2 ***
-export const redisClient = redis.createClient({url:'redis://'+redisHost+':'+redisPort});
+export const redisClient = redis.createClient({ url: 'redis://' + redisHost + ':' + redisPort });
 
 
 // **** 1 ***
@@ -258,8 +258,15 @@ export function findRealDB(token: string): Promise<string> {
         })
     })
 }
+export function writeMachineSetting(machineId: string, setting: any) {
+    redisClient.set('_setting_' + machineId, JSON.stringify(setting));
+}
+export function readMachineSetting(machineId: string,) {
+    return redisClient.get('_setting_' + machineId);
+
+}
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
-    
+
     const logs = process.env._log_path + `/results_${da}.json`;
     return fs.readFileSync(logs).toString();
 }
@@ -268,23 +275,23 @@ export function writeSucceededRecordLog(m, position) {
     const logs = process.env._log_path + `/results_${da}.json`;
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
-export function writeLogs(m, position,name='g_') {
+export function writeLogs(m, position, name = 'g_') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path + `/${name}_${da}.json`;
-    console.log('m',m);
+    console.log('m', m);
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
-export function writeErrorLogs(m:string,e:any) {
+export function writeErrorLogs(m: string, e: any) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path + `/e_${da}.json`;
-    console.log('error',m);
-    
-    fs.appendFileSync(logs, JSON.stringify({ m,e, time: new Date() }), { flag: 'a+' });
+    console.log('error', m);
+
+    fs.appendFileSync(logs, JSON.stringify({ m, e, time: new Date() }), { flag: 'a+' });
 }
 export function getNanoSecTime() {
     var hrTime = process.hrtime();
     return hrTime[0] * 1000000000 + hrTime[1];
-  }
+}
 export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
 
 export const LAAB_URL = 'http://localhost:30000';

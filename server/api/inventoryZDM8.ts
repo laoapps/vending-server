@@ -8,9 +8,11 @@ import {
   findRealDB,
   PrintError,
   PrintSucceeded,
+  readMachineSetting,
   redisClient,
   writeErrorLogs,
   writeLogs,
+  writeMachineSetting,
   writeSucceededRecordLog,
 } from "../services/service";
 import {
@@ -1357,6 +1359,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // r.machineId = o.machineId ? o.machineId : r.machineId;
                 r.photo = o.photo ? o.photo : r.photo;
                 // r.changed('isActive',true);
+                
                 res.send(
                   PrintSucceeded(
                     "updateMachine",
@@ -1373,6 +1376,54 @@ export class InventoryZDM8 implements IBaseClass {
           } catch (error) {
             console.log(error);
             res.send(PrintError("updateMachine", error, EMessage.error));
+          }
+        }
+      );
+      router.post(
+        this.path + "/updateMachineSetting",
+        this.checkToken,
+        // this.checkToken.bind(this),
+        // this.checkDisabled.bind(this),
+        async (req, res) => {
+          try {
+            const ownerUuid = res.locals["ownerUuid"] || "";
+            const id = req.query["id"] + "";
+
+            const o = req.body.data as IMachineClientID;
+            this.machineClientlist
+              .findOne({ where: { ownerUuid, id } })
+              .then(async (r) => {
+                if (!r)
+                  return res.send(
+                    PrintError("updateMachineSetting", [], EMessage.notfound)
+                  );
+                if(!r.data) r.data=[];
+                const a = r.data.find(v=>v.settingName=='setting');
+                if(!Array.isArray(o.data))o.data=[];
+                o.data[0].allowVending = o.data[0]?.allowVending==''?false:true;
+                o.data[0].allowCashIn = o.data[0]?.allowCashIn==''?false:true;
+                const x = o.data[0]?.allowVending;
+                const y = o.data[0]?.allowCashIn;
+                if(!a)r.data.push({settingName:'setting',allowVending:x,allowCashIn:y});
+                else{a.allowVending=x;a.allowCashIn=y}
+                writeMachineSetting(r.machineId,r.data);
+                res.send(
+                  PrintSucceeded(
+                    "updateMachineSetting",
+                    await r.save(),
+                    EMessage.succeeded
+                  )
+                );
+                this.refreshMachines();
+
+              })
+              .catch((e) => {
+                console.log("Error updateMachineSetting", e);
+                res.send(PrintError("updateMachineSetting", e, EMessage.error));
+              });
+          } catch (error) {
+            console.log(error);
+            res.send(PrintError("updateMachineSetting", error, EMessage.error));
           }
         }
       );
@@ -1736,6 +1787,39 @@ export class InventoryZDM8 implements IBaseClass {
         that.creditMachine(d);
       });
       this.ssocket.onMachineResponse((re: IReqModel) => {
+        if(re.transactionID==-52){
+            const machineId = this.ssocket.findMachineIdToken(re.token);
+            const ws=this.wsClient.find(v=>v['machineId']==machineId.machineId);
+            if(ws){
+                const resx = {} as IResModel;
+                resx.command = EMACHINE_COMMAND.status;
+                resx.message = EMessage.status;
+                resx.data=re.data;
+                // save to redis
+                redisClient.set('_status_'+machineId.machineId,JSON.stringify({d:re.data,t:moment.now()}));
+                // send to machine client
+                this.sendWS(ws['clientId'],resx);
+            }
+            // fafb header
+            // 52 command
+            // 01 length
+            // Communication number+ 
+            '00'//Bill acceptor status+ 
+            '00'//Coin acceptor status+ 
+            '00'// Card reader status+
+            '00'// Temperature controller status+ 
+            '00'// Temperature+ 
+            '00'// Door status+ 
+            '00 00 00 00'// Bill change(4 byte)+ 
+            '00 00 00 00'// Coin change(4 byte)+ 
+            '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
+            '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
+            '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
+            
+            console.log('FAFB52',re.data);
+            
+            return;
+        }
         console.log("onMachineResponse", re);
         console.log("onMachineResponse transactionID", re.transactionID);
         this.getBillProcess((b) => {
@@ -1949,6 +2033,7 @@ export class InventoryZDM8 implements IBaseClass {
       this.ssocket.initMachineId(rx);
     });
   }
+
 
   generateBillMMoney(value: number, transactionID: string) {
     return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
@@ -2228,12 +2313,21 @@ export class InventoryZDM8 implements IBaseClass {
 
           if (data === '{"command":"ping"}') {
             // send pong if recieved a ping.
-            redisClient.get('_balance_'+ws['clientId']).then(r=>{
+            redisClient.get('_balance_'+ws['clientId']).then(async r=>{
+                let  x =await readMachineSetting(ws['machineId']);
+                let setting ={} as any;
+                try {
+                    if(!x){setting.allowVending=true,setting.allowCashIn=true}
+                    else setting = JSON.parse(x);
+                } catch (error) {
+                    console.log('parsing error setting',error);
+                }
+                
                 ws.send(
                     JSON.stringify(
                       PrintSucceeded(
                         "pong",
-                        { command: "ping", production: this.production,balance:r },
+                        { command: "ping", production: this.production,balance:r,setting },
                         EMessage.succeeded
                       )
                     )

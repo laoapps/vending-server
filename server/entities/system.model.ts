@@ -675,6 +675,134 @@ export enum EMODBUS_ERROR {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export enum EZDM8_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
@@ -707,7 +835,8 @@ export enum EZDM8_COMMAND {
     limiter = "limiter",
     reports = "reports",
     deleteReport = "deleteReport",
-    deleteReports = "deleteReports"
+    deleteReports = "deleteReports",
+    logs = "logs"
 }
 export enum EPaymentStatus{
     paid='paid',
@@ -885,7 +1014,8 @@ export enum EMessage {
     updatelimiter = "updatelimiter",
     requestReports = "requestReports",
     deleteReport = "deleteReport",
-    machineCredit = "machineCredit"
+    machineCredit = "machineCredit",
+    status = "status"
 }
 export interface IBase {
     id?: number;

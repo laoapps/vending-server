@@ -882,8 +882,9 @@ export enum EMACHINE_COMMAND {
 export interface IMachineClientID extends IBase {
     otp: string;
     machineId: string;
-    ownerUuid:string;
-    photo:string;
+    ownerUuid: string;
+    photo: string;
+    data: Array<any>;
 }
 
 export interface IMMoneyLogInRes {

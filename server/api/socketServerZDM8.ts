@@ -1,7 +1,7 @@
 import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess, IBillCashIn, EEntity } from '../entities/system.model';
 import cryptojs from 'crypto-js';
-import { redisClient, writeLogs } from '../services/service';
+import { readMachineSetting, redisClient, writeLogs, writeMachineSetting } from '../services/service';
 import { EventEmitter } from 'events';
 import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
 import { v4 as uuid4 } from 'uuid';
@@ -169,8 +169,18 @@ export class SocketServerZDM8 {
                                         console.log(`cash validate fail`, response?.message);
                                         // socket.end();
                                     }
-                                    
-                                    that.updateBalance(m.machineId, {balance:response?.balance||0,limiter});
+                                    readMachineSetting(m.machineId).then(r=>{
+                                        let setting ={} as any
+                                        if(r){
+                                            try {
+                                                setting= JSON.parse(r);
+                                            } catch (error) {
+                                                console.log('error parsing setting 2',error);
+                                            }
+                                        }
+                                        that.updateBalance(m.machineId, {balance:response?.balance||0,limiter,setting});
+                                    })
+                                   
 
                                 }).catch(error => {
                                     console.log(`cash validation error`, error.message);
@@ -385,7 +395,21 @@ export class SocketServerZDM8 {
         const data = JSON.parse(JSON.stringify(m));
         console.log(`initMachineId`, data);
         this.machineIds.push(...data)
-
+        this.initMachineSetting(m);
+    }
+    initMachineSetting(m: Array<IMachineClientID>){
+        m.forEach(v=>{
+            if(!Array.isArray(v.data))v.data=[];
+            const a = v.data.find(v=>v.settingName=='setting');
+            const x = v.data[0]?.allowVending;
+            const y = v.data[0]?.allowCashIn;
+            const w = v.data[0]?.light;
+            const z = v.data[0]?.highTemp;
+            const u = v.data[0]?.lowTemp;
+            if(!a)v.data.push({settingName:'setting',allowVending:x,allowCashIn:y,lowTemp:u,highTemp:z,light:w});
+            else{a.allowVending=x;a.allowCashIn=y}
+            writeMachineSetting(v.machineId,v.data);
+        })
     }
     listOnlineMachines() {
         try {
@@ -517,6 +541,33 @@ export class SocketServerZDM8 {
             if (x) {
                 const res = {} as IResModel;
                 res.command = EZDM8_COMMAND.reports
+                res.message = EMessage.requestReports;
+                res.status = 1;
+                console.log('writing...', x['machineId'], 'limiter');
+                return {  status: x.write(JSON.stringify(res) + '\n'),code:1};
+            } else {
+                console.log('client id socket not found');
+                const data = `${machineId}`
+                return {  status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients),code:0 };
+            }
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return {  status: false, message: error.message };
+        }
+
+    }
+    getLogs(machineId: string) {
+        try {
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
+                if (x) {
+                    return x.machineId == machineId;
+                }
+                return false;
+            });
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EZDM8_COMMAND.logs
                 res.message = EMessage.requestReports;
                 res.status = 1;
                 console.log('writing...', x['machineId'], 'limiter');
