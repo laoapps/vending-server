@@ -2341,7 +2341,7 @@ export class InventoryZDM8 implements IBaseClass {
             setWsHeartbeat(
                 wss,
                 (ws, data, binary) => {
-                    console.log("WS HEART BEAT");
+                    console.log("WS HEART BEAT",data);
 
                     if (data === '{"command":"ping"}') {
                         // send pong if recieved a ping.
