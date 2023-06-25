@@ -2345,54 +2345,54 @@ export class InventoryZDM8 implements IBaseClass {
 
                     if (data === '{"command":"ping"}') {
                         // send pong if recieved a ping.
-                        redisClient.get('_balance_' + ws['clientId']).then(async r => {
-                            console.log('clientid balance',r);
+                        // redisClient.get('_balance_' + ws['clientId']).then(async r => {
+                        //     console.log('clientid balance',r);
                             
-                            let x = await readMachineSetting(ws['machineId']);
-                            let mstatus= await readMachineStatus(ws['machineId']);
+                        //     let x = await readMachineSetting(ws['machineId']);
+                        //     let mstatus= await readMachineStatus(ws['machineId']);
 
-                            console.log('clientid  setting',x);
-                            console.log('clientid  status',x);
-                            const mArray = ws['myMachineId'] as Array<string>;
-                            let mymstatus = [];
-                            let mymsetting= [];
-                            let mymbalance =[];
-                            let setting = {} as any;
-                            try {
+                        //     console.log('clientid  setting',x);
+                        //     console.log('clientid  status',x);
+                        //     const mArray = ws['myMachineId'] as Array<string>;
+                        //     let mymstatus = [];
+                        //     let mymsetting= [];
+                        //     let mymbalance =[];
+                        //     let setting = {} as any;
+                        //     try {
                                 
                                
-                                let y = [];
-                                if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true }
-                                else {
-                                    y = JSON.parse(x) as Array<any>;
-                                    setting = y.find(v => v.settingName == 'setting');
-                                }
+                        //         let y = [];
+                        //         if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true }
+                        //         else {
+                        //             y = JSON.parse(x) as Array<any>;
+                        //             setting = y.find(v => v.settingName == 'setting');
+                        //         }
                                 
                                 
-                                for (let index = 0; index < mArray.length; index++) {
-                                    const element = mArray[index];
-                                    mymstatus.push(await readMachineStatus(element));
-                                    mymsetting.push(await readMachineSetting(element));
-                                    mymbalance.push(await readMachineBalance(element));
-                                }
-                                console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
-                            } catch (error) {
-                                console.log('parsing error setting', error);
-                                setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
-                            }
-                            console.log('ready to pong');
-                            const limiter = 100000;
-                            const merchant = 0;
-                            ws.send(
-                                JSON.stringify(
-                                    PrintSucceeded(
-                                        "pong",
-                                        { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting},
-                                        EMessage.succeeded
-                                    )
-                                )
-                            );
-                        });
+                        //         for (let index = 0; index < mArray.length; index++) {
+                        //             const element = mArray[index];
+                        //             mymstatus.push(await readMachineStatus(element));
+                        //             mymsetting.push(await readMachineSetting(element));
+                        //             mymbalance.push(await readMachineBalance(element));
+                        //         }
+                        //         console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
+                        //     } catch (error) {
+                        //         console.log('parsing error setting', error);
+                        //         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
+                        //     }
+                        //     console.log('ready to pong');
+                        //     const limiter = 100000;
+                        //     const merchant = 0;
+                        //     ws.send(
+                        //         JSON.stringify(
+                        //             PrintSucceeded(
+                        //                 "pong",
+                        //                 { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting},
+                        //                 EMessage.succeeded
+                        //             )
+                        //         )
+                        //     );
+                        // });
 
                     }
                 },
@@ -2528,11 +2528,55 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         else if (d.command == "ping") {
                             console.log("WS PING");
-                            return ws.send(
-                                JSON.stringify(
-                                    PrintSucceeded(d.command, res, EMessage.succeeded)
-                                )
-                            );
+                            redisClient.get('_balance_' + ws['clientId']).then(async r => {
+                                console.log('clientid balance',r);
+                                
+                                let x = await readMachineSetting(ws['machineId']);
+                                let mstatus= await readMachineStatus(ws['machineId']);
+    
+                                console.log('clientid  setting',x);
+                                console.log('clientid  status',x);
+                                const mArray = ws['myMachineId'] as Array<string>;
+                                let mymstatus = [];
+                                let mymsetting= [];
+                                let mymbalance =[];
+                                let setting = {} as any;
+                                try {
+                                    
+                                   
+                                    let y = [];
+                                    if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true }
+                                    else {
+                                        y = JSON.parse(x) as Array<any>;
+                                        setting = y.find(v => v.settingName == 'setting');
+                                    }
+                                    
+                                    
+                                    for (let index = 0; index < mArray.length; index++) {
+                                        const element = mArray[index];
+                                        mymstatus.push(await readMachineStatus(element));
+                                        mymsetting.push(await readMachineSetting(element));
+                                        mymbalance.push(await readMachineBalance(element));
+                                    }
+                                    console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
+                                } catch (error) {
+                                    console.log('parsing error setting', error);
+                                    setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
+                                }
+                                console.log('ready to pong');
+                                const limiter = 100000;
+                                const merchant = 0;
+                                return ws.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "pong",
+                                            { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting},
+                                            EMessage.succeeded
+                                        )
+                                    )
+                                );
+                            });
+                            
                         }
                         console.log("WS CLOSE");
                         ws.close();
