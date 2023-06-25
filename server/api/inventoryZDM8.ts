@@ -1744,7 +1744,7 @@ export class InventoryZDM8 implements IBaseClass {
                     that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                     console.log(`sw sender`, d.command, res.data);
                     redisClient.set('_balance_' + ws['clientId'], bn.value);
-                    writeMachineBalance(machineId.machineId,bn.value);
+                    
                     ws.send(
                         JSON.stringify(
                             PrintSucceeded(d.command, res, EMessage.succeeded)
