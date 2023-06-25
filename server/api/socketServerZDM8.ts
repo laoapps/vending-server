@@ -1,7 +1,7 @@
 import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess, IBillCashIn, EEntity } from '../entities/system.model';
 import cryptojs from 'crypto-js';
-import { readMachineSetting, redisClient, writeLogs, writeMachineBalance, writeMachineLimiter, writeMachineSetting } from '../services/service';
+import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineLimiter, writeMachineSetting } from '../services/service';
 import { EventEmitter } from 'events';
 import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
 import { v4 as uuid4 } from 'uuid';
@@ -179,7 +179,7 @@ export class SocketServerZDM8 {
                                                 setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=15;setting.light=true;
                                             }
                                         }
-                                        writeMachineBalance(m.machineId,response?.balance+'');
+                                        writeMerchantLimiterBalance(x.ownerUuid,response?.balance+'');
                                         writeMachineLimiter(m.machineId,limiter+'');
                                         that.updateBalance(m.machineId, {balance:response?.balance||0,limiter,setting});
                                     })

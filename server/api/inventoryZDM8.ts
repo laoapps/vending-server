@@ -8,7 +8,7 @@ import {
     findRealDB,
     PrintError,
     PrintSucceeded,
-    readMachineBalance,
+    readMerchantLimiterBalance,
     readMachineLimiter,
     readMachineSetting,
     readMachineStatus,
@@ -17,6 +17,7 @@ import {
     writeLogs,
     writeMachineSetting,
     writeSucceededRecordLog,
+    readMachineBalance,
 } from "../services/service";
 import {
     EClientCommand,
@@ -2467,6 +2468,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log('admintoken',r);
                                 
                                 if (r) {
+                                    ws['ownerUuid']=r;
                                     this.machineClientlist
                                                 .findAll({ where: { ownerUuid:r } })
                                                 .then((ry) => {
@@ -2493,6 +2495,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             const ownerUuid = rx;
                                             console.log('admintoken owneruuid',rx);
                                             if (!ownerUuid) throw new Error(EMessage.notfound);
+                                            ws['ownerUuid']=ownerUuid;
                                             this.machineClientlist
                                                 .findAll({ where: { ownerUuid } })
                                                 .then((ry) => {
@@ -2541,7 +2544,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log('myMachineId',mArray);
                                 let mymstatus = [];
                                 let mymsetting= [];
-                                let mymbalance =[];
+                                let mymlimiterbalance ='0';
+                                let mymmachinebalance =[];
                                 let mymlimiter =[];
                                 let setting = {} as any;
                                 try {
@@ -2554,7 +2558,8 @@ export class InventoryZDM8 implements IBaseClass {
                                         setting = y.find(v => v.settingName == 'setting');
                                     }
                                     
-                                    
+                                    mymlimiterbalance=(await readMerchantLimiterBalance(ws['ownerUuid']))||'0';
+                                   
                                     for (let index = 0; index < mArray.length; index++) {
                                         const element = mArray[index];
 
@@ -2564,13 +2569,15 @@ export class InventoryZDM8 implements IBaseClass {
                                         mymsetting.push({msetting,machineId:element});
 
 
+                                       
+
                                         const mb=JSON.parse((await readMachineBalance(element))||'0');
-                                        mymbalance.push({machineId:element,balance:mb});
+                                        mymmachinebalance.push({machineId:element,balance:mb});
 
                                         const ml=JSON.parse((await readMachineLimiter(element))||'100000');
                                         mymlimiter.push({machineId:element,balance:ml});
                                     }
-                                    console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
+                                    console.log('clientid  my machinestatus',mymstatus,mymsetting,mymlimiterbalance);
                                 } catch (error) {
                                     console.log('parsing error setting', error);
                                     setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
@@ -2582,7 +2589,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
-                                            { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
+                                            { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance: mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
                                             EMessage.succeeded
                                         )
                                     )

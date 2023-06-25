@@ -56,7 +56,7 @@ export class ApiService {
   static __T: any;
   static waiting_T: any
   audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
-
+  machineTemps=[];
   constructor(public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
@@ -78,7 +78,6 @@ export class ApiService {
       
       try {
         if (!r) return console.log('empty');
-        if (!r) return console.log('empty');
         console.log('ws alive subscription', r);
         this.wsAlive.time = new Date();
         this.wsAlive.isAlive = this.checkOnlineStatus();
@@ -91,6 +90,8 @@ export class ApiService {
         // }
         if(r.balance)
         this.cash=r.balance;
+
+        this.machineTemps.push(...r.data.mymstatus)
       } catch (error) {
         console.log('error',error);
         

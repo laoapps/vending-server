@@ -272,6 +272,13 @@ export function readMachineLimiter(machineId: string,) {
     return redisClient.get('_limiter_' + machineId);
 
 }
+export function writeMerchantLimiterBalance(ownerUuid: string, balance: string) {
+    redisClient.set('_limiter_balance_' + ownerUuid, balance);
+}
+export function readMerchantLimiterBalance(ownerUuid:string) {
+    return redisClient.get('_limiter_balance_' + ownerUuid);
+
+}
 export function writeMachineBalance(machineId: string, balance: string) {
     redisClient.set('_balance_' + machineId, balance);
 }
@@ -279,6 +286,7 @@ export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
 
 }
+
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
 
     const logs = process.env._log_path + `/results_${da}.json`;
