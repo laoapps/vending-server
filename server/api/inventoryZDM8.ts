@@ -2346,8 +2346,13 @@ export class InventoryZDM8 implements IBaseClass {
                     if (data === '{"command":"ping"}') {
                         // send pong if recieved a ping.
                         redisClient.get('_balance_' + ws['clientId']).then(async r => {
+                            console.log('clientid balance',r);
+                            
                             let x = await readMachineSetting(ws['machineId']);
                             let mstatus= await readMachineStatus(ws['machineId']);
+
+                            console.log('clientid  setting',x);
+                            console.log('clientid  status',x);
                             const mArray = ws['myMachineId'] as Array<string>;
                             let mymstatus = [];
                             let mymsetting= [];
@@ -2362,7 +2367,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     y = JSON.parse(x) as Array<any>;
                                     setting = y.find(v => v.settingName == 'setting');
                                 }
-
+                                
                                 
                                 for (let index = 0; index < mArray.length; index++) {
                                     const element = mArray[index];
@@ -2370,11 +2375,12 @@ export class InventoryZDM8 implements IBaseClass {
                                     mymsetting.push(await readMachineSetting(element));
                                     mymbalance.push(await readMachineBalance(element));
                                 }
-                                
+                                console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
                             } catch (error) {
                                 console.log('parsing error setting', error);
                                 setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
                             }
+                            console.log('ready to pong');
                             const limiter = 100000;
                             const merchant = 0;
                             ws.send(
