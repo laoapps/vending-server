@@ -2460,8 +2460,25 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log('admintoken',r);
                                 
                                 if (r) {
-                                    ws['myMachineId']=JSON.parse(r);
-                                    ws["clientId"] = uuid4();
+                                    this.machineClientlist
+                                                .findAll({ where: { ownerUuid:r } })
+                                                .then((ry) => {
+                                                    if (ry) {
+                                                        const m = ry.map(v=>v.machineId);
+                                                        console.log('admintoken owneruuid machines',m);
+                                                        ws['myMachineId']=m;
+                                                        ws["clientId"] = uuid4();
+                                                        ws.send(
+                                                            JSON.stringify(
+                                                                PrintSucceeded(d.command, res, EMessage.succeeded)
+                                                            ));
+                                                    }
+                                                    else ws.close(0);
+                                                })
+                                                .catch((e) => {
+                                                    console.log("Error list machine", e);
+                                                    ws.close(0);
+                                                });
                                 }
                                 else {
                                     findRealDB(token)
@@ -2475,7 +2492,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     if (ry) {
                                                         const m = ry.map(v=>v.machineId);
                                                         console.log('admintoken owneruuid machines',m);
-                                                        redisClient.setEx('_admintoken_'+token,60*60*24,JSON.stringify(m));
+                                                        redisClient.setEx('_admintoken_'+token,60*60*24,ownerUuid);
                                                         ws['myMachineId']=m;
                                                         ws["clientId"] = uuid4();
                                                         ws.send(
