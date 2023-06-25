@@ -62,7 +62,7 @@ export class VendingVMC {
                 console.log('INIT accept banknote');
                 that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 console.log('INIT temperature');
-                that.commandVMC(EVMC_COMMAND._7028,{},-7028,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7037,{},-7037,that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
                 //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
