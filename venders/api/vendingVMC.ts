@@ -359,7 +359,7 @@ export class VendingVMC {
                         const setting = params.setting.find(v=>v.settingName=='setting');
                         if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp||setting.allowCashIn!=this.setting.allowCashIn) {
                             this.setting =setting;
-                            this.setting.allowCashIn=false;
+                            // this.setting.allowCashIn=false;
                             this.commandVMC(EVMC_COMMAND._7036, params, transactionID, this.getNextNo()).then(r => {
                                 resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                             }).catch(e => {
