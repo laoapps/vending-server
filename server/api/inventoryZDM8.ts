@@ -2423,6 +2423,7 @@ export class InventoryZDM8 implements IBaseClass {
                             redisClient.get('_admintoken' + token).then(r => {
                                 if (r) {
                                     ws['myMachineId']=JSON.parse(r);
+                                    ws["clientId"] = uuid4();
                                 }
                                 else {
                                     findRealDB(token)
@@ -2436,6 +2437,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                         const m = r.map(v=>v.machineId);
                                                         redisClient.setEx('_admintoken'+token,60*60*24,JSON.stringify(r.map(v=>v.machineId)));
                                                         ws['myMachineId']=m;
+                                                        ws["clientId"] = uuid4();
                                                         ws.send(
                                                             JSON.stringify(
                                                                 PrintSucceeded(d.command, res, EMessage.succeeded)
