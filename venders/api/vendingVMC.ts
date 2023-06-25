@@ -240,6 +240,7 @@ export class VendingVMC {
         }
 
     }
+    
     sycnVMC() {
         //FA FB 31 01 02 33
         this.commandVMC(EVMC_COMMAND.sync, {}, -31);
@@ -332,7 +333,7 @@ export class VendingVMC {
                     this.balance = params?.balance || 0;
                     this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
-                    this.setting = params?.setting ? params?.setting : this.setting;
+                    
                     if (this.balance < this.limiter) {
                         this.lastupdate = moment().add(-360, 'days').milliseconds();
                         if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
@@ -352,9 +353,11 @@ export class VendingVMC {
                         })
                     }
 
-                    if (params?.setting) {
-                        //temp 
-                        if (params.setting.lowTemp != this.setting.lowTemp || params.setting.highTemp != this.setting.highTemp) {
+                    if (Array.isArray(params?.setting)) {
+                        try {
+                            //temp 
+                        const setting = params.setting.find(v=>v.settingName=='setting');
+                        if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp) {
                             this.setting.lowTemp == params.setting.lowTemp;
                             this.setting.highTemp == params.setting.highTemp;
 
@@ -366,15 +369,20 @@ export class VendingVMC {
                         }
                         // light
 
-                        if (params.setting.light != this.setting.light) {
+                        // if (setting.light != this.setting.light) {
 
-                            this.setting.light == params.setting.light;
-                            this.commandVMC(EVMC_COMMAND._7016, params, transactionID, this.getNextNo()).then(r => {
-                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                            }).catch(e => {
-                                reject(PrintError(command as any, params, e.message));
-                            })
+                        //     this.setting.light == setting.light;
+                        //     this.commandVMC(EVMC_COMMAND._7016, params, transactionID, this.getNextNo()).then(r => {
+                        //         resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                        //     }).catch(e => {
+                        //         reject(PrintError(command as any, params, e.message));
+                        //     })
+                        // }
+                        } catch (error) {
+                            console.log(error);
+                            
                         }
+                        
 
 
                     }
@@ -630,8 +638,8 @@ export class VendingVMC {
                 buff.push('36');//// temp setting
                 buff.push(int2hex(1));// setting 1 or read 0
                 buff.push(int2hex(0));// 0 as master 
-                buff.push(int2hex(5)); // low temp (Range 0-60) 
-                buff.push(int2hex(15)); // Highest temperature (Range 0-60) 
+                buff.push(int2hex(this.setting?.lowTemp)); // low temp (Range 0-60) 
+                buff.push(int2hex(this.setting?.highTemp)); // Highest temperature (Range 0-60) 
                 buff.push(int2hex(5)); // Return difference value (Range 2-8) 
                 buff.push(int2hex(0)); // Delay Starting time (Range 0-8)
                 buff.push(int2hex(0)); // Sensor correction (Range -10-10) 
