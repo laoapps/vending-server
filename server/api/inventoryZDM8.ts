@@ -2556,8 +2556,13 @@ export class InventoryZDM8 implements IBaseClass {
                                     for (let index = 0; index < mArray.length; index++) {
                                         const element = mArray[index];
                                         mymstatus.push(await readMachineStatus(element));
-                                        mymsetting.push(await readMachineSetting(element));
-                                        mymbalance.push(await readMachineBalance(element));
+                                        const msetting = JSON.parse(await readMachineSetting(element));
+                                        msetting.machineId=element;
+                                        mymsetting.push(msetting);
+
+
+                                        const mb=JSON.parse((await readMachineBalance(element))||'0');
+                                        mymbalance.push(mb);
                                     }
                                     console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
                                 } catch (error) {

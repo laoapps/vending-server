@@ -303,9 +303,9 @@ export function  hex2dec(hex: string) {
     }
 
 }
-export interface IMachineStatus{billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
+export interface IMachineStatus{machineId:string,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
 
-export function machineStatus(b:string):IMachineStatus{
+export function machineStatus(b:string,m:string):IMachineStatus{
     try {
         console.log('do machineStatus',b);
     
@@ -348,17 +348,16 @@ export function machineStatus(b:string):IMachineStatus{
         // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
         // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
         // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-        return {billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
+        return {machineId:m,billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
     } catch (error) {
         return {} as IMachineStatus;
     }
-    return {} as IMachineStatus;
    
   }
 
 export async function readMachineStatus(machineId:string){
     const x = await redisClient.get('_machinestatus_'+machineId);
-    return machineStatus( x);
+    return machineStatus( x,machineId);
 }
 export function writeMachineStatus(machineId: string, b: any) {
     redisClient.set('_machinestatus_' + machineId, b);
