@@ -48,7 +48,7 @@ export class ApiService {
   eventEmitter = new EventEmitter();
   machineuuid = uuid.v4()
   url = localStorage.getItem('url') || environment.url;
-  // wsurl = localStorage.getItem('wsurl') || environment.wsurl;
+  wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   currentPaymentProvider = EPaymentProvider.mmoney;
   machineId = {} as IMachineClientID;
 
@@ -79,7 +79,7 @@ export class ApiService {
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = localStorage.getItem('machineId') || '12345678';
     this.machineId.otp = localStorage.getItem('otp') || '111111';
-    // this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
+    this.wsapi.connect(this.wsurl);
 
 
     this.wsapi.aliveSubscription.subscribe(r => {
@@ -276,6 +276,10 @@ export class ApiService {
   updateMachine(o:IMachineClientID,id:number) {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + `/updateMachine?id=${id}`,{token,data:o}, { headers: this.headerBase() });
+  }
+  updateMachineSetting(o:IMachineClientID,id:number) {
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/updateMachineSetting?id=${id}`,{token,data:o}, { headers: this.headerBase() });
   }
   addMachine(o:IMachineClientID) {
     const token = localStorage.getItem('lva_token');

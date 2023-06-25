@@ -22,7 +22,7 @@ export class WsapiService {
   retry: any;
   constructor() {
   }
-  connect(url: string, machineId: string, otp: string) {
+  connect(url: string) {
     this.wsurl = url;
     this.webSocket = new WebSocket(this.wsurl);
 
@@ -35,16 +35,16 @@ export class WsapiService {
       // this.pingTimeout = setTimeout(() => {
       //   this.webSocket.close();
       // }, 30000 + 1000);
-      this.machineId = machineId;
-      this.otp = otp;
+      // this.machineId = [];
+     const  token = localStorage.getItem('lva_token');
       const req = {} as IReqModel;
-      req.command= EMACHINE_COMMAND.login;
+      req.command= EMACHINE_COMMAND.adminlogin;
       // req. data= '', 
       // req. ip= '', 
       // req.  message: '',
       // req.   status: -1, 
       req.  time=new Date().toString(), 
-      req.   token=cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex) 
+      req.   token=token ;
       this.send(req);
 
       this.webSocket.onclose = (ev): void => {
@@ -56,7 +56,7 @@ export class WsapiService {
         setTimeout(() => {
           // clearInterval(this.retries);
           // this.retry = null;
-          this.connect(url, machineId, otp);
+          this.connect(url);
 
         }, 5000);
       };
@@ -67,7 +67,7 @@ export class WsapiService {
         setTimeout(() => {
           // clearInterval(this.retries);
           // this.retry = null;
-          this.connect(url, machineId, otp);
+          this.connect(url);
 
         }, 5000);
 
@@ -142,7 +142,7 @@ export class WsapiService {
             console.log('create a new connection');
 
             // that.webSocket.close();
-            that.connect(that.wsurl, that.machineId+'', that.otp+'');
+            that.connect(that.wsurl);
             that.retries = 0;
           } else {
             console.log("waiting for the connection...")

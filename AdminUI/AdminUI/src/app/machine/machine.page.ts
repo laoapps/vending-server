@@ -27,102 +27,135 @@ export class MachinePage implements OnInit {
   ];
 
 
-  _l = new Array<IMachineClientID>();    
-  showImage:(p:string)=>string;
-
-  constructor(public apiService:ApiService, private laabAPIService: LaabApiService) {
-    this.showImage= this.apiService.showImage;
+  _l = new Array<IMachineClientID>();
+  showImage: (p: string) => string;
+  settings = {} as any;
+  constructor(public apiService: ApiService, private laabAPIService: LaabApiService) {
+    this.showImage = this.apiService.showImage;
   }
 
   ngOnInit() {
-    this.apiService.listMachine().subscribe(r=>{
+    this.apiService.listMachine().subscribe(r => {
       console.log(r);
-      if(r.status){
+      if (r.status) {
         this._l.push(...r.data);
+        this._l.forEach(v=>{
+          let setting =v.data?.find(vx=>vx.settingName=='setting');
+          if(!setting){
+            setting={};
+            setting.allowVending=true;
+            setting.allowCashIn=true;
+            setting.lowTemp=5;
+            setting.highTemp=15;
+            setting.light=true;
+          }
+          this.settings[v.machineId]=setting;
+        })
+       
       }
       // this.apiService.toast.create({message:r.message,duration:5000}).then(ry=>{
       //   ry.present();
       // })
     })
   }
-  new(){
-    this.apiService.showModal(MachineAddPage).then(ro=>{
+  updateSetting(m:string){
+    const setting = this.settings[m];
+    const o = this._l.find(v=>v.machineId==m);
+    const oldData = JSON.stringify(o.data);
+    o.data=setting;
+    this.apiService.updateMachineSetting(o,o.id).subscribe(rx=>{
+      console.log(rx);
+      if (!rx.status) {
+        o.data=JSON.parse(oldData);
+        console.log('Update setting failed restore old data');
+        
+      }else{
+        console.log('update setting success !');
+        
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+        ry.present();
+      })
+    })
+  }
+  new() {
+    this.apiService.showModal(MachineAddPage).then(ro => {
       ro?.present();
-      ro?.onDidDismiss().then(r=>{
+      ro?.onDidDismiss().then(r => {
         console.log(`adddd`, r);
-        if(r.data.s){
-          this.apiService.addMachine(r.data.s)?.subscribe(rx=>{
+        if (r.data.s) {
+          this.apiService.addMachine(r.data.s)?.subscribe(rx => {
             console.log(rx);
-            if(rx.status){
+            if (rx.status) {
               this._l.unshift(rx.data);
             }
-            this.apiService.toast.create({message:rx.message,duration:5000}).then(ry=>{
+            this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
               ry.present();
             })
-            
+
           })
         }
       })
     })
   }
-  edit(id:number){
-    const s = this._l.find(v=>v.id==id);
-    if(!s) return alert('Not found')
-    this.apiService.showModal(MachineDetailsPage,{s}).then(ro=>{
+  edit(id: number) {
+    const s = this._l.find(v => v.id == id);
+    if (!s) return alert('Not found')
+    this.apiService.showModal(MachineDetailsPage, { s }).then(ro => {
       ro?.present();
-      ro?.onDidDismiss().then(r=>{
+      ro?.onDidDismiss().then(r => {
         console.log(r);
-        
-        if(r.data.update){
-          this.apiService.updateMachine(s,id).subscribe(rx=>{
+
+        if (r.data.update) {
+          this.apiService.updateMachine(s, id).subscribe(rx => {
             console.log(rx);
-            if(rx.status){
-              this._l.find((v,i)=>{
-                if(v.id==rx.data.id){
-                  this._l.splice(i,1,...[rx.data]);
+            if (rx.status) {
+              this._l.find((v, i) => {
+                if (v.id == rx.data.id) {
+                  this._l.splice(i, 1, ...[rx.data]);
                   return true;
                 }
                 return false;
               })
             }
-            this.apiService.toast.create({message:rx.message,duration:5000}).then(ry=>{
+            this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
               ry.present();
             })
-            
+
           })
         }
-      }).catch(e=>{
+      }).catch(e => {
         console.log(e);
-        
+
       })
     })
   }
 
-  disable(id:number){
-    const s = this._l.find(v=>v.id==id);
-    if(!s) return alert('Not found')
+  disable(id: number) {
+    const s = this._l.find(v => v.id == id);
+    if (!s) return alert('Not found')
 
-          this.apiService.disableMachine(s.isActive,id).subscribe(rx=>{
-            console.log(rx);
-            if(rx.status){
-              this._l.find((v,i)=>{
-                if(v.id==rx.data.id){
-                  this._l.splice(i,1,...[rx.data]);
-                  return true;
-                }
-                return false;
-              })
-            }
-            this.apiService.toast.create({message:rx.message,duration:5000}).then(ry=>{
-              ry.present();
-            })
-            
+    this.apiService.disableMachine(s.isActive, id).subscribe(rx => {
+      console.log(rx);
+      if (rx.status) {
+        this._l.find((v, i) => {
+          if (v.id == rx.data.id) {
+            this._l.splice(i, 1, ...[rx.data]);
+            return true;
+          }
+          return false;
+        })
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+        ry.present();
+      })
+
     })
   }
-  sale(s:string){
-    this.apiService.showModal(SalePage,{machineId:s}).then(ro=>{
+  sale(s: string) {
+    this.apiService.showModal(SalePage, { machineId: s }).then(ro => {
       ro?.present();
-      ro?.onDidDismiss().then(r=>{
+      ro?.onDidDismiss().then(r => {
         console.log(r);
       })
     });
@@ -131,9 +164,9 @@ export class MachinePage implements OnInit {
     this.apiService.closeModal()
   }
 
-  machineWallet(id:number) {
-    const s = this._l.find(v=>v.id==id);
-    if(!s) return alert('Not found');
+  machineWallet(id: number) {
+    const s = this._l.find(v => v.id == id);
+    if (!s) return alert('Not found');
     this.apiService.currentMachineId = s.machineId;
     this.apiService.showModal(MachineWalletPage, { s }).then(r => {
       r.present();

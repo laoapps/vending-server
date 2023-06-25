@@ -1015,7 +1015,8 @@ export enum EMessage {
     requestReports = "requestReports",
     deleteReport = "deleteReport",
     machineCredit = "machineCredit",
-    status = "status"
+    status = "status",
+    adminloginok = "adminloginok"
 }
 export interface IBase {
     id?: number;

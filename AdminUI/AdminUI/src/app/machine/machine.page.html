@@ -87,16 +87,28 @@
                       <button (click)="sale(p.machineId)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Sale</button>
                     </td>
                   </tr>
-                  <tr>
-                    <td colspan="7">
-                      <div>STATUS</div>
-                      <ion-list>
-                        <ion-item>  Allow Vending <ion-checkbox ></ion-checkbox>  </ion-item>
-                        <ion-item> Allow Cash-In<ion-checkbox ></ion-checkbox> </ion-item>
-                      </ion-list>
+                  <tr *ngIf="settings[p.machineId]">
+                    <td colspan="6">
+                      <div>Setting </div>
+                        <div style="float: left;"> Allow Vending <ion-checkbox [(ngModel)]="settings[p.machineId].allowVending" ></ion-checkbox>  </div>
+                        <div style="float: left;"> Allow Cash-In<ion-checkbox [(ngModel)]="settings[p.machineId].allowCashIn"></ion-checkbox> </div>
+                        <div style="float: left;"> Light<ion-checkbox [(ngModel)]="settings[p.machineId].light"></ion-checkbox> </div>
+                        <div style="float: left;"> Low temp: <ion-input type="number" [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> High temp: <ion-input type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input></div>
+                        
+                      
                        
                                      
             
+                    </td>
+                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button> 
+                    <td>
+
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="7">
+                      <div>Status </div>
+                      
                     </td>
                   </tr>
                 </tbody>

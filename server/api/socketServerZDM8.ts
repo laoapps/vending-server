@@ -176,6 +176,7 @@ export class SocketServerZDM8 {
                                                 setting= JSON.parse(r);
                                             } catch (error) {
                                                 console.log('error parsing setting 2',error);
+                                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=15;setting.light=true;
                                             }
                                         }
                                         that.updateBalance(m.machineId, {balance:response?.balance||0,limiter,setting});
@@ -400,14 +401,15 @@ export class SocketServerZDM8 {
     initMachineSetting(m: Array<IMachineClientID>){
         m.forEach(v=>{
             if(!Array.isArray(v.data))v.data=[];
+            
+            const x = v.data[0]?.allowVending||true;
+            const y = v.data[0]?.allowCashIn||true;
+            const w = v.data[0]?.light||true;
+            const z = v.data[0]?.highTemp||15;
+            const u = v.data[0]?.lowTemp||5;
             const a = v.data.find(v=>v.settingName=='setting');
-            const x = v.data[0]?.allowVending;
-            const y = v.data[0]?.allowCashIn;
-            const w = v.data[0]?.light;
-            const z = v.data[0]?.highTemp;
-            const u = v.data[0]?.lowTemp;
             if(!a)v.data.push({settingName:'setting',allowVending:x,allowCashIn:y,lowTemp:u,highTemp:z,light:w});
-            else{a.allowVending=x;a.allowCashIn=y}
+            else{a.allowVending=x;a.allowCashIn=y,a.light=w;a.highTemp=z;a.lowTemp=u}
             writeMachineSetting(v.machineId,v.data);
         })
     }

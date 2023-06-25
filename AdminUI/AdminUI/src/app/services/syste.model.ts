@@ -861,22 +861,25 @@ export interface IBaseClass {
 }
 
 
+
+
 export enum EMACHINE_COMMAND {
-    login = 'login',
-    ping = 'ping',
-    status = 'status',
-    confirm = "confirm",
-    note_credit = "note_credit",
-    CREDIT_NOTE = "CREDIT_NOTE",
-    READ_NOTE = "READ_NOTE",
-    REJECT_BANKNOTE = "REJECT_BANKNOTE",
-    JAMMED = "JAMMED",
-    start = "start",
-    ENABLE = "ENABLE",
-    DISABLE = "DISABLE",
-    stop = "stop",
-    setcounter = "setcounter",
-    NOTE_REJECTED = "NOTE_REJECTED"
+  login = 'login',
+  ping = 'ping',
+  status = 'status',
+  confirm = "confirm",
+  note_credit = "note_credit",
+  CREDIT_NOTE = "CREDIT_NOTE",
+  READ_NOTE = "READ_NOTE",
+  REJECT_BANKNOTE = "REJECT_BANKNOTE",
+  JAMMED = "JAMMED",
+  start = "start",
+  ENABLE = "ENABLE",
+  DISABLE = "DISABLE",
+  stop = "stop",
+  setcounter = "setcounter",
+  NOTE_REJECTED = "NOTE_REJECTED",
+  adminlogin = "adminlogin"
 }
 
 export interface IMachineClientID extends IBase {
