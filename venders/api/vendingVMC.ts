@@ -360,6 +360,8 @@ export class VendingVMC {
                         if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp||setting.allowCashIn!=this.setting.allowCashIn) {
                             this.setting =setting;
                             // this.setting.allowCashIn=false;
+                            console.log('new setting',this.setting);
+                            
                             this.commandVMC(EVMC_COMMAND._7036, params, transactionID, this.getNextNo()).then(r => {
                                 resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                             }).catch(e => {
