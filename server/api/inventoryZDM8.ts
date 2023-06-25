@@ -2589,7 +2589,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
-                                            { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance: mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
+                                            { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
                                             EMessage.succeeded
                                         )
                                     )
