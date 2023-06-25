@@ -334,7 +334,7 @@ export class VendingVMC {
                     this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
                     
-                    if (this.balance < this.limiter) {
+                    if (this.balance < this.limiter||!this.setting.allowCashIn) {
                         this.lastupdate = moment().add(-360, 'days').milliseconds();
                         if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
                         this.enable = false;
