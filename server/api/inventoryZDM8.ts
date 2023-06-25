@@ -2543,10 +2543,10 @@ export class InventoryZDM8 implements IBaseClass {
     sendWSMyMachine(machineId: string, resx: IResModel) {
         this.wsClient.forEach((v) => {
             const x = v["myMachineId"] as Array<string>;
-            console.log("WS SENDING", x, x.includes(machineId), v.readyState);
-            if (x.length && x.includes(machineId)) {
+            console.log("WS SENDING", x, x?.includes(machineId), v?.readyState);
+            if (x?.length && x?.includes(machineId)) {
                 // yy.push(v);
-                console.log("WS SENDING", x, v.readyState);
+                console.log("WS SENDING", x, v?.readyState);
 
                 v.send(JSON.stringify(resx));
             }
@@ -2568,7 +2568,7 @@ export class InventoryZDM8 implements IBaseClass {
     sendWS(clientId: string, resx: IResModel) {
         this.wsClient.find((v) => {
             const x = v["clientId"] as string;
-            console.log("WS SENDING", x, x == clientId, v.readyState);
+            console.log("WS SENDING", x, x == clientId, v?.readyState);
             if (x && x == clientId) {
                 // yy.push(v);
                 console.log("WS SENDING", x, v.readyState);
@@ -2621,10 +2621,10 @@ export class InventoryZDM8 implements IBaseClass {
 
         this.wsClient.find((v) => {
             const x = v["machineId"] as string;
-            console.log("WS SENDING id", x, machineId, x == machineId, v.readyState);
+            console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
             if (x && x == machineId) {
                 // yy.push(v);
-                console.log("WS SENDING machine id", x, v.readyState);
+                console.log("WS SENDING machine id", x, v?.readyState);
                 v.send(JSON.stringify(resx));
             }
         });
