@@ -265,6 +265,13 @@ export function readMachineSetting(machineId: string,) {
     return redisClient.get('_setting_' + machineId);
 
 }
+export function writeMachineBalance(machineId: string, balance: string) {
+    redisClient.set('_balance_' + machineId, balance);
+}
+export function readMachineBalance(machineId: string,) {
+    return redisClient.get('_balance_' + machineId);
+
+}
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
 
     const logs = process.env._log_path + `/results_${da}.json`;

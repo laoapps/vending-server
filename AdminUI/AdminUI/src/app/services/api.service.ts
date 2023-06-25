@@ -83,6 +83,8 @@ export class ApiService {
 
 
     this.wsapi.aliveSubscription.subscribe(r => {
+      console.log('ALIVE',r);
+      
       if (!r) return console.log('empty');
       // console.log('ws alive subscription', r);
       this.wsAlive.time = new Date();

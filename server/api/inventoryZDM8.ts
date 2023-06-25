@@ -1743,6 +1743,7 @@ export class InventoryZDM8 implements IBaseClass {
                     that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                     console.log(`sw sender`, d.command, res.data);
                     redisClient.set('_balance_' + ws['clientId'], bn.value);
+                    writeMachineBalance(machineId.machineId,bn.value);
                     ws.send(
                         JSON.stringify(
                             PrintSucceeded(d.command, res, EMessage.succeeded)
@@ -2349,6 +2350,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const mArray = ws['myMachineId'] as Array<string>;
                             let mymstatus = [];
                             let mymsetting= [];
+                            let mymbalance =[];
                             let setting = {} as any;
                             try {
                                 
@@ -2365,18 +2367,20 @@ export class InventoryZDM8 implements IBaseClass {
                                     const element = mArray[index];
                                     mymstatus.push(await readMachineStatus(element));
                                     mymsetting.push(await readMachineSetting(element));
+                                    mymbalance.push(await readMachineSetting(element));
                                 }
                                 
                             } catch (error) {
                                 console.log('parsing error setting', error);
                                 setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
                             }
-
+                            const limiter = 100000;
+                            const merchant = 0;
                             ws.send(
                                 JSON.stringify(
                                     PrintSucceeded(
                                         "pong",
-                                        { command: "ping", production: this.production, balance: r, setting ,mstatus,mymstatus,mymsetting},
+                                        { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting},
                                         EMessage.succeeded
                                     )
                                 )
@@ -2472,12 +2476,10 @@ export class InventoryZDM8 implements IBaseClass {
                                                                 PrintSucceeded(d.command, res, EMessage.succeeded)
                                                             ));
                                                     }
-
                                                     else ws.close();
                                                 })
                                                 .catch((e) => {
                                                     console.log("Error list machine", e);
-
                                                     ws.close(0);
                                                 });
                                         })
@@ -2611,3 +2613,7 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 }
+function writeMachineBalance(machineId: string, value: number) {
+    throw new Error("Function not implemented.");
+}
+
