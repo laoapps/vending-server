@@ -62,8 +62,8 @@ export class ApiService {
   onlineMachines = new Array<IMachineClientID>();
   test = { test: false };
 
-  audio = new Audio('assets/khopchay.mp3');
-
+  // audio = new Audio('assets/khopchay.mp3');
+  myMachineStatus=new Array<IMachineStatus>();
   constructor(public http: HttpClient,
     public router: Router,
     public wsapi: WsapiService,
@@ -84,9 +84,12 @@ export class ApiService {
 
     this.wsapi.aliveSubscription.subscribe(r => {
       console.log('ALIVE',r);
-      
+      //{ command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
+     
       try {
+       
         if (!r) return console.log('empty');
+        this.myMachineStatus.push(...r.data.mymstatus)
         // console.log('ws alive subscription', r);
         this.wsAlive.time = new Date();
         this.wsAlive.isAlive = this.checkOnlineStatus();
@@ -128,8 +131,8 @@ export class ApiService {
 
         x.stock.qtty--;
         // PLAY SOUNDS
-        this.audio = new Audio('assets/khopchay.mp3');
-        this.audio.play();
+        // this.audio = new Audio('assets/khopchay.mp3');
+        // this.audio.play();
         this.toast.create({ message, duration: 2000 }).then(r => {
           r.present();
         });
@@ -145,8 +148,8 @@ export class ApiService {
 
       } else if (!r.position.status) {
         // PLAY SOUNDS
-        this.audio = new Audio('assets/labob.mp3');
-        this.audio.play();
+        // this.audio = new Audio('assets/labob.mp3');
+        // this.audio.play();
         this.alert.create({
           header: 'Alert', message, buttons: [
             {
@@ -487,3 +490,4 @@ export class ApiService {
   }
   
 }
+

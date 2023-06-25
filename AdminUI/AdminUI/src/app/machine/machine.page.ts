@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
-import { IMachineClientID } from '../services/syste.model';
+import { IMachineClientID, IMachineStatus } from '../services/syste.model';
 import { MachineAddPage } from './machine-add/machine-add.page';
 import { MachineDetailsPage } from './machine-details/machine-details.page';
 import { SalePage } from '../sale/sale.page';
@@ -30,8 +30,10 @@ export class MachinePage implements OnInit {
   _l = new Array<IMachineClientID>();
   showImage: (p: string) => string;
   settings = {} as any;
+  myMachineStatus=new Array<IMachineStatus>();
   constructor(public apiService: ApiService, private laabAPIService: LaabApiService) {
     this.showImage = this.apiService.showImage;
+    this.myMachineStatus=apiService.myMachineStatus;
   }
 
   ngOnInit() {
@@ -57,6 +59,9 @@ export class MachinePage implements OnInit {
       //   ry.present();
       // })
     })
+  }
+  findMachine(m:string){
+    return this.myMachineStatus.find(v=>v['machineId']==m);
   }
   updateSetting(m:string){
     const setting = this.settings[m];
