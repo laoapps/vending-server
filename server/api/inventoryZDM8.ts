@@ -9,6 +9,7 @@ import {
     PrintError,
     PrintSucceeded,
     readMachineSetting,
+    readMachineStatus,
     redisClient,
     writeErrorLogs,
     writeLogs,
@@ -1410,7 +1411,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const y = o.data[0]?.allowCashIn || true;
                                 const w = o.data[0]?.light || true;
                                 const z = o.data[0]?.highTemp || 15;
-                                const u = o.data[0]?.lowTemp || 5;
+                                const u = o.data[0]?.lowTemp || 7;
                                 const a = data.find(v => v.settingName == 'setting');
                                 if (!a) r.data.push({ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w });
                                 else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u }
@@ -1809,27 +1810,41 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.message = EMessage.status;
                         resx.data = re.data;
                         // save to redis
-                        redisClient.set('_status_' + machineId.machineId, JSON.stringify({ d: re.data, t: moment.now() }));
+                        redisClient.set('_machinestatus_' + machineId.machineId, re.data);
                         // send to machine client
                         this.sendWSMyMachine(machineId.machineId, resx);
 
                         this.sendWS(ws['clientId'], resx);
                     }
-                    // fafb header
-                    // 52 command
-                    // 01 length
-                    // Communication number+ 
-                    '00'//Bill acceptor status+ 
-                    '00'//Coin acceptor status+ 
-                    '00'// Card reader status+
-                    '00'// Temperature controller status+ 
-                    '00'// Temperature+ 
-                    '00'// Door status+ 
-                    '00 00 00 00'// Bill change(4 byte)+ 
-                    '00 00 00 00'// Coin change(4 byte)+ 
-                    '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
-                    '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
-                    '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
+                    // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
+                    // fafb52
+                    // 21 //len
+                    // 54 // series
+                    // 00 // bill acceptor
+                    // 01 // coin acceptor
+                    // 00 // card reader status
+                    // 00 // tem controller status
+                    // 13 // temp
+                    // 00 // door 
+                    // 00000000 // bill change
+                    // 00000000 // coin change
+                    // 30303030303030303030
+                    // 13aaaaaaaaaaaaaa8d
+                    // // fafb header
+                    // // 52 command
+                    // // 01 length
+                    // // Communication number+ 
+                    // '00'//Bill acceptor status+ 
+                    // '00'//Coin acceptor status+ 
+                    // '00'// Card reader status+
+                    // '00'// Temperature controller status+ 
+                    // '00'// Temperature+ 
+                    // '00'// Door status+ 
+                    // '00 00 00 00'// Bill change(4 byte)+ 
+                    // '00 00 00 00'// Coin change(4 byte)+ 
+                    // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
+                    // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
+                    // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
 
                     console.log('FAFB52', re.data);
 
@@ -2330,24 +2345,38 @@ export class InventoryZDM8 implements IBaseClass {
                         // send pong if recieved a ping.
                         redisClient.get('_balance_' + ws['clientId']).then(async r => {
                             let x = await readMachineSetting(ws['machineId']);
+                            let mstatus= await readMachineStatus(ws['machineId']);
+                            const mArray = ws['myMachineId'] as Array<string>;
+                            let mymstatus = [];
+                            let mymsetting= [];
                             let setting = {} as any;
                             try {
+                                
+                               
                                 let y = [];
-                                if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 15; setting.light = true }
+                                if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true }
                                 else {
                                     y = JSON.parse(x) as Array<any>;
                                     setting = y.find(v => v.settingName == 'setting');
                                 }
+
+                                
+                                for (let index = 0; index < mArray.length; index++) {
+                                    const element = mArray[index];
+                                    mymstatus.push(await readMachineStatus(element));
+                                    mymsetting.push(await readMachineSetting(element));
+                                }
+                                
                             } catch (error) {
                                 console.log('parsing error setting', error);
-                                setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 15; setting.light = true
+                                setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
                             }
 
                             ws.send(
                                 JSON.stringify(
                                     PrintSucceeded(
                                         "pong",
-                                        { command: "ping", production: this.production, balance: r, setting },
+                                        { command: "ping", production: this.production, balance: r, setting ,mstatus,mymstatus,mymsetting},
                                         EMessage.succeeded
                                     )
                                 )

@@ -26,6 +26,7 @@ export class VendingVMC {
     setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 7, highTemp: 13, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
+    machinestatus='';
 
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
@@ -181,7 +182,7 @@ export class VendingVMC {
                 else if (b.startsWith('fafb52')) {
                     // report status to the server
                     console.log('SEND REPORT',b);
-                    
+                    that.machinestatus=b;
                     that.sock?.send(b, -52);
 
                 }
