@@ -53,6 +53,10 @@ const routes: Routes = [
   {
     path: 'remainingbilllocal',
     loadChildren: () => import('./remainingbilllocal/remainingbilllocal.module').then( m => m.RemainingbilllocalPageModule)
+  },
+  {
+    path: 'howto',
+    loadChildren: () => import('./howto/howto.module').then( m => m.HowtoPageModule)
   }
 ];
 @NgModule({

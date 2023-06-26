@@ -2492,30 +2492,36 @@ export class InventoryZDM8 implements IBaseClass {
                                 else {
                                     findRealDB(token)
                                         .then((rx) => {
-                                            const ownerUuid = rx;
-                                            console.log('admintoken owneruuid',rx);
-                                            if (!ownerUuid) throw new Error(EMessage.notfound);
-                                            ws['ownerUuid']=ownerUuid;
-                                            this.machineClientlist
-                                                .findAll({ where: { ownerUuid } })
-                                                .then((ry) => {
-                                                    if (ry) {
-                                                        const m = ry.map(v=>v.machineId);
-                                                        console.log('admintoken owneruuid machines',m);
-                                                        redisClient.setEx('_admintoken_'+token,60*60*24,ownerUuid);
-                                                        ws['myMachineId']=m;
-                                                        ws["clientId"] = uuid4();
-                                                        ws.send(
-                                                            JSON.stringify(
-                                                                PrintSucceeded(d.command, res, EMessage.succeeded)
-                                                            ));
-                                                    }
-                                                    else ws.close(0);
-                                                })
-                                                .catch((e) => {
-                                                    console.log("Error list machine", e);
-                                                    ws.close(0);
-                                                });
+                                            try {
+                                                const ownerUuid = rx;
+                                                console.log('admintoken owneruuid',rx);
+                                                if (!ownerUuid) throw new Error(EMessage.notfound);
+                                                ws['ownerUuid']=ownerUuid;
+                                                this.machineClientlist
+                                                    .findAll({ where: { ownerUuid } })
+                                                    .then((ry) => {
+                                                        if (ry) {
+                                                            const m = ry.map(v=>v.machineId);
+                                                            console.log('admintoken owneruuid machines',m);
+                                                            redisClient.setEx('_admintoken_'+token,60*60*24,ownerUuid);
+                                                            ws['myMachineId']=m;
+                                                            ws["clientId"] = uuid4();
+                                                            ws.send(
+                                                                JSON.stringify(
+                                                                    PrintSucceeded(d.command, res, EMessage.succeeded)
+                                                                ));
+                                                        }
+                                                        else ws.close(0);
+                                                    })
+                                                    .catch((e) => {
+                                                        console.log("Error list machine", e);
+                                                        ws.close(0);
+                                                    });
+                                            } catch (error) {
+                                                console.log(error);
+                                                ws.close(0)
+                                            }
+                                           
                                         })
                                         .catch((e) => {
                                             console.log(e);
@@ -2531,7 +2537,8 @@ export class InventoryZDM8 implements IBaseClass {
                             return;
                         }
                         else if (d.command == "ping") {
-                            console.log("WS PING",ws['clientId'],ws['myMachineId']);
+                            try {
+                                console.log("WS PING",ws['clientId'],ws['myMachineId']);
                             redisClient.get('_balance_' + ws['clientId']).then(async r => {
                                 console.log('clientid balance',r);
                                 
@@ -2596,6 +2603,11 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                             });
                             return;
+                            } catch (error) {
+                                console.log((error));
+                                
+                            }
+                            
                             
                         }
                         console.log("WS CLOSE");

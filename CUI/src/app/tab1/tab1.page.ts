@@ -44,6 +44,8 @@ export class Tab1Page {
   _machineStatus={status:{}as IMachineStatus}as any;
 
 
+  checkHowTo_Time=60*10;// 10 minutes
+  _howToT:any;
 
   production = environment.production;
   audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
