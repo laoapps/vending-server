@@ -93,6 +93,11 @@ export class HowtoPage implements OnInit {
   
 
   ngOnInit(): void {
+    // auto play first video
+    setTimeout(() => {
+      this.testVideoPlayerPlugin('assets/howtovideo/demo.mp4');
+    }, 3000);
+    
   }
   setApi() {
     this.testApi = !this.testApi;
