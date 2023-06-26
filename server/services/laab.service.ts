@@ -24,6 +24,7 @@ export const LAAB_RegisterCoin: string = LAABbase + 'pex/exchange_service/coin_r
 export const LAAB_CoinTransfer: string = LAABbase + 'pex/exchange_service/coin_to_coin_transaction';
 export const LAAB_ShowIncomeReport: string = LAABbase + 'pex/coin_currency/show_sender_coin_to_coin_income_list';
 export const LAAB_ShowExpendReport: string = LAABbase + 'pex/coin_currency/show_sender_coin_to_coin_expend_list';
+export const LAAB_ShowSMCExpendReport: string = LAABbase + 'pex/coin_currency/show_sender_coin_to_csmc_expend_list';
 export const LAAB_TextHashVerify: string = LAABbase + 'pex/coin_currency/coin_wallet_hash_verifying';
 export const LAAB_QRHashVerify: string = LAABbase + 'pex/coin_currency/coin_wallet_hash_verifying_qrmode';
 

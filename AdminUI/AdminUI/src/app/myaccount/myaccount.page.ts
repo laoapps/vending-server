@@ -112,8 +112,7 @@ export class MyaccountPage implements OnInit {
         (await loading).present();
         setTimeout(async () => {
           (await loading).dismiss();
-
-                  
+          
           if (component == 'coin-transfer') {
             this.child_coinTransferComponent = true;
             this.child_CQRComponent = false;

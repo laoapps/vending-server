@@ -1,6 +1,6 @@
 import { Transaction } from "sequelize";
 import axios from "axios";
-import { IENMessage, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowExpendReport, LAAB_ShowIncomeReport, translateUToSU } from "../../../../services/laab.service";
+import { IENMessage, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowExpendReport, LAAB_ShowIncomeReport, LAAB_ShowSMCExpendReport, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
 
@@ -71,7 +71,7 @@ export class ShowVendingWalletReportFunc {
 
     private ValidateParams(): string {
         if (!(this.ownerUuid && this.machineClientId && this.page && this.limit && this.statement)) return IENMessage.parametersEmpty;
-        if (this.statement != 'income' && this.statement != 'expend') return IENMessage.invalidStatement;
+        if (this.statement != 'income' && this.statement != 'expend' && this.statement != 'smc_expend') return IENMessage.invalidStatement;
         return IENMessage.success;
     }
 
@@ -137,6 +137,9 @@ export class ShowVendingWalletReportFunc {
                     if (run.data.status != 1) return resolve(run.data.message);
                 } else if (this.statement == 'expend') {
                     run = await axios.post(LAAB_ShowExpendReport, params);
+                    if (run.data.status != 1) return resolve(run.data.message);
+                } else if (this.statement == 'smc_expend') {
+                    run = await axios.post(LAAB_ShowSMCExpendReport, params);
                     if (run.data.status != 1) return resolve(run.data.message);
                 }
 

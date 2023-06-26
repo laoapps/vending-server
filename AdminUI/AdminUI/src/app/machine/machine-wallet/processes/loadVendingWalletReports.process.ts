@@ -96,6 +96,7 @@ export class LoadVendingWalletReportsProcess {
 
                 this.vendingAPIServgice.showVendingWalletReport(params).subscribe(r => {
                     const response: any = r;
+                    console.log(`response`, response);
                     if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);
                     this.rows = response.info.rows;
                     this.count = response.info.count;
