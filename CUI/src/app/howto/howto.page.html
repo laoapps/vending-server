@@ -1,9 +1,20 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>howto</ion-title>
+    <ion-title>How To <ion-icon name="close-outline" (click)="close()"></ion-icon></ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
+<ion-list>
+  <ion-item *ngFor="let s of list">
+    <div>
+      
+      <ion-label>{{s.title}}</ion-label>
+        <img [src]="s.image" style="width:200px;height:200px"/>
+      <ion-label>{{s.name}}</ion-label>
+      <ion-label>{{s.description}}</ion-label>
+      <ion-button (click)="testVideoPlayerPlugin(s.url)">PLAY</ion-button>
+    </div>
+  </ion-item>
+</ion-list>
 </ion-content>

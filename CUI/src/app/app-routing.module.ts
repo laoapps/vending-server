@@ -57,6 +57,10 @@ const routes: Routes = [
   {
     path: 'howto',
     loadChildren: () => import('./howto/howto.module').then( m => m.HowtoPageModule)
+  },
+  {
+    path: 'fullscreen',
+    loadChildren: () => import('./fullscreen/fullscreen.module').then( m => m.FullscreenPageModule)
   }
 ];
 @NgModule({

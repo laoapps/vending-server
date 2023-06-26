@@ -56,7 +56,7 @@
       </a>
     </div>
     <div class="right">
-      {{_machineStatus?.status?.temp}}
+      {{_machineStatus?.status?.temp}}<ion-icon name="thermometer-outline"></ion-icon>
       <!-- <a (click)="showBills()" href="javascript:void(0)" class="item">
         <div class="icon">
           <i class="fa-solid fa-ticket"></i>
@@ -84,7 +84,8 @@
   <!-- </ion-toolbar> -->
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" 
+>
   <div class="floatingBtn"><ion-icon name="logo-whatsapp"></ion-icon><div>ມີບັນຫາໂທWA:<div>{{apiService.contact}}</div></div></div>
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>

@@ -5,6 +5,22 @@ export interface IDevice {
   port: number;
   driver?: object;
 }
+export interface IVideoList{
+  id:number;
+  name:string;
+  title:string;
+  description:string;
+  url:any;
+  image:string;
+}
+export function  hex2dec(hex: string) {
+  try {
+      return parseInt(hex, 16);
+  } catch (error) {
+      return -1;
+  }
+
+}
 export interface IUsbDevice {
     productId: number;
     vendorId: number;

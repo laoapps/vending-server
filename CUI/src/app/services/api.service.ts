@@ -13,7 +13,7 @@ import { EventEmitter } from 'events';
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
-import { IMachineStatus } from './service';
+import { IMachineStatus, hex2dec } from './service';
 
 @Injectable({
   providedIn: 'root'
@@ -93,6 +93,7 @@ export class ApiService {
         this.cash=r.balance;
 
         this._machineStatus.status=r.data.mstatus;
+        this._machineStatus.status.temp = hex2dec(this._machineStatus.status.temp)
       } catch (error) {
         console.log('error',error);
         
