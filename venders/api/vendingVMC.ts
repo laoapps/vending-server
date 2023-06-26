@@ -26,7 +26,7 @@ export class VendingVMC {
     setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 7, highTemp: 13, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
-    machinestatus='';
+    machinestatus = '';
 
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
@@ -63,7 +63,7 @@ export class VendingVMC {
                 console.log('INIT accept banknote');
                 that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 console.log('INIT temperature');
-                that.commandVMC(EVMC_COMMAND._7037,{},-7037,that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
                 //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
@@ -75,7 +75,7 @@ export class VendingVMC {
 
             setTimeout(() => {
                 setInterval(() => {
-                    console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate));
+                    console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate), that.setting?.allowCashIn);
 
                     if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
                         if (!that.enable) return;
@@ -181,8 +181,8 @@ export class VendingVMC {
                 }
                 else if (b.startsWith('fafb52')) {
                     // report status to the server
-                    console.log('SEND REPORT',b);
-                    that.machinestatus=b;
+                    console.log('SEND REPORT', b);
+                    that.machinestatus = b;
                     that.sock?.send(b, -52);
 
                 }
@@ -243,7 +243,7 @@ export class VendingVMC {
         }
 
     }
-    
+
     sycnVMC() {
         //FA FB 31 01 02 33
         this.commandVMC(EVMC_COMMAND.sync, {}, -31);
@@ -336,8 +336,8 @@ export class VendingVMC {
                     this.balance = params?.balance || 0;
                     this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
-                    
-                    if (this.balance < this.limiter||!this.setting.allowCashIn) {
+
+                    if (this.balance < this.limiter) {
                         // this.lastupdate = moment().add(-360, 'days').toNow();
                         if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
                         this.enable = false;
@@ -359,46 +359,58 @@ export class VendingVMC {
                     if (Array.isArray(params?.setting)) {
                         try {
                             //temp 
-                        const setting = params.setting.find(v=>v.settingName=='setting');
-                        if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp) {
-                            this.setting.lowTemp =setting.lowTemp;
-                            this.setting.highTemp =setting.highTemp;
-                            // this.setting.allowCashIn=false;
-                            console.log('new setting',this.setting);
-                            
-                            this.commandVMC(EVMC_COMMAND._7037, params, transactionID, this.getNextNo()).then(r => {
-                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                            }).catch(e => {
-                                reject(PrintError(command as any, params, e.message));
-                            })
-                        }
-                        // disable
-                        if (setting.allowCashIn!=this.setting.allowCashIn) {
-                            this.setting.allowCashIn=setting.allowCashIn;
-                            console.log('new setting',this.setting);
-                            
-                            this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
-                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                            }).catch(e => {
-                                reject(PrintError(command as any, params, e.message));
-                            })
-                        }
-                        // light
+                            const setting = params.setting.find(v => v.settingName == 'setting');
+                            if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp) {
+                                this.setting.lowTemp = setting.lowTemp;
+                                this.setting.highTemp = setting.highTemp;
+                                // this.setting.allowCashIn=false;
+                                console.log('new setting', this.setting);
 
-                        // if (setting.light != this.setting.light) {
+                                this.commandVMC(EVMC_COMMAND._7037, params, transactionID, this.getNextNo()).then(r => {
+                                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                }).catch(e => {
+                                    reject(PrintError(command as any, params, e.message));
+                                })
+                            }
+                            // disable
+                            if (setting.allowCashIn != this.setting.allowCashIn) {
+                                this.setting.allowCashIn = setting.allowCashIn;
+                                console.log('new setting', this.setting);
+                                if (!this.setting.allowCashIn) {
+                                    if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                    this.enable = false;
+                                    this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
+                                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                    }).catch(e => {
+                                        reject(PrintError(command as any, params, e.message));
+                                    })
+                                } else {
+                                    if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                    this.enable = true;
+                                    this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
+                                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                    }).catch(e => {
+                                        reject(PrintError(command as any, params, e.message));
+                                    })
+                                }
 
-                        //     this.setting.light == setting.light;
-                        //     this.commandVMC(EVMC_COMMAND._7016, params, transactionID, this.getNextNo()).then(r => {
-                        //         resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                        //     }).catch(e => {
-                        //         reject(PrintError(command as any, params, e.message));
-                        //     })
-                        // }
+                            }
+                            // light
+
+                            // if (setting.light != this.setting.light) {
+
+                            //     this.setting.light == setting.light;
+                            //     this.commandVMC(EVMC_COMMAND._7016, params, transactionID, this.getNextNo()).then(r => {
+                            //         resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                            //     }).catch(e => {
+                            //         reject(PrintError(command as any, params, e.message));
+                            //     })
+                            // }
                         } catch (error) {
                             console.log(error);
-                            
+
                         }
-                        
+
 
 
                     }
@@ -675,8 +687,8 @@ export class VendingVMC {
                 buff.push(int2hex(series));// // 47 series
                 buff.push('16');//// light setting
                 buff.push(int2hex(1));// 00 read coin system type, 01 set coin system type
-                buff.push(int2hex(params.start||15));// 01  coin acceptor 02  hopper
-                buff.push(int2hex(params.end||10));
+                buff.push(int2hex(params.start || 15));// 01  coin acceptor 02  hopper
+                buff.push(int2hex(params.end || 10));
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
