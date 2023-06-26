@@ -26,6 +26,7 @@ import { LaabCashinShowCodePage } from './LAAB/laab-cashin-show-code/laab-cashin
 import { LaabCashoutPage } from './LAAB/laab-cashout/laab-cashout.page';
 import { WsapiService } from '../services/wsapi.service';
 import { IMachineStatus } from '../services/service';
+import { HowtoPage } from '../howto/howto.page';
 
 
 var host = window.location.protocol + "//" + window.location.host;
@@ -44,8 +45,7 @@ export class Tab1Page {
   _machineStatus={status:{}as IMachineStatus}as any;
 
 
-  checkHowTo_Time=60*10;// 10 minutes
-  _howToT:any;
+  
 
   production = environment.production;
   audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
@@ -74,7 +74,10 @@ export class Tab1Page {
   timeoutHandler: any;
   manageStockCount = 0;
   compensation = 0;
-
+  _checkHowTo_Duration=60*1;
+  _checkHowTo_Time=60*1;// 10 minutes
+  _howToT:any;
+  _howToPage:HTMLIonModalElement;
   constructor(private ref: ChangeDetectorRef,
     public apiService: ApiService,
     platform: Platform,
@@ -85,9 +88,10 @@ export class Tab1Page {
     private WSAPIService: WsapiService
     ) 
     { 
+     
       this._machineStatus=this.apiService._machineStatus;
       this.autoUpdateCash();
-
+      
       this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
       this.cashValidationProcess = new CashValidationProcess(this.apiService, this.vendingAPIService);
       this.cashinValidationProcess = new CashinValidationProcess(this.apiService, this.vendingAPIService);
@@ -145,8 +149,41 @@ export class Tab1Page {
 
       });
 
+      setTimeout(() => {
+        this.checkHowTo();
+      }, 5000);
 
+  }
+  setActive(){
+    console.log(('active'));
+    
+    this._checkHowTo_Time=this._checkHowTo_Duration;
+  }
+  checkHowTo(){
+    this._checkHowTo_Time=this._checkHowTo_Duration;
+    if(this._howToT) {
+      clearInterval(this._howToT);
+      this._howToT=null;
 
+    }
+    this._howToT=setInterval(()=>{
+      if(this._checkHowTo_Time==this._checkHowTo_Duration){
+        if(this._howToPage){this._howToPage.dismiss();this._howToPage=null;}
+        this.apiService.modal.create({ component: HowtoPage, componentProps: {  }, cssClass: 'dialog-fullscreen' },).then(r => {
+          r.present();
+          this._howToPage=r;
+        });
+      }else if(this._checkHowTo_Time<=0){
+        if(this._howToPage){this._howToPage.dismiss();this._howToPage=null;console.log('close');
+        }
+        this.apiService.modal.create({ component: HowtoPage, componentProps: {  }, cssClass: 'dialog-fullscreen' },).then(r => {
+          r.present();
+          this._howToPage=r;
+        });
+        this._checkHowTo_Time=this._checkHowTo_Duration;
+      }
+      this._checkHowTo_Time--;
+    },1000);
   }
 
   autoUpdateCash() {
@@ -389,7 +426,7 @@ export class Tab1Page {
 
   addOrder(x: IVendingMachineSale) {
     // this.zone.runOutsideAngular(() => { 
-
+      this.setActive();
       if (!x) return alert('not found')
      const ord = this.orders.filter(v=>v.position==x.position);
      if(ord.length)
