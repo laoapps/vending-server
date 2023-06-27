@@ -953,7 +953,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const id = Number(req.query["id"]);
                         const isActive =
                             req.query["isActive"] == ""
-                                ? null
+                                ? false
                                 : Boolean(req.query["isActive"]);
                         const sEnt = StockFactory(
                             EEntity.product + "_" + ownerUuid,
@@ -967,7 +967,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     return res.send(
                                         PrintError("disableProduct", [], EMessage.error)
                                     );
-                                if (isActive != null) r.isActive = isActive;
+                                 r.isActive = isActive;
                                 r.changed("isActive", true);
                                 res.send(
                                     PrintSucceeded(
