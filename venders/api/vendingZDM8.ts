@@ -106,7 +106,7 @@ export class VendingZDM8 {
                         check = this.checkSum(buff)
                         // try if data didn't confirm 
                         setTimeout(() => {
-                            if (this.retry < 1) {
+                            if (this.transactionID!=-1&&this.retry<1) {
                                 this.command(command, param, transactionID);
                             } else {
                                 return this.retry = 0;
@@ -114,7 +114,7 @@ export class VendingZDM8 {
                             this.retry++;
 
 
-                        }, 1000);
+                        }, 3000);
 
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
