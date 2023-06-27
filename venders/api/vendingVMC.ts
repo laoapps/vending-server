@@ -127,7 +127,7 @@ export class VendingVMC {
                     //FA FB 04 05 packNo 03 00 19
                     console.log('drop detect', b);
                     that.sock?.send(b, -9);
-                    writeLogs(b, -1);
+                    writeLogs(b, -1,'_drop');
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
