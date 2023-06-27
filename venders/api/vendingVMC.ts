@@ -146,11 +146,35 @@ export class VendingVMC {
                     // new 50k not working
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
-                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
-                        // if error then resend
-                        that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
-                        
-                        });
+                    const t = moment.now();
+                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
+                        // if error then resend 1
+                        setTimeout(() => {
+                            that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
+                                // if error then resend 2
+                                setTimeout(() => {
+                                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
+                                        // if error then resend 3
+                                        setTimeout(() => {
+                                            that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
+                                                 // if error then resend 4
+                                                setTimeout(() => {
+                                                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
+                                                        setTimeout(() => {
+                                                             // if error then resend 5
+                                                            setTimeout(() => {
+                                                                that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE);
+                                                            }, 1000*60*10);
+                                                        }, 1000*60*5);
+                                                    });
+                                                }, 1000*60);
+                                            });
+                                        }, 1000*30);
+                                    });
+                                }, 1000*5);
+                            });
+                        }, 1000);
+                       
                     });
                     writeLogs(b, -1);
 
