@@ -62,7 +62,7 @@ export class FindEPINShortCodeFunc {
 
     private ValidateParams(): string {
         if (!(this.machineId && this.phonenumber && this.page && this.limit)) return IENMessage.parametersEmpty;
-        this.limit = Number(this.page - 1) * Number(this.limit);
+        this.offset = Number(this.page - 1) * Number(this.limit);
         return IENMessage.success;
     }
 
