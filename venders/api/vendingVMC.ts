@@ -23,7 +23,7 @@ export class VendingVMC {
     limiter = 100000;
     balance = 0;
     lastupdate = 0;
-    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 3, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
+    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
     machinestatus = '';
@@ -754,7 +754,7 @@ export class VendingVMC {
                 buff.push(int2hex(1));// setting 1 or read 0
                 buff.push(int2hex(0));// 0 as master 
                 buff.push(int2hex(5)); // Return difference value (Range 2-8) 
-                buff.push(int2hex(this.setting?.lowTemp || 3)); // temperature
+                buff.push(int2hex(this.setting?.lowTemp || 5)); // temperature
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
                 // 0x01+Machine number+ Temperature controller working mode+ Temperature
