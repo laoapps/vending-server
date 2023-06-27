@@ -100,6 +100,9 @@ export class ApiService {
         //   }, 3000);
         //   this.validateDB();
         // }
+        r.data.mystatus.forEach(e => {
+            e.temp=this.hex2dec(e.temp);
+        });
       } catch (error) {
         console.log('error',error);
         
