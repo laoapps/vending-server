@@ -23,7 +23,7 @@ export class VendingVMC {
     limiter = 100000;
     balance = 0;
     lastupdate = 0;
-    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 7, highTemp: 13, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
+    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 6, highTemp: 13, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
     machinestatus = '';
@@ -63,7 +63,8 @@ export class VendingVMC {
                 console.log('INIT accept banknote');
                 that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                 console.log('INIT temperature');
-                that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
                 // setTimeout(() => {
                 //     console.log('INIT disable');
                 //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
@@ -366,7 +367,7 @@ export class VendingVMC {
                                 // this.setting.allowCashIn=false;
                                 console.log('new setting', this.setting);
 
-                                this.commandVMC(EVMC_COMMAND._7037, params, transactionID, this.getNextNo()).then(r => {
+                                this.commandVMC(EVMC_COMMAND._7028, params, transactionID, this.getNextNo()).then(r => {
                                     resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                                 }).catch(e => {
                                     reject(PrintError(command as any, params, e.message));
@@ -668,12 +669,25 @@ export class VendingVMC {
                 buff.push(int2hex(0));// 0 as master 
                 buff.push(int2hex(this.setting?.lowTemp)); // low temp (Range 0-60) 
                 buff.push(int2hex(this.setting?.highTemp)); // Highest temperature (Range 0-60) 
-                buff.push(int2hex(5)); // Return difference value (Range 2-8) 
+                buff.push(int2hex(6)); // Return difference value (Range 2-8) 
                 buff.push(int2hex(0)); // Delay Starting time (Range 0-8)
                 buff.push(int2hex(0)); // Sensor correction (Range -10-10) 
                 buff.push(int2hex(1)); // Defrosting period (Range 0-24 Hours) 
                 buff.push(int2hex(10)); // Defrosting time (Range 1-40 Minutes)
                 buff.push(int2hex(0)); // Protect (1-ON, 0-OFF)
+                buff.push(int2hex(0));// 27 check sum
+                buff[buff.length - 1] = chk8xor(buff);// update checksum
+            }
+            else if (command == EVMC_COMMAND._7028) {
+                //FA FB 70 len packNo 28 01 00 02 05 crc
+                buff.push('70');// 70 
+                buff.push(int2hex(6));// 04 len
+                buff.push(int2hex(series));// // 47 series
+                buff.push('28');//// temp setting
+                buff.push(int2hex(1));// setting 1 or read 0
+                buff.push(int2hex(0));// 0 as master 
+                buff.push(int2hex(2)); // Return difference value (Range 2-8) 
+                buff.push(int2hex(this.setting?.lowTemp||6)); // temperature
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
