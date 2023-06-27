@@ -959,6 +959,8 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.product + "_" + ownerUuid,
                             dbConnection
                         );
+                        console.log('sEnt',isActive,id,ownerUuid);
+                        
                         await sEnt.sync();
                         sEnt
                             .findByPk(id)
