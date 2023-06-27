@@ -176,7 +176,7 @@ export class SocketServerZDM8 {
                                                 setting= JSON.parse(r);
                                             } catch (error) {
                                                 console.log('error parsing setting 2',error);
-                                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=0;setting.highTemp=10;setting.light=true;
+                                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
                                             }
                                         }
                                         writeMerchantLimiterBalance(x.ownerUuid,response?.balance+'');
@@ -408,7 +408,7 @@ export class SocketServerZDM8 {
             const y = v.data[0]?.allowCashIn||true;
             const w = v.data[0]?.light||true;
             const z = v.data[0]?.highTemp||10;
-            const u = v.data[0]?.lowTemp||3;
+            const u = v.data[0]?.lowTemp||5;
             const a = v.data.find(v=>v.settingName=='setting');
             if(!a)v.data.push({settingName:'setting',allowVending:x,allowCashIn:y,lowTemp:u,highTemp:z,light:w});
             else{a.allowVending=x;a.allowCashIn=y,a.light=w;a.highTemp=z;a.lowTemp=u}
