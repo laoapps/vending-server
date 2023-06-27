@@ -487,7 +487,8 @@ export class VendingVMC {
                         console.log('INIT accept banknote');
                         that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                         console.log('INIT temperature');
-                        // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                        that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                        console.log('INIT temperature');
                         that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
                         // setTimeout(() => {
                         //     console.log('INIT disable');
@@ -736,7 +737,7 @@ export class VendingVMC {
                 buff.push(int2hex(0));// 0 as master 
                 buff.push(int2hex(this.setting?.lowTemp||5)); // low temp (Range 0-60) 
                 buff.push(int2hex(this.setting?.highTemp||10)); // Highest temperature (Range 0-60) 
-                buff.push(int2hex(2)); // Return difference value (Range 2-8) 
+                buff.push(int2hex(5)); // Return difference value (Range 2-8) 
                 buff.push(int2hex(0)); // Delay Starting time (Range 0-8)
                 buff.push(int2hex(0)); // Sensor correction (Range -10-10) 
                 buff.push(int2hex(1)); // Defrosting period (Range 0-24 Hours) 
