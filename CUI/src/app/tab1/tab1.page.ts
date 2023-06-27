@@ -496,19 +496,14 @@ export class Tab1Page {
   }
 
   addOrder(x: IVendingMachineSale) {
-    // this.zone.runOutsideAngular(() => {
-    console.log(`allow vending`, this.WSAPIService.setting_allowVending);
-
-    if (this.WSAPIService.setting_allowVending == false) {
-      this.apiService.simpleMessage('Vending is closed');
-      return;
-    }
-    this.setActive();
-    if (!x) return alert('not found');
-    const ord = this.orders.filter((v) => v.position == x.position);
-    if (ord.length) if (ord.length >= ord[0]?.max) return alert('Out of Stock');
-    console.log('ID', x);
-    console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
+    // this.zone.runOutsideAngular(() => { 
+      this.setActive();
+      if (!x) return alert('not found')
+     const ord = this.orders.filter(v=>v.position==x.position);
+     if(ord.length)
+      if (ord.length >= ord[0]?.max) return alert('Out of Stock');
+      console.log('ID', x);
+      console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 
     this.apiService.showLoading('', 500);
 

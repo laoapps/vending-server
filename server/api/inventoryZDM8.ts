@@ -1413,8 +1413,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 const x = o.data[0]?.allowVending || true;
                                 const y = o.data[0]?.allowCashIn || true;
                                 const w = o.data[0]?.light || true;
-                                const z = o.data[0]?.highTemp || 15;
-                                const u = o.data[0]?.lowTemp || 7;
+                                const z = o.data[0]?.highTemp || 10;
+                                const u = o.data[0]?.lowTemp || 5;
                                 const a = data.find(v => v.settingName == 'setting');
                                 if (!a) r.data.push({ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w });
                                 else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u }
@@ -1746,12 +1746,28 @@ export class InventoryZDM8 implements IBaseClass {
                     that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                     console.log(`sw sender`, d.command, res.data);
                     redisClient.set('_balance_' + ws['clientId'], bn.value);
-                    
-                    ws.send(
-                        JSON.stringify(
-                            PrintSucceeded(d.command, res, EMessage.succeeded)
+                   
+                    readMachineSetting(machineId.machineId).then(async r=>{
+                        let setting ={} as any
+                        if(r){
+                            try {
+                                setting= JSON.parse(r);
+                            } catch (error) {
+                                console.log('error parsing setting 2',error);
+                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                            }
+                        }
+                        const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
+                        const limiter = await readMachineLimiter(machineId.machineId);
+
+                        that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting})
+                        ws.send(
+                            JSON.stringify(
+                                PrintSucceeded(d.command, res, EMessage.succeeded)
+                            )
                         )
-                    );
+                    })
+                    
 
                 })
                 .catch((error) => {
@@ -2364,7 +2380,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 
                                
                         //         let y = [];
-                        //         if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true }
+                        //         if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 3; setting.highTemp = 10; setting.light = true }
                         //         else {
                         //             y = JSON.parse(x) as Array<any>;
                         //             setting = y.find(v => v.settingName == 'setting');
@@ -2380,7 +2396,7 @@ export class InventoryZDM8 implements IBaseClass {
                         //         console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
                         //     } catch (error) {
                         //         console.log('parsing error setting', error);
-                        //         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
+                        //         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 3; setting.highTemp = 10; setting.light = true
                         //     }
                         //     console.log('ready to pong');
                         //     const limiter = 100000;
@@ -2559,7 +2575,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     
                                    
                                     let y = [];
-                                    if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true }
+                                    if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true }
                                     else {
                                         y = JSON.parse(x) as Array<any>;
                                         setting = y.find(v => v.settingName == 'setting');
@@ -2587,7 +2603,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     console.log('clientid  my machinestatus',mymstatus,mymsetting,mymlimiterbalance);
                                 } catch (error) {
                                     console.log('parsing error setting', error);
-                                    setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
+                                    setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true
                                 }
                                 console.log('ready to pong');
                                 const limiter = 100000;

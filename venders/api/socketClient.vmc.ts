@@ -54,7 +54,9 @@ export class SocketClientVMC {
                         this.m.command(d.command as any, param, d.transactionID).then(r => {
                             console.log('DATA command completed');
 
-                            this.send(r, d.transactionID, d.command as any);
+                            this.send(r, d.transactionID, d.command as any,()=>{
+
+                            });
                         }).catch(e => {
                             if (e) {
                                 console.log('DATA command error', e);
@@ -200,17 +202,27 @@ export class SocketClientVMC {
             that.client.write(JSON.stringify(req) + '\n');
         }, 5000);
     }
-    send(data: any, transactionID: number, command = EMACHINE_COMMAND.status) {
+    sendingCount=1;
+    send(data: any, transactionID: number, command = EMACHINE_COMMAND.status,cbe=()=>{}) {
         const req = {} as IReqModel;
         req.command = command;
         req.time = new Date().toString();
         req.token = this.token;
         req.data = data;
-        req.transactionID = transactionID
-        this.client.write(JSON.stringify(req) + '\n', e => {
-            if (e)
-                console.log('SEND error on send', e);
-        });
+        req.transactionID = transactionID;
+        
+        setTimeout(() => {
+            this.client.write(JSON.stringify(req) + '\n', e => {
+                if (e)
+                   {
+                    console.log('SEND error on send', e);
+                    if(cbe)cbe();
+                   } 
+                else
+                    this.sendingCount=1;
+            });
+        }, 100*this.sendingCount++);
+        
     }
     close() {
         this.client.end();

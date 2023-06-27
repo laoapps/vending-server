@@ -700,6 +700,134 @@ export enum EMODBUS_ERROR {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export enum EZDM8_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
@@ -734,7 +862,8 @@ export enum EZDM8_COMMAND {
     limiter = "limiter",
     balance = "balance",
     logs = "logs",
-    temp = "temp"
+    temp = "temp",
+    restart = "restart"
 }
 export enum EMessage {
     loginfailed = 'login failed',

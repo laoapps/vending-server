@@ -1068,7 +1068,11 @@ export interface IVendingMachineBill extends IBase, IBC {
     transactionID: number;
     qr: string;
 }
-
+export interface IEPINShort extends IBase {
+    phonenumber: string;
+    EPIN: any;
+    SMC: any;
+}
 export interface IMachineID extends IBase, IBC {
     machineId: string;
     machineIp: string;

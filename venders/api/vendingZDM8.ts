@@ -14,6 +14,7 @@ export class VendingZDM8 {
     });
     sock: SocketClientZDM8;
     transactionID = -1;
+    retry = 0;
     constructor(sock: SocketClientZDM8) {
 
         this.sock = sock;
@@ -32,9 +33,9 @@ export class VendingZDM8 {
                 buffer = '';
             });
         });
-        
+
     }
-   
+
 
 
     checkSum(buff: any) {
@@ -103,6 +104,18 @@ export class VendingZDM8 {
                         const liftsystem = '00';
                         buff = [pcbarray, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
                         check = this.checkSum(buff)
+                        // try if data didn't confirm 
+                        setTimeout(() => {
+                            if (this.retry < 1) {
+                                this.command(command, param, transactionID);
+                            } else {
+                                return this.retry = 0;
+                            }
+                            this.retry++;
+
+
+                        }, 1000);
+
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
                         // ● 10: Function code
