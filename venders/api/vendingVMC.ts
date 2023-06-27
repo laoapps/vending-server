@@ -62,8 +62,8 @@ export class VendingVMC {
                 that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
                 console.log('INIT accept banknote');
                 that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
-                console.log('INIT temperature');
-                that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                // console.log('INIT temperature');
+                // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
                 console.log('INIT temperature 2');
                 that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
                 // setTimeout(() => {
@@ -147,7 +147,7 @@ export class VendingVMC {
                     // new 50k not working
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
-                    const t = moment.now();
+                    const t = Number('-21'+moment.now());
                     that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
                         // if error then resend 1
                         setTimeout(() => {
@@ -398,7 +398,7 @@ export class VendingVMC {
                                 this.setting.highTemp = setting.highTemp;
                                 // this.setting.allowCashIn=false;
                                 console.log('new setting', this.setting);
-                                that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                                // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
                                 this.commandVMC(EVMC_COMMAND._7028, params, -7028, this.getNextNo()).then(r => {
                                     resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                                 }).catch(e => {
@@ -487,7 +487,7 @@ export class VendingVMC {
                         console.log('INIT accept banknote');
                         that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                         console.log('INIT temperature');
-                        that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                        // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
                         that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
                         // setTimeout(() => {
                         //     console.log('INIT disable');
