@@ -2380,7 +2380,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 
                                
                         //         let y = [];
-                        //         if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true }
+                        //         if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 3; setting.highTemp = 10; setting.light = true }
                         //         else {
                         //             y = JSON.parse(x) as Array<any>;
                         //             setting = y.find(v => v.settingName == 'setting');
@@ -2396,7 +2396,7 @@ export class InventoryZDM8 implements IBaseClass {
                         //         console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
                         //     } catch (error) {
                         //         console.log('parsing error setting', error);
-                        //         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 7; setting.highTemp = 15; setting.light = true
+                        //         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 3; setting.highTemp = 10; setting.light = true
                         //     }
                         //     console.log('ready to pong');
                         //     const limiter = 100000;
