@@ -952,6 +952,8 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
                         const isActive =Boolean(req.query["isActive"]);
+                        console.log('XIS',isActive,req.query["isActive"]);
+                        
                         const sEnt = StockFactory(
                             EEntity.product + "_" + ownerUuid,
                             dbConnection
