@@ -213,6 +213,8 @@ export class SocketClientVMC {
             this.client.write(JSON.stringify(req) + '\n', e => {
                 if (e)
                     console.log('SEND error on send', e);
+                else
+                    this.sendingCount=1;
             });
         }, 100*this.sendingCount++);
         
