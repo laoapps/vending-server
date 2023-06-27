@@ -107,7 +107,7 @@ export class LaabVendingAPI {
         router.post('/laab/admin/vending_wallet_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
         router.post('/laab/admin/find_epinshortcode',   APIAdminAccess, this.adminReadPanel.FindEPINShortCode.bind(this.adminReadPanel));
         router.post('/laab/admin/show_epinshortcode',   APIAdminAccess, this.adminReadPanel.ShowEPINShortCode.bind(this.adminReadPanel));
-        router.post('/laab/admin/counter_cashout_cash_validation', this.APIMachineAccess, this.adminWritePanel.CounterCashout_CashValidation.bind(this.adminWritePanel));
+        router.post('/laab/admin/counter_cashout_cash_validation', APIAdminAccess, this.adminWritePanel.CounterCashout_CashValidation.bind(this.adminWritePanel));
 
 
 

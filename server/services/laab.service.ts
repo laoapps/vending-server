@@ -220,32 +220,6 @@ class VerifyToken {
         this.token = String(this.token);
     }
 
-    private ConfirmOwnToken(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-
-                const base64Payload = this.token.split('.')[1];
-                const payload = Buffer.from(base64Payload, 'base64');
-                const result = JSON.parse(payload.toString());
-                const phonenumber: string = result.data.phoneNumber;
-                this.phonenumber = phonenumber;
-                console.log(`phonenumber`, phonenumber);
-                
-
-                // if ownerUuid is phonenumber we will decrypt token for find phone number and compare
-                if (this.ownerUuid != undefined && this.ownerUuid != phonenumber) return resolve(IENMessage.thisIsNotYourToken);
-
-                resolve(IENMessage.success);
-                
-    
-            } catch (error) {
-                
-                resolve(error.message);
-    
-            }
-        })
-    }
-
     private VerifyFromUsermanager(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
