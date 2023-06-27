@@ -111,6 +111,7 @@ export class FindEPINShortCodeFunc {
                 }
                
                 const run = await epinshortcodeEntity.findAndCountAll(condition);
+                console.log(`response query`, run.rows);
                 if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
                
                 this.response = {

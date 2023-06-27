@@ -88,7 +88,7 @@ export class FindEPINShortCodeListProcess {
                     ownerUuid: this.ownerUuid,
                     machineId: this.machineId,
                     phonenumber: this.phonenumber,
-                    time: this.time,
+                    // time: this.time,
                     page: this.page,
                     limit: this.limit,
                     token: this.token
