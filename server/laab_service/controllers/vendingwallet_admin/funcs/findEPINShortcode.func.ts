@@ -91,7 +91,7 @@ export class FindEPINShortCodeFunc {
                     condition = {
                         where: {
                             phonenumber: this.phonenumber,
-                            createdAt: {[Op.like]: `%${this.time}%` as string},
+                            createdAt: {[Op.like]: `%${this.time}%`+''},
                         },
                         limit: this.limit,
                         offset: this.offset,
