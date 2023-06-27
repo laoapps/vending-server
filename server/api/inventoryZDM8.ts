@@ -2583,7 +2583,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     
                                     mymlimiterbalance=(await readMerchantLimiterBalance(ws['ownerUuid']))||'0';
                                    
-                                    for (let index = 0; index < mArray.length; index++) {
+                                    for (let index = 0; index < mArray?.length; index++) {
                                         const element = mArray[index];
 
                                         mymstatus.push(await readMachineStatus(element));
