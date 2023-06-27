@@ -951,15 +951,14 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
-                        const isActive =Boolean(req.query["isActive"]);
-                        console.log('XIS',isActive,req.query["isActive"]);
-                        
+                        const isActive =
+                        !req.query["isActive"]
+                                ? false
+                                : true;
                         const sEnt = StockFactory(
                             EEntity.product + "_" + ownerUuid,
                             dbConnection
                         );
-                        console.log('sEnt',isActive,id,ownerUuid);
-                        
                         await sEnt.sync();
                         sEnt
                             .findByPk(id)
@@ -1125,7 +1124,9 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
-                        const isActive = Boolean(req.query["isActive"]);
+                        const isActive =!req.query["isActive"]
+                        ? false
+                        : true;
                         const sEnt = VendingMachineSaleFactory(
                             EEntity.vendingmachinesale + "_" + ownerUuid,
                             dbConnection
@@ -1138,7 +1139,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     return res.send(
                                         PrintError("disableSale", [], EMessage.error)
                                     );
-                                r.isActive = isActive;
+                                 r.isActive = isActive;
                                 r.changed("isActive", true);
                                 res.send(
                                     PrintSucceeded(
@@ -1451,7 +1452,9 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
-                        const isActive = Boolean(req.query["isActive"]);
+                        const isActive = !req.query["isActive"]
+                        ? false
+                        : true;
                         const id = req.query["id"] + "";
                         this.machineClientlist
                             .findOne({ where: { ownerUuid, id } })
@@ -1461,7 +1464,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         PrintError("disableMachine", [], EMessage.notfound)
                                     );
                                 r.isActive = isActive;
-                                r.changed('isActive',true);
+                                // r.changed('isActive',true);
                                 this.refreshMachines();
                                 res.send(
                                     PrintSucceeded(
