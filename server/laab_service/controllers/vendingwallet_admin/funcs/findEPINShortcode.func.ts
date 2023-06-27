@@ -110,7 +110,7 @@ export class FindEPINShortCodeFunc {
                     }
                 }
                
-                const run = await epinshortcodeEntity.findAndCountAll(condition);
+                const run = await epinshortcodeEntity.findAndCountAll({ where: { phonenumber: this.phonenumber }, limit: this.limit, offset: this.offset, order: [[ 'id', 'DESC' ]] });
                 console.log(`response query`, run.rows);
                 if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
                
