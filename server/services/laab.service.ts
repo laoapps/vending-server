@@ -184,9 +184,6 @@ class VerifyToken {
     
                 console.log(`verify token`, 4);
 
-                const ConfirmOwnToken = await this.ConfirmOwnToken();
-                if (ConfirmOwnToken != IENMessage.success) throw new Error(ConfirmOwnToken);
-    
                 console.log(`verify token`, 5);
 
                 const VerifyFromUsermanager = await this.VerifyFromUsermanager();
