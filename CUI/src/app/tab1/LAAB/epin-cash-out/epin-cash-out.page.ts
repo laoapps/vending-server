@@ -90,7 +90,7 @@ export class EpinCashOutPage implements OnInit {
   createSMC(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-       
+       console.log(`--->`, this.phonenumber);
         if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
 
         let params: any = {

@@ -36,7 +36,7 @@ export const initDB =()=>{
         console.log(`vending wallet sync`);
         vendingWallet = VendingWalletFactory(EEntity.vendingwallet, dbConnection);
     });
-    epinshortcodeEntity = EPINShortCodeFactory(EEntity.vendingwallet, dbConnection).sync().then(() => {
+    epinshortcodeEntity = EPINShortCodeFactory(EEntity.epinshortcode, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);
         epinshortcodeEntity = EPINShortCodeFactory(EEntity.epinshortcode, dbConnection);
     });
