@@ -191,23 +191,22 @@ export class CashValidationFunc {
                 // if (this.balance <= 100000) return resolve(IENMessage.cashValidationFail);
                 console.log(`balance`, this.balance);
 
-                let acceptcash: number = 0;
-                if (this.balance >= 200000) {
-                    acceptcash = 100000;
-                } else if (this.balance >= 150000 && this.balance < 200000) {
-                    acceptcash = 50000;
-                } else if (this.balance >= 120000 && this.balance < 150000) {
-                    acceptcash = 20000;
-                } else if (this.balance >= 100000 && this.balance < 120000) {
-                    acceptcash = 10000;
-                } else if (this.balance >= 105000 && this.balance < 100000) {
-                    acceptcash = 5000;
-                } else {
-                    acceptcash = 0;
-                }
+                // let acceptcash: number = 0;
+                // if (this.balance >= 200000) {
+                //     acceptcash = 100000;
+                // } else if (this.balance >= 150000 && this.balance < 200000) {
+                //     acceptcash = 50000;
+                // } else if (this.balance >= 120000 && this.balance < 150000) {
+                //     acceptcash = 20000;
+                // } else if (this.balance >= 100000 && this.balance < 120000) {
+                //     acceptcash = 10000;
+                // } else if (this.balance >= 105000 && this.balance < 100000) {
+                //     acceptcash = 5000;
+                // } else {
+                //     acceptcash = 0;
+                // }
 
                 this.response = {
-                    acceptcash: acceptcash,
                     balance: this.balance,
                     message: IENMessage.success
                 }

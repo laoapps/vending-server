@@ -162,7 +162,7 @@ export class SmcListPage implements OnInit {
         
         
         const params = {
-          machineId: localStorage.getItem('machineId') || '12345678',
+          machineId: localStorage.getItem('machineId'),
           detail: findsave[0].detail
         }
         console.log(`params`, params);

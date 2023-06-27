@@ -71,7 +71,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
 
         let count = 0;
         const params = {
-          machineId: localStorage.getItem('machineId') || '12345678'
+          machineId: localStorage.getItem('machineId')
         }
         this.counterRefreshBalance = setInterval(async () => {
           count++;

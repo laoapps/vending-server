@@ -25,7 +25,6 @@ export class EpinCashOutPage implements OnInit {
   numberList: Array<string> = [];
   placeholder: string = 'ENTER PHONE NUMBER';
   phonenumber: string;
-  btnCreateSMC: boolean = false;
 
   constructor(
     public apiService: ApiService,
@@ -37,7 +36,6 @@ export class EpinCashOutPage implements OnInit {
 
   ngOnInit() {
     this.loadNumberList();
-    this.checkBalance();
 
   }
   loadNumberList(): void {
@@ -89,19 +87,11 @@ export class EpinCashOutPage implements OnInit {
     this.apiService.modal.dismiss();
   }
 
-  checkBalance() {
-    if (this.apiService.cash > 0) {
-      this.btnCreateSMC = true;
-    } else {
-      this.btnCreateSMC = false;
-    }
-  }
-
   createSMC(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
        
-        if (this.btnCreateSMC == false) throw new Error(IENMessage.thereIsNotBalance);
+        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
 
         let params: any = {
           machineId: localStorage.getItem('machineId'),
@@ -112,22 +102,8 @@ export class EpinCashOutPage implements OnInit {
         let run: any = await this.createSMCProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = 0;
-        this.btnCreateSMC = false;
 
         console.log(`afer create skc`, run.data);
-
-
-        let local = localStorage.getItem('smc_list');
-        let localList: Array<any> = [];
-        if (local == undefined || local == null) {
-
-          const array: Array<any> = [run.data[0]];
-          localStorage.setItem('smc_list', JSON.stringify(array));
-        } else {
-          localList = JSON.parse(local);
-          localList.unshift(run.data[0]);
-          localStorage.setItem('smc_list', JSON.stringify(localList));
-        }
 
         params = {
           machineId: localStorage.getItem('machineId'),
@@ -137,11 +113,6 @@ export class EpinCashOutPage implements OnInit {
         const createEPIN = await this.createEPINProcess.Init(params);
         console.log(`ruunnn`, run);
         if (createEPIN.message != IENMessage.success) throw new Error(run);
-
-        localList = localList.filter(item => item.link !== run.data[0].detail.link);
-        localStorage.setItem('smc_list', JSON.stringify(localList));
-
-
 
         const model = {
           type: 'EQR',
@@ -160,6 +131,7 @@ export class EpinCashOutPage implements OnInit {
           }
           this.apiService.modal.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
             r.present();
+            this.apiService.modal.dismiss();
             resolve(IENMessage.success);
           });
         });
@@ -177,7 +149,7 @@ export class EpinCashOutPage implements OnInit {
       try {
         
         const props = {
-          machineId: localStorage.getItem('machineId') || '12345678'
+          machineId: localStorage.getItem('machineId')
         }
         this.apiService.modal.create({ component: SmcListPage, componentProps: props }).then(r => {
           r.present();
