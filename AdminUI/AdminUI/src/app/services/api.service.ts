@@ -293,6 +293,8 @@ export class ApiService {
   }
   updateMachineSetting(o:IMachineClientID,id:number) {
     const token = localStorage.getItem('lva_token');
+    console.log('update setting',o);
+    
     return this.http.post<IResModel>(this.url + `/updateMachineSetting?id=${id}`,{token,data:o}, { headers: this.headerBase() });
   }
   addMachine(o:IMachineClientID) {

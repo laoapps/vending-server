@@ -1398,6 +1398,8 @@ export class InventoryZDM8 implements IBaseClass {
                         const id = req.query["id"] + "";
 
                         const o = req.body.data as IMachineClientID;
+                        console.log('OOOOOO',o);
+                        
                         this.machineClientlist
                             .findOne({ where: { ownerUuid, id } })
                             .then(async (r) => {
