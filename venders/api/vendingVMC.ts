@@ -723,7 +723,7 @@ export class VendingVMC {
                 buff.push('28');//// temp setting
                 buff.push(int2hex(1));// setting 1 or read 0
                 buff.push(int2hex(0));// 0 as master 
-                buff.push(int2hex(2)); // Return difference value (Range 2-8) 
+                buff.push(int2hex(5)); // Return difference value (Range 2-8) 
                 buff.push(int2hex(this.setting?.lowTemp || 6)); // temperature
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
