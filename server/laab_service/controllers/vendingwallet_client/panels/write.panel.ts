@@ -3,7 +3,6 @@ import { IENMessage, message, IStatus } from "../../../../services/laab.service"
 import { PaidValidationFunc } from "../funcs/paidValidation.func";
 import { CreateEPINFunc } from "../funcs/createEPIN.func";
 import { CreateSMCFunc } from "../funcs/createSMC.func";
-import { CounterCashout_CashValidationFunc } from "../funcs/countercashout_cashValidation.func";
 
 export class WritePanel {
     
@@ -71,26 +70,7 @@ export class WritePanel {
             message([], error.message, IStatus.unsuccess, res);
         }
     }
-    public CounterCashout_CashValidationFunc(req: Request, res: Response) {
-        try {
 
-            const data = req.body;
-            this.queues.QCounterCashout_CashValidationFunc.add({ data }).then(job => {
-                console.log(`here`);
-                job.finished().then(run => {
-                    if (run.message != IENMessage.success) {
-                        message([], run, IStatus.unsuccess, res);
-                    } else {
-                        delete run.message;
-                        message(run, IENMessage.success, IStatus.success, res);
-                    }
-                });
-            });
-
-        } catch (error) {
-            message([], error.message, IStatus.unsuccess, res);
-        }
-    }
 
 
 
@@ -140,17 +120,5 @@ export class WritePanel {
         });
     }
 
-    public _CounterCashout_CashValidationFunc(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-                
-                const func = new CounterCashout_CashValidationFunc();
-                const run = await func.Init(params);
-                resolve(run);
 
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
 }

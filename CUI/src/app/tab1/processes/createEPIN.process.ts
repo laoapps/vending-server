@@ -10,6 +10,7 @@ export class CreateEPINProcess {
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
+    private phonenumber: string;
     private detail: any = {} as any;
 
 
@@ -63,11 +64,12 @@ export class CreateEPINProcess {
 
 
     private InitParams(params: any): void {
+        this.phonenumber = params.phonenumber;
         this.detail = params.detail;
     }
 
     private ValidateParams(): string {
-        if (!(this.detail)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.detail)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -76,6 +78,7 @@ export class CreateEPINProcess {
             try {
 
                 const params = {
+                    phonenumber: this.phonenumber,
                     detail: this.detail,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }

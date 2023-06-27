@@ -23,7 +23,7 @@ export let QCreateVendingWalletCoin = new Queue('QCreateVendingWalletCoin', { de
 export let QPaidValidation = new Queue('QPaidValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateSMC = new Queue('QCreateSMC', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateEPIN = new Queue('QCreateEPIN', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
-export let QCounterCashout_CashValidationFunc = new Queue('QCounterCashout_CashValidationFunc', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QCounterCashout_CashValidation = new Queue('QCounterCashout_CashValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
 
 export class LaabVendingAPI {
@@ -37,16 +37,17 @@ export class LaabVendingAPI {
         QCreateVendingLimiter: QCreateVendingLimiter,
         QCreateVendingLimiterCoin: QCreateVendingLimiterCoin,
         QCreateVendingWallet: QCreateVendingWallet,
-        QCreateVendingWalletCoin: QCreateVendingWalletCoin
+        QCreateVendingWalletCoin: QCreateVendingWalletCoin,
+        QCreateSMC: QCreateSMC,
+        QCreateEPIN: QCreateEPIN,
+        QCounterCashout_CashValidation: QCounterCashout_CashValidation
     }
     private adminReadPanel: AdminReadPanel;
     private adminWritePanel: AdminWritePanel;
 
     private clientQueues: any = {
         QPaidValidation: QPaidValidation,
-        QCreateSMC: QCreateSMC,
-        QCreateEPIN: QCreateEPIN,
-        QCounterCashout_CashValidationFunc: QCounterCashout_CashValidationFunc
+
     }
     private clientReadPanel: ClientReadPanel;
     private clientWritePanel: ClientWritePanel;
@@ -104,7 +105,9 @@ export class LaabVendingAPI {
         router.post('/laab/admin/vending_wallet_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
         router.post('/laab/admin/show_vending_wallet_report', APIAdminAccess, this.adminReadPanel.ShowVendingWalletReport.bind(this.adminReadPanel));
         router.post('/laab/admin/vending_wallet_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
-
+        router.post('/laab/admin/find_epinshortcode',   APIAdminAccess, this.adminReadPanel.FindEPINShortCode.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_epinshortcode',   APIAdminAccess, this.adminReadPanel.ShowEPINShortCode.bind(this.adminReadPanel));
+        router.post('/laab/admin/counter_cashout_cash_validation', this.APIMachineAccess, this.adminWritePanel.CounterCashout_CashValidation.bind(this.adminWritePanel));
 
 
 
@@ -113,7 +116,6 @@ export class LaabVendingAPI {
         router.post('/laab/client/paid_validation', this.APIMachineAccess, this.clientWritePanel.PaidValidation.bind(this.clientWritePanel));
         router.post('/laab/client/create_smart_contract', this.APIMachineAccess, this.clientWritePanel.CreateSMC.bind(this.clientWritePanel));
         router.post('/laab/client/create_epin', this.APIMachineAccess, this.clientWritePanel.CreateEPIN.bind(this.clientWritePanel));
-        router.post('/laab/client/counter_cashout_cash_validation', this.APIMachineAccess, this.clientWritePanel.CounterCashout_CashValidationFunc.bind(this.clientWritePanel));
 
 
         router.post('/laab/client/show_vending_wallet_coin_balance', this.APIMachineAccess, this.clientReadPanel.ShowVendinWalletCoinBalance.bind(this.clientReadPanel));
@@ -121,8 +123,7 @@ export class LaabVendingAPI {
         router.post('/laab/client/cash_in_validation', this.APIMachineAccess, this.clientReadPanel.CashinValidation.bind(this.clientReadPanel));
         router.post('/laab/client/load_smart_contract', this.APIMachineAccess, this.clientReadPanel.LoadSMC.bind(this.clientReadPanel));
         router.post('/laab/client/transfer_validation', this.APIMachineAccess, this.clientReadPanel.TransferValidation.bind(this.clientReadPanel));
-        router.post('/laab/client/find_epinshortcode', this.APIMachineAccess, this.clientReadPanel.FindEPINShortCode.bind(this.clientReadPanel));
-        router.post('/laab/client/show_epinshortcode', this.APIMachineAccess, this.clientReadPanel.ShowEPINShortCode.bind(this.clientReadPanel));
+
 
 
 
@@ -170,6 +171,17 @@ export class LaabVendingAPI {
                 done(null, r);
             }).catch(error => done(error, null));
         });
+        QCounterCashout_CashValidation.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.adminWritePanel._CounterCashout_CashValidation(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+
+
+
+
         QPaidValidation.process((job, done) => {
             const d = job.data;
             const data = d.data;
@@ -191,13 +203,7 @@ export class LaabVendingAPI {
                 done(null, r);
             }).catch(error => done(error, null));
         });
-        QCounterCashout_CashValidationFunc.process((job, done) => {
-            const d = job.data;
-            const data = d.data;
-            this.clientWritePanel._CounterCashout_CashValidationFunc(data).then(r => {
-                done(null, r);
-            }).catch(error => done(error, null));
-        });
+        
     }
 
     private APIMachineAccess = (req: Request, res: Response, next: NextFunction) => {

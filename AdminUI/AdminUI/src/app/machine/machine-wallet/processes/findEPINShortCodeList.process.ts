@@ -67,13 +67,15 @@ export class FindEPINShortCodeListProcess {
     private InitParams(params: any): void {
         this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
+        this.time = params.time;
         this.page = params.page;
         this.limit = params.limit;
         this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.time && this.page && this.limit)) return IENMessage.parametersEmpty;
+        console.log(this.machineId, this.phonenumber, this.time, this.page, this.limit, this.token);
+        if (!(this.machineId && this.phonenumber && this.time && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -92,7 +94,7 @@ export class FindEPINShortCodeListProcess {
 
                 this.vendingAPIServgice.findEPINShortCodeList(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response`, response);
+                    console.log(`response find epin short code`, response);
                     if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);
                     this.rows = response.info.rows;
                     this.count = response.info.count;

@@ -18,6 +18,8 @@ import { VendingWalletCoinTransferFunc } from "../funcs/vendingWalletCoinTransfe
 import { ShowVendingWalletCoinBalanceFunc } from "../funcs/showVendingWalletCoinBalance.func";
 import { ShowVendingWalletReportFunc } from "../funcs/showVendingWalletReport.func";
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
+import { FindEPINShortCodeFunc } from "../funcs/findEPINShortcode.func";
+import { ShowEPINShortCodeFunc } from "../funcs/showEPINShortcode.func";
 
 export class ReadPanel {
 
@@ -370,6 +372,44 @@ export class ReadPanel {
     public ShowVendingWalletReport(req: Request, res: Response) {
         try {
             const func = new ShowVendingWalletReportFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public FindEPINShortCode(req: Request, res: Response) {
+        try {
+            const func = new FindEPINShortCodeFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public ShowEPINShortCode(req: Request, res: Response) {
+        try {
+            const func = new ShowEPINShortCodeFunc();
             const data = req.body;
             func.Init(data).then(run => {
                 if (run.message != IENMessage.success) {

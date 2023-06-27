@@ -45,6 +45,7 @@ export class CounterComponent implements OnInit {
   }
   getTime(e: Event) {
     this.time = momenttimezone((e.target as HTMLInputElement).value).tz("Asia/Vientiane").format('D/M/YYYY HH:mm:ss');
+    console.log(`change`, this.time);
   }
   findList(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
@@ -54,30 +55,30 @@ export class CounterComponent implements OnInit {
 
         if (!(this.phonenumber)) throw new Error(IENMessage.pleaseEnterPhonenumber);
         if (!(this.time)) throw new Error(IENMessage.invalidTime);
-        
-        this.showTable = true;
-        
-        // const params = {
-        //   machineId: this.apiService.currentMachineId,
-        //   phonenumber: this.phonenumber,
-        //   time: this.time,
-        //   page: this.currentPage,
-        //   limit: this.limit,
-        // }
-        // const run = await this.findEPINShortCodeListProcess.Init(params);
-        // if (run.message != IENMessage.success) throw new Error(run.message);
 
-        // if (run.data[0].count == 0) {
-        //   this.showTable = false;
-        //   return resolve(IENMessage.success);
-        // }
         // this.showTable = true;
+        
+        const params = {
+          machineId: this.apiService.currentMachineId,
+          phonenumber: this.phonenumber,
+          time: this.time,
+          page: this.currentPage,
+          limit: this.limit,
+        }
+        const run = await this.findEPINShortCodeListProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run.message);
 
-        // this.lists = run.data[0].rows;
-        // this.count = Number(run.data[0].count);
+        if (run.data[0].count == 0) {
+          this.showTable = false;
+          return resolve(IENMessage.success);
+        }
+        this.showTable = true;
 
-        // const totalPage = Math.ceil(this.count / this.limit);
-        // this.btnList = this.apiService.paginations(this.currentPage, totalPage);
+        this.lists = run.data[0].rows;
+        this.count = Number(run.data[0].count);
+
+        const totalPage = Math.ceil(this.count / this.limit);
+        this.btnList = this.apiService.paginations(this.currentPage, totalPage);
 
         resolve(IENMessage.success);
 

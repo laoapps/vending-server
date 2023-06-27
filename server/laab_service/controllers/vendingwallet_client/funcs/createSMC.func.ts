@@ -100,7 +100,7 @@ export class CreateSMCFunc {
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.cash && this.description)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.phonenumber && this.cash && this.description)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 

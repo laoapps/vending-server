@@ -8,8 +8,8 @@ import { CreateSMCFunc } from "../funcs/createSMC.func";
 import { LoadSMCFunc } from "../funcs/loadSMC.func";
 import { CreateEPINFunc } from "../funcs/createEPIN.func";
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
-import { FindEPINShortCodeFunc } from "../funcs/findEPINShortcode.func";
-import { ShowEPINShortCodeFunc } from "../funcs/showEPINShortcode.func";
+import { FindEPINShortCodeFunc } from "../../vendingwallet_admin/funcs/findEPINShortcode.func";
+import { ShowEPINShortCodeFunc } from "../../vendingwallet_admin/funcs/showEPINShortcode.func";
 
 export class ReadPanel {
 
@@ -112,41 +112,5 @@ export class ReadPanel {
         }
     }
 
-    public FindEPINShortCode(req: Request, res: Response) {
-        try {
-            const func = new FindEPINShortCodeFunc();
-            const data = req.body;
-            func.Init(data).then(run => {
-                if (run.message != IENMessage.success) {
-                    message([], run, IStatus.unsuccess, res);
-                } else {
-                    delete run.message;
-                    message(run, IENMessage.success, IStatus.success, res);
-                }
 
-            }).catch(error => message([], error.message, IStatus.unsuccess, res));
-
-        } catch (error) {
-            message([], error.message, IStatus.unsuccess, res);
-        }
-    }
-
-    public ShowEPINShortCode(req: Request, res: Response) {
-        try {
-            const func = new ShowEPINShortCodeFunc();
-            const data = req.body;
-            func.Init(data).then(run => {
-                if (run.message != IENMessage.success) {
-                    message([], run, IStatus.unsuccess, res);
-                } else {
-                    delete run.message;
-                    message(run, IENMessage.success, IStatus.success, res);
-                }
-
-            }).catch(error => message([], error.message, IStatus.unsuccess, res));
-
-        } catch (error) {
-            message([], error.message, IStatus.unsuccess, res);
-        }
-    }
 }
