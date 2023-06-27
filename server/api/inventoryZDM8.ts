@@ -952,7 +952,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
                         const isActive =
-                        !req.query["isActive"]
+                        req.query["isActive"]+'' =='no'
                                 ? false
                                 : true;
                         console.log('req.query["isActive"]', !req.query["isActive"],req.query["isActive"],isActive,);
@@ -1126,7 +1126,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
-                        const isActive =!req.query["isActive"]
+                        const isActive =req.query["isActive"]+'' =='no'
                         ? false
                         : true;
                         const sEnt = VendingMachineSaleFactory(
@@ -1454,7 +1454,7 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
-                        const isActive = !req.query["isActive"]
+                        const isActive = req.query["isActive"]+'' =='no'
                         ? false
                         : true;
                         const id = req.query["id"] + "";

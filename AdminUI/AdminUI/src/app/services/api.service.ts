@@ -285,7 +285,7 @@ export class ApiService {
   }
   disableMachine(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive}`, {token}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive?'yes':'no'}`, {token}, { headers: this.headerBase() });
   }
   updateMachine(o:IMachineClientID,id:number) {
     const token = localStorage.getItem('lva_token');
@@ -325,11 +325,11 @@ export class ApiService {
   }
   disableProduct(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive}&id=${id}`, {token}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive?'yes':'no'}&id=${id}`, {token}, { headers: this.headerBase() });
   }
   disableSale(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive}&id=${id}`, {token}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive?'yes':'no'}&id=${id}`, {token}, { headers: this.headerBase() });
   }
   deleteSale(id:number) {
     const token = localStorage.getItem('lva_token');
