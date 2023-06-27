@@ -59,6 +59,7 @@ export class CounterComponent implements OnInit {
         // this.showTable = true;
         
         const params = {
+          ownerUuid: this.apiService.ownerUuid,
           machineId: this.apiService.currentMachineId,
           phonenumber: this.phonenumber,
           time: this.time,
