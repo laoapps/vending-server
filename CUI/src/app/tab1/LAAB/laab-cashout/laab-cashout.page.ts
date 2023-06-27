@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
@@ -57,6 +57,8 @@ export class LaabCashoutPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
        
+        if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
+
         const params = {
           machineId: localStorage.getItem('machineId'),
           receiver: this.phonenumber,

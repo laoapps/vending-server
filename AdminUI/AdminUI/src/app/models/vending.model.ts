@@ -162,3 +162,39 @@ export interface VENDING_ShowVendingWalletReport extends IBase {
     page: number,
     limit: number
 }
+export interface VENDING_ShowEPINShortCodeList extends IBase {
+    machineId: string,
+    page: number,
+    limit: number
+}
+export interface VENDING_FindEPINShortCodeList extends IBase {
+    machineId: string,
+    phonenumber: string,
+    time: string,
+    page: number,
+    limit: number
+}
+export interface VENDING_CreateEPIN extends IBase {
+    machineId: string,
+    phonenumber: string,
+    detail: any,
+}
+
+
+
+
+
+
+
+
+
+export interface VENDING_CounterCashout_cash extends IBase {
+    machineId: string,
+    phonenumber: string,
+    destination: string,
+    coinname: string,
+    name: string,
+    receiver: string,
+    cash: number,
+    description: string
+}

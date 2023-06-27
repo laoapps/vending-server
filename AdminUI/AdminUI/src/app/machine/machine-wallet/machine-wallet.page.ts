@@ -22,6 +22,7 @@ export class MachineWalletPage implements OnInit {
   child_coinTransferComponent: boolean = false;
   child_CQRComponent: boolean = false;
   child_reportOptionsComponent: boolean = false;
+  child_counterComponent: boolean = false;
 
   constructor(
     public apiService: ApiService,
@@ -83,16 +84,24 @@ export class MachineWalletPage implements OnInit {
             this.child_coinTransferComponent = true;
             this.child_CQRComponent = false;
             this.child_reportOptionsComponent = false;
+            this.child_counterComponent = false;
           } else if (component == 'cmcqr') {
             this.child_coinTransferComponent = false;
             this.child_CQRComponent = true;
             this.child_reportOptionsComponent = false;
+            this.child_counterComponent = false;
           } else if (component == 'cqr-scan') {
             this.apiService.modal.create({ component: CqrScanPage, componentProps: {} }).then(r => r.present());
           } else if (component == 'report-options') {
             this.child_coinTransferComponent = false;
             this.child_CQRComponent = false;
             this.child_reportOptionsComponent = true;
+            this.child_counterComponent = false;
+          } else if (component == 'counter') {
+            this.child_coinTransferComponent = false;
+            this.child_CQRComponent = false;
+            this.child_reportOptionsComponent = false;
+            this.child_counterComponent = true;
           }
 
           resolve(IENMessage.success);

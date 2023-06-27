@@ -8,6 +8,8 @@ import { CreateSMCFunc } from "../funcs/createSMC.func";
 import { LoadSMCFunc } from "../funcs/loadSMC.func";
 import { CreateEPINFunc } from "../funcs/createEPIN.func";
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
+import { FindEPINShortCodeFunc } from "../funcs/findEPINShortcode.func";
+import { ShowEPINShortCodeFunc } from "../funcs/showEPINShortcode.func";
 
 export class ReadPanel {
 
@@ -70,44 +72,6 @@ export class ReadPanel {
         }
     }
 
-    // public PaidValidation(req: Request, res: Response) {
-    //     try {
-    //         const func = new PaidValidationFunc();
-    //         const data = req.body;
-    //         func.Init(data).then(run => {
-    //             if (run.message != IENMessage.success) {
-    //                 message([], run, IStatus.unsuccess, res);
-    //             } else {
-    //                 delete run.message;
-    //                 message(run, IENMessage.success, IStatus.success, res);
-    //             }
-
-    //         }).catch(error => message([], error.message, IStatus.unsuccess, res));
-
-    //     } catch (error) {
-    //         message([], error.message, IStatus.unsuccess, res);
-    //     }
-    // }
-
-    public CreateSMC(req: Request, res: Response) {
-        try {
-            const func = new CreateSMCFunc();
-            const data = req.body;
-            func.Init(data).then(run => {
-                if (run.message != IENMessage.success) {
-                    message([], run, IStatus.unsuccess, res);
-                } else {
-                    delete run.message;
-                    message(run, IENMessage.success, IStatus.success, res);
-                }
-
-            }).catch(error => message([], error.message, IStatus.unsuccess, res));
-
-        } catch (error) {
-            message([], error.message, IStatus.unsuccess, res);
-        }
-    }
-
     public LoadSMC(req: Request, res: Response) {
         try {
             const func = new LoadSMCFunc();
@@ -127,9 +91,11 @@ export class ReadPanel {
         }
     }
 
-    public CreateEPIN(req: Request, res: Response) {
+
+
+    public TransferValidation(req: Request, res: Response) {
         try {
-            const func = new CreateEPINFunc();
+            const func = new TransferValidationFunc();
             const data = req.body;
             func.Init(data).then(run => {
                 if (run.message != IENMessage.success) {
@@ -146,9 +112,28 @@ export class ReadPanel {
         }
     }
 
-    public TransferValidation(req: Request, res: Response) {
+    public FindEPINShortCode(req: Request, res: Response) {
         try {
-            const func = new TransferValidationFunc();
+            const func = new FindEPINShortCodeFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public ShowEPINShortCode(req: Request, res: Response) {
+        try {
+            const func = new ShowEPINShortCodeFunc();
             const data = req.body;
             func.Init(data).then(run => {
                 if (run.message != IENMessage.success) {

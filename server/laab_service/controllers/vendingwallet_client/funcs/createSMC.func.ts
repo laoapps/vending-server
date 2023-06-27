@@ -1,16 +1,18 @@
 import { Transaction } from "sequelize";
 import axios from "axios";
-import { EPIN_Generate, IENMessage, LAAB_CoinTransfer, LAAB_CreateCouponCoinWalletSMC, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_GenerateVendingOTP, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, jwtEncode, translateUToSU } from "../../../../services/laab.service";
+import { EPIN_Generate, IENMessage, ILAABKeys, LAAB_CoinTransfer, LAAB_CreateCouponCoinWalletSMC, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_GenerateVendingOTP, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, jwtEncode, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { genCode, genModel, genQRCode } from "../../../../services/epin.service";
-import { vendingWallet } from "../../../../entities";
+import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../entities";
+import jwt from "jsonwebtoken";
 
 export class CreateSMCFunc {
 
+    private transaction: Transaction;
     private machineId:string;
 
 
-    
+    private phonenumber: string;
     private cash: number;
     private description: string;
 
@@ -31,6 +33,8 @@ export class CreateSMCFunc {
     private vKey: string;
     private otp: string;
 
+    private detail: any = {} as any;
+    private bill: any = {} as any;
     private passkeys: string;
     private response: any = {} as any;
 
@@ -38,6 +42,7 @@ export class CreateSMCFunc {
 
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
+            this.transaction = await dbConnection.transaction();
             try {
 
                 console.log(`create smc`, 1);
@@ -71,10 +76,17 @@ export class CreateSMCFunc {
 
                 console.log(`create smc`, 7);
 
+                const CreateEPINShortCode = await this.CreateEPINShortCode();
+                if (CreateEPINShortCode != IENMessage.success) throw new Error(CreateEPINShortCode);
+
+                console.log(`create smc`, 8);
+
+                await this.transaction.commit();
                 resolve(this.response);
                 
             } catch (error) {
 
+                await this.transaction.rollback();
                 resolve(error.message);
             }
         });
@@ -82,6 +94,7 @@ export class CreateSMCFunc {
 
     private InitParams(params: any) {
         this.machineId = params.machineId;
+        this.phonenumber = params.phonenumber;
         this.cash = params.cash;
         this.description = params.description;
     }
@@ -222,23 +235,60 @@ export class CreateSMCFunc {
                 const qrcode = genQRCode(1, genEPINModel.clientValue);
                 const code = genCode(1, genEPINModel.clientValue);
 
-                this.response = {
-                    detail: {
-                        name: this.coinwallet,
-                        link: run.data.info.smcResponse.smart_contract_link,
-                        price: this.cash,
-                        sender: this.coinwallet,
-                        usecode: false,
-                        items: [{
-                            qrcode: qrcode,
-                            code: code,
-                            otps: this.otps,
-                        }],
+                this.detail = {
+                    name: this.coinwallet,
+                    link: run.data.info.smcResponse.smart_contract_link,
+                    price: this.cash,
+                    sender: this.coinwallet,
+                    usecode: false,
+                    items: [{
+                        qrcode: qrcode,
+                        code: code,
+                        otps: this.otps,
+                    }]
+                }
+                this.bill = run.data.info.bill;
+
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private CreateEPINShortCode(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const params = {
+                    creator: this.sender,
+                    phonenumber: this.phonenumber,
+                    SMC: {
+                        detail: this.detail,
+                        bill: this.bill,
                     },
-                    bill: run.data.info.bill,
+                    EPIN: {
+                        destination: '',
+                        coinname: '',
+                        name: ''
+                    },
+                    counter: {
+                        cash:{
+                            hash: '',
+                            info: ''
+                        }
+                    }
+                }
+
+                const run = await epinshortcodeEntity.create(params, { transaction: this.transaction });
+                if (!run) return resolve(IENMessage.createEPINShortCodeFail);
+                
+                this.response = {
+                    detail: this.detail,
+                    bill: this.bill,
                     message: IENMessage.success
                 }
-                console.log(`--->`, this.response);
 
                 resolve(IENMessage.success);
 

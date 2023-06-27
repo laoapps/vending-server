@@ -20,7 +20,7 @@ export class TransferValidationFunc {
     private passkeys: string;
     private response: any = {} as any;
 
-    constructor(){}
+    constructor() {}
 
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
@@ -141,6 +141,5 @@ export class TransferValidationFunc {
             }
         });
     }
-
 
 }

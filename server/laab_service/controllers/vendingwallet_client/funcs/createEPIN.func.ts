@@ -2,36 +2,18 @@ import { Transaction } from "sequelize";
 import axios from "axios";
 import { EPIN_Generate, IENMessage, LAAB_CoinTransfer, LAAB_CreateCouponCoinWalletSMC, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_GenerateVendingOTP, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
-import { vendingWallet } from "../../../../entities";
+import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../entities";
 
 export class CreateEPINFunc {
 
+    private transaction: Transaction;
     private machineId:string;
+    private phonenumber: string;
     private detail: any = {} as any;
 
     private sender: string;
-    private receiver: string;
-    private ownerUuid: string;
-    private coinListId: string;
-    private coinCode: string;
-    private name: string;
-    private balance: number;
-
-    private laabuuid: string;
-    private coinwallet: string;
-    private otps: Array<any> = [];
-    private otpKey: Array<any> = [];
-    private encryptCoinCode: string;
-    private databaseValue: string;
-    private clientValue: string;
-    private code: Array<any> = [];
-    private qrcode: Array<any> = [];
-
-    private otpkeyFormat: any = {} as any;
-    private vKey: string;
-    private otp: string;
-    private smcResponse: any = {} as any;
-
+    private connection: any = {} as any;
+    private coinName: string;
     private passkeys: string;
     private response: any = {} as any;
 
@@ -39,42 +21,48 @@ export class CreateEPINFunc {
 
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
+            this.transaction = await dbConnection.transaction();
             try {
 
-                console.log(`cash in validation`, 1);
+                console.log(`create epin`, 1);
 
                 this.InitParams(params);
 
-                console.log(`cash in validation`, 2);
+                console.log(`create epin`, 2);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`cash in validation`, 3);
+                console.log(`create epin`, 3);
 
                 const FindVendingWallet = await this.FindVendingWallet();
                 if (FindVendingWallet != IENMessage.success) throw new Error(FindVendingWallet);
 
-                console.log(`cash in validation`, 4);
+                console.log(`create epin`, 4);
 
-                const FindMyLAABWallet = await this.FindMyLAABWallet();
-                if (FindMyLAABWallet != IENMessage.success) throw new Error(FindMyLAABWallet)
+                const FindEPINShortCode = await this.FindEPINShortCode();
+                if (FindEPINShortCode != IENMessage.success) throw new Error(FindEPINShortCode);
+
+                console.log(`create epin`, 5);
 
                 const CreateEPINCoupon = await this.CreateEPINCoupon();
                 if (CreateEPINCoupon != IENMessage.success) throw new Error(CreateEPINCoupon);
 
-                console.log(`cash in validation`, 5);
+                console.log(`create epin`, 6);
 
-                console.log(`cash in validation`, 6);
+                const UpdateEPINShortCode = await this.UpdateEPINShortCode();
+                if (UpdateEPINShortCode != IENMessage.success) throw new Error(UpdateEPINShortCode);
 
-                console.log(`cash in validation`, 7);
+                console.log(`create epin`, 7);
 
-                console.log(`cash in validation`, 8);
+                console.log(`create epin`, 8);
 
+                await this.transaction.commit();
                 resolve(this.response);
-                
+
             } catch (error) {
 
+                await this.transaction.rollback();
                 resolve(error.message);
             }
         });
@@ -82,11 +70,12 @@ export class CreateEPINFunc {
 
     private InitParams(params: any) {
         this.machineId = params.machineId;
+        this.phonenumber = params.phonenumber;
         this.detail = params.detail;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.detail)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.phonenumber && this.detail)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -95,11 +84,9 @@ export class CreateEPINFunc {
             try {
                 
                 let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
-                if (run == null) return resolve(IENMessage.notFoundYourMerchant);
-                this.ownerUuid = run.ownerUuid;
+                if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
                 this.sender = translateUToSU(run.uuid);
-                this.coinListId = run.coinListId;
-                this.coinCode = run.coinCode;
+                this.coinName = run.coinName;
                 this.passkeys = run.passkeys;
                 resolve(IENMessage.success);
 
@@ -109,22 +96,32 @@ export class CreateEPINFunc {
         });
     }
 
-    private FindMyLAABWallet(): Promise<any> {
+    private FindEPINShortCode(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                // const suuid = translateUToSU(this.uuid);
-
-                const params = {
-                    sender: this.sender,
-
-                    // access by passkey
-                    phonenumber: this.sender,
-                    passkeys: this.passkeys
+                
+                const condition = {
+                    where: {
+                        creator: this.sender,
+                        phonenumber: this.phonenumber,
+                        SMC: {
+                            link: this.detail.link
+                        },
+                        EPIN: {
+                            destination: '',
+                            coinname: '',
+                            name: ''
+                        }
+                    }
                 }
-                const run = await axios.post(LAAB_FindMyWallet, params);
-                if (run.data.status != 1) return resolve(run.data.message);
-                this.laabuuid = run.data.name;
-                this.coinwallet = this.coinListId + '_' + this.laabuuid + '__' + this.coinCode;
+                const run = await epinshortcodeEntity.findOne(condition);
+                if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
+
+                const left: string = JSON.stringify(run.SMC);
+                const right: string = JSON.stringify(this.detail);
+                if (left != right) return resolve(IENMessage.detailUmatch);
+
+                this.connection = run;
                 resolve(IENMessage.success);
 
             } catch (error) {
@@ -156,7 +153,33 @@ export class CreateEPINFunc {
                 console.log(`response`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
 
+                
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private UpdateEPINShortCode(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                this.connection.EPIN = {
+                    destination: this.detail.items[0].qrcode[0],
+                    coinname: this.coinName,
+                    name: this.detail.sender
+                }
+                const run = await this.connection.save({ transaction: this.transaction });
+                if (run == null) return resolve(IENMessage.updateEPINShortCodeFail);
                 this.response = {
+                    EPIN: {
+                        uuid: run.uuid,
+                        destination: this.detail.items[0].qrcode[0],
+                        coinname: this.coinName,
+                        name: this.detail.sender
+                    },
                     message: IENMessage.success
                 }
                 resolve(IENMessage.success);
@@ -166,5 +189,5 @@ export class CreateEPINFunc {
             }
         });
     }
-    
+
 }

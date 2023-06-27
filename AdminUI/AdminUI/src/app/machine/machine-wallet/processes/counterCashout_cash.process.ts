@@ -3,18 +3,19 @@ import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
-export class TransferValidationProcess {
+export class CounterCashout_CashProcess {
 
     private workload: any = {} as any;
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private receiver: string;
-    private cash: number;
-    private description: string;
+    private machineId: string;
+    private phonenumber: string;
+    private detail: any = {} as any;
+    private token: string;
 
-    private bill: any = {} as any;
+    private EPIN: string;
 
     constructor(
         apiService: ApiService,
@@ -30,26 +31,26 @@ export class TransferValidationProcess {
                 
 
 
-                console.log(`paid validation`, 1);
+                console.log(`cash validation`, 1);
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
-                console.log(`paid validation`, 2);
+                console.log(`cash validation`, 2);
 
                 this.InitParams(params);
 
-                console.log(`paid validation`, 3);
+                console.log(`cash validation`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`paid validation`, 4);
+                console.log(`cash validation`, 4);
                 
-                const PaidValidation = await this.PaidValidation();
-                if (PaidValidation != IENMessage.success) throw new Error(PaidValidation);
+                const CounterCashout_cash = await this.CounterCashout_cash();
+                if (CounterCashout_cash != IENMessage.success) throw new Error(CounterCashout_cash);
 
-                console.log(`paid validation`, 5);
+                console.log(`cash validation`, 5);
 
                 (await this.workload).dismiss();
                 resolve(this.Commit());
@@ -66,33 +67,34 @@ export class TransferValidationProcess {
 
 
     private InitParams(params: any): void {
-        this.receiver = params.receiver;
-        this.cash = params.cash;
-        this.description = params.description;
+        this.machineId = params.machineId;
+        this.phonenumber = params.phonenumber;
+        this.detail = params.detail;
+        this.token = localStorage.getItem('lva_token');
+
     }
 
     private ValidateParams(): string {
-        if (!(this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
-        if (this.receiver.length != 8) return IENMessage.invalidPhonenumber;
+        if (!(this.machineId && this.phonenumber && this.detail && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
-    private PaidValidation(): Promise<any> {
+    private CounterCashout_cash(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 const params = {
-                    receiver: `+85620` + this.receiver,
-                    cash: this.cash,
-                    description: this.description,
-                    token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
+                    machineId: this.machineId,
+                    phonenumber: this.phonenumber,
+                    detail: this.detail,
+                    token: this.token
                 }
-
-                this.vendingAPIService.transferValidation(params).subscribe(r => {
+                
+                this.vendingAPIService.counterCashout_cash(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response`, response);
+                    console.log(`response create epin`, response);
                     if (response.status != 1) return resolve(response.message);
-                    this.bill = response.info.bill;
+                    this.EPIN = response.info.EPIN;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -105,7 +107,7 @@ export class TransferValidationProcess {
     private Commit(): any {
         const response = {
             data: [{
-                bill: this.bill
+                EPIN: this.EPIN
             }],
             message: IENMessage.success
         }

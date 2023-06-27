@@ -57,6 +57,12 @@
           </div>
           <div class="text">Reports</div>
         </a>
+        <a (click)="switchMenu('counter')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-cash-register"></i>
+          </div>
+          <div class="text">Counter</div>
+        </a>
 
       </div>
 
@@ -70,7 +76,9 @@
       <div *ngIf="child_reportOptionsComponent == true">
         <app-report-options></app-report-options>
       </div>
-      
+      <div *ngIf="child_counterComponent == true">
+        <app-counter></app-counter>
+      </div>
 
 
     </div>

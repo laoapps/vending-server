@@ -21,6 +21,9 @@ export let QCreateVendingLimiterCoin = new Queue('QCreateVendingLimiterCoin', { 
 export let QCreateVendingWallet = new Queue('QCreateVendingWallet', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateVendingWalletCoin = new Queue('QCreateVendingWalletCoin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QPaidValidation = new Queue('QPaidValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QCreateSMC = new Queue('QCreateSMC', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QCreateEPIN = new Queue('QCreateEPIN', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QCounterCashout_CashValidationFunc = new Queue('QCounterCashout_CashValidationFunc', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
 
 export class LaabVendingAPI {
@@ -35,6 +38,8 @@ export class LaabVendingAPI {
         QCreateVendingLimiterCoin: QCreateVendingLimiterCoin,
         QCreateVendingWallet: QCreateVendingWallet,
         QCreateVendingWalletCoin: QCreateVendingWalletCoin,
+        QCreateSMC: QCreateSMC,
+        QCreateEPIN: QCreateEPIN,
     }
     private adminReadPanel: AdminReadPanel;
     private adminWritePanel: AdminWritePanel;
@@ -105,13 +110,18 @@ export class LaabVendingAPI {
 
         // vending client
         router.post('/laab/client/paid_validation', this.APIMachineAccess, this.clientWritePanel.PaidValidation.bind(this.clientWritePanel));
+        router.post('/laab/client/create_smart_contract', this.APIMachineAccess, this.clientWritePanel.CreateSMC.bind(this.clientWritePanel));
+        router.post('/laab/client/create_epin', this.APIMachineAccess, this.clientWritePanel.CreateEPIN.bind(this.clientWritePanel));
+        router.post('/laab/client/counter_cashout_cash_validation', this.APIMachineAccess, this.clientWritePanel.CounterCashout_CashValidationFunc.bind(this.clientWritePanel));
+
+
         router.post('/laab/client/show_vending_wallet_coin_balance', this.APIMachineAccess, this.clientReadPanel.ShowVendinWalletCoinBalance.bind(this.clientReadPanel));
         router.post('/laab/client/cash_validation', this.APIMachineAccess, this.clientReadPanel.CashValidation.bind(this.clientReadPanel));
         router.post('/laab/client/cash_in_validation', this.APIMachineAccess, this.clientReadPanel.CashinValidation.bind(this.clientReadPanel));
-        router.post('/laab/client/create_smart_contract', this.APIMachineAccess, this.clientReadPanel.CreateSMC.bind(this.clientReadPanel));
         router.post('/laab/client/load_smart_contract', this.APIMachineAccess, this.clientReadPanel.LoadSMC.bind(this.clientReadPanel));
-        router.post('/laab/client/create_epin', this.APIMachineAccess, this.clientReadPanel.CreateEPIN.bind(this.clientReadPanel));
         router.post('/laab/client/transfer_validation', this.APIMachineAccess, this.clientReadPanel.TransferValidation.bind(this.clientReadPanel));
+        router.post('/laab/client/find_epinshortcode', this.APIMachineAccess, this.clientReadPanel.FindEPINShortCode.bind(this.clientReadPanel));
+        router.post('/laab/client/show_epinshortcode', this.APIMachineAccess, this.clientReadPanel.ShowEPINShortCode.bind(this.clientReadPanel));
 
 
 
@@ -163,6 +173,27 @@ export class LaabVendingAPI {
             const d = job.data;
             const data = d.data;
             this.clientWritePanel._PaidValidation(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QCreateSMC.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.clientWritePanel._CreateSMC(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QCreateEPIN.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.clientWritePanel._CreateEPIN(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QCounterCashout_CashValidationFunc.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.clientWritePanel._CounterCashout_CashValidationFunc(data).then(r => {
                 done(null, r);
             }).catch(error => done(error, null));
         });

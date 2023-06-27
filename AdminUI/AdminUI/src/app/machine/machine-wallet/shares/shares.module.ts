@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CoinTransferComponent } from './components/coin-transfer/coin-transfer.component';
 import { CqrComponent } from './components/cqr/cqr.component';
 import { ReportOptionsComponent } from './components/report-options/report-options.component';
+import { CounterComponent } from './components/counter/counter.component';
 
 
 
@@ -11,7 +12,8 @@ import { ReportOptionsComponent } from './components/report-options/report-optio
   declarations: [
     CoinTransferComponent,
     CqrComponent,
-    ReportOptionsComponent
+    ReportOptionsComponent,
+    CounterComponent
   ],
   imports: [
     CommonModule,
@@ -20,7 +22,8 @@ import { ReportOptionsComponent } from './components/report-options/report-optio
   exports: [
     CoinTransferComponent,
     CqrComponent,
-    ReportOptionsComponent
+    ReportOptionsComponent,
+    CounterComponent
   ]
 })
 export class SharesModule { }

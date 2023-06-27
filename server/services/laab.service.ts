@@ -35,6 +35,8 @@ export const LAAB_ShowCouponCoinWalletSMC: string = LAABbase + 'psmc/coupon/show
 
 
 export const EPIN_Generate: string = EPINBase + 'topup/generate';
+export const EPIN_FindQRScan: string = EPINBase + 'topup/findqrscan';
+export const EPIN_QRScan: string = EPINBase + 'topup/qrscan';
 
 
 
@@ -51,6 +53,11 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    detailUmatch = 'detail unmatch',
+    scanQREPINsuccessButSaveLogEPINShortCodeFail = 'scan QREPIN success but save log EPIN short code fail',
+    updateEPINShortCodeFail = 'update EPIN short code fail',
+    notFoundEPINShortCode = 'not found EPIN short code',
+    createEPINShortCodeFail = 'create EPIN short code fail',
     thisIsNotYourToken = 'this is not your token',
     InvalidAuthorizeFormat = 'invalid authorize format',
     invalidToken = 'invalid token',
@@ -271,4 +278,8 @@ class VerifyToken {
         });
     }
     
+}
+
+export enum ILAABKeys {
+    jwtotp = `ea718210b4d4dbcfdb0a663f8d914891aa20c38f265d8c6fe9c49f543de35555163d094bc3ec7dc9551216287dd2bb09991cc96ab07b2b4bd5cc1cd122c81399a557fd02bf18e8deb45fddd2fd35919c`
 }

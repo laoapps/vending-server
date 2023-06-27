@@ -34,6 +34,7 @@ export class ApiService {
 
 
 
+
   _billEvents = new EventEmitter();
   stock = new Array<IStock>();
   eventEmitter = new EventEmitter();
@@ -80,6 +81,7 @@ export class ApiService {
       try {
         if (!r) return console.log('empty');
         console.log('ws alive subscription', r);
+        
         this.wsAlive.time = new Date();
         this.wsAlive.isAlive = this.checkOnlineStatus();
         this.test.test = r?.test;
@@ -378,6 +380,7 @@ export class ApiService {
   simpleMessage(text: string) {
     this.toast.create({ message: text, duration: 2000 }).then(r => r.present());
   }
+
   openSoundPleaseSelect(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {

@@ -1,4 +1,6 @@
 export enum IENMessage {
+    invalidTime = 'invalid time',
+    pleaseEnterPhonenumber = 'please enter phone number',
     notFoundAnyDataList = 'not found any data list',
     thisCQRIsNotVendingCoin = 'this CQR is not vending coin',
     notFoundYourVendingWalletCoin = 'not found your vending wallet coin',

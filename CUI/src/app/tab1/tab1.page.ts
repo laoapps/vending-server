@@ -1,6 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  NgZone,
+  OnInit,
+} from '@angular/core';
 import { ApiService } from '../services/api.service';
-import { EClientCommand, IBillProcess, IMachineClientID, IMachineId, IMMoneyQRRes, IStock, IVendingMachineBill, IVendingMachineSale } from '../services/syste.model';
+import {
+  EClientCommand,
+  IBillProcess,
+  IMachineClientID,
+  IMachineId,
+  IMMoneyQRRes,
+  IStock,
+  IVendingMachineBill,
+  IVendingMachineSale,
+} from '../services/syste.model';
 import { ModalController, Platform } from '@ionic/angular';
 // import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
@@ -28,24 +43,19 @@ import { WsapiService } from '../services/wsapi.service';
 import { IMachineStatus } from '../services/service';
 import { HowtoPage } from '../howto/howto.page';
 
-
-var host = window.location.protocol + "//" + window.location.host;
+var host = window.location.protocol + '//' + window.location.host;
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page {
-
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
   private cashValidationProcess: CashValidationProcess;
   private cashinValidationProcess: CashinValidationProcess;
 
   acceptcash: number;
-  _machineStatus={status:{}as IMachineStatus}as any;
-
-
-  
+  _machineStatus = { status: {} as IMachineStatus } as any;
 
   production = environment.production;
   audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
@@ -74,11 +84,12 @@ export class Tab1Page {
   timeoutHandler: any;
   manageStockCount = 0;
   compensation = 0;
-  _checkHowTo_Duration=60*1;
-  _checkHowTo_Time=60*1;// 10 minutes
-  _howToT:any;
-  _howToPage:HTMLIonModalElement;
-  constructor(private ref: ChangeDetectorRef,
+  _checkHowTo_Duration = 1000 * 60 * 10;
+  _checkHowTo_Time = 1000 * 60 * 10; // 10 minutes
+  _howToT: any;
+  _howToPage: HTMLIonModalElement;
+  constructor(
+    private ref: ChangeDetectorRef,
     public apiService: ApiService,
     platform: Platform,
     // private scanner: @ionic-native/serial,
@@ -86,110 +97,125 @@ export class Tab1Page {
     public appCaching: CachingService,
     private vendingAPIService: VendingAPIService,
     private WSAPIService: WsapiService
-    ) 
-    { 
-     
-      this._machineStatus=this.apiService._machineStatus;
-      this.autoUpdateCash();
-      
-      this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
-      this.cashValidationProcess = new CashValidationProcess(this.apiService, this.vendingAPIService);
-      this.cashinValidationProcess = new CashinValidationProcess(this.apiService, this.vendingAPIService);
+  ) {
+    this._machineStatus = this.apiService._machineStatus;
+    this.autoUpdateCash();
 
-      // alert('V1_'+this.mmLogo);      
+    this.loadVendingWalletCoinBalanceProcess =
+      new LoadVendingWalletCoinBalanceProcess(
+        this.apiService,
+        this.vendingAPIService
+      );
+    this.cashValidationProcess = new CashValidationProcess(
+      this.apiService,
+      this.vendingAPIService
+    );
+    this.cashinValidationProcess = new CashinValidationProcess(
+      this.apiService,
+      this.vendingAPIService
+    );
 
-      // ref.detach();
-      // this.zone.runOutsideAngular(()=>{
-      this.machineId = this.apiService.machineId;
-      this.url = this.apiService.url;
-      // this.initVendingSale();
+    // alert('V1_'+this.mmLogo);
 
+    // ref.detach();
+    // this.zone.runOutsideAngular(()=>{
+    this.machineId = this.apiService.machineId;
+    this.url = this.apiService.url;
+    // this.initVendingSale();
 
-      platform.ready().then(() => {
-          this.apiService.audioElement = document.createElement('audio');
-          console.log('Width: ' + (this.swidth = platform.width()));
-          console.log('Height: ' + (this.sheight = platform.height()));
-          console.log('screen width', this.swidth, 'screen height', this.sheight);
-          if (this.swidth > 550) this.smode = 3;
-          else this.smode = 2;
-          // setTimeout(() => {
-          console.log('loading sale list');
+    platform.ready().then(() => {
+      this.apiService.audioElement = document.createElement('audio');
+      console.log('Width: ' + (this.swidth = platform.width()));
+      console.log('Height: ' + (this.sheight = platform.height()));
+      console.log('screen width', this.swidth, 'screen height', this.sheight);
+      if (this.swidth > 550) this.smode = 3;
+      else this.smode = 2;
+      // setTimeout(() => {
+      console.log('loading sale list');
 
+      // }, 1000);
+      this.vendingOnSale = this.apiService.vendingOnSale;
+      this.vendingBillPaid = this.apiService.vendingBillPaid;
+      this.vendingBill = this.apiService.vendingBill;
+      this.onlineMachines = this.apiService.onlineMachines;
 
-          // }, 1000);
-          this.vendingOnSale = this.apiService.vendingOnSale;
-          this.vendingBillPaid = this.apiService.vendingBillPaid;
-          this.vendingBill = this.apiService.vendingBill;
-          this.onlineMachines = this.apiService.onlineMachines;
-
-          this.apiService.wsapi.loginSubscription.subscribe(r => {
-            if (!r) return console.log('empty')
-            console.log('ws login subscription', r);
-            this.apiService.myTab1 = this;
-            this.apiService.clientId.clientId = r.clientId;
-            this.apiService.wsAlive.time = new Date();
-            this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
-            // this.loadSaleList();
-            this.initStock();
-           
-          })
-
-
-        });
-      // });
-
-      this.apiService.onDeductOrderUpdate((position) => {
-        try {
-          const ind = this.orders.findIndex(v => v.position == position);
-          if (ind != -1)
-            this.orders.splice(ind, 1);
-        } catch (error) {
-          console.log(' error on event emitter');
-        }
-
+      this.apiService.wsapi.loginSubscription.subscribe((r) => {
+        if (!r) return console.log('empty');
+        console.log('ws login subscription', r);
+        this.apiService.myTab1 = this;
+        this.apiService.clientId.clientId = r.clientId;
+        this.apiService.wsAlive.time = new Date();
+        this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
+        // this.loadSaleList();
+        this.initStock();
       });
+    });
+    // });
 
-      setTimeout(() => {
-        this.checkHowTo();
-      }, 5000);
+    this.apiService.onDeductOrderUpdate((position) => {
+      try {
+        const ind = this.orders.findIndex((v) => v.position == position);
+        if (ind != -1) this.orders.splice(ind, 1);
+      } catch (error) {
+        console.log(' error on event emitter');
+      }
+    });
 
+    setTimeout(() => {
+      this.checkHowTo();
+    }, 5000);
   }
-  setActive(){
-    console.log(('active'));
-    
-    this._checkHowTo_Time=this._checkHowTo_Duration;
+  setActive() {
+    console.log('active');
+    this._checkHowTo_Time = this._checkHowTo_Duration+1000;
   }
-  checkHowTo(){
-    this._checkHowTo_Time=this._checkHowTo_Duration;
-    if(this._howToT) {
+  checkHowTo() {
+    this._checkHowTo_Time = this._checkHowTo_Duration;
+    if (this._howToT) {
       clearInterval(this._howToT);
-      this._howToT=null;
-
+      this._howToT = null;
     }
-    this._howToT=setInterval(()=>{
-      if(this._checkHowTo_Time==this._checkHowTo_Duration){
-        if(this._howToPage){this._howToPage.dismiss();this._howToPage=null;}
-        this.apiService.modal.create({ component: HowtoPage, componentProps: {  }, cssClass: 'dialog-fullscreen' },).then(r => {
-          r.present();
-          this._howToPage=r;
-        });
-      }else if(this._checkHowTo_Time<=0){
-        if(this._howToPage){this._howToPage.dismiss();this._howToPage=null;console.log('close');
+    this._howToT = setInterval(() => {
+      if (this._checkHowTo_Time == this._checkHowTo_Duration) {
+        if (this._howToPage) {
+          this._howToPage.dismiss();
+          this._howToPage = null;
         }
-        this.apiService.modal.create({ component: HowtoPage, componentProps: {  }, cssClass: 'dialog-fullscreen' },).then(r => {
-          r.present();
-          this._howToPage=r;
-        });
-        this._checkHowTo_Time=this._checkHowTo_Duration;
+        this.apiService.modal
+          .create({
+            component: HowtoPage,
+            componentProps: {},
+            cssClass: 'dialog-fullscreen',
+          })
+          .then((r) => {
+            r.present();
+            this._howToPage = r;
+          });
+      } else if (this._checkHowTo_Time <= 0) {
+        if (this._howToPage) {
+          this._howToPage.dismiss();
+          this._howToPage = null;
+          console.log('close');
+        }
+        this.apiService.modal
+          .create({
+            component: HowtoPage,
+            componentProps: {},
+            cssClass: 'dialog-fullscreen',
+          })
+          .then((r) => {
+            r.present();
+            this._howToPage = r;
+          });
+        this._checkHowTo_Time = this._checkHowTo_Duration;
       }
       this._checkHowTo_Time--;
-    },1000);
+    }, 1000);
   }
 
   autoUpdateCash() {
-    this.WSAPIService.balanceUpdateSubscription.subscribe(async r => {
-      if (r)
-      {
+    this.WSAPIService.balanceUpdateSubscription.subscribe(async (r) => {
+      if (r) {
         await this.initVendingWalletCoinBalance();
       }
     });
@@ -199,20 +225,21 @@ export class Tab1Page {
     window.location.reload();
   }
   initStock() {
-
-    if(this.vendingOnSale?.length) return;
-    this.apiService.loadVendingSale().subscribe(r => {
+    if (this.vendingOnSale?.length) return;
+    this.apiService.loadVendingSale().subscribe((r) => {
       console.log(`load vending sale`, r.data);
       if (r.status) {
         const saleServer = r.data as Array<IVendingMachineSale>;
         console.log('saleServer', saleServer);
 
         this.apiService.newStockItems(saleServer);
-        
+
         // window.location.reload();
-        this.storage.get('saleStock', 'stock').then(s => {
+        this.storage.get('saleStock', 'stock').then((s) => {
           console.log(`storage get`, s);
-          const saleitems = JSON.parse(JSON.stringify(s?.v ? s.v : [])) as Array<IVendingMachineSale>;
+          const saleitems = JSON.parse(
+            JSON.stringify(s?.v ? s.v : [])
+          ) as Array<IVendingMachineSale>;
           console.log(`saleitems`, saleitems);
           this.saleList.sort((a, b) => {
             if (a.position < b.position) return -1;
@@ -220,21 +247,19 @@ export class Tab1Page {
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
           if (this.saleList[0]?.position == 0) this.compensation = 1;
-         
+
           setTimeout(() => {
             this.showBills();
           }, 1000);
 
           this.initVendingWalletCoinBalance().then(() => {});
-          
 
           console.log(`sale list der`, this.saleList);
-        })
-
+        });
       } else {
-        alert(r.message)
+        alert(r.message);
       }
-    })
+    });
   }
   endCount() {
     if (this.timeoutHandler) {
@@ -255,31 +280,30 @@ export class Tab1Page {
     const x = prompt('password');
     console.log(x, this.getPassword());
 
-    if(environment.production)
-    if (!this.getPassword().endsWith(x) || x.length < 6) return;
+    if (environment.production)
+      if (!this.getPassword().endsWith(x) || x.length < 6) return;
     const m = await this.apiService.showModal(StocksalePage);
-    m.onDidDismiss().then(r => {
+    m.onDidDismiss().then((r) => {
       r.data;
       console.log('manageStock', r.data);
       // if (r.data) {
       const k = 'refillSaleStock';
-      this.storage.get(k + '_', k).then(rx => {
+      this.storage.get(k + '_', k).then((rx) => {
         const b = rx.v as Array<IVendingMachineSale>;
         const s = b ? b : [];
         const u = new Date();
-        this.vendingOnSale.forEach(v => v.updatedAt = u);
+        this.vendingOnSale.forEach((v) => (v.updatedAt = u));
         s.unshift(...this.vendingOnSale);
-        this.storage.set(k + '_', s, k)
-      })
+        this.storage.set(k + '_', s, k);
+      });
 
       // } else {
       //   console.log('Canceled');
 
       // }
       // window.location.reload();
-    })
+    });
     m.present();
-
   }
   // loadPaidBills() {
   //   this.apiService.loadPaidBills().subscribe(r => {
@@ -298,12 +322,12 @@ export class Tab1Page {
   //   })
   // }
   loadOnlineMachine() {
-    this.apiService.loadOnlineMachine().subscribe(r => {
+    this.apiService.loadOnlineMachine().subscribe((r) => {
       console.log(r);
       if (r.status) {
         this.onlineMachines.push(...r.data);
       }
-    })
+    });
   }
   // loadSaleList() {
   //   this.apiService.loadSaleList().subscribe(r => {
@@ -323,23 +347,33 @@ export class Tab1Page {
     // if (x.stock.qtty <= 0) alert('Out Of order');
     this.apiService.showLoading();
     if (x.stock.price == 0) {
-      this.apiService.getFreeProduct(x.position, x.stock.id).subscribe(r => {
+      this.apiService.getFreeProduct(x.position, x.stock.id).subscribe((r) => {
         console.log(r);
         if (r.status) {
-          this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
-            r.present();
-            const y = this.apiService.vendingOnSale.find(v => v.position == x.position);
-            y.stock.qtty--;
-            console.log('yyyyy', y, x);
+          this.apiService.toast
+            .create({ message: r.message, duration: 2000 })
+            .then((r) => {
+              r.present();
+              const y = this.apiService.vendingOnSale.find(
+                (v) => v.position == x.position
+              );
+              y.stock.qtty--;
+              console.log('yyyyy', y, x);
 
-            this.storage.set('bill_' + new Date().getTime(), y, 'bills')
-            // PLAY SOUNDS
-            this.storage.set('saleStock', this.apiService.vendingOnSale, 'stock');
-          })
+              this.storage.set('bill_' + new Date().getTime(), y, 'bills');
+              // PLAY SOUNDS
+              this.storage.set(
+                'saleStock',
+                this.apiService.vendingOnSale,
+                'stock'
+              );
+            });
         } else {
-          this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
-            r.present();
-          })
+          this.apiService.toast
+            .create({ message: r.message, duration: 5000 })
+            .then((r) => {
+              r.present();
+            });
         }
         setTimeout(() => {
           this.audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
@@ -348,24 +382,100 @@ export class Tab1Page {
         }, 3000);
       });
     } else {
-
-      
-
       const amount = x.stock.price * 1;
-      
-      this.apiService.buyMMoney([x], amount, this.machineId.machineId).subscribe(r => {
+
+      this.apiService
+        .buyMMoney([x], amount, this.machineId.machineId)
+        .subscribe((r) => {
+          console.log(r);
+          if (r.status) {
+            this.bills = r.data as IVendingMachineBill;
+            // localStorage.setItem('order', JSON.stringify(this.bills));
+            this.storage.set(
+              'order_' + new Date().getTime(),
+              this.bills,
+              'orders'
+            );
+            new qrlogo({
+              logo: '../../assets/icon/mmoney.png',
+              content: this.bills.qr,
+            })
+              .getCanvas()
+              .then((r) => {
+                this.apiService.modal
+                  .create({
+                    component: QrpayPage,
+                    componentProps: {
+                      encodedData: r.toDataURL(),
+                      amount,
+                      ref: this.bills.paymentref,
+                    },
+                    cssClass: 'dialog-fullscreen',
+                  })
+                  .then((r) => {
+                    r.present();
+                  });
+              });
+
+            // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
+            //   res => {
+            //     console.log(res);
+            //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
+            //       r.present();
+            //     })
+            //   }, error => {
+            //     alert(error);
+            //   }
+            // );
+          } else {
+            this.apiService.toast
+              .create({ message: r.message, duration: 5000 })
+              .then((r) => {
+                r.present();
+              });
+          }
+          setTimeout(() => {
+            this.apiService.dismissLoading();
+          }, 1000);
+        });
+    }
+  }
+  buyManyMMoney() {
+    if (!this.orders.length) return alert('Please add any items first');
+    const amount = this.orders.reduce(
+      (a, b) => a + b.stock.price * b.stock.qtty,
+      0
+    );
+    // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
+    this.apiService.showLoading();
+    console.log(this.orders, amount);
+    this.apiService
+      .buyMMoney(this.orders, amount, this.machineId.machineId)
+      .subscribe((r) => {
         console.log(r);
         if (r.status) {
           this.bills = r.data as IVendingMachineBill;
-          // localStorage.setItem('order', JSON.stringify(this.bills));
-          this.storage.set('order_' + new Date().getTime(), this.bills, 'orders')
-          new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
-            this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref }, cssClass: 'dialog-fullscreen' },).then(r => {
-              r.present();
-
-            });
+          localStorage.setItem('order', JSON.stringify(this.bills));
+          new qrlogo({
+            logo: '../../assets/icon/mmoney.png',
+            content: this.bills.qr,
           })
-
+            .getCanvas()
+            .then((r) => {
+              this.apiService.modal
+                .create({
+                  component: QrpayPage,
+                  componentProps: {
+                    encodedData: r.toDataURL(),
+                    amount,
+                    ref: this.bills.paymentref,
+                  },
+                  cssClass: 'dialog-fullscreen',
+                })
+                .then((r) => {
+                  r.present();
+                });
+            });
           // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
           //   res => {
           //     console.log(res);
@@ -376,65 +486,31 @@ export class Tab1Page {
           //     alert(error);
           //   }
           // );
-        } else {
-          this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
-            r.present();
-          })
         }
-        setTimeout(() => {
-          this.apiService.dismissLoading();
-        }, 1000);
-      })
-    }
-  }
-  buyManyMMoney() {
-    if (!this.orders.length) return alert('Please add any items first');
-    const amount = this.orders.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
-    // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
-    this.apiService.showLoading();
-    console.log(this.orders, amount);
-    this.apiService.buyMMoney(this.orders, amount, this.machineId.machineId).subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this.bills = r.data as IVendingMachineBill;
-        localStorage.setItem('order', JSON.stringify(this.bills));
-        new qrlogo({ logo: '../../assets/icon/mmoney.png', content: this.bills.qr }).getCanvas().then(r => {
-          this.apiService.modal.create({ component: QrpayPage, componentProps: { encodedData: r.toDataURL(), amount, ref: this.bills.paymentref }, cssClass: 'dialog-fullscreen' }).then(r => {
-            r.present();
-          })
-        })
-        // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
-        //   res => {
-        //     console.log(res);
-        //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
-        //       r.present();
-        //     })
-        //   }, error => {
-        //     alert(error);
-        //   }
-        // );
-        
-      }
-      this.apiService.dismissLoading();
-      this.getTotalSale.q = 0;
-      this.getTotalSale.t = 0;
-      // this.orders = [];
-      this.summarizeOrder = [];
-    });
-
+        this.apiService.dismissLoading();
+        this.getTotalSale.q = 0;
+        this.getTotalSale.t = 0;
+        // this.orders = [];
+        this.summarizeOrder = [];
+      });
   }
 
   addOrder(x: IVendingMachineSale) {
-    // this.zone.runOutsideAngular(() => { 
-      this.setActive();
-      if (!x) return alert('not found')
-     const ord = this.orders.filter(v=>v.position==x.position);
-     if(ord.length)
-      if (ord.length >= ord[0]?.max) return alert('Out of Stock');
-      console.log('ID', x);
-      console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
+    // this.zone.runOutsideAngular(() => {
+    console.log(`allow vending`, this.WSAPIService.setting_allowVending);
 
-      this.apiService.showLoading('',500);
+    if (this.WSAPIService.setting_allowVending == false) {
+      this.apiService.simpleMessage('Vending is closed');
+      return;
+    }
+    this.setActive();
+    if (!x) return alert('not found');
+    const ord = this.orders.filter((v) => v.position == x.position);
+    if (ord.length) if (ord.length >= ord[0]?.max) return alert('Out of Stock');
+    console.log('ID', x);
+    console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
+
+    this.apiService.showLoading('', 500);
 
     // if (this.orders.find(v => v.position == x.position)) {
     //   const mx = x.max;
@@ -443,7 +519,7 @@ export class Tab1Page {
     //   const re = this.orders.find(v => {
     //     const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
     //     console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
-        
+
     //     return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
     //   });
     //    console.log('0x0r',this.orders, mx, re);
@@ -453,11 +529,11 @@ export class Tab1Page {
     //   }, 1000);
     //     return alert('Out of Stock');
     //   }
-     
+
     // }
-   
+
     // if (x.stock.qtty <= 0) alert('Out Of order');
-   
+
     const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
     y.stock.qtty = 1;
     console.log('y', y);
@@ -465,45 +541,48 @@ export class Tab1Page {
     //  console.log('sum',this.getSummarizeOrder());
     this.getSummarizeOrder();
     // setTimeout(() => {
-      this.apiService.dismissLoading();
+    this.apiService.dismissLoading();
     // }, 1000);
-   
-    
 
     // });
   }
   checkCartCount(position: number) {
-    return this.orders.find(v => v.position == position)?.stock?.qtty || 0;
+    return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;
   }
   getSummarizeOrder() {
     // this.summarizeOrder=new Array<IVendingMachineSale>();
     const o = new Array<IVendingMachineSale>();
-    const ord = JSON.parse(JSON.stringify( this.orders)) as Array<IVendingMachineSale>;
-    ord.forEach(v => {
-      const x = o.find(x => x.stock.id == v.stock.id);
+    const ord = JSON.parse(
+      JSON.stringify(this.orders)
+    ) as Array<IVendingMachineSale>;
+    ord.forEach((v) => {
+      const x = o.find((x) => x.stock.id == v.stock.id);
       if (!x) o.push(v);
-      else x.stock.qtty += 1
+      else x.stock.qtty += 1;
     });
-    console.log('OOOO',o);
-    
+    console.log('OOOO', o);
+
     // this.summarizeOrder.push(...o);
     const t = this.getTotal();
-    Object.keys(this.getTotalSale).forEach(k => {
+    Object.keys(this.getTotalSale).forEach((k) => {
       this.getTotalSale[k] = t[k];
-    })
+    });
     // return this.summarizeOrder;
   }
   getTotal() {
     const o = this.orders;
-    const q = o.reduce((a, b) => { return a + b.stock.qtty }, 0);
-    const t = o.reduce((a, b) => { return a + b.stock.qtty * b.stock.price }, 0);
+    const q = o.reduce((a, b) => {
+      return a + b.stock.qtty;
+    }, 0);
+    const t = o.reduce((a, b) => {
+      return a + b.stock.qtty * b.stock.price;
+    }, 0);
     return { q, t };
   }
   // clearOrder() {
   //   this.orders.length = 0;
   //   this.getSummarizeOrder();
   // }
-
 
   getSaleList() {
     const x = new Array<Array<IVendingMachineSale>>();
@@ -512,12 +591,13 @@ export class Tab1Page {
       if (i == this.smode) {
         x.push(this.vendingOnSale.slice(0, i));
       } else if (!(i % this.smode)) {
-        x.push(this.vendingOnSale.slice(i - this.smode, i))
+        x.push(this.vendingOnSale.slice(i - this.smode, i));
       } else if (i == this.vendingOnSale.length - 1) {
-        x.push(this.vendingOnSale.slice(this.vendingOnSale.length - this.smode))
+        x.push(
+          this.vendingOnSale.slice(this.vendingOnSale.length - this.smode)
+        );
       }
-
-    })
+    });
     // console.log('x',x);
 
     return x;
@@ -532,9 +612,9 @@ export class Tab1Page {
   // }
   getPassword() {
     let x = '';
-    this.apiService.machineuuid.split('').forEach(v => {
-      !Number.isNaN(Number.parseInt(v)) ? x += v : '';
-    })
+    this.apiService.machineuuid.split('').forEach((v) => {
+      !Number.isNaN(Number.parseInt(v)) ? (x += v) : '';
+    });
     return x;
   }
 
@@ -548,23 +628,15 @@ export class Tab1Page {
     // }
   }
 
-
-
-
-
   refreshVendingWalletCoinBalance(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
         // const machineId: string = localStorage.getItem('machineId');
-        const params = {
-          
-        }
+        const params = {};
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = run.data[0].vendingWalletCoinBalance;
         resolve(IENMessage.success);
-
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
@@ -572,18 +644,14 @@ export class Tab1Page {
     });
   }
   initVendingWalletCoinBalance(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
         // const machineId: string = localStorage.getItem('machineId');
-        const params = {
-          
-        }
+        const params = {};
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = run.data[0].vendingWalletCoinBalance;
         resolve(IENMessage.success);
-
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
@@ -591,29 +659,24 @@ export class Tab1Page {
     });
   }
   cashin(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
         // const machineId: string = localStorage.getItem('machineId');
-        let params: any = {
-          
-        }
+        let params: any = {};
         let run: any = await this.cashValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.acceptcash = run.data[0].acceptcash;
         const cashList = await this.cashList();
 
         params = {
-
           cash: cashList,
-          description: 'VENDING CASH IN'
-        }
+          description: 'VENDING CASH IN',
+        };
         run = await this.cashinValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = Number(this.apiService.cash) + Number(cashList);
 
         resolve(IENMessage.success);
-
       } catch (error) {
         await this.apiService.openSoundSystemError();
         this.apiService.simpleMessage(error.message);
@@ -622,9 +685,8 @@ export class Tab1Page {
     });
   }
   cashList(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-       
         let message: any = {} as any;
         let inputs: Array<any> = [
           {
@@ -649,7 +711,6 @@ export class Tab1Page {
             handler: async () => {
               await message.dismiss();
               resolve(10000);
-              
             },
           },
           {
@@ -658,7 +719,6 @@ export class Tab1Page {
             handler: async () => {
               await message.dismiss();
               resolve(20000);
-                
             },
           },
           {
@@ -667,7 +727,6 @@ export class Tab1Page {
             handler: async () => {
               await message.dismiss();
               resolve(50000);
-                
             },
           },
           {
@@ -676,7 +735,6 @@ export class Tab1Page {
             handler: async () => {
               await message.dismiss();
               resolve(100000);
-                
             },
           },
         ];
@@ -696,32 +754,32 @@ export class Tab1Page {
 
         message = await this.apiService.alert.create({
           header: 'Cash In',
-          inputs: inputs
+          inputs: inputs,
         });
         message.present();
-
       } catch (error) {
         resolve(error.message);
       }
     });
   }
   laabGo(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-
         this.summarizeOrder = JSON.parse(JSON.stringify(this.orders));
 
-        this.summarizeOrder.forEach(item => item.stock.image = '');
-        
+        this.summarizeOrder.forEach((item) => (item.stock.image = ''));
+
         console.log(`summarizeOrder`, this.summarizeOrder);
         let sum_quantity: number = 0;
         let sum_total: number = 0;
-        for(let i = 0; i < this.summarizeOrder.length; i++) {
+        for (let i = 0; i < this.summarizeOrder.length; i++) {
           sum_quantity += this.summarizeOrder[i].stock.qtty;
-          sum_total += this.summarizeOrder[i].stock.qtty * this.summarizeOrder[i].stock.price;
+          sum_total +=
+            this.summarizeOrder[i].stock.qtty *
+            this.summarizeOrder[i].stock.price;
         }
         console.log(`sum total`, sum_total);
-        if (this.apiService.cash < sum_total){
+        if (this.apiService.cash < sum_total) {
           await this.apiService.openSoundPleaseInsertBanknotes();
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
@@ -732,12 +790,17 @@ export class Tab1Page {
           data: {
             ids: this.summarizeOrder,
             value: sum_total,
-            clientId: this.apiService.clientId.clientId
+            clientId: this.apiService.clientId.clientId,
           },
           ip: '',
           time: new Date().toString(),
-          token:  cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
-        }
+          token: cryptojs
+            .SHA256(
+              this.apiService.machineId.machineId +
+                this.apiService.machineId.otp
+            )
+            .toString(cryptojs.enc.Hex),
+        };
 
         const props = {
           machineId: localStorage.getItem('machineId') || '12345678',
@@ -746,13 +809,14 @@ export class Tab1Page {
           total: sum_total,
           balance: sum_refund,
           paidLAAB: paidLAAB,
-        }
+        };
         console.log(`props`, props);
 
-        this.apiService.modal.create({ component: LaabGoPage, componentProps: props }).then(r => {
-          r.present();
-        });
-        
+        this.apiService.modal
+          .create({ component: LaabGoPage, componentProps: props })
+          .then((r) => {
+            r.present();
+          });
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
@@ -765,25 +829,23 @@ export class Tab1Page {
     this.getTotalSale.t = 0;
   }
   epinCashOut(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
-        this.apiService.modal.create({ component: EpinCashOutPage, componentProps: {} }).then(r => {
-          r.present();
-        });
-
+        this.apiService.modal
+          .create({ component: EpinCashOutPage, componentProps: {} })
+          .then((r) => {
+            r.present();
+          });
       } catch (error) {
         resolve(error.message);
       }
     });
   }
   laabCashin(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
         // const machineId: string = localStorage.getItem('machineId');
-        let params: any = {
-        }
+        let params: any = {};
         let run: any = await this.cashValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.acceptcash = run.data[0].acceptcash;
@@ -791,8 +853,8 @@ export class Tab1Page {
 
         params = {
           cash: cashList,
-          description: 'VENDING CASH IN'
-        }
+          description: 'VENDING CASH IN',
+        };
         console.log(`params`, params);
 
         let qrModel = {
@@ -804,19 +866,23 @@ export class Tab1Page {
           options: {
             coinname: this.apiService.coinName,
             name: this.apiService.name,
-          }
-        }
+          },
+        };
 
-        QRCode.toDataURL(JSON.stringify(qrModel)).then(async r => {
+        QRCode.toDataURL(JSON.stringify(qrModel)).then(async (r) => {
           const props = {
-            qrImage: r
-          }
-          this.apiService.modal.create({ component: LaabCashinShowCodePage, componentProps: props }).then(r => {
-            r.present();
-            resolve(IENMessage.success);
-          });
+            qrImage: r,
+          };
+          this.apiService.modal
+            .create({
+              component: LaabCashinShowCodePage,
+              componentProps: props,
+            })
+            .then((r) => {
+              r.present();
+              resolve(IENMessage.success);
+            });
         });
-
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
@@ -824,48 +890,52 @@ export class Tab1Page {
     });
   }
   laabCashout(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
-        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
+        if (this.apiService.cash == 0)
+          throw new Error(IENMessage.thereIsNotBalance);
 
-        const props = {
-        }
-        this.apiService.modal.create({ component: LaabCashoutPage, componentProps: props }).then(r => {
-          r.present();
-          resolve(IENMessage.success);
-        });
-
+        const props = {};
+        this.apiService.modal
+          .create({ component: LaabCashoutPage, componentProps: props })
+          .then((r) => {
+            r.present();
+            resolve(IENMessage.success);
+          });
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
-    })
+    });
   }
-  showBills(){
+  showBills() {
     console.log(`here`);
-    this.apiService.loadDeliveryingBills().subscribe(r => {
+    this.apiService.loadDeliveryingBills().subscribe((r) => {
       console.log(`response`, r);
       if (r.status) {
         this.apiService.dismissModal();
-        this.apiService. pb = r.data as Array<IBillProcess>;
-        if( this.apiService. pb.length)
-        this.apiService.showModal(RemainingbillsPage, { r: this.apiService. pb}).then(r=>{
-          r.present();
-        });
-      }
-      else {
-        this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
-          r.present();
-        })
+        this.apiService.pb = r.data as Array<IBillProcess>;
+        if (this.apiService.pb.length)
+          this.apiService
+            .showModal(RemainingbillsPage, { r: this.apiService.pb })
+            .then((r) => {
+              r.present();
+            });
+      } else {
+        this.apiService.toast
+          .create({ message: r.message, duration: 5000 })
+          .then((r) => {
+            r.present();
+          });
       }
     });
   }
   public reshowBills(count: number): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-
-        let loading = this.apiService.load.create({ message: 'Please wait...' });
+        let loading = this.apiService.load.create({
+          message: 'Please wait...',
+        });
 
         if (count > 0) {
           (await loading).present();
@@ -873,16 +943,13 @@ export class Tab1Page {
             (await loading).dismiss();
             this.showBills();
           }, 1000);
-  
         }
-
 
         resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
-    })
-    
+    });
   }
 }

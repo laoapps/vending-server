@@ -7,6 +7,9 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
   providedIn: 'root'
 })
 export class WsapiService {
+  setting_allowCashIn: boolean = false;
+  setting_allowVending: boolean = false;
+
   wsurl = 'ws://localhost:9009';
   webSocket: WebSocket;
   retries = 1;
@@ -79,7 +82,8 @@ export class WsapiService {
           case 'ping':
             console.log('Ping');
             // { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
-
+            this.setting_allowCashIn = res.data.setting.allowCashIn;
+            this.setting_allowVending = res.data.setting.allowVending;
             this.aliveSubscription.next({test:data?.test,data,balance:res['balance']} as IAlive)
             break;
           case 'confirm':

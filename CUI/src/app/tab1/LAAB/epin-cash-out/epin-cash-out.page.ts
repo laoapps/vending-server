@@ -18,6 +18,13 @@ export class EpinCashOutPage implements OnInit {
   private createSMCProcess: CreateSMCProcess;
   private createEPINProcess: CreateEPINProcess;
 
+  
+  showPhonenumberPage: boolean = true;
+  showEPINCashoutPage: boolean = false;
+
+  numberList: Array<string> = [];
+  placeholder: string = 'ENTER PHONE NUMBER';
+  phonenumber: string;
   btnCreateSMC: boolean = false;
 
   constructor(
@@ -29,8 +36,53 @@ export class EpinCashOutPage implements OnInit {
   }
 
   ngOnInit() {
+    this.loadNumberList();
     this.checkBalance();
 
+  }
+  loadNumberList(): void {
+    for(let i = 1; i < 10; i++) {
+      this.numberList.push(i.toString());
+    }
+    this.phonenumber = this.placeholder;
+  }
+  processDigits(digit: string) {
+    if (this.phonenumber == this.placeholder) {
+      this.phonenumber = digit;
+    } else {
+      if (this.phonenumber.length < 8) {
+        this.phonenumber += digit;
+      }
+    }
+  }
+  deleteDigits() {
+    if (this.phonenumber != this.placeholder) {
+      if (this.phonenumber != undefined && Object.entries(this.phonenumber).length == 1) {
+        this.phonenumber = this.placeholder;
+      } else {
+        this.phonenumber = this.phonenumber.substring(0, this.phonenumber.length - 1);
+      }
+    }
+  }
+
+  next(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
+        if (this.phonenumber != this.placeholder && this.phonenumber.length != 8) throw new Error(IENMessage.invalidPhonenumber);
+        this.phonenumber = `+85620${this.phonenumber}`;
+
+        this.showPhonenumberPage = false;
+        this.showEPINCashoutPage = true;
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
   }
 
   close() {
@@ -49,8 +101,11 @@ export class EpinCashOutPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
        
+        if (this.btnCreateSMC == false) throw new Error(IENMessage.thereIsNotBalance);
+
         let params: any = {
           machineId: localStorage.getItem('machineId'),
+          phonenumber: this.phonenumber,
           cash: this.apiService.cash
         }
 
@@ -76,6 +131,7 @@ export class EpinCashOutPage implements OnInit {
 
         params = {
           machineId: localStorage.getItem('machineId'),
+          phonenumber: this.phonenumber,
           detail: run.data[0].detail
         }
         const createEPIN = await this.createEPINProcess.Init(params);

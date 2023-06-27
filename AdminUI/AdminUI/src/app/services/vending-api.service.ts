@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { VENDING_CreateMerchant, VENDING_CreateMerchantCoin, VENDING_CreateVendingLimiter, VENDING_CreateVendingLimiterCoin, VENDING_CreateVendingWallet, VENDING_CreateVendingWalletCoin, VENDING_FindMerchant, VENDING_FindMerchantCoin, VENDING_FindVendingCoin, VENDING_FindVendingLimiter, VENDING_FindVendingLimiterCoin, VENDING_FindVendingWallet, VENDING_FindVendingWalletCoin, VENDING_Login, VENDING_MerchantCoinTransfer, VENDING_QRHashVerify, VENDING_ShowMerchantCoinBalance, VENDING_ShowMerchantReport, VENDING_ShowVendingLimiterCoinBalance, VENDING_ShowVendingLimiterReport, VENDING_ShowVendingWalletCoinBalance, VENDING_ShowVendingWalletReport, VENDING_TextHashVerify, VENDING_VendingLimiterCoinTransfer, VENDING_VendingWalletCoinTransfer } from '../models/vending.model';
+import { VENDING_CreateEPIN, VENDING_CreateMerchant, VENDING_CreateMerchantCoin, VENDING_CreateVendingLimiter, VENDING_CreateVendingLimiterCoin, VENDING_CreateVendingWallet, VENDING_CreateVendingWalletCoin, VENDING_FindEPINShortCodeList, VENDING_FindMerchant, VENDING_FindMerchantCoin, VENDING_FindVendingCoin, VENDING_FindVendingLimiter, VENDING_FindVendingLimiterCoin, VENDING_FindVendingWallet, VENDING_FindVendingWalletCoin, VENDING_Login, VENDING_MerchantCoinTransfer, VENDING_QRHashVerify, VENDING_ShowEPINShortCodeList, VENDING_ShowMerchantCoinBalance, VENDING_ShowMerchantReport, VENDING_ShowVendingLimiterCoinBalance, VENDING_ShowVendingLimiterReport, VENDING_ShowVendingWalletCoinBalance, VENDING_ShowVendingWalletReport, VENDING_TextHashVerify, VENDING_VendingLimiterCoinTransfer, VENDING_VendingWalletCoinTransfer } from '../models/vending.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
@@ -106,5 +106,22 @@ export class VendingAPIService {
   }
   showVendingWalletReport(params: VENDING_ShowVendingWalletReport): Observable<any> {
     return this.http.post(this.url + '/laab/admin/show_vending_wallet_report', params);
+  }
+  showEPINShortCodeList(params: VENDING_ShowEPINShortCodeList): Observable<any> {
+    return this.http.post(this.url + '/laab/admin/show_epinshortcode', params);
+  }
+  findEPINShortCodeList(params: VENDING_FindEPINShortCodeList): Observable<any> {
+    return this.http.post(this.url + '/laab/admin/find_epinshortcode', params);
+  }
+  createEPIN(params: VENDING_CreateEPIN): Observable<any> {
+    return this.http.post(this.url + '/laab/client/create_epin', params);
+  }
+
+
+
+
+  
+  counterCashout_cash(params: VENDING_CreateEPIN): Observable<any> {
+    return this.http.post(this.url + '/laab/client/create_epin', params);
   }
 }

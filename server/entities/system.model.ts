@@ -3214,6 +3214,7 @@ export enum EEntity {
     insuffbillcash = "insuffbillcash",
     machineclientid = "machineclientid",
     vendingmachinebillpaid = "vendingmachinebillpaid",
-    vendingwallet = 'vendingwallet'
+    vendingwallet = 'vendingwallet',
+    epinshortcode = 'epinshortcode'
 }
 

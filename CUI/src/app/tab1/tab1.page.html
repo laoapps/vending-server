@@ -56,8 +56,8 @@
       </a>
     </div>
     <div class="right">
-      {{_machineStatus?.status?.temp}}<ion-icon name="thermometer-outline"></ion-icon><ion-icon name="help-circle-outline" (click)="checkHowTo()"></ion-icon>
-      <!-- <a (click)="showBills()" href="javascript:void(0)" class="item">
+      {{_machineStatus?.status?.temp}}<ion-icon name="thermometer-outline"></ion-icon>
+      <!-- <a (click)="showBills()" href="javascript:void(0)" class="item">elp-circle-outline
         <div class="icon">
           <i class="fa-solid fa-ticket"></i>
         </div>
@@ -86,7 +86,9 @@
 
 <ion-content [fullscreen]="true" 
 >
-  <div class="floatingBtn"><ion-icon name="logo-whatsapp"></ion-icon><div>ມີບັນຫາໂທWA:<div>{{apiService.contact}}</div></div></div>
+<div class="floatingBtn2"><ion-icon name="videocam-sharp" (click)="checkHowTo()"></ion-icon><div><div>How To</div></div></div>
+  <div class="floatingBtn"><ion-icon name="logo-whatsapp"></ion-icon><div>WA:<div>{{apiService.contact}}</div></div></div>
+
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
