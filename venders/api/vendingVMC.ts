@@ -325,6 +325,7 @@ export class VendingVMC {
 
     command(command: EZDM8_COMMAND, params: any, transactionID: number) {
         return new Promise<any>((resolve, reject) => {
+            const that = this;
             switch (command) {
                 case EZDM8_COMMAND.shippingcontrol:
                     this.commandVMC(EVMC_COMMAND._06, params, transactionID, this.getNextNo()).then(r => {
@@ -356,6 +357,7 @@ export class VendingVMC {
                             reject(PrintError(command as any, params, e.message));
                         })
                     }
+
 
                     if (Array.isArray(params?.setting)) {
                         try {
@@ -396,6 +398,7 @@ export class VendingVMC {
                                 }
 
                             }
+
                             // light
 
                             // if (setting.light != this.setting.light) {
@@ -429,6 +432,40 @@ export class VendingVMC {
                     }
 
 
+                    break;
+
+                case EZDM8_COMMAND.restart:
+                    setTimeout(() => {
+                        console.log('INITIALIZE.............................................................!');
+                        console.log('INIT 51');
+                        that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
+                        console.log('INIT 7001');
+                        that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
+                        console.log('INIT 7001');
+                        that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
+                        console.log('INIT 7018');
+                        that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
+                        console.log('INIT 7019');
+                        that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
+                        console.log('INIT 7020');
+                        that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
+                        console.log('INIT 7023');
+                        that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+
+                        console.log('INIT enable');
+                        that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+                        console.log('INIT accept banknote');
+                        that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
+                        console.log('INIT temperature');
+                        // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                        that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
+                        // setTimeout(() => {
+                        //     console.log('INIT disable');
+                        //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
+                        // }, 30000);
+                        // console.log('INIT disable');
+                        // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
+                    }, 2000);
                     break;
                 case EZDM8_COMMAND.hutemp:
 
@@ -687,7 +724,7 @@ export class VendingVMC {
                 buff.push(int2hex(1));// setting 1 or read 0
                 buff.push(int2hex(0));// 0 as master 
                 buff.push(int2hex(5)); // Return difference value (Range 2-8) 
-                buff.push(int2hex(this.setting?.lowTemp||6)); // temperature
+                buff.push(int2hex(this.setting?.lowTemp || 6)); // temperature
                 buff.push(int2hex(0));// 27 check sum
                 buff[buff.length - 1] = chk8xor(buff);// update checksum
             }
