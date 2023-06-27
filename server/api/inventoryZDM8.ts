@@ -951,10 +951,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
-                        const isActive =
-                            req.query["isActive"] == ""
-                                ? false
-                                : Boolean(req.query["isActive"]);
+                        const isActive =Boolean(req.query["isActive"]);
                         const sEnt = StockFactory(
                             EEntity.product + "_" + ownerUuid,
                             dbConnection
@@ -971,7 +968,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     );
                                 console.log('disableproduct',r);
                                 
-                                if (isActive != null) r.isActive = isActive;
+                                r.isActive = isActive;
                                 console.log('disableproduct',r);
                                 r.changed("isActive", true);
                                 res.send(
@@ -1126,10 +1123,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
-                        const isActive =
-                            req.query["isActive"] == ""
-                                ? null
-                                : Boolean(req.query["isActive"]);
+                        const isActive = Boolean(req.query["isActive"]);
                         const sEnt = VendingMachineSaleFactory(
                             EEntity.vendingmachinesale + "_" + ownerUuid,
                             dbConnection
@@ -1142,7 +1136,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     return res.send(
                                         PrintError("disableSale", [], EMessage.error)
                                     );
-                                if (isActive != null) r.isActive = isActive;
+                                r.isActive = isActive;
                                 r.changed("isActive", true);
                                 res.send(
                                     PrintSucceeded(
@@ -1465,7 +1459,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         PrintError("disableMachine", [], EMessage.notfound)
                                     );
                                 r.isActive = isActive;
-                                // r.changed('isActive',true);
+                                r.changed('isActive',true);
                                 this.refreshMachines();
                                 res.send(
                                     PrintSucceeded(
