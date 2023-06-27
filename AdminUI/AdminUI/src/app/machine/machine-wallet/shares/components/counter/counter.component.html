@@ -38,34 +38,20 @@
               <td>Action</td>
             </tr>
           </thead>
-          <tbody>
+          <tbody *ngFor="let list of lists; let i = index">
             <tr>
-              <td>de0f18fd-6a06-47b4-a906-d3f0e2720032</td>
-              <td>+8562056381009</td>
-              <td>test</td>
-              <td>test</td>
-              <td>test</td>
-              <td>test</td>
-              <td>
-                <a href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Create EPIN</a>
-                <a href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-money-bill-wave"></i> Cash</a>
-              </td>
-            </tr>
-          </tbody>
-          <!-- <tbody *ngFor="let list of lists; let i = index">
-            <tr>
-              <td>de0f18fd-6a06-47b4-a906-d3f0e2720032</td>
-              <td>+8562056381009</td>
-              <td>test</td>
-              <td>test</td>
-              <td>test</td>
-              <td>test</td>
+              <td>{{ list.uuid }}</td>
+              <td>{{ list.phonenumber }}</td>
+              <td>{{ list.SMC }}</td>
+              <td>{{ list.EPIN }}</td>
+              <td>{{ list.counter }}</td>
+              <td>{{ list.createdAt }}</td>
               <td>
                 <a href="javascript:void(0)" class="btn-epin-generate"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
                 <a href="javascript:void(0)" class="btn-epin-generate"><i class="fa-solid fa-money-bill-wave"></i> Cash</a>
               </td>
             </tr>
-          </tbody> -->
+          </tbody>
         </table>
 
         <ul class="pagination">

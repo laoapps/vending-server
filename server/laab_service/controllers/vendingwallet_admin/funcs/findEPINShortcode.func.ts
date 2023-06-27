@@ -55,7 +55,7 @@ export class FindEPINShortCodeFunc {
     private InitParams(params: any) {
         this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
-        this.time = params.time;
+        // this.time = params.time;
         this.page = params.page;
         this.limit = params.limit;
     }
