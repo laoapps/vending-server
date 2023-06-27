@@ -37,15 +37,16 @@ export class LaabVendingAPI {
         QCreateVendingLimiter: QCreateVendingLimiter,
         QCreateVendingLimiterCoin: QCreateVendingLimiterCoin,
         QCreateVendingWallet: QCreateVendingWallet,
-        QCreateVendingWalletCoin: QCreateVendingWalletCoin,
-        QCreateSMC: QCreateSMC,
-        QCreateEPIN: QCreateEPIN,
+        QCreateVendingWalletCoin: QCreateVendingWalletCoin
     }
     private adminReadPanel: AdminReadPanel;
     private adminWritePanel: AdminWritePanel;
 
     private clientQueues: any = {
-        QPaidValidation: QPaidValidation
+        QPaidValidation: QPaidValidation,
+        QCreateSMC: QCreateSMC,
+        QCreateEPIN: QCreateEPIN,
+        QCounterCashout_CashValidationFunc: QCounterCashout_CashValidationFunc
     }
     private clientReadPanel: ClientReadPanel;
     private clientWritePanel: ClientWritePanel;
