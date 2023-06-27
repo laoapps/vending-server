@@ -398,8 +398,8 @@ export class VendingVMC {
                                 this.setting.highTemp = setting.highTemp;
                                 // this.setting.allowCashIn=false;
                                 console.log('new setting', this.setting);
-
-                                this.commandVMC(EVMC_COMMAND._7028, params, transactionID, this.getNextNo()).then(r => {
+                                that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                                this.commandVMC(EVMC_COMMAND._7028, params, -7028, this.getNextNo()).then(r => {
                                     resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                                 }).catch(e => {
                                     reject(PrintError(command as any, params, e.message));
@@ -487,7 +487,7 @@ export class VendingVMC {
                         console.log('INIT accept banknote');
                         that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
                         console.log('INIT temperature');
-                        // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                        that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
                         that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
                         // setTimeout(() => {
                         //     console.log('INIT disable');
@@ -734,8 +734,8 @@ export class VendingVMC {
                 buff.push('37');//// temp setting
                 buff.push(int2hex(1));// setting 1 or read 0
                 buff.push(int2hex(0));// 0 as master 
-                buff.push(int2hex(this.setting?.lowTemp)); // low temp (Range 0-60) 
-                buff.push(int2hex(this.setting?.highTemp)); // Highest temperature (Range 0-60) 
+                buff.push(int2hex(this.setting?.lowTemp||5)); // low temp (Range 0-60) 
+                buff.push(int2hex(this.setting?.highTemp||10)); // Highest temperature (Range 0-60) 
                 buff.push(int2hex(2)); // Return difference value (Range 2-8) 
                 buff.push(int2hex(0)); // Delay Starting time (Range 0-8)
                 buff.push(int2hex(0)); // Sensor correction (Range -10-10) 
