@@ -1746,12 +1746,28 @@ export class InventoryZDM8 implements IBaseClass {
                     that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                     console.log(`sw sender`, d.command, res.data);
                     redisClient.set('_balance_' + ws['clientId'], bn.value);
-                    
-                    ws.send(
-                        JSON.stringify(
-                            PrintSucceeded(d.command, res, EMessage.succeeded)
+                   
+                    readMachineSetting(machineId.machineId).then(async r=>{
+                        let setting ={} as any
+                        if(r){
+                            try {
+                                setting= JSON.parse(r);
+                            } catch (error) {
+                                console.log('error parsing setting 2',error);
+                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=15;setting.light=true;
+                            }
+                        }
+                        const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
+                        const limiter = await readMachineLimiter(machineId.machineId);
+
+                        that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting})
+                        ws.send(
+                            JSON.stringify(
+                                PrintSucceeded(d.command, res, EMessage.succeeded)
+                            )
                         )
-                    );
+                    })
+                    
 
                 })
                 .catch((error) => {

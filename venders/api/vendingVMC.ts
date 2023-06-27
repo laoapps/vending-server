@@ -146,7 +146,12 @@ export class VendingVMC {
                     // new 50k not working
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
-                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE);
+                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
+                        // if error then resent
+                        that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), -11, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
+                        
+                        });
+                    });
                     writeLogs(b, -1);
 
                 }
@@ -706,7 +711,7 @@ export class VendingVMC {
                 buff.push(int2hex(0));// 0 as master 
                 buff.push(int2hex(this.setting?.lowTemp)); // low temp (Range 0-60) 
                 buff.push(int2hex(this.setting?.highTemp)); // Highest temperature (Range 0-60) 
-                buff.push(int2hex(6)); // Return difference value (Range 2-8) 
+                buff.push(int2hex(5)); // Return difference value (Range 2-8) 
                 buff.push(int2hex(0)); // Delay Starting time (Range 0-8)
                 buff.push(int2hex(0)); // Sensor correction (Range -10-10) 
                 buff.push(int2hex(1)); // Defrosting period (Range 0-24 Hours) 

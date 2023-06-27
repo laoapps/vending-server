@@ -427,6 +427,7 @@ export class Tab1Page {
   addOrder(x: IVendingMachineSale) {
     // this.zone.runOutsideAngular(() => { 
       this.setActive();
+      // if('!setting.allowVending') 'out of service';
       if (!x) return alert('not found')
      const ord = this.orders.filter(v=>v.position==x.position);
      if(ord.length)
