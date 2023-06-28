@@ -1673,8 +1673,8 @@ export class InventoryZDM8 implements IBaseClass {
     }
    async creditMachine(d: IReqModel) {
         const that = this;
-        const x = d.token as string;
         const ack = await readACKConfirmCashIn(d.transactionID+'');
+        let machineId = this.ssocket.findMachineIdToken(d.token);
         const ws = that.wsClient.find(
             (v) => v["machineId"] == machineId.machineId + ""
         );
@@ -1687,7 +1687,7 @@ export class InventoryZDM8 implements IBaseClass {
             "creditMachine WS online machine",
             that.ssocket.listOnlineMachines()
         );
-        let machineId = this.ssocket.findMachineIdToken(x);
+        
         console.log('FOUND ACK EXIST TRANSACTIONID',ack,d.transactionID);
         
         if(ack){
