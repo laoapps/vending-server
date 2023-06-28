@@ -122,6 +122,6 @@ export class VendingAPIService {
 
   
   counterCashout_cash(params: VENDING_CounterCashout_cash): Observable<any> {
-    return this.http.post(this.url + '/laab/admin/countcounter_cashout_cash_validationer', params);
+    return this.http.post(this.url + '/laab/admin/counter_cashout_cash_validation', params);
   }
 }

@@ -136,7 +136,7 @@ export class WritePanel {
         try {
 
             const data = req.body;
-            this.queues.QCounterCashout_CashValidationFunc.add({ data }).then(job => {
+            this.queues.QCounterCashout_CashValidation.add({ data }).then(job => {
                 console.log(`here`);
                 job.finished().then(run => {
                     if (run.message != IENMessage.success) {
