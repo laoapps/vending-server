@@ -119,7 +119,7 @@ export class ReCreateEPINFunc {
                 const run = await epinshortcodeEntity.findOne(condition);
                 if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
 
-                const left: string = JSON.stringify(run.SMC);
+                const left: string = JSON.stringify(run.SMC.detail);
                 const right: string = JSON.stringify(this.detail);
                 if (left != right) return resolve(IENMessage.detailUmatch);
 
