@@ -54,7 +54,6 @@ export class CounterComponent implements OnInit {
         console.log(`time`, this.time);
 
         if (!(this.phonenumber)) throw new Error(IENMessage.pleaseEnterPhonenumber);
-        if (!(this.time)) throw new Error(IENMessage.invalidTime);
 
         // this.showTable = true;
         
@@ -62,12 +61,12 @@ export class CounterComponent implements OnInit {
           ownerUuid: this.apiService.ownerUuid,
           machineId: this.apiService.currentMachineId,
           phonenumber: this.phonenumber,
-          time: this.time,
+          time: this.time || '',
           page: this.currentPage,
           limit: this.limit,
         }
         const run = await this.findEPINShortCodeListProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run.message);
+        if (run.message != IENMessage.success) throw new Error(run);
 
         if (run.data[0].count == 0) {
           this.showTable = false;

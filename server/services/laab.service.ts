@@ -159,8 +159,6 @@ export function APIAdminAccess(req: Request, res: Response, next: NextFunction) 
 class VerifyToken {
 
     private token: string;
-    private ownerUuid: string;
-    private phonenumber: string;
     
     constructor() {}
 
@@ -204,11 +202,9 @@ class VerifyToken {
         console.log(params);
         
         this.token = params.token;
-        this.ownerUuid = params.ownerUuid;
     }
 
     private ValidateParams(): string {
-        if (!(this.ownerUuid)) return IENMessage.InvalidAuthorizeFormat;
         if (!(this.token)) return IENMessage.needToken;
         return IENMessage.success;
     }   
@@ -235,8 +231,8 @@ class VerifyToken {
                 if (run.data.status != 1) return resolve(run.data.message);
 
                 const response = {
-                    phonenumber: this.phonenumber,
-                    uuid: run.data.data[0],
+                    phonenumber: run.data.data[0].phoneNumber,
+                    uuid: run.data.data[0].uuid,
                     message: IENMessage.success
                 }
                 resolve(response);

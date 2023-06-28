@@ -42,9 +42,9 @@
             <tr>
               <td>{{ list.uuid }}</td>
               <td>{{ list.phonenumber }}</td>
-              <td>{{ list.SMC }}</td>
-              <td>{{ list.EPIN }}</td>
-              <td>{{ list.counter }}</td>
+              <td>{{ list.SMC.detail.price | number }}</td>
+              <td>{{ list.EPIN.destination }}</td>
+              <td>{{ list.counter.cash.hash }}</td>
               <td>{{ list.createdAt }}</td>
               <td>
                 <a (click)="createEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>

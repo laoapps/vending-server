@@ -76,7 +76,7 @@ export class FindEPINShortCodeListProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.ownerUuid && this.machineId && this.phonenumber && this.time && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.ownerUuid && this.machineId && this.phonenumber && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -88,7 +88,7 @@ export class FindEPINShortCodeListProcess {
                     ownerUuid: this.ownerUuid,
                     machineId: this.machineId,
                     phonenumber: this.phonenumber,
-                    // time: this.time,
+                    time: this.time,
                     page: this.page,
                     limit: this.limit,
                     token: this.token
