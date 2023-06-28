@@ -14,9 +14,6 @@ export class CounterCashout_CashValidationFunc {
     private destination: string;
     private coinname: string;
     private name: string;
-    private receiver: string;
-    private cash: number;
-    private description: string;
 
     private creator: string;
     private sender: string;
@@ -93,13 +90,10 @@ export class CounterCashout_CashValidationFunc {
         this.destination = params.destination;
         this.coinname = params.coinname;
         this.name = params.name;
-        this.receiver = params.receiver;
-        this.cash = params.cash;
-        this.description = params.description;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.destination && this.coinname && this.name && this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.phonenumber && this.destination && this.coinname && this.name)) return IENMessage.parametersEmpty;
 
         return IENMessage.success;
     }

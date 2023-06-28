@@ -6,6 +6,7 @@ import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as moment from 'moment';
 import * as momenttimezone from 'moment-timezone';
 import { ReCreateEPINProcess } from '../../../processes/recreateEPIN.process';
+import { CounterCashout_CashProcess } from '../../../processes/counterCashout_cash.process';
 
 @Component({
   selector: 'app-counter',
@@ -16,6 +17,7 @@ export class CounterComponent implements OnInit {
 
   private findEPINShortCodeListProcess: FindEPINShortCodeListProcess;
   private recreateEPINProcess: ReCreateEPINProcess;
+  private counterCashout_cashProcess: CounterCashout_CashProcess;
 
   showTable: boolean = false;
   phonenumber: string;
@@ -33,6 +35,7 @@ export class CounterComponent implements OnInit {
   ) { 
     this.findEPINShortCodeListProcess = new FindEPINShortCodeListProcess(this.apiService, this.vendingAPIServgice);
     this.recreateEPINProcess = new ReCreateEPINProcess(this.apiService, this.vendingAPIServgice);
+    this.counterCashout_cashProcess = new CounterCashout_CashProcess(this.apiService, this.vendingAPIServgice);
   }
 
   ngOnInit() {}
@@ -136,10 +139,12 @@ export class CounterComponent implements OnInit {
         const params = {
           machineId: this.apiService.currentMachineId,
           phonenumber: this.phonenumber,
-          detail: data.SMC
+          destination: data.EPIN.destination,
+          coinname: data.EPIN.coinname,
+          name: data.EPIN.name
         }
 
-        const run = await this.recreateEPINProcess.Init(params);
+        const run = await this.counterCashout_cashProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         
         this.lists.filter(item => {

@@ -15,9 +15,6 @@ export class CounterCashout_CashProcess {
     private destination: string;
     private coinname: string;
     private name: string;
-    private receiver: string;
-    private cash: number;
-    private description: string;
     private token: string;
 
     private EPIN: string;
@@ -77,15 +74,12 @@ export class CounterCashout_CashProcess {
         this.destination = params.destination;
         this.coinname = params.coinname;
         this.name = params.name;
-        this.receiver = params.receiver;
-        this.cash = params.cash;
-        this.description = params.description;
         this.token = localStorage.getItem('lva_token');
 
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.destination && this.coinname && this.name && this.receiver && this.cash && this.description && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.phonenumber && this.destination && this.coinname && this.name && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -99,9 +93,6 @@ export class CounterCashout_CashProcess {
                     destination: this.destination,
                     coinname: this.coinname,
                     name: this.name,
-                    receiver: this.receiver,
-                    cash: this.cash,
-                    description: this.description,
                     token: this.token
                 }
                 
