@@ -146,7 +146,7 @@ export class CounterCashout_CashValidationFunc {
                         phonenumber: this.phonenumber,
                         SMC: {[Op.ne]: {}},
                         EPIN: {
-                            description: this.description,
+                            destination: this.destination,
                             coinname: this.coinname,
                             name: this.name
                         },
