@@ -1697,7 +1697,7 @@ export class InventoryZDM8 implements IBaseClass {
             bsi.clientId = ws["clientId"];
             bsi.createdAt = new Date();
             bsi.updatedAt = bsi.createdAt;
-            bsi.transactionID = d?.data?.transID;
+            bsi.transactionID = d.transactionID;
             bsi.uuid = uuid4();
             bsi.userUuid; // later
             bsi.id; // auto
