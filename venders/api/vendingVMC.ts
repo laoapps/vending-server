@@ -164,7 +164,7 @@ export class VendingVMC {
                     // new 50k not working
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
-                    const t = moment.now();
+                    const t = Number('-21'+moment.now());
                     that.creditPending.push({data:cryptojs.SHA256(that.sock?.machineid+'' + that.getNoteValue(b)).toString(cryptojs.enc.Hex),t:moment.now(),transactionID:t+'',command:EMACHINE_COMMAND.CREDIT_NOTE});
 
                     that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
