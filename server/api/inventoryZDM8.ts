@@ -18,6 +18,8 @@ import {
     writeMachineSetting,
     writeSucceededRecordLog,
     readMachineBalance,
+    writeACKConfirmCashIn,
+    readACKConfirmCashIn,
 } from "../services/service";
 import {
     EClientCommand,
@@ -1669,14 +1671,39 @@ export class InventoryZDM8 implements IBaseClass {
 
         // })
     }
-    creditMachine(d: IReqModel) {
+   async creditMachine(d: IReqModel) {
         const that = this;
         const x = d.token as string;
+        const ack = await readACKConfirmCashIn(d.transactionID+'');
         console.log(
             "creditMachine WS online machine",
             that.ssocket.listOnlineMachines()
         );
         let machineId = this.ssocket.findMachineIdToken(x);
+        if(ack){
+            readMachineSetting(machineId.machineId).then(async r=>{
+                let setting ={} as any
+                if(r){
+                    try {
+                        setting= JSON.parse(r);
+                    } catch (error) {
+                        console.log('error parsing setting 2',error);
+                        setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                    }
+                }
+                const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
+                const limiter = await readMachineLimiter(machineId.machineId);
+
+                that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting,confirmCredit:true,transactionID:d.transactionID})
+                ws.send(
+                    JSON.stringify(
+                        PrintSucceeded(d.command, res, EMessage.succeeded)
+                    )
+                )
+            })
+            return;
+        }
+        
 
         if (!machineId) throw new Error("machine is not exist");
         const sock = that.ssocket.findOnlneMachine(machineId.machineId);
@@ -1954,6 +1981,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
         });
     }
+
     updateBillCash(
         billCash: IBillCashIn,
         machineId: string,
@@ -2001,6 +2029,7 @@ export class InventoryZDM8 implements IBaseClass {
                             "_" +
                             mId?.machineId
                         );
+                        writeACKConfirmCashIn(billCash.transactionID+'');
                     })
                     .catch((e) => {
                         console.log("  mEnt.create", e);
