@@ -94,6 +94,8 @@ export class VendingVMC {
                         clearLogsDays();
                         that.countProcessClearLog -= 2;
                     }
+                    console.log('pending retry======= ',that.pendingRetry,'credit pending------',that.creditPending);
+                    
                     if(that.pendingRetry<=0){
                         const cp= that.creditPending[0];
                         if(cp){
@@ -389,9 +391,10 @@ export class VendingVMC {
                     this.lastupdate = moment.now();
                     if(params?.confirmCredit){
                         const transactionID = params.transactionID;
-                        const ti=this.creditPending.findIndex(v=>v.transactionID==transactionID);
-                        if(ti!=-1){
-                            this.creditPending.splice(ti,1);
+                        if(this.creditPending.find(v=>v.transactionID==transactionID)){
+                            console.log('RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING',params);
+                            
+                            this.creditPending=this.creditPending.filter(v=>v.transactionID!=transactionID);
                         }
                     }
                     if (this.balance < this.limiter) {
