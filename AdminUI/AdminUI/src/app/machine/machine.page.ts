@@ -67,7 +67,12 @@ export class MachinePage implements OnInit {
     const setting = this.settings[m];
     const o = this._l.find(v=>v.machineId==m);
     const oldData = JSON.stringify(o.data);
-    o.data=setting;
+    o.data=[setting];
+    console.log('setting',o);
+    console.log('setting',o.data);
+    console.log('this.setting',this.settings);
+    
+    
     this.apiService.updateMachineSetting(o,o.id).subscribe(rx=>{
       console.log(rx);
       if (!rx.status) {

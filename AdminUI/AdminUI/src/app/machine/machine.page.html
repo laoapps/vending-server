@@ -80,7 +80,7 @@
                     <td>{{p.machineId}}</td>
                     <td>{{p.otp}}</td>
                     <td>{{p.updatedAt|date:'yy-MM-dd HH:mm:ss':'offsettz||420'}}</td>
-                    <td><ion-toggle  [(ngModel)]="p.isActive" (click)="disable(p.id)" ></ion-toggle></td>
+                    <td><ion-toggle  [(ngModel)]="p.isActive" (ngModelChange)="disable(p.id)" ></ion-toggle></td>
                     <td>
                       <button (click)="machineWallet(p.id)" class="btn btn-light border border-1 "><i class="fa-solid fa-wallet"></i> Machine Wallet</button>
                       <button (click)="edit(p.id)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Edit</button>

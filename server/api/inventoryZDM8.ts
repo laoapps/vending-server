@@ -952,9 +952,11 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
                         const isActive =
-                            req.query["isActive"] == ""
-                                ? null
-                                : Boolean(req.query["isActive"]);
+                        req.query["isActive"]+'' =='no'
+                                ? false
+                                : true;
+                        console.log('req.query["isActive"]', !req.query["isActive"],req.query["isActive"],isActive,);
+                        
                         const sEnt = StockFactory(
                             EEntity.product + "_" + ownerUuid,
                             dbConnection
@@ -967,7 +969,10 @@ export class InventoryZDM8 implements IBaseClass {
                                     return res.send(
                                         PrintError("disableProduct", [], EMessage.error)
                                     );
-                                if (isActive != null) r.isActive = isActive;
+                                console.log('disableproduct',r);
+                                
+                                r.isActive = isActive;
+                                console.log('disableproduct',r);
                                 r.changed("isActive", true);
                                 res.send(
                                     PrintSucceeded(
@@ -1121,10 +1126,9 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
-                        const isActive =
-                            req.query["isActive"] == ""
-                                ? null
-                                : Boolean(req.query["isActive"]);
+                        const isActive =req.query["isActive"]+'' =='no'
+                        ? false
+                        : true;
                         const sEnt = VendingMachineSaleFactory(
                             EEntity.vendingmachinesale + "_" + ownerUuid,
                             dbConnection
@@ -1137,7 +1141,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     return res.send(
                                         PrintError("disableSale", [], EMessage.error)
                                     );
-                                if (isActive != null) r.isActive = isActive;
+                                 r.isActive = isActive;
                                 r.changed("isActive", true);
                                 res.send(
                                     PrintSucceeded(
@@ -1394,6 +1398,8 @@ export class InventoryZDM8 implements IBaseClass {
                         const id = req.query["id"] + "";
 
                         const o = req.body.data as IMachineClientID;
+                        console.log('OOOOOO',o);
+                        
                         this.machineClientlist
                             .findOne({ where: { ownerUuid, id } })
                             .then(async (r) => {
@@ -1450,7 +1456,9 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
-                        const isActive = Boolean(req.query["isActive"]);
+                        const isActive = req.query["isActive"]+'' =='no'
+                        ? false
+                        : true;
                         const id = req.query["id"] + "";
                         this.machineClientlist
                             .findOne({ where: { ownerUuid, id } })
@@ -2583,7 +2591,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     
                                     mymlimiterbalance=(await readMerchantLimiterBalance(ws['ownerUuid']))||'0';
                                    
-                                    for (let index = 0; index < mArray.length; index++) {
+                                    for (let index = 0; index < mArray?.length; index++) {
                                         const element = mArray[index];
 
                                         mymstatus.push(await readMachineStatus(element));
