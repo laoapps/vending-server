@@ -32,21 +32,21 @@ export class CounterCashout_CashValidationFunc {
             this.transaction = await dbConnection.transaction();
             try {
 
-                console.log(`transfer validation`, 1);
+                console.log(`counter cash out cash validation`, 1);
 
                 this.InitParams(params);
 
-                console.log(`transfer validation`, 2);
+                console.log(`counter cash out cash validation`, 2);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`transfer validation`, 3);
+                console.log(`counter cash out cash validation`, 3);
 
                 const FindVendingWallet = await this.FindVendingWallet();
                 if (FindVendingWallet != IENMessage.success) throw new Error(FindVendingWallet);
 
-                console.log(`transfer validation`, 4);
+                console.log(`counter cash out cash validation`, 4);
 
                 const FindMerchant = await this.FindMerchant();
                 if (FindMerchant != IENMessage.success) throw new Error(FindMerchant);
@@ -54,24 +54,24 @@ export class CounterCashout_CashValidationFunc {
                 const FindEPINShortCode = await this.FindEPINShortCode();
                 if (FindEPINShortCode != IENMessage.success) throw new Error(FindEPINShortCode);
 
-                console.log(`transfer validation`, 5);
+                console.log(`counter cash out cash validation`, 5);
 
                 const FindEPIN = await this.FindEPIN();
                 if (FindEPIN != IENMessage.success) throw new Error(FindEPIN);
 
-                console.log(`transfer validation`, 6);
+                console.log(`counter cash out cash validation`, 6);
 
                 const ScanEPIN = await this.ScanEPIN();
                 if (ScanEPIN != IENMessage.success) throw new Error(ScanEPIN);
 
-                console.log(`transfer validation`, 7);
+                console.log(`counter cash out cash validation`, 7);
 
                 const UpdateEPINShortCode = await this.UpdateEPINShortCode();
                 if (UpdateEPINShortCode != IENMessage.success) throw new Error(UpdateEPINShortCode);
 
-                console.log(`transfer validation`, 8);
+                console.log(`counter cash out cash validation`, 8);
 
-                console.log(`transfer validation`, 9);
+                console.log(`counter cash out cash validation`, 9);
 
                 await this.transaction.commit();
                 resolve(this.response);

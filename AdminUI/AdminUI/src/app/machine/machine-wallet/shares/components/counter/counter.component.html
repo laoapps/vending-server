@@ -48,7 +48,7 @@
               <td>{{ list.createdAt }}</td>
               <td>
                 <a  *ngIf="list.EPIN.destination == ''" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
-                <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-money-bill-wave"></i> Cash</a>
+                <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-money-bill-wave"></i> Cash Out</a>
               </td>
             </tr>
           </tbody>
