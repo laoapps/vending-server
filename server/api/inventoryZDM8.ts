@@ -1680,6 +1680,8 @@ export class InventoryZDM8 implements IBaseClass {
             that.ssocket.listOnlineMachines()
         );
         let machineId = this.ssocket.findMachineIdToken(x);
+        console.log('FOUND ACK EXIST TRANSACTIONID',ack,d.transactionID);
+        
         if(ack){
             readMachineSetting(machineId.machineId).then(async r=>{
                 let setting ={} as any
@@ -1774,6 +1776,9 @@ export class InventoryZDM8 implements IBaseClass {
             func
                 .Init(params)
                 .then((run) => {
+                    console.log('RECORD THIS TRANSACTIION AS IT has been doen');
+                    
+                    writeACKConfirmCashIn(d.transactionID+'');
                     console.log(`response cash in validation`, run);
                     if (run.message != IENMessage.success) throw new Error(run);
                     bsi.bankNotes.push(bn);
@@ -1989,6 +1994,7 @@ export class InventoryZDM8 implements IBaseClass {
         provider = ""
     ) {
         try {
+          
             const bEnt: BillCashInStatic = BillCashInFactory(
                 EEntity.billcash + "_" + this.production,
                 dbConnection
@@ -2029,7 +2035,6 @@ export class InventoryZDM8 implements IBaseClass {
                             "_" +
                             mId?.machineId
                         );
-                        writeACKConfirmCashIn(billCash.transactionID+'');
                     })
                     .catch((e) => {
                         console.log("  mEnt.create", e);
