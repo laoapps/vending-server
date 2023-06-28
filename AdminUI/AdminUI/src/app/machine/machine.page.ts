@@ -68,6 +68,7 @@ export class MachinePage implements OnInit {
     const o = this._l.find(v=>v.machineId==m);
     const oldData = JSON.stringify(o.data);
     o.data=[setting];
+    console.log('setting',o);
     console.log('setting',o.data);
     console.log('this.setting',this.settings);
     
