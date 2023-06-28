@@ -391,9 +391,9 @@ export class VendingVMC {
                     this.lastupdate = moment.now();
                     if(params?.confirmCredit){
                         const transactionID = params.transactionID;
+                        console.log('RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING',params);
                         if(this.creditPending.find(v=>v.transactionID==transactionID)){
-                            console.log('RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING',params);
-                            
+                           
                             this.creditPending=this.creditPending.filter(v=>v.transactionID!=transactionID);
                         }
                     }
