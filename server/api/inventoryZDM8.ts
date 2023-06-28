@@ -1768,7 +1768,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
                         const limiter = await readMachineLimiter(machineId.machineId);
 
-                        that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting})
+                        that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting,confirmCredit:true,transactionID:bsi.transactionID})
                         ws.send(
                             JSON.stringify(
                                 PrintSucceeded(d.command, res, EMessage.succeeded)
