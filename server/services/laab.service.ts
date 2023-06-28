@@ -203,7 +203,6 @@ class VerifyToken {
         
         this.token = params.token;
     }
-
     private ValidateParams(): string {
         if (!(this.token)) return IENMessage.needToken;
         return IENMessage.success;

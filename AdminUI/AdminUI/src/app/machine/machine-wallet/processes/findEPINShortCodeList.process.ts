@@ -10,7 +10,6 @@ export class FindEPINShortCodeListProcess {
     private apiService: ApiService;
     private vendingAPIServgice: VendingAPIService;
 
-    private ownerUuid: string;
     private machineId: string;
     private phonenumber: string;
     private time: string;
@@ -33,26 +32,26 @@ export class FindEPINShortCodeListProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                console.log(`merchant coin transfer`, 1);
+                console.log(`find epin short code list`, 1);
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
-                console.log(`merchant coin transfer`, 2);
+                console.log(`find epin short code list`, 2);
 
                 this.InitParams(params);
 
-                console.log(`merchant coin transfer`, 3);
+                console.log(`find epin short code list`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`merchant coin transfer`, 4);
+                console.log(`find epin short code list`, 4);
 
                 const ShowReport = await this.ShowReport();
                 if (ShowReport != IENMessage.success) throw new Error(ShowReport);
 
-                console.log(`merchant coin transfer`, 5);
+                console.log(`find epin short code list`, 5);
 
                 (await this.workload).dismiss();
                 resolve(this.Commit());
@@ -66,7 +65,6 @@ export class FindEPINShortCodeListProcess {
     }
 
     private InitParams(params: any): void {
-        this.ownerUuid = params.ownerUuid;
         this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
         this.time = params.time;
@@ -76,7 +74,7 @@ export class FindEPINShortCodeListProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.ownerUuid && this.machineId && this.phonenumber && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.phonenumber && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -85,7 +83,6 @@ export class FindEPINShortCodeListProcess {
             try {
 
                 const params = {
-                    ownerUuid: this.ownerUuid,
                     machineId: this.machineId,
                     phonenumber: this.phonenumber,
                     time: this.time,
