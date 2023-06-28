@@ -174,7 +174,7 @@ export interface VENDING_FindEPINShortCodeList extends IBase {
     page: number,
     limit: number
 }
-export interface VENDING_CreateEPIN extends IBase {
+export interface VENDING_ReCreateEPIN extends IBase {
     machineId: string,
     phonenumber: string,
     detail: any,

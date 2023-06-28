@@ -3,7 +3,7 @@ import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
-export class CreateEPINProcess {
+export class ReCreateEPINProcess {
 
     private workload: any = {} as any;
 
@@ -90,7 +90,7 @@ export class CreateEPINProcess {
                     token: this.token
                 }
                 
-                this.vendingAPIService.createEPIN(params).subscribe(r => {
+                this.vendingAPIService.recreateEPIN(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response create epin`, response);
                     if (response.status != 1) return resolve(response.message);

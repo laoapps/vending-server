@@ -5,7 +5,7 @@ import { FindEPINShortCodeListProcess } from '../../../processes/findEPINShortCo
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as moment from 'moment';
 import * as momenttimezone from 'moment-timezone';
-import { CreateEPINProcess } from '../../../processes/createEPIN.process';
+import { ReCreateEPINProcess } from '../../../processes/recreateEPIN.process';
 
 @Component({
   selector: 'app-counter',
@@ -15,7 +15,7 @@ import { CreateEPINProcess } from '../../../processes/createEPIN.process';
 export class CounterComponent implements OnInit {
 
   private findEPINShortCodeListProcess: FindEPINShortCodeListProcess;
-  private createEPINProcess: CreateEPINProcess;
+  private recreateEPINProcess: ReCreateEPINProcess;
 
   showTable: boolean = false;
   phonenumber: string;
@@ -32,7 +32,7 @@ export class CounterComponent implements OnInit {
     private vendingAPIServgice: VendingAPIService
   ) { 
     this.findEPINShortCodeListProcess = new FindEPINShortCodeListProcess(this.apiService, this.vendingAPIServgice);
-    this.createEPINProcess = new CreateEPINProcess(this.apiService, this.vendingAPIServgice);
+    this.recreateEPINProcess = new ReCreateEPINProcess(this.apiService, this.vendingAPIServgice);
   }
 
   ngOnInit() {}
@@ -116,7 +116,7 @@ export class CounterComponent implements OnInit {
           detail: data.SMC
         }
 
-        const run = await this.createEPINProcess.Init(params);
+        const run = await this.recreateEPINProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         
         this.lists.filter(item => {
@@ -143,7 +143,7 @@ export class CounterComponent implements OnInit {
           detail: data.SMC
         }
 
-        const run = await this.createEPINProcess.Init(params);
+        const run = await this.recreateEPINProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         
         this.lists.filter(item => {

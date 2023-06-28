@@ -12,7 +12,12 @@ export class CounterCashout_CashProcess {
     
     private machineId: string;
     private phonenumber: string;
-    private detail: any = {} as any;
+    private destination: string;
+    private coinname: string;
+    private name: string;
+    private receiver: string;
+    private cash: number;
+    private description: string;
     private token: string;
 
     private EPIN: string;
@@ -69,13 +74,18 @@ export class CounterCashout_CashProcess {
     private InitParams(params: any): void {
         this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
-        this.detail = params.detail;
+        this.destination = params.destination;
+        this.coinname = params.coinname;
+        this.name = params.name;
+        this.receiver = params.receiver;
+        this.cash = params.cash;
+        this.description = params.description;
         this.token = localStorage.getItem('lva_token');
 
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.detail && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.phonenumber && this.destination && this.coinname && this.name && this.receiver && this.cash && this.description && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -86,13 +96,18 @@ export class CounterCashout_CashProcess {
                 const params = {
                     machineId: this.machineId,
                     phonenumber: this.phonenumber,
-                    detail: this.detail,
+                    destination: this.destination,
+                    coinname: this.coinname,
+                    name: this.name,
+                    receiver: this.receiver,
+                    cash: this.cash,
+                    description: this.description,
                     token: this.token
                 }
                 
                 this.vendingAPIService.counterCashout_cash(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response create epin`, response);
+                    console.log(`response counter cashout cash`, response);
                     if (response.status != 1) return resolve(response.message);
                     this.EPIN = response.info.EPIN;
                     resolve(IENMessage.success);
