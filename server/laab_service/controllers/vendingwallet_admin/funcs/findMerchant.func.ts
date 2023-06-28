@@ -55,6 +55,7 @@ export class FindMerchantFunc {
     }
 
     private InitParams(params: any) {
+        console.log(`owner uuid der ni`, params.ownerUuid);
         this.ownerUuid = params.ownerUuid;
         this.walletType = IVendingWalletType.merchant;
     }

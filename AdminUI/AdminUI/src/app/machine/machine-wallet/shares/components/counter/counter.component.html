@@ -47,7 +47,7 @@
               <td>{{ list.counter.cash.hash }}</td>
               <td>{{ list.createdAt }}</td>
               <td>
-                <a (click)="createEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
+                <a (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
                 <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-money-bill-wave"></i> Cash</a>
               </td>
             </tr>

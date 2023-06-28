@@ -54,11 +54,8 @@ export class CounterComponent implements OnInit {
         console.log(`time`, this.time);
 
         if (!(this.phonenumber)) throw new Error(IENMessage.pleaseEnterPhonenumber);
-
-        // this.showTable = true;
         
         const params = {
-          ownerUuid: this.apiService.ownerUuid,
           machineId: this.apiService.currentMachineId,
           phonenumber: this.phonenumber,
           time: this.time || '',
@@ -105,14 +102,14 @@ export class CounterComponent implements OnInit {
     });
   }
 
-  createEPIN(data: any): Promise<any> {
+  recreateEPIN(data: any): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
         const params = {
           machineId: this.apiService.currentMachineId,
           phonenumber: this.phonenumber,
-          detail: data.SMC
+          detail: data.SMC.detail
         }
 
         const run = await this.recreateEPINProcess.Init(params);
