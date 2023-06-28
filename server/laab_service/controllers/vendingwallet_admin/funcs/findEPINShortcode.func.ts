@@ -55,7 +55,7 @@ export class FindEPINShortCodeFunc {
     private InitParams(params: any) {
         this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
-        // this.time = params.time;
+        this.time = params.time;
         this.page = params.page;
         this.limit = params.limit;
     }
@@ -85,32 +85,32 @@ export class FindEPINShortCodeFunc {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                // let condition: any = {} as any;
-                // if (this.time)
-                // {
-                //     condition = {
-                //         where: {
-                //             phonenumber: this.phonenumber,
-                //             createdAt: {[Op.like]: `%${this.time}%`+''},
-                //         },
-                //         limit: this.limit,
-                //         offset: this.offset,
-                //         order: [[ 'id', 'DESC' ]]
-                //     }
-                // }
-                // else 
-                // {
-                //     condition = {
-                //         where: {
-                //             phonenumber: this.phonenumber
-                //         },
-                //         limit: this.limit,
-                //         offset: this.offset,
-                //         order: [[ 'id', 'DESC' ]]
-                //     }
-                // }
+                let condition: any = {} as any;
+                if (this.time)
+                {
+                    condition = {
+                        where: {
+                            phonenumber: this.phonenumber,
+                            createdAt: {[Op.like]: `%${this.time}%`+''},
+                        },
+                        limit: this.limit,
+                        offset: this.offset,
+                        order: [[ 'id', 'DESC' ]]
+                    }
+                }
+                else 
+                {
+                    condition = {
+                        where: {
+                            phonenumber: this.phonenumber
+                        },
+                        limit: this.limit,
+                        offset: this.offset,
+                        order: [[ 'id', 'DESC' ]]
+                    }
+                }
                
-                const run = await epinshortcodeEntity.findAndCountAll({ where: { phonenumber: this.phonenumber }, limit: this.limit, offset: this.offset, order: [[ 'id', 'DESC' ]] });
+                const run = await epinshortcodeEntity.findAndCountAll(condition);
                 console.log(`response query`, run.rows);
                 if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
                
