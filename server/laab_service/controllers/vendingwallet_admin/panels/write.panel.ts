@@ -7,6 +7,7 @@ import { CreateVendingWalletFunc } from "../funcs/createVendingWallet.func";
 import { CreateVendingWalletCoinFunc } from "../funcs/createVendingWalletCoin.func";
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
 import { CounterCashout_CashValidationFunc } from "../funcs/countercashout_cashValidation.func";
+import { ReCreateEPINFunc } from "../funcs/recreateEPIN.func";
 
 export class WritePanel {
     
@@ -151,6 +152,26 @@ export class WritePanel {
             message([], error.message, IStatus.unsuccess, res);
         }
     }
+    public ReCreateEPIN(req: Request, res: Response) {
+        try {
+
+            const data = req.body;
+            this.queues.QReCreateEPIN.add({ data }).then(job => {
+                console.log(`here`);
+                job.finished().then(run => {
+                    if (run.message != IENMessage.success) {
+                        message([], run, IStatus.unsuccess, res);
+                    } else {
+                        delete run.message;
+                        message(run, IENMessage.success, IStatus.success, res);
+                    }
+                });
+            });
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
 
 
 
@@ -250,6 +271,20 @@ export class WritePanel {
             try {
                 
                 const func = new CounterCashout_CashValidationFunc();
+                const run = await func.Init(params);
+                resolve(run);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    public _ReCreateEPIN(params: any): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const func = new ReCreateEPINFunc();
                 const run = await func.Init(params);
                 resolve(run);
 

@@ -47,8 +47,8 @@
               <td>{{ list.counter }}</td>
               <td>{{ list.createdAt }}</td>
               <td>
-                <a href="javascript:void(0)" class="btn-epin-generate"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
-                <a href="javascript:void(0)" class="btn-epin-generate"><i class="fa-solid fa-money-bill-wave"></i> Cash</a>
+                <a (click)="createEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
+                <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-money-bill-wave"></i> Cash</a>
               </td>
             </tr>
           </tbody>

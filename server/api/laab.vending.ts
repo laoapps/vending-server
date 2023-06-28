@@ -23,6 +23,7 @@ export let QCreateVendingWalletCoin = new Queue('QCreateVendingWalletCoin', { de
 export let QPaidValidation = new Queue('QPaidValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateSMC = new Queue('QCreateSMC', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateEPIN = new Queue('QCreateEPIN', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QReCreateEPIN = new Queue('QReCreateEPIN', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCounterCashout_CashValidation = new Queue('QCounterCashout_CashValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
 
@@ -38,16 +39,17 @@ export class LaabVendingAPI {
         QCreateVendingLimiterCoin: QCreateVendingLimiterCoin,
         QCreateVendingWallet: QCreateVendingWallet,
         QCreateVendingWalletCoin: QCreateVendingWalletCoin,
-        QCreateSMC: QCreateSMC,
-        QCreateEPIN: QCreateEPIN,
-        QCounterCashout_CashValidation: QCounterCashout_CashValidation
+        QCounterCashout_CashValidation: QCounterCashout_CashValidation,
+        QReCreateEPIN: QReCreateEPIN,
+
     }
     private adminReadPanel: AdminReadPanel;
     private adminWritePanel: AdminWritePanel;
 
     private clientQueues: any = {
         QPaidValidation: QPaidValidation,
-
+        QCreateEPIN: QCreateEPIN,
+        QCreateSMC: QCreateSMC,
     }
     private clientReadPanel: ClientReadPanel;
     private clientWritePanel: ClientWritePanel;
@@ -108,6 +110,7 @@ export class LaabVendingAPI {
         router.post('/laab/admin/find_epinshortcode',   APIAdminAccess, this.adminReadPanel.FindEPINShortCode.bind(this.adminReadPanel));
         router.post('/laab/admin/show_epinshortcode',   APIAdminAccess, this.adminReadPanel.ShowEPINShortCode.bind(this.adminReadPanel));
         router.post('/laab/admin/counter_cashout_cash_validation', APIAdminAccess, this.adminWritePanel.CounterCashout_CashValidation.bind(this.adminWritePanel));
+        router.post('/laab/admin/recreate_epin', APIAdminAccess, this.adminWritePanel.ReCreateEPIN.bind(this.adminWritePanel));
 
 
 
@@ -175,6 +178,13 @@ export class LaabVendingAPI {
             const d = job.data;
             const data = d.data;
             this.adminWritePanel._CounterCashout_CashValidation(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QReCreateEPIN.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.adminWritePanel._ReCreateEPIN(data).then(r => {
                 done(null, r);
             }).catch(error => done(error, null));
         });
