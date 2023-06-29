@@ -27,12 +27,11 @@ export class SocketServerZDM8 {
 
     constructor(ports: number) {
         try {
-            this.sclients = Array<tls.TLSSocket>();
             // this.ports = this.ports || ports;
             this.machineIds = new Array<IMachineClientID>();
             //creates the server
         // emitted when new client connects
-                    const that = this;
+            const that = this;
 
             //emitted when server closes ...not emitted until all connections closes.
             this.server= tls.createServer({
@@ -44,13 +43,22 @@ export class SocketServerZDM8 {
             .on('close', function () {
                 console.log('Server closed !');
             })
-            .on('connection', () => {
-                console.log('insecure connection');
-              })
+            // .on('connection', () => {
+            //     console.log('insecure connection');
+            //   })
             .on('secureConnection', function (socket) {
                 //this property shows the number of characters currently buffered to be written. (Number of characters is approximately equal to the number of bytes to be written, but the buffer may contain strings, and the strings are lazily encoded, so the exact number of bytes is not known.)
                 //Users who experience large or growing bufferSize should attempt to "throttle" the data flows in their program with pause() and resume().
-
+                socket.setEncoding('utf8');
+                socket.setKeepAlive(true);
+                socket.setTimeout(30000, function () {
+                    // called after timeout -> same as socket.on('timeout')
+                    // it just tells that soket timed out => its ur job to end or destroy the socket.
+                    // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
+                    // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
+                    console.log('Socket timed out');
+                    socket.end();
+                });
                 console.log('Buffer size : ' + socket.bufferSize);
 
                 console.log('---------server details -----------------',socket.authorized);
@@ -83,18 +91,6 @@ export class SocketServerZDM8 {
                 that.server.getConnections(function (error, count) {
                     console.log('Number of concurrent connections to the server : ' + count);
                 });
-
-                socket.setEncoding('utf8');
-                socket.setKeepAlive(true);
-                socket.setTimeout(30000, function () {
-                    // called after timeout -> same as socket.on('timeout')
-                    // it just tells that soket timed out => its ur job to end or destroy the socket.
-                    // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
-                    // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
-                    console.log('Socket timed out');
-                    socket.end();
-                });
-
 
                 socket.on('data', function (data) {
                     try {

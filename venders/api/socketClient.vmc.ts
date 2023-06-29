@@ -126,7 +126,7 @@ export class SocketClientVMC {
             clearInterval(this.t);
             this.t = null;
         }
-        this.client.on('connect', function () {
+        this.client.on('secureConnect', function () {
             // console.log('Client: connection established with server');
 
             // console.log('---------client details -----------------');
@@ -142,7 +142,7 @@ export class SocketClientVMC {
             if (that.client?.authorized) {
                 console.log("Connection authorized by a Certificate Authority.");
                 // writing data to server
-            that.client?.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
+                that.client?.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
                 } else {
                 console.log("Connection not authorized: " + that.client?.authorizationError)
                 }
