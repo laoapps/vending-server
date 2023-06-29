@@ -11,6 +11,7 @@ import axios from 'axios';
 import tls from 'tls';
 import fs from 'fs';
 import constants from 'constants';
+/// VMC SOCKET CLIENT AS THE FIRST RELEASE
 export class SocketClientVMC {
     //---------------------client----------------------
 
