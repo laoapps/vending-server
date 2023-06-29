@@ -154,6 +154,24 @@ export function writeLogs(m, position,name='g_') {
     console.log('m',m);
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
+export function writeCreditRecord(m, transactionID:string,name='credit_') {
+    // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = process.env._log_path||process.cwd() + `/${name}_.json`;
+    console.log('m',m);
+    fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+}
+export function readCreditRecord(name='credit_') {
+    // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = process.env._log_path||process.cwd() + `/${name}_.json`;
+
+    return fs.readFileSync(logs).toString();
+}
+export function writeCreditLogs(m, transactionID:string,name='credit_logs') {
+    const da = moment().year() + '_' + moment().month() + '_' + moment().date();
+    const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
+    console.log('m',m);
+    fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+}
 export function clearLogsDays(name='g_',duration=15){
     try {
         const hist= moment().subtract(duration,'days');
@@ -172,6 +190,7 @@ export function clearLogsDays(name='g_',duration=15){
         
     }
 }
+
 export function loadLogsDays(name='g_',duration=15){
     try {
         const hist= moment().subtract(duration,'days');

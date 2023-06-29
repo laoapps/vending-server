@@ -8,11 +8,18 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import axios from 'axios';
+import tls from 'tls';
+import fs from 'fs';
 export class SocketClientVMC {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
+    options = {
+        key: process.env.privateKeys,
+        cert: process.env.publicKeys,
+        rejectUnauthorized: false
+    };
     port = 51223;
     host = 'laoapps.com';
     machineid = '11111111';
@@ -105,10 +112,10 @@ export class SocketClientVMC {
     }
     init() {
         const that = this;
-        this.client.connect({
-            port: this.port,
-            host: this.host
-        });
+        this.client = tls.connect(
+            this.port,
+            this.host,this.options
+        );
         if (this.t) {
             clearInterval(this.t);
             this.t = null;

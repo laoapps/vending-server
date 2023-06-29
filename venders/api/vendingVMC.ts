@@ -5,12 +5,13 @@ import { EMACHINE_COMMAND, EMessage, EVMC_COMMAND, EZDM8_COMMAND, IReqModel, IRe
 import { SerialPort } from 'serialport'
 
 
-import { broadCast, chk8xor, clearLogsDays, initWs, int2hex, loadLogsDays, PrintError, PrintSucceeded, writeErrorLogs, writeLogs, wsSendToClient } from '../services/service';
+import { broadCast, chk8xor, clearLogsDays, initWs, int2hex, loadLogsDays, PrintError, PrintSucceeded, readCreditRecord, writeCreditRecord, writeErrorLogs, writeLogs, wsSendToClient } from '../services/service';
 import xor from 'buffer-xor'
 import { SocketClientVMC } from './socketClient.vmc';
 import { resolve } from 'path';
 import moment, { duration } from 'moment';
-import cryptojs from 'crypto-js'
+import cryptojs from 'crypto-js';
+import tls from 'tls';
 export class VendingVMC {
 
     // port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
@@ -41,8 +42,10 @@ export class VendingVMC {
                 return console.log('Error: ', err.message)
             }
             console.log(`port ${that.path} accessed`);
-            that.sycnVMC();
+            try {
+                 that.sycnVMC();
             that.setPoll(10);
+           
             setTimeout(() => {
                 console.log('INITIALIZE.............................................................!');
                 console.log('INIT 51');
@@ -75,8 +78,14 @@ export class VendingVMC {
                 // console.log('INIT disable');
                 // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
             }, 2000);
+            that.creditPending=JSON.parse(readCreditRecord())
+            } catch (error) {
+                console.log('ERROR',error);
+                
+            }
+           
             var b = '';
-
+            
             setTimeout(() => {
                 setInterval(() => {
                     try {
@@ -169,7 +178,7 @@ export class VendingVMC {
                     // new 100k not working
                     const t = Number('-21' + moment.now());
                     that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
-
+                    writeCreditRecord(that.creditPending,t+'');
                     that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
 
 
@@ -371,6 +380,7 @@ export class VendingVMC {
                         if (this.creditPending.find(v => v.transactionID == transactionID)) {
 
                             this.creditPending = this.creditPending.filter(v => v.transactionID != transactionID);
+                            writeCreditRecord(this.creditPending,transactionID)
                         }
                     }
                     if (this.balance < this.limiter) {

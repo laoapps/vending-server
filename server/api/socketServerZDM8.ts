@@ -9,10 +9,15 @@ import { dbConnection } from '../entities';
 import { BillCashInStatic, BillCashInFactory } from '../entities/billcash.entity';
 import { MachineIDStatic, MachineIDFactory } from '../entities/machineid.entity';
 import { IENMessage } from '../services/laab.service';
-
+import tls from 'tls';
+import fs from 'fs';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
-    server = net.createServer();
+     options = {
+        key: fs.readFileSync(process.env.privateKeys),
+        cert: fs.readFileSync(process.env.publicKeys)
+    };
+    server = tls.createServer(this.options);
     sclients = Array<net.Socket>();
     ports = 31223;
 

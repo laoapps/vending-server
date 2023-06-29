@@ -501,7 +501,8 @@ export enum EMACHINE_COMMAND {
     stop = "stop",
     setcounter = "setcounter",
     restart = "restart",
-    logs = "logs"
+    logs = "logs",
+    confirmOrder = "confirmOrder"
 }
 export interface IResModel {
     transactionID:number;

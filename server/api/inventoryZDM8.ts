@@ -113,6 +113,15 @@ export class InventoryZDM8 implements IBaseClass {
         EEntity.machineclientid,
         dbConnection
     );
+    billCashEnt: BillCashInStatic = BillCashInFactory(
+        EEntity.billcash + "_" + this.production,
+        dbConnection
+    );
+    badBillCashEnt: BillCashInStatic = BillCashInFactory(
+        EEntity.badbillcash + "_" + this.production,
+        dbConnection
+    );
+    
     checkMachineIdToken(req: Request, res: Response, next: NextFunction) {
         const { token } = req.body;
         res.locals["machineId"] = this.ssocket.findMachineIdToken(token);
@@ -219,6 +228,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
 
     constructor(router: Router, wss: WebSocketServer.Server) {
+        this.billCashEnt.sync();
         this.initBankNotes();
 
         this.ssocket = new SocketServerZDM8(this.ports);
@@ -1689,29 +1699,55 @@ export class InventoryZDM8 implements IBaseClass {
         );
         
         console.log('FOUND ACK EXIST TRANSACTIONID',ack,d.transactionID);
-        
+
+        const bsi = {} as IBillCashIn;
+        bsi.clientId = ws["clientId"];
+        bsi.createdAt = new Date();
+        bsi.updatedAt = bsi.createdAt;
+        bsi.transactionID = d.transactionID;
+        bsi.uuid = uuid4();
+        bsi.userUuid; // later
+        bsi.id; // auto
+
+        bsi.isActive = true;
+
+        bsi.badBankNotes = []; // update from machine
+        bsi.bankNotes = []; // update from machine
+
+        bsi.confirm; // update when cash has come
+        bsi.confirmTime; // update when cash has come
+
+        bsi.requestTime = new Date();
+        // bsi.requestor = requestor;
+        bsi.machineId = machineId.machineId;
+        if(!ack){
+            const r =await this.loadBillCash(machineId.machineId,d.transactionID)
+            if(r?.length)
+            writeACKConfirmCashIn(d.transactionID+'');
+        }
         if(ack){
             
-            readMachineSetting(machineId.machineId).then(async r=>{
-                let setting ={} as any
-                if(r){
-                    try {
-                        setting= JSON.parse(r);
-                    } catch (error) {
-                        console.log('error parsing setting 2',error);
-                        setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                readMachineSetting(machineId.machineId).then(async r=>{
+                    let setting ={} as any
+                    if(r){
+                        try {
+                            setting= JSON.parse(r);
+                        } catch (error) {
+                            console.log('error parsing setting 2',error);
+                            setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                        }
                     }
-                }
-                const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
-                const limiter = await readMachineLimiter(machineId.machineId);
-
-                that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting,confirmCredit:true,transactionID:d.transactionID})
-                ws.send(
-                    JSON.stringify(
-                        PrintSucceeded(d.command, res, EMessage.succeeded)
+                    const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
+                    const limiter = await readMachineLimiter(machineId.machineId);
+                    this.updateBillCash(bsi,machineId.machineId,d.transactionID);
+                    that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting,confirmCredit:true,transactionID:d.transactionID})
+                    ws.send(
+                        JSON.stringify(
+                            PrintSucceeded(d.command, res, EMessage.succeeded)
+                        )
                     )
-                )
-            })
+                })
+           
             return;
         }else{
             if (!machineId) throw new Error("machine is not exist");
@@ -1723,26 +1759,7 @@ export class InventoryZDM8 implements IBaseClass {
     
             
             if (d.token) {
-                const bsi = {} as IBillCashIn;
-                bsi.clientId = ws["clientId"];
-                bsi.createdAt = new Date();
-                bsi.updatedAt = bsi.createdAt;
-                bsi.transactionID = d.transactionID;
-                bsi.uuid = uuid4();
-                bsi.userUuid; // later
-                bsi.id; // auto
-    
-                bsi.isActive = true;
-    
-                bsi.badBankNotes = []; // update from machine
-                bsi.bankNotes = []; // update from machine
-    
-                bsi.confirm; // update when cash has come
-                bsi.confirmTime; // update when cash has come
-    
-                bsi.requestTime = new Date();
-                // bsi.requestor = requestor;
-                bsi.machineId = machineId.machineId;
+               
     
                 console.log("billCashIn", res.data);
     
@@ -1991,7 +2008,46 @@ export class InventoryZDM8 implements IBaseClass {
             });
         });
     }
-
+    loadBillCash(
+        machineId: string,
+        transactionID: number,
+    ) {
+        return new Promise<Array<IBillCashIn>>((resolve,reject)=>{
+            try {
+               
+                this.billCashEnt.findAll({where:{transactionID,machineId}}).then(r=>{
+                    resolve(r)
+                   }).catch(e=>{
+                    console.log(e);
+                    
+                   });
+                
+            } catch (error) {
+                console.log("Error update badbillcash",error);
+            }
+        })
+       
+    }
+    loadBadBillCash(
+        machineId: string,
+        transactionID: number,
+    ) {
+        return new Promise<Array<IBillCashIn>>((resolve,reject)=>{
+            try {
+               
+                this.badBillCashEnt.findAll({where:{transactionID,machineId}}).then(r=>{
+                    resolve(r)
+                   }).catch(e=>{
+                    console.log(e);
+                    
+                   });
+                
+            } catch (error) {
+                console.log("Error load badbillcash",error);
+            }
+        })
+       
+    }
     updateBillCash(
         billCash: IBillCashIn,
         machineId: string,
@@ -2000,12 +2056,7 @@ export class InventoryZDM8 implements IBaseClass {
     ) {
         try {
           
-            const bEnt: BillCashInStatic = BillCashInFactory(
-                EEntity.billcash + "_" + this.production,
-                dbConnection
-            );
-            bEnt.sync().then((r) => {
-                bEnt.create(billCash).then((rx) => {
+                this.billCashEnt.create(billCash).then((rx) => {
                     console.log(
                         "SAVED BILL CASH-IN",
                         provider + "_",
@@ -2016,7 +2067,6 @@ export class InventoryZDM8 implements IBaseClass {
                         billCash?.requestor?.transData[0]?.accountRef
                     );
                 });
-            });
             const mId = this.ssocket.findMachineId(machineId);
             const mEnt: MachineIDStatic = MachineIDFactory(
                 EEntity.machineIDHistory + "_" + this.production + "_" + machineId,
@@ -2055,23 +2105,14 @@ export class InventoryZDM8 implements IBaseClass {
         transactionID: number
     ) {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(
-                EEntity.badbillcash + "_" + this.production,
-                dbConnection
-            );
-            bEnt
-                .sync()
-                .then((r) => {
-                    bEnt.create(billCash).then((rx) => {
+            
+            this.badBillCashEnt.create(billCash).then((rx) => {
                         console.log(
                             "SAVED BILL CASH-IN",
                             EEntity.badbillcash + "_" + this.production
                         );
                     });
-                })
-                .catch((e) => {
-                    console.log(" bEnt.create", e);
-                });
+                
             const mId = this.ssocket.findMachineId(machineId);
             const mEnt: MachineIDStatic = MachineIDFactory(
                 EEntity.machineIDHistory + "_" + this.production + "_" + machineId,

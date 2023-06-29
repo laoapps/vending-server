@@ -1,10 +1,11 @@
 
-import { EMessage, EZDM8_COMMAND, IResModel } from '../entities/syste.model';
+import { EMACHINE_COMMAND, EMessage, EVMC_COMMAND, EZDM8_COMMAND, IResModel } from '../entities/syste.model';
 
-import { int2hex, PrintError, PrintSucceeded } from '../services/service';
+import { clearLogsDays, int2hex, loadLogsDays, PrintError, PrintSucceeded, writeLogs } from '../services/service';
 import { SerialPort } from 'serialport';
 import { SocketClientZDM8 } from './socketClient.zdm8';
 import crc from 'crc';
+import moment from 'moment';
 export class VendingZDM8 {
     port = new SerialPort({ path: '/dev/ttyS1', baudRate: 9600 }, function (err) {
         if (err) {
@@ -13,24 +14,92 @@ export class VendingZDM8 {
         console.log(`port '/dev/ttyS1' accessed`);
     });
     sock: SocketClientZDM8;
+    enable = true;
+    limiter = 100000;
+    balance = 0;
     transactionID = -1;
     retry = 0;
+    countProcessClearLog = 60 * 60 * 24;
+    creditPending = new Array<{ command: any, data: any, transactionID: string, t: number }>();
+    processPending = new Array<{command: any, params: any, transactionID: string}>();
+    setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
+
+    lastupdate = 0;
+    pendingRetry = 10;// 10s
+
+    processPendingRetry = 3;// 10s
     constructor(sock: SocketClientZDM8) {
 
         this.sock = sock;
-        let buffer = '';
+        let b = '';
         const that = this;
+        setInterval(() => {
+            try {
+                console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate));
+
+ 
+                if (that.countProcessClearLog <= 0) {
+                    that.countProcessClearLog = 60 * 60 * 24;
+                } else {
+                    clearLogsDays();
+                    that.countProcessClearLog -= 2;
+                }
+                console.log('pending retry======= ', that.pendingRetry, 'credit pending------', that.creditPending);
+                const cp = that.creditPending[0];
+                if (cp) {
+                    if (that.pendingRetry <= 0) {
+
+                        const t = cp?.transactionID;
+                        const b = cp?.data
+                        that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
+                    } else {
+                        that.pendingRetry -= 2;
+                    }
+                }else{
+                    that.pendingRetry = 10;
+                }
+
+                const pp = that.processPending[0];
+                if (pp) {
+                    if (that.processPendingRetry <= 0) {
+
+                        const t = pp?.transactionID;
+                        const b = pp?.params
+                        that.sock?.send(b, Number(t), EMACHINE_COMMAND.confirmOrder);
+                    } else {
+                        that.processPendingRetry -= 2;
+                    }
+                }else{
+                    that.processPendingRetry = 3;
+                }
+                
+            } catch (error) {
+                console.log(error);
+            }
+
+        }, 2000);
         this.port.on("open", function () {
             console.log('open serial communication');
             // Listens to incoming data
             that.port.on('data', function (data: any) {
                 console.log('data', data);
-                buffer += data.toString('hex');
-                console.log('buffer', buffer);
+                b += data.toString('hex');
+                console.log('buffer', b);
+                
+
+                // read bill accepted
+                // const t = Number('-21' + moment.now());
+                // that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
+                // send to server
+                //sock.send(buffer, that.transactionID);    
+                // writeLogs(b, -1);
+
+
                 // if (buffer.length == 4) {
-                sock.send(buffer, that.transactionID);
+                // confirm any 
+                sock.send(b, that.transactionID);      
                 that.transactionID = -1;
-                buffer = '';
+                b = '';
             });
         });
 
@@ -52,7 +121,7 @@ export class VendingZDM8 {
             return '';
         }
     }
-    command(command: string, param: any, transactionID: number) {
+    command(command: string, params: any, transactionID: number) {
         // this.port.setID(1);
         this.transactionID = transactionID;
         return new Promise<IResModel>((resolve, reject) => {
@@ -97,24 +166,24 @@ export class VendingZDM8 {
                         // Packet byte 2 cabinet status '00'-open status 01-closed status
                         // Note: This instruction is based on the current protocol extension instruction and is non-standard.
                         break;
+                    case EZDM8_COMMAND.disable:
+
+                    break;
+                    case EZDM8_COMMAND.enable:
+
+                    break;
+
                     case EZDM8_COMMAND.shippingcontrol:
-                        const slot = int2hex(param.slot);
+                        const slot = int2hex(params.slot);
                         const isspring = '01';
                         const dropdetect = '00';
                         const liftsystem = '00';
                         buff = [pcbarray, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
                         check = this.checkSum(buff)
                         // try if data didn't confirm 
-                        setTimeout(() => {
-                            if (this.transactionID!=-1&&this.retry<1) {
-                                this.command(command, param, transactionID);
-                            } else {
-                                return this.retry = 0;
-                            }
-                            this.retry++;
-
-
-                        }, 3000);
+                        
+                        this.processPending.push({command,params,transactionID:transactionID+''});
+                        this.command(command, params, transactionID);
 
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
@@ -149,6 +218,118 @@ export class VendingZDM8 {
                     //                 01 03 02 2-byte data CRCL CRCH
                     // Return Example: 01 03 02 07 D0 BB E8
                     // Packet:7D0 corresponds to 2'00'0 in decimal, indicating the current position of the lift motor at 2'00'0 (with symbols to note the positive and negative) Note: This command is valid only for lift systems. 8.31
+                    case EZDM8_COMMAND.balance:
+                        this.balance = params?.balance || 0;
+                        this.limiter = params?.limiter || 100000;
+                        this.lastupdate = moment.now();
+                        if (params?.confirmCredit) {
+                            const transactionID = params.transactionID;
+                            console.log('RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING', params);
+                            if (this.creditPending.find(v => v.transactionID == transactionID)) {
+    
+                                this.creditPending = this.creditPending.filter(v => v.transactionID != transactionID);
+                            }
+                        }
+                        if (this.balance < this.limiter) {
+                            // this.lastupdate = moment().add(-360, 'days').toNow();
+                            if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                            this.enable = false;
+                            this.command(EVMC_COMMAND.disable, params, transactionID).then(r => {
+                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                            }).catch(e => {
+                                reject(PrintError(command as any, params, e.message));
+                            })
+                        } else {
+                            if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                            this.enable = true;
+                            this.command(EVMC_COMMAND.enable, params, transactionID).then(r => {
+                                resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                            }).catch(e => {
+                                reject(PrintError(command as any, params, e.message));
+                            })
+                        }
+    
+    
+                        if (Array.isArray(params?.setting)) {
+                            try {
+                                //temp 
+                                const setting = params.setting.find(v => v.settingName == 'setting');
+                                if (setting.lowTemp != this.setting.lowTemp || setting.highTemp != this.setting.highTemp) {
+                                    this.setting.lowTemp = setting.lowTemp;
+                                    this.setting.highTemp = setting.highTemp;
+                                    // this.setting.allowCashIn=false;
+                                    console.log('new setting', this.setting);
+                                    // that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                                    this.command(EVMC_COMMAND._7028, params, -7028).then(r => {
+                                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                    }).catch(e => {
+                                        reject(PrintError(command as any, params, e.message));
+                                    })
+                                }
+                                // disable
+                                if (setting.allowCashIn != this.setting.allowCashIn) {
+                                    this.setting.allowCashIn = setting.allowCashIn;
+                                    console.log('new setting', this.setting);
+                                    if (!this.setting.allowCashIn) {
+                                        if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                        this.enable = false;
+                                        this.command(EVMC_COMMAND.disable, params, transactionID).then(r => {
+                                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                        }).catch(e => {
+                                            reject(PrintError(command as any, params, e.message));
+                                        })
+                                    } else {
+                                        if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                        this.enable = true;
+                                        this.command(EVMC_COMMAND.enable, params, transactionID).then(r => {
+                                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                        }).catch(e => {
+                                            reject(PrintError(command as any, params, e.message));
+                                        })
+                                    }
+    
+                                }
+    
+                                // light
+    
+                                // if (setting.light != this.setting.light) {
+    
+                                //     this.setting.light == setting.light;
+                                //     this.commandVMC(EVMC_COMMAND._7016, params, transactionID, this.getNextNo()).then(r => {
+                                //         resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                //     }).catch(e => {
+                                //         reject(PrintError(command as any, params, e.message));
+                                //     })
+                                // }
+                            } catch (error) {
+                                console.log(error);
+    
+                            }
+    
+    
+    
+                        }
+    
+                        break;
+                    case EZDM8_COMMAND.logs:
+                        const duration = params?.duration || 15;
+    
+                        for (let index = 0; index < duration; index++) {
+                            setTimeout(() => {
+                                const i = loadLogsDays();
+                                this.sock?.send(i, -3600, EMACHINE_COMMAND.logs);
+                            }, index * 5000);
+    
+                        }
+    
+    
+                        break;
+    
+                    case EZDM8_COMMAND.restart:
+                       
+                        break;
+                    
+                    
                     case EZDM8_COMMAND.dropdetectstatus:
                         buff = [pcbarray, '03', '00', '08', '00', '01', '05', 'C8'];
                         // 01 03 02 2-byte data CRCL CRCH
@@ -203,8 +384,8 @@ export class VendingZDM8 {
                     // // Packet 1 byte X-axis operation status '00'-idle 01-motor is addressing 02-motor finished addressing 03-fault
                     // // Packet byte 2 X-axis fault code '00' - no error (see Table 3.1 for detailed fault codes)
                     case EZDM8_COMMAND.relaycommand:
-                        const r = param.slot;
-                        const rstate = param.state;
+                        const r = params.slot;
+                        const rstate = params.state;
                         buff = [pcbarray, '06', r, rstate, '01', '01', '01', '1C', '9A'];
                         //                 Sending packet description.
                         // Data packet byte 1 relay number: 01-10 relay
@@ -309,16 +490,16 @@ export class VendingZDM8 {
 
                 this.port.write(Buffer.from(x, 'hex'), (e) => {
                     if (e) {
-                        reject(PrintError(command, param, e.message));
+                        reject(PrintError(command, params, e.message));
                         console.log('command with Error: ', e.message)
                     } else {
                         console.log('command succeeded')
-                        resolve(PrintSucceeded(command, param, EMessage.commandsucceeded));
+                        resolve(PrintSucceeded(command, params, EMessage.commandsucceeded));
                     }
                 })
 
             } catch (error: any) {
-                reject(PrintError(command, param, error.message));
+                reject(PrintError(command, params, error.message));
             }
 
 

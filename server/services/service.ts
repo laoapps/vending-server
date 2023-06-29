@@ -273,10 +273,13 @@ export function readMachineLimiter(machineId: string,) {
 
 }
 export function  writeACKConfirmCashIn(transactionID:string) {
-    redisClient.setEx('_ack_confirm_CashIn_' + transactionID,60, 'yes');
+    redisClient.setEx('_ack_confirm_CashIn_' + transactionID,60*10, 'yes');
 }
 export function  readACKConfirmCashIn(transactionID:string) {
     return redisClient.get('_ack_confirm_CashIn_' + transactionID);
+}
+export function  removeACKConfirmCashIn(transactionID:string) {
+    return redisClient.del('_ack_confirm_CashIn_' + transactionID);
 }
 export function writeMerchantLimiterBalance(ownerUuid: string, balance: string) {
     redisClient.set('_limiter_balance_' + ownerUuid, balance);
