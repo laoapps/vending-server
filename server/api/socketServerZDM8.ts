@@ -14,8 +14,8 @@ import fs from 'fs';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
      options = {
-        key: fs.readFileSync(process.env.privateKeys),
-        cert: fs.readFileSync(process.env.publicKeys)
+        key: process.env.privateKeys,
+        cert: process.env.publicKeys
     };
     server = tls.createServer(this.options);
     sclients = Array<net.Socket>();

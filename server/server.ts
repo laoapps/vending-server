@@ -83,7 +83,7 @@ CreateDatabase("")
     );
     process.env._image_path = path.join(__dirname, "..", "public");
     process.env._log_path = path.join(__dirname, "..", "logs");
-    process.env.privateKeys= fs.readFileSync(__dirname + "/private-key.pem", "utf8");
+    process.env.privateKeys = fs.readFileSync(__dirname + "/private-key.pem", "utf8");
     process.env.publicKeys = fs.readFileSync(__dirname + "/public-cert.pem", "utf8");
     fs.existsSync(process.env._log_path) || fs.mkdirSync(process.env._log_path);
     fs.existsSync(process.env._image_path) ||
@@ -128,7 +128,7 @@ CreateDatabase("")
         const { pathname } = parse(request.url || "");
         console.log("pathname", pathname);
 
-        if (pathname === "/zdm8" ) {
+        if (pathname === "/zdm8") {
           wss1.handleUpgrade(request, socket, head, function done(ws) {
             wss1.emit("connection", ws, request);
           });
@@ -138,7 +138,7 @@ CreateDatabase("")
             wss1.emit("connection", ws, request);
           });
         }
-         else {
+        else {
           socket.destroy();
         }
       } catch (error) {
