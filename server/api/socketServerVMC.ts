@@ -88,7 +88,7 @@ export class SocketServerVMC  extends SocketEmitter{
                             const token = d.token;
                             const x = that.findMachineIdToken(token);
                             if (x) {
-                                console.log('DATA found machine id');
+                                console.log('DATA found machine id',x);
                                 socket['machineId'] = x;
                                 const mx = that.sclients.filter(v => {
                                     const m = v['machineId'] as IMachineClientID;
