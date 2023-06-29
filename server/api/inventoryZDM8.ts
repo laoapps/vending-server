@@ -1835,8 +1835,6 @@ export class InventoryZDM8 implements IBaseClass {
                                         )
                                     )
                                 })
-    
-    
                             })
                             .catch((error) => {
                                 console.log(`error cash in validation`, error.message);
