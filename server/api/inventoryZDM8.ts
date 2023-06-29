@@ -1441,7 +1441,8 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 r.data = a;
                                 r.changed('data', true);
-
+                                console.log('updating machine setting',r.data);
+                                
                                 writeMachineSetting(r.machineId, r.data);
                                 res.send(
                                     PrintSucceeded(
