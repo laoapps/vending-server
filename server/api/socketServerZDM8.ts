@@ -40,10 +40,6 @@ export class SocketServerZDM8 {
                 cert: process.env.servercert,
                 ca:process.env.ca,
                 requestCert: true,
-            },(socket)=>{
-                // socket.write('welcome!\n');
-                // socket.setEncoding('utf8');
-                socket.pipe(socket);
             })
             .on('close', function () {
                 console.log('Server closed !');
