@@ -88,7 +88,7 @@ export class VendingVMC {
             } catch (error) {
                 console.log('readCreditRecord');
                 writeLogs({error,message:'readCreditRecord',text},{})
-                that.creditPending.length=0;
+                that.creditPending=[];
                 writeCreditRecord(that.creditPending,'-92')
             }
             
