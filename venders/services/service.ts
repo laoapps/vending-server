@@ -147,9 +147,9 @@ export function writeSucceededRecordLog(m, position) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path || process.cwd() + `/results_${da}.json`;
     if (!fs.existsSync(logs)) {
-        fs.writeFileSync(logs, JSON.stringify({ m, position, time: new Date() }));
+        fs.writeFileSync(logs, JSON.stringify({ m, position, time: new Date() }),{encoding:'utf-8'});
     } else {
-        fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+        fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+',encoding:'utf-8' });
     }
 }
 export function writeLogs(m, position, name = 'g_') {
@@ -157,36 +157,36 @@ export function writeLogs(m, position, name = 'g_') {
     const logs = process.env._log_path || process.cwd() + `/${name}_${da}.json`;
     console.log('m', m);
     if (!fs.existsSync(logs)) {
-        fs.writeFileSync(logs, JSON.stringify({ m, position, time: new Date() }));
+        fs.writeFileSync(logs, JSON.stringify({ m, position, time: new Date() }),{encoding:'utf-8'});
     } else {
-        fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+        fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' ,encoding:'utf-8'});
     }
 }
 export function writeCreditRecord(m, transactionID: string, name = 'credit_') {
     // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path || process.cwd() + `/${name}_.json`;
-    console.log('m', m);
+    console.log('writeCreditRecord', m);
     if (!fs.existsSync(logs)) {
-        fs.writeFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }));
+        fs.writeFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }),{encoding:'utf-8'});
     } else {
-        fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+        fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+',encoding:'utf-8' });
     }
 
 }
 export function readCreditRecord(name = 'credit_') {
     // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path || process.cwd() + `/${name}_.json`;
-
-    return fs.readFileSync(logs).toString();
+    const text = fs.readFileSync(logs,{encoding:'utf-8'});
+    return text;
 }
 export function writeCreditLogs(m, transactionID: string, name = 'credit_logs') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path || process.cwd() + `/${name}_${da}.json`;
-    console.log('m', m);
+    console.log('writeCreditLogs', m);
     if (!fs.existsSync(logs)) {
-        fs.writeFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }));
+        fs.writeFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }),{encoding:'utf-8'});
     } else {
-        fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+        fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+',encoding:'utf-8' },);
     }
 }
 export function clearLogsDays(name = 'g_', duration = 15) {
@@ -218,13 +218,13 @@ export function loadLogsDays(name = 'g_', duration = 15) {
 
         let content = '';
         if (!fs.existsSync(logs))
-            content += fs.readFileSync(logs, { encoding: 'utf8', flag: 'r' })
+            content += fs.readFileSync(logs, { encoding:'utf-8', flag: 'r' })
 
         if (!fs.existsSync(elogs))
-            content += fs.readFileSync(elogs, { encoding: 'utf8', flag: 'r' })
+            content += fs.readFileSync(elogs, { encoding: 'utf-8', flag: 'r' })
 
         if (!fs.existsSync(rlogs))
-            content += fs.readFileSync(rlogs, { encoding: 'utf8', flag: 'r' });
+            content += fs.readFileSync(rlogs, { encoding: 'utf-8', flag: 'r' });
         return content;
     } catch (error) {
         console.log(error);
