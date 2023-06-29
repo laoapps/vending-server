@@ -128,6 +128,7 @@ export class VendingVMC {
                                 const t = cp?.transactionID;
                                 const b = cp?.data
                                 that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
+                                that.pendingRetry=10;
                             } else {
                                 that.pendingRetry -= 2;
                             }
