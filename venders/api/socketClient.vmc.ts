@@ -142,7 +142,7 @@ export class SocketClientVMC {
             if (that.client?.authorized) {
                 console.log("Connection authorized by a Certificate Authority.");
                 // writing data to server
-                that.client?.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
+                that.send({},-11,EMACHINE_COMMAND.login);
                 } else {
                 console.log("Connection not authorized: " + that.client?.authorizationError)
                 }
@@ -221,7 +221,7 @@ export class SocketClientVMC {
             req.token = that.token;
             req.time = new Date().getTime() + '';
             req.command = EMACHINE_COMMAND.ping;
-            that.client?.write(JSON.stringify(req) + '\n');
+            that.send({},-13,EMACHINE_COMMAND.ping)
         }, 5000);
     }
     sendingCount=1;
