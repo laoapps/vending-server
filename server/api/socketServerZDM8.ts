@@ -18,20 +18,7 @@ export class SocketServerZDM8 {
     //     key: process.env.privateKeys,
     //     cert: process.env.publicKeys
     // };
-    server = tls.createServer({
-        // secureOptions: constants.SSL_OP_NO_TLSv1_2 ,
-        // secureProtocol:'TLSv1_method',
-        // maxVersion:'TLSv1.2',
-        key: process.env.privateKeys,
-        cert: process.env.publicKeys,
-        ca:process.env.ca,
-        requestCert: true,
-        // rejectUnauthorized:false
-    },(socket)=>{
-        socket.write('welcome!\n');
-        socket.setEncoding('utf8');
-        socket.pipe(socket);
-    });
+    server:tls.Server|undefined ;
     sclients = Array<tls.TLSSocket>();
     ports = 31223;
 
@@ -44,19 +31,27 @@ export class SocketServerZDM8 {
             this.ports = this.ports || ports;
             this.machineIds = new Array<IMachineClientID>();
             //creates the server
-
+        // emitted when new client connects
+                    const that = this;
 
             //emitted when server closes ...not emitted until all connections closes.
-            this.server.on('close', function () {
+            this.server= tls.createServer({
+                key: process.env.serverkey,
+                cert: process.env.servercert,
+                ca:process.env.ca,
+                requestCert: true,
+            },(socket)=>{
+                socket.write('welcome!\n');
+                socket.setEncoding('utf8');
+                socket.pipe(socket);
+            })
+            .on('close', function () {
                 console.log('Server closed !');
-            });
-
-            // emitted when new client connects
-            const that = this;
-            this.server.on('connection', () => {
+            })
+            .on('connection', () => {
                 console.log('insecure connection');
               })
-            this.server.on('secureConnection', function (socket) {
+            .on('secureConnection', function (socket) {
                 //this property shows the number of characters currently buffered to be written. (Number of characters is approximately equal to the number of bytes to be written, but the buffer may contain strings, and the strings are lazily encoded, so the exact number of bytes is not known.)
                 //Users who experience large or growing bufferSize should attempt to "throttle" the data flows in their program with pause() and resume().
 
@@ -340,21 +335,20 @@ export class SocketServerZDM8 {
                 //     
                 // }, 1200000);
 
-            });
-
+            })
             // emits when any error occurs -> calls closed event immediately after this.
-            this.server.on('error', function (error) {
+            .on('error', function (error) {
                 console.log('Error: ' + error);
-            });
+            })
 
             //emits when server is bound with server.listen
-            this.server.on('listening', function () {
+            .on('listening', function () {
                 console.log('Server is listening!');
-            });
+            })
 
             // this. server.maxConnections = 10;
             // for dyanmic port allocation
-            this.server.listen(this.ports, function () {
+            .listen(this.ports, function () {
                 var address = that.server.address() as net.AddressInfo;
                 var port = address.port;
                 var family = address.family;

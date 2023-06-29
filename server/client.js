@@ -7,19 +7,16 @@ const hostname = 'laoapps.com';
 const tls = require('tls');
 const fs = require('fs');
 
-const options = {
-  host: hostname,
-  port: port,
 
-  // Necessary only if using the client certificate authentication
-  key: fs.readFileSync('certs/client/client.key'),
-  cert: fs.readFileSync('certs/client/client.crt'),
 
-  // Necessary only if the server uses the self-signed certificate
-  ca: fs.readFileSync('certs/ca/ca.crt')
-};
-
-const socket = tls.connect(options, () => {
+const socket = tls.connect({
+    host:hostname,
+    port,
+    key: fs.readFileSync('certs/client/client.key'),
+    cert: fs.readFileSync('certs/client/client.crt'),
+    // Necessary only if the server uses the self-signed certificate
+    ca: fs.readFileSync('certs/ca/ca.crt')
+}, () => {
   console.log('client connected', socket.authorized ? 'authorized' : 'unauthorized');
   if (!socket.authorized) {
     console.log("Error: ", socket.authorizationError());

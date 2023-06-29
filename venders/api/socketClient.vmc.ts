@@ -117,13 +117,9 @@ export class SocketClientVMC {
             this.port,
             this.host,
             {
-                // secureOptions: constants.SSL_OP_NO_TLSv1_2 ,
-                // secureProtocol:'TLSv1_method',
-                // maxVersion:'TLSv1.2',
-                key: process.env.privateKeys,
-                cert: process.env.publicKeys,
-                ca:process.env.ca,
-                rejectUnauthorized: false
+                key: process.env.clientkey,
+                cert: process.env.clientcert,
+                ca:process.env.ca
             }
         );
         if (this.t) {
@@ -156,9 +152,8 @@ export class SocketClientVMC {
         this.client.setEncoding('utf8');
 
         this.client.on('data', async (data) => {
-
-
-            // if (d.command == 'ping') {
+            try {
+                 // if (d.command == 'ping') {
             //     that.send([], d.command as any);
             // }
             // else {
@@ -193,6 +188,12 @@ export class SocketClientVMC {
             })
 
             // console.log('DATA response', d.command, d);
+            } catch (error) {
+                console.log(error);
+                
+            }
+
+           
         });
         this.client.on('error', function (e) {
             if (e)

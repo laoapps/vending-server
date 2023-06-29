@@ -19,8 +19,8 @@ import fs from 'fs';
 // server.listen(process.env.PORT || 9009, async function () {
 //     console.log('HTTP listening on port ' + process.env.PORT || 9009);
 //   });
-process.env.privateKeys= fs.readFileSync(__dirname + "/certs/client/client.key")+'';
-process.env.publicKeys = fs.readFileSync(__dirname + "/certs/client/client.crt")+'';
+process.env.clientkey= fs.readFileSync(__dirname + "/certs/client/client.key")+'';
+process.env.clientcert = fs.readFileSync(__dirname + "/certs/client/client.crt")+'';
 process.env.ca = fs.readFileSync(__dirname+'/certs/ca/ca.crt')+'';
 
 
