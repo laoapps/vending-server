@@ -166,7 +166,7 @@ export function writeCreditRecord(m, name = 'credit_') {
     // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path || process.cwd() + `/${name}_.json`;
     console.log('writeCreditRecord', m);
-        fs.writeFileSync(logs, m,{encoding:'utf-8'});
+        fs.writeFileSync(logs, JSON.stringify(m),{encoding:'utf-8'});
     
 
 }
