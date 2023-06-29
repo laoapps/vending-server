@@ -2471,7 +2471,7 @@ export class InventoryZDM8 implements IBaseClass {
             setWsHeartbeat(
                 wss,
                 (ws, data, binary) => {
-                    console.log("WS HEART BEAT", data);
+                    // console.log("WS HEART BEAT", data);
 
                     if (data === '{"command":"ping"}') {
                         // send pong if recieved a ping.
@@ -2667,8 +2667,8 @@ export class InventoryZDM8 implements IBaseClass {
                         else if (d.command == "ping") {
                             try {
                                 console.log("WS PING", ws['clientId'], ws['myMachineId']);
-                                redisClient.get('_balance_' + ws['clientId']).then(async r => {
-                                    console.log('clientid balance', r);
+                                readMachineBalance(ws['machineId']).then(async r => {
+                                    console.log('machine balance', r);
 
                                     let x = await readMachineSetting(ws['machineId']);
                                     let mstatus = await readMachineStatus(ws['machineId']);
@@ -2718,8 +2718,8 @@ export class InventoryZDM8 implements IBaseClass {
                                         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true
                                     }
                                     console.log('ready to pong');
-                                    const limiter = 100000;
-                                    const merchant = 0;
+                                    const limiter = 100000; // TODO: Get limiter 
+                                    const merchant = 0; // TODO:Get merchant balance
                                     ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
