@@ -273,7 +273,7 @@ export function readMachineLimiter(machineId: string,) {
 
 }
 export function  writeACKConfirmCashIn(transactionID:string) {
-    return redisClient.setEx('_ack_confirm_CashIn_' + transactionID,10, 'yes');
+    return redisClient.setEx('_ack_confirm_CashIn_' + transactionID,5, 'yes');
 }
 export function  readACKConfirmCashIn(transactionID:string) {
     return redisClient.get('_ack_confirm_CashIn_' + transactionID);

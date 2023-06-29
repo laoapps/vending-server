@@ -242,6 +242,8 @@ export class SocketClientVMC {
                    } 
                 else
                     this.sendingCount=1;
+                console.log('sent wiht error',e);
+                
             });
         }, 100*this.sendingCount++);
         

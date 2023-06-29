@@ -133,10 +133,10 @@ export class VendingVMC {
                                 }, 500);
                                 setTimeout(() => {
                                     that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
-                                }, 500);
+                                }, 1000);
                                 setTimeout(() => {
                                     that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
-                                }, 500);
+                                }, 1500);
                                 that.pendingRetry=10;
                             } else {
                                 that.pendingRetry -= 2;

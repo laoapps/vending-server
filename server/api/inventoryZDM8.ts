@@ -1774,7 +1774,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // that.ssocket.terminateByClientClose(machineId.machineId)
                     const hashnotes = this.initHashBankNotes(machineId.machineId);
     
-                    console.log('hashnotes',hashnotes);
+                    // console.log('hashnotes',hashnotes);
                     
     
                     if (d?.token) {
@@ -1786,7 +1786,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // that.push(bsi);
                         //
                         const hn = hashnotes.find((v) => v.hash == d?.data + "");
-                        if (hn != undefined && Object.entries(hn).length == 0) {
+                        if (hn == undefined || Object.entries(hn).length == 0) {
                             ws.send(
                                 JSON.stringify(
                                     PrintError(d.command, [], EMessage.invalidBankNote + " 0")
@@ -1794,20 +1794,20 @@ export class InventoryZDM8 implements IBaseClass {
                             );
                             return;
                         }
-                        console.log("hn", hn);
+                        // console.log("hn", hn);
                         const bn = this.notes.find((v) => v.value == hn?.value);
-                        if (bn != undefined && Object.entries(bn).length == 0) {
+                        if (bn == undefined || Object.entries(bn).length == 0) {
                             ws.send(
                                 JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote))
                             );
                             return;
                         }
-                        console.log("bn", bn);
+                        // console.log("bn", bn);
     
                         // *** cash in here
                         const func = new CashinValidationFunc();
                         const params = {
-                            cash: bn.value,
+                            cash: bn?.value,
                             description: "VENDING LAAB CASH IN",
                             machineId: machineId.machineId,
                         };
