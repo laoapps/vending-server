@@ -13,11 +13,16 @@ import tls from 'tls';
 import fs from 'fs';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
-     options = {
+    //  options = {
+    //     key: process.env.privateKeys,
+    //     cert: process.env.publicKeys
+    // };
+    server = tls.createServer({
         key: process.env.privateKeys,
-        cert: process.env.publicKeys
-    };
-    server = tls.createServer(this.options);
+        cert: process.env.publicKeys,
+        secureProtocol:'TLSv1_method',
+        rejectUnauthorized:false
+    });
     sclients = Array<net.Socket>();
     ports = 31223;
 

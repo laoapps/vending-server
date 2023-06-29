@@ -15,11 +15,11 @@ export class SocketClientVMC {
 
     // creating a custom socket client and connecting it....
     client:tls.TLSSocket|undefined=undefined;
-    options = {
-        key: process.env.privateKeys,
-        cert: process.env.publicKeys,
-        rejectUnauthorized: false
-    };
+    // options = {
+    //     key: process.env.privateKeys,
+    //     cert: process.env.publicKeys,
+    //     rejectUnauthorized: false
+    // };
     port = 51223;
     host = 'laoapps.com';
     machineid = '11111111';
@@ -115,7 +115,12 @@ export class SocketClientVMC {
         this.client = tls.connect(
             this.port,
             this.host,
-            this.options
+            {
+                secureProtocol:'TLSv1_method',
+                key: process.env.privateKeys,
+                cert: process.env.publicKeys,
+                rejectUnauthorized: false
+            }
         );
         if (this.t) {
             clearInterval(this.t);
