@@ -36,8 +36,8 @@ export class SocketServerZDM8 {
 
             //emitted when server closes ...not emitted until all connections closes.
             this.server= tls.createServer({
-                key: process.env.serverkey,
-                cert: process.env.servercert,
+                key: process.env.privateKeys,
+                cert: process.env.publicKeys,
                 ca:process.env.ca,
                 requestCert: true,
             },(socket)=>{
@@ -88,7 +88,7 @@ export class SocketServerZDM8 {
                     console.log('Number of concurrent connections to the server : ' + count);
                 });
 
-                // socket.setEncoding('utf8');
+                socket.setEncoding('utf8');
                 socket.setKeepAlive(true);
                 socket.setTimeout(30000, function () {
                     // called after timeout -> same as socket.on('timeout')
@@ -336,6 +336,7 @@ export class SocketServerZDM8 {
                 // }, 1200000);
 
             })
+
             // emits when any error occurs -> calls closed event immediately after this.
             .on('error', function (error) {
                 console.log('Error: ' + error);
