@@ -8,5 +8,4 @@ COPY package-lock.json /app/package-lock.json
 RUN npm install
 RUN npm install typescript -g
 COPY . /app
-COPY *.pem /app/dist/
 CMD ["npm","start"]
