@@ -1683,17 +1683,10 @@ export class InventoryZDM8 implements IBaseClass {
 
         // })
     }
-    processingCreditQueques=new Array<string>();
+    // processingCreditQueques=new Array<string>();
     async creditMachine(d: IReqModel) {
             try {
                 const that = this;
-                // check if it in the Queque
-                if(this.processingCreditQueques.find(v=>v==d.transactionID+''))
-                     throw new Error('TOO FAST '+d.transactionID);
-                    else
-                    this.processingCreditQueques.push(d.transactionID+'');
-
-
                 // find in redis
                 let ack = await readACKConfirmCashIn(d.transactionID + '');
                 let machineId = this.ssocket.findMachineIdToken(d.token);
@@ -1704,7 +1697,10 @@ export class InventoryZDM8 implements IBaseClass {
                         await writeACKConfirmCashIn(d.transactionID + '');
                         ack = 'yes';
                     }
+                }else{
+                    throw new Error('TOO FAST '+d.transactionID);
                 }
+                
                 
                 
                 const ws = that.wsClient.find(
@@ -1767,8 +1763,6 @@ export class InventoryZDM8 implements IBaseClass {
                         )
                         // finish the process allow next queque with exist TransactionID
                         console.log('finish the process allow next queque with exist TransactionID',d.transactionID);
-                        
-                        this.processingCreditQueques = this.processingCreditQueques.filter(v=>v!==d.transactionID+'');
                     })
     
                     return;
@@ -1824,8 +1818,6 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log('RECORD THIS TRANSACTIION AS IT has been doen');
                                 // finish the process allow next queque 
                                 console.log('finish the process allow next queque ');
-                                
-                                this.processingCreditQueques = this.processingCreditQueques.filter(v=>v!==d.transactionID+'');
                                 writeACKConfirmCashIn(d.transactionID + '');
                                 console.log(`response cash in validation`, run);
                                 if (run.message != IENMessage.success) throw new Error(run);
