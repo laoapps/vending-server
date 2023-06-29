@@ -175,14 +175,14 @@ export class SocketClientVMC {
                 if (d.command == 'balance') {
                     this.send(r, d.transactionID, EMACHINE_COMMAND.status);
                 } else {
-                    this.send(r, d.transactionID, d.command as any);
+                    this.send(r, d.transactionID, EMACHINE_COMMAND.status as any);
                 }
 
             }).catch(e => {
                 if (e) {
                     console.log('DATA command error', e);
 
-                    this.send(e, d.transactionID, d.command as any);
+                    this.send(e, d.transactionID, EMACHINE_COMMAND.status as any);
                 }
 
             })
