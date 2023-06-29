@@ -28,7 +28,7 @@ export class VendingVMC {
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
     machinestatus = '';
-    creditPending = new Array<{ command: any, data: any, transactionID: string,raw:string, t: number }>();
+    creditPending = new Array<{ command: any, data: any, transactionID: string, raw: string, t: number }>();
 
     pendingRetry = 10;// 10s
     constructor(sock: SocketClientVMC) {
@@ -43,62 +43,62 @@ export class VendingVMC {
             }
             console.log(`port ${that.path} accessed`);
             try {
-                 that.sycnVMC();
-            that.setPoll(10);
-           
-            setTimeout(() => {
-                console.log('INITIALIZE.............................................................!');
-                console.log('INIT 51');
-                that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
-                console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
-                console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
-                console.log('INIT 7018');
-                that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
-                console.log('INIT 7019');
-                that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
-                console.log('INIT 7020');
-                that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
-                console.log('INIT 7023');
-                that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+                that.sycnVMC();
+                that.setPoll(10);
 
-                console.log('INIT enable');
-                that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
-                console.log('INIT accept banknote');
-                that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
-                // console.log('INIT temperature');
-                that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
-                console.log('INIT temperature 2');
-                that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
-                // setTimeout(() => {
-                //     console.log('INIT disable');
-                //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
-                // }, 30000);
-                // console.log('INIT disable');
-                // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
-            }, 2000);
+                setTimeout(() => {
+                    console.log('INITIALIZE.............................................................!');
+                    console.log('INIT 51');
+                    that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
+                    console.log('INIT 7001');
+                    that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
+                    console.log('INIT 7001');
+                    that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
+                    console.log('INIT 7018');
+                    that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
+                    console.log('INIT 7019');
+                    that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
+                    console.log('INIT 7020');
+                    that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
+                    console.log('INIT 7023');
+                    that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
-            let text ='';
-            try {
-                text = readCreditRecord();
-            console.log('readCreditRecord',text);
-            
-            that.creditPending=JSON.parse(text)
+                    console.log('INIT enable');
+                    that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+                    console.log('INIT accept banknote');
+                    that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
+                    // console.log('INIT temperature');
+                    that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                    console.log('INIT temperature 2');
+                    that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
+                    // setTimeout(() => {
+                    //     console.log('INIT disable');
+                    //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
+                    // }, 30000);
+                    // console.log('INIT disable');
+                    // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
+                }, 2000);
+
+                let text = '';
+                try {
+                    text = readCreditRecord();
+                    console.log('readCreditRecord', text);
+
+                    that.creditPending = JSON.parse(text)
+                } catch (error) {
+                    console.log('readCreditRecord');
+                    writeLogs({ error, message: 'readCreditRecord', text }, {})
+                    that.creditPending = [];
+                    writeCreditRecord(that.creditPending)
+                }
+
             } catch (error) {
-                console.log('readCreditRecord');
-                writeLogs({error,message:'readCreditRecord',text},{})
-                that.creditPending=[];
-                writeCreditRecord(that.creditPending,'-92')
+                console.log('ERROR', error);
+                writeLogs({ error }, {});
             }
-            
-            } catch (error) {
-                console.log('ERROR',error);
-                writeLogs({error},{});
-            }
-           
+
             var b = '';
-            
+
             setTimeout(() => {
                 setInterval(() => {
                     try {
@@ -127,7 +127,7 @@ export class VendingVMC {
                             } else {
                                 that.pendingRetry -= 2;
                             }
-                        }else{
+                        } else {
                             that.pendingRetry = 10;
                         }
                     } catch (error) {
@@ -191,9 +191,9 @@ export class VendingVMC {
                     // new 100k not working
                     const t = Number('-21' + moment.now());
                     const v = that.getNoteValue(b);
-                    that.creditPending.push({raw:b,data: cryptojs.SHA256(that.sock?.machineid + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
-                    writeCreditRecord(that.creditPending,t+'');
-                    that.sock?.send(cryptojs.SHA256(that.sock?.machineid +v).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
+                    that.creditPending.push({ raw: b, data: cryptojs.SHA256(that.sock?.machineid + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
+                    writeCreditRecord(that.creditPending, t + '');
+                    that.sock?.send(cryptojs.SHA256(that.sock?.machineid + v).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
 
 
                     });
@@ -394,7 +394,7 @@ export class VendingVMC {
                         if (this.creditPending.find(v => v.transactionID == transactionID)) {
 
                             this.creditPending = this.creditPending.filter(v => v.transactionID != transactionID);
-                            writeCreditRecord(this.creditPending,transactionID)
+                            writeCreditRecord(this.creditPending, transactionID)
                         }
                     }
                     if (this.balance < this.limiter) {

@@ -162,11 +162,11 @@ export function writeLogs(m, position, name = 'g_') {
         fs.appendFileSync(logs, '\n'+JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' ,encoding:'utf-8'});
     }
 }
-export function writeCreditRecord(m, transactionID: string, name = 'credit_') {
+export function writeCreditRecord(m, name = 'credit_') {
     // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path || process.cwd() + `/${name}_.json`;
     console.log('writeCreditRecord', m);
-        fs.writeFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }),{encoding:'utf-8'});
+        fs.writeFileSync(logs, m,{encoding:'utf-8'});
     
 
 }
