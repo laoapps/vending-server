@@ -85,6 +85,10 @@ export class VendingVMC {
                     console.log('readCreditRecord', text);
 
                     that.creditPending = JSON.parse(text)
+                    if(!Array.isArray(that.creditPending)){
+                        that.creditPending=[];
+                        writeCreditRecord(that.creditPending)
+                    }
                 } catch (error) {
                     console.log('readCreditRecord');
                     writeLogs({ error, message: 'readCreditRecord', text }, {})
