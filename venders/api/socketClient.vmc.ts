@@ -141,17 +141,17 @@ export class SocketClientVMC {
 
             if (that.client?.authorized) {
                 console.log("Connection authorized by a Certificate Authority.");
+                // writing data to server
+            that.client?.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
                 } else {
                 console.log("Connection not authorized: " + that.client?.authorizationError)
                 }
-            // writing data to server
-            that.client?.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
+            
 
-        });
+        })
+        .setEncoding('utf8')
 
-        this.client.setEncoding('utf8');
-
-        this.client.on('data', async (data) => {
+        .on('data', async (data) => {
             try {
                  // if (d.command == 'ping') {
             //     that.send([], d.command as any);
@@ -194,18 +194,18 @@ export class SocketClientVMC {
             }
 
            
-        });
-        this.client.on('error', function (e) {
+        })
+        .on('error', function (e) {
             if (e)
                 console.log('ERROR error:' + e);
-        });
+        })
         // this.client.on('end', function (data) {
         //     console.log('Data from server:' + data);
         //     setTimeout(() => {
         //         that.init();
         //     }, 3000);
         // });
-        this.client.on('close', function (data) {
+        .on('close', function (data) {
             console.log('CLOSE on close:' + data);
             setTimeout(() => {
                 that.client?.destroy();

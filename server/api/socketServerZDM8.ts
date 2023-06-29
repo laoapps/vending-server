@@ -41,8 +41,8 @@ export class SocketServerZDM8 {
                 ca:process.env.ca,
                 requestCert: true,
             },(socket)=>{
-                socket.write('welcome!\n');
-                socket.setEncoding('utf8');
+                // socket.write('welcome!\n');
+                // socket.setEncoding('utf8');
                 socket.pipe(socket);
             })
             .on('close', function () {
@@ -142,7 +142,7 @@ export class SocketServerZDM8 {
                                 socket.end();
                                 return;
                             }
-
+                            return;
                         } else if (d.command == EMACHINE_COMMAND.ping) {
                             console.log('DATA command ping');
                             const token = d.token;
