@@ -12,6 +12,7 @@ import tls from 'tls';
 import fs from 'fs';
 import constants from 'constants';
 /// VMC SOCKET CLIENT AS THE FIRST RELEASE
+/// fixed ADMIN update SETTING
 export class SocketClientVMC {
     //---------------------client----------------------
 
