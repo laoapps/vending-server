@@ -27,7 +27,9 @@ export class VendingVMC {
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
     machinestatus = '';
+    creditPending = new Array<{ command: any, data: any, transactionID: string, t: number }>();
 
+    pendingRetry = 10;// 10s
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
 
@@ -77,19 +79,37 @@ export class VendingVMC {
 
             setTimeout(() => {
                 setInterval(() => {
-                    console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate), that.setting?.allowCashIn);
+                    try {
+                        console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate), that.setting?.allowCashIn);
 
-                    if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
-                        if (!that.enable) return;
-                        that.commandVMC(EVMC_COMMAND.disable, {}, -118);
-                        that.enable = false;
-                        return;
-                    }
-                    if (that.countProcessClearLog <= 0) {
-                        that.countProcessClearLog = 60 * 60 * 24;
-                    } else {
-                        clearLogsDays();
-                        that.countProcessClearLog -= 2;
+                        if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
+                            if (!that.enable) return;
+                            that.commandVMC(EVMC_COMMAND.disable, {}, -118);
+                            that.enable = false;
+                            return;
+                        }
+                        if (that.countProcessClearLog <= 0) {
+                            that.countProcessClearLog = 60 * 60 * 24;
+                        } else {
+                            clearLogsDays();
+                            that.countProcessClearLog -= 2;
+                        }
+                        console.log('pending retry======= ', that.pendingRetry, 'credit pending------', that.creditPending);
+                        const cp = that.creditPending[0];
+                        if (cp) {
+                            if (that.pendingRetry <= 0) {
+
+                                const t = cp?.transactionID;
+                                const b = cp?.data
+                                that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
+                            } else {
+                                that.pendingRetry -= 2;
+                            }
+                        }else{
+                            that.pendingRetry = 10;
+                        }
+                    } catch (error) {
+                        console.log(error);
                     }
 
                 }, 2000);
@@ -128,7 +148,7 @@ export class VendingVMC {
                     //FA FB 04 05 packNo 03 00 19
                     console.log('drop detect', b);
                     that.sock?.send(b, -9);
-                    writeLogs(b, -1,'_drop');
+                    writeLogs(b, -1, '_drop');
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
@@ -147,35 +167,12 @@ export class VendingVMC {
                     // new 50k not working
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
-                    const t = Number('-21'+moment.now());
-                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
-                        // if error then resend 1
-                        setTimeout(() => {
-                            that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
-                                // if error then resend 2
-                                setTimeout(() => {
-                                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
-                                        // if error then resend 3
-                                        setTimeout(() => {
-                                            that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
-                                                 // if error then resend 4
-                                                setTimeout(() => {
-                                                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE,()=>{
-                                                        setTimeout(() => {
-                                                             // if error then resend 5
-                                                            setTimeout(() => {
-                                                                that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE);
-                                                            }, 1000*60*10);
-                                                        }, 1000*60*5);
-                                                    });
-                                                }, 1000*60);
-                                            });
-                                        }, 1000*30);
-                                    });
-                                }, 1000*5);
-                            });
-                        }, 1000);
-                       
+                    const t = Number('-21' + moment.now());
+                    that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
+
+                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
+
+
                     });
                     writeLogs(b, -1);
 
@@ -368,7 +365,14 @@ export class VendingVMC {
                     this.balance = params?.balance || 0;
                     this.limiter = params?.limiter || 100000;
                     this.lastupdate = moment.now();
+                    if (params?.confirmCredit) {
+                        const transactionID = params.transactionID;
+                        console.log('RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING', params);
+                        if (this.creditPending.find(v => v.transactionID == transactionID)) {
 
+                            this.creditPending = this.creditPending.filter(v => v.transactionID != transactionID);
+                        }
+                    }
                     if (this.balance < this.limiter) {
                         // this.lastupdate = moment().add(-360, 'days').toNow();
                         if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
@@ -735,8 +739,8 @@ export class VendingVMC {
                 buff.push('37');//// temp setting
                 buff.push(int2hex(1));// setting 1 or read 0
                 buff.push(int2hex(0));// 0 as master 
-                buff.push(int2hex(this.setting?.lowTemp||5)); // low temp (Range 0-60) 
-                buff.push(int2hex(this.setting?.highTemp||10)); // Highest temperature (Range 0-60) 
+                buff.push(int2hex(this.setting?.lowTemp || 5)); // low temp (Range 0-60) 
+                buff.push(int2hex(this.setting?.highTemp || 10)); // Highest temperature (Range 0-60) 
                 buff.push(int2hex(5)); // Return difference value (Range 2-8) 
                 buff.push(int2hex(0)); // Delay Starting time (Range 0-8)
                 buff.push(int2hex(0)); // Sensor correction (Range -10-10) 

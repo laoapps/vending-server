@@ -41,6 +41,8 @@ export class SaleAddPage implements OnInit {
   showProductList(){
     this.apiService.showModal(ProductlistPage).then(ro => {
       ro?.present();
+      console.log('show product list');
+      
       ro?.onDidDismiss().then(r => {
         console.log(r);
 

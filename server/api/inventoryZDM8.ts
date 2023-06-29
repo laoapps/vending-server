@@ -18,6 +18,8 @@ import {
     writeMachineSetting,
     writeSucceededRecordLog,
     readMachineBalance,
+    writeACKConfirmCashIn,
+    readACKConfirmCashIn,
 } from "../services/service";
 import {
     EClientCommand,
@@ -1669,138 +1671,173 @@ export class InventoryZDM8 implements IBaseClass {
 
         // })
     }
-    creditMachine(d: IReqModel) {
+   async creditMachine(d: IReqModel) {
         const that = this;
-        const x = d.token as string;
+        const ack = await readACKConfirmCashIn(d.transactionID+'');
+        let machineId = this.ssocket.findMachineIdToken(d.token);
+        const ws = that.wsClient.find(
+            (v) => v["machineId"] == machineId.machineId + ""
+        );
+        const res = {} as IResModel;
+    
+            res.command = d.command;
+            res.message = EMessage.machineCredit;
+            res.status = 1;
         console.log(
             "creditMachine WS online machine",
             that.ssocket.listOnlineMachines()
         );
-        let machineId = this.ssocket.findMachineIdToken(x);
+        
+        console.log('FOUND ACK EXIST TRANSACTIONID',ack,d.transactionID);
+        
+        if(ack){
+            
+            readMachineSetting(machineId.machineId).then(async r=>{
+                let setting ={} as any
+                if(r){
+                    try {
+                        setting= JSON.parse(r);
+                    } catch (error) {
+                        console.log('error parsing setting 2',error);
+                        setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                    }
+                }
+                const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
+                const limiter = await readMachineLimiter(machineId.machineId);
 
-        if (!machineId) throw new Error("machine is not exist");
-        const sock = that.ssocket.findOnlneMachine(machineId.machineId);
-        if (!sock) throw new Error("machine is not online");
-        // that.ssocket.terminateByClientClose(machineId.machineId)
-        const hashnotes = this.initHashBankNotes(machineId.machineId);
-        const ws = that.wsClient.find(
-            (v) => v["machineId"] == machineId.machineId + ""
-        );
-
-        const res = {} as IResModel;
-
-        res.command = d.command;
-        res.message = EMessage.machineCredit;
-        res.status = 1;
-        if (d.token) {
-            const bsi = {} as IBillCashIn;
-            bsi.clientId = ws["clientId"];
-            bsi.createdAt = new Date();
-            bsi.updatedAt = bsi.createdAt;
-            bsi.transactionID = d?.data?.transID;
-            bsi.uuid = uuid4();
-            bsi.userUuid; // later
-            bsi.id; // auto
-
-            bsi.isActive = true;
-
-            bsi.badBankNotes = []; // update from machine
-            bsi.bankNotes = []; // update from machine
-
-            bsi.confirm; // update when cash has come
-            bsi.confirmTime; // update when cash has come
-
-            bsi.requestTime = new Date();
-            // bsi.requestor = requestor;
-            bsi.machineId = machineId.machineId;
-
-            console.log("billCashIn", res.data);
-
-            // bsi.requestor = requestor;
-            // that.push(bsi);
-            //
-            const hn = hashnotes.find((v) => v.hash == d?.data + "");
-            if (hn != undefined && Object.entries(hn).length == 0) {
+                that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting,confirmCredit:true,transactionID:d.transactionID})
                 ws.send(
                     JSON.stringify(
-                        PrintError(d.command, [], EMessage.invalidBankNote + " 0")
+                        PrintSucceeded(d.command, res, EMessage.succeeded)
                     )
-                );
-                return;
-            }
-            const bn = this.notes.find((v) => v.value == hn?.value);
-            if (bn != undefined && Object.entries(bn).length == 0) {
-                ws.send(
-                    JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote))
-                );
-                return;
-            }
-
-            // *** cash in here
-            const func = new CashinValidationFunc();
-            const params = {
-                cash: bn.value,
-                description: "VENDING LAAB CASH IN",
-                machineId: machineId.machineId,
-            };
-            console.log(`cash in validation params`, params);
-            func
-                .Init(params)
-                .then((run) => {
-                    console.log(`response cash in validation`, run);
-                    if (run.message != IENMessage.success) throw new Error(run);
-                    bsi.bankNotes.push(bn);
-                    res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
-                    that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
-                    console.log(`sw sender`, d.command, res.data);
-                    redisClient.set('_balance_' + ws['clientId'], bn.value);
-                   
-                    readMachineSetting(machineId.machineId).then(async r=>{
-                        let setting ={} as any
-                        if(r){
-                            try {
-                                setting= JSON.parse(r);
-                            } catch (error) {
-                                console.log('error parsing setting 2',error);
-                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
-                            }
-                        }
-                        const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
-                        const limiter = await readMachineLimiter(machineId.machineId);
-
-                        that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting})
-                        ws.send(
-                            JSON.stringify(
-                                PrintSucceeded(d.command, res, EMessage.succeeded)
-                            )
+                )
+            })
+            return;
+        }else{
+            if (!machineId) throw new Error("machine is not exist");
+            const sock = that.ssocket.findOnlneMachine(machineId.machineId);
+            if (!sock) throw new Error("machine is not online");
+            // that.ssocket.terminateByClientClose(machineId.machineId)
+            const hashnotes = this.initHashBankNotes(machineId.machineId);
+          
+    
+            
+            if (d.token) {
+                const bsi = {} as IBillCashIn;
+                bsi.clientId = ws["clientId"];
+                bsi.createdAt = new Date();
+                bsi.updatedAt = bsi.createdAt;
+                bsi.transactionID = d.transactionID;
+                bsi.uuid = uuid4();
+                bsi.userUuid; // later
+                bsi.id; // auto
+    
+                bsi.isActive = true;
+    
+                bsi.badBankNotes = []; // update from machine
+                bsi.bankNotes = []; // update from machine
+    
+                bsi.confirm; // update when cash has come
+                bsi.confirmTime; // update when cash has come
+    
+                bsi.requestTime = new Date();
+                // bsi.requestor = requestor;
+                bsi.machineId = machineId.machineId;
+    
+                console.log("billCashIn", res.data);
+    
+                // bsi.requestor = requestor;
+                // that.push(bsi);
+                //
+                const hn = hashnotes.find((v) => v.hash == d?.data + "");
+                if (hn != undefined && Object.entries(hn).length == 0) {
+                    ws.send(
+                        JSON.stringify(
+                            PrintError(d.command, [], EMessage.invalidBankNote + " 0")
                         )
+                    );
+                    return;
+                }
+                const bn = this.notes.find((v) => v.value == hn?.value);
+                if (bn != undefined && Object.entries(bn).length == 0) {
+                    ws.send(
+                        JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote))
+                    );
+                    return;
+                }
+    
+                // *** cash in here
+                const func = new CashinValidationFunc();
+                const params = {
+                    cash: bn.value,
+                    description: "VENDING LAAB CASH IN",
+                    machineId: machineId.machineId,
+                };
+                console.log(`cash in validation params`, params);
+                func
+                    .Init(params)
+                    .then((run) => {
+                        console.log('RECORD THIS TRANSACTIION AS IT has been doen');
+                        
+                        writeACKConfirmCashIn(d.transactionID+'');
+                        console.log(`response cash in validation`, run);
+                        if (run.message != IENMessage.success) throw new Error(run);
+                        bsi.bankNotes.push(bn);
+                        res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
+                        that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
+                        console.log(`sw sender`, d.command, res.data);
+                        redisClient.set('_balance_' + ws['clientId'], bn.value);
+                       
+                        readMachineSetting(machineId.machineId).then(async r=>{
+                            let setting ={} as any
+                            if(r){
+                                try {
+                                    setting= JSON.parse(r);
+                                } catch (error) {
+                                    console.log('error parsing setting 2',error);
+                                    setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                                }
+                            }
+                            const balance =await readMerchantLimiterBalance(machineId.ownerUuid);
+                            const limiter = await readMachineLimiter(machineId.machineId);
+    
+                            that.ssocket.updateBalance(machineId.machineId,{balance:balance||0,limiter,setting,confirmCredit:true,transactionID:bsi.transactionID})
+                            ws.send(
+                                JSON.stringify(
+                                    PrintSucceeded(d.command, res, EMessage.succeeded)
+                                )
+                            )
+                        })
+                        
+    
                     })
-                    
-
-                })
-                .catch((error) => {
-                    console.log(`error cash in validation`, error.message);
-                    bsi.badBankNotes.push(bn);
-                    res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
-                    that.updateBadBillCash(bsi, machineId?.machineId, bsi?.transactionID);
-
-                    if (error.transferFail == true) {
-                        console.log(`error`, error.message);
-                        this.updateInsuffBillCash(bsi);
-                    }
-
-                    ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
-                });
-
-            // const requestor = this.requestors.find(v => v.transID == d.data.transID);
-
-            // if (!requestor) throw new Error('Requestor is not exist');
-        } else {
-            // throw new Error(EMessage.MachineIdNotFound)
-            ws.send(
-                JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound))
-            );
+                    .catch((error) => {
+                        console.log(`error cash in validation`, error.message);
+                        bsi.badBankNotes.push(bn);
+                        res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
+                        that.updateBadBillCash(bsi, machineId?.machineId, bsi?.transactionID);
+    
+                        if (error.transferFail == true) {
+                            console.log(`error`, error.message);
+                            this.updateInsuffBillCash(bsi);
+                        }
+    
+                        ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                    });
+    
+                // const requestor = this.requestors.find(v => v.transID == d.data.transID);
+    
+                // if (!requestor) throw new Error('Requestor is not exist');
+            } else {
+                // throw new Error(EMessage.MachineIdNotFound)
+                ws.send(
+                    JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound))
+                );
+            }
         }
+        
+
+        
     }
 
     initHashBankNotes(machineId: string) {
@@ -1954,6 +1991,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
         });
     }
+
     updateBillCash(
         billCash: IBillCashIn,
         machineId: string,
@@ -1961,6 +1999,7 @@ export class InventoryZDM8 implements IBaseClass {
         provider = ""
     ) {
         try {
+          
             const bEnt: BillCashInStatic = BillCashInFactory(
                 EEntity.billcash + "_" + this.production,
                 dbConnection
