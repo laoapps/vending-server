@@ -117,6 +117,7 @@ export class InventoryZDM8 implements IBaseClass {
         EEntity.billcash + "_" + this.production,
         dbConnection
     );
+    
     badBillCashEnt: BillCashInStatic = BillCashInFactory(
         EEntity.badbillcash + "_" + this.production,
         dbConnection
@@ -228,7 +229,8 @@ export class InventoryZDM8 implements IBaseClass {
     }
 
     constructor(router: Router, wss: WebSocketServer.Server) {
-        this.billCashEnt.sync();
+        this.billCashEnt.sync({force:true});
+        this.badBillCashEnt.sync({force:true});
         this.initBankNotes();
 
         this.ssocket = new SocketServerZDM8(this.ports);

@@ -40,22 +40,19 @@ export const BankNoteFactory = (name: string, sequelize: Sequelize):BankNoteStat
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
         },
-        name:{
+        value:{
+            type: DataTypes.FLOAT,
+        },
+        amount: {
+            type: DataTypes.FLOAT,
+        },
+        currency:{
             type: DataTypes.STRING,
         },
+        channel: {
+            type: DataTypes.FLOAT,
+        },
         image: {
-            type: DataTypes.TEXT,
-        },
-        price:{
-            type: DataTypes.FLOAT,
-        },
-        qtty: {
-            type: DataTypes.FLOAT,
-        },
-        hasM: {
-            type: DataTypes.TEXT,
-        },
-        hashP: {
             type: DataTypes.TEXT,
         }
 

@@ -40,24 +40,41 @@ export const BillCashInFactory = (name: string, sequelize: Sequelize):BillCashIn
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
         },
-        name:{
+        bankNotes:{
+            type: DataTypes.JSONB,
+        },
+        badBankNotes: {
+            type: DataTypes.JSONB,
+        },
+        transactionID:{
+            type: DataTypes.FLOAT,
+        },
+        userUuid: {
             type: DataTypes.STRING,
         },
-        image: {
-            type: DataTypes.TEXT,
+        requestor: {
+            type: DataTypes.JSONB,
         },
-        price:{
-            type: DataTypes.FLOAT,
-        },
-        qtty: {
-            type: DataTypes.FLOAT,
-        },
-        hasM: {
-            type: DataTypes.TEXT,
-        },
-        hashP: {
-            type: DataTypes.TEXT,
+        requestTime: {
+            type: DataTypes.DATE,
         }
+        ,
+        confirm: {
+            type: DataTypes.JSONB,
+        }
+        ,
+        confirmTime: {
+            type: DataTypes.DATE,
+        }
+        ,
+        clientId: {
+            type: DataTypes.STRING,
+        }
+        ,
+        machineId: {
+            type: DataTypes.STRING,
+        }
+       
 
     } as ModelAttributes<BillCashInModel>;
 
