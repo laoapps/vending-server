@@ -117,7 +117,7 @@ export class SocketClientVMC {
             this.port,
             this.host,
             {
-                secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1,
+                secureOptions: constants.SSL_OP_NO_TLSv1_2 ,
                 maxVersion:'TLSv1.2',
                 key: process.env.privateKeys,
                 cert: process.env.publicKeys,
