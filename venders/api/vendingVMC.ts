@@ -28,7 +28,7 @@ export class VendingVMC {
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
     machinestatus = '';
-    creditPending = new Array<{ command: any, data: any, transactionID: string, t: number }>();
+    creditPending = new Array<{ command: any, data: any, transactionID: string,raw:string, t: number }>();
 
     pendingRetry = 10;// 10s
     constructor(sock: SocketClientVMC) {
@@ -177,9 +177,10 @@ export class VendingVMC {
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
                     const t = Number('-21' + moment.now());
-                    that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
+                    const v = that.getNoteValue(b);
+                    that.creditPending.push({raw:b,data: cryptojs.SHA256(that.sock?.machineid + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
                     writeCreditRecord(that.creditPending,t+'');
-                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
+                    that.sock?.send(cryptojs.SHA256(that.sock?.machineid +v).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
 
 
                     });
