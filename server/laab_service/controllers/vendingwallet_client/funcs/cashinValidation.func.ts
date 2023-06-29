@@ -226,7 +226,7 @@ export class CashinValidationFunc {
                     qr: JSON.stringify(h)
                 }
 
-                const lastBalance: number = Number(this.balance) + Number(this.cash);
+                const lastBalance: number = Number(this.balance) - Number(this.cash);
                 writeMerchantLimiterBalance(this.ownerUuid, lastBalance.toString());
 
                 this.response = {
