@@ -11,6 +11,7 @@ import { MachineIDStatic, MachineIDFactory } from '../entities/machineid.entity'
 import { IENMessage } from '../services/laab.service';
 import tls from 'tls';
 import fs from 'fs';
+import constants from 'constants';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
     //  options = {
@@ -18,9 +19,10 @@ export class SocketServerZDM8 {
     //     cert: process.env.publicKeys
     // };
     server = tls.createServer({
+        secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1,
+        maxVersion:'TLSv1.2',
         key: process.env.privateKeys,
         cert: process.env.publicKeys,
-        secureProtocol:'TLSv1.2_method',//TLSv1_method
         rejectUnauthorized:false
     });
     sclients = Array<net.Socket>();

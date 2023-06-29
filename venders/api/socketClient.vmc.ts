@@ -10,6 +10,7 @@ import express, { Router } from 'express';
 import axios from 'axios';
 import tls from 'tls';
 import fs from 'fs';
+import constants from 'constants';
 export class SocketClientVMC {
     //---------------------client----------------------
 
@@ -116,7 +117,8 @@ export class SocketClientVMC {
             this.port,
             this.host,
             {
-                secureProtocol:'TLSv1.2_method',//TLSv1_method,TLS_method
+                secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1,
+                maxVersion:'TLSv1.2',
                 key: process.env.privateKeys,
                 cert: process.env.publicKeys,
                 rejectUnauthorized: false
