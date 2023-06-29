@@ -20,7 +20,7 @@ export class SocketServerZDM8 {
     server = tls.createServer({
         key: process.env.privateKeys,
         cert: process.env.publicKeys,
-        secureProtocol:'TLS_method',//TLSv1_method
+        secureProtocol:'SSLv3',//TLSv1_method
         rejectUnauthorized:false
     });
     sclients = Array<net.Socket>();
