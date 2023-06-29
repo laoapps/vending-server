@@ -24,10 +24,15 @@ export class SocketServerZDM8 {
         // maxVersion:'TLSv1.2',
         key: process.env.privateKeys,
         cert: process.env.publicKeys,
+        ca:process.env.ca,
         requestCert: true,
-        rejectUnauthorized:false
+        // rejectUnauthorized:false
+    },(socket)=>{
+        socket.write('welcome!\n');
+        socket.setEncoding('utf8');
+        socket.pipe(socket);
     });
-    sclients = Array<net.Socket>();
+    sclients = Array<tls.TLSSocket>();
     ports = 31223;
 
     public machineIds = new Array<IMachineClientID>();
@@ -35,7 +40,7 @@ export class SocketServerZDM8 {
 
     constructor(ports: number) {
         try {
-            this.sclients = Array<net.Socket>();
+            this.sclients = Array<tls.TLSSocket>();
             this.ports = this.ports || ports;
             this.machineIds = new Array<IMachineClientID>();
             //creates the server
@@ -48,13 +53,16 @@ export class SocketServerZDM8 {
 
             // emitted when new client connects
             const that = this;
-            this.server.on('connection', function (socket) {
+            this.server.on('connection', () => {
+                console.log('insecure connection');
+              })
+            this.server.on('secureConnection', function (socket) {
                 //this property shows the number of characters currently buffered to be written. (Number of characters is approximately equal to the number of bytes to be written, but the buffer may contain strings, and the strings are lazily encoded, so the exact number of bytes is not known.)
                 //Users who experience large or growing bufferSize should attempt to "throttle" the data flows in their program with pause() and resume().
 
                 console.log('Buffer size : ' + socket.bufferSize);
 
-                console.log('---------server details -----------------');
+                console.log('---------server details -----------------',socket.authorized);
 
                 var address = that.server.address() as net.AddressInfo;
                 var port = address?.port;
