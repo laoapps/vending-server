@@ -83,8 +83,11 @@ CreateDatabase("")
     );
     process.env._image_path = path.join(__dirname, "..", "public");
     process.env._log_path = path.join(__dirname, "..", "logs");
-    process.env.privateKeys = fs.readFileSync(__dirname + "/private-key.pem", "utf8");
-    process.env.publicKeys = fs.readFileSync(__dirname + "/public-cert.pem", "utf8");
+    process.env.privateKeys = fs.readFileSync(__dirname + "/certs/server/server.key")+'';
+    process.env.publicKeys = fs.readFileSync(__dirname + "/certs/server/server.crt")+'';
+    process.env.ca = fs.readFileSync(__dirname+'/certs/ca/ca.crt')+'';
+
+  
     fs.existsSync(process.env._log_path) || fs.mkdirSync(process.env._log_path);
     fs.existsSync(process.env._image_path) ||
       fs.mkdirSync(process.env._image_path);
