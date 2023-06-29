@@ -1428,7 +1428,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.data[0].allowCashIn = o.data[0]?.allowCashIn == '' ? false : true;
                                 o.data[0].light = o.data[0]?.light == '' ? false : true;
 
-                                const data = r.data.find(v => v.settingName == 'setting');
+                                const a = r.data.find(v => v.settingName == 'setting');
 
                                 const x = o.data[0]?.allowVending || true;
                                 const y = o.data[0]?.allowCashIn || true;
@@ -1436,11 +1436,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 const z = o.data[0]?.highTemp || 10;
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
-                                const a = data.find(v => v.settingName == 'setting');
                                 if (!a) r.data.push({ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w,limiter:l });
                                 else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u;a.limiter=l }
 
-                                r.data = data;
+                                r.data = a;
                                 r.changed('data', true);
 
                                 writeMachineSetting(r.machineId, r.data);
@@ -2716,10 +2715,10 @@ export class InventoryZDM8 implements IBaseClass {
                                         console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
                                     } catch (error) {
                                         console.log('parsing error setting', error);
-                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true
+                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true;setting.limiter=100000;
                                     }
                                     console.log('ready to pong');
-                                    const limiter = 100000; // TODO: Get limiter 
+                                    const limiter = setting.limiter; // TODO: Get limiter 
                                     const merchant = 0; // TODO:Get merchant balance
                                     ws.send(
                                         JSON.stringify(
