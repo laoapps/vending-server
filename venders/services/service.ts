@@ -113,8 +113,8 @@ export function chk8xor(byteArray = new Array<any>()) {
     let checksum = 0x00
     for (let i = 0; i < byteArray.length - 1; i++)
         checksum ^= parseInt(byteArray[i].replace(/^#/, ''), 16)
-    const x =checksum.toString(16);
-    if(x.length==1)return '0'+x;
+    const x = checksum.toString(16);
+    if (x.length == 1) return '0' + x;
     return x;
 }
 
@@ -132,7 +132,7 @@ function toHex(str: string) {
     return result;
 }
 function fromHex(hex: string) {
-    let str='';
+    let str = '';
     try {
         str = decodeURIComponent(hex.replace(/(..)/g, '%$1'))
     }
@@ -145,101 +145,118 @@ function fromHex(hex: string) {
 
 export function writeSucceededRecordLog(m, position) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path||process.cwd() + `/results_${da}.json`;
-    fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+    const logs = process.env._log_path || process.cwd() + `/results_${da}.json`;
+    if (!fs.existsSync(logs)) {
+        fs.writeFileSync(logs, JSON.stringify({ m, position, time: new Date() }));
+    } else {
+        fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+    }
 }
-export function writeLogs(m, position,name='g_') {
+export function writeLogs(m, position, name = 'g_') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
-    console.log('m',m);
-    fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+    const logs = process.env._log_path || process.cwd() + `/${name}_${da}.json`;
+    console.log('m', m);
+    if (!fs.existsSync(logs)) {
+        fs.writeFileSync(logs, JSON.stringify({ m, position, time: new Date() }));
+    } else {
+        fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
+    }
 }
-export function writeCreditRecord(m, transactionID:string,name='credit_') {
+export function writeCreditRecord(m, transactionID: string, name = 'credit_') {
     // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path||process.cwd() + `/${name}_.json`;
-    console.log('m',m);
-    fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+    const logs = process.env._log_path || process.cwd() + `/${name}_.json`;
+    console.log('m', m);
+    if (!fs.existsSync(logs)) {
+        fs.writeFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }));
+    } else {
+        fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+    }
+
 }
-export function readCreditRecord(name='credit_') {
+export function readCreditRecord(name = 'credit_') {
     // const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path||process.cwd() + `/${name}_.json`;
+    const logs = process.env._log_path || process.cwd() + `/${name}_.json`;
 
     return fs.readFileSync(logs).toString();
 }
-export function writeCreditLogs(m, transactionID:string,name='credit_logs') {
+export function writeCreditLogs(m, transactionID: string, name = 'credit_logs') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
-    console.log('m',m);
-    fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+    const logs = process.env._log_path || process.cwd() + `/${name}_${da}.json`;
+    console.log('m', m);
+    if (!fs.existsSync(logs)) {
+        fs.writeFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }));
+    } else {
+        fs.appendFileSync(logs, JSON.stringify({ m, transactionID, time: new Date() }), { flag: 'a+' });
+    }
 }
-export function clearLogsDays(name='g_',duration=15){
+export function clearLogsDays(name = 'g_', duration = 15) {
     try {
-        const hist= moment().subtract(duration,'days');
-        const  da = hist.year() + '_' + hist.month() + '_' + hist.date();
-        const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
-        const elogs = process.env._log_path||process.cwd() + `/e_${da}.json`;
-        const rlogs = process.env._log_path||process.cwd() + `/results_${da}.json`;
-        !fs.existsSync(logs)||
-        fs.unlinkSync(logs);
-        !fs.existsSync(elogs)||
-        fs.unlinkSync(elogs);
-        !fs.existsSync(rlogs)||
-        fs.unlinkSync(rlogs);
+        const hist = moment().subtract(duration, 'days');
+        const da = hist.year() + '_' + hist.month() + '_' + hist.date();
+        const logs = process.env._log_path || process.cwd() + `/${name}_${da}.json`;
+        const elogs = process.env._log_path || process.cwd() + `/e_${da}.json`;
+        const rlogs = process.env._log_path || process.cwd() + `/results_${da}.json`;
+        !fs.existsSync(logs) ||
+            fs.unlinkSync(logs);
+        !fs.existsSync(elogs) ||
+            fs.unlinkSync(elogs);
+        !fs.existsSync(rlogs) ||
+            fs.unlinkSync(rlogs);
     } catch (error) {
         console.log(error);
-        
+
     }
 }
 
-export function loadLogsDays(name='g_',duration=15){
+export function loadLogsDays(name = 'g_', duration = 15) {
     try {
-        const hist= moment().subtract(duration,'days');
-        const  da = hist.year() + '_' + hist.month() + '_' + hist.date();
-        const logs = process.env._log_path||process.cwd() + `/${name}_${da}.json`;
-        const elogs = process.env._log_path||process.cwd() + `/e_${da}.json`;
-        const rlogs = process.env._log_path||process.cwd() + `/results_${da}.json`;
+        const hist = moment().subtract(duration, 'days');
+        const da = hist.year() + '_' + hist.month() + '_' + hist.date();
+        const logs = process.env._log_path || process.cwd() + `/${name}_${da}.json`;
+        const elogs = process.env._log_path || process.cwd() + `/e_${da}.json`;
+        const rlogs = process.env._log_path || process.cwd() + `/results_${da}.json`;
 
         let content = '';
-        if(!fs.existsSync(logs))
-        content +=fs.readFileSync(logs,{ encoding: 'utf8', flag: 'r' })
+        if (!fs.existsSync(logs))
+            content += fs.readFileSync(logs, { encoding: 'utf8', flag: 'r' })
 
-        if(!fs.existsSync(elogs))
-        content +=fs.readFileSync(elogs,{ encoding: 'utf8', flag: 'r' })
+        if (!fs.existsSync(elogs))
+            content += fs.readFileSync(elogs, { encoding: 'utf8', flag: 'r' })
 
-        if(!fs.existsSync(rlogs))
-        content +=fs.readFileSync(rlogs,{ encoding: 'utf8', flag: 'r' });
+        if (!fs.existsSync(rlogs))
+            content += fs.readFileSync(rlogs, { encoding: 'utf8', flag: 'r' });
         return content;
     } catch (error) {
         console.log(error);
-        
+
     }
 }
-export interface IMachineStatus{billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
+export interface IMachineStatus { billStatus: string, coinStatus: string, cardStatus: string, tempconrollerStatus: string, temp: string, doorStatus: string, billChangeValue: string, coinChangeValue: string, machineIMEI: string, allMachineTemp: string }
 
-export function machineStatus(b:string):IMachineStatus{
+export function machineStatus(b: string): IMachineStatus {
     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
     // fafb52
     // 21 //len
     // 54 // series
-    const billStatus =b.substring(10,12);
+    const billStatus = b.substring(10, 12);
     // 00 // bill acceptor
-    const coinStatus=b.substring(12,14);
+    const coinStatus = b.substring(12, 14);
     // 01 // coin acceptor
-   const cardStatus= b.substring(14,16);
+    const cardStatus = b.substring(14, 16);
     // 00 // card reader status
-    const tempconrollerStatus= b.substring(16,18);
+    const tempconrollerStatus = b.substring(16, 18);
     // 00 // tem controller status
-    const temp= b.substring(18,20);
+    const temp = b.substring(18, 20);
     // 13 // temp
-    const doorStatus= b.substring(20,22);
+    const doorStatus = b.substring(20, 22);
     // 00 // door 
-    const billChangeValue= b.substring(22,30);
+    const billChangeValue = b.substring(22, 30);
     // 00000000 // bill change
-    const coinChangeValue=b.substring(30,38);
+    const coinChangeValue = b.substring(30, 38);
     // 00000000 // coin change
-    const machineIMEI= b.substring(38,58);
+    const machineIMEI = b.substring(38, 58);
     // 30303030303030303030
-    const allMachineTemp= b.substring(58,74);
+    const allMachineTemp = b.substring(58, 74);
     // 13aaaaaaaaaaaaaa8d
     // // fafb header
     // // 52 command
@@ -256,13 +273,16 @@ export function machineStatus(b:string):IMachineStatus{
     // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
     // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
     // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-    return {billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
-  }
+    return { billStatus, coinStatus, cardStatus, tempconrollerStatus, temp, doorStatus, billChangeValue, coinChangeValue, machineIMEI, allMachineTemp }
+}
 
-export function writeErrorLogs(m:string,e:any) {
+export function writeErrorLogs(m: string, e: any) {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
-    const logs = process.env._log_path||process.cwd() + `/e_${da}.json`;
-    console.log('error',m);
-    
-    fs.appendFileSync(logs, JSON.stringify({ m,e, time: new Date() }), { flag: 'a+' });
+    const logs = process.env._log_path || process.cwd() + `/e_${da}.json`;
+    console.log('error', m);
+    if (!fs.existsSync(logs)) {
+        fs.writeFileSync(logs, JSON.stringify({ m, e, time: new Date() }));
+    } else {
+        fs.appendFileSync(logs, JSON.stringify({ m, e, time: new Date() }), { flag: 'a+' });
+    }
 }
