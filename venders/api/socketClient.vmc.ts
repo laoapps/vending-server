@@ -14,7 +14,7 @@ export class SocketClientVMC {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
-    client = new net.Socket();
+    client:tls.TLSSocket|undefined=undefined;
     options = {
         key: process.env.privateKeys,
         cert: process.env.publicKeys,
@@ -114,7 +114,8 @@ export class SocketClientVMC {
         const that = this;
         this.client = tls.connect(
             this.port,
-            this.host,this.options
+            this.host,
+            this.options
         );
         if (this.t) {
             clearInterval(this.t);
@@ -133,9 +134,13 @@ export class SocketClientVMC {
 
             // console.log('Client is IP4/IP6 : ' + family);
 
-
+            if (that.client?.authorized) {
+                console.log("Connection authorized by a Certificate Authority.");
+                } else {
+                console.log("Connection not authorized: " + that.client?.authorizationError)
+                }
             // writing data to server
-            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
+            that.client?.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
 
         });
 
@@ -193,8 +198,8 @@ export class SocketClientVMC {
         this.client.on('close', function (data) {
             console.log('CLOSE on close:' + data);
             setTimeout(() => {
-                that.client.destroy();
-                that.client = new net.Socket();
+                that.client?.destroy();
+                // that.client = new net.Socket();
                 that.init();
             }, 3000);
         });
@@ -206,7 +211,7 @@ export class SocketClientVMC {
             req.token = that.token;
             req.time = new Date().getTime() + '';
             req.command = EMACHINE_COMMAND.ping;
-            that.client.write(JSON.stringify(req) + '\n');
+            that.client?.write(JSON.stringify(req) + '\n');
         }, 5000);
     }
     sendingCount=1;
@@ -219,7 +224,7 @@ export class SocketClientVMC {
         req.transactionID = transactionID;
         
         setTimeout(() => {
-            this.client.write(JSON.stringify(req) + '\n', e => {
+            this.client?.write(JSON.stringify(req) + '\n', e => {
                 if (e)
                    {
                     console.log('SEND error on send', e);
@@ -232,7 +237,7 @@ export class SocketClientVMC {
         
     }
     close() {
-        this.client.end();
+        this.client?.end();
         this.m.close();
     }
 
