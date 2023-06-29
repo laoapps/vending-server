@@ -125,7 +125,6 @@ export class SocketServerZDM8 {
                                     }
                                     return false;
                                 })
-
                                 if (!mx.length) {
                                     that.sclients.push(socket);
                                     console.log('DATA machine exist and accepted');

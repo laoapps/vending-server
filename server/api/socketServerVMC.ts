@@ -102,7 +102,7 @@ export class SocketServerVMC  extends SocketEmitter{
                                     that.sclients.push(socket);
                                     console.log('DATA machine exist and accepted');
                                     that.isAcceptMachineLogin(x.machineId);
-                                } else if (mx.length) {
+                                } else if (mx.length>1) {
                                     console.log('DATA duplicated connection', mx.length);
                                     mx.forEach(v => v.end())
                                     socket.end();
