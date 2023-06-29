@@ -116,7 +116,7 @@ export class SocketClientVMC {
             this.port,
             this.host,
             {
-                secureProtocol:'TLSv1_method',
+                secureProtocol:'TLS_method',//TLSv1_method
                 key: process.env.privateKeys,
                 cert: process.env.publicKeys,
                 rejectUnauthorized: false
