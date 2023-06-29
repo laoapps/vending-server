@@ -259,7 +259,15 @@ export function findRealDB(token: string): Promise<string> {
     })
 }
 export function writeMachineSetting(machineId: string, setting: any) {
-    redisClient.set('_setting_' + machineId, JSON.stringify(setting));
+    try {
+        console.log('writeMachineSetting',machineId,setting);
+        
+        redisClient.set('_setting_' + machineId, JSON.stringify(setting));
+    } catch (error) {
+        console.log('error writeMachineSetting',error);
+        
+    }
+    
 }
 export function readMachineSetting(machineId: string,) {
     return redisClient.get('_setting_' + machineId);
