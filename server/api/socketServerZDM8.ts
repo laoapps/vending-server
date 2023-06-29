@@ -1,7 +1,7 @@
 import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess, IBillCashIn, EEntity } from '../entities/system.model';
 import cryptojs from 'crypto-js';
-import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineLimiter, writeMachineSetting } from '../services/service';
+import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineSetting } from '../services/service';
 import { EventEmitter } from 'events';
 import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
 import { v4 as uuid4 } from 'uuid';
@@ -170,7 +170,7 @@ export class SocketServerZDM8 {
                                     machineId: m.machineId
                                 }
                                 console.log(`machine der`, params);
-                                const limiter =100000;
+                                // const limiter =100000;
                                 func.Init(params).then(run => {
                                     const response: any = run;
                                     if (response.message != IENMessage.success) {
@@ -184,12 +184,12 @@ export class SocketServerZDM8 {
                                                 setting= JSON.parse(r);
                                             } catch (error) {
                                                 console.log('error parsing setting 2',error);
-                                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;setting.limiter=100000
                                             }
                                         }
                                         writeMerchantLimiterBalance(x.ownerUuid,response?.balance+'');
-                                        writeMachineLimiter(m.machineId,limiter+'');
-                                        that.updateBalance(m.machineId, {balance:response?.balance||0,limiter,setting});
+                                        // writeMachineLimiter(m.machineId,limiter+'');
+                                        that.updateBalance(m.machineId, {balance:response?.balance||0,limiter:setting.limiter,setting});
                                     })
                                    
 
@@ -418,9 +418,10 @@ export class SocketServerZDM8 {
             const w = v.data[0]?.light||true;
             const z = v.data[0]?.highTemp||10;
             const u = v.data[0]?.lowTemp||5;
+            const l = v.data[0]?.limiter||100000;
             const a = v.data.find(v=>v.settingName=='setting');
-            if(!a)v.data.push({settingName:'setting',allowVending:x,allowCashIn:y,lowTemp:u,highTemp:z,light:w});
-            else{a.allowVending=x;a.allowCashIn=y,a.light=w;a.highTemp=z;a.lowTemp=u}
+            if(!a)v.data.push({settingName:'setting',allowVending:x,allowCashIn:y,lowTemp:u,highTemp:z,light:w,limiter:l});
+            else{a.allowVending=x;a.allowCashIn=y,a.light=w;a.highTemp=z;a.lowTemp=u;a.limiter=l}
             writeMachineSetting(v.machineId,v.data);
         })
     }

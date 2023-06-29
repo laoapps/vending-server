@@ -265,13 +265,13 @@ export function readMachineSetting(machineId: string,) {
     return redisClient.get('_setting_' + machineId);
 
 }
-export function writeMachineLimiter(machineId: string, balance: string) {
-    redisClient.set('_limiter_' + machineId, balance);
-}
-export function readMachineLimiter(machineId: string,) {
-    return redisClient.get('_limiter_' + machineId);
+// export function writeMachineLimiter(machineId: string, balance: string) {
+//     redisClient.set('_limiter_' + machineId, balance);
+// }
+// export function readMachineLimiter(machineId: string,) {
+//     return redisClient.get('_limiter_' + machineId);
 
-}
+// }
 export function  writeACKConfirmCashIn(transactionID:string) {
     return redisClient.setEx('_ack_confirm_CashIn_' + transactionID,5, 'yes');
 }
