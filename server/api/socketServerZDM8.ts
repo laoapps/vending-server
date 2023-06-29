@@ -20,7 +20,7 @@ export class SocketServerZDM8 {
     // };
     server = tls.createServer({
         // secureOptions: constants.SSL_OP_NO_TLSv1_2 ,
-        secureProtocol:'TLSV1.3_method',
+        secureProtocol:'TLSv1_3_method',
         // maxVersion:'TLSv1.2',
         key: process.env.privateKeys,
         cert: process.env.publicKeys,
