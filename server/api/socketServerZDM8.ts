@@ -35,6 +35,9 @@ export class SocketServerZDM8 {
                     const that = this;
 
             //emitted when server closes ...not emitted until all connections closes.
+            console.log('serverkey', process.env.serverkey);
+            console.log('serverkey', process.env.servercert);
+            console.log('serverkey', process.env.ca);
             this.server= tls.createServer({
                 key: process.env.serverkey,
                 cert: process.env.servercert,
