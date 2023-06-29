@@ -1785,6 +1785,7 @@ export class InventoryZDM8 implements IBaseClass {
                             );
                             return;
                         }
+                        console.log("hn", hn);
                         const bn = this.notes.find((v) => v.value == hn?.value);
                         if (bn != undefined && Object.entries(bn).length == 0) {
                             ws.send(
@@ -1792,6 +1793,7 @@ export class InventoryZDM8 implements IBaseClass {
                             );
                             return;
                         }
+                        console.log("bn", bn);
     
                         // *** cash in here
                         const func = new CashinValidationFunc();
