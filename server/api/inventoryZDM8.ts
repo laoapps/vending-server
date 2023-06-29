@@ -1744,6 +1744,7 @@ export class InventoryZDM8 implements IBaseClass {
                 bsi.machineId = machineId.machineId;
                 
                 if (ack) {
+                    // reconfirm
                     readMachineSetting(machineId.machineId).then(async r => {
                         let setting = {} as any
                         if (r) {
@@ -1772,6 +1773,7 @@ export class InventoryZDM8 implements IBaseClass {
     
                     return;
                 } else {
+                    // create new bill for new credit
                     if (!machineId) throw new Error("machine is not exist");
                     const sock = that.ssocket.findOnlneMachine(machineId.machineId);
                     if (!sock) throw new Error("machine is not online");
