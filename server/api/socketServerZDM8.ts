@@ -36,8 +36,8 @@ export class SocketServerZDM8 {
 
             //emitted when server closes ...not emitted until all connections closes.
             this.server= tls.createServer({
-                key: process.env.privateKeys,
-                cert: process.env.publicKeys,
+                key: process.env.serverkey,
+                cert: process.env.servercert,
                 ca:process.env.ca,
                 requestCert: true,
             },(socket)=>{
