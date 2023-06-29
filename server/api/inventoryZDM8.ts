@@ -1872,7 +1872,7 @@ export class InventoryZDM8 implements IBaseClass {
         // load machines
         return new Promise<Array<IMachineClientID>>((resolve, reject) => {
             this.machineClientlist.sync().then((r) => {
-                this.machineClientlist.findAll().then((rx) => {
+                this.machineClientlist.findAll({attributes:{exclude: ['photo']}}).then((rx) => {
                     this.ssocket.initMachineId(rx);
                 });
             });
@@ -2167,7 +2167,7 @@ export class InventoryZDM8 implements IBaseClass {
         }
     }
     refreshMachines() {
-        this.machineClientlist.findAll().then((rx) => {
+        this.machineClientlist.findAll({attributes:{exclude: ['photo']}}).then((rx) => {
             this.ssocket.initMachineId(rx);
         });
     }
