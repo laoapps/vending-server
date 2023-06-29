@@ -1696,7 +1696,8 @@ export class InventoryZDM8 implements IBaseClass {
                     if (r?.length) {
                         await writeACKConfirmCashIn(d.transactionID + '');
                         ack = 'yes';
-                    }
+                    }else
+                    await writeACKConfirmCashIn(d.transactionID + '');
                 }else{
                     throw new Error('TOO FAST '+d.transactionID);
                 }
