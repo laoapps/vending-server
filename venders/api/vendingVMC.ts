@@ -78,10 +78,20 @@ export class VendingVMC {
                 // console.log('INIT disable');
                 // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
             }, 2000);
-            const text = readCreditRecord();
+
+            let text ='';
+            try {
+                text = readCreditRecord();
             console.log('readCreditRecord',text);
             
             that.creditPending=JSON.parse(text)
+            } catch (error) {
+                console.log('readCreditRecord');
+                writeLogs({error,message:'readCreditRecord',text},{})
+                that.creditPending.length=0;
+                
+            }
+            
             } catch (error) {
                 console.log('ERROR',error);
                 writeLogs({error},{});
