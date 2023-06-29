@@ -1766,12 +1766,13 @@ export class InventoryZDM8 implements IBaseClass {
                     // that.ssocket.terminateByClientClose(machineId.machineId)
                     const hashnotes = this.initHashBankNotes(machineId.machineId);
     
+                    console.log('hashnotes',hashnotes);
+                    
+    
+                    if (d?.token) {
     
     
-                    if (d.token) {
-    
-    
-                        console.log("billCashIn", d.data);
+                        console.log("billCashIn", d?.data);
     
                         // bsi.requestor = requestor;
                         // that.push(bsi);
