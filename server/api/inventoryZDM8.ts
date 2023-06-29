@@ -1683,21 +1683,30 @@ export class InventoryZDM8 implements IBaseClass {
 
         // })
     }
-    waitCredit = 1;
-    creditMachine(d: IReqModel) {
-        setTimeout(async () => {
+    processingCreditQueques=new Array<string>();
+    async creditMachine(d: IReqModel) {
             try {
                 const that = this;
+                // check if it in the Queque
+                if(this.processingCreditQueques.find(v=>v==d.transactionID+''))
+                     throw new Error('TOO FAST '+d.transactionID);
+                    else
+                    this.processingCreditQueques.push(d.transactionID+'');
+
+
+                // find in redis
                 let ack = await readACKConfirmCashIn(d.transactionID + '');
                 let machineId = this.ssocket.findMachineIdToken(d.token);
                 if (!ack) {
+                    // double check in database
                     const r = await this.loadBillCash(machineId.machineId, d.transactionID)
                     if (r?.length) {
                         await writeACKConfirmCashIn(d.transactionID + '');
                         ack = 'yes';
                     }
-    
                 }
+                
+                
                 const ws = that.wsClient.find(
                     (v) => v["machineId"] == machineId.machineId + ""
                 );
@@ -1735,7 +1744,6 @@ export class InventoryZDM8 implements IBaseClass {
                 bsi.machineId = machineId.machineId;
                 
                 if (ack) {
-    
                     readMachineSetting(machineId.machineId).then(async r => {
                         let setting = {} as any
                         if (r) {
@@ -1756,6 +1764,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 PrintSucceeded(d.command, res, EMessage.succeeded)
                             )
                         )
+                        // finish the process allow next queque with exist TransactionID
+                        console.log('finish the process allow next queque with exist TransactionID',d.transactionID);
+                        
+                        this.processingCreditQueques = this.processingCreditQueques.filter(v=>v!==d.transactionID+'');
                     })
     
                     return;
@@ -1808,7 +1820,10 @@ export class InventoryZDM8 implements IBaseClass {
                             .Init(params)
                             .then((run) => {
                                 console.log('RECORD THIS TRANSACTIION AS IT has been doen');
-    
+                                // finish the process allow next queque 
+                                console.log('finish the process allow next queque ');
+                                
+                                this.processingCreditQueques = this.processingCreditQueques.filter(v=>v!==d.transactionID+'');
                                 writeACKConfirmCashIn(d.transactionID + '');
                                 console.log(`response cash in validation`, run);
                                 if (run.message != IENMessage.success) throw new Error(run);
@@ -1867,10 +1882,6 @@ export class InventoryZDM8 implements IBaseClass {
                 console.log('error credit machine',error,);
                 
             }
-           
-        }, 50 * this.waitCredit++);
-
-
 
 
     }
