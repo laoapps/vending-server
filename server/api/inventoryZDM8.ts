@@ -1428,7 +1428,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.data[0].allowCashIn = o.data[0]?.allowCashIn == '' ? false : true;
                                 o.data[0].light = o.data[0]?.light == '' ? false : true;
 
-                                const a = r.data.find(v => v.settingName == 'setting');
+                                let a = r.data.find(v => v.settingName == 'setting');
 
                                 const x = o.data[0]?.allowVending || true;
                                 const y = o.data[0]?.allowCashIn || true;
@@ -1436,7 +1436,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 const z = o.data[0]?.highTemp || 10;
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
-                                if (!a) r.data.push({ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w,limiter:l });
+                                if (!a) {r.data.push({ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w,limiter:l });
+                                a=r.data;}
                                 else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u;a.limiter=l }
 
                                 r.data = a;
