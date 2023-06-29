@@ -10,7 +10,6 @@ export class FindEPINShortCodeListProcess {
     private apiService: ApiService;
     private vendingAPIServgice: VendingAPIService;
 
-    private machineId: string;
     private phonenumber: string;
     private time: string;
     private page: number;
@@ -65,7 +64,6 @@ export class FindEPINShortCodeListProcess {
     }
 
     private InitParams(params: any): void {
-        this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
         this.time = params.time;
         this.page = params.page;
@@ -74,7 +72,7 @@ export class FindEPINShortCodeListProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -83,7 +81,6 @@ export class FindEPINShortCodeListProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId,
                     phonenumber: this.phonenumber,
                     time: this.time,
                     page: this.page,

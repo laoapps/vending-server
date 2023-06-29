@@ -30,6 +30,14 @@ const routes: Routes = [
   {
     path: 'laab-cashout',
     loadChildren: () => import('./LAAB/laab-cashout/laab-cashout.module').then( m => m.LaabCashoutPageModule)
+  },
+  {
+    path: 'stack-cashout',
+    loadChildren: () => import('./LAAB/stack-cashout/stack-cashout.module').then( m => m.StackCashoutPageModule)
+  },
+  {
+    path: 'mmoney-ios-android-download',
+    loadChildren: () => import('./LAAB/mmoney-ios-android-download/mmoney-ios-android-download.module').then( m => m.MmoneyIosAndroidDownloadPageModule)
   }
 ];
 

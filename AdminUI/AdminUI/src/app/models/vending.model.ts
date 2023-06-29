@@ -168,7 +168,6 @@ export interface VENDING_ShowEPINShortCodeList extends IBase {
     limit: number
 }
 export interface VENDING_FindEPINShortCodeList extends IBase {
-    machineId: string,
     phonenumber: string,
     time?: string,
     page: number,

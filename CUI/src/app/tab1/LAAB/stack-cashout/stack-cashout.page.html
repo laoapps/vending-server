@@ -1,0 +1,56 @@
+<ion-content>
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">Cash Out</div>
+      <div class="sub-title">Choose your cash out options</div>
+
+      <!-- <div class="cash-balance">{{ apiService.cash | number }}</div> -->
+    </div>
+    <div class="laab-card-body">
+      <a (click)="laabCashout('MMoney')" href="javascript:void(0)" class="btn-option">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/mmoney-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">M-Money</div>
+          <div class="sub-title">Cash out your money from vending to your M-Money account</div>
+        </div>
+      </a>
+      <a (click)="laabCashout('LAAB')" href="javascript:void(0)" class="btn-option">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/LAAB-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">LAAB Wallet</div>
+          <div class="sub-title">Cash out your money from vending to your LAAB account</div>
+        </div>
+      </a>
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/EPIN-LAAB.jpeg" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">EPin</div>
+          <div class="sub-title">Generate QR EPIN for receive your cash</div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+
+</ion-content>

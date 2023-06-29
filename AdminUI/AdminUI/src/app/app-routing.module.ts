@@ -139,6 +139,10 @@ const routes: Routes = [
   {
     path: 'machine-wallet',
     loadChildren: () => import('./machine/machine-wallet/machine-wallet.module').then( m => m.MachineWalletPageModule)
+  },
+  {
+    path: 'epin-management',
+    loadChildren: () => import('./machine/epin-management/epin-management.module').then( m => m.EpinManagementPageModule)
   }
 ];
 @NgModule({

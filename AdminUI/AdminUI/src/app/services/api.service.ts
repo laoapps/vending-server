@@ -100,7 +100,7 @@ export class ApiService {
         //   }, 3000);
         //   this.validateDB();
         // }
-        r.data.mystatus.forEach(e => {
+        r.data.mymstatus.forEach(e => {
             e.temp=this.hex2dec(e.temp);
         });
       } catch (error) {

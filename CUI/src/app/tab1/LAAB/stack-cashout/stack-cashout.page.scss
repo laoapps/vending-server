@@ -1,0 +1,123 @@
+.laab-card {
+    margin: 10px;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    // background: #EE3124;
+    background: rgb(255,255,255);
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(238,49,36,0.7161239495798319) 0%, rgba(214,43,31,1) 100%, rgba(255,255,255,1) 100%);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+
+    .laab-card-options {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+
+       .right {
+            .btn-close-modal {
+                color: #fff;
+                text-decoration: none;
+            }
+       }
+    }
+
+    .laab-card-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: start;
+        color: #fff;
+
+        .title {
+            font-size: 35px;
+            font-weight: bold;
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        .cash-balance {
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 30px;
+            letter-spacing: 4px;
+            font-weight: 300;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+
+            span {
+                font-size: 14px;
+                display: flex;
+                position: relative;
+                padding-left: 10px;
+                top: 3px;
+            }
+        }
+
+
+
+    }
+    .laab-card-body {
+        margin-top: 25px;
+
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .btn-option {
+            display: flex;
+            gap: 15px;
+            // background: #ffff;
+
+
+            background: rgb(255,255,255);
+            background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgba(255,205,141,1) 0%, rgba(255,129,124,1) 100%, rgba(255,255,255,1) 100%);
+
+
+            border-radius: 8px;
+            padding: 10px;
+            // height: 200px;
+            text-decoration: none;
+            box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+            transition: .2s;
+
+            .left {
+
+                .icon {
+                    img {
+                        width: 100px;
+                        height: 100px;
+                    }
+                }
+            }
+
+            .right {
+                display: flex;
+                flex-direction: column;
+
+                .title {
+                    font-weight: bold;
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #333;
+                }
+
+                .sub-title {
+                    font-size: 14px;
+                    font-weight: 300;
+                    color: #555;
+                }
+            }
+        }
+        .btn-option:hover {
+            background: rgb(255,255,255);
+            background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgb(255, 197, 120) 0%, rgb(248, 113, 109) 100%, rgba(255,255,255,1) 100%);
+
+        }
+    }
+}

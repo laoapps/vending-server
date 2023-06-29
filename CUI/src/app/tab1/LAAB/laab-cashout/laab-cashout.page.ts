@@ -11,6 +11,7 @@ import { TransferValidationProcess } from '../../processes/transferValidation.pr
 })
 export class LaabCashoutPage implements OnInit {
 
+  @Input() state: string;
   private transferValidationProcess: TransferValidationProcess;
 
   numberList: Array<string> = [];

@@ -1,6 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&family=Shippori+Mincho+B1:wght@800&display=swap');
+
 ion-header {
     --ion-background-color: #fff;
     z-index: 10000;
+}
+
+.btn-abs {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 40%;
+    right: 1%;
+    gap: 5px;
+    z-index: 999990;
+
+    .item {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: #EE3124;
+        text-decoration: none;
+        background: #fff;
+        padding: 10px;
+
+        .icon {
+            font-size: 25px;
+        }
+
+        .text {
+            color: #333;
+            font-size: 20px;
+        }
+    }
 }
 
 .box img {
@@ -188,13 +221,13 @@ div.scrollmenu {
     // transform: rotate(-90deg);
     width: 90px;
     right: 3%; /* From JQuery we know scroll bar width is 17px */
-    top: 40%;
+    top: 45%;
     position: fixed;
     z-index: 1000;
 }
 .floatingBtn ion-icon{
     font-size: 50px !important;
-    color:green !important;
+    color:#EE3124 !important;
    
 }
 .floatingBtn2 {
@@ -203,13 +236,28 @@ div.scrollmenu {
    // transform: rotate(-90deg);
    width: 90px;
    right: 3%; /* From JQuery we know scroll bar width is 17px */
-   top: 50%;
+   top: 55%;
    position: fixed;
    z-index: 1000;
 }
 .floatingBtn2 ion-icon{
    font-size: 50px !important;
-   color:green !important;
+   color:#EE3124 !important;
+  
+}
+.floatingBtn3 {
+    background: white;
+  
+   // transform: rotate(-90deg);
+   width: 90px;
+   right: 3%; /* From JQuery we know scroll bar width is 17px */
+   top: 65%;
+   position: fixed;
+   z-index: 1000;
+}
+.floatingBtn3 ion-icon{
+   font-size: 50px !important;
+   color:#EE3124 !important;
   
 }
 
@@ -222,191 +270,82 @@ div.scrollmenu {
     justify-content: center;
     background: #fff;
     padding: 10px;
+    gap: 10px;
 
-    .left {
+    .cash-balance {
+        // font-family: 'tahoma';
+        // font-family: 'Fjalla One', sans-serif;
+        // font-family: 'JetBrains Mono', monospace;
+        font-family: 'Shippori Mincho B1', serif;
+        // background: #333;
+
+        background: rgb(255,255,255);
+        background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(84,84,84,1) 0%, rgba(47,45,47,1) 100%, rgba(221,57,50,1) 100%);
+
+        color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 50px;
+        font-weight: bold;
         display: flex;
-        gap: 10px;
-
-        .cash-balance {
-            background: #333;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 24px;
-            letter-spacing: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 300px;
-            border: 1px solid #3333;
-
-            span {
-                font-size: 14px;
-                display: flex;
-                position: relative;
-                padding-left: 10px;
-                top: 3px;
-            }
-        }
-
-        .item-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-
-            .item {
-                text-decoration: none;
-                color: #333;
-                background: #fff;
-                padding: 10px;
-                border-radius: 5px;
-                display: flex;
-                align-items: center;
-                width: 150px;
-                box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
-    
-                .icon {
-                    text-align: center;
-                    font-size: 20px;
-                    color: #EE3124;
-                }
-    
-                .text {
-                    font-size: 14px;
-                    font-weight: 300;
-                    text-align: center;
-                    padding-left: 10px;
-                }
-            }
-            .item:hover {
-                background: #f5f6f7;
-            }
-        }
-
-        // .item {
-        //     text-decoration: none;
-        //     color: #333;
-        //     background: #fff;
-        //     padding: 10px;
-        //     border-radius: 5px;
-        //     display: flex;
-        //     flex-direction: column;
-        //     width: 150px;
-        //     box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
-
-        //     .icon {
-        //         text-align: center;
-        //         font-size: 20px;
-        //         color: #EE3124;
-        //     }
-
-        //     .text {
-        //         font-size: 14px;
-        //         font-weight: 300;
-        //         text-align: center;
-        //     }
-        // }
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 130px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
+        letter-spacing: 15px;
+        overflow: hidden;
     }
 
-    .center {
+    .item {
+        position: relative;
+        text-decoration: none;
+        color: #333;
+        // background: #fff;
+
+        background: rgb(255,255,255);
+        background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(242,241,241,1) 100%);
+
+        padding: 15px;
+        border-radius: 8px;
         display: flex;
-        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        width: 200px;
+        height: 130px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
+        transition: .2s;
+        overflow: hidden;
 
-        .cash-balance {
-            font-family: 'tahoma';
-            background: #333;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
-            letter-spacing: 5px;
+        .icon {
+            position: relative;
+            text-align: center;
+            font-size: 35px;
+            color: #EE3124;
         }
 
-        .item {
-            text-decoration: none;
-            color: #333;
-            background: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            width: 200px;
-            height: 100px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
-            transition: .2s;
-
-            .icon {
-                text-align: center;
-                font-size: 20px;
-                color: #EE3124;
-                padding-bottom: 10px;
-            }
-
-            .text {
-                font-size: 14px;
-                font-weight: 300;
-                text-align: center;
-            }
+        .text {
+            position: relative;
+            z-index: 999999;
+            font-size: 18px;
+            font-weight: 300;
+            text-align: center;
         }
-        .item:hover {
-            background: #f5f6f7;
+
+        .svg-top {
+            position: absolute;
+            left: 0; right: 0; top: 0;
+           }
+        .svg-bottom {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
         }
     }
+    .item:hover {
+        // background: #f5f6f7;
 
-    .right {
-        display: flex;
-        gap: 10px;
-
-        .cash-balance {
-            font-family: 'tahoma';
-            background: #333;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-width: 100%;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
-        }
-
-        .item {
-            text-decoration: none;
-            color: #333;
-            background: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            width: 150px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
-            transition: .2s;
-
-            .icon {
-                text-align: center;
-                font-size: 20px;
-                color: #EE3124;
-                
-            }
-
-            .text {
-                font-size: 14px;
-                font-weight: 300;
-                text-align: center;
-            }
-        }
-        .item:hover {
-            background: #f5f6f7;
-        }
+        background: rgb(255,255,255);
+        background: radial-gradient(circle, rgba(255,255,255,0.5536808473389356) 0%, rgba(233,233,233,1) 100%);
     }
 }

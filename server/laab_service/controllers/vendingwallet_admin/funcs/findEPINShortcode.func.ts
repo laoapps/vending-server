@@ -6,7 +6,6 @@ import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../en
 
 export class FindEPINShortCodeFunc {
 
-    private machineId:string;
     private phonenumber: string;
     private time: string;
     private page: number;
@@ -33,9 +32,6 @@ export class FindEPINShortCodeFunc {
 
                 console.log(`find epin short code`, 3);
 
-                const FindVendingWallet = await this.FindVendingWallet();
-                if (FindVendingWallet != IENMessage.success) throw new Error(FindVendingWallet);
-
                 console.log(`find epin short code`, 4);
 
                 const FindEPINShortCode = await this.FindEPINShortCode();
@@ -53,7 +49,6 @@ export class FindEPINShortCodeFunc {
     }
 
     private InitParams(params: any) {
-        this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
         this.time = params.time;
         this.page = params.page;
@@ -61,24 +56,9 @@ export class FindEPINShortCodeFunc {
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.page && this.limit)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.page && this.limit)) return IENMessage.parametersEmpty;
         this.offset = Number(this.page - 1) * Number(this.limit);
         return IENMessage.success;
-    }
-
-    private FindVendingWallet(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-                
-                let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
-                if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
-                this.sender = translateUToSU(run.uuid);
-                resolve(IENMessage.success);
-
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
     }
 
     private FindEPINShortCode(): Promise<any> {

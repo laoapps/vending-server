@@ -1,4 +1,5 @@
 export enum IENMessage {
+    thisEPINHasAlreadyCashedOut = 'this EPIN has already cashed out',
     invalidTime = 'invalid time',
     pleaseEnterPhonenumber = 'please enter phone number',
     notFoundAnyDataList = 'not found any data list',

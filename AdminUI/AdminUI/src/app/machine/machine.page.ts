@@ -8,6 +8,7 @@ import { LaabApiService } from '../services/laab-api.service';
 import { LAAB_FindMachineLimiter, LAAB_FindMachineWallet, LAAB_RegisterMachineLimiter, LAAB_RegisterMachineWallet, LAAB_ShowMachineCoinWalletBalance, LAAB_ShowMachineCoinWalletByGroup, LAAB_ShowMachineLimiterBalance, LAAB_ShowMachineWalletBalance } from '../models/laab.model';
 import { IENMessage, IVendingRoles } from '../models/base.model';
 import { MachineWalletPage } from './machine-wallet/machine-wallet.page';
+import { EpinManagementPage } from './epin-management/epin-management.page';
 
 
 @Component({
@@ -186,6 +187,13 @@ export class MachinePage implements OnInit {
         this.apiService.currentVendingWalletCoinName = '';
         this.apiService.currentVendingWalletCoinBalance = null;
       });
+    });
+  }
+
+  epinManagement() {
+    console.log(`list`, this._l);
+    this.apiService.showModal(EpinManagementPage, { }).then(r => {
+      r.present();
     });
   }
 

@@ -42,6 +42,9 @@ import { LaabCashoutPage } from './LAAB/laab-cashout/laab-cashout.page';
 import { WsapiService } from '../services/wsapi.service';
 import { IMachineStatus } from '../services/service';
 import { HowtoPage } from '../howto/howto.page';
+import { StackCashoutPage } from './LAAB/stack-cashout/stack-cashout.page';
+import { EpinShowCodePage } from './LAAB/epin-show-code/epin-show-code.page';
+import { MmoneyIosAndroidDownloadPage } from './LAAB/mmoney-ios-android-download/mmoney-ios-android-download.page';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -162,7 +165,7 @@ export class Tab1Page {
     });
 
     setTimeout(() => {
-      this.checkHowTo();
+      // this.checkHowTo();
     }, 5000);
   }
   setActive() {
@@ -280,8 +283,8 @@ export class Tab1Page {
     const x = prompt('password');
     console.log(x, this.getPassword());
 
-    if (environment.production)
-      if (!this.getPassword().endsWith(x) || x.length < 6) return;
+    // if (environment.production)
+      if (!this.getPassword().endsWith(x)||!this.getPassword().startsWith(this.machineId?.otp) || x.length < 12) return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then((r) => {
       r.data;
@@ -738,19 +741,19 @@ export class Tab1Page {
             },
           },
         ];
-        if (this.acceptcash == 100000) {
-          inputs.splice(inputs.length - 0, 0);
-        } else if (this.acceptcash == 50000) {
-          inputs.splice(inputs.length - 1, 1);
-        } else if (this.acceptcash == 20000) {
-          inputs.splice(inputs.length - 2, 2);
-        } else if (this.acceptcash == 10000) {
-          inputs.splice(inputs.length - 3, 3);
-        } else if (this.acceptcash == 5000) {
-          inputs.splice(inputs.length - 4, 4);
-        } else {
-          inputs = [];
-        }
+        // if (this.acceptcash == 100000) {
+        //   inputs.splice(inputs.length - 0, 0);
+        // } else if (this.acceptcash == 50000) {
+        //   inputs.splice(inputs.length - 1, 1);
+        // } else if (this.acceptcash == 20000) {
+        //   inputs.splice(inputs.length - 2, 2);
+        // } else if (this.acceptcash == 10000) {
+        //   inputs.splice(inputs.length - 3, 3);
+        // } else if (this.acceptcash == 5000) {
+        //   inputs.splice(inputs.length - 4, 4);
+        // } else {
+        //   inputs = [];
+        // }
 
         message = await this.apiService.alert.create({
           header: 'Cash In',
@@ -950,6 +953,35 @@ export class Tab1Page {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
+    });
+  }
+  public openStackCashOutPage(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        
+        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
+        
+        this.apiService.modal.create({ component: StackCashoutPage }).then(r => {
+          r.present();
+        });
+        
+        resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      } 
+    });
+  }
+
+  public ShowMMoneyAppLink() {
+    //
+    const ios_link: string = 'https://apps.apple.com/la/app/m-money/id1513863808';
+    const android_link: string = 'https://play.google.com/store/apps/details?id=com.ltc.wallet';
+    const props = {
+      links: [android_link, ios_link]
+    }
+    this.apiService.modal.create({ component: MmoneyIosAndroidDownloadPage, componentProps: props }).then(r => {
+      r.present();
     });
   }
 }

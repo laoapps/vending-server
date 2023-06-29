@@ -1,4 +1,4 @@
-<div class="laab-transfer-container">
+<!-- <div class="laab-transfer-container">
   <div class="item-card">
     <div class="item-card-header">
       <div class="title">Counter</div>
@@ -8,21 +8,16 @@
       
       <div class="search-group">
         <div class="form-group">
-          <label for="">Phone number</label>
+          <label for="">Phone number <span class="text-danger">*</span></label>
           <div class="input-group mb-3">
-            <input (change)="resetList($event)" [(ngModel)]="phonenumber" type="text" placeholder="Enter phone number" class="form-control">
+            <input (keyup)="resetList($event)" [(ngModel)]="phonenumber" type="text" placeholder="Enter phone number" class="form-control">
             <span class="input-group-text">
               <i class="fa-solid fa-mobile-screen-button"></i>
             </span>
           </div>
         </div>
-        <div class="form-group">
-          <label for="">Date & Time</label>
-          <input (change)="getTime($event)" type="datetime-local" class="form-control input-datetime">
-        </div>
-        <div class="form-group mt-3">
-          <button (click)="findList()" class="btn-validate"><i class="fa-solid fa-rotate"></i> Validate</button>
-        </div>
+        <button (click)="findList()" class="btn-validate"><i class="fa-solid fa-rotate"></i> Validate</button>
+
       </div>
 
       <div *ngIf="showTable == true" class="table-responsive mt-2">
@@ -47,8 +42,11 @@
               <td>{{ list.counter.cash.hash }}</td>
               <td>{{ list.createdAt }}</td>
               <td>
-                <a  *ngIf="list.EPIN.destination == ''" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
-                <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-money-bill-wave"></i> Cash Out</a>
+                <a  *ngIf="list?.EPIN?.destination == ''" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
+                <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action">
+                  <span *ngIf="list?.counter?.cash == ''">Cash Out</span>
+                  <span *ngIf="list?.counter?.cash != ''">Already cashed out</span>
+                </a>
               </td>
             </tr>
           </tbody>
@@ -63,4 +61,4 @@
 
     </div>
   </div>
-</div>
+</div> -->
