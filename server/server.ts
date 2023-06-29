@@ -85,7 +85,7 @@ CreateDatabase("")
     process.env._log_path = path.join(__dirname, "..", "logs");
 
     process.env.serverkey = fs.readFileSync(__dirname + "/certs/server/server.key")+'';
-    process.env.servercert = fs.readFileSync(__dirname + "/certs/server/server.crt")+'';
+    process.env.servercert = fs.readFileSync(__dirname + "'certs/server/server.crt")+'';
     process.env.ca = fs.readFileSync(__dirname+'/certs/ca/ca.crt')+'';
 
 

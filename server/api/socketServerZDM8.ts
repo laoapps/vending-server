@@ -20,7 +20,7 @@ export class SocketServerZDM8 {
     // };
     server:tls.Server|undefined ;
     sclients = Array<tls.TLSSocket>();
-    ports = 31223;
+    // ports = 31223;
 
     public machineIds = new Array<IMachineClientID>();
     eventEmitter = new EventEmitter();
@@ -28,7 +28,7 @@ export class SocketServerZDM8 {
     constructor(ports: number) {
         try {
             this.sclients = Array<tls.TLSSocket>();
-            this.ports = this.ports || ports;
+            // this.ports = this.ports || ports;
             this.machineIds = new Array<IMachineClientID>();
             //creates the server
         // emitted when new client connects
@@ -88,7 +88,7 @@ export class SocketServerZDM8 {
                     console.log('Number of concurrent connections to the server : ' + count);
                 });
 
-                socket.setEncoding('utf8');
+                // socket.setEncoding('utf8');
                 socket.setKeepAlive(true);
                 socket.setTimeout(30000, function () {
                     // called after timeout -> same as socket.on('timeout')
@@ -348,7 +348,7 @@ export class SocketServerZDM8 {
 
             // this. server.maxConnections = 10;
             // for dyanmic port allocation
-            .listen(this.ports, function () {
+            .listen(ports, function () {
                 var address = that.server.address() as net.AddressInfo;
                 var port = address.port;
                 var family = address.family;
