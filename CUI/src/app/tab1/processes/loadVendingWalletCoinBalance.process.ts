@@ -28,8 +28,8 @@ export class LoadVendingWalletCoinBalanceProcess {
 
                 console.log(`show vending wallet coin balance`, 1);
 
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
                 console.log(`show vending wallet coin balance`, 2);
 
@@ -47,14 +47,14 @@ export class LoadVendingWalletCoinBalanceProcess {
 
                 console.log(`show vending wallet coin balance`, 5);
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
 
             } catch (error) {
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });
