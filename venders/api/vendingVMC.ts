@@ -444,10 +444,10 @@ export class VendingVMC {
                             // disable 
                             if(setting.allowCashIn != this.setting.allowCashIn)
                                 this.setting.allowCashIn = setting.allowCashIn;
-                                
+
                             if (this.balance < this.limiter||!setting.allowCashIn ) {
-                               
-                                // this.lastupdate = moment().add(-360, 'days').toNow();
+                                console.log('DISABLE', this.setting.allowCashIn);
+                                
                                 if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
                                 this.enable = false;
                                 this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
@@ -456,6 +456,7 @@ export class VendingVMC {
                                     reject(PrintError(command as any, params, e.message));
                                 })
                             } else {
+                                console.log('ENABLE', this.setting.allowCashIn);
                                 if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
                                 this.enable = true;
                                 this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
