@@ -14,6 +14,7 @@ import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
+import { ControlMenuService } from './control-menu.service';
 
 @Injectable({
   providedIn: 'root'
@@ -59,7 +60,12 @@ export class ApiService {
   static waiting_T: any
   audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
   _machineStatus={status:{}as IMachineStatus}as any;
-  constructor(public http: HttpClient,
+  constructor(
+    public controlMenuService: ControlMenuService,
+    
+    
+    
+    public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
     public modal: ModalController,

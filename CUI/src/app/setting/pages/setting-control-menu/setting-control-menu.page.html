@@ -1,0 +1,179 @@
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">Setting - Control Menu</div>
+    </div>
+    <div class="right">
+      <a (click)="setStatus()" href="javascript:void(0)" class="item"><i class="fa-solid fa-check-to-slot"></i> Save</a>
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="setting-control-menu-container">
+
+      <!-- **** vending **** -->
+    <div class="text-section">Vending Standard</div>
+    <div class="laab-card">
+      <div class="laab-card-body">
+
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-ticket active" type="checkbox" id="menu-ticket">
+          <label class="form-check-label" for="menu-ticket">Tickets</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout active" type="checkbox" id="menu-cashout">
+          <label class="form-check-label" for="menu-cashout">Cash Out</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-whatsapp active" type="checkbox" id="menu-whatsapp">
+          <label class="form-check-label" for="menu-whatsapp">Whatsapp</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-how-to active" type="checkbox" id="menu-how-to">
+          <label class="form-check-label" for="menu-how-to">How To</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-tempurature active" type="checkbox" id="menu-tempurature">
+          <label class="form-check-label" for="menu-tempurature">Temperature</label>
+        </div>
+
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+    <!-- **** LAAB **** -->
+    <div class="text-section">LAAB Menu</div>
+    <div class="laab-card">
+      <div class="laab-card-body">
+
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-laab-cashin active" type="checkbox" id="menu-laab-cashin">
+          <label class="form-check-label" for="lmenu-laab-cashin">Cash In</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-laab-account active" type="checkbox" id="menu-cashout-laab-account">
+          <label class="form-check-label" for="menu-cashout-laab-account">Cash Out - LAAB account</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-laab-epin active" type="checkbox" id="menu-cashout-laab-epin">
+          <label class="form-check-label" for="menu-cashout-laab-epin">Cash Out - LAAB EPIN</label>
+        </div>
+
+      </div>
+    </div>
+
+
+
+
+
+
+    <!-- **** MMoney **** -->
+    <div class="text-section">MMoney Menu</div>
+    <div class="laab-card">
+      <div class="laab-card-body">
+
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-mmoney-account active" type="checkbox" id="menu-cashout-mmoney-account">
+          <label class="form-check-label" for="menu-cashout-mmoney-account">Cash Out - MMoney Account</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-mmoney-ios-android-qr-link active" type="checkbox" id="menu-mmoney-ios-android-qr-link">
+          <label class="form-check-label" for="menu-mmoney-ios-android-qr-link">IOS & Android QR Link</label>
+        </div>
+
+      </div>
+    </div>
+
+
+
+
+
+
+    <!-- **** Bank **** -->
+    <div class="text-section">Bank Cash Out Menu</div>
+    <div class="laab-card">
+      <div class="laab-card-body">
+
+        <!-- vietnam -->
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-vietcombank-account active" type="checkbox" id="menu-cashout-vietcombank-account">
+          <label class="form-check-label" for="menu-cashout-vietcombank-account">Cash Out - Vietcome Bank Account</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-vietinbank-account active" type="checkbox" id="menu-cashout-vietinbank-account">
+          <label class="form-check-label" for="menu-cashout-vietinbank-account">Cash Out - Vietin Bank Account</label>
+        </div>
+
+
+
+
+
+        <!-- china -->
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-icbcbank-account active" type="checkbox" id="menu-cashout-icbcbank-account">
+          <label class="form-check-label" for="menu-cashout-icbcbank-account">Cash Out - ICBC Bank Account</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-bocbank-account active" type="checkbox" id="menu-cashout-bocbank-account">
+          <label class="form-check-label" for="menu-cashout-bocbank-account">Cash Out - BOC Bank Account</label>
+        </div>
+
+
+
+
+
+        <!-- thai -->
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-kaskornbank-account active" type="checkbox" id="menu-cashout-kaskornbank-account">
+          <label class="form-check-label" for="menu-cashout-kaskornbank-account">Cash Out - Kasikorn Bank Account</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-bangkokbank-account active" type="checkbox" id="menu-cashout-bangkokbank-account">
+          <label class="form-check-label" for="menu-cashout-bangkokbank-account">Cash Out - Bangkok Bank Account</label>
+        </div>
+
+
+
+
+
+        <!-- indonacia -->
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-bcabank-account active" type="checkbox" id="menu-cashout-bcabank-account">
+          <label class="form-check-label" for="menu-cashout-bcabank-account">Cash Out - BCA Bank Account</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-dbsbank-account active" type="checkbox" id="menu-cashout-dbsbank-account">
+          <label class="form-check-label" for="menu-cashout-dbsbank-account">Cash Out - DBS Bank Account</label>
+        </div>
+
+
+
+
+
+        <!-- mynmar -->
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-abank-account active" type="checkbox" id="menu-cashout-abank-account">
+          <label class="form-check-label" for="menu-cashout-abank-account">Cash Out - A Bank Account</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input menu-cashout-mcbbank-account active" type="checkbox" id="menu-cashout-mcbbank-account">
+          <label class="form-check-label" for="menu-cashout-mcbbank-account">Cash Out - MCB Bank Account</label>
+        </div>
+
+
+
+      </div>
+    </div>
+  </div>
+
+</ion-content>

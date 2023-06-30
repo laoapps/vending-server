@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../services/api.service';
+import { SettingControlMenuPage } from './pages/setting-control-menu/setting-control-menu.page';
 
 @Component({
   selector: 'app-setting',
@@ -11,7 +13,9 @@ export class SettingPage implements OnInit {
   machineId = localStorage.getItem('machineId') || '12345678';
   otp = localStorage.getItem('otp') || '111111';
   contact = localStorage.getItem('contact') || '55516321';
-  constructor() { }
+  constructor(
+    private apiService: ApiService
+  ) { }
 
   ngOnInit() {
   }
@@ -22,6 +26,12 @@ export class SettingPage implements OnInit {
     localStorage.setItem('otp', this.otp)
     localStorage.setItem('contact', this.contact)
     window.location.reload();
+  }
+
+  openSettingControlMenu() {
+    this.apiService.modal.create({ component: SettingControlMenuPage, cssClass: 'dialog-fullscreen' }).then(r => {
+      r.present();
+    });
   }
 
 }

@@ -150,3 +150,72 @@ ion-item {
 .form-control:read-only {
     background: #fff;
 }
+
+
+
+
+
+
+
+
+// **** control menu **** 
+// how to use control menu
+// 1 create control menu service class for save list and state
+// 2 toggle status by setting page then update dynamic status to another form
+// 3 add class control-menu and name in element you want to set status
+
+
+.menu-ticket,
+.menu-laab-cashin,
+.menu-cashout,
+.menu-whatsapp,
+.menu-how-to,
+.menu-tempurature,
+.menu-mmoney-ios-android-qr-link,
+.menu-cashout-mmoney-account,
+.menu-cashout-laab-account,
+.menu-cashout-laab-epin,
+
+
+
+
+
+.menu-cashout-vietcombank-account,
+.menu-cashout-vietinbank-account,
+.menu-cashout-icbcbank-account,
+.menu-cashout-bocbank-account,
+.menu-cashout-kaskornbank-account,
+.menu-cashout-bangkokbank-account,
+.menu-cashout-bcabank-account,
+.menu-cashout-dbsbank-account,
+.menu-cashout-abank-account,
+.menu-cashout-mcbbank-account
+{
+	display: none;
+}
+.menu-ticket.active,
+.menu-laab-cashin.active,
+.menu-cashout.active,
+.menu-whatsapp.active,
+.menu-how-to.active,
+.menu-tempurature.active,
+.menu-mmoney-ios-android-qr-link.active,
+.menu-cashout-mmoney-account.active,
+.menu-cashout-laab-account.active,
+.menu-cashout-laab-epin.active,
+
+
+
+.menu-cashout-vietcombank-account.active,
+.menu-cashout-vietinbank-account.active,
+.menu-cashout-icbcbank-account.active,
+.menu-cashout-bocbank-account.active,
+.menu-cashout-kaskornbank-account.active,
+.menu-cashout-bangkokbank-account.active,
+.menu-cashout-bcabank-account.active,
+.menu-cashout-dbsbank-account.active,
+.menu-cashout-abank-account.active,
+.menu-cashout-mcbbank-account.active
+{
+	display: flex;
+}

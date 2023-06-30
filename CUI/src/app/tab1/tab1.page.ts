@@ -45,6 +45,8 @@ import { HowtoPage } from '../howto/howto.page';
 import { StackCashoutPage } from './LAAB/stack-cashout/stack-cashout.page';
 import { EpinShowCodePage } from './LAAB/epin-show-code/epin-show-code.page';
 import { MmoneyIosAndroidDownloadPage } from './LAAB/mmoney-ios-android-download/mmoney-ios-android-download.page';
+import { SettingControlMenuPage } from '../setting/pages/setting-control-menu/setting-control-menu.page';
+import { ControlMenuService } from '../services/control-menu.service';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -56,6 +58,12 @@ export class Tab1Page {
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
   private cashValidationProcess: CashValidationProcess;
   private cashinValidationProcess: CashinValidationProcess;
+
+  private CONTROL_MENUList: Array<{ name: string, status: boolean }> = [];
+  private links: NodeListOf<HTMLLinkElement>;
+
+
+
 
   acceptcash: number;
   _machineStatus = { status: {} as IMachineStatus } as any;
@@ -101,8 +109,13 @@ export class Tab1Page {
     private vendingAPIService: VendingAPIService,
     private WSAPIService: WsapiService
   ) {
+    this.dynamicControlMenu();
+
     this._machineStatus = this.apiService._machineStatus;
     this.autoUpdateCash();
+
+
+
 
     this.loadVendingWalletCoinBalanceProcess =
       new LoadVendingWalletCoinBalanceProcess(
@@ -847,6 +860,10 @@ export class Tab1Page {
   laabCashin(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
+
+        const disable = this.apiService.controlMenuService.disableControlMenuFunction('menu-laab-cashin');
+        if (disable == undefined || disable == false) return resolve(IENMessage.success);
+
         // const machineId: string = localStorage.getItem('machineId');
         let params: any = {};
         let run: any = await this.cashValidationProcess.Init(params);
@@ -974,7 +991,9 @@ export class Tab1Page {
   }
 
   public ShowMMoneyAppLink() {
-    //
+
+    // this.refreshControlMenuList();
+
     const ios_link: string = 'https://apps.apple.com/la/app/m-money/id1513863808';
     const android_link: string = 'https://play.google.com/store/apps/details?id=com.ltc.wallet';
     const props = {
@@ -984,4 +1003,66 @@ export class Tab1Page {
       r.present();
     });
   }
+
+
+  // openSettingControlMenu() {
+  //   this.apiService.modal.create({ component: SettingControlMenuPage, cssClass: 'dialog-fullscreen' }).then(r => {
+  //     r.present();
+  //   });
+  // }
+
+
+  dynamicControlMenu() {
+    this.refreshControlMenuList();
+    let i = setInterval(() => {
+      if (this.links == undefined) {
+        this.links = (document.querySelectorAll('.control-menu') as NodeListOf<HTMLLinkElement>);
+        ControlMenuService.tab1PageLinks = this.links
+      } 
+
+      this.links = ControlMenuService.tab1PageLinks;
+      this.animateControlMenu(this.links);
+
+      this.apiService.controlMenuService.CONTROL_MENU.subscribe(r => {
+        if (r) this.animateControlMenu(this.links, r);
+      });
+      clearInterval(i);
+
+    });
+  }
+  animateControlMenu(links: NodeListOf<HTMLLinkElement>, res?: any) {
+    links.forEach(item => {
+      const name = item.className.split(' ')[2];
+      if (res)
+      {
+        res.forEach(menu => {
+
+          if (name == menu.name) {
+            if (menu.status == true) {
+              item.classList.add('active');
+            } else {
+              item.classList.remove('active');
+            }
+          }
+        });
+      }
+      else 
+      {
+        this.CONTROL_MENUList.forEach(menu => {
+
+          if (name == menu.name) {
+            if (menu.status == true) {
+              item.classList.add('active');
+            } else {
+              item.classList.remove('active');
+            }
+          }
+        });
+      }
+    });
+  }
+  refreshControlMenuList() {
+    this.CONTROL_MENUList = JSON.parse(JSON.stringify(this.apiService.controlMenuService.CONTROL_MENUList));
+  }
+  
 }

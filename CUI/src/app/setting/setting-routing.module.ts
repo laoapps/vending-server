@@ -7,6 +7,10 @@ const routes: Routes = [
   {
     path: '',
     component: SettingPage
+  },
+  {
+    path: 'setting-control-menu',
+    loadChildren: () => import('./pages/setting-control-menu/setting-control-menu.module').then( m => m.SettingControlMenuPageModule)
   }
 ];
 

@@ -13,7 +13,6 @@ export class CounterCashout_CashValidationFunc {
     private phonenumber: string;
     private destination: string;
     private coinname: string;
-    private name: string;
 
     private creator: string;
     private sender: string;
@@ -89,11 +88,10 @@ export class CounterCashout_CashValidationFunc {
         this.phonenumber = params.phonenumber;
         this.destination = params.destination;
         this.coinname = params.coinname;
-        this.name = params.name;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.destination && this.coinname && this.name)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.phonenumber && this.destination && this.coinname)) return IENMessage.parametersEmpty;
 
         return IENMessage.success;
     }
@@ -141,8 +139,7 @@ export class CounterCashout_CashValidationFunc {
                         SMC: {[Op.ne]: {}},
                         EPIN: {
                             destination: this.destination,
-                            coinname: this.coinname,
-                            name: this.name
+                            coinname: this.coinname
                         },
                         counter: {
                             cash: {

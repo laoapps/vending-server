@@ -111,8 +111,7 @@ export class ReCreateEPINFunc {
                         },
                         EPIN: {
                             destination: '',
-                            coinname: '',
-                            name: ''
+                            coinname: ''
                         }
                     }
                 }
@@ -170,8 +169,7 @@ export class ReCreateEPINFunc {
                 
                 this.connection.EPIN = {
                     destination: this.detail.items[0].qrcode[0],
-                    coinname: this.coinName,
-                    name: this.detail.sender
+                    coinname: this.coinName
                 }
                 const run = await this.connection.save({ transaction: this.transaction });
                 if (run == null) return resolve(IENMessage.updateEPINShortCodeFail);
@@ -179,8 +177,7 @@ export class ReCreateEPINFunc {
                     EPIN: {
                         uuid: run.uuid,
                         destination: this.detail.items[0].qrcode[0],
-                        coinname: this.coinName,
-                        name: this.detail.sender
+                        coinname: this.coinName
                     },
                     message: IENMessage.success
                 }
