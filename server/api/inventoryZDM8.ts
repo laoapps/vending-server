@@ -1442,7 +1442,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.data[0].allowVending = o.data[0]?.allowVending == '' ? false : true;
                                 o.data[0].allowCashIn = o.data[0]?.allowCashIn == '' ? false : true;
                                 o.data[0].light = o.data[0]?.light == '' ? false : true;
-
+                                if(!Array.isArray(r.data))r.data=[r.data];
                                 let a = r.data.find(v => v.settingName == 'setting');
 
                                 const x = o.data[0]?.allowVending || true;
