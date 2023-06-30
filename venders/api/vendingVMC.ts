@@ -33,10 +33,7 @@ export class VendingVMC {
     pendingRetry = 10;// 10s
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
-
         const that = this;
-
-
         this.port = new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
             if (err) {
                 return console.log('Error: ', err.message)
