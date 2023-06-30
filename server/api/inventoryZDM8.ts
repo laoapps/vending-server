@@ -1451,11 +1451,11 @@ export class InventoryZDM8 implements IBaseClass {
                                 const z = o.data[0]?.highTemp || 10;
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
-                                if (!a) {r.data.push({ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w,limiter:l });
-                                a=r.data;}
+                                if (!a) {a={ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w,limiter:l };
+                                }
                                 else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u;a.limiter=l }
 
-                                r.data = a;
+                                r.data = [a];
                                 r.changed('data', true);
                                 console.log('updating machine setting',r.data);
                                 
