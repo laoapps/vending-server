@@ -1345,8 +1345,11 @@ export class InventoryZDM8 implements IBaseClass {
                             return res.send(
                                 PrintError("addMachine", [], EMessage.bodyIsEmpty)
                             );
-
-                        // r.changed('isActive',true);
+                        if(o.machineId.length!=8||Number.isNaN(o.machineId)||Number.isNaN(o.otp))
+                        return res.send(
+                            PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP)
+                        );
+                        
                         const x = await this.machineClientlist.findOne({
                             where: { machineId: o.machineId },
                         });
