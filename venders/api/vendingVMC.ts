@@ -411,24 +411,7 @@ export class VendingVMC {
                             writeCreditRecord(this.creditPending, transactionID)
                         }
                     }
-                    if (this.balance < this.limiter) {
-                        // this.lastupdate = moment().add(-360, 'days').toNow();
-                        if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                        this.enable = false;
-                        this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
-                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                        }).catch(e => {
-                            reject(PrintError(command as any, params, e.message));
-                        })
-                    } else {
-                        if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                        this.enable = true;
-                        this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
-                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                        }).catch(e => {
-                            reject(PrintError(command as any, params, e.message));
-                        })
-                    }
+                    
 
 
                     if (Array.isArray(params?.setting)) {
@@ -446,31 +429,7 @@ export class VendingVMC {
                                 }).catch(e => {
                                     reject(PrintError(command as any, params, e.message));
                                 })
-                            }
-                            // disable
-                            if (setting.allowCashIn != this.setting.allowCashIn) {
-                                this.setting.allowCashIn = setting.allowCashIn;
-                                console.log('new setting', this.setting);
-                                if (!this.setting.allowCashIn) {
-                                    if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                                    this.enable = false;
-                                    this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
-                                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                                    }).catch(e => {
-                                        reject(PrintError(command as any, params, e.message));
-                                    })
-                                } else {
-                                    if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                                    this.enable = true;
-                                    this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
-                                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                                    }).catch(e => {
-                                        reject(PrintError(command as any, params, e.message));
-                                    })
-                                }
-
-                            }
-
+                            } 
                             // light
 
                             // if (setting.light != this.setting.light) {
@@ -482,6 +441,31 @@ export class VendingVMC {
                             //         reject(PrintError(command as any, params, e.message));
                             //     })
                             // }
+                            // disable 
+                            if(setting.allowCashIn != this.setting.allowCashIn)
+                                this.setting.allowCashIn = setting.allowCashIn;
+                                
+                            if (this.balance < this.limiter||!setting.allowCashIn ) {
+                               
+                                // this.lastupdate = moment().add(-360, 'days').toNow();
+                                if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                this.enable = false;
+                                this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
+                                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                }).catch(e => {
+                                    reject(PrintError(command as any, params, e.message));
+                                })
+                            } else {
+                                if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                this.enable = true;
+                                this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
+                                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                }).catch(e => {
+                                    reject(PrintError(command as any, params, e.message));
+                                })
+                            }
+
+                           
                         } catch (error) {
                             console.log(error);
 
