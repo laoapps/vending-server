@@ -413,9 +413,9 @@ export class SocketServerZDM8 {
         m.forEach(v=>{
             if(!Array.isArray(v.data))v.data=[];
             
-            const x = v.data[0]?.allowVending||true;
-            const y = v.data[0]?.allowCashIn||true;
-            const w = v.data[0]?.light||true;
+            const x = v.data[0]?.allowVending;
+            const y = v.data[0]?.allowCashIn;
+            const w = v.data[0]?.light;
             const z = v.data[0]?.highTemp||10;
             const u = v.data[0]?.lowTemp||5;
             const l = v.data[0]?.limiter||100000;
