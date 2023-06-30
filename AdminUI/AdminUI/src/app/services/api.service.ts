@@ -276,14 +276,15 @@ export class ApiService {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + '/super_listMachine', {token}, { headers: this.headerBase() });
   }
-  listMachine() {
+  listMachine(isActive='all') {
     const req = {
       ownerUuid: localStorage.getItem('lva_ownerUuid'),
-      token: localStorage.getItem('lva_token')
+      token: localStorage.getItem('lva_token'),
+      isActive
     }
-    return this.http.post<IResModel>(this.url + '/listMachine', req, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/listMachine?isActive='+isActive, req, { headers: this.headerBase() });
   }
-  disableMachine(isActive:boolean,id:number) {
+  disableMachine(isActive,id:number) {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive?'yes':'no'}`, {token}, { headers: this.headerBase() });
   }
@@ -305,13 +306,13 @@ export class ApiService {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + '/reportStock',{token}, { headers: this.headerBase() });
   }
-  listSaleByMachine(machineId:string) {
+  listSaleByMachine(machineId:string,isActive='all') {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}`, {token}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}&isActive${isActive}`, {token,}, { headers: this.headerBase() });
   }
-  listSale() {
+  listSale(isActive='all') {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + '/listSale',{token}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/listSale?isActive='+isActive,{token}, { headers: this.headerBase() });
   }
   updateSale(o:IVendingMachineSale) {
     const token = localStorage.getItem('lva_token');
@@ -323,7 +324,7 @@ export class ApiService {
   }
   listProduct(isActive:string='all') {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + '/listProduct', {isActive,token}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/listProduct?isActive='+isActive, {token}, { headers: this.headerBase() });
   }
   disableProduct(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');
