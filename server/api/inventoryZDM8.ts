@@ -1014,6 +1014,10 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
+                        const isActive = req.query['isActive'];
+                        let actives =[];
+                        if(isActive=='all')actives.push(...[true,false]);
+                        else actives.push(...isActive=='yes'?[true]:[false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const sEnt = StockFactory(
                             EEntity.product + "_" + ownerUuid,
@@ -1021,7 +1025,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll()
+                            .findAll({where:{isActive:{[Op.or]:actives}}})
                             .then((r) => {
                                 res.send(PrintSucceeded("listProduct", r, EMessage.succeeded));
                             })
@@ -1253,6 +1257,10 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
+                        const isActive = req.query['isActive'];
+                        let actives =[];
+                        if(isActive=='all')actives.push(...[true,false]);
+                        else actives.push(...isActive=='yes'?[true]:[false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const sEnt = VendingMachineSaleFactory(
                             EEntity.vendingmachinesale + "_" + ownerUuid,
@@ -1260,7 +1268,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll()
+                            .findAll({where:{isActive:{[Op.or]:actives}}})
                             .then((r) => {
                                 res.send(PrintSucceeded("listSale", r, EMessage.succeeded));
                             })
@@ -1282,6 +1290,10 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
+                        const isActive = req.query['isActive'];
+                        let actives =[];
+                        if(isActive=='all')actives.push(...[true,false]);
+                        else actives.push(...isActive=='yes'?[true]:[false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const machineId = req.query["machineId"] + "";
                         const sEnt = VendingMachineSaleFactory(
@@ -1290,7 +1302,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll({ where: { machineId } })
+                            .findAll({ where: { machineId ,isActive:{[Op.or]:actives}} })
                             .then((r) => {
                                 res.send(
                                     PrintSucceeded("listSaleByMachine", r, EMessage.succeeded)
@@ -1512,9 +1524,13 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
+                        const isActive = req.query['isActive'];
+                        let actives =[];
+                        if(isActive=='all')actives.push(...[true,false]);
+                        else actives.push(...isActive=='yes'?[true]:[false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         this.machineClientlist
-                            .findAll({ where: { ownerUuid } })
+                            .findAll({ where: { ownerUuid, isActive:{[Op.or]:actives}} })
                             .then((r) => {
                                 res.send(PrintSucceeded("listMachine", r, EMessage.succeeded));
                             })

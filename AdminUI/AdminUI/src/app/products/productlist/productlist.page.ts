@@ -12,7 +12,7 @@ export class ProductlistPage implements OnInit {
   constructor(public apiService: ApiService) { }
 
   ngOnInit() {
-    this.apiService.listProduct().subscribe(r => {
+    this.apiService.listProduct('yes').subscribe(r => {
       console.log(r);
       if (r.status) {
         this._l.push(...r.data);

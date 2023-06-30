@@ -321,9 +321,9 @@ export class ApiService {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + '/addSale',{data:o,token}, { headers: this.headerBase() });
   }
-  listProduct() {
+  listProduct(isActive:string='all') {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + '/listProduct', {token}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/listProduct', {isActive,token}, { headers: this.headerBase() });
   }
   disableProduct(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');
