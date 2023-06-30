@@ -8,11 +8,21 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import axios from 'axios';
+import tls from 'tls';
+import fs from 'fs';
+import constants from 'constants';
+/// VMC SOCKET CLIENT AS THE FIRST RELEASE
+/// fixed ADMIN update SETTING
 export class SocketClientVMC {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
-    client = new net.Socket();
+    client:tls.TLSSocket|undefined=undefined;
+    // options = {
+    //     key: process.env.privateKeys,
+    //     cert: process.env.publicKeys,
+    //     rejectUnauthorized: false
+    // };
     port = 51223;
     host = 'laoapps.com';
     machineid = '11111111';
@@ -105,15 +115,20 @@ export class SocketClientVMC {
     }
     init() {
         const that = this;
-        this.client.connect({
-            port: this.port,
-            host: this.host
-        });
+        this.client = tls.connect(
+            this.port,
+            this.host,
+            {
+                key: process.env.clientkey,
+                cert: process.env.clientcert,
+                ca:process.env.ca
+            }
+        );
         if (this.t) {
             clearInterval(this.t);
             this.t = null;
         }
-        this.client.on('connect', function () {
+        this.client.on('secureConnect', function () {
             // console.log('Client: connection established with server');
 
             // console.log('---------client details -----------------');
@@ -126,18 +141,21 @@ export class SocketClientVMC {
 
             // console.log('Client is IP4/IP6 : ' + family);
 
+            if (that.client?.authorized) {
+                console.log("Connection authorized by a Certificate Authority.");
+                // writing data to server
+                that.send({},-11,EMACHINE_COMMAND.login);
+                } else {
+                console.log("Connection not authorized: " + that.client?.authorizationError)
+                }
+            
 
-            // writing data to server
-            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
+        })
+        .setEncoding('utf8')
 
-        });
-
-        this.client.setEncoding('utf8');
-
-        this.client.on('data', async (data) => {
-
-
-            // if (d.command == 'ping') {
+        .on('data', async (data) => {
+            try {
+                 // if (d.command == 'ping') {
             //     that.send([], d.command as any);
             // }
             // else {
@@ -159,35 +177,41 @@ export class SocketClientVMC {
                 if (d.command == 'balance') {
                     this.send(r, d.transactionID, EMACHINE_COMMAND.status);
                 } else {
-                    this.send(r, d.transactionID, d.command as any);
+                    this.send(r, d.transactionID, EMACHINE_COMMAND.status as any);
                 }
 
             }).catch(e => {
                 if (e) {
                     console.log('DATA command error', e);
 
-                    this.send(e, d.transactionID, d.command as any);
+                    this.send(e, d.transactionID, EMACHINE_COMMAND.status as any);
                 }
 
             })
 
             // console.log('DATA response', d.command, d);
-        });
-        this.client.on('error', function (e) {
+            } catch (error) {
+                console.log(error);
+                
+            }
+
+           
+        })
+        .on('error', function (e) {
             if (e)
                 console.log('ERROR error:' + e);
-        });
+        })
         // this.client.on('end', function (data) {
         //     console.log('Data from server:' + data);
         //     setTimeout(() => {
         //         that.init();
         //     }, 3000);
         // });
-        this.client.on('close', function (data) {
+        .on('close', function (data) {
             console.log('CLOSE on close:' + data);
             setTimeout(() => {
-                that.client.destroy();
-                that.client = new net.Socket();
+                that.client?.destroy();
+                // that.client = new net.Socket();
                 that.init();
             }, 3000);
         });
@@ -199,7 +223,7 @@ export class SocketClientVMC {
             req.token = that.token;
             req.time = new Date().getTime() + '';
             req.command = EMACHINE_COMMAND.ping;
-            that.client.write(JSON.stringify(req) + '\n');
+            that.send({},-13,EMACHINE_COMMAND.ping)
         }, 5000);
     }
     sendingCount=1;
@@ -212,7 +236,7 @@ export class SocketClientVMC {
         req.transactionID = transactionID;
         
         setTimeout(() => {
-            this.client.write(JSON.stringify(req) + '\n', e => {
+            this.client?.write(JSON.stringify(req) + '\n', e => {
                 if (e)
                    {
                     console.log('SEND error on send', e);
@@ -220,12 +244,14 @@ export class SocketClientVMC {
                    } 
                 else
                     this.sendingCount=1;
+                console.log('sent wiht error',e);
+                
             });
         }, 100*this.sendingCount++);
         
     }
     close() {
-        this.client.end();
+        this.client?.end();
         this.m.close();
     }
 

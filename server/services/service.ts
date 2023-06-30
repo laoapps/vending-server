@@ -259,24 +259,35 @@ export function findRealDB(token: string): Promise<string> {
     })
 }
 export function writeMachineSetting(machineId: string, setting: any) {
-    redisClient.set('_setting_' + machineId, JSON.stringify(setting));
+    try {
+        console.log('writeMachineSetting',machineId,setting);
+        
+        redisClient.set('_setting_' + machineId, JSON.stringify(setting));
+    } catch (error) {
+        console.log('error writeMachineSetting',error);
+        
+    }
+    
 }
 export function readMachineSetting(machineId: string,) {
     return redisClient.get('_setting_' + machineId);
 
 }
-export function writeMachineLimiter(machineId: string, balance: string) {
-    redisClient.set('_limiter_' + machineId, balance);
-}
-export function readMachineLimiter(machineId: string,) {
-    return redisClient.get('_limiter_' + machineId);
+// export function writeMachineLimiter(machineId: string, balance: string) {
+//     redisClient.set('_limiter_' + machineId, balance);
+// }
+// export function readMachineLimiter(machineId: string,) {
+//     return redisClient.get('_limiter_' + machineId);
 
-}
+// }
 export function  writeACKConfirmCashIn(transactionID:string) {
-    redisClient.setEx('_ack_confirm_CashIn_' + transactionID,60, 'yes');
+    return redisClient.setEx('_ack_confirm_CashIn_' + transactionID,5, 'yes');
 }
 export function  readACKConfirmCashIn(transactionID:string) {
     return redisClient.get('_ack_confirm_CashIn_' + transactionID);
+}
+export function  removeACKConfirmCashIn(transactionID:string) {
+    return redisClient.del('_ack_confirm_CashIn_' + transactionID);
 }
 export function writeMerchantLimiterBalance(ownerUuid: string, balance: string) {
     redisClient.set('_limiter_balance_' + ownerUuid, balance);

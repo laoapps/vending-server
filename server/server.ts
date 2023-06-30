@@ -29,6 +29,17 @@ import { CreateDatabase } from "./entities";
 import { LaabVendingAPI } from "./api/laab.vending";
 import { CashNV9LAAB } from "./api/cashNV9LAAB";
 
+const f = fs.readFileSync(__dirname + "/.env", "utf8");
+const env = JSON.parse(f); //../
+    process.env.backendKey = env.backendKey;
+    process.env.production = env.production;
+    process.env.name = env.name; 
+    process.env._image_path = path.join(__dirname, "..", "public");
+    process.env._log_path = path.join(__dirname, "..", "logs");
+
+    process.env.serverkey = fs.readFileSync(__dirname + '/certs/server/server.key')+'';
+    process.env.servercert = fs.readFileSync(__dirname + '/certs/server/server.crt')+'';
+    process.env.ca = fs.readFileSync(__dirname+'/certs/ca/ca.crt')+'';
 CreateDatabase("")
   .then((r) => {
     console.log("DATABASE CREATED OK", r);
@@ -50,16 +61,15 @@ CreateDatabase("")
     app.disable("x-powered-by");
     app.use(helmet.hidePoweredBy());
 
+
+    
     const server = http.createServer(app);
     // const wss = new WebSocket.Server({ server });
-    const f = fs.readFileSync(__dirname + "/.env", "utf8");
+    
     // console.log('F',f);
 
-    const env = JSON.parse(f); //../
-
-    process.env.backendKey = env.backendKey;
-    process.env.production = env.production;
-    process.env.name = env.name;
+    
+    
 
     const wss1 = new WebSocket.Server({ noServer: true });
     const wss2 = new WebSocket.Server({ noServer: true });
@@ -81,8 +91,10 @@ CreateDatabase("")
       //  invVMC,
       invZDM8
     );
-    process.env._image_path = path.join(__dirname, "..", "public");
-    process.env._log_path = path.join(__dirname, "..", "logs");
+  
+
+
+  
     fs.existsSync(process.env._log_path) || fs.mkdirSync(process.env._log_path);
     fs.existsSync(process.env._image_path) ||
       fs.mkdirSync(process.env._image_path);
@@ -126,7 +138,7 @@ CreateDatabase("")
         const { pathname } = parse(request.url || "");
         console.log("pathname", pathname);
 
-        if (pathname === "/zdm8" ) {
+        if (pathname === "/zdm8") {
           wss1.handleUpgrade(request, socket, head, function done(ws) {
             wss1.emit("connection", ws, request);
           });
@@ -136,7 +148,7 @@ CreateDatabase("")
             wss1.emit("connection", ws, request);
           });
         }
-         else {
+        else {
           socket.destroy();
         }
       } catch (error) {

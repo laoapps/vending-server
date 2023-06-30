@@ -94,13 +94,11 @@
                         <div style="float: left;"> <ion-icon name="storefront-sharp"></ion-icon> <ion-checkbox [(ngModel)]="settings[p.machineId].allowVending" ></ion-checkbox>  </div>
                         <div style="float: left;"> <ion-icon name="cash-sharp"></ion-icon><ion-checkbox [(ngModel)]="settings[p.machineId].allowCashIn"></ion-checkbox> </div>
                         <div style="float: left;"> <ion-icon name="bulb-sharp"></ion-icon><ion-checkbox [(ngModel)]="settings[p.machineId].light"></ion-checkbox> </div>
-                        <div style="float: left;"> <ion-icon name="snow-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> 
-                        <ion-icon name="thermometer-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input></div>
-                        
-                      
-                       
-                                     
-            
+                        <div style="float: left;"> <ion-icon name="arrow-redo-circle-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].limiter"></ion-input> </div>
+                        <div style="float: left;"> <ion-icon name="snow-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> </div>
+                        <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input>
+                      </div>
+
                     </td>
                      <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button> 
                     <td>

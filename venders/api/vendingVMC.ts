@@ -5,12 +5,13 @@ import { EMACHINE_COMMAND, EMessage, EVMC_COMMAND, EZDM8_COMMAND, IReqModel, IRe
 import { SerialPort } from 'serialport'
 
 
-import { broadCast, chk8xor, clearLogsDays, initWs, int2hex, loadLogsDays, PrintError, PrintSucceeded, writeErrorLogs, writeLogs, wsSendToClient } from '../services/service';
+import { broadCast, chk8xor, clearLogsDays, initWs, int2hex, loadLogsDays, PrintError, PrintSucceeded, readCreditRecord, writeCreditRecord, writeErrorLogs, writeLogs, wsSendToClient } from '../services/service';
 import xor from 'buffer-xor'
 import { SocketClientVMC } from './socketClient.vmc';
 import { resolve } from 'path';
 import moment, { duration } from 'moment';
-import cryptojs from 'crypto-js'
+import cryptojs from 'crypto-js';
+import tls from 'tls';
 export class VendingVMC {
 
     // port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 57600 }, function (err) {
@@ -27,54 +28,76 @@ export class VendingVMC {
     logduration = 15;
     countProcessClearLog = 60 * 60 * 24;
     machinestatus = '';
-    creditPending = new Array<{ command: any, data: any, transactionID: string, t: number }>();
+    creditPending = new Array<{ command: any, data: any, transactionID: string, raw: string, t: number }>();
 
     pendingRetry = 10;// 10s
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
-
         const that = this;
-
-
         this.port = new SerialPort({ path: this.path, baudRate: 57600 }, function (err) {
             if (err) {
                 return console.log('Error: ', err.message)
             }
             console.log(`port ${that.path} accessed`);
-            that.sycnVMC();
-            that.setPoll(10);
-            setTimeout(() => {
-                console.log('INITIALIZE.............................................................!');
-                console.log('INIT 51');
-                that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
-                console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
-                console.log('INIT 7001');
-                that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
-                console.log('INIT 7018');
-                that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
-                console.log('INIT 7019');
-                that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
-                console.log('INIT 7020');
-                that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
-                console.log('INIT 7023');
-                that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+            try {
+                that.sycnVMC();
+                that.setPoll(10);
 
-                console.log('INIT enable');
-                that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
-                console.log('INIT accept banknote');
-                that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
-                // console.log('INIT temperature');
-                that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
-                console.log('INIT temperature 2');
-                that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
-                // setTimeout(() => {
-                //     console.log('INIT disable');
-                //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
-                // }, 30000);
-                // console.log('INIT disable');
-                // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
-            }, 2000);
+                setTimeout(() => {
+                    console.log('INITIALIZE.............................................................!');
+                    console.log('INIT 51');
+                    that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
+                    console.log('INIT 7001');
+                    that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
+                    console.log('INIT 7001');
+                    that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
+                    console.log('INIT 7018');
+                    that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
+                    console.log('INIT 7019');
+                    that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
+                    console.log('INIT 7020');
+                    that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
+                    console.log('INIT 7023');
+                    that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
+
+                    console.log('INIT enable');
+                    that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+                    console.log('INIT accept banknote');
+                    that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
+                    // console.log('INIT temperature');
+                    that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
+                    console.log('INIT temperature 2');
+                    that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
+                    // setTimeout(() => {
+                    //     console.log('INIT disable');
+                    //     that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
+                    // }, 30000);
+                    // console.log('INIT disable');
+                    // that.commandVMC(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
+                }, 2000);
+
+                let text = '';
+                try {
+                    text = readCreditRecord();
+                    console.log('readCreditRecord', text);
+
+                    that.creditPending = JSON.parse(text)
+                    if(!Array.isArray(that.creditPending)){
+                        that.creditPending=[];
+                        writeCreditRecord(that.creditPending)
+                    }
+                } catch (error) {
+                    console.log('readCreditRecord');
+                    writeLogs({ error, message: 'readCreditRecord', text }, {})
+                    that.creditPending = [];
+                    writeCreditRecord(that.creditPending)
+                }
+
+            } catch (error) {
+                console.log('ERROR', error);
+                writeLogs({ error }, {});
+            }
+
             var b = '';
 
             setTimeout(() => {
@@ -102,10 +125,20 @@ export class VendingVMC {
                                 const t = cp?.transactionID;
                                 const b = cp?.data
                                 that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
+                                setTimeout(() => {
+                                    that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
+                                }, 500);
+                                setTimeout(() => {
+                                    that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
+                                }, 1000);
+                                setTimeout(() => {
+                                    that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
+                                }, 1500);
+                                that.pendingRetry=10;
                             } else {
                                 that.pendingRetry -= 2;
                             }
-                        }else{
+                        } else {
                             that.pendingRetry = 10;
                         }
                     } catch (error) {
@@ -168,9 +201,10 @@ export class VendingVMC {
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
                     const t = Number('-21' + moment.now());
-                    that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
-
-                    that.sock?.send(cryptojs.SHA256(that.sock.machineid + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
+                    const v = that.getNoteValue(b);
+                    that.creditPending.push({ raw: b, data: cryptojs.SHA256(that.sock?.machineid + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
+                    writeCreditRecord(that.creditPending, t + '');
+                    that.sock?.send(cryptojs.SHA256(that.sock?.machineid + v).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE, () => {
 
 
                     });
@@ -371,26 +405,10 @@ export class VendingVMC {
                         if (this.creditPending.find(v => v.transactionID == transactionID)) {
 
                             this.creditPending = this.creditPending.filter(v => v.transactionID != transactionID);
+                            writeCreditRecord(this.creditPending, transactionID)
                         }
                     }
-                    if (this.balance < this.limiter) {
-                        // this.lastupdate = moment().add(-360, 'days').toNow();
-                        if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                        this.enable = false;
-                        this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
-                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                        }).catch(e => {
-                            reject(PrintError(command as any, params, e.message));
-                        })
-                    } else {
-                        if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                        this.enable = true;
-                        this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
-                            resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                        }).catch(e => {
-                            reject(PrintError(command as any, params, e.message));
-                        })
-                    }
+                    
 
 
                     if (Array.isArray(params?.setting)) {
@@ -408,31 +426,7 @@ export class VendingVMC {
                                 }).catch(e => {
                                     reject(PrintError(command as any, params, e.message));
                                 })
-                            }
-                            // disable
-                            if (setting.allowCashIn != this.setting.allowCashIn) {
-                                this.setting.allowCashIn = setting.allowCashIn;
-                                console.log('new setting', this.setting);
-                                if (!this.setting.allowCashIn) {
-                                    if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                                    this.enable = false;
-                                    this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
-                                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                                    }).catch(e => {
-                                        reject(PrintError(command as any, params, e.message));
-                                    })
-                                } else {
-                                    if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
-                                    this.enable = true;
-                                    this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
-                                        resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
-                                    }).catch(e => {
-                                        reject(PrintError(command as any, params, e.message));
-                                    })
-                                }
-
-                            }
-
+                            } 
                             // light
 
                             // if (setting.light != this.setting.light) {
@@ -444,6 +438,32 @@ export class VendingVMC {
                             //         reject(PrintError(command as any, params, e.message));
                             //     })
                             // }
+                            // disable 
+                            if(setting.allowCashIn != this.setting.allowCashIn)
+                                this.setting.allowCashIn = setting.allowCashIn;
+
+                            if (this.balance < this.limiter||!setting.allowCashIn ) {
+                                console.log('DISABLE', this.setting.allowCashIn);
+                                
+                                if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                this.enable = false;
+                                this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
+                                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                }).catch(e => {
+                                    reject(PrintError(command as any, params, e.message));
+                                })
+                            } else {
+                                console.log('ENABLE', this.setting.allowCashIn);
+                                if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
+                                this.enable = true;
+                                this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
+                                    resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
+                                }).catch(e => {
+                                    reject(PrintError(command as any, params, e.message));
+                                })
+                            }
+
+                           
                         } catch (error) {
                             console.log(error);
 

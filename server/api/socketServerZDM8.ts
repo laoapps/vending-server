@@ -1,7 +1,7 @@
 import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess, IBillCashIn, EEntity } from '../entities/system.model';
 import cryptojs from 'crypto-js';
-import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineLimiter, writeMachineSetting } from '../services/service';
+import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineSetting } from '../services/service';
 import { EventEmitter } from 'events';
 import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
 import { v4 as uuid4 } from 'uuid';
@@ -9,38 +9,59 @@ import { dbConnection } from '../entities';
 import { BillCashInStatic, BillCashInFactory } from '../entities/billcash.entity';
 import { MachineIDStatic, MachineIDFactory } from '../entities/machineid.entity';
 import { IENMessage } from '../services/laab.service';
-
+import tls from 'tls';
+import fs from 'fs';
+import constants from 'constants';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 export class SocketServerZDM8 {
-    server = net.createServer();
-    sclients = Array<net.Socket>();
-    ports = 31223;
+    //  options = {
+    //     key: process.env.privateKeys,
+    //     cert: process.env.publicKeys
+    // };
+    server:tls.Server|undefined ;
+    sclients = Array<tls.TLSSocket>();
+    // ports = 31223;
 
     public machineIds = new Array<IMachineClientID>();
     eventEmitter = new EventEmitter();
 
     constructor(ports: number) {
         try {
-            this.sclients = Array<net.Socket>();
-            this.ports = this.ports || ports;
+            // this.ports = this.ports || ports;
             this.machineIds = new Array<IMachineClientID>();
             //creates the server
-
+        // emitted when new client connects
+            const that = this;
 
             //emitted when server closes ...not emitted until all connections closes.
-            this.server.on('close', function () {
+            this.server= tls.createServer({
+                key: process.env.serverkey,
+                cert: process.env.servercert,
+                ca:process.env.ca,
+                requestCert: true,
+            })
+            .on('close', function () {
                 console.log('Server closed !');
-            });
-
-            // emitted when new client connects
-            const that = this;
-            this.server.on('connection', function (socket) {
+            })
+            // .on('connection', () => {
+            //     console.log('insecure connection');
+            //   })
+            .on('secureConnection', function (socket) {
                 //this property shows the number of characters currently buffered to be written. (Number of characters is approximately equal to the number of bytes to be written, but the buffer may contain strings, and the strings are lazily encoded, so the exact number of bytes is not known.)
                 //Users who experience large or growing bufferSize should attempt to "throttle" the data flows in their program with pause() and resume().
-
+                socket.setEncoding('utf8');
+                socket.setKeepAlive(true);
+                socket.setTimeout(30000, function () {
+                    // called after timeout -> same as socket.on('timeout')
+                    // it just tells that soket timed out => its ur job to end or destroy the socket.
+                    // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
+                    // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
+                    console.log('Socket timed out');
+                    socket.end();
+                });
                 console.log('Buffer size : ' + socket.bufferSize);
 
-                console.log('---------server details -----------------');
+                console.log('---------server details -----------------',socket.authorized);
 
                 var address = that.server.address() as net.AddressInfo;
                 var port = address?.port;
@@ -71,18 +92,6 @@ export class SocketServerZDM8 {
                     console.log('Number of concurrent connections to the server : ' + count);
                 });
 
-                socket.setEncoding('utf8');
-                socket.setKeepAlive(true);
-                socket.setTimeout(30000, function () {
-                    // called after timeout -> same as socket.on('timeout')
-                    // it just tells that soket timed out => its ur job to end or destroy the socket.
-                    // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
-                    // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
-                    console.log('Socket timed out');
-                    socket.end();
-                });
-
-
                 socket.on('data', function (data) {
                     try {
                         var bread = socket.bytesRead;
@@ -108,7 +117,6 @@ export class SocketServerZDM8 {
                                     }
                                     return false;
                                 })
-
                                 if (!mx.length) {
                                     that.sclients.push(socket);
                                     console.log('DATA machine exist and accepted');
@@ -126,7 +134,7 @@ export class SocketServerZDM8 {
                                 socket.end();
                                 return;
                             }
-
+                            return;
                         } else if (d.command == EMACHINE_COMMAND.ping) {
                             console.log('DATA command ping');
                             const token = d.token;
@@ -162,7 +170,7 @@ export class SocketServerZDM8 {
                                     machineId: m.machineId
                                 }
                                 console.log(`machine der`, params);
-                                const limiter =100000;
+                                // const limiter =100000;
                                 func.Init(params).then(run => {
                                     const response: any = run;
                                     if (response.message != IENMessage.success) {
@@ -176,12 +184,12 @@ export class SocketServerZDM8 {
                                                 setting= JSON.parse(r);
                                             } catch (error) {
                                                 console.log('error parsing setting 2',error);
-                                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;
+                                                setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;setting.limiter=100000
                                             }
                                         }
                                         writeMerchantLimiterBalance(x.ownerUuid,response?.balance+'');
-                                        writeMachineLimiter(m.machineId,limiter+'');
-                                        that.updateBalance(m.machineId, {balance:response?.balance||0,limiter,setting});
+                                        // writeMachineLimiter(m.machineId,limiter+'');
+                                        that.updateBalance(m.machineId, {balance:response?.balance||0,limiter:setting.limiter,setting});
                                     })
                                    
 
@@ -318,21 +326,21 @@ export class SocketServerZDM8 {
                 //     
                 // }, 1200000);
 
-            });
+            })
 
             // emits when any error occurs -> calls closed event immediately after this.
-            this.server.on('error', function (error) {
+            .on('error', function (error) {
                 console.log('Error: ' + error);
-            });
+            })
 
             //emits when server is bound with server.listen
-            this.server.on('listening', function () {
+            .on('listening', function () {
                 console.log('Server is listening!');
-            });
+            })
 
             // this. server.maxConnections = 10;
             // for dyanmic port allocation
-            this.server.listen(this.ports, function () {
+            .listen(ports, function () {
                 var address = that.server.address() as net.AddressInfo;
                 var port = address.port;
                 var family = address.family;
@@ -398,20 +406,22 @@ export class SocketServerZDM8 {
         const data = JSON.parse(JSON.stringify(m));
         console.log(`initMachineId`, data);
         this.machineIds.push(...data)
+        // this.machineIds.forEach(v=>v.photo='');
         this.initMachineSetting(m);
     }
     initMachineSetting(m: Array<IMachineClientID>){
         m.forEach(v=>{
             if(!Array.isArray(v.data))v.data=[];
             
-            const x = v.data[0]?.allowVending||true;
-            const y = v.data[0]?.allowCashIn||true;
-            const w = v.data[0]?.light||true;
+            const x = v.data[0]?.allowVending;
+            const y = v.data[0]?.allowCashIn;
+            const w = v.data[0]?.light;
             const z = v.data[0]?.highTemp||10;
             const u = v.data[0]?.lowTemp||5;
+            const l = v.data[0]?.limiter||100000;
             const a = v.data.find(v=>v.settingName=='setting');
-            if(!a)v.data.push({settingName:'setting',allowVending:x,allowCashIn:y,lowTemp:u,highTemp:z,light:w});
-            else{a.allowVending=x;a.allowCashIn=y,a.light=w;a.highTemp=z;a.lowTemp=u}
+            if(!a)v.data.push({settingName:'setting',allowVending:x,allowCashIn:y,lowTemp:u,highTemp:z,light:w,limiter:l});
+            else{a.allowVending=x;a.allowCashIn=y,a.light=w;a.highTemp=z;a.lowTemp=u;a.limiter=l}
             writeMachineSetting(v.machineId,v.data);
         })
     }

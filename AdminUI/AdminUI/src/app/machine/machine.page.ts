@@ -43,6 +43,8 @@ export class MachinePage implements OnInit {
       if (r.status) {
         this._l.push(...r.data);
         this._l.forEach(v=>{
+          console.log('....',v);
+          if(!Array.isArray(v.data))v.data=[v.data]
           let setting =v.data?.find(vx=>vx.settingName=='setting');
           if(!setting){
             setting={};
