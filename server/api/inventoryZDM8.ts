@@ -1993,18 +1993,19 @@ export class InventoryZDM8 implements IBaseClass {
         try {
             const that = this;
             // find in redis
-            let ack = await readACKConfirmCashIn(d.transactionID + '');
             let machineId = this.ssocket.findMachineIdToken(d.token);
+            let ack = await readACKConfirmCashIn(machineId+''+d.transactionID);
+            
             if (!ack) {
                 // double check in database
                 const r = await this.loadBillCash(machineId.machineId, d.transactionID)
                 if (r?.length) {
-                    await writeACKConfirmCashIn(d.transactionID + '');
+                    await writeACKConfirmCashIn(machineId+''+d.transactionID);
                     ack = 'yes';
                 } else
-                    await writeACKConfirmCashIn(d.transactionID + '');
+                    await writeACKConfirmCashIn(machineId+''+d.transactionID);
             } else {
-                await writeACKConfirmCashIn(d.transactionID + '');
+                await writeACKConfirmCashIn(machineId+''+d.transactionID);
                 throw new Error('TOO FAST ' + d.transactionID);
             }
 
@@ -2061,7 +2062,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
                     // const limiter = await readMachineLimiter(machineId.machineId);
                     this.updateBillCash(bsi, machineId.machineId, d.transactionID);
-                    await writeACKConfirmCashIn(d.transactionID + '');
+                    await writeACKConfirmCashIn(machineId+''+d.transactionID);
                     that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
                     ws.send(
                         JSON.stringify(
@@ -2125,7 +2126,7 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log('RECORD THIS TRANSACTIION AS IT has been doen');
                             // finish the process allow next queque 
                             console.log('finish the process allow next queque ');
-                            writeACKConfirmCashIn(d.transactionID + '');
+                            writeACKConfirmCashIn(machineId+''+d.transactionID);
                             console.log(`response cash in validation`, run);
                             if (run.message != IENMessage.success) throw new Error(run);
                             bsi.bankNotes.push(bn);
