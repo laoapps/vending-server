@@ -308,7 +308,7 @@ export class ApiService {
   }
   listSaleByMachine(machineId:string,isActive='all') {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}&isActive${isActive}`, {token,}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}&isActive=${isActive}`, {token,}, { headers: this.headerBase() });
   }
   listSale(isActive='all') {
     const token = localStorage.getItem('lva_token');
