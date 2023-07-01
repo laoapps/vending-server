@@ -2215,7 +2215,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const machineId = this.ssocket.findMachineIdToken(re.token);
                     const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
                     const wsAdmins = this.wsClient.find(v=> v['myMachineId'].includes(machineId.machineId));
-                    console.log('ws',ws,'wsAdmin',wsAdmins);
+                    console.log('ws',ws,'wsAdmin',wsAdmins,machineId);
                     
                     // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
                     if (ws) {
@@ -3137,6 +3137,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 console.log('admintoken owneruuid machines', m);
                                                 ws['myMachineId'] = m;
                                                 ws["clientId"] = uuid4();
+                                                this.wsClient.push(ws);
                                                 ws.send(
                                                     JSON.stringify(
                                                         PrintSucceeded(d.command, res, EMessage.succeeded)
@@ -3166,6 +3167,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                             redisClient.setEx('_admintoken_' + token, 60 * 60 * 24, ownerUuid);
                                                             ws['myMachineId'] = m;
                                                             ws["clientId"] = uuid4();
+                                                            this.wsClient.push(ws);
                                                             ws.send(
                                                                 JSON.stringify(
                                                                     PrintSucceeded(d.command, res, EMessage.succeeded)
