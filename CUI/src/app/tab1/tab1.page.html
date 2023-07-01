@@ -179,14 +179,23 @@
       <ion-grid>
         <ion-row>
           <ion-col>
-            <div class="button-wrapper" style="float: right;" (click)="laabGo()">
+
+            <!-- old -->
+            <!-- <div class="button-wrapper" style="float: right;" (click)="laabGo()">
 
               <div class="background-button xbutton" href="#" title="LAAB GO"></div>
             </div>
             <div class="button-wrapper" style="float: right;" (click)="buyManyMMoney()">
 
               <div class="background-button xbutton" href="#" title="GO"></div>
+            </div> -->
+
+
+            <div class="button-wrapper" style="float: right;" (click)="vendingGO()">
+
+              <div class="background-button xbutton" href="#" title="GO"></div>
             </div>
+            
             <div style="float: right;">
               <ion-icon name="cart-sharp" color="primary" style="font-size: 30px;"></ion-icon>
               :{{getTotalSale?.q|number}}:

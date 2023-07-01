@@ -48,6 +48,7 @@ import { MmoneyIosAndroidDownloadPage } from './MMoney/mmoney-ios-android-downlo
 import { SettingControlMenuPage } from '../setting/pages/setting-control-menu/setting-control-menu.page';
 import { ControlMenuService } from '../services/control-menu.service';
 import { TopupAndServicePage } from './Vending/topup-and-service/topup-and-service.page';
+import { VendingGoPage } from './Vending/vending-go/vending-go.page';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -1080,6 +1081,19 @@ export class Tab1Page {
         resolve(error.message);
       } 
     });
+  }
+
+  vendingGO() {
+    const props = {
+      summarizeOrder: this.summarizeOrder,
+      getTotalSale: this.getTotalSale,
+      bills: this.bills,
+      machineId: this.machineId,
+      orders: this.orders
+    }
+    this.apiService.modal.create({ component: VendingGoPage, componentProps: props }).then(r => {
+      r.present();
+    })
   }
 
 }

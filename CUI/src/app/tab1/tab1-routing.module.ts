@@ -50,6 +50,10 @@ const routes: Routes = [
   {
     path: 'phone-payment',
     loadChildren: () => import('./Vending/phone-payment/phone-payment.module').then( m => m.PhonePaymentPageModule)
+  },
+  {
+    path: 'vending-go',
+    loadChildren: () => import('./Vending/vending-go/vending-go.module').then( m => m.VendingGoPageModule)
   }
 ];
 
