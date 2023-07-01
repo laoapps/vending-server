@@ -23,6 +23,7 @@ import {
     writeACKConfirmCashIn,
     readACKConfirmCashIn,
     writeMachineBalance,
+    writeMachineStatus,
 } from "../services/service";
 import {
     EClientCommand,
@@ -1921,7 +1922,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                                     console.log(`sw sender`, d.command, res.data);
                                     // redisClient.set('_balance_' + ws['clientId'], bn.value);
-                                    writeMachineBalance(machineId.machineId, bn.value + '');
+                                    // writeMachineBalance(machineId.machineId, bn.value + '');
                                     readMachineSetting(machineId.machineId).then(async r => {
                                         let setting = {} as any
                                         if (r) {
@@ -2127,11 +2128,11 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log(`response cash in validation`, run);
                             if (run.message != IENMessage.success) throw new Error(run);
                             bsi.bankNotes.push(bn);
-                            res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
+                            res.data = { clientId: ws["clientId"], billCashIn: bsi, bn,machineId:machineId.machineId };
                             that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
-                            console.log(`sw sender`, d.command, res.data);
-                            redisClient.set('_balance_' + ws['clientId'], bn.value);
-
+                            console.log(`sw sender`, d.command, res.data,machineId.machineId);
+                            // redisClient.set('_balance_' + ws['clientId'], bn.value);
+                            // writeMachineBalance(machineId.machineId,bn.value+'')
                             readMachineSetting(machineId.machineId).then(async r => {
                                 let setting = {} as any
                                 if (r) {
@@ -2220,11 +2221,12 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.message = EMessage.status;
                         resx.data = re.data;
                         // save to redis
-                        redisClient.set('_machinestatus_' + machineId.machineId, re.data);
+                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
+                        writeMachineStatus(machineId.machineId, re.data);
                         // send to machine client
                         this.sendWSMyMachine(machineId.machineId, resx);
 
-                        this.sendWS(ws['clientId'], resx);
+                        // this.sendWS(ws['clientId'], resx);
                     }
                     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
                     // fafb52
