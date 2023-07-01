@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { PaidValidationProcess } from '../../processes/paidValidation.process';
+import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { IENMessage } from 'src/app/models/base.model';

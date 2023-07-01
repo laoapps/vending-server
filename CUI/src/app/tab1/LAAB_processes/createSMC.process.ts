@@ -3,7 +3,7 @@ import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
-export class PaidValidationProcess {
+export class CreateSMCProcess {
 
     private workload: any = {} as any;
 
@@ -12,7 +12,9 @@ export class PaidValidationProcess {
     
     private cash: number;
     private description: string;
-    private paidLAAB: any = {} as any;
+
+    private detail: any = {} as any;
+    private bill: any = {} as any;
 
     constructor(
         apiService: ApiService,
@@ -28,28 +30,28 @@ export class PaidValidationProcess {
                 
 
 
-                console.log(`paid validation`, 1);
+                console.log(`create smc`, 1);
 
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
-                console.log(`paid validation`, 2);
+                console.log(`create smc`, 2);
 
                 this.InitParams(params);
 
-                console.log(`paid validation`, 3);
+                console.log(`create smc`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`paid validation`, 4);
+                console.log(`create smc`, 4);
                 
-                const PaidValidation = await this.PaidValidation();
-                if (PaidValidation != IENMessage.success) throw new Error(PaidValidation);
+                const CashValidation = await this.CashValidation();
+                if (CashValidation != IENMessage.success) throw new Error(CashValidation);
 
-                console.log(`paid validation`, 5);
+                console.log(`create smc`, 5);
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
@@ -65,30 +67,30 @@ export class PaidValidationProcess {
 
     private InitParams(params: any): void {
         this.cash = params.cash;
-        this.description = params.description;
-        this.paidLAAB = params.paidLAAB;
+        this.description = 'VENDING CASH OUT TO SMART CONTRACT';
     }
 
     private ValidateParams(): string {
-        if (!(this.cash && this.description && this.paidLAAB)) return IENMessage.parametersEmpty;
+        if (!(this.cash)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
-    private PaidValidation(): Promise<any> {
+    private CashValidation(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 const params = {
                     cash: this.cash,
                     description: this.description,
-                    paidLAAB: this.paidLAAB,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
-
-                this.vendingAPIService.paidValidation(params).subscribe(r => {
+                
+                this.vendingAPIService.createSMC(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response`, response);
+                    console.log(`response create smc`, response);
                     if (response.status != 1) return resolve(response.message);
+                    this.detail = response.info.detail;
+                    this.bill = response.info.bill;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -101,6 +103,8 @@ export class PaidValidationProcess {
     private Commit(): any {
         const response = {
             data: [{
+                detail: this.detail,
+                bill: this.bill
             }],
             message: IENMessage.success
         }

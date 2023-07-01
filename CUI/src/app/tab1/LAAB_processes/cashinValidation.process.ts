@@ -3,16 +3,15 @@ import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
-export class CreateEPINProcess {
+export class CashinValidationProcess {
 
     private workload: any = {} as any;
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private phonenumber: string;
-    private detail: any = {} as any;
-
+    private cash: number;
+    private description: string;
 
     constructor(
         apiService: ApiService,
@@ -30,8 +29,8 @@ export class CreateEPINProcess {
 
                 console.log(`cash validation`, 1);
 
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
                 console.log(`cash validation`, 2);
 
@@ -44,19 +43,19 @@ export class CreateEPINProcess {
 
                 console.log(`cash validation`, 4);
                 
-                const CashValidation = await this.CashValidation();
-                if (CashValidation != IENMessage.success) throw new Error(CashValidation);
+                const CashinValidation = await this.CashinValidation();
+                if (CashinValidation != IENMessage.success) throw new Error(CashinValidation);
 
                 console.log(`cash validation`, 5);
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
 
             } catch (error) {
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });
@@ -64,28 +63,28 @@ export class CreateEPINProcess {
 
 
     private InitParams(params: any): void {
-        this.phonenumber = params.phonenumber;
-        this.detail = params.detail;
+        this.cash = params.cash;
+        this.description = params.description;
     }
 
     private ValidateParams(): string {
-        if (!(this.phonenumber && this.detail)) return IENMessage.parametersEmpty;
+        if (!(this.cash && this.description)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
-    private CashValidation(): Promise<any> {
+    private CashinValidation(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 const params = {
-                    phonenumber: this.phonenumber,
-                    detail: this.detail,
+                    cash: this.cash,
+                    description: this.description,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
-                
-                this.vendingAPIService.createEPIN(params).subscribe(r => {
+
+                this.vendingAPIService.cashinValidation(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response create epin`, response);
+                    console.log(`response`, response);
                     if (response.status != 1) return resolve(response.message);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));

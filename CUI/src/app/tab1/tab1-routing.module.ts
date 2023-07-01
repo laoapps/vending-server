@@ -37,7 +37,15 @@ const routes: Routes = [
   },
   {
     path: 'mmoney-ios-android-download',
-    loadChildren: () => import('./LAAB/mmoney-ios-android-download/mmoney-ios-android-download.module').then( m => m.MmoneyIosAndroidDownloadPageModule)
+    loadChildren: () => import('./MMoney/mmoney-ios-android-download/mmoney-ios-android-download.module').then( m => m.MmoneyIosAndroidDownloadPageModule)
+  },
+  {
+    path: 'topup-service',
+    loadChildren: () => import('./LAAB/topup-service/topup-service.module').then( m => m.TopupServicePageModule)
+  },
+  {
+    path: 'topup-and-service',
+    loadChildren: () => import('./Vending/topup-and-service/topup-and-service.module').then( m => m.TopupAndServicePageModule)
   }
 ];
 

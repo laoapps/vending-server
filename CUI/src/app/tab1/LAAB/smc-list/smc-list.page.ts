@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
-import { LoadSMCProcess } from '../../processes/loadSMC.process';
+import { LoadSMCProcess } from '../../LAAB_processes/loadSMC.process';
 import { IENMessage } from 'src/app/models/base.model';
-import { CreateEPINProcess } from '../../processes/createEPIN.process';
+import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
 import * as QRCode from 'qrcode';
 import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
 import moment from 'moment';

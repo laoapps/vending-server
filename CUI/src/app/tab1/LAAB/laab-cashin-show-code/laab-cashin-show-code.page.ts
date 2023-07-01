@@ -1,7 +1,7 @@
 import { Component, OnInit ,Input, OnDestroy} from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
-import { LoadVendingWalletCoinBalanceProcess } from '../../processes/loadVendingWalletCoinBalance.process';
+import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 @Component({
   selector: 'app-laab-cashin-show-code',

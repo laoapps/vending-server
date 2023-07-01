@@ -3,18 +3,16 @@ import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
-export class TransferValidationProcess {
+export class PaidValidationProcess {
 
     private workload: any = {} as any;
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private receiver: string;
     private cash: number;
     private description: string;
-
-    private bill: any = {} as any;
+    private paidLAAB: any = {} as any;
 
     constructor(
         apiService: ApiService,
@@ -32,8 +30,8 @@ export class TransferValidationProcess {
 
                 console.log(`paid validation`, 1);
 
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
                 console.log(`paid validation`, 2);
 
@@ -51,14 +49,14 @@ export class TransferValidationProcess {
 
                 console.log(`paid validation`, 5);
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
 
             } catch (error) {
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });
@@ -66,14 +64,13 @@ export class TransferValidationProcess {
 
 
     private InitParams(params: any): void {
-        this.receiver = params.receiver;
         this.cash = params.cash;
         this.description = params.description;
+        this.paidLAAB = params.paidLAAB;
     }
 
     private ValidateParams(): string {
-        if (!(this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
-        if (this.receiver.length != 8) return IENMessage.invalidPhonenumber;
+        if (!(this.cash && this.description && this.paidLAAB)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -82,17 +79,16 @@ export class TransferValidationProcess {
             try {
 
                 const params = {
-                    receiver: `+85620` + this.receiver,
                     cash: this.cash,
                     description: this.description,
+                    paidLAAB: this.paidLAAB,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
 
-                this.vendingAPIService.transferValidation(params).subscribe(r => {
+                this.vendingAPIService.paidValidation(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
                     if (response.status != 1) return resolve(response.message);
-                    this.bill = response.info.bill;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -105,7 +101,6 @@ export class TransferValidationProcess {
     private Commit(): any {
         const response = {
             data: [{
-                bill: this.bill
             }],
             message: IENMessage.success
         }

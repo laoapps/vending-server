@@ -3,18 +3,14 @@ import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
-export class LoadSMCProcess {
+export class CashValidationProcess {
 
     private workload: any = {} as any;
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private page: number;
-    private limit: number;
-
-    private rows: Array<any> = [];
-    private count: number = 0;
+    private acceptcash: number;
 
     constructor(
         apiService: ApiService,
@@ -30,35 +26,35 @@ export class LoadSMCProcess {
                 
 
 
-                console.log(`load smc`, 1);
+                console.log(`cash validation`, 1);
 
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
-                console.log(`load smc`, 2);
+                console.log(`cash validation`, 2);
 
                 this.InitParams(params);
 
-                console.log(`load smc`, 3);
+                console.log(`cash validation`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`load smc`, 4);
+                console.log(`cash validation`, 4);
                 
-                const LoadSMC = await this.LoadSMC();
-                if (LoadSMC != IENMessage.success) throw new Error(LoadSMC);
+                const CashValidation = await this.CashValidation();
+                if (CashValidation != IENMessage.success) throw new Error(CashValidation);
 
-                console.log(`load smc`, 5);
+                console.log(`cash validation`, 5);
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
 
             } catch (error) {
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });
@@ -66,31 +62,26 @@ export class LoadSMCProcess {
 
 
     private InitParams(params: any): void {
-        this.page = params.page;
-        this.limit = params.limit;
     }
 
     private ValidateParams(): string {
-        if (!(this.page && this.limit)) return IENMessage.parametersEmpty;
+
         return IENMessage.success;
     }
 
-    private LoadSMC(): Promise<any> {
+    private CashValidation(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 const params = {
-                    page: this.page,
-                    limit: this.limit,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
-                
-                this.vendingAPIService.loadSMC(params).subscribe(r => {
+
+                this.vendingAPIService.cashValidation(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
                     if (response.status != 1) return resolve(response.message);
-                    this.rows = response.info.rows;
-                    this.count = response.info.count;
+                    this.acceptcash = response.info.acceptcash;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -103,10 +94,7 @@ export class LoadSMCProcess {
     private Commit(): any {
         const response = {
             data: [{
-                rows: this.rows,
-                count: this.count,
-                page: this.page,
-                limit: this.limit
+                acceptcash: this.acceptcash
             }],
             message: IENMessage.success
         }

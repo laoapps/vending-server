@@ -27,10 +27,10 @@ import { environment } from 'src/environments/environment';
 import { ShowcartPage } from '../showcart/showcart.page';
 
 import { VendingAPIService } from '../services/vending-api.service';
-import { LoadVendingWalletCoinBalanceProcess } from './processes/loadVendingWalletCoinBalance.process';
+import { LoadVendingWalletCoinBalanceProcess } from './LAAB_processes/loadVendingWalletCoinBalance.process';
 import { IENMessage } from '../models/base.model';
-import { CashValidationProcess } from './processes/cashValidation.process';
-import { CashinValidationProcess } from './processes/cashinValidation.process';
+import { CashValidationProcess } from './LAAB_processes/cashValidation.process';
+import { CashinValidationProcess } from './LAAB_processes/cashinValidation.process';
 import { LaabGoPage } from './LAAB/laab-go/laab-go.page';
 import { EpinCashOutPage } from './LAAB/epin-cash-out/epin-cash-out.page';
 import * as cryptojs from 'crypto-js';
@@ -44,7 +44,7 @@ import { IMachineStatus } from '../services/service';
 import { HowtoPage } from '../howto/howto.page';
 import { StackCashoutPage } from './LAAB/stack-cashout/stack-cashout.page';
 import { EpinShowCodePage } from './LAAB/epin-show-code/epin-show-code.page';
-import { MmoneyIosAndroidDownloadPage } from './LAAB/mmoney-ios-android-download/mmoney-ios-android-download.page';
+import { MmoneyIosAndroidDownloadPage } from './MMoney/mmoney-ios-android-download/mmoney-ios-android-download.page';
 import { SettingControlMenuPage } from '../setting/pages/setting-control-menu/setting-control-menu.page';
 import { ControlMenuService } from '../services/control-menu.service';
 
@@ -1005,11 +1005,6 @@ export class Tab1Page {
   }
 
 
-  // openSettingControlMenu() {
-  //   this.apiService.modal.create({ component: SettingControlMenuPage, cssClass: 'dialog-fullscreen' }).then(r => {
-  //     r.present();
-  //   });
-  // }
 
 
   dynamicControlMenu() {
@@ -1065,4 +1060,26 @@ export class Tab1Page {
     this.CONTROL_MENUList = JSON.parse(JSON.stringify(this.apiService.controlMenuService.CONTROL_MENUList));
   }
   
+
+
+
+
+  public openTopupAndServicePage(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        
+        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
+        
+        this.apiService.modal.create({ component: StackCashoutPage }).then(r => {
+          r.present();
+        });
+        
+        resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      } 
+    });
+  }
+
 }

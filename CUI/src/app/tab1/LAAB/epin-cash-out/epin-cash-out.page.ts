@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
-import { CreateSMCProcess } from '../../processes/createSMC.process';
+import { CreateSMCProcess } from '../../LAAB_processes/createSMC.process';
 import { IENMessage } from 'src/app/models/base.model';
 import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
 import { SmcListPage } from '../smc-list/smc-list.page';
 import * as QRCode from 'qrcode';
-import { CreateEPINProcess } from '../../processes/createEPIN.process';
+import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
 
 @Component({
   selector: 'app-epin-cash-out',

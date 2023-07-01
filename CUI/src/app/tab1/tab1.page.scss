@@ -73,8 +73,8 @@ ion-header {
         text-decoration: none;
         padding: 10px;
         border-radius: 8px;
-        gap: 5px;
         transition: .2s;
+        opacity: .8;
 
         .icon {
             font-size: 25px;
@@ -93,9 +93,9 @@ ion-header {
         .text {
             width: 100%;
             color: #fff;
-            font-size: 20px;
+            font-size: 16px;
             padding-left: 10px;
-            padding-right: 5px;
+            // padding-right: 5px;
         }
     }
     .item-blue {

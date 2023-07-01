@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
-import { TransferValidationProcess } from '../../processes/transferValidation.process';
+import { TransferValidationProcess } from '../../LAAB_processes/transferValidation.process';
 
 @Component({
   selector: 'app-laab-cashout',
