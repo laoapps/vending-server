@@ -299,7 +299,7 @@ export class Tab1Page {
     console.log(x, this.getPassword());
 
     // if (environment.production)
-      if (!this.getPassword().endsWith(x.substring(6))||!this.getPassword().startsWith(this.machineId?.otp) || x.length < 12) return;
+      if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.machineId?.otp) || x.length < 12) return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then((r) => {
       r.data;
