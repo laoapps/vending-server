@@ -2213,6 +2213,7 @@ export class InventoryZDM8 implements IBaseClass {
             this.ssocket.onMachineResponse((re: IReqModel) => {
                 if (re.transactionID == -52) {
                     const machineId = this.ssocket.findMachineIdToken(re.token);
+                    writeMachineStatus(machineId.machineId, re.data);
                     const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
                     const wsAdmins = this.wsClient.find(v=> v['myMachineId'].includes(machineId.machineId));
                     console.log('ws',ws,'wsAdmin',wsAdmins,machineId);
@@ -2227,7 +2228,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
                         console.log('writeMachineStatus',machineId.machineId,re.data);
                         
-                        writeMachineStatus(machineId.machineId, re.data);
+                        
                         // send to machine client
                         this.sendWSToMachine(machineId.machineId, resx);
 
@@ -2241,8 +2242,6 @@ export class InventoryZDM8 implements IBaseClass {
                         // save to redis
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
                         console.log('writeMachineStatus',machineId.machineId,re.data);
-                        
-                        writeMachineStatus(machineId.machineId, re.data);
                         // send to machine client
                         this.sendWSMyMachine(machineId.machineId, resx);
                     }
