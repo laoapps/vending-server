@@ -90,10 +90,12 @@
       </div>
       <div>
         <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
+        <ion-button (click)="setMax(s.position)">SET MAX</ion-button>
         <ion-range [disabled]="isDisabled!=s.position+''" [ticks]="true" [snaps]="true" [min]="0" [max]="s.max" [(ngModel)]="s.stock.qtty"
           (ionChange)="save()"></ion-range>
       </div>
     </ion-card>
     <ion-item-divider></ion-item-divider>
+    
   </div>
 </ion-content>

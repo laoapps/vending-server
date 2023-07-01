@@ -6,6 +6,7 @@ import { IStock, IVendingMachineSale } from '../services/syste.model';
 import { StockPage } from '../stock/stock.page';
 import { ReportbillsPage } from '../reportbills/reportbills.page';
 import { ReportrefillsalePage } from '../reportrefillsale/reportrefillsale.page';
+import { AlertController } from '@ionic/angular';
 @Component({
   selector: 'app-stocksale',
   templateUrl: './stocksale.page.html',
@@ -20,6 +21,7 @@ export class StocksalePage implements OnInit {
   isDisabled='';
   search='';
   constructor(public apiService: ApiService,
+    public alertController:AlertController,
     public storage: IonicStorageService) {
     this.saleStock = apiService.vendingOnSale;
     this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
@@ -71,6 +73,7 @@ export class StocksalePage implements OnInit {
         const qtt = x.stock.qtty;
          if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
         x.stock.qtty=qtt;
+        
         console.log('x',x);
         
         if(this.saleStock[0].position==0)this.compensation=1;
@@ -79,22 +82,74 @@ export class StocksalePage implements OnInit {
     })
     s.present();
   }
+  setMax(position:number){
+
+    const x = this.saleStock.find(v => v.position == position);
+    this.alertController.create({
+      cssClass: '',
+      header: 'Set Max!',
+      inputs: [
+        {
+          name: 'maxqtty',
+          type: 'number',
+          value:5,
+          min: 3,
+          max: 20,
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => {
+           
+          },
+        },
+        {
+          text: 'Ok',
+          handler: (v) => {
+            try {
+              console.log('CONFRIM',v);
+              const x = this.saleStock.find(v => v.position == position);
+              x.max=Number(v.maxqtty);
+              if(this.saleStock[0].position==0)this.compensation=1;
+              this.save();
+            } catch (error) {
+                console.log(error);
+            }
+          },
+        },
+      ],
+    }).then(r=>{
+      r.present();
+    });
+
+   
+  
+    
+  }
 
 
   ngOnInit() {
     this.stock=[];
     const maxPosition=Number(localStorage.getItem('maxPosition'))||60;
-    !(this.saleStock.length<maxPosition)||
-    Array.from(Array(maxPosition), (_, i) => i+1).forEach(v=>this.saleStock.find(vx=>vx.position==v)||
-    this.saleStock.push({
-      machineId:this.apiService.machineId.machineId,
-      position:v,
-      isActive:true,
-      id:-1,
-      max:5,
-      stock:{image:'',name:'',price:-1,qtty:0,id:-1} as IStock
-    } as IVendingMachineSale));
-    console.log('saleStock',this.saleStock);
+    console.log('saleStock',this.saleStock.length);
+    if(this.saleStock.length<maxPosition){
+      Array.from(Array(maxPosition), (_, i) => i+1).forEach(v=>this.saleStock.find(vx=>vx.position==v)||
+      this.saleStock.push({
+        machineId:this.apiService.machineId.machineId,
+        position:v,
+        isActive:true,
+        id:-1,
+        max:5,
+        stock:{image:'',name:'',price:-1,qtty:0,id:-1} as IStock
+      } as IVendingMachineSale));
+  
+    }
+   
+
+    console.log('saleStock',this.saleStock.length);
     
     this.saleStock.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);

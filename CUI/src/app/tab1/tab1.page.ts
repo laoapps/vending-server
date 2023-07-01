@@ -262,6 +262,7 @@ export class Tab1Page {
           this.saleList.sort((a, b) => {
             if (a.position < b.position) return -1;
           });
+          if (this.vendingOnSale?.length) return;
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
           if (this.saleList[0]?.position == 0) this.compensation = 1;
