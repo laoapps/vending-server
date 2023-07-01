@@ -243,7 +243,7 @@ export class Tab1Page {
     window.location.reload();
   }
   initStock() {
-    if (this.vendingOnSale?.length) return;
+    // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().subscribe((r) => {
       console.log(`load vending sale`, r.data);
       if (r.status) {
@@ -262,7 +262,8 @@ export class Tab1Page {
           this.saleList.sort((a, b) => {
             if (a.position < b.position) return -1;
           });
-          if (this.vendingOnSale?.length) return;
+          // reset everytime ws activate
+          if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
           if (this.saleList[0]?.position == 0) this.compensation = 1;
