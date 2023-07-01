@@ -46,6 +46,10 @@ const routes: Routes = [
   {
     path: 'topup-and-service',
     loadChildren: () => import('./Vending/topup-and-service/topup-and-service.module').then( m => m.TopupAndServicePageModule)
+  },
+  {
+    path: 'phone-payment',
+    loadChildren: () => import('./Vending/phone-payment/phone-payment.module').then( m => m.PhonePaymentPageModule)
   }
 ];
 

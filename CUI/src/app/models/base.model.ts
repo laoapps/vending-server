@@ -1,4 +1,9 @@
 export enum IENMessage {
+    phonePaymentSuccess = 'phone payment success',
+    minimumOfAmountIs1000 = 'minimum of amount is 1000',
+    invalidCustomAmount = 'invalid custom amount',
+    balanceIsNotEnought = 'balance is not enought',
+    invalidSelectionTopupServiceMenu = 'invalid selection topup service menu',
     invalidPhonenumber = 'invalid phone number',
     thereIsNotBalance = 'there is not balance',
     cashoutToAnotherLAABAccountSuccess = 'cash out to another LAAB account success',

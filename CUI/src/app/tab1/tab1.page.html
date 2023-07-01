@@ -88,10 +88,10 @@
       </div>
 
     </a>
-    <a (click)="checkHowTo()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+    <a (click)="openTopupAndServicePage()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
       <div class="text">Topup & Services</div>
       <div class="icon">
-        <i class="fa-solid fa-phone"></i>
+        <i class="fa-solid fa-layer-group"></i>
       </div>
     </a>
     <a href="javascript:void(0)" class="item-sea control-menu menu-tempurature active">
@@ -125,7 +125,7 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div *ngFor="let sl of saleList; index as i" style="display:inline-block">
+  <div *ngFor="let sl of saleList; index as i" style="display:inline-block; z-index:999999">
     <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
       <ion-item-divider class="item-header">
         <ion-label>

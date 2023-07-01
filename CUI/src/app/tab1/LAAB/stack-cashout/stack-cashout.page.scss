@@ -77,15 +77,16 @@
             gap: 15px;
 
             // background: rgb(255,255,255);
-            // background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgba(255,205,141,1) 0%, rgba(255,129,124,1) 100%, rgba(255,255,255,1) 100%);
+            // background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,161,161,1) 0%, rgba(238,49,36,1) 100%, rgba(255,255,255,1) 100%);
 
             background: rgb(255,255,255);
             background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,161,161,1) 0%, rgba(238,49,36,1) 100%, rgba(255,255,255,1) 100%);
 
-            // background: #fff;
-
-            min-height: 120px;
-            max-height: 120px;
+            // background: rgb(255,255,255);
+            // background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(238,49,36,1) 0%, rgba(255,161,161,1) 100%, rgba(255,255,255,1) 100%);
+            
+            min-height: 140px;
+            max-height: 140px;
 
             border-radius: 8px;
             padding: 10px;
@@ -122,6 +123,7 @@
                     font-size: 20px;
                     font-weight: bold;
                     color: #fff;
+        
                 }
 
                 .sub-title {
@@ -129,16 +131,32 @@
                     font-weight: 300;
                     color: #fff;
                 }
+
+                .stack-cashout-comming-soon {
+                    background: #F7DC6F;
+                    color: #333;
+                    font-size: 12px;
+                    padding: 0px 5px;
+                    border-radius: 5px;
+                    width: 100px;
+                    text-align: center;
+                }
             }
         }
         .btn-option:hover {
             // background: rgb(255,255,255);
             // background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgb(255, 197, 120) 0%, rgb(248, 113, 109) 100%, rgba(255,255,255,1) 100%);
 
+            // background: rgb(255,255,255);
+            // background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,102,102,1) 0%, rgba(226,15,0,1) 100%, rgba(255,255,255,1) 100%);
+        
             background: rgb(255,255,255);
             background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,102,102,1) 0%, rgba(226,15,0,1) 100%, rgba(255,255,255,1) 100%);
-        
+
             // background: #f5f6f7;
+
+            // background: rgb(255,255,255);
+            //     background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(226,15,0,1) 0%, rgba(255,102,102,1) 100%, rgba(255,255,255,1) 100%);
 
         }
     }

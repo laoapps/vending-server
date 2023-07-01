@@ -47,6 +47,7 @@ import { EpinShowCodePage } from './LAAB/epin-show-code/epin-show-code.page';
 import { MmoneyIosAndroidDownloadPage } from './MMoney/mmoney-ios-android-download/mmoney-ios-android-download.page';
 import { SettingControlMenuPage } from '../setting/pages/setting-control-menu/setting-control-menu.page';
 import { ControlMenuService } from '../services/control-menu.service';
+import { TopupAndServicePage } from './Vending/topup-and-service/topup-and-service.page';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -1068,9 +1069,8 @@ export class Tab1Page {
     return new Promise<any>(async (resolve, reject) => {
       try {
         
-        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
         
-        this.apiService.modal.create({ component: StackCashoutPage }).then(r => {
+        this.apiService.modal.create({ component: TopupAndServicePage, cssClass: 'dialog-fullscreen' }).then(r => {
           r.present();
         });
         

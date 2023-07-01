@@ -1,10 +1,10 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Component, ComponentRef, Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IMachineClientID, IMachineId, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
-import { AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, ModalOptions, ToastController } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
 import moment from 'moment';
 import * as uuid from 'uuid';
@@ -386,6 +386,7 @@ export class ApiService {
   simpleMessage(text: string) {
     this.toast.create({ message: text, duration: 2000 }).then(r => r.present());
   }
+
 
   openSoundPleaseSelect(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {

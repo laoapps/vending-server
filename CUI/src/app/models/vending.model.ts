@@ -28,3 +28,23 @@ export interface VENDING_TransferValidation extends IBase {
     cash: number,
     description: string
 }
+
+
+
+
+
+export enum ITopupServiceMenu {
+    phone_payment='phone_payment',
+    electricity_payment='electricity_payment',
+    water_payment='water_payment',
+    leasing_payment='leasing_payment',
+    bill_payment='bill_payment',
+    insurance_payment='insurance_payment',
+    banking_insitute='banking_insitute',
+    road_tax='road_tax',
+    land_tax='land_tax',
+    loan='loan',
+    queue_booking='queue_booking',
+    find_a_job='find_a_job',
+    renting_service='renting_service'
+}
