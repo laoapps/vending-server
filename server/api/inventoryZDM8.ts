@@ -2214,7 +2214,9 @@ export class InventoryZDM8 implements IBaseClass {
                 if (re.transactionID == -52) {
                     const machineId = this.ssocket.findMachineIdToken(re.token);
                     const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                    const wsAdmins = this.wsClient.find(v=> v['myMachineId'].includes(machineId.machineId))
+                    const wsAdmins = this.wsClient.find(v=> v['myMachineId'].includes(machineId.machineId));
+                    console.log('ws',ws,'wsAdmin',wsAdmins);
+                    
                     // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
                     if (ws) {
                         const resx = {} as IResModel;
