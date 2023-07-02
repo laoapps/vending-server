@@ -5,10 +5,12 @@
 </ion-header>
 
 <ion-content>
+  [options]="particlesOptions"
+    [particlesInit]="particlesInit"
   <ng-particles
 
-    [options]="particlesOptions"
-    [particlesInit]="particlesInit"
+    
+    
     (particlesLoaded)="particlesLoaded($event)"
 ></ng-particles>
   <div class="placeholder">

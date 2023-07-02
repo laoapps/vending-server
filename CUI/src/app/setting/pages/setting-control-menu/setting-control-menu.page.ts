@@ -99,5 +99,7 @@ export class SettingControlMenuPage implements OnInit {
       }
     });
   }
-
+  close() {
+    this.apiService.modal.dismiss();
+  }
 }

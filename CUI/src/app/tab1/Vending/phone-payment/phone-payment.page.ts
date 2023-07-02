@@ -195,4 +195,8 @@ export class PhonePaymentPage implements OnInit {
       }
     });
   }
+
+  close() {
+    this.apiService.modal.dismiss();
+  }
 }
