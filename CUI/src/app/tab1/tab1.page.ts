@@ -265,7 +265,11 @@ export class Tab1Page {
             if (a.position < b.position) return -1;
           });
           // reset everytime ws activate
+          console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
           if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
+          if(this.saleList?.length) this.saleList.length=0;
+          console.log(' this.vendingOnSale.length 2', this.vendingOnSale.length);
+          console.log(`sale list der 1`, this.saleList.length);
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
           if (this.saleList[0]?.position == 0) this.compensation = 1;
@@ -276,7 +280,7 @@ export class Tab1Page {
 
           this.initVendingWalletCoinBalance().then(() => {});
 
-          console.log(`sale list der`, this.saleList);
+          console.log(`sale list der 2`, this.saleList.length);
         });
       } else {
         alert(r.message);
