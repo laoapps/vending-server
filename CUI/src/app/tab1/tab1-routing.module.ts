@@ -54,6 +54,10 @@ const routes: Routes = [
   {
     path: 'vending-go',
     loadChildren: () => import('./Vending/vending-go/vending-go.module').then( m => m.VendingGoPageModule)
+  },
+  {
+    path: 'how-to',
+    loadChildren: () => import('./Vending/how-to/how-to.module').then( m => m.HowToPageModule)
   }
 ];
 

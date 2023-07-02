@@ -224,7 +224,6 @@ ion-content {
     margin: 10px;
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    // background: #EE3124;
     background: rgb(255,255,255);
     background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(238,49,36,0.7161239495798319) 0%, rgba(214,43,31,1) 100%, rgba(255,255,255,1) 100%);
     border-radius: 5px;
@@ -329,9 +328,10 @@ ion-content {
                 text-decoration: none;
                 width: 100%;
                 padding: 10px;
+                transition: .2s;
+
                 background: rgb(255,255,255);
                 background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(238,49,36,1) 0%, rgba(255,161,161,1) 100%, rgba(255,255,255,1) 100%);
-                transition: .2s;
 
                 .left {
                     width: 50px;
@@ -371,10 +371,11 @@ ion-content {
                 text-decoration: none;
                 width: 100%;
                 padding: 10px;
+                transition: .2s;
+                
                 background: rgb(255,255,255);
                 background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,161,161,1) 0%, rgba(238,49,36,1) 100%, rgba(255,255,255,1) 100%);
-                transition: .2s;
-
+                
                 .left {
 
                     display: flex;

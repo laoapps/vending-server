@@ -49,6 +49,8 @@ import { SettingControlMenuPage } from '../setting/pages/setting-control-menu/se
 import { ControlMenuService } from '../services/control-menu.service';
 import { TopupAndServicePage } from './Vending/topup-and-service/topup-and-service.page';
 import { VendingGoPage } from './Vending/vending-go/vending-go.page';
+import { HowtoPageModule } from '../howto/howto.module';
+import { HowToPage } from './Vending/how-to/how-to.page';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -1092,6 +1094,11 @@ export class Tab1Page {
       orders: this.orders
     }
     this.apiService.modal.create({ component: VendingGoPage, componentProps: props }).then(r => {
+      r.present();
+    })
+  }
+  openHowToPage() {
+    this.apiService.modal.create({ component: HowToPage, componentProps: {}, cssClass: 'dialog-fullscreen'}).then(r => {
       r.present();
     })
   }

@@ -1,0 +1,65 @@
+<ion-content>
+
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left">
+
+        <div class="status-list">
+          <div class="form-check form-switch">
+            <input (change)="toggleAutoFullScreen()" class="form-check-input" type="checkbox" id="auto-full-screen">
+            <label class="form-check-label" for="auto-full-screen">Auto full screen</label>
+          </div>
+          <div class="form-check form-switch">
+            <input (change)="toggleAutoPlayVideo()" class="form-check-input" type="checkbox" id="auto-play-video">
+            <label class="form-check-label" for="auto-play-video">Auto play video</label>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">How To</div>
+      <div class="sub-title">All video will guid you how to use vending function</div>
+    </div>
+    <div class="laab-card-body">
+      <div class="left">
+
+        <div class="main-display">
+          <div class="control-options">
+            <a (click)="showFullScreen()" href="javascript:void(0)" class="btn-full-screen"><i class="fa-solid fa-display"></i> Full Screen</a>
+          </div>
+          
+          <!-- <div class="close-options">
+            <a href="javascript:void(0)" class="btn-close-full-screen">Close <i class="fa-solid fa-arrow-right"></i></a>
+          </div> -->
+          <video id="how-to-player" src="{{ currentPlay.video }}" controls></video>
+          <div class="title">{{ currentPlay.title }}</div>
+          <div class="sub-title">{{ currentPlay.subtitle }}</div>
+        </div>
+
+      </div>
+      <div class="right">
+        <div class="main-list">
+          <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.video)" href="javascript:void(0)" class="item">
+            <div class="left">
+              <video src="{{ list.video }}"></video>
+            </div>
+            <div class="right">
+              <div class="title">{{ list.title }}</div>
+              <div class="sub-title">{{ list.subtitle }}</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  
+</ion-content>
