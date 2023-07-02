@@ -8,12 +8,18 @@
 <ion-list>
   <ion-item *ngFor="let s of list">
     <div>
-      
-      <ion-label>{{s.title}}</ion-label>
-        <img [src]="s.image" style="width:200px;height:200px"/>
+      <video  width="400px" height="400px" controls preload="none"
+      data-setup='{ "aspectRatio":"640:267", "playbackRates": [1, 1.5, 2] }'>
+        <source [src]="s.url" type="video/mp4" />
+		        Browser not supported
+      </video>
+      <!-- <ion-label>{{s.title}}</ion-label> -->
+        <!-- <img [src]="s.image" style="width:200px;height:200px"/> -->
       <ion-label>{{s.name}}</ion-label>
-      <ion-label>{{s.description}}</ion-label>
-      <ion-button (click)="testVideoPlayerPlugin(s.url)">PLAY</ion-button>
+      <!-- <ion-label>{{s.description}}</ion-label> -->
+      <!-- <ion-button (click)="testVideoPlayerPlugin(s.url)">PLAY</ion-button>
+       -->
+       
     </div>
   </ion-item>
 </ion-list>

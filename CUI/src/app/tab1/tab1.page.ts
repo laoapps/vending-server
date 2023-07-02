@@ -245,7 +245,7 @@ export class Tab1Page {
     window.location.reload();
   }
   initStock() {
-    if (this.vendingOnSale?.length) return;
+    // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().subscribe((r) => {
       console.log(`load vending sale`, r.data);
       if (r.status) {
@@ -264,6 +264,8 @@ export class Tab1Page {
           this.saleList.sort((a, b) => {
             if (a.position < b.position) return -1;
           });
+          // reset everytime ws activate
+          if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
           if (this.saleList[0]?.position == 0) this.compensation = 1;
@@ -301,7 +303,7 @@ export class Tab1Page {
     console.log(x, this.getPassword());
 
     // if (environment.production)
-      if (!this.getPassword().endsWith(x)||!this.getPassword().startsWith(this.machineId?.otp) || x.length < 12) return;
+      if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.machineId?.otp) || x.length < 12) return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then((r) => {
       r.data;
@@ -516,55 +518,61 @@ export class Tab1Page {
   }
 
   addOrder(x: IVendingMachineSale) {
-    // this.zone.runOutsideAngular(() => {
-    console.log(`allow vending`, this.WSAPIService.setting_allowVending);
+    try {
+      console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
 
-    if (this.WSAPIService.setting_allowVending == false) {
-      this.apiService.simpleMessage('Vending is closed');
-      return;
+      if (this.WSAPIService?.setting_allowVending == false) {
+        this.apiService.simpleMessage('Vending is closed');
+        return;
+      }
+      this.setActive();
+      if (!x) return alert('not found');
+      const ord = this.orders.filter((v) => v.position == x.position);
+      if (ord.length) if (ord.length >= ord[0]?.max) return alert('Out of Stock');
+      console.log('ID', x);
+      console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
+  
+      this.apiService.showLoading('', 500);
+  
+      // if (this.orders.find(v => v.position == x.position)) {
+      //   const mx = x.max;
+      //   // const summ = this.getSummarizeOrder();
+      //   // const summ  = this.summarizeOrder;
+      //   const re = this.orders.find(v => {
+      //     const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
+      //     console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
+  
+      //     return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
+      //   });
+      //    console.log('0x0r',this.orders, mx, re);
+      //   if (re){
+      //      setTimeout(() => {
+      //     this.apiService.dismissLoading();
+      //   }, 1000);
+      //     return alert('Out of Stock');
+      //   }
+  
+      // }
+  
+      // if (x.stock.qtty <= 0) alert('Out Of order');
+  
+      const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+      y.stock.qtty = 1;
+      console.log('y', y);
+      this.orders.push(y);
+      //  console.log('sum',this.getSummarizeOrder());
+      this.getSummarizeOrder();
+      // setTimeout(() => {
+      this.apiService.dismissLoading();
+      // }, 1000);
+  
+      // });
+    } catch (error) {
+      console.log('error',error);
+      alert(JSON.stringify(error))
+      
     }
-    this.setActive();
-    if (!x) return alert('not found');
-    const ord = this.orders.filter((v) => v.position == x.position);
-    if (ord.length) if (ord.length >= ord[0]?.max) return alert('Out of Stock');
-    console.log('ID', x);
-    console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
-
-    this.apiService.showLoading('', 500);
-
-    // if (this.orders.find(v => v.position == x.position)) {
-    //   const mx = x.max;
-    //   // const summ = this.getSummarizeOrder();
-    //   // const summ  = this.summarizeOrder;
-    //   const re = this.orders.find(v => {
-    //     const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
-    //     console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
-
-    //     return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
-    //   });
-    //    console.log('0x0r',this.orders, mx, re);
-    //   if (re){
-    //      setTimeout(() => {
-    //     this.apiService.dismissLoading();
-    //   }, 1000);
-    //     return alert('Out of Stock');
-    //   }
-
-    // }
-
-    // if (x.stock.qtty <= 0) alert('Out Of order');
-
-    const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-    y.stock.qtty = 1;
-    console.log('y', y);
-    this.orders.push(y);
-    //  console.log('sum',this.getSummarizeOrder());
-    this.getSummarizeOrder();
-    // setTimeout(() => {
-    this.apiService.dismissLoading();
-    // }, 1000);
-
-    // });
+   
   }
   checkCartCount(position: number) {
     return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;

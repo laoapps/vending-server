@@ -44,11 +44,14 @@ export class TabsPage {
       this.count = 6;
       const x = prompt('password');
       console.log(x, this.getPassword());
-
-      if (this.getPassword().endsWith(x) && x.length >= 6)
+      console.log('password',this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.api.machineId?.otp));
+      
+      if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.api.machineId?.otp) || x.length >=12) {
         this.api.showModal(SettingPage).then(r => {
           r.present();
         })
+      }
+        
       if (this.t) {
         clearTimeout(this.t);
         this.t = null;

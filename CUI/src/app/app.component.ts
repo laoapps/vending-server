@@ -59,10 +59,11 @@ export class AppComponent {
       const x = prompt('password');
       console.log(x, this.getPassword());
 
-      if (this.getPassword().endsWith(x) && x.length >= 6)
+      if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.apiService.machineId?.otp) || x.length >=12) {
         this.apiService.showModal(SettingPage).then(r => {
           r.present();
         })
+      }
       if (this.t) {
         clearTimeout(this.t);
         this.t = null;

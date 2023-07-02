@@ -143,5 +143,8 @@ export class VendingGoPage implements OnInit {
       }
     });
   }
+  close() {
+    this.apiService.modal.dismiss();
+  }
 
 }

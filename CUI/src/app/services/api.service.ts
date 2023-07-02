@@ -187,6 +187,7 @@ export class ApiService {
 
       if (r) {
         this.dismissModal();
+        this.dismissModal();
         this.dismissLoading();
         this.loadDeliveryingBills().subscribe(r => {
           if (r.status) {
