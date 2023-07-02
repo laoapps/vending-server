@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import  JSConfetti from 'js-confetti'
 import { MoveDirection, ClickMode, HoverMode, OutMode, Container, Engine } from "tsparticles-engine";
-import { loadFull } from "tsparticles";
-
+import { loadFull, } from "tsparticles";
+import {IParticlesParams} from 'ng-particles';
 
 @Component({
   selector: 'app-dice',
@@ -17,6 +17,7 @@ export class DicePage implements OnInit {
   lucky=['ໂຊກ','ຫມານ','ລຳ້ລວຍ','ເຮັງເຮັງ','ສຸ່ມ','ຮັ່ງມີ','ຄຳ້ຄູນ'];
   luckyText='ສຸ່ມ';
   jsConfetti = new JSConfetti();
+  
    /* or the classic JavaScript object */
    particlesOptions :any =  {
     fullScreen: {
