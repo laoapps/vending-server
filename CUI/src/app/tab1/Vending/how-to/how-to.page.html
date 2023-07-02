@@ -6,10 +6,10 @@
       <div class="left">
 
         <div class="status-list">
-          <div class="form-check form-switch">
+          <!-- <div class="form-check form-switch">
             <input (change)="toggleAutoFullScreen()" class="form-check-input" type="checkbox" id="auto-full-screen">
             <label class="form-check-label" for="auto-full-screen">Auto full screen</label>
-          </div>
+          </div> -->
           <div class="form-check form-switch">
             <input (change)="toggleAutoPlayVideo()" class="form-check-input" type="checkbox" id="auto-play-video">
             <label class="form-check-label" for="auto-play-video">Auto play video</label>
@@ -30,14 +30,11 @@
       <div class="left">
 
         <div class="main-display">
-          <div class="control-options">
+          <!-- <div class="control-options">
             <a (click)="showFullScreen()" href="javascript:void(0)" class="btn-full-screen"><i class="fa-solid fa-display"></i> Full Screen</a>
-          </div>
-          
-          <!-- <div class="close-options">
-            <a href="javascript:void(0)" class="btn-close-full-screen">Close <i class="fa-solid fa-arrow-right"></i></a>
           </div> -->
-          <video id="how-to-player" src="{{ currentPlay.video }}" controls></video>
+
+          <video id="how-to-player" src="{{ currentPlay.video }}" controls controlsList="nodownload noplaybackrate nofullscreen"></video>
           <div class="title">{{ currentPlay.title }}</div>
           <div class="sub-title">{{ currentPlay.subtitle }}</div>
         </div>

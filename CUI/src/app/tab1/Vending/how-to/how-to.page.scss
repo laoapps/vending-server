@@ -129,7 +129,10 @@ ion-content {
                         left: 300px;
                     }
                 }
-
+                video::-webkit-media-controls-fullscreen-button { display: none; }
+                // video::-webkit-media-controls-download-button {
+                //     display:none;
+                // }
                 
 
                 color: #fff;
@@ -227,7 +230,6 @@ input[type="checkbox"]:checked, input[type="radio"]:checked {
 // video::-webkit-media-controls {
 //     display: none;
 // }
-
 
 
 
