@@ -1159,7 +1159,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.stock = p;
                                 p.qtty = 0;
                                 sEnt
-                                    .findOne({ where: { position: o.position } })
+                                    .findOne({ where: { position: o.position ,machineId:o.machineId} })
                                     .then((rx) => {
                                         if (rx)
                                             return res.send(
@@ -2217,7 +2217,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const machineId = this.ssocket.findMachineIdToken(re.token);
                     writeMachineStatus(machineId.machineId, re.data);
                     const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                    const wsAdmins = this.wsClient.find(v=> v['myMachineId'].includes(machineId.machineId));
+                    const wsAdmins = this.wsClient.find(v=> v['myMachineId']?.includes(machineId.machineId));
                     console.log('ws','wsAdmin',machineId);
                     
                     // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));

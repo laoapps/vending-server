@@ -25,7 +25,7 @@ export class SocketClientVMC {
     // };
     port = 51223;
     host = 'laoapps.com';
-    machineid = '11111111';
+    machineid = process.env.machineId||'11111111';
     otp = '111111';
     token = '';
     t: any;
