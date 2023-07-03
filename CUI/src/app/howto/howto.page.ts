@@ -19,8 +19,8 @@ export class HowtoPage implements OnInit {
 
   ionViewWillEnter(): void {
     this.list.push({name:'How To 1',title:'How To 1',description:'How To 1',url:this.host+'/assets/video-how-to/howto3.mp4',image:'',id:0})
-    this.list.push({name:'How To 2',title:'How To 2',description:'How To 2',url:this.host+'/assets/video-how-to/howto2.mp4',image:'',id:1})
-    this.list.push({name:'How To 3',title:'How To 3',description:'How To 3',url:this.host+'/assets/video-how-to/howto1.mp4',image:'',id:2})
+    this.list.push({name:'How To 2',title:'How To 2',description:'How To 2',url:'./assets/video-how-to/howto2.mp4',image:'',id:1})
+    this.list.push({name:'How To 3',title:'How To 3',description:'How To 3',url:'/assets/video-how-to/howto1.mp4',image:'',id:2})
     // this.list.push({name:'demo4',title:'demo4',description:'demo4',url:'assets/how-to-video/demo.mp4',image:'',id:0})
     // this.apiService.loadHowTo().subscribe(r=>{
 
