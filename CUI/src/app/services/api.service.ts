@@ -323,10 +323,10 @@ export class ApiService {
   }
   saveSale(data:any) {
     
-    return this.http.post<IResModel>(this.url + '/saveSale',{data,token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/saveMachineSale',{data,token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
   }
   recoverSale() {
-    return this.http.post<IResModel>(this.url + '/recoverSale',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/readMachineSale',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
   }
   loadPaidBills() {
     return this.http.post<IResModel>(this.url + '/getPaidBills', { headers: this.headerBase() });
