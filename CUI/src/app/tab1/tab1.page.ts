@@ -212,7 +212,12 @@ export class Tab1Page {
         console.log('saleServer', saleServer);
 
         this.apiService.newProductItems(saleServer);
-        
+        // saleServer.forEach(async (v,i)=>{
+        //   setTimeout(async () => {
+        //     await this.apiService.saveImage(v.stock.id,v.stock.image);
+        //   }, 100*i);
+         
+        // })
         // window.location.reload();
         this.initVendingWalletCoinBalance().then(() => {});
         this.storage.get('saleStock', 'stock').then((s) => {

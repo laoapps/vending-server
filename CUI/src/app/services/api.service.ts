@@ -251,10 +251,10 @@ export class ApiService {
     return headers;
   }
   public async saveImage(id:number,base64:string,db='image'){
-    this.storage.set(id+'',base64,db);
+    return this.storage.set2(id+'',base64,db);
   }
-  public async getImage(id:number,db='image'){
-    return (await this.storage.get(id+'',db))?.v;
+  public async getImageBase64(id:number,db='image'){
+    return (await this.storage.get2(id+'',db));
   }
   newProductItems(s: Array<IVendingMachineSale>) {
     this.stock.length=0;

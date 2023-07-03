@@ -27,7 +27,9 @@ export class RemainingbillsPage implements OnInit {
     
 
   }
-
+  findImage(id:number){
+    return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
+  }
   findPrice(id:number){
     return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
   }

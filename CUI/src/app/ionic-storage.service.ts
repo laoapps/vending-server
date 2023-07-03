@@ -23,6 +23,26 @@ export class IonicStorageService {
     });
     
   }
+  set2(k:string,v:string,dbname=''){
+    return new Promise<any>((resolve,reject)=>{
+      this.dbStorage.set(dbname+k,v).then(r=>{
+        resolve(r);
+      }).catch(e=>{
+        reject(e)
+      });
+    });
+    
+  }
+  get2(k:string,dbname=''){
+    return new Promise<string>((resolve,reject)=>{
+      this.dbStorage.get(dbname+k).then(r=>{
+        resolve(r);
+      }).catch(e=>{
+        console.log('error',e);
+        reject(e);
+      })
+    })
+  }
 
 
   setWithdate(k:string,v:any,d:Date){

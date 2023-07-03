@@ -253,7 +253,7 @@ export class StocksalePage implements OnInit {
   selectItem(pos=''){
     setTimeout(() => {
       this.isDisabled =pos;
-    }, 500);
+    }, 200);
    
   }
 

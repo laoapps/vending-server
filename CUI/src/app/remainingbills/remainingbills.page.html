@@ -68,7 +68,7 @@
       <div *ngFor="let s of r; let i = index" (click)="retryProcessBill(s.transactionID+'',s.position)" href="javascript:void(0)" class="item">
         <div class="content">
           <div class="icon">
-            <img src="{{apiService.getImage(getStock(s?.position)?.id)}}" alt="">
+            <img src="{{findImage(getStock(s?.position)?.id)}}" alt="">
           </div>
           <div class="detail">
             <div class="price">Position #{{ s.position }}</div>
