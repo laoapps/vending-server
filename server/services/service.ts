@@ -303,9 +303,9 @@ export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
 
 }
-export function readMachineSale(machineId: string,) {
+export function readMachineSale(machineId: string) {
     // return redisClient.get('_machineSale_' + machineId);
-    fs.readFileSync(__dirname+'/'+machineId,{encoding:'utf-8'});
+    return fs.readFileSync(__dirname+'/'+machineId,{encoding:'utf-8'});
 
 }
 export function writeMachineSale(machineId: string,value:string) {
