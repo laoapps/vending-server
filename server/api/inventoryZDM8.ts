@@ -1063,25 +1063,25 @@ export class InventoryZDM8 implements IBaseClass {
 
                         //         res.send(PrintError("listProduct", e, EMessage.error));
                         //     });
-                        const r=[
-                        {
-                            name:'Vending Machine How to 1',
-                            description:'How to purchase',
-                            type:'vdo',
-                            url:'https://www.youtube.com/shorts/Gq7WZ2hNG-Y'
-                        },
+                        const r = [
                             {
-                            name:'Vending Machine How to 2',
-                            description:'How to cash-in',
-                            type:'vdo',
-                            url:'https://www.youtube.com/shorts/Gq7WZ2hNG-Y'
-                        },
-                        {
-                            name:'Vending Machine How to 3',
-                            description:'How to cash-out',
-                            type:'vdo',
-                            url:'https://www.youtube.com/shorts/9J3M-vh2oGs'
-                        }
+                                name: 'Vending Machine How to 1',
+                                description: 'How to purchase',
+                                type: 'vdo',
+                                url: 'https://www.youtube.com/shorts/Gq7WZ2hNG-Y'
+                            },
+                            {
+                                name: 'Vending Machine How to 2',
+                                description: 'How to cash-in',
+                                type: 'vdo',
+                                url: 'https://www.youtube.com/shorts/Gq7WZ2hNG-Y'
+                            },
+                            {
+                                name: 'Vending Machine How to 3',
+                                description: 'How to cash-out',
+                                type: 'vdo',
+                                url: 'https://www.youtube.com/shorts/9J3M-vh2oGs'
+                            }
                         ];
                         res.send(PrintSucceeded("listAds", r, EMessage.succeeded));
                     } catch (error) {
@@ -1159,7 +1159,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.stock = p;
                                 p.qtty = 0;
                                 sEnt
-                                    .findOne({ where: { position: o.position ,machineId:o.machineId} })
+                                    .findOne({ where: { position: o.position, machineId: o.machineId } })
                                     .then((rx) => {
                                         if (rx)
                                             return res.send(
@@ -1388,7 +1388,7 @@ export class InventoryZDM8 implements IBaseClass {
                             },
                         });
                         const ownerUuid = m?.ownerUuid || "";
-                        
+
                         // const ownerUuid = res.locals["ownerUuid"] || "";
                         const sEnt = VendingMachineSaleFactory(
                             EEntity.vendingmachinesale + "_" + ownerUuid,
@@ -1863,25 +1863,25 @@ export class InventoryZDM8 implements IBaseClass {
                 const that = this;
                 let { phonenumber, cashInValue } = d.data;
                 // DEMO 1000 only
-                cashInValue=1000;
+                cashInValue = 1000;
                 if (isNaN(cashInValue)) return reject(new Error('Invalid Cash In Value'));
-                 // validate phonenumber for MMoney
+                // validate phonenumber for MMoney
                 if (phonenumber?.length < 10 || isNaN(phonenumber) || phonenumber == '') return reject('Invalid Phonenumber');
                 // find in redis
-                d.transactionID=new Date().getTime();
+                d.transactionID = new Date().getTime();
 
-                let ack = await readACKConfirmCashIn(phonenumber+''+d.transactionID );
+                let ack = await readACKConfirmCashIn(phonenumber + '' + d.transactionID);
                 let machineId = this.ssocket.findMachineIdToken(d.token);
                 if (!ack) {
                     // double check in database
                     const r = await this.loadBillCash(machineId.machineId, d.transactionID)
                     if (r?.length) {
-                        await writeACKConfirmCashIn(phonenumber+''+d.transactionID);
+                        await writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
                         ack = 'yes';
                     } else
-                        await writeACKConfirmCashIn(phonenumber+''+d.transactionID);
+                        await writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
                 } else {
-                    throw new Error('TOO FAST ' + phonenumber+''+d.transactionID);
+                    throw new Error('TOO FAST ' + phonenumber + '' + d.transactionID);
                 }
 
 
@@ -1918,7 +1918,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
                         // const limiter = await readMachineLimiter(machineId.machineId);
                         this.updateBillCash(bsi, machineId.machineId, d.transactionID);
-                        await writeACKConfirmCashIn(phonenumber+''+d.transactionID);
+                        await writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
                         // that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
                         ws.send(
                             JSON.stringify(
@@ -1939,7 +1939,7 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log("billCashIn", d?.data);
 
                         // *** cash in here
-                        const bn = { amount: cashInValue, channel: -1 * cashInValue,value:cashInValue } as IBankNote;
+                        const bn = { amount: cashInValue, channel: -1 * cashInValue, value: cashInValue } as IBankNote;
 
                         // start Cash In MMoney
                         this.refillMMoney(machineId.machineId, phonenumber, cashInValue, 'LAAB CASH OUT TO MMONEY').then(rm => {
@@ -1958,7 +1958,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     console.log('RECORD THIS TRANSACTIION AS IT has been doen');
                                     // finish the process allow next queque 
                                     console.log('finish the process allow next queque ');
-                                    writeACKConfirmCashIn(phonenumber+''+d.transactionID);
+                                    writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
                                     console.log(`response cash in validation`, run);
                                     if (run.message != IENMessage.success) throw new Error(run);
                                     bsi.bankNotes.push(bn);
@@ -2038,18 +2038,18 @@ export class InventoryZDM8 implements IBaseClass {
             const that = this;
             // find in redis
             let machineId = this.ssocket.findMachineIdToken(d.token);
-            let ack = await readACKConfirmCashIn(machineId+''+d.transactionID);
-            
+            let ack = await readACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
+
             if (!ack) {
                 // double check in database
                 const r = await this.loadBillCash(machineId.machineId, d.transactionID)
                 if (r?.length) {
-                    await writeACKConfirmCashIn(machineId+''+d.transactionID);
+                    await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
                     ack = 'yes';
                 } else
-                    await writeACKConfirmCashIn(machineId+''+d.transactionID);
+                    await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
             } else {
-                await writeACKConfirmCashIn(machineId+''+d.transactionID);
+                await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
                 throw new Error('TOO FAST ' + d.transactionID);
             }
 
@@ -2106,7 +2106,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
                     // const limiter = await readMachineLimiter(machineId.machineId);
                     this.updateBillCash(bsi, machineId.machineId, d.transactionID);
-                    await writeACKConfirmCashIn(machineId+''+d.transactionID);
+                    await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
                     that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
                     ws.send(
                         JSON.stringify(
@@ -2170,13 +2170,13 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log('RECORD THIS TRANSACTIION AS IT has been doen');
                             // finish the process allow next queque 
                             console.log('finish the process allow next queque ');
-                            writeACKConfirmCashIn(machineId+''+d.transactionID);
+                            writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
                             console.log(`response cash in validation`, run);
                             if (run.message != IENMessage.success) throw new Error(run);
                             bsi.bankNotes.push(bn);
-                            res.data = { clientId: ws["clientId"], billCashIn: bsi, bn,machineId:machineId.machineId };
+                            res.data = { clientId: ws["clientId"], billCashIn: bsi, bn, machineId: machineId.machineId };
                             that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
-                            console.log(`sw sender`, d.command, res.data,machineId.machineId);
+                            console.log(`sw sender`, d.command, res.data, machineId.machineId);
                             // redisClient.set('_balance_' + ws['clientId'], bn.value);
                             // writeMachineBalance(machineId.machineId,bn.value+'')
                             readMachineSetting(machineId.machineId).then(async r => {
@@ -2261,9 +2261,9 @@ export class InventoryZDM8 implements IBaseClass {
                     const machineId = this.ssocket.findMachineIdToken(re.token);
                     writeMachineStatus(machineId.machineId, re.data);
                     const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                    const wsAdmins = this.wsClient.find(v=> v['myMachineId']?.includes(machineId.machineId));
-                    console.log('ws','wsAdmin',machineId);
-                    
+                    const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
+                    console.log('ws', 'wsAdmin', machineId);
+
                     // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
                     if (ws) {
                         const resx = {} as IResModel;
@@ -2272,22 +2272,22 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.data = re.data;
                         // save to redis
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        console.log('writeMachineStatus',machineId.machineId,re.data);
-                        
-                        
+                        console.log('writeMachineStatus', machineId.machineId, re.data);
+
+
                         // send to machine client
                         this.sendWSToMachine(machineId.machineId, resx);
 
                         // this.sendWS(ws['clientId'], resx);
                     }
-                    if(wsAdmins){
+                    if (wsAdmins) {
                         const resx = {} as IResModel;
                         resx.command = EMACHINE_COMMAND.status;
                         resx.message = EMessage.status;
                         resx.data = re.data;
                         // save to redis
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        console.log('writeMachineStatus',machineId.machineId,re.data);
+                        console.log('writeMachineStatus', machineId.machineId, re.data);
                         // send to machine client
                         this.sendWSMyMachine(machineId.machineId, resx);
                     }
@@ -3277,7 +3277,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         for (let index = 0; index < mArray?.length; index++) {
                                             const element = mArray[index];
 
-                                            mymstatus.push({machineId:element,mstatus:await readMachineStatus(element)});
+                                            mymstatus.push({ machineId: element, mstatus: await readMachineStatus(element) });
 
                                             const msetting = JSON.parse(await readMachineSetting(element));
                                             mymsetting.push({ msetting, machineId: element });
