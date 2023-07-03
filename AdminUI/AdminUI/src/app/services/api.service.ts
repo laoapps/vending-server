@@ -423,7 +423,7 @@ export class ApiService {
     // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
     // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
     // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-    return {billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
+    return {lastUpdate:new Date(),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
   }
 
 

@@ -335,7 +335,7 @@ export function  hex2dec(hex: string) {
     }
 
 }
-export interface IMachineStatus{machineId:string,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
+export interface IMachineStatus{lastUpdate:Date,machineId:string,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
 
 export function machineStatus(b:string,m:string):IMachineStatus{
     try {
@@ -380,7 +380,7 @@ export function machineStatus(b:string,m:string):IMachineStatus{
         // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
         // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
         // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-        return {machineId:m,billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
+        return {machineId:m,billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp,lastUpdate:new Date()}
     } catch (error) {
         return {} as IMachineStatus;
     }

@@ -881,7 +881,7 @@ export enum EMACHINE_COMMAND {
   NOTE_REJECTED = "NOTE_REJECTED",
   adminlogin = "adminlogin"
 }
-export interface IMachineStatus{billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
+export interface IMachineStatus{lastUpdate:Date,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
 
 export interface IMachineClientID extends IBase {
     otp: string;
