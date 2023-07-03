@@ -22,7 +22,7 @@ import fs from 'fs';
 process.env.clientkey= fs.readFileSync(__dirname + "/certs/client/client.key")+'';
 process.env.clientcert = fs.readFileSync(__dirname + "/certs/client/client.crt")+'';
 process.env.ca = fs.readFileSync(__dirname+'/certs/ca/ca.crt')+'';
-process.env.machineId = '11115001'
+process.env.machineId = fs.readFileSync(__dirname+'/machineId')+''||'11111111'
 
 var clients=new Array<any>();
 try {
