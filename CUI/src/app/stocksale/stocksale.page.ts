@@ -51,12 +51,14 @@ export class StocksalePage implements OnInit {
     alert('Are you going to save sale to online');
     const p=prompt('please type 12345678');
     if(p=='12345678'){
+      this.apiService.showLoading();
       this.apiService.saveSale(this.apiService.vendingOnSale).subscribe(r=>{
         console.log(r);
         
         if(r.status){
 
         }
+        this.apiService.dismissLoading();
         this.apiService.toast.create({message:r.message}).then(r=>{
           r.present();
         })
@@ -67,6 +69,7 @@ export class StocksalePage implements OnInit {
     alert('Are you going to recover sale from online');
     const p=prompt('please type 12345678');
     if(p=='12345678'){
+      this.apiService.showLoading();
       this.apiService.recoverSale().subscribe(r=>{
         console.log(r);
         if(r.status){
@@ -76,6 +79,7 @@ export class StocksalePage implements OnInit {
           // })
           this.apiService.vendingOnSale.push(...r.data)
         }
+        this.apiService.dismissLoading();
         this.apiService.toast.create({message:r.message}).then(r=>{
           r.present();
         })
