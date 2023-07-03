@@ -26,6 +26,7 @@ import {
     writeMachineStatus,
     writeMachineSale,
     readMachineSale,
+    base64ToFile,
 } from "../services/service";
 import {
     EClientCommand,
@@ -967,6 +968,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                             // let base64Image = o.image.split(';base64,').pop();
                             // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
+                           o.image= base64ToFile(o.image);
                             sEnt
                                 .create(o)
                                 .then((r) => {
@@ -1531,6 +1533,7 @@ export class InventoryZDM8 implements IBaseClass {
                             where: { machineId: o.machineId },
                         });
                         if (!x) {
+                            o.photo = base64ToFile(o.photo);
                             this.machineClientlist
                                 .create(o)
                                 .then((r) => {
@@ -1571,7 +1574,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     );
                                 r.otp = o.otp ? o.otp : r.otp;
                                 // r.machineId = o.machineId ? o.machineId : r.machineId;
-                                r.photo = o.photo ? o.photo : r.photo;
+                                r.photo = o.photo ? base64ToFile(o.photo) : base64ToFile(r.photo);
                                 // r.changed('isActive',true);
 
                                 res.send(

@@ -433,3 +433,10 @@ export function getNanoSecTime() {
 export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
 
 export const LAAB_URL = 'http://localhost:30000';
+
+
+export function base64ToFile(data:string,filename=moment.now(),ext='.png'){
+    let buff = Buffer.from(data, 'base64');
+    fs.writeFileSync(process.env._image_path+'/'+filename+ext, buff);
+    return filename+'';
+}

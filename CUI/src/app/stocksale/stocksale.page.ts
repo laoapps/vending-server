@@ -71,9 +71,10 @@ export class StocksalePage implements OnInit {
         console.log(r);
         if(r.status){
           this.apiService.vendingOnSale.length=0;
-          r.data.forEach(v=>{
-            this.apiService.vendingOnSale.push(...r.data);
-          })
+          // r.data.forEach(v=>{
+          //   this.apiService.vendingOnSale.push(v);
+          // })
+          this.apiService.vendingOnSale.push(...r.data)
         }
         this.apiService.toast.create({message:r.message}).then(r=>{
           r.present();
