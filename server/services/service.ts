@@ -351,7 +351,7 @@ export interface IMachineStatus{lastUpdate:Date,machineId:string,billStatus:stri
 export function  machineStatus(x:string):IMachineStatus{
     let y:any;
     let b = ''
-    console.log('x',x);
+    console.log('xxxxxx',x);
     
     try {
       y= JSON.parse(x);
