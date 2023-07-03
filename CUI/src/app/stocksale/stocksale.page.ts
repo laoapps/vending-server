@@ -99,21 +99,27 @@ export class StocksalePage implements OnInit {
     if (!this.stock.length) return alert('no stock')
     const s = await this.apiService.showModal(StockPage);
     s.onDidDismiss().then(r => {
-      if (r.data) {
-        const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
-        // console.log('r.data',r.data);
-         console.log('s',s);
+      try {
+        if (r.data) {
+          const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
+          // console.log('r.data',r.data);
+           console.log('s',s);
+          
+          const x = this.saleStock.find(v => v.position == position);
+          const qtt = x.stock.qtty;
+           if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
+          x.stock.qtty=qtt;
+          
+          console.log('x',x);
+          
+          if(this.saleStock[0].position==0)this.compensation=1;
+          this.save();
+        }
+      } catch (error) {
+        console.log(error);
         
-        const x = this.saleStock.find(v => v.position == position);
-        const qtt = x.stock.qtty;
-         if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
-        x.stock.qtty=qtt;
-        
-        console.log('x',x);
-        
-        if(this.saleStock[0].position==0)this.compensation=1;
-        this.save();
       }
+      
     })
     s.present();
   }
