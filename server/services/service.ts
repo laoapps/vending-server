@@ -307,6 +307,8 @@ export function readMachineSale(machineId: string) {
     // return redisClient.get('_machineSale_' + machineId);
     try {
         const p =path.normalize(__dirname+'../'+machineId);
+        console.log('path readMachineSale',p);
+        
         return fs.readFileSync(p,{encoding:'utf-8'});
     } catch (error) {
             console.log('errro readMachineSale',error);
@@ -320,6 +322,8 @@ export function writeMachineSale(machineId: string,value:string) {
     try {
         const p =path.normalize(__dirname+'../'+machineId);
         fs.writeFileSync(p,value,{encoding:'utf-8'});
+        console.log('path writeMachineSale',p);
+        
         return p;
     } catch (error) {
         console.log('errro writeMachineSale',error);
