@@ -391,7 +391,7 @@ export function  machineStatus(x:string):IMachineStatus{
 
 export async function readMachineStatus(machineId:string){
     const x = await redisClient.get('_machinestatus_'+machineId);
-    return machineStatus( x,machineId);
+    return machineStatus( x);
 }
 export function writeMachineStatus(machineId: string, b: any) {
     redisClient.set('_machinestatus_' + machineId, JSON.stringify({b,t:new Date()}));
