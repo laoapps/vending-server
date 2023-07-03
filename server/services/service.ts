@@ -310,7 +310,9 @@ export function readMachineSale(machineId: string) {
 }
 export function writeMachineSale(machineId: string,value:string) {
     // return redisClient.set('_machineSale_' + machineId,value);
-    fs.writeFileSync(__dirname+'/'+machineId,value,{encoding:'utf-8'});
+    const p = __dirname+'/'+machineId;
+    fs.writeFileSync(p,value,{encoding:'utf-8'});
+    return p;
 }
 
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {

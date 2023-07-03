@@ -1345,11 +1345,11 @@ export class InventoryZDM8 implements IBaseClass {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
                         const machineId = this.ssocket.findMachineIdToken(d.token);
-                        writeMachineSale(machineId.machineId,d.data);
+                        // writeMachineSale(machineId.machineId,d.data);
                         res.send(
                             PrintSucceeded(
                                 "updateSale",
-                                [],
+                                writeMachineSale(machineId.machineId,d.data),
                                 EMessage.succeeded
                             )
                         );
