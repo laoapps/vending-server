@@ -48,11 +48,11 @@ CreateDatabase("")
     console.log(`is vending`, isVending);
     const app = express();
     const router = express.Router();
-    app.use(express.json({ limit: "200mb" }));
+    app.use(express.json({ limit: "2000mb" }));
     
     app.use(
       express.urlencoded({
-        limit: "200mb",
+        limit: "2000mb",
         extended: true,
         parameterLimit: 5000,
       })
