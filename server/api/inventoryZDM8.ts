@@ -1349,7 +1349,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintSucceeded(
                                 "saveMachineSale",
-                                writeMachineSale(machineId.machineId,d.data),
+                                writeMachineSale(machineId.machineId,JSON.stringify(d.data)),
                                 EMessage.succeeded
                             )
                         );
@@ -1373,7 +1373,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintSucceeded(
                                 "readMachineSale",
-                                 readMachineSale(machineId.machineId),
+                                 JSON.parse(readMachineSale(machineId.machineId)),
                                 EMessage.succeeded
                             )
                         );
