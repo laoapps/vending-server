@@ -46,6 +46,41 @@ export class StocksalePage implements OnInit {
     })
     s.present();
   }
+
+  async saveSale(){
+    alert('Are you going to save sale to online');
+    const p=prompt('please type 12345678');
+    if(p=='12345678'){
+      this.apiService.saveSale(this.apiService.vendingOnSale).subscribe(r=>{
+        console.log(r);
+        
+        if(r.status){
+
+        }
+        this.apiService.toast.create({message:r.message}).then(r=>{
+          r.present();
+        })
+      })
+    }
+  }
+  async recoverSale(){
+    alert('Are you going to recover sale from online');
+    const p=prompt('please type 12345678');
+    if(p=='12345678'){
+      this.apiService.recoverSale().subscribe(r=>{
+        console.log(r);
+        if(r.status){
+          this.apiService.vendingOnSale.length=0;
+          r.data.forEach(v=>{
+            this.apiService.vendingOnSale.push(...r.data);
+          })
+        }
+        this.apiService.toast.create({message:r.message}).then(r=>{
+          r.present();
+        })
+      })
+    }
+  }
   async reportBills(){
    
 
