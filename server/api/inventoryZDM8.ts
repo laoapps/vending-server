@@ -1159,7 +1159,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.stock = p;
                                 p.qtty = 0;
                                 sEnt
-                                    .findOne({ where: { position: o.position } })
+                                    .findOne({ where: { position: o.position ,machineId:o.machineId} })
                                     .then((rx) => {
                                         if (rx)
                                             return res.send(
