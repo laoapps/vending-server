@@ -1367,6 +1367,50 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+            router.post(
+                this.path + "/machineSaleList",
+                this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const isActive = req.query['isActive'];
+                        let actives = [];
+                        if (isActive == 'all') actives.push(...[true, false]);
+                        else actives.push(...isActive == 'yes' ? [true] : [false]);
+
+                        const m = await machineClientIDEntity.findOne({
+                            where: {
+                                machineId: this.ssocket.findMachineIdToken(d.token)
+                                    ?.machineId,
+                            },
+                        });
+                        const ownerUuid = m?.ownerUuid || "";
+                        
+                        // const ownerUuid = res.locals["ownerUuid"] || "";
+                        const sEnt = VendingMachineSaleFactory(
+                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        sEnt
+                            .findAll({ where: { isActive: { [Op.or]: actives } } })
+                            .then((r) => {
+                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded));
+                            })
+                            .catch((e) => {
+                                console.log("error list sale", e);
+
+                                res.send(PrintError("listSale", e, EMessage.error));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
             router.post(
                 this.path + "/listSaleByMachine",
                 this.checkToken,

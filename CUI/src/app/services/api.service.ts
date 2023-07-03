@@ -312,7 +312,7 @@ export class ApiService {
     req.token = cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     console.log(`req der`, req);
-    return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url+'/listSale', req, { headers: this.headerBase() });
   }
 
   loadOnlineMachine() {
