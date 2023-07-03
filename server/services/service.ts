@@ -307,11 +307,11 @@ export function readMachineSale(machineId: string) {
     // return redisClient.get('_machineSale_' + machineId);
     try {
         return fs.readFileSync(__dirname+'/../'+machineId,{encoding:'utf-8'});
-
     } catch (error) {
             console.log('errro readMachineSale',error);
             
     }
+    return '';
     
 }
 export function writeMachineSale(machineId: string,value:string) {
@@ -323,6 +323,7 @@ export function writeMachineSale(machineId: string,value:string) {
     } catch (error) {
         console.log('errro writeMachineSale',error);
     }
+    return '';
     
 }
 

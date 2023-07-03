@@ -1373,7 +1373,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintSucceeded(
                                 "updateSale",
-                                await readMachineSale(machineId.machineId),
+                                 readMachineSale(machineId.machineId),
                                 EMessage.succeeded
                             )
                         );
