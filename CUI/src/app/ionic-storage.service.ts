@@ -30,6 +30,7 @@ export class IonicStorageService {
       this.dbStorage.set(k,JSON.stringify({v,d})).then(r=>{
         resolve(r);
       }).catch(e=>{
+        console.log('error',e);
         reject(e)
       });
     })
@@ -45,6 +46,8 @@ export class IonicStorageService {
         
         resolve(JSON.parse(rx) as {v:any,d:Date});
       }).catch(e=>{
+        console.log('error',e);
+        
         reject(e);
       })
     })

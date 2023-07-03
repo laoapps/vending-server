@@ -235,7 +235,7 @@ export class ApiService {
   }
   public updateOnlineStatus() {
     this.wsAlive.isAlive = this.checkOnlineStatus();
-    console.log(this.wsAlive.time);
+    // console.log(this.wsAlive.time);
 
     return this.wsAlive.time;
   }
@@ -250,7 +250,13 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
-  newStockItems(s: Array<IVendingMachineSale>) {
+  public async saveImage(id:number,base64:string,db='image'){
+    this.storage.set(id+'',base64,db);
+  }
+  public async getImage(id:number,db='image'){
+    return (await this.storage.get(id+'',db))?.v;
+  }
+  newProductItems(s: Array<IVendingMachineSale>) {
     this.stock.length=0;
     s.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
@@ -259,7 +265,7 @@ export class ApiService {
         this.stock.push(JSON.parse(JSON.stringify(v)));
     });
     console.log(`new stock`, this.stock);
-    this.storage.set('stockitems_', this.stock, 'item')
+    this.storage.set('productItems', this.stock, 'item')
   }
 
   updateStockItems(s: Array<IStock>) {
@@ -269,7 +275,7 @@ export class ApiService {
       if (!this.stock.find(y => y.id == v.id))
         this.stock.push(JSON.parse(JSON.stringify(v)));
     });
-    this.storage.set('stockitems_', this.stock, 'item')
+    this.storage.set('productItems', this.stock, 'item')
   }
 
   async showModal(component: any, d: any = {}) {

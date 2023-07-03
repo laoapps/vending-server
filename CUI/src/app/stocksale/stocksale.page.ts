@@ -52,6 +52,12 @@ export class StocksalePage implements OnInit {
     const p=prompt('please type 12345678');
     if(p=='12345678'){
       this.apiService.showLoading();
+      const x =[];
+      this.apiService.vendingOnSale.forEach(v=>{
+        const e= JSON.parse(JSON.stringify(v));
+        e.stock.image='';
+        x.push(e);
+      })
       this.apiService.saveSale(this.apiService.vendingOnSale).subscribe(r=>{
         console.log(r);
         
@@ -77,6 +83,8 @@ export class StocksalePage implements OnInit {
           // r.data.forEach(v=>{
           //   this.apiService.vendingOnSale.push(v);
           // })
+          console.log('recover',r.data);
+          
           this.apiService.vendingOnSale.push(...r.data)
         }
         this.apiService.dismissLoading();

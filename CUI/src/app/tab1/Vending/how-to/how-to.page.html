@@ -34,7 +34,7 @@
             <a (click)="showFullScreen()" href="javascript:void(0)" class="btn-full-screen"><i class="fa-solid fa-display"></i> Full Screen</a>
           </div> -->
 
-          <video id="how-to-player" src="{{ currentPlay.video }}" controls controlsList="nodownload noplaybackrate nofullscreen"></video>
+          <video id="how-to-player" src="{{ currentPlay.video }}"  controls type="video/mp4" controlsList="nodownload noplaybackrate nofullscreen"></video>
           <div class="title">{{ currentPlay.title }}</div>
           <div class="sub-title">{{ currentPlay.subtitle }}</div>
         </div>
@@ -42,10 +42,9 @@
       </div>
       <div class="right">
         <div class="main-list">
-          <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.video)" href="javascript:void(0)" class="item" type="video/mp4">
+          <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.video)" href="javascript:void(0)" class="item">
             <div class="left">
-              <video src="{{ list.video }}" preload="auto" type="video/mp4">
-                <source [src]="list.video" type="video/mp4" />
+              <video src="{{ list.video }}" type="video/mp4">
               </video>
             </div>
             <div class="right">
@@ -54,9 +53,7 @@
             </div>
           </a>
           
-          <video  preload="auto" type="video/mp4">
-            <source *ngFor="let list of lists; let i = index;" [src]="list.video" type="video/mp4" />
-          </video>
+          
         </div>
       </div>
     </div>
