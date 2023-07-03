@@ -303,6 +303,14 @@ export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
 
 }
+export function readMachineSale(machineId: string,) {
+    return redisClient.get('_machineSale_' + machineId);
+
+}
+export function writeMachineSale(machineId: string,value:string) {
+    return redisClient.set('_machineSale_' + machineId,value);
+
+}
 
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
 

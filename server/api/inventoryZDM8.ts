@@ -24,6 +24,8 @@ import {
     readACKConfirmCashIn,
     writeMachineBalance,
     writeMachineStatus,
+    writeMachineSale,
+    readMachineSale,
 } from "../services/service";
 import {
     EClientCommand,
@@ -1333,7 +1335,54 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
-
+            router.post(
+                this.path + "/saveMachineSale",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        // const isActive = req.query['isActive'];
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        writeMachineSale(machineId.machineId,d.data);
+                        res.send(
+                            PrintSucceeded(
+                                "updateSale",
+                                [],
+                                EMessage.succeeded
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/readMachineSale",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        // const isActive = req.query['isActive'];
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                       
+                        res.send(
+                            PrintSucceeded(
+                                "updateSale",
+                                await readMachineSale(machineId.machineId),
+                                EMessage.succeeded
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
             router.post(
                 this.path + "/listSale",
                 this.checkToken,
