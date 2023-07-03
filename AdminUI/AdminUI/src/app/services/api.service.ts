@@ -63,7 +63,7 @@ export class ApiService {
   test = { test: false };
 
   // audio = new Audio('assets/khopchay.mp3');
-  myMachineStatus=new Array<IMachineStatus>();
+  myMachineStatus=new Array<{machineId:string,mstatus:IMachineStatus}>();
   constructor(public http: HttpClient,
     public router: Router,
     public wsapi: WsapiService,
@@ -101,7 +101,7 @@ export class ApiService {
         //   this.validateDB();
         // }
         r.data.mymstatus.forEach(e => {
-            e.temp=this.hex2dec(e.temp);
+            e.mstatus.temp=this.hex2dec(e.mstatus.temp);
         });
       } catch (error) {
         console.log('error',error);
