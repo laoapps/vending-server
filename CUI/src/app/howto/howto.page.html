@@ -8,8 +8,8 @@
 <ion-list>
   <ion-item *ngFor="let s of list">
     <div>
-      <video  width="400px" height="400px" controls preload="none"
-      data-setup='{ "aspectRatio":"640:267", "playbackRates": [1, 1.5, 2] }'>
+      <video  width="400px" height="400px" controls preload="auto"
+      data-setup='{ "aspectRatio":"640:267", "playbackRates": [1, 1.5, 2] }' type="video/mp4">
         <source [src]="s.url" type="video/mp4" />
 		        Browser not supported
       </video>

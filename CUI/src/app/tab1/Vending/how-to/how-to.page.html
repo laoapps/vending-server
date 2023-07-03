@@ -42,15 +42,21 @@
       </div>
       <div class="right">
         <div class="main-list">
-          <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.video)" href="javascript:void(0)" class="item">
+          <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.video)" href="javascript:void(0)" class="item" type="video/mp4">
             <div class="left">
-              <video src="{{ list.video }}"></video>
+              <video src="{{ list.video }}" preload="auto" type="video/mp4">
+                <source [src]="list.video" type="video/mp4" />
+              </video>
             </div>
             <div class="right">
               <div class="title">{{ list.title }}</div>
               <div class="sub-title">{{ list.subtitle }}</div>
             </div>
           </a>
+          
+          <video  preload="auto" type="video/mp4">
+            <source *ngFor="let list of lists; let i = index;" [src]="list.video" type="video/mp4" />
+          </video>
         </div>
       </div>
     </div>
