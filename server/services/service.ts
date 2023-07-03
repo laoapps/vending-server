@@ -305,14 +305,25 @@ export function readMachineBalance(machineId: string,) {
 }
 export function readMachineSale(machineId: string) {
     // return redisClient.get('_machineSale_' + machineId);
-    return fs.readFileSync(__dirname+'/../'+machineId,{encoding:'utf-8'});
+    try {
+        return fs.readFileSync(__dirname+'/../'+machineId,{encoding:'utf-8'});
 
+    } catch (error) {
+            console.log('errro readMachineSale',error);
+            
+    }
+    
 }
 export function writeMachineSale(machineId: string,value:string) {
     // return redisClient.set('_machineSale_' + machineId,value);
-    const p = __dirname+'/../'+machineId;
-    fs.writeFileSync(p,value,{encoding:'utf-8'});
-    return p;
+    try {
+        const p = __dirname+'/../'+machineId;
+        fs.writeFileSync(p,value,{encoding:'utf-8'});
+        return p;
+    } catch (error) {
+        console.log('errro writeMachineSale',error);
+    }
+    
 }
 
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
