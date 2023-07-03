@@ -304,12 +304,13 @@ export function readMachineBalance(machineId: string,) {
 
 }
 export function readMachineSale(machineId: string,) {
-    return redisClient.get('_machineSale_' + machineId);
+    // return redisClient.get('_machineSale_' + machineId);
+    fs.readFileSync(__dirname+'/'+machineId,{encoding:'utf-8'});
 
 }
 export function writeMachineSale(machineId: string,value:string) {
-    return redisClient.set('_machineSale_' + machineId,value);
-
+    // return redisClient.set('_machineSale_' + machineId,value);
+    fs.writeFileSync(__dirname+'/'+machineId,value,{encoding:'utf-8'});
 }
 
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
