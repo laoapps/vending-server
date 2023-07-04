@@ -39,10 +39,10 @@ export class HowToPage implements OnInit {
   }
   loadCurrentPlay() {
     this.currentPlay = this.lists[0];
-    const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
-    howToPlayer.disablePictureInPicture = true;
 
     let i = setInterval(() => {
+      const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
+      howToPlayer.disablePictureInPicture = true;
       const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
         clearInterval(i);
         if (this.autoPlayVideo == true) {

@@ -45,6 +45,7 @@
           <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.video)" href="javascript:void(0)" class="item">
             <div class="left">
               <video src="{{ list.video }}"></video>
+              <img src="../../../../assets/video-how-to/howto1.mp4" alt="">
             </div>
             <div class="right">
               <div class="title">{{ list.title }}</div>
