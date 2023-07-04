@@ -1,21 +1,13 @@
 import * as fs from "fs";
 import * as path from "path";
-import https from "https";
 import http from "http";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
-import express, { Router } from "express";
+import express from "express";
 import * as WebSocket from "ws";
-import { SocketServerZDM8 } from "./api/socketServerZDM8";
 import { InventoryZDM8 } from "./api/inventoryZDM8";
-import { SocketServerVMC } from "./api/socketServerVMC";
-import { InventoryVMC } from "./api/inventoryVMC";
-import { InventoryM102 } from "./api/inventoryM102";
-import { SocketServerM102 } from "./api/socketServerM102";
 import { SocketServerESSPKiosk } from "./api/socketServerNV9_Kiosk";
-import { CashNV9MMoney } from "./api/cashNV9MMoney";
-import axios from "axios";
 import {
   EClientCommand,
   EMessage,
@@ -47,15 +39,17 @@ CreateDatabase("")
     const isVending = process.env.VENDING || true;
     console.log(`is vending`, isVending);
     const app = express();
-    const router = express.Router();
-    app.use(express.json({ limit: "50mb" }));
+    // const router = express.Router();
+    app.use(express.json({ limit: "2000mb" }));
+    
     app.use(
       express.urlencoded({
-        limit: "50mb",
+        limit: "2000mb",
         extended: true,
-        parameterLimit: 5000,
+        parameterLimit: 5000
       })
     );
+    // app.use(express.json());
     app.use(cors());
     app.use(cookieParser());
     app.disable("x-powered-by");
@@ -63,7 +57,7 @@ CreateDatabase("")
 
 
     
-    const server = http.createServer(app);
+  
     // const wss = new WebSocket.Server({ server });
     
     // console.log('F',f);
@@ -132,7 +126,7 @@ CreateDatabase("")
         return res.send(PrintError(d.command, error, EMessage.error));
       }
     });
-
+    const server = http.createServer(app);
     server.on("upgrade", function upgrade(request, socket, head) {
       try {
         const { pathname } = parse(request.url || "");

@@ -17,7 +17,7 @@ export class ReportbillsPage implements OnInit {
   today_bills = new Array<IBillProcess>();
   url = this.apiService.url;
   totalSale = 0;
-  sumSale = new Array<{ name: string, price: number, qtty: number, total: number,image:string }>();
+  sumSale = new Array<{ name: string, price: number, qtty: number, total: number,image:string,id:number }>();
   show=1;
   constructor(public storage: IonicStorageService, public modal: ModalController, public apiService: ApiService, public excelService: ExcelService) { }
 
@@ -35,14 +35,14 @@ export class ReportbillsPage implements OnInit {
     this.today_bills=this.bills.filter(v=>moment(v.bill.paymenttime).diff(new Date(),'days')==0 );
   }
   summarize(v: Array<IStock>) {
-    this.sumSale= new Array<{ name: string, price: number, qtty: number, total: number,image:string }>();
+    this.sumSale= new Array<{ name: string, price: number, qtty: number, total: number,image:string,id:number }>();
     v.forEach(v => {
       const x = this.sumSale.find(vx => vx.name == v.name);
       if (x != undefined) {
         x.qtty++;
         x.total = x.qtty * x.price;
       } else {
-        this.sumSale.push({ name: v.name, price: v.price, qtty: 1, total: v.price ,image:v.image})
+        this.sumSale.push({ name: v.name, price: v.price, qtty: 1, total: v.price ,image:'',id:v.id})
       }
     });
     this.sumSale.sort((a,b)=> b.total-a.total)

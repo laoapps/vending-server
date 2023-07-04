@@ -235,7 +235,7 @@ export class ApiService {
   }
   public updateOnlineStatus() {
     this.wsAlive.isAlive = this.checkOnlineStatus();
-    console.log(this.wsAlive.time);
+    // console.log(this.wsAlive.time);
 
     return this.wsAlive.time;
   }
@@ -250,7 +250,13 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
-  newStockItems(s: Array<IVendingMachineSale>) {
+  public async saveImage(id:number,base64:string,db='image'){
+    return this.storage.set2(id+'',base64,db);
+  }
+  public async getImageBase64(id:number,db='image'){
+    return (await this.storage.get2(id+'',db));
+  }
+  newProductItems(s: Array<IVendingMachineSale>) {
     this.stock.length=0;
     s.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
@@ -259,7 +265,7 @@ export class ApiService {
         this.stock.push(JSON.parse(JSON.stringify(v)));
     });
     console.log(`new stock`, this.stock);
-    this.storage.set('stockitems_', this.stock, 'item')
+    this.storage.set('productItems', this.stock, 'item')
   }
 
   updateStockItems(s: Array<IStock>) {
@@ -269,7 +275,7 @@ export class ApiService {
       if (!this.stock.find(y => y.id == v.id))
         this.stock.push(JSON.parse(JSON.stringify(v)));
     });
-    this.storage.set('stockitems_', this.stock, 'item')
+    this.storage.set('productItems', this.stock, 'item')
   }
 
   async showModal(component: any, d: any = {}) {
@@ -301,7 +307,7 @@ export class ApiService {
   initDemo() {
     return this.http.get<IResModel>(this.url + '/init?machineId=' + this.machineId.machineId, { headers: this.headerBase() });
   }
-  loadVendingSale() {
+  loadVendingSale(isActive='yes') {
     const req = {} as IReqModel;
     req.command = EClientCommand.list;
     req.data = {
@@ -312,7 +318,7 @@ export class ApiService {
     req.token = cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     console.log(`req der`, req);
-    return this.http.post<IResModel>(this.url, req, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url+'/machineSaleList?isActive='+isActive, req, { headers: this.headerBase() });
   }
 
   loadOnlineMachine() {
@@ -321,7 +327,13 @@ export class ApiService {
   loadDeliveryingBills() {
     return this.http.post<IResModel>(this.url + '/getDeliveryingBills',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
   }
-
+  saveSale(data:any) {
+    
+    return this.http.post<IResModel>(this.url + '/saveMachineSale',{data,token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
+  }
+  recoverSale() {
+    return this.http.post<IResModel>(this.url + '/readMachineSale',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
+  }
   loadPaidBills() {
     return this.http.post<IResModel>(this.url + '/getPaidBills', { headers: this.headerBase() });
   }

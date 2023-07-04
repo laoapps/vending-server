@@ -34,7 +34,7 @@ export class AppComponent {
     }, 1000)
     setInterval(() => {
       this.uT = this.apiService.updateOnlineStatus();
-      console.log(this.uT);
+      // console.log(this.uT);
 
     }, 5000)
 

@@ -63,7 +63,7 @@ export class ApiService {
   test = { test: false };
 
   // audio = new Audio('assets/khopchay.mp3');
-  myMachineStatus=new Array<IMachineStatus>();
+  myMachineStatus=new Array<{machineId:string,mstatus:IMachineStatus}>();
   constructor(public http: HttpClient,
     public router: Router,
     public wsapi: WsapiService,
@@ -101,7 +101,7 @@ export class ApiService {
         //   this.validateDB();
         // }
         r.data.mymstatus.forEach(e => {
-            e.temp=this.hex2dec(e.temp);
+            e.mstatus.temp=this.hex2dec(e.mstatus.temp);
         });
       } catch (error) {
         console.log('error',error);
@@ -383,7 +383,16 @@ export class ApiService {
     }
 
 }
-  machineStatus(b:string):IMachineStatus{
+  machineStatus(x:string):IMachineStatus{
+    let y:any;
+    let b = ''
+    try {
+      y= JSON.parse(x);
+     b = y.b;
+    } catch (error) {
+      console.log('error',error);
+      return {} as IMachineStatus;
+    }
     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
     // fafb52
     // 21 //len
@@ -423,7 +432,7 @@ export class ApiService {
     // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
     // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
     // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-    return {billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
+    return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
   }
 
 

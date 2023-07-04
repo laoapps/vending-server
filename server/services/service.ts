@@ -303,6 +303,34 @@ export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
 
 }
+export function readMachineSale(machineId: string) {
+    // return redisClient.get('_machineSale_' + machineId);
+    try {
+        const p =path.resolve(__dirname, '..');
+        console.log('path readMachineSale',p);
+        
+        return fs.readFileSync(p+'/'+machineId,{encoding:'utf-8'});
+    } catch (error) {
+            console.log('errro readMachineSale',error);
+            
+    }
+    return '';
+    
+}
+export function writeMachineSale(machineId: string,value:string) {
+    // return redisClient.set('_machineSale_' + machineId,value);
+    try {
+        const p =path.resolve(__dirname, '..');
+        fs.writeFileSync(p+'/'+machineId,value,{encoding:'utf-8'});
+        console.log('path writeMachineSale',p);
+        
+        return p;
+    } catch (error) {
+        console.log('errro writeMachineSale',error);
+    }
+    return '';
+    
+}
 
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
 
@@ -335,64 +363,68 @@ export function  hex2dec(hex: string) {
     }
 
 }
-export interface IMachineStatus{machineId:string,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
+export interface IMachineStatus{lastUpdate:Date,machineId:string,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
 
-export function machineStatus(b:string,m:string):IMachineStatus{
-    try {
-        console.log('do machineStatus',b);
+export function  machineStatus(x:string):IMachineStatus{
+    let y:any;
+    let b = ''
+    console.log('xxxxxx',x);
     
-        // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
-        // fafb52
-        // 21 //len
-        // 54 // series
-        const billStatus =b.substring(10,12);
-        // 00 // bill acceptor
-        const coinStatus=b.substring(12,14);
-        // 01 // coin acceptor
-       const cardStatus= b.substring(14,16);
-        // 00 // card reader status
-        const tempconrollerStatus= b.substring(16,18);
-        // 00 // tem controller status
-        const temp= b.substring(18,20);
-        // 13 // temp
-        const doorStatus= b.substring(20,22);
-        // 00 // door 
-        const billChangeValue= b.substring(22,30);
-        // 00000000 // bill change
-        const coinChangeValue=b.substring(30,38);
-        // 00000000 // coin change
-        const machineIMEI= b.substring(38,58);
-        // 30303030303030303030
-        const allMachineTemp= b.substring(58,74);
-        // 13aaaaaaaaaaaaaa8d
-        // // fafb header
-        // // 52 command
-        // // 01 length
-        // // Communication number+ 
-        // '00'//Bill acceptor status+ 
-        // '00'//Coin acceptor status+ 
-        // '00'// Card reader status+
-        // '00'// Temperature controller status+ 
-        // '00'// Temperature+ 
-        // '00'// Door status+ 
-        // '00 00 00 00'// Bill change(4 byte)+ 
-        // '00 00 00 00'// Coin change(4 byte)+ 
-        // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
-        // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
-        // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-        return {machineId:m,billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
+    try {
+      y= JSON.parse(x);
+     b = y.b;
     } catch (error) {
-        return {} as IMachineStatus;
+      console.log('error',error);
+      return {} as IMachineStatus;
     }
-   
+    // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
+    // fafb52
+    // 21 //len
+    // 54 // series
+    const billStatus =b.substring(10,12);
+    // 00 // bill acceptor
+    const coinStatus=b.substring(12,14);
+    // 01 // coin acceptor
+   const cardStatus= b.substring(14,16);
+    // 00 // card reader status
+    const tempconrollerStatus= b.substring(16,18);
+    // 00 // tem controller status
+    const temp= b.substring(18,20);
+    // 13 // temp
+    const doorStatus= b.substring(20,22);
+    // 00 // door 
+    const billChangeValue= b.substring(22,30);
+    // 00000000 // bill change
+    const coinChangeValue=b.substring(30,38);
+    // 00000000 // coin change
+    const machineIMEI= b.substring(38,58);
+    // 30303030303030303030
+    const allMachineTemp= b.substring(58,74);
+    // 13aaaaaaaaaaaaaa8d
+    // // fafb header
+    // // 52 command
+    // // 01 length
+    // // Communication number+ 
+    // '00'//Bill acceptor status+ 
+    // '00'//Coin acceptor status+ 
+    // '00'// Card reader status+
+    // '00'// Temperature controller status+ 
+    // '00'// Temperature+ 
+    // '00'// Door status+ 
+    // '00 00 00 00'// Bill change(4 byte)+ 
+    // '00 00 00 00'// Coin change(4 byte)+ 
+    // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
+    // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
+    // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
+    return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp} as IMachineStatus
   }
 
 export async function readMachineStatus(machineId:string){
     const x = await redisClient.get('_machinestatus_'+machineId);
-    return machineStatus( x,machineId);
+    return machineStatus( x);
 }
 export function writeMachineStatus(machineId: string, b: any) {
-    redisClient.set('_machinestatus_' + machineId, b);
+    redisClient.set('_machinestatus_' + machineId, JSON.stringify({b,t:new Date()}));
 }
 export function getNanoSecTime() {
     var hrTime = process.hrtime();
@@ -401,3 +433,10 @@ export function getNanoSecTime() {
 export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
 
 export const LAAB_URL = 'http://localhost:30000';
+
+
+export function base64ToFile(data:string,filename=moment.now(),ext='.png'){
+    let buff = Buffer.from(data, 'base64');
+    fs.writeFileSync(process.env._image_path+'/'+filename+ext, buff);
+    return filename+'';
+}

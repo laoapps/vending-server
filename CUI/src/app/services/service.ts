@@ -27,8 +27,17 @@ export interface IUsbDevice {
     productName: string;
     deviceId: number;
   }
-  export interface IMachineStatus{billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
- export function  machineStatus(b:string):IMachineStatus{
+  export interface IMachineStatus{lastUpdate:Date,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
+export function  machineStatus(x:string):IMachineStatus{
+  let y:any;
+  let b = ''
+  try {
+    y= JSON.parse(x);
+   b = y.b;
+  } catch (error) {
+    console.log('error',error);
+    return {} as IMachineStatus;
+  }
   // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
   // fafb52
   // 21 //len
@@ -68,5 +77,5 @@ export interface IUsbDevice {
   // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
   // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
   // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-  return {billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
+  return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
 }

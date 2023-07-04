@@ -31,7 +31,7 @@ export class MachinePage implements OnInit {
   _l = new Array<IMachineClientID>();
   showImage: (p: string) => string;
   settings = {} as any;
-  myMachineStatus=new Array<IMachineStatus>();
+  myMachineStatus=new Array<{machineId:string,mstatus:IMachineStatus}>();
   constructor(public apiService: ApiService, private laabAPIService: LaabApiService) {
     this.showImage = this.apiService.showImage;
     this.myMachineStatus=apiService.myMachineStatus;
@@ -45,7 +45,9 @@ export class MachinePage implements OnInit {
         this._l.forEach(v=>{
           console.log('....',v);
           if(!Array.isArray(v.data))v.data=[v.data]
-          let setting =v.data?.find(vx=>vx.settingName=='setting');
+          let setting =v.data?.find(vx=>vx?.settingName=='setting');
+          console.log('setting',setting);
+          
           if(!setting){
             setting={};
             setting.allowVending=true;
@@ -64,7 +66,7 @@ export class MachinePage implements OnInit {
     })
   }
   findMachine(m:string){
-    return this.myMachineStatus.find(v=>v['machineId']==m);
+    return this.myMachineStatus.find(v=>v['machineId']==m).mstatus;
   }
   updateSetting(m:string){
     const setting = this.settings[m];

@@ -25,9 +25,7 @@ export class RemainingbillsPage implements OnInit {
     console.log(`here`);
     await this.apiService.openSoundPleaseSelect();
     
-    // this.r.forEach(v=>{
-    //   v.bill.vendingsales.forEach(vx=>vx.stock.image=this.apiService.vendingOnSale.find(vy=>vy.stock.id==vx.stock.id)?.stock?.image)
-    // })
+
   }
   findImage(id:number){
     return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;

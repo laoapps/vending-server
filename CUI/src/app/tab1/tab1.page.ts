@@ -189,49 +189,7 @@ export class Tab1Page {
     console.log('active');
     this._checkHowTo_Time = this._checkHowTo_Duration+1000;
   }
-  checkHowTo() {
-    this._checkHowTo_Time = this._checkHowTo_Duration;
-    if (this._howToT) {
-      clearInterval(this._howToT);
-      this._howToT = null;
-    }
-    this._howToT = setInterval(() => {
-      if (this._checkHowTo_Time == this._checkHowTo_Duration) {
-        if (this._howToPage) {
-          this._howToPage.dismiss();
-          this._howToPage = null;
-        }
-        this.apiService.modal
-          .create({
-            component: HowtoPage,
-            componentProps: {},
-            cssClass: 'dialog-fullscreen',
-          })
-          .then((r) => {
-            r.present();
-            this._howToPage = r;
-          });
-      } else if (this._checkHowTo_Time <= 0) {
-        if (this._howToPage) {
-          this._howToPage.dismiss();
-          this._howToPage = null;
-          console.log('close');
-        }
-        this.apiService.modal
-          .create({
-            component: HowtoPage,
-            componentProps: {},
-            cssClass: 'dialog-fullscreen',
-          })
-          .then((r) => {
-            r.present();
-            this._howToPage = r;
-          });
-        this._checkHowTo_Time = this._checkHowTo_Duration;
-      }
-      this._checkHowTo_Time--;
-    }, 1000);
-  }
+
 
   autoUpdateCash() {
     this.WSAPIService.balanceUpdateSubscription.subscribe(async (r) => {
@@ -247,44 +205,61 @@ export class Tab1Page {
   initStock() {
     // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().subscribe((r) => {
-      console.log(`load vending sale`, r.data);
+      try {
+         console.log(`load vending sale`, r.data);
       if (r.status) {
         const saleServer = r.data as Array<IVendingMachineSale>;
         console.log('saleServer', saleServer);
 
-        this.apiService.newStockItems(saleServer);
-
+        this.apiService.newProductItems(saleServer);
+        // saleServer.forEach(async (v,i)=>{
+        //   setTimeout(async () => {
+        //     await this.apiService.saveImage(v.stock.id,v.stock.image);
+        //   }, 100*i);
+         
+        // })
         // window.location.reload();
+        this.initVendingWalletCoinBalance().then(() => {});
         this.storage.get('saleStock', 'stock').then((s) => {
-          console.log(`storage get`, s);
-          const saleitems = JSON.parse(
-            JSON.stringify(s?.v ? s.v : [])
-          ) as Array<IVendingMachineSale>;
-          console.log(`saleitems`, saleitems);
-          this.saleList.sort((a, b) => {
-            if (a.position < b.position) return -1;
-          });
-          // reset everytime ws activate
-          console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
-          if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
-          if(this.saleList?.length) this.saleList.length=0;
-          console.log(' this.vendingOnSale.length 2', this.vendingOnSale.length);
-          console.log(`sale list der 1`, this.saleList.length);
-          this.vendingOnSale.push(...saleitems);
-          this.saleList.push(...this.vendingOnSale);
-          if (this.saleList[0]?.position == 0) this.compensation = 1;
-
-          setTimeout(() => {
-            this.showBills();
-          }, 1000);
-
-          this.initVendingWalletCoinBalance().then(() => {});
-
-          console.log(`sale list der 2`, this.saleList.length);
+          try {
+            console.log(`storage get`, s);
+            const saleitems = JSON.parse(
+              JSON.stringify(s?.v ? s.v : [])
+            ) as Array<IVendingMachineSale>;
+            console.log(`saleitems`, saleitems);
+            this.saleList.sort((a, b) => {
+              if (a.position < b.position) return -1;
+            });
+            // reset everytime ws activate
+            console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
+            if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
+            if(this.saleList?.length) this.saleList.length=0;
+            console.log(' this.vendingOnSale.length 2', this.vendingOnSale.length);
+            console.log(`sale list der 1`, this.saleList.length);
+            this.vendingOnSale.push(...saleitems);
+            this.saleList.push(...this.vendingOnSale);
+            if (this.saleList[0]?.position == 0) this.compensation = 1;
+  
+            setTimeout(() => {
+              this.showBills();
+            }, 1000);
+  
+            
+  
+            console.log(`sale list der 2`, this.saleList.length);
+          } catch (error) {
+            console.log('error',error);
+             
+          }
+         
         });
       } else {
         alert(r.message);
       }
+      } catch (error) {
+        console.log('error',error);
+      }
+     
     });
   }
   endCount() {

@@ -46,6 +46,54 @@ export class StocksalePage implements OnInit {
     })
     s.present();
   }
+
+  async saveSale(){
+    alert('Are you going to save sale to online');
+    const p=prompt('please type 12345678');
+    if(p=='12345678'){
+      this.apiService.showLoading();
+      const x =[];
+      this.apiService.vendingOnSale.forEach(v=>{
+        const e= JSON.parse(JSON.stringify(v));
+        e.stock.image='';
+        x.push(e);
+      })
+      this.apiService.saveSale(this.apiService.vendingOnSale).subscribe(r=>{
+        console.log(r);
+        
+        if(r.status){
+
+        }
+        this.apiService.dismissLoading();
+        this.apiService.toast.create({message:r.message}).then(r=>{
+          r.present();
+        })
+      })
+    }
+  }
+  async recoverSale(){
+    alert('Are you going to recover sale from online');
+    const p=prompt('please type 12345678');
+    if(p=='12345678'){
+      this.apiService.showLoading();
+      this.apiService.recoverSale().subscribe(r=>{
+        console.log(r);
+        if(r.status){
+          this.apiService.vendingOnSale.length=0;
+          // r.data.forEach(v=>{
+          //   this.apiService.vendingOnSale.push(v);
+          // })
+          console.log('recover',r.data);
+          
+          this.apiService.vendingOnSale.push(...r.data)
+        }
+        this.apiService.dismissLoading();
+        this.apiService.toast.create({message:r.message}).then(r=>{
+          r.present();
+        })
+      })
+    }
+  }
   async reportBills(){
    
 
@@ -64,21 +112,27 @@ export class StocksalePage implements OnInit {
     if (!this.stock.length) return alert('no stock')
     const s = await this.apiService.showModal(StockPage);
     s.onDidDismiss().then(r => {
-      if (r.data) {
-        const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
-        // console.log('r.data',r.data);
-         console.log('s',s);
+      try {
+        if (r.data) {
+          const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
+          // console.log('r.data',r.data);
+           console.log('s',s);
+          
+          const x = this.saleStock.find(v => v.position == position);
+          const qtt = x.stock.qtty;
+           if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
+          x.stock.qtty=qtt;
+          
+          console.log('x',x);
+          
+          if(this.saleStock[0].position==0)this.compensation=1;
+          this.save();
+        }
+      } catch (error) {
+        console.log(error);
         
-        const x = this.saleStock.find(v => v.position == position);
-        const qtt = x.stock.qtty;
-         if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
-        x.stock.qtty=qtt;
-        
-        console.log('x',x);
-        
-        if(this.saleStock[0].position==0)this.compensation=1;
-        this.save();
       }
+      
     })
     s.present();
   }
@@ -199,7 +253,7 @@ export class StocksalePage implements OnInit {
   selectItem(pos=''){
     setTimeout(() => {
       this.isDisabled =pos;
-    }, 500);
+    }, 200);
    
   }
 
