@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { IStock } from 'src/app/services/syste.model';
+import * as uuid from "uuid";
 
 @Component({
   selector: 'app-product-add',
@@ -12,6 +14,10 @@ export class ProductAddPage implements OnInit {
   s = {isActive:false} as IStock;
   loaded: boolean = false;
   imageSrc: string = '';
+
+
+
+
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
   }
@@ -23,15 +29,26 @@ export class ProductAddPage implements OnInit {
     this.apiService.closeModal()
   }
   save() {
-    this.s.image =this.imageSrc 
+    this.s.image =this.imageSrc;
+
+    if (!(this.s.image && this.s.token && this.s.file && this.s.filename && this.s.fileuuid)) {
+      this.apiService.simpleMessage(IENMessage.parametersEmpty);
+      return;
+    }
+
+
     this.apiService.closeModal({ s: this.s })
   }
 
   handleInputChange(e:any) {
     console.log("input change")
     var file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
+    this.s.file = file;
+    this.s.filename = file.name;
+    this.s.fileuuid = uuid.v4();
+  
 
-    var pattern = /image-*/;
+    var pattern = /image-*/;  
     var reader = new FileReader();
 
     if (!file.type.match(pattern)) {
@@ -46,7 +63,7 @@ export class ProductAddPage implements OnInit {
   }
 
   _handleReaderLoaded(e:any) {
-    console.log("_handleReaderLoaded")
+    console.log("_handleReaderLoaded");
     var reader = e.target;
     this.imageSrc = reader.result;
     this.loaded = true;
@@ -54,4 +71,5 @@ export class ProductAddPage implements OnInit {
   cancel() {
     this.imageSrc = '';
   }
+
 }

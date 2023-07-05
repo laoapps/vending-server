@@ -8,9 +8,11 @@
 <ion-content>
   <ion-list>
     <ion-item>
-      <ion-img class="product_image"[src]="showImage(s.photo)"></ion-img>
-      <input type="file" name="file" accept="image/*"
-      (change)="handleInputChange($event)">
+      <!-- <ion-img class="machine_image"[src]="showImage(s.photo)"></ion-img> -->
+      <!-- <ion-img class="machine_image" src="{{ imageSrc }}"></ion-img> -->
+      <img class="machine_image" src="{{ imageSrc }}">
+
+      <input type="file" name="file" accept="image/*" (change)="handleInputChange($event)" >
         <button 
       (click)="cancel()">Clear</button>
     </ion-item>

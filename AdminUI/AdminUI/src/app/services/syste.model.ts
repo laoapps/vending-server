@@ -756,6 +756,11 @@ export interface IStock extends IBase, IBC {
     image: string;
     price: number;
     qtty: number;
+
+    // formData?: FormData;
+    file?: File;
+    filename?: string;
+    fileuuid?: string;
 }
 export interface IMMoneyQRRes {
     uuid: string;
@@ -773,6 +778,7 @@ export interface IVendingMachineSale extends IBase, IBC {
     stock: IStock;
     position: number;
     max:number;
+
 }
 export interface IVendingMachineBill extends IBase, IBC {
     vendingsales: Array<IVendingMachineSale>;
@@ -889,6 +895,12 @@ export interface IMachineClientID extends IBase {
     ownerUuid: string;
     photo: string;
     data: Array<any>;
+
+
+    // formData?: FormData;
+    file?: File;
+    filename?: string;
+    fileuuid?: string;
 }
 
 export interface IMMoneyLogInRes {

@@ -293,7 +293,7 @@ export class ApiService {
       return await this.modal.create({ component, componentProps: d, cssClass: 'dialog-fullscreen' });
     } catch (error) {
       console.log('ERROR', error);
-      this.toast.create({ message: 'Error' }).then(r => {
+      this.toast.create({ message: 'Error', duration: 2000 }).then(r => {
         r.present();
       });
     }

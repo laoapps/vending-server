@@ -1,4 +1,10 @@
 export enum IENMessage {
+    writeFileFailAndCancelwriteFileSuccess = 'write fle fail and cancel write file success',
+    cancelAndWriteFileFail = 'cancel and write file fail',
+    addMachineError = 'add machine error',
+    writeFileError = 'write file error',
+    addMachineFail = 'add machine fail',
+    writeFileFail = 'write file fail',
     thisEPINHasAlreadyCashedOut = 'this EPIN has already cashed out',
     invalidTime = 'invalid time',
     pleaseEnterPhonenumber = 'please enter phone number',

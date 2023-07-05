@@ -140,25 +140,25 @@ export class CashValidationFunc {
             }
         });
         //forward center // messenging center
-        const callBackPartner=[{
-            ids:[], // specefic receiver
+    //     const callBackPartner=[{
+    //         ids:[], // specefic receiver
 
-            callbackurl:'', // laoapps.com:9006/zdm8/callbackfromlaab
-            params:{},
-            topic:'',// vending // title
-            provider:'',//laab, waiwa, hangmi.... ** sender
-            creator:'' // vending-service // ** receiver
-        },
-        {
-            ids:[], // 
+    //         callbackurl:'', // laoapps.com:9006/zdm8/callbackfromlaab
+    //         params:{},
+    //         topic:'',// vending // title
+    //         provider:'',//laab, waiwa, hangmi.... ** sender
+    //         creator:'' // vending-service // ** receiver
+    //     },
+    //     {
+    //         ids:[], // 
 
-            callbackurl:'',
-            params:{},
-            topic:'',// vending
-            provider:'',//laab, waiwa, hangmi....
-            creator:'' // vending-service
-        }
-    ]
+    //         callbackurl:'',
+    //         params:{},
+    //         topic:'',// vending
+    //         provider:'',//laab, waiwa, hangmi....
+    //         creator:'' // vending-service
+    //     }
+    // ]
     // 1.callback receiver
     // 2.register callback
     // 3. ping to check callbacks array return with checksum compare hash

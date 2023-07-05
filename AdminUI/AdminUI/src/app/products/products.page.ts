@@ -3,6 +3,8 @@ import { IStock } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { ProductAddPage } from './product-add/product-add.page';
 import { ProductDetailsPage } from './product-details/product-details.page';
+import { FilemanagerApiService } from '../services/filemanager-api.service';
+import { IENMessage } from '../models/base.model';
 
 @Component({
   selector: 'app-products',
@@ -11,7 +13,7 @@ import { ProductDetailsPage } from './product-details/product-details.page';
 })
 export class ProductsPage implements OnInit {
   _l = new Array<IStock>();
-  constructor(public apiService: ApiService) { }
+  constructor(public apiService: ApiService, private filemanagerAPIService: FilemanagerApiService) { }
 
   ngOnInit() {
     this.apiService.listProduct().subscribe(r => {
@@ -30,19 +32,51 @@ export class ProductsPage implements OnInit {
       ro?.onDidDismiss().then(r => {
         console.log(r);
         if (r.data.s) {
-          this.apiService.addProduct(r.data.s)?.subscribe(rx => {
-            console.log(rx);
-            if (rx.status) {
-              this._l.unshift(rx.data);
-            }
-            this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
-              ry.present();
-            })
 
-          })
+          const base64 = r.data.s.image;
+          const formfile = new FormData();
+          const fileuuid = r.data.s.fileuuid;
+          formfile.append('docs', r.data.s.file, r.data.s.file.name);
+          formfile.append('uuid', fileuuid);
+
+          this.filemanagerAPIService.writeFile(formfile).subscribe(r_writeFile => {
+            console.log(`write file fail`, r_writeFile);
+            console.log(`write file fail`, r_writeFile);
+            
+            if (r_writeFile.status != 1) {
+              this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid }).subscribe(r_cancelWriteFile => {
+                if (r_cancelWriteFile.status != 1) {
+                  this.apiService.simpleMessage(IENMessage.cancelAndWriteFileFail);
+                  return;
+                }
+                this.apiService.simpleMessage(IENMessage.writeFileFailAndCancelwriteFileSuccess);
+                return;
+              }, error => this.apiService.simpleMessage(IENMessage.writeFileError));
+            }
+
+            delete r.data.s.file;
+            delete r.data.s.fileuuid;
+            r.data.s.image = r_writeFile.data[0].info.fileUrl;
+            this.apiService.addProduct(r.data.s)?.subscribe(rx => {
+              if (rx.status != 1) {
+                this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid }).subscribe(r_cancelWriteFile => {
+                  if (r_cancelWriteFile.status != 1) {
+                    this.apiService.simpleMessage(IENMessage.cancelAndWriteFileFail);
+                    return;
+                  }
+                  this.apiService.simpleMessage(IENMessage.addMachineFail);
+                  return;
+                }, error => this.apiService.simpleMessage(IENMessage.writeFileError));
+              }
+
+              rx.data.s.image = base64;
+              this._l.unshift(rx.data);
+            }, error => this.apiService.simpleMessage(IENMessage.addMachineError));
+          }, error => this.apiService.simpleMessage(IENMessage.writeFileError));
+
         }
-      })
-    })
+      });
+    });
   }
   edit(id: number | undefined) {
     const s = this._l.find(v => v.id == id);

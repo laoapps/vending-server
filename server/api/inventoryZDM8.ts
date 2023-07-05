@@ -968,7 +968,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                             // let base64Image = o.image.split(';base64,').pop();
                             // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
-                           o.image= base64ToFile(o.image);
+                        //    o.image= base64ToFile(o.image);
                             sEnt
                                 .create(o)
                                 .then((r) => {
@@ -1533,7 +1533,7 @@ export class InventoryZDM8 implements IBaseClass {
                             where: { machineId: o.machineId },
                         });
                         if (!x) {
-                            o.photo = base64ToFile(o.photo);
+                            // o.photo = base64ToFile(o.photo);
                             this.machineClientlist
                                 .create(o)
                                 .then((r) => {

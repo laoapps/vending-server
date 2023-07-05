@@ -65,7 +65,7 @@ export class StocksalePage implements OnInit {
 
         }
         this.apiService.dismissLoading();
-        this.apiService.toast.create({message:r.message}).then(r=>{
+        this.apiService.toast.create({message:r.message, duration: 2000}).then(r=>{
           r.present();
         })
       })
@@ -88,7 +88,7 @@ export class StocksalePage implements OnInit {
           this.apiService.vendingOnSale.push(...r.data)
         }
         this.apiService.dismissLoading();
-        this.apiService.toast.create({message:r.message}).then(r=>{
+        this.apiService.toast.create({message:r.message, duration: 200}).then(r=>{
           r.present();
         })
       })

@@ -26,7 +26,7 @@ export class MachineDetailsPage implements OnInit {
     this.apiService.closeModal()
   }
   save() {
-    this.apiService.closeModal({ s: this.s })
+    this.apiService.closeModal({ s: this.s });
   }
 
   handleInputChange(e:any) {

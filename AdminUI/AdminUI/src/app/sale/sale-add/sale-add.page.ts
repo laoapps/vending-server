@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { IENMessage } from 'src/app/models/base.model';
 import { PositionlistPage } from 'src/app/positionlist/positionlist.page';
 import { ProductlistPage } from 'src/app/products/productlist/productlist.page';
 import { ApiService } from 'src/app/services/api.service';
@@ -16,6 +17,9 @@ export class SaleAddPage implements OnInit {
   s = {} as IVendingMachineSale;
   loaded: boolean = false;
   imageSrc: string = '';
+
+  formData: FormData;
+
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
     this.s.max=5;
@@ -27,10 +31,13 @@ export class SaleAddPage implements OnInit {
     this.s.isActive=false;
   }
   close() {
+    this.formData?.delete('docs');
+    this.formData?.delete('uuid');
     this.apiService.closeModal()
   }
   save() {
     if(this.sales.find(v=>v.position==this.s.position&&this.s.position>0))return alert('Position was duplicated');
+
     this.apiService.closeModal({ s: this.s })
   }
 

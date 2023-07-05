@@ -77,7 +77,8 @@
                 <tbody *ngFor="let p of _l; let i = index">
                   <tr>
                     <td>{{ i+1 }}</td>
-                    <td><ion-img class="product_image"[src]="showImage(p.photo)"></ion-img></td>
+                    <!-- <td><ion-img class="product_image" [src]="showImage(p.photo)"></ion-img></td> -->
+                    <td><img class="machine_image" src="{{ p.photo }}" alt=""></td>
                     <td>{{p.machineId}}</td>
                     <td>{{p.otp}}</td>
                     <td>{{p.updatedAt|date:'yy-MM-dd HH:mm:ss':'offsettz||420'}}</td>
@@ -98,7 +99,6 @@
                         <div style="float: left;"> <ion-icon name="snow-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> </div>
                         <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input>
                       </div>
-
                     </td>
                      <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button> 
                     <td>
