@@ -1020,7 +1020,7 @@ export class Tab1Page {
     this.apiService.loadDeliveryingBills().subscribe((r) => {
       console.log(`response`, r);
       if (r.status) {
-        this.apiService.dismissModal();
+        // this.apiService.dismissModal();
         this.apiService.pb = r.data as Array<IBillProcess>;
         if (this.apiService.pb.length)
           this.apiService
@@ -1185,5 +1185,4 @@ export class Tab1Page {
       r.present();
     })
   }
-
 }

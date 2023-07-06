@@ -20,6 +20,32 @@ import { ControlMenuService } from './control-menu.service';
   providedIn: 'root'
 })
 export class ApiService {
+
+  howtoVideoPlayList: Array<any> = [
+    {
+      id: 1,
+      video: '../../../../assets/video-how-to/howto1.mov',
+      title: 'How to1',
+      subtitle: 'Video is expend about how to use basic vending function',
+      file: ''
+    },
+    {
+        id: 2,
+        video: '../../../../assets/video-how-to/howto2.mov',
+        title: 'How to 2',
+        subtitle: 'Video is expend about how to use basic vending function',
+        file: ''
+    },
+    {
+        id: 3,
+        video: '../../../../assets/video-how-to/howto3.mov',
+        title: 'How to 3',
+        subtitle: 'Video is expend about how to use basic vending function',
+        file: ''
+    }
+  ];
+
+
   bill_price: Array<number> = [];
   bill_image: Array<string> = [];
 
@@ -209,8 +235,19 @@ export class ApiService {
       }
     })
 
-
+    // this.initLocalHowToVideoPlayList();
   }
+
+  // private initLocalHowToVideoPlayList() {
+    
+  //   for(let i = 0; i < this.howtoVideoPlayList.length; i++) {
+  //     fetch(this.howtoVideoPlayList[i].video).then(r => r.blob()).then(blob => {
+  //       this.howtoVideoPlayList[i].file = blob;
+  //     });
+  //   }
+  //   // console.log(this.howtoVideoPlayList[1]);
+    
+  // }
 
   public validateDB() {
 
@@ -494,6 +531,24 @@ export class ApiService {
         reader.readAsDataURL(blob);
         console.log(`base64 der`, base64);
         
+
+      } catch (error) {
+        resolve(error.message); 
+      }
+    });
+  }
+
+  convertLocalFilePath(local_path: string): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        const run = await fetch(local_path);
+        const blob = await run.blob();
+        resolve(URL.createObjectURL(blob));
+        
+        // fetch(this.howtoVideoPlayList[i].video).then(r => r.blob()).then(blob => {
+        //   this.howtoVideoPlayList[i].file = blob;
+        // });
 
       } catch (error) {
         resolve(error.message); 

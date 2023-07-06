@@ -1,4 +1,5 @@
 export enum IENMessage {
+    notFoundFile = 'not found file',
     vendingSaleListEmpty = 'vending sale list empty',
     loadVendingSaleListFail = 'load vending sale list fail',
     phonePaymentSuccess = 'phone payment success',
