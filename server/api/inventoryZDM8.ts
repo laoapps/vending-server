@@ -2093,7 +2093,7 @@ export class InventoryZDM8 implements IBaseClass {
             let machineId = this.ssocket.findMachineIdToken(d.token);
             let ack = await readACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
 
-            if (!ack) {
+            if (ack!='yes') {
                 // double check in database
                 const r = await this.loadBillCash(machineId.machineId, d.transactionID)
                 if (r?.length) {
@@ -2145,7 +2145,7 @@ export class InventoryZDM8 implements IBaseClass {
             // bsi.requestor = requestor;
             bsi.machineId = machineId.machineId;
 
-            if (ack) {
+            if (ack=='yes') {
                 // reconfirm
                 readMachineSetting(machineId.machineId).then(async r => {
                     let setting = {} as any
