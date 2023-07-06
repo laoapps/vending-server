@@ -2112,6 +2112,8 @@ export class InventoryZDM8 implements IBaseClass {
             const ws = that.wsClient.find(
                 (v) => v["machineId"] == machineId.machineId + ""
             );
+            let wsclientId='';
+            if(ws)wsclientId=ws["clientId"];
             const res = {} as IResModel;
 
             res.command = d.command;
@@ -2125,7 +2127,7 @@ export class InventoryZDM8 implements IBaseClass {
             console.log('FOUND ACK EXIST TRANSACTIONID', ack, d.transactionID);
 
             const bsi = {} as IBillCashIn;
-            bsi.clientId = ws["clientId"];
+            bsi.clientId =wsclientId;
             bsi.createdAt = new Date();
             bsi.updatedAt = bsi.createdAt;
             bsi.transactionID = d.transactionID;
@@ -2162,7 +2164,7 @@ export class InventoryZDM8 implements IBaseClass {
                     this.updateBillCash(bsi, machineId.machineId, d.transactionID);
                     await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
                     that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
-                    ws.send(
+                    ws?.send(
                         JSON.stringify(
                             PrintSucceeded(d.command, res, EMessage.succeeded)
                         )
@@ -2193,7 +2195,7 @@ export class InventoryZDM8 implements IBaseClass {
                     //
                     const hn = hashnotes.find((v) => v.hash == d?.data + "");
                     if (hn == undefined || Object.entries(hn).length == 0) {
-                        ws.send(
+                        ws?.send(
                             JSON.stringify(
                                 PrintError(d.command, [], EMessage.invalidBankNote + " 0")
                             )
@@ -2203,7 +2205,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // console.log("hn", hn);
                     const bn = this.notes.find((v) => v.value == hn?.value);
                     if (bn == undefined || Object.entries(bn).length == 0) {
-                        ws.send(
+                        ws?.send(
                             JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote))
                         );
                         return;
@@ -2228,7 +2230,7 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log(`response cash in validation`, run);
                             if (run.message != IENMessage.success) throw new Error(run);
                             bsi.bankNotes.push(bn);
-                            res.data = { clientId: ws["clientId"], billCashIn: bsi, bn, machineId: machineId.machineId };
+                            res.data = { clientId: wsclientId, billCashIn: bsi, bn, machineId: machineId.machineId };
                             that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                             console.log(`sw sender`, d.command, res.data, machineId.machineId);
                             // redisClient.set('_balance_' + ws['clientId'], bn.value);
@@ -2247,7 +2249,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 // const limiter = await readMachineLimiter(machineId.machineId);
 
                                 that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
-                                ws.send(
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded)
                                     )
@@ -2257,7 +2259,7 @@ export class InventoryZDM8 implements IBaseClass {
                         .catch((error) => {
                             console.log(`error cash in validation`, error.message);
                             bsi.badBankNotes.push(bn);
-                            res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
+                            res.data = { clientId: wsclientId, billCashIn: bsi, bn };
                             that.updateBadBillCash(bsi, machineId?.machineId, bsi?.transactionID);
 
                             if (error.transferFail == true) {
@@ -2265,7 +2267,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.updateInsuffBillCash(bsi);
                             }
 
-                            ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                            ws?.send(JSON.stringify(PrintError(d.command, [], error.message)));
                         });
 
                     // const requestor = this.requestors.find(v => v.transID == d.data.transID);
@@ -2273,7 +2275,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // if (!requestor) throw new Error('Requestor is not exist');
                 } else {
                     // throw new Error(EMessage.MachineIdNotFound)
-                    ws.send(
+                    ws?.send(
                         JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound))
                     );
                 }
