@@ -479,7 +479,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
             router.post(this.path + "/creditMMoney", (req, res) => {
                 const d = req.body as IReqModel;
-                this.creditMachineMMoney(d);
+                // this.creditMachineMMoney(d);
                 res.send({ message: "wait", status: 1 });
             });
             router.post(this.path + "/refresh", this.checkToken, async (req, res) => {
