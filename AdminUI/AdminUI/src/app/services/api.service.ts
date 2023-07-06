@@ -89,6 +89,7 @@ export class ApiService {
       try {
        
         if (!r) return console.log('empty');
+        this.myMachineStatus.length=0;
         this.myMachineStatus.push(...r.data.mymstatus)
         // console.log('ws alive subscription', r);
         this.wsAlive.time = new Date();

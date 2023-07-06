@@ -246,7 +246,6 @@ export class Tab1Page {
 
             // console.log(`sale server`, JSON.stringify(saleServer.map(item => { return { uuid: item.stock.uuid } })));
 
-            console.log(`sale server`, saleServer);
             console.log(`saleitems`, saleitems);
 
             this.saleList.sort((a, b) => {
@@ -263,20 +262,6 @@ export class Tab1Page {
 
             // console.log(' this.vendingOnSale.length 2', this.vendingOnSale.length);
             // console.log(`sale list der 1`, this.saleList.length);
-
-
-
-
-            /* compare sale server and cashing list */
-            // saleServer.filter(server_item => {
-            //   saleitems.find(cash_item => {
-            //     if (server_item.stock.image ==)
-            //   });
-            // });
-
-
-
-
 
             this.vendingOnSale.push(...saleitems);
             this.saleList.push(...this.vendingOnSale);

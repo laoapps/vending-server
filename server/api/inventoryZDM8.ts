@@ -1161,8 +1161,10 @@ export class InventoryZDM8 implements IBaseClass {
                                     return res.send(
                                         PrintError("addSale", [], EMessage.productNotFound)
                                     );
-                                o.stock = p;
                                 p.qtty = 0;
+                                o.stock = p;
+                                console.log('addSale',o);
+                                
                                 sEnt
                                     .findOne({ where: { position: o.position, machineId: o.machineId } })
                                     .then((rx) => {
