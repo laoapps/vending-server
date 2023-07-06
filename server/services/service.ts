@@ -273,6 +273,15 @@ export function readMachineSetting(machineId: string,) {
     return redisClient.get('_setting_' + machineId);
 
 }
+
+export function readMachineLimiterBalance(machineId: string,) {
+    return redisClient.get('_limiter_machine_balance_' + machineId);
+
+}
+export function writeMachineLimiterBalance(machineId: string,value:string) {
+    return redisClient.set('_limiter_machine_balance_' + machineId,value+'');
+
+}
 // export function writeMachineLimiter(machineId: string, balance: string) {
 //     redisClient.set('_limiter_' + machineId, balance);
 // }

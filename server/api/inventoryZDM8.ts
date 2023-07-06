@@ -27,6 +27,7 @@ import {
     writeMachineSale,
     readMachineSale,
     base64ToFile,
+    writeMachineLimiterBalance,
 } from "../services/service";
 import {
     EClientCommand,
@@ -478,7 +479,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
             router.post(this.path + "/creditMMoney", (req, res) => {
                 const d = req.body as IReqModel;
-                this.creditMachineMMoney(d);
+                // this.creditMachineMMoney(d);
                 res.send({ message: "wait", status: 1 });
             });
             router.post(this.path + "/refresh", this.checkToken, async (req, res) => {
@@ -968,7 +969,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                             // let base64Image = o.image.split(';base64,').pop();
                             // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
-                        //    o.image= base64ToFile(o.image);
+                            //    o.image= base64ToFile(o.image);
                             sEnt
                                 .create(o)
                                 .then((r) => {
@@ -1351,7 +1352,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintSucceeded(
                                 "saveMachineSale",
-                                writeMachineSale(machineId.machineId,JSON.stringify(d.data)),
+                                writeMachineSale(machineId.machineId, JSON.stringify(d.data)),
                                 EMessage.succeeded
                             )
                         );
@@ -1371,11 +1372,11 @@ export class InventoryZDM8 implements IBaseClass {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
                         const machineId = this.ssocket.findMachineIdToken(d.token);
-                       
+
                         res.send(
                             PrintSucceeded(
                                 "readMachineSale",
-                                 JSON.parse(readMachineSale(machineId.machineId)),
+                                JSON.parse(readMachineSale(machineId.machineId)),
                                 EMessage.succeeded
                             )
                         );
@@ -2102,7 +2103,8 @@ export class InventoryZDM8 implements IBaseClass {
                     await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
             } else {
                 await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
-                throw new Error('TOO FAST ' + d.transactionID);
+                // throw new Error('TOO FAST ' + d.transactionID);
+                // ack = 'yes';
             }
 
 
@@ -2451,6 +2453,35 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
             });
+
+            /// NEED TO UPDATE AND CHANGE LATER USING SOCKET UPDATE FROM LAAB 06072023
+            setInterval(() => {
+                const onlineId = [];
+                this.ssocket.machineIds.forEach((v, i) => {
+                    if (this.ssocket.findOnlneMachine(v.machineId)) {
+                        setTimeout(() => {
+                            const func = new CashValidationFunc();
+                            const params = {
+                                machineId: v.machineId
+                            }
+                            func.Init(params).then(run => {
+                                const response: any = run;
+                                console.log(`response`, response);
+                                if (response.message != IENMessage.success) {
+                                    console.log(`cash validate fail`, response?.message);
+                                    // socket.end();
+                                }
+                                writeMachineLimiterBalance(v.machineId,response?.balance);
+                            }).catch(error => {
+                                console.log(`cash validation error`, error.message);
+                                // socket.end();
+                            });
+                        }, 100 * i);
+                    }
+                });
+
+            }, 10000)
+
         });
     }
     loadBillCash(
