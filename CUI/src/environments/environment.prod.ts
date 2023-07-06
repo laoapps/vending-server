@@ -7,4 +7,5 @@ export const environment = {
   testVending: 'http://localhost:30777/vending/api/',
   vending: 'https://vendingservicevmc.laoapps.com',
   vending_server: 'https://vendingservicevmc.laoapps.com',
+  filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
 };

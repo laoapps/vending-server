@@ -35,8 +35,11 @@
   <div *ngFor="let s of saleStock" style="display:inline;float:left" (click)="selectItem(s.position+'')">
     <ion-card>
       <ion-label>{{s.position+compensation|number}}</ion-label>
-      <img style="width: 100px;height:240px" [src]="s.stock.image.includes(';base64,')?s.stock.image:this.url+'/public/'+s.stock.image"
-        (click)="changeStock(s.position)">
+      <!-- <img style="width: 100px;height:240px" [src]="s.stock.image.includes(';base64,')?s.stock.image:this.url+'/public/'+s.stock.image"
+        (click)="changeStock(s.position)"> -->
+        <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)" >
+        <!-- <img *ngIf="!s.stock.image" style="width: 100px;height:240px" src="../../assets/empty-box.png" (click)="changeStock(s.position)" class="position-img"> -->
+        <!-- <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)"> -->
     </ion-card>
     <ion-card >
       <div>

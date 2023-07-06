@@ -25,6 +25,7 @@ export class StocksalePage implements OnInit {
     public storage: IonicStorageService) {
     this.saleStock = apiService.vendingOnSale;
     this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
+    console.log(`TEST SALE STOCK`, this.saleStock);
     // this.stock=apiService.stock;
   }
   refillAll(){
@@ -41,7 +42,7 @@ export class StocksalePage implements OnInit {
     const s = await this.apiService.showModal(ReportrefillsalePage);
     s.onDidDismiss().then(r => {
       if (r.data) {
-     
+
       }
     })
     s.present();
@@ -197,6 +198,7 @@ export class StocksalePage implements OnInit {
         isActive:true,
         id:-1,
         max:5,
+        // stock:{imgUrl: '', image:'',name:'',price:-1,qtty:0,id:-1} as IStock
         stock:{image:'',name:'',price:-1,qtty:0,id:-1} as IStock
       } as IVendingMachineSale));
   

@@ -735,6 +735,8 @@ export interface IBase{
     createdAt?:Date;
     updatedAt?:Date;
     // deletedAt?:Date;
+
+    // imgUrl?: string,
 }
 export interface IBC {
     hashP: string;

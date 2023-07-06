@@ -51,6 +51,8 @@ import { TopupAndServicePage } from './Vending/topup-and-service/topup-and-servi
 import { VendingGoPage } from './Vending/vending-go/vending-go.page';
 import { HowtoPageModule } from '../howto/howto.module';
 import { HowToPage } from './Vending/how-to/how-to.page';
+import { LoadStockListProcess } from './Vending_processes/loadStockList.process';
+import { AppcachingserviceService } from '../services/appcachingservice.service';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -62,9 +64,13 @@ export class Tab1Page {
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
   private cashValidationProcess: CashValidationProcess;
   private cashinValidationProcess: CashinValidationProcess;
+  private loadStockListProcess: LoadStockListProcess;
 
   private CONTROL_MENUList: Array<{ name: string, status: boolean }> = [];
   private links: NodeListOf<HTMLLinkElement>;
+
+  private ownerUuid: string;
+  filemanagerURL: string = environment.filemanagerurl + 'download/';
 
 
 
@@ -111,7 +117,8 @@ export class Tab1Page {
     public storage: IonicStorageService,
     public appCaching: CachingService,
     private vendingAPIService: VendingAPIService,
-    private WSAPIService: WsapiService
+    private WSAPIService: WsapiService,
+    private cashingService: AppcachingserviceService,
   ) {
     this.dynamicControlMenu();
 
@@ -134,6 +141,10 @@ export class Tab1Page {
       this.apiService,
       this.vendingAPIService
     );
+    this.loadStockListProcess = new LoadStockListProcess(
+      this.apiService,
+      this.cashingService
+    );
 
     // alert('V1_'+this.mmLogo);
 
@@ -144,6 +155,7 @@ export class Tab1Page {
     // this.initVendingSale();
 
     platform.ready().then(() => {
+      this.ownerUuid = localStorage.getItem('machineId');
       this.apiService.audioElement = document.createElement('audio');
       console.log('Width: ' + (this.swidth = platform.width()));
       console.log('Height: ' + (this.sheight = platform.height()));
@@ -167,7 +179,8 @@ export class Tab1Page {
         this.apiService.wsAlive.time = new Date();
         this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
         // this.loadSaleList();
-        this.initStock();
+        // this.initStock();
+        this.loadStock();
       });
     });
     // });
@@ -222,20 +235,49 @@ export class Tab1Page {
         this.initVendingWalletCoinBalance().then(() => {});
         this.storage.get('saleStock', 'stock').then((s) => {
           try {
+
             console.log(`storage get`, s);
+
             const saleitems = JSON.parse(
               JSON.stringify(s?.v ? s.v : [])
             ) as Array<IVendingMachineSale>;
+
+
+
+            // console.log(`sale server`, JSON.stringify(saleServer.map(item => { return { uuid: item.stock.uuid } })));
+
+            console.log(`sale server`, saleServer);
             console.log(`saleitems`, saleitems);
+
             this.saleList.sort((a, b) => {
               if (a.position < b.position) return -1;
             });
+            console.log(`sale list der ni`, this.saleList);
+
             // reset everytime ws activate
-            console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
+            // console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
+
             if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
+
             if(this.saleList?.length) this.saleList.length=0;
-            console.log(' this.vendingOnSale.length 2', this.vendingOnSale.length);
-            console.log(`sale list der 1`, this.saleList.length);
+
+            // console.log(' this.vendingOnSale.length 2', this.vendingOnSale.length);
+            // console.log(`sale list der 1`, this.saleList.length);
+
+
+
+
+            /* compare sale server and cashing list */
+            // saleServer.filter(server_item => {
+            //   saleitems.find(cash_item => {
+            //     if (server_item.stock.image ==)
+            //   });
+            // });
+
+
+
+
+
             this.vendingOnSale.push(...saleitems);
             this.saleList.push(...this.vendingOnSale);
             if (this.saleList[0]?.position == 0) this.compensation = 1;
@@ -262,6 +304,60 @@ export class Tab1Page {
      
     });
   }
+
+  loadStock(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        // await this.cashingService.remove(this.ownerUuid);
+        // return resolve(IENMessage.success);
+
+        // save image
+        const params = {
+          ownerUuid: this.ownerUuid,
+          filemanagerURL: this.filemanagerURL
+        }
+        const run = await this.loadStockListProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        this.apiService.newProductItems(run.data[0].lists);
+
+        const s = await this.storage.get('saleStock', 'stock');
+        const saleitems = JSON.parse(
+          JSON.stringify(s?.v ? s.v : [])
+        ) as Array<IVendingMachineSale>;
+
+        this.saleList.sort((a, b) => {
+          if (a.position < b.position) return -1;
+        });
+
+        if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
+        if(this.saleList?.length) this.saleList.length=0;
+        
+        const initVendingWalletCoinBalance = await this.initVendingWalletCoinBalance();
+        if (initVendingWalletCoinBalance != IENMessage.success) throw new Error(initVendingWalletCoinBalance);
+
+        this.vendingOnSale.push(...saleitems);
+        this.saleList.push(...this.vendingOnSale);
+        if (this.saleList[0]?.position == 0) this.compensation = 1;
+
+        setTimeout(() => {
+          this.showBills();
+        }, 1000);
+
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
+
+
+
   endCount() {
     if (this.timeoutHandler) {
       clearTimeout(this.timeoutHandler);

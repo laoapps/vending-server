@@ -1,4 +1,6 @@
 export enum IENMessage {
+    vendingSaleListEmpty = 'vending sale list empty',
+    loadVendingSaleListFail = 'load vending sale list fail',
     phonePaymentSuccess = 'phone payment success',
     minimumOfAmountIs1000 = 'minimum of amount is 1000',
     invalidCustomAmount = 'invalid custom amount',

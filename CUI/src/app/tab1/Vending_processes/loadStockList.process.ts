@@ -2,7 +2,7 @@ import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
 
-export class LoadProductListProcess {
+export class LoadStockListProcess {
 
     private workload: any = {} as any;
 
@@ -33,53 +33,53 @@ export class LoadProductListProcess {
                 
 
 
-                console.log(`init product list`, 1);
+                console.log(`init stock list`, 1);
 
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
-                console.log(`init product list`, 2);
+                console.log(`init stock list`, 2);
 
                 this.InitParams(params);
   
-                console.log(`init product list`, 3);
+                console.log(`init stock list`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`init product list`, 4);
+                console.log(`init stock list`, 4);
 
                 const LoadProductList = await this.LoadProductList();
                 if (LoadProductList != IENMessage.success) throw new Error(LoadProductList);
 
-                console.log(`init product list`, 5);
+                console.log(`init stock list`, 5);
 
                 const FindCashingServiceList = await this.FindCashingServiceList();
                 if (FindCashingServiceList != IENMessage.success) throw new Error(FindCashingServiceList);
                 
-                console.log(`init product list`, 6);
+                console.log(`init stock list`, 6);
 
                 this.ValidateClientLoad();
 
-                console.log(`init product list`, 7);
+                console.log(`init stock list`, 7);
 
                 const HttpReceiveImageAndSaveOnCashingService = await this.HttpReceiveImageAndSaveOnCashingService();
                 if (HttpReceiveImageAndSaveOnCashingService != IENMessage.success) throw new Error(HttpReceiveImageAndSaveOnCashingService);
 
-                console.log(`init product list`, 8);
+                console.log(`init stock list`, 8);
 
                 const ReceiveImageAndSaveNewChangeOnCashingService = await this.ReceiveImageAndSaveNewChangeOnCashingService();
                 if (ReceiveImageAndSaveNewChangeOnCashingService != IENMessage.success) throw new Error(ReceiveImageAndSaveNewChangeOnCashingService);
 
-                console.log(`init product list`, 9);
+                console.log(`init stock list`, 9);
                 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(this.Commit());
 
 
             } catch (error) {
                 console.log(`error`, error.message);
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });
@@ -103,15 +103,16 @@ export class LoadProductListProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                this.apiService.listProduct().subscribe(r => {
+                this.apiService.loadVendingSale().subscribe(r => {
                     const response: any = r;
-                    if (response.status != 1) return resolve(IENMessage.loadProductListFail);
-                    if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);
+                    if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
+                    if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
                     this.lists = response.data;
 
-                    let list = this.lists.map(item => { return { id: item.id, image: item.image } });
-                    list = list.sort((a,b) => a.id-b.id);
-                    console.log(`product lists`, list);
+                    // let list = this.lists.map(item => { return { id: item.id, image: item.image } });
+                    // list = list.sort((a,b) => a.id-b.id);
+                    // console.log(`stock lists`, list);
+                    
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -157,7 +158,7 @@ export class LoadProductListProcess {
     
                 let lists: Array<{ name: string, file: string}> = [];
                 for(let i = 0; i < this.lists.length; i++) {
-                    const name = this.lists[i].image;
+                    const name = this.lists[i].stock.image;
     
                     if (name != '') {
                     
@@ -167,14 +168,15 @@ export class LoadProductListProcess {
         
                         const obj = {
                             name: name,
-                            file: file
+                            file: file,
+
                         }
         
                         const same = lists.filter(item => item.name == name);
                         if (same != undefined && Object.entries(same).length == 0) {
                             lists.push(obj);
                         }
-                        this.lists[i].image = file;
+                        this.lists[i].stock.image = file;
     
                     }
                     if (i == this.lists.length-1) {
@@ -199,26 +201,26 @@ export class LoadProductListProcess {
 
                 this.lists.filter(list => {
                     this.cashList.find((cash, cash_index) => {
-                        if (list.photo == cash.name) list.photo = cash.file;
+                        if (list.stock.image == cash.name) list.stock.image = cash.file;
                     });
                 });
 
-                const data = this.lists.filter(item => item.photo.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.photo.substring(0,4) != 'data');
+                const data = this.lists.filter(item => item.stock.image.substring(0,4) == 'data');
+                const nodata = this.lists.filter(item => item.stock.image.substring(0,4) != 'data');
 
                 if (nodata != undefined && nodata.length > 0)
                 {
                     for(let i = 0; i < nodata.length; i++) {
-                        const url = `${this.filemanagerURL}${nodata[i].image}`;
+                        const url = `${this.filemanagerURL}${nodata[i].stock.image}`;
                         const run = await fetch(url, { method: 'GET' });
                         const file = await this.apiService.convertBlobToBase64(await run.blob());
     
                         const obj = {
-                            name: nodata[i].image,
+                            name: nodata[i].stock.image,
                             file: file
                         }
     
-                        nodata[i].image = file;
+                        nodata[i].stock.image = file;
                         this.cashList.push(obj);
                     }
                     data.push(...nodata);
@@ -239,7 +241,8 @@ export class LoadProductListProcess {
         console.log(`commit list`, this.lists);
         const response = {
             data: [{
-                lists: this.lists
+                lists: this.lists,
+                cashList: this.cashList
             }],
             message: IENMessage.success
         }

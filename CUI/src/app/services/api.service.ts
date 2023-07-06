@@ -177,6 +177,7 @@ export class ApiService {
       //     }
       // })
       // this.dismissModal();
+      console.log(`vendingOnSale-->`, this.vendingOnSale);
       this.storage.set('saleStock', this.vendingOnSale, 'stock');
 
       // });
@@ -256,6 +257,7 @@ export class ApiService {
   public async getImageBase64(id:number,db='image'){
     return (await this.storage.get2(id+'',db));
   }
+
   newProductItems(s: Array<IVendingMachineSale>) {
     this.stock.length=0;
     s.map(vs => vs.stock).forEach(v => {
@@ -478,4 +480,25 @@ export class ApiService {
       }
     });
   }
+
+    
+  convertBlobToBase64(blob: Blob): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        let base64: string = '';
+        const reader = new FileReader();
+        reader.addEventListener('load', event => {
+           resolve(event.target.result as string);
+        });
+        reader.readAsDataURL(blob);
+        console.log(`base64 der`, base64);
+        
+
+      } catch (error) {
+        resolve(error.message); 
+      }
+    });
+  }
 }
+

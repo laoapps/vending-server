@@ -199,16 +199,17 @@ export class LoadProductListProcess {
 
                 this.lists.filter(list => {
                     this.cashList.find((cash, cash_index) => {
-                        if (list.photo == cash.name) list.photo = cash.file;
+                        if (list.image == cash.name) list.image = cash.file;
                     });
                 });
 
-                const data = this.lists.filter(item => item.photo.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.photo.substring(0,4) != 'data');
+                const data = this.lists.filter(item => item.image.substring(0,4) == 'data');
+                const nodata = this.lists.filter(item => item.image.substring(0,4) != 'data');
 
                 if (nodata != undefined && nodata.length > 0)
                 {
                     for(let i = 0; i < nodata.length; i++) {
+                        console.log(`get new`, i+1);
                         const url = `${this.filemanagerURL}${nodata[i].image}`;
                         const run = await fetch(url, { method: 'GET' });
                         const file = await this.apiService.convertBlobToBase64(await run.blob());
