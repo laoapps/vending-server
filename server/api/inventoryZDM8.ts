@@ -1424,7 +1424,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/machineSaleList",
                 // this.checkToken,
                 // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
+                // this.checkDisabled.bind(this),s
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
@@ -1432,11 +1432,10 @@ export class InventoryZDM8 implements IBaseClass {
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
-
+                        const machineId=this.ssocket.findMachineIdToken(d.token);
                         const m = await machineClientIDEntity.findOne({
                             where: {
-                                machineId: this.ssocket.findMachineIdToken(d.token)
-                                    ?.machineId,
+                                machineId: machineId.machineId
                             },
                         });
                         const ownerUuid = m?.ownerUuid || "";
@@ -1448,7 +1447,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives } } })
+                            .findAll({ where: { isActive: { [Op.or]: actives },machineId:machineId.machineId } })
                             .then((r) => {
                                 res.send(PrintSucceeded("listSale", r, EMessage.succeeded));
                             })
