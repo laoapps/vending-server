@@ -31,6 +31,8 @@ export class VendingVMC {
     creditPending = new Array<{ command: any, data: any, transactionID: string, raw: string, t: number }>();
 
     pendingRetry = 10;// 10s
+
+    firstInit=true;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         const that = this;
@@ -121,19 +123,9 @@ export class VendingVMC {
                         const cp = that.creditPending[0];
                         if (cp) {
                             if (that.pendingRetry <= 0) {
-
                                 const t = cp?.transactionID;
                                 const b = cp?.data
                                 that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
-                                setTimeout(() => {
-                                    that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
-                                }, 500);
-                                setTimeout(() => {
-                                    that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
-                                }, 1000);
-                                setTimeout(() => {
-                                    that.sock?.send(b, Number(t), EMACHINE_COMMAND.CREDIT_NOTE);
-                                }, 1500);
                                 that.pendingRetry=10;
                             } else {
                                 that.pendingRetry -= 2;
@@ -200,6 +192,10 @@ export class VendingVMC {
                     // new 50k not working
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
+                    if(that.firstInit){
+                        that.firstInit=false;
+                        return;
+                    }
                     const t = Number('-21' + moment.now());
                     const v = that.getNoteValue(b);
                     that.creditPending.push({ raw: b, data: cryptojs.SHA256(that.sock?.machineid + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
@@ -403,9 +399,9 @@ export class VendingVMC {
                         const transactionID = params.transactionID;
                         console.log('RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING', params);
                         if (this.creditPending.find(v => v.transactionID == transactionID)) {
-
+                            writeCreditRecord(this.creditPending, transactionID);
                             this.creditPending = this.creditPending.filter(v => v.transactionID != transactionID);
-                            writeCreditRecord(this.creditPending, transactionID)
+                            
                         }
                     }
                     
@@ -472,7 +468,7 @@ export class VendingVMC {
 
 
                     }
-
+                    that.firstInit=false;
                     break;
                 case EZDM8_COMMAND.logs:
                     const duration = params?.duration || 15;
