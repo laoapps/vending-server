@@ -1042,6 +1042,53 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
             router.post(
+                this.path + "/deleteProduct",
+                this.checkToken,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const id = Number(req.query["id"]);
+                        const isActive =
+                            req.query["isActive"] + '' == 'no'
+                                ? false
+                                : true;
+                        console.log('req.query["isActive"]', !req.query["isActive"], req.query["isActive"], isActive,);
+
+                        const sEnt = StockFactory(
+                            EEntity.product + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        sEnt
+                            .destroy({where :{id}})
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("deleteProduct", [], EMessage.error)
+                                    );
+                                console.log('deleteProduct', r);
+                                res.send(
+                                    PrintSucceeded(
+                                        "deleteProduct",
+                                        r,
+                                        EMessage.succeeded
+                                    )
+                                );
+                            })
+                            .catch((e) => {
+                                console.log("error deleteProduct", e);
+
+                                res.send(PrintError("deleteProduct", e, EMessage.error));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("deleteProduct", error, EMessage.error));
+                    }
+                }
+            );
+            router.post(
                 this.path + "/listAds",
                 // this.checkToken,
                 // this.checkToken,
