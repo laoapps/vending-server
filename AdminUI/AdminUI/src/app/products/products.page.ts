@@ -119,6 +119,28 @@ export class ProductsPage implements OnInit {
       });
     });
   }
+  delete(id:number){
+   if(! confirm('Are you sure?'))return;
+    const s = this._l.find(v => v.id == id);
+    if (!s) return alert('Not found')
+
+    this.apiService.deleteProduct( id).subscribe(rx => {
+      console.log(rx);
+      if (rx.status) {
+        this._l.find((v, i) => {
+          if (v.id == id) {
+            this._l.splice(i, 1);
+            return true;
+          }
+          return false;
+        })
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
+        ry.present();
+      })
+
+    })
+  }
   edit(id: number | undefined) {
     const s = this._l.find(v => v.id == id);
     if (!s) return alert('Not found')

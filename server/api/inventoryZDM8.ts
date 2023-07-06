@@ -1050,11 +1050,6 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const id = Number(req.query["id"]);
-                        const isActive =
-                            req.query["isActive"] + '' == 'no'
-                                ? false
-                                : true;
-                        console.log('req.query["isActive"]', !req.query["isActive"], req.query["isActive"], isActive,);
 
                         const sEnt = StockFactory(
                             EEntity.product + "_" + ownerUuid,

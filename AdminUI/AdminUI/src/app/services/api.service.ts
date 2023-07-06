@@ -331,6 +331,10 @@ export class ApiService {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive?'yes':'no'}&id=${id}`, {token}, { headers: this.headerBase() });
   }
+  deleteProduct(id:number) {
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/deleteProduct?&id=${id}`, {token}, { headers: this.headerBase() });
+  }
   disableSale(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive?'yes':'no'}&id=${id}`, {token}, { headers: this.headerBase() });
