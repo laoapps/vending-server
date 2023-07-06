@@ -12,6 +12,8 @@ import { EpinManagementPage } from './epin-management/epin-management.page';
 import { FilemanagerApiService } from '../services/filemanager-api.service';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import { environment } from 'src/environments/environment';
+import { IonicstorageService } from '../services/ionicstorage.service';
+import { LoadMachineListProcess } from './processes/loadMachineList.process';
 
 
 @Component({
@@ -21,6 +23,10 @@ import { environment } from 'src/environments/environment';
 })
 export class MachinePage implements OnInit {
 
+  private loadMachineListProcess: LoadMachineListProcess;
+  private ownerUuid: string;
+
+  ionicStorage: IonicstorageService;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
   fakeList: Array<any> = [
     {
@@ -32,6 +38,7 @@ export class MachinePage implements OnInit {
   ];
 
 
+
   _l = new Array<IMachineClientID>();
   showImage: (p: string) => string;
   settings = {} as any;
@@ -41,24 +48,36 @@ export class MachinePage implements OnInit {
     public apiService: ApiService, 
     private laabAPIService: LaabApiService,
     private filemanagerAPIService: FilemanagerApiService,
-    private cashingService: AppcachingserviceService
+    private cashingService: AppcachingserviceService,
   ) {
+    this.loadMachineListProcess = new LoadMachineListProcess(this.apiService, this.cashingService);
+    
     this.showImage = this.apiService.showImage;
     this.myMachineStatus=apiService.myMachineStatus;
+
   }
 
+
   ngOnInit() {
+    this.ownerUuid = localStorage.getItem('lva_ownerUuid');
+    // this.initDOM();
+    this.loadMachine();
+   
+  }
+
+  loaddefault() {
+    let setList: Array<any> = [];
 
     this.apiService.listMachine().subscribe(async r => {
       console.log(r);
       if (r.status) {
-
-        const ownerUuid = localStorage.getItem('lva_ownerUuid');
-        let storage = await this.cashingService.get(ownerUuid);
+        setList = r.data;
+        // await this.cashingService.clear();
+        let storage = await this.cashingService.get(this.ownerUuid);
         if (storage == undefined || storage == null) {
-          await this.cashingService.set(ownerUuid, JSON.stringify([]));
+          await this.cashingService.set(this.ownerUuid, JSON.stringify([]));
         }
-        const storageValues: any = JSON.parse(JSON.parse(storage).v);
+        const storageValues: any = JSON.parse(JSON.parse(storage)?.v);
         console.log(`storageValues`, storageValues, storageValues.length);
         
 
@@ -67,17 +86,32 @@ export class MachinePage implements OnInit {
         // 2 after get image from server this function will reload element and save current url and base64
         if (storageValues != undefined && Object.entries(storageValues).length == 0) {
 
-          let i = setInterval(() => {
+          let i = setInterval(async () => {
             clearInterval(i);
-            const imgs = (document.querySelectorAll('.machine_image') as NodeListOf<HTMLImageElement>);
-
-            imgs.forEach((elm, index) => {
+            let lists: Array<{ name: string, file: string}> = [];
+            const imgs = (document.querySelectorAll('.display_machine_image') as NodeListOf<HTMLImageElement>);
+            imgs.forEach(async (elm, index) => {
               const name = elm.getAttribute('src');
               if (name != '') {
+              
+                const url = `${this.filemanagerURL}${name}`;
+                const run = await fetch(url, { method: 'GET' });
+                let file = await this.apiService.convertBlobToBase64(await run.blob());
+
                 const obj = {
-                  name: name
+                  name: name,
+                  file: file
                 }
-                elm.src = `${this.filemanagerURL}${name}`;
+
+                const same = lists.find(item => item.name == name);
+                console.log(`same`, same);
+                if (same == undefined) {
+                  lists.push(obj);
+                }
+                elm.src = file;
+              }
+              if (index == imgs.length-1) {
+                await this.cashingService.set(this.ownerUuid, JSON.stringify(lists));
               }
             });
           });
@@ -85,29 +119,40 @@ export class MachinePage implements OnInit {
         }
         else 
         {
-          // for(let i = 0; i < r.data.length; i++) {
-          //   for(let j = 0; j < storageValues.length; i++) {
-          //     if (r.data[i].photo == storageValues[j].name) {
-          //       r.data[i].photo == storageValues[j].file;
-          //     } else 
-          //     {
-          //       const url = `http://${this.filemanagerURL}${r.data.photo}`;
-          //       r.data.photo[i] = url;
-          //     }
-          //   }
-          // }
+          let lists: Array<{ name: string, file: string}> = [];
+
+          for(let i = 0; i < setList.length; i++) {
+            for(let j = 0; j < storageValues.length; j++) {
+              
+              if (setList[i].photo == storageValues[j].name) {
+                setList[i].photo = storageValues[j].file;
+              } 
+              else 
+              {
+                if (setList[i].photo != '') {
+                  const url = `${this.filemanagerURL}${setList[i].photo}`;
+                  const run = await fetch(url, { method: 'GET' });
+                  const file = await this.apiService.convertBlobToBase64(await run.blob());
+  
+                  const obj = {
+                    name: setList[i].photo,
+                    file: file
+                  }
+  
+                  lists.push(obj);
+                  setList[i].photo = file;
+                  console.log();
+                }
+              }
+            }
+          }
+
+          storageValues.push(...lists);
+          await this.cashingService.set(this.ownerUuid, JSON.stringify(storageValues));
         }
-        
-        console.log(`--->`, this._l);
+      
 
-        
-
-
-        // let i = setInterval(() => {
-        //   clearInterval(i);
-        //   this._l.push(...r.data);
-        // })
-        this._l.push(...r.data);
+        this._l.push(...setList);
         this._l.forEach(v=>{
 
           // init cashing
@@ -132,19 +177,22 @@ export class MachinePage implements OnInit {
       // this.apiService.toast.create({message:r.message,duration:5000}).then(ry=>{
       //   ry.present();
       // })
-    })
+    });
   }
 
-  loadMachine() {
-    this.apiService.listMachine().subscribe(r => {
-      console.log(r);
-      if (r.status) {
+  loadMachine(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+      //  await this.cashingService.clear();
+        const params = {
+          ownerUuid: this.ownerUuid,
+          filemanagerURL: this.filemanagerURL
+        }
+        const run = await this.loadMachineListProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
 
-
-
-        this._l.push(...r.data);
+        this._l.push(...run.data[0].lists);
         this._l.forEach(v=>{
-          console.log('....',v);
           if(!Array.isArray(v.data))v.data=[v.data]
           let setting =v.data?.find(vx=>vx?.settingName=='setting');
           console.log('setting',setting);
@@ -159,6 +207,12 @@ export class MachinePage implements OnInit {
           }
           this.settings[v.machineId]=setting;
         });
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
       }
     });
   }
@@ -222,7 +276,7 @@ export class MachinePage implements OnInit {
             delete r.data.s.file;
             delete r.data.s.fileuuid;
             r.data.s.photo = r_writeFile.data[0].info.fileUrl;
-            this.apiService.addMachine(r.data.s)?.subscribe(rx => {
+            this.apiService.addMachine(r.data.s)?.subscribe(async rx => {
               console.log(`add machine response`, rx);
               if (rx.status != 1) {
                 this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid}).subscribe(r_cancelWriteFile => {

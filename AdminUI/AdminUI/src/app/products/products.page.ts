@@ -5,6 +5,9 @@ import { ProductAddPage } from './product-add/product-add.page';
 import { ProductDetailsPage } from './product-details/product-details.page';
 import { FilemanagerApiService } from '../services/filemanager-api.service';
 import { IENMessage } from '../models/base.model';
+import { LoadProductListProcess } from './processes/loadProductList.process';
+import { AppcachingserviceService } from '../services/appcachingservice.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-products',
@@ -12,20 +15,58 @@ import { IENMessage } from '../models/base.model';
   styleUrls: ['./products.page.scss'],
 })
 export class ProductsPage implements OnInit {
+
+  private loadProductListProcess: LoadProductListProcess;
+  private ownerUuid: string;
+  filemanagerURL: string = environment.filemanagerurl + 'download/';
+
   _l = new Array<IStock>();
-  constructor(public apiService: ApiService, private filemanagerAPIService: FilemanagerApiService) { }
+  constructor(public apiService: ApiService, private filemanagerAPIService: FilemanagerApiService,
+    private cashingService: AppcachingserviceService,
+    
+    ) { 
+    this.loadProductListProcess = new LoadProductListProcess(this.apiService, this.cashingService);
+
+  }
 
   ngOnInit() {
-    this.apiService.listProduct().subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this._l.push(...r.data);
-      }
-      this.apiService.toast.create({ message: r.message, duration: 2000 }).then(ry => {
-        ry.present();
-      })
-    })
+    this.ownerUuid = localStorage.getItem('lva_ownerUuid');
+    this.loadProduct();
+
+    // this.apiService.listProduct().subscribe(r => {
+    //   console.log(r);
+    //   if (r.status) {
+    //     this._l.push(...r.data);
+    //   }
+    //   this.apiService.toast.create({ message: r.message, duration: 2000 }).then(ry => {
+    //     ry.present();
+    //   });
+    // });
   }
+
+  loadProduct(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+      //  await this.cashingService.clear();
+        const params = {
+          ownerUuid: this.ownerUuid,
+          filemanagerURL: this.filemanagerURL
+        }
+        const run = await this.loadProductListProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        this._l.push(...run.data[0].lists);
+
+        resolve(IENMessage.success);
+
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
   new() {
     this.apiService.showModal(ProductAddPage).then(ro => {
       ro?.present();
@@ -41,7 +82,7 @@ export class ProductsPage implements OnInit {
 
           this.filemanagerAPIService.writeFile(formfile).subscribe(r_writeFile => {
             console.log(`write file fail`, r_writeFile);
-            console.log(`write file fail`, r_writeFile);
+            console.log(`write file fail`, r_writeFile.data[0].info.fileUrl);
             
             if (r_writeFile.status != 1) {
               this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid }).subscribe(r_cancelWriteFile => {

@@ -504,5 +504,23 @@ export class ApiService {
     return pageingtation;
   }
   
+  convertBlobToBase64(blob: Blob): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        let base64: string = '';
+        const reader = new FileReader();
+        reader.addEventListener('load', event => {
+           resolve(event.target.result as string);
+        });
+        reader.readAsDataURL(blob);
+        console.log(`base64 der`, base64);
+        
+
+      } catch (error) {
+        resolve(error.message); 
+      }
+    });
+  }
 }
 

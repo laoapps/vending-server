@@ -173,6 +173,7 @@ export class SocketServerZDM8 {
                                 // const limiter =100000;
                                 func.Init(params).then(run => {
                                     const response: any = run;
+                                    console.log(`response`, response);
                                     if (response.message != IENMessage.success) {
                                         console.log(`cash validate fail`, response?.message);
                                         // socket.end();
