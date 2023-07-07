@@ -177,6 +177,12 @@ export class VendingVMC {
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
+                    //FAFB2106C608000186A0CF.  // if it is 08 then ignore
+                    if(b.substring(10,12)=='08'){
+                        // ignore because it is a report that it was swallowed
+
+                    }else{
+
                     // fafb2106ee01 00000002 cb
                     // fafb2106f501 00000002 d0
                     // fafb21061008 00000002 3c
@@ -205,6 +211,9 @@ export class VendingVMC {
 
                     });
                     writeLogs(b, -1);
+                    }
+
+
 
                 }
                 else if (b.startsWith('fafb23')) {// receive banknotes
