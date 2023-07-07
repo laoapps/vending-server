@@ -13,6 +13,7 @@ export class LoadProductListProcess {
     // parameters
     private ownerUuid: string;
     private filemanagerURL: string;
+    private status: string;
 
     // properties
     private lists: Array<any> = [];
@@ -91,6 +92,7 @@ export class LoadProductListProcess {
 
         this.ownerUuid = params.ownerUuid;
         this.filemanagerURL = params.filemanagerURL;
+        this.status = params.status ? params.status : '';
     }
 
     private ValidateParams(): string {
@@ -103,7 +105,7 @@ export class LoadProductListProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                this.apiService.listProduct().subscribe(r => {
+                this.apiService.listProduct(this.status).subscribe(r => {
                     const response: any = r;
                     if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);

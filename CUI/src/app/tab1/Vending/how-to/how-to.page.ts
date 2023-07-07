@@ -22,22 +22,24 @@ export class HowToPage implements OnInit {
 
   ngOnInit() {
     this.lists = this.apiService.howtoVideoPlayList;
-    // this.loadAutoPlayState();
-    // this.loadCurrentPlay();
+    this.loadAutoPlayState();
+    this.loadCurrentPlay();
 
-    if(!this.platform.is('capacitor')){
-      this.lists = this.apiService.howtoVideoPlayList;
-        this.loadAutoPlayState();
-        this.loadCurrentPlay();
-     }else{
-      this.platform.ready().then(() => {
-        this.lists = this.apiService.howtoVideoPlayList;
-        this.loadAutoPlayState();
-        this.loadCurrentPlay();
-       
-      });
-     }
-   
+    // if(!this.platform.is('capacitor')){
+    //   this.lists = this.apiService.howtoVideoPlayList;
+    //     this.loadAutoPlayState();
+    //     this.loadCurrentPlay();
+    //  }else{
+      
+    //  }
+    // this.platform.ready().then(() => {
+    //   setTimeout(() => {
+    //     this.lists = this.apiService.howtoVideoPlayList;
+    //     this.loadAutoPlayState();
+    //     this.loadCurrentPlay();
+    //   }, 1000);
+     
+    // });
   }
 
   close() {
@@ -61,8 +63,9 @@ export class HowToPage implements OnInit {
         const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
         howToPlayer.disablePictureInPicture = true;
         
-        const path = this.lists[0].video;
-        this.currentPlay = await this.apiService.convertLocalFilePath(path);
+        this.currentPlay = this.lists[0];
+        console.log(`current`, this.currentPlay);
+        this.currentPlay.video = await this.apiService.convertLocalFilePath(this.currentPlay.video);
 
         let i = setInterval(() => {
           clearInterval(i);
@@ -87,10 +90,13 @@ export class HowToPage implements OnInit {
         
         const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
 
-        const path = this.lists.filter(item => item.id == id)[0].video;
-        if (path == undefined) throw new Error(IENMessage.notFoundFile);
+        const current = this.lists.filter(item => item.id == id)[0];
+        if (current.video == undefined) throw new Error(IENMessage.notFoundFile);
 
-        howToPlayer.src = await this.apiService.convertLocalFilePath(path);
+        this.currentPlay.video = await this.apiService.convertLocalFilePath(current.video);
+        this.currentPlay.title = current.title;
+        this.currentPlay.subsubtitle = current.subtitle;
+
         howToPlayer.play();
         resolve(IENMessage.success);
 

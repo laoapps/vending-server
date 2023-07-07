@@ -19,7 +19,6 @@ export class SalePage implements OnInit {
   @Input()machineId: string;
 
   private loadSaleListProcess: LoadSaleListProcess;
-  private ownerUuid: string;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
 
 
@@ -35,7 +34,6 @@ export class SalePage implements OnInit {
    }
 
   ngOnInit() {
-    this.ownerUuid = localStorage.getItem('lva_ownerUuid');
     this.loadSaleList();
     
     // this.apiService.listSaleByMachine(this.machineId).subscribe(r => {
@@ -55,7 +53,7 @@ export class SalePage implements OnInit {
       try {
       //  await this.cashingService.clear();
         const params = {
-          ownerUuid: this.ownerUuid,
+          ownerUuid: this.apiService.ownerUuid,
           filemanagerURL: this.filemanagerURL,
           machineId: this.machineId
         }
@@ -78,11 +76,15 @@ export class SalePage implements OnInit {
     this.apiService.showModal(SaleAddPage,{machineId:this.machineId,sales:this._l}).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
-        console.log(r);
         if (r.data.s) {
+        console.log(`-->`, r.data);
+
+          const base64 = r.data.s.stock.image;
           this.apiService.addSale(r.data.s)?.subscribe(rx => {
-            console.log(rx);
+            console.log(`rx`, rx);
+            console.log(`rx stock`, rx.data.stock);
             if (rx.status) {
+              rx.data.stock.image = base64;
               this._l.unshift(rx.data);
             }
             this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {

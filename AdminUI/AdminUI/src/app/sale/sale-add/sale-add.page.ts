@@ -18,7 +18,6 @@ export class SaleAddPage implements OnInit {
   loaded: boolean = false;
   imageSrc: string = '';
 
-  formData: FormData;
 
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
@@ -31,9 +30,7 @@ export class SaleAddPage implements OnInit {
     this.s.isActive=false;
   }
   close() {
-    this.formData?.delete('docs');
-    this.formData?.delete('uuid');
-    this.apiService.closeModal()
+    this.apiService.closeModal();
   }
   save() {
     if(this.sales.find(v=>v.position==this.s.position&&this.s.position>0))return alert('Position was duplicated');
@@ -51,10 +48,10 @@ export class SaleAddPage implements OnInit {
       console.log('show product list');
       
       ro?.onDidDismiss().then(r => {
-        console.log(r);
+        console.log(`after close product list`, r);
 
         if (r.data) {
-          
+          console.log(`rrrr data`, r.data);
           this.s.stock=r.data.data;
         }
       }).catch(e => {

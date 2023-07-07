@@ -17,11 +17,12 @@ import { environment } from 'src/environments/environment';
 export class ProductsPage implements OnInit {
 
   private loadProductListProcess: LoadProductListProcess;
-  private ownerUuid: string;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
 
   _l = new Array<IStock>();
-  constructor(public apiService: ApiService, private filemanagerAPIService: FilemanagerApiService,
+  constructor(
+    public apiService: ApiService, 
+    private filemanagerAPIService: FilemanagerApiService,
     private cashingService: AppcachingserviceService,
     
     ) { 
@@ -30,7 +31,6 @@ export class ProductsPage implements OnInit {
   }
 
   ngOnInit() {
-    this.ownerUuid = localStorage.getItem('lva_ownerUuid');
     this.loadProduct();
 
     // this.apiService.listProduct().subscribe(r => {
@@ -49,7 +49,7 @@ export class ProductsPage implements OnInit {
       try {
       //  await this.cashingService.clear();
         const params = {
-          ownerUuid: this.ownerUuid,
+          ownerUuid: this.apiService.ownerUuid,
           filemanagerURL: this.filemanagerURL
         }
         const run = await this.loadProductListProcess.Init(params);

@@ -24,7 +24,6 @@ import { LoadMachineListProcess } from './processes/loadMachineList.process';
 export class MachinePage implements OnInit {
 
   private loadMachineListProcess: LoadMachineListProcess;
-  private ownerUuid: string;
 
   ionicStorage: IonicstorageService;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
@@ -59,7 +58,6 @@ export class MachinePage implements OnInit {
 
 
   ngOnInit() {
-    this.ownerUuid = localStorage.getItem('lva_ownerUuid');
     // this.initDOM();
     this.loadMachine();
    
@@ -73,9 +71,9 @@ export class MachinePage implements OnInit {
       if (r.status) {
         setList = r.data;
         // await this.cashingService.clear();
-        let storage = await this.cashingService.get(this.ownerUuid);
+        let storage = await this.cashingService.get(this.apiService.ownerUuid);
         if (storage == undefined || storage == null) {
-          await this.cashingService.set(this.ownerUuid, JSON.stringify([]));
+          await this.cashingService.set(this.apiService.ownerUuid, JSON.stringify([]));
         }
         const storageValues: any = JSON.parse(JSON.parse(storage)?.v);
         console.log(`storageValues`, storageValues, storageValues.length);
@@ -111,7 +109,7 @@ export class MachinePage implements OnInit {
                 elm.src = file;
               }
               if (index == imgs.length-1) {
-                await this.cashingService.set(this.ownerUuid, JSON.stringify(lists));
+                await this.cashingService.set(this.apiService.ownerUuid, JSON.stringify(lists));
               }
             });
           });
@@ -148,7 +146,7 @@ export class MachinePage implements OnInit {
           }
 
           storageValues.push(...lists);
-          await this.cashingService.set(this.ownerUuid, JSON.stringify(storageValues));
+          await this.cashingService.set(this.apiService.ownerUuid, JSON.stringify(storageValues));
         }
       
 
@@ -185,7 +183,7 @@ export class MachinePage implements OnInit {
       try {
       //  await this.cashingService.clear();
         const params = {
-          ownerUuid: this.ownerUuid,
+          ownerUuid: this.apiService.ownerUuid,
           filemanagerURL: this.filemanagerURL
         }
         const run = await this.loadMachineListProcess.Init(params);

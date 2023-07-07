@@ -30,6 +30,7 @@
     "@types/crypto-js": "^4.1.1",
     "@types/moment-timezone": "^0.5.30",
     "angular-notifier": "^12.0.0",
+    "axios": "^1.4.0",
     "crypto-js": "^4.1.1",
     "ionicons": "^6.0.3",
     "moment": "^2.29.4",

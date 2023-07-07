@@ -15,6 +15,7 @@ import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
+import axios from "axios";
 
 @Injectable({
   providedIn: 'root'
@@ -24,21 +25,21 @@ export class ApiService {
   howtoVideoPlayList: Array<any> = [
     {
       id: 1,
-      video: '../../../../assets/video-how-to/howto1.mov',
+      video: 'assets/video-how-to/howto1.mov',
       title: 'How to1',
       subtitle: 'Video is expend about how to use basic vending function',
       file: ''
     },
     {
         id: 2,
-        video: '../../../../assets/video-how-to/howto2.mov',
+        video: 'assets/video-how-to/howto2.mov',
         title: 'How to 2',
         subtitle: 'Video is expend about how to use basic vending function',
         file: ''
     },
     {
         id: 3,
-        video: '../../../../assets/video-how-to/howto3.mov',
+        video: 'assets/video-how-to/howto3.mov',
         title: 'How to 3',
         subtitle: 'Video is expend about how to use basic vending function',
         file: ''
@@ -542,13 +543,23 @@ export class ApiService {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        const run = await fetch(local_path);
-        const blob = await run.blob();
-        resolve(URL.createObjectURL(blob));
+        // const run = await fetch(local_path);
+        // const blob = await run.blob();
+
+        const run = await axios({
+          method: 'GET',
+          url: local_path,
+          responseType: 'blob'
+        });
+
+        console.log(`data--->`, run.data);
+        resolve(URL.createObjectURL(run.data));
         
         // fetch(this.howtoVideoPlayList[i].video).then(r => r.blob()).then(blob => {
         //   this.howtoVideoPlayList[i].file = blob;
         // });
+
+        // resolve(IENMessage.success);
 
       } catch (error) {
         resolve(error.message); 
