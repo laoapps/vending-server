@@ -202,6 +202,7 @@ export class VendingVMC {
                         that.firstInit=false;
                         return;
                     }
+                    
                     const t = Number('-21' + moment.now());
                     const v = that.getNoteValue(b);
                     that.creditPending.push({ raw: b, data: cryptojs.SHA256(that.sock?.machineid + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
