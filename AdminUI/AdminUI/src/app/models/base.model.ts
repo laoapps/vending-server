@@ -1,4 +1,5 @@
 export enum IENMessage {
+    loadListFail = 'load list fail',
     loadProductListFail = 'load product list fail',
     loadMachineListFail = 'load machine list fail',
     writeFileFailAndCancelwriteFileSuccess = 'write fle fail and cancel write file success',

@@ -5,6 +5,10 @@ import { SaleAddPage } from './sale-add/sale-add.page';
 import { SaleDetailsPage } from './sale-details/sale-details.page';
 import { ProductDetailsPage } from '../products/product-details/product-details.page';
 import { ProductlistPage } from '../products/productlist/productlist.page';
+import { LoadSaleListProcess } from './processes/loadSaleList.process';
+import { environment } from 'src/environments/environment';
+import { IENMessage } from '../models/base.model';
+import { AppcachingserviceService } from '../services/appcachingservice.service';
 
 @Component({
   selector: 'app-sale',
@@ -12,25 +16,64 @@ import { ProductlistPage } from '../products/productlist/productlist.page';
   styleUrls: ['./sale.page.scss'],
 })
 export class SalePage implements OnInit {
-  @Input()machineId='';
+  @Input()machineId: string;
+
+  private loadSaleListProcess: LoadSaleListProcess;
+  private ownerUuid: string;
+  filemanagerURL: string = environment.filemanagerurl + 'download/';
+
+
+
   showImage:(p:string)=>string;
   _l = new Array<IVendingMachineSale>();
-  constructor(public apiService: ApiService) {
+  constructor(
+    public apiService: ApiService, 
+    private cashingService: AppcachingserviceService,
+    ) {
+    this.loadSaleListProcess = new LoadSaleListProcess(this.apiService, this.cashingService);
     this.showImage=this.apiService.showImage;
    }
 
   ngOnInit() {
+    this.ownerUuid = localStorage.getItem('lva_ownerUuid');
+    this.loadSaleList();
     
-    this.apiService.listSaleByMachine(this.machineId).subscribe(r => {
-      console.log(r);
-      if (r.status) {
-        this._l.push(...r.data);
-      }
-      this.apiService.toast.create({ message: r.message, duration: 2000 }).then(ry => {
-        ry.present();
-      })
-    })
+    // this.apiService.listSaleByMachine(this.machineId).subscribe(r => {
+    //   console.log(r);
+    //   if (r.status) {
+    //     this._l.push(...r.data);
+    //   }
+    //   this.apiService.toast.create({ message: r.message, duration: 2000 }).then(ry => {
+    //     ry.present();
+    //   })
+    // })
   }
+
+
+  loadSaleList(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+      //  await this.cashingService.clear();
+        const params = {
+          ownerUuid: this.ownerUuid,
+          filemanagerURL: this.filemanagerURL,
+          machineId: this.machineId
+        }
+        const run = await this.loadSaleListProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        this._l.push(...run.data[0].lists);
+
+        resolve(IENMessage.success);
+
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
   new() {
     this.apiService.showModal(SaleAddPage,{machineId:this.machineId,sales:this._l}).then(ro => {
       ro?.present();

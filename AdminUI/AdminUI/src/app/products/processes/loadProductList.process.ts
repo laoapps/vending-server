@@ -49,8 +49,8 @@ export class LoadProductListProcess {
 
                 console.log(`init product list`, 4);
 
-                const LoadProductList = await this.LoadProductList();
-                if (LoadProductList != IENMessage.success) throw new Error(LoadProductList);
+                const LoadList = await this.LoadList();
+                if (LoadList != IENMessage.success) throw new Error(LoadList);
 
                 console.log(`init product list`, 5);
 
@@ -99,13 +99,13 @@ export class LoadProductListProcess {
     }
 
 
-    private LoadProductList(): Promise<any> {
+    private LoadList(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 this.apiService.listProduct().subscribe(r => {
                     const response: any = r;
-                    if (response.status != 1) return resolve(IENMessage.loadProductListFail);
+                    if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);
                     this.lists = response.data;
 

@@ -22,8 +22,22 @@ export class HowToPage implements OnInit {
 
   ngOnInit() {
     this.lists = this.apiService.howtoVideoPlayList;
-    this.loadAutoPlayState();
-    this.loadCurrentPlay();
+    // this.loadAutoPlayState();
+    // this.loadCurrentPlay();
+
+    if(!this.platform.is('capacitor')){
+      this.lists = this.apiService.howtoVideoPlayList;
+        this.loadAutoPlayState();
+        this.loadCurrentPlay();
+     }else{
+      this.platform.ready().then(() => {
+        this.lists = this.apiService.howtoVideoPlayList;
+        this.loadAutoPlayState();
+        this.loadCurrentPlay();
+       
+      });
+     }
+   
   }
 
   close() {

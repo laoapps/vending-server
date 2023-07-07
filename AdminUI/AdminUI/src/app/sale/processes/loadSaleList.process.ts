@@ -2,7 +2,7 @@ import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
 
-export class LoadMachineListProcess {
+export class LoadSaleListProcess {
 
     private workload: any = {} as any;
 
@@ -13,6 +13,7 @@ export class LoadMachineListProcess {
     // parameters
     private ownerUuid: string;
     private filemanagerURL: string;
+    private machineId: string;
 
     // properties
     private lists: Array<any> = [];
@@ -91,6 +92,7 @@ export class LoadMachineListProcess {
 
         this.ownerUuid = params.ownerUuid;
         this.filemanagerURL = params.filemanagerURL;
+        this.machineId = params.machineId ? params.machineId : '';
     }
 
     private ValidateParams(): string {
@@ -103,12 +105,12 @@ export class LoadMachineListProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                this.apiService.listMachine().subscribe(r => {
+                this.apiService.listSaleByMachine(this.machineId).subscribe(r => {
                     const response: any = r;
                     if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);
                     this.lists = response.data;
-                    console.log(`machine lists`, this.lists);
+                    console.log(`lists`, this.lists);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -154,7 +156,7 @@ export class LoadMachineListProcess {
     
                 let lists: Array<{ name: string, file: string}> = [];
                 for(let i = 0; i < this.lists.length; i++) {
-                    const name = this.lists[i].photo;
+                    const name = this.lists[i].stock.image;
     
                     if (name != '') {
                     
@@ -171,7 +173,7 @@ export class LoadMachineListProcess {
                         if (same != undefined && Object.entries(same).length == 0) {
                             lists.push(obj);
                         }
-                        this.lists[i].photo = file;
+                        this.lists[i].stock.image = file;
     
                     }
                     if (i == this.lists.length-1) {
@@ -196,26 +198,28 @@ export class LoadMachineListProcess {
 
                 this.lists.filter(list => {
                     this.cashList.find((cash, cash_index) => {
-                        if (list.photo == cash.name) list.photo = cash.file;
+                        if (list.stock.image == cash.name) list.stock.image = cash.file;
                     });
                 });
 
-                const data = this.lists.filter(item => item.photo.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.photo.substring(0,4) != 'data');
+                const data = this.lists.filter(item => item.stock.image.substring(0,4) == 'data');
+                const nodata = this.lists.filter(item => item.stock.image.substring(0,4) != 'data');
 
                 if (nodata != undefined && nodata.length > 0)
                 {
                     for(let i = 0; i < nodata.length; i++) {
-                        const url = `${this.filemanagerURL}${nodata[i].photo}`;
+                        console.log(`receive image new`);
+
+                        const url = `${this.filemanagerURL}${nodata[i].stock.image}`;
                         const run = await fetch(url, { method: 'GET' });
                         const file = await this.apiService.convertBlobToBase64(await run.blob());
     
                         const obj = {
-                            name: nodata[i].photo,
+                            name: nodata[i].stock.image,
                             file: file
                         }
     
-                        nodata[i].photo = file;
+                        nodata[i].stock.image = file;
                         this.cashList.push(obj);
                     }
                     data.push(...nodata);
