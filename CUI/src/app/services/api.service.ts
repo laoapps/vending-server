@@ -298,7 +298,7 @@ export class ApiService {
   newProductItems(s: Array<IVendingMachineSale>) {
     this.stock.length=0;
     s.map(vs => vs.stock).forEach(v => {
-      // console.log('stock',v);
+       console.log('stock',v);
 
       if (!this.stock.find(y => y.id == v.id))
         this.stock.push(JSON.parse(JSON.stringify(v)));

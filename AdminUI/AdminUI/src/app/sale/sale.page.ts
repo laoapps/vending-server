@@ -127,7 +127,9 @@ export class SalePage implements OnInit {
     })
   }
   deletesale(s:IVendingMachineSale) {
-    this.apiService.disableSale(s.isActive,s.id).subscribe(rx => {
+    if(! confirm('Are you sure?'))return;
+
+    this.apiService.deleteSale(s.id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
         // this._l.find((v, i) => {

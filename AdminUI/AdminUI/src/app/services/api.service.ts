@@ -89,6 +89,7 @@ export class ApiService {
       try {
        
         if (!r) return console.log('empty');
+        this.myMachineStatus.length=0;
         this.myMachineStatus.push(...r.data.mymstatus)
         // console.log('ws alive subscription', r);
         this.wsAlive.time = new Date();
@@ -329,6 +330,10 @@ export class ApiService {
   disableProduct(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive?'yes':'no'}&id=${id}`, {token}, { headers: this.headerBase() });
+  }
+  deleteProduct(id:number) {
+    const token = localStorage.getItem('lva_token');
+    return this.http.post<IResModel>(this.url + `/deleteProduct?&id=${id}`, {token}, { headers: this.headerBase() });
   }
   disableSale(isActive:boolean,id:number) {
     const token = localStorage.getItem('lva_token');

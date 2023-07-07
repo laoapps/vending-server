@@ -26,6 +26,7 @@
     <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p.id)" ></ion-toggle></ion-col>
 
     <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>
+    <ion-col><ion-button (click)="delete(p.id)">delete</ion-button></ion-col>
   </ion-row>
 </ion-grid>
 </ion-content>
