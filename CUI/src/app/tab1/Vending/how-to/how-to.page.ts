@@ -3,6 +3,7 @@ import { howToVideoJSON } from './video';
 import { ApiService } from 'src/app/services/api.service';
 import { Platform } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
+import { VideoPlayer } from '@awesome-cordova-plugins/video-player/ngx';
 
 @Component({
   selector: 'app-how-to',
@@ -18,28 +19,38 @@ export class HowToPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private platform: Platform,
+    private videoPlayer: VideoPlayer
   ) { }
 
   ngOnInit() {
     this.lists = this.apiService.howtoVideoPlayList;
-    this.loadAutoPlayState();
-    this.loadCurrentPlay();
-
-    // if(!this.platform.is('capacitor')){
-    //   this.lists = this.apiService.howtoVideoPlayList;
-    //     this.loadAutoPlayState();
-    //     this.loadCurrentPlay();
-    //  }else{
+    // this.loadAutoPlayState();
+    // this.loadCurrentPlay();
+    setTimeout(() => {
+      this.videoPlayer.play('file:///android_asset/www/assets/video-how-to/howto1.mov').then(() => {
+        console.log('video completed');
+       }).catch(err => {
+        console.log('error play');
+        
+        console.log(err);
+       });
+    }, 3000);
+   
+    // // if(!this.platform.is('capacitor')){
+    // //   this.lists = this.apiService.howtoVideoPlayList;
+    // //     this.loadAutoPlayState();
+    // //     this.loadCurrentPlay();
+    // //  }else{
       
-    //  }
-    // this.platform.ready().then(() => {
-    //   setTimeout(() => {
-    //     this.lists = this.apiService.howtoVideoPlayList;
-    //     this.loadAutoPlayState();
-    //     this.loadCurrentPlay();
-    //   }, 1000);
+    // //  }
+    // // this.platform.ready().then(() => {
+    // //   setTimeout(() => {
+    // //     this.lists = this.apiService.howtoVideoPlayList;
+    // //     this.loadAutoPlayState();
+    // //     this.loadCurrentPlay();
+    // //   }, 1000);
      
-    // });
+    // // });
   }
 
   close() {
