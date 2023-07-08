@@ -16,6 +16,11 @@ import { OrderModule } from 'ngx-order-pipe';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { NgParticlesModule } from "ng-particles";
 import {NgPipesModule} from 'ngx-pipes';
+
+// today
+import { VideoPlayer } from '@ionic-native/video-player/ngx';
+
+
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,
@@ -24,6 +29,7 @@ import {NgPipesModule} from 'ngx-pipes';
      NgPipesModule
   ],
   providers: [ 
+    VideoPlayer,
     // BarcodeScanner,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage,AppVersion],
   bootstrap: [AppComponent],

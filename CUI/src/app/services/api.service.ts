@@ -25,7 +25,7 @@ export class ApiService {
   howtoVideoPlayList: Array<any> = [
     {
       id: 1,
-      video: 'assets/video-how-to/howto1.mov',
+      video: 'assets/video-how-to/video1.mp4',
       title: 'How to1',
       subtitle: 'Video is expend about how to use basic vending function',
       file: ''
@@ -436,8 +436,8 @@ export class ApiService {
 
 
   audioElement: HTMLAudioElement = {} as any;
-  simpleMessage(text: string) {
-    this.toast.create({ message: text, duration: 2000 }).then(r => r.present());
+  simpleMessage(text: string, time: number = 2000) {
+    this.toast.create({ message: text, duration: time }).then(r => r.present());
   }
 
 

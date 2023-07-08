@@ -3,7 +3,9 @@ import { howToVideoJSON } from './video';
 import { ApiService } from 'src/app/services/api.service';
 import { Platform } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
-
+import { VideoPlayer } from '@ionic-native/video-player/ngx';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+ 
 @Component({
   selector: 'app-how-to',
   templateUrl: './how-to.page.html',
@@ -16,14 +18,19 @@ export class HowToPage implements OnInit {
   lists: Array<any> = [];
 
   constructor(
+    private videoPlayer: VideoPlayer,
     private apiService: ApiService,
     private platform: Platform,
   ) { }
 
   ngOnInit() {
+    
+
     this.lists = this.apiService.howtoVideoPlayList;
     this.loadAutoPlayState();
     this.loadCurrentPlay();
+
+
 
     // if(!this.platform.is('capacitor')){
     //   this.lists = this.apiService.howtoVideoPlayList;
@@ -40,6 +47,18 @@ export class HowToPage implements OnInit {
     //   }, 1000);
      
     // });
+  }
+
+  testWriteFile() {
+    const writeSecretFile = async () => {
+      await Filesystem.writeFile({
+        path: 'secrets/text.txt',
+        data: 'This is a test',
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8,
+      });
+    };
+    
   }
 
   close() {
@@ -60,22 +79,49 @@ export class HowToPage implements OnInit {
   loadCurrentPlay(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
-        howToPlayer.disablePictureInPicture = true;
-        
         this.currentPlay = this.lists[0];
-        console.log(`current`, this.currentPlay);
-        this.currentPlay.video = await this.apiService.convertLocalFilePath(this.currentPlay.video);
 
-        let i = setInterval(() => {
-          clearInterval(i);
+        // this.videoPlayer.play(this.currentPlay.video).then(() => {
+        //   console.log('video completed');
+        //   this.apiService.simpleMessage(`Video COMPLETE`, 10000);
+        //   }).catch(err => {
+        //   console.log(`video error`, err);
+        //   this.apiService.simpleMessage(`Video ERROR`, 10000);
+        // });
 
-          const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
-          if (this.autoPlayVideo == true) {
-            autoPlayVideo.checked = true;
-            howToPlayer.play();
-          }
-        });
+        // this.currentPlay.video = await this.apiService.convertLocalFilePath(this.currentPlay.video);
+
+        // let i = setInterval(() => {
+        //   const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
+        //   howToPlayer.src = this.currentPlay.video;
+
+        //   const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
+        //   if (this.autoPlayVideo == true) {
+        //     autoPlayVideo.checked = true;
+        //     howToPlayer.src = this.currentPlay.video;
+        //     howToPlayer.play();
+        //   }
+        //   clearInterval(i);
+
+        // });
+        // const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
+        // howToPlayer.disablePictureInPicture = true;
+        
+
+        
+
+        resolve(IENMessage.success);
+
+        // let i = setInterval(() => {
+        //   clearInterval(i);
+
+        //   const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
+        //   if (this.autoPlayVideo == true) {
+        //     autoPlayVideo.checked = true;
+        //     howToPlayer.src = this.currentPlay.video;
+        //     howToPlayer.play();
+        //   }
+        // });
 
 
       } catch (error) {
