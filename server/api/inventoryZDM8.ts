@@ -1675,10 +1675,11 @@ export class InventoryZDM8 implements IBaseClass {
                                 const z = o.data[0]?.highTemp || 10;
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
+                                const t = o.data[0]?.imei || '';
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l ,imei:t};
                                 }
-                                else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l }
+                                else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l  ,a.imei=t}
 
                                 r.data = [a];
                                 r.changed('data', true);
@@ -2008,7 +2009,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 setting = JSON.parse(r);
                             } catch (error) {
                                 console.log('error parsing setting 2', error);
-                                setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;
+                                setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
                             }
                         }
                         // const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
@@ -2199,7 +2200,7 @@ export class InventoryZDM8 implements IBaseClass {
                             setting = JSON.parse(r);
                         } catch (error) {
                             console.log('error parsing setting 2', error);
-                            setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;
+                            setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
                         }
                     }
                     const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
@@ -2285,7 +2286,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         setting = JSON.parse(r);
                                     } catch (error) {
                                         console.log('error parsing setting 2', error);
-                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;
+                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
                                     }
                                 }
                                 const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
@@ -3179,55 +3180,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // console.log("WS HEART BEAT", data);
 
                     if (data === '{"command":"ping"}') {
-                        // send pong if recieved a ping.
-                        // redisClient.get('_balance_' + ws['clientId']).then(async r => {
-                        //     console.log('clientid balance',r);
-
-                        //     let x = await readMachineSetting(ws['machineId']);
-                        //     let mstatus= await readMachineStatus(ws['machineId']);
-
-                        //     console.log('clientid  setting',x);
-                        //     console.log('clientid  status',x);
-                        //     const mArray = ws['myMachineId'] as Array<string>;
-                        //     let mymstatus = [];
-                        //     let mymsetting= [];
-                        //     let mymbalance =[];
-                        //     let setting = {} as any;
-                        //     try {
-
-
-                        //         let y = [];
-                        //         if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 3; setting.highTemp = 10; setting.light = true }
-                        //         else {
-                        //             y = JSON.parse(x) as Array<any>;
-                        //             setting = y.find(v => v.settingName == 'setting');
-                        //         }
-
-
-                        //         for (let index = 0; index < mArray.length; index++) {
-                        //             const element = mArray[index];
-                        //             mymstatus.push(await readMachineStatus(element));
-                        //             mymsetting.push(await readMachineSetting(element));
-                        //             mymbalance.push(await readMachineBalance(element));
-                        //         }
-                        //         console.log('clientid  my machinestatus',mymstatus,mymsetting,mymbalance);
-                        //     } catch (error) {
-                        //         console.log('parsing error setting', error);
-                        //         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 3; setting.highTemp = 10; setting.light = true
-                        //     }
-                        //     console.log('ready to pong');
-                        //     const limiter = 100000;
-                        //     const merchant = 0;
-                        //     ws.send(
-                        //         JSON.stringify(
-                        //             PrintSucceeded(
-                        //                 "pong",
-                        //                 { command: "ping", production: this.production, balance: r,limiter,merchant,mymbalance, setting ,mstatus,mymstatus,mymsetting},
-                        //                 EMessage.succeeded
-                        //             )
-                        //         )
-                        //     );
-                        // });
+                        
 
                     }
                 },
@@ -3394,7 +3347,7 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                                         let y = [];
-                                        if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true }
+                                        if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true,setting.imei='' }
                                         else {
                                             y = JSON.parse(x) as Array<any>;
                                             setting = y.find(v => v.settingName == 'setting');
@@ -3422,7 +3375,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
                                     } catch (error) {
                                         console.log('parsing error setting', error);
-                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;
+                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
                                     }
                                     console.log('ready to pong');
                                     const limiter = setting.limiter; // TODO: Get limiter 

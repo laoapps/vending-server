@@ -2,6 +2,7 @@ import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
 import axios from "axios";
+import { CustomloadingPage } from "src/app/customloading/customloading.page";
 
 export class LoadStockListProcess {
 
@@ -30,9 +31,10 @@ export class LoadStockListProcess {
 
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
+            let message='Loading stock list....';
             try {
                 
-
+                (await this.apiService.showModal(CustomloadingPage,{message})).present();
 
                 console.log(`init stock list`, 1);
 
@@ -40,48 +42,59 @@ export class LoadStockListProcess {
                 // (await this.workload).present();
 
                 console.log(`init stock list`, 2);
-
+                message='Init params....';
                 this.InitParams(params);
   
                 console.log(`init stock list`, 3);
-
+                message='validate params....';
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
                 console.log(`init stock list`, 4);
-
-                const LoadProductList = await this.LoadProductList();
+                message='Load product list....';
+                const LoadProductList = await this.LoadProductList(message);
                 if (LoadProductList != IENMessage.success) throw new Error(LoadProductList);
 
                 console.log(`init stock list`, 5);
-
-                const FindCashingServiceList = await this.FindCashingServiceList();
+                message='find caching service list....';
+                const FindCashingServiceList = await this.FindCashingServiceList(message);
                 if (FindCashingServiceList != IENMessage.success) throw new Error(FindCashingServiceList);
                 
                 console.log(`init stock list`, 6);
-
+                message='Validate client load....';
                 this.ValidateClientLoad();
 
                 console.log(`init stock list`, 7);
-
-                const HttpReceiveImageAndSaveOnCashingService = await this.HttpReceiveImageAndSaveOnCashingService();
+                message='load images....';
+                const HttpReceiveImageAndSaveOnCashingService = await this.HttpReceiveImageAndSaveOnCashingService(message);
                 if (HttpReceiveImageAndSaveOnCashingService != IENMessage.success) throw new Error(HttpReceiveImageAndSaveOnCashingService);
 
                 console.log(`init stock list`, 8);
-
-                const ReceiveImageAndSaveNewChangeOnCashingService = await this.ReceiveImageAndSaveNewChangeOnCashingService();
+                message='caching image....';
+                const ReceiveImageAndSaveNewChangeOnCashingService = await this.ReceiveImageAndSaveNewChangeOnCashingService(message);
                 if (ReceiveImageAndSaveNewChangeOnCashingService != IENMessage.success) throw new Error(ReceiveImageAndSaveNewChangeOnCashingService);
 
                 console.log(`init stock list`, 9);
-                
-                // (await this.workload).dismiss();
+                message='caching images....';
+                setTimeout(() => {
+                     // (await this.workload).dismiss();
+                this.apiService.dismissModal();
                 resolve(this.Commit());
+                
+                }, 1000);
+               
 
 
             } catch (error) {
-                console.log(`error`, error.message);
-                // (await this.workload).dismiss();
-                resolve(error.message);     
+                message='Init params....'+error.message;
+                setTimeout(() => {
+                    this.apiService.dismissModal();
+                    console.log(`error`, error.message);
+                    // (await this.workload).dismiss();
+                    resolve(error.message);  
+                }, 3000);
+                
+                  
             }
         });
     }
@@ -100,7 +113,7 @@ export class LoadStockListProcess {
     }
 
 
-    private LoadProductList(): Promise<any> {
+    private LoadProductList(message:string): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
@@ -113,7 +126,7 @@ export class LoadStockListProcess {
                     // let list = this.lists.map(item => { return { id: item.id, image: item.image } });
                     // list = list.sort((a,b) => a.id-b.id);
                     // console.log(`stock lists`, list);
-                    
+                    message='found sale '+this.lists.length;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -123,7 +136,7 @@ export class LoadStockListProcess {
         });
     }
 
-    private FindCashingServiceList(): Promise<any> {
+    private FindCashingServiceList(message:string): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
@@ -136,7 +149,7 @@ export class LoadStockListProcess {
                 const parse = JSON.parse(run);
                 this.cashList = parse.v;
                 console.log(`cash list`, this.cashList);
-
+                message='caching list '+this.cashList.length
                 resolve(IENMessage.success);
                 
             } catch (error) {
@@ -151,7 +164,7 @@ export class LoadStockListProcess {
         }
     }
 
-    private HttpReceiveImageAndSaveOnCashingService(): Promise<any> {
+    private HttpReceiveImageAndSaveOnCashingService(message:string): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
             
@@ -160,7 +173,7 @@ export class LoadStockListProcess {
                 let lists: Array<{ name: string, file: string}> = [];
                 for(let i = 0; i < this.lists.length; i++) {
                     const name = this.lists[i].stock.image;
-    
+                    message=' loading image '+name +' -- '+i+'/'+this.lists.length;
                     if (name != '') {
                     
                         const url = `${this.filemanagerURL}${name}`;
@@ -182,7 +195,7 @@ export class LoadStockListProcess {
                             lists.push(obj);
                         }
                         this.lists[i].stock.image = file;
-    
+                       
                     }
                     if (i == this.lists.length-1) {
                         console.log(`first time save`, this.ownerUuid, this.lists, lists);
@@ -198,16 +211,17 @@ export class LoadStockListProcess {
         });
     }
 
-    private ReceiveImageAndSaveNewChangeOnCashingService(): Promise<any> {
+    private ReceiveImageAndSaveNewChangeOnCashingService(message:string): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 if (this.firsttime == true) return resolve(IENMessage.success);
 
-                this.lists.filter(list => {
+                this.lists.forEach((list,i) => {
                     this.cashList.find((cash, cash_index) => {
                         if (list.stock.image == cash.name) list.stock.image = cash.file;
                     });
+                    message='caching '+i+' name:'+list.stock.image
                 });
 
                 const data = this.lists.filter(item => item.stock.image.substring(0,4) == 'data');

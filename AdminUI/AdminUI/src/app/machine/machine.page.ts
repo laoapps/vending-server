@@ -167,6 +167,7 @@ export class MachinePage implements OnInit {
             setting.lowTemp=5;
             setting.highTemp=15;
             setting.light=true;
+            setting.imei='';
           }
           this.settings[v.machineId]=setting;
         })
@@ -202,6 +203,7 @@ export class MachinePage implements OnInit {
             setting.lowTemp=5;
             setting.highTemp=15;
             setting.light=true;
+            setting.imei='';
           }
           this.settings[v.machineId]=setting;
         });

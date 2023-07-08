@@ -57,6 +57,10 @@ const routes: Routes = [
   {
     path: 'howto',
     loadChildren: () => import('./howto/howto.module').then( m => m.HowtoPageModule)
+  },
+  {
+    path: 'customloading',
+    loadChildren: () => import('./customloading/customloading.module').then( m => m.CustomloadingPageModule)
   }
 ];
 @NgModule({

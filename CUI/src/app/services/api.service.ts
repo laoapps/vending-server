@@ -31,18 +31,18 @@ export class ApiService {
       file: ''
     },
     {
-        id: 2,
-        video: 'assets/video-how-to/howto2.mov',
-        title: 'How to 2',
-        subtitle: 'Video is expend about how to use basic vending function',
-        file: ''
+      id: 2,
+      video: 'assets/video-how-to/howto2.mov',
+      title: 'How to 2',
+      subtitle: 'Video is expend about how to use basic vending function',
+      file: ''
     },
     {
-        id: 3,
-        video: 'assets/video-how-to/howto3.mov',
-        title: 'How to 3',
-        subtitle: 'Video is expend about how to use basic vending function',
-        file: ''
+      id: 3,
+      video: 'assets/video-how-to/howto3.mov',
+      title: 'How to 3',
+      subtitle: 'Video is expend about how to use basic vending function',
+      file: ''
     }
   ];
 
@@ -86,12 +86,12 @@ export class ApiService {
   static __T: any;
   static waiting_T: any
   audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
-  _machineStatus={status:{}as IMachineStatus}as any;
+  _machineStatus = { status: {} as IMachineStatus } as any;
   constructor(
     public controlMenuService: ControlMenuService,
-    
-    
-    
+
+
+
     public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
@@ -109,12 +109,12 @@ export class ApiService {
 
 
     this.wsapi.aliveSubscription.subscribe(r => {
-      console.log('ALIVE',r);
-      
+      console.log('ALIVE', r);
+
       try {
         if (!r) return console.log('empty');
         console.log('ws alive subscription', r);
-        
+
         this.wsAlive.time = new Date();
         this.wsAlive.isAlive = this.checkOnlineStatus();
         this.test.test = r?.test;
@@ -124,16 +124,16 @@ export class ApiService {
         //   }, 3000);
         //   this.validateDB();
         // }
-        if(r.balance)
-        this.cash=r.balance;
+        if (r.balance)
+          this.cash = r.balance;
 
-        this._machineStatus.status=r.data.mstatus;
+        this._machineStatus.status = r.data.mstatus;
         this._machineStatus.status.temp = hex2dec(this._machineStatus.status.temp)
       } catch (error) {
-        console.log('error',error);
-        
+        console.log('error', error);
+
       }
-      
+
     });
 
     this.wsapi.refreshSubscription.subscribe(r => {
@@ -170,7 +170,7 @@ export class ApiService {
 
         r.bill.updatedAt = new Date();
 
-   
+
 
       } else if (!r.position) {
         // PLAY SOUNDS
@@ -221,10 +221,10 @@ export class ApiService {
           if (r.status) {
             this.dismissModal();
             const pb = r.data as Array<IBillProcess>;
-            if(pb.length)
-            this.showModal(RemainingbillsPage, { r:pb }).then(r=>{
-              r.present();
-            });
+            if (pb.length)
+              this.showModal(RemainingbillsPage, { r: pb }).then(r => {
+                r.present();
+              });
           }
           else {
             this.toast.create({ message: r.message, duration: 5000 }).then(r => {
@@ -240,14 +240,14 @@ export class ApiService {
   }
 
   // private initLocalHowToVideoPlayList() {
-    
+
   //   for(let i = 0; i < this.howtoVideoPlayList.length; i++) {
   //     fetch(this.howtoVideoPlayList[i].video).then(r => r.blob()).then(blob => {
   //       this.howtoVideoPlayList[i].file = blob;
   //     });
   //   }
   //   // console.log(this.howtoVideoPlayList[1]);
-    
+
   // }
 
   public validateDB() {
@@ -289,17 +289,17 @@ export class ApiService {
     //let options = new RequestOptions({ headers:headers})
     return headers;
   }
-  public async saveImage(id:number,base64:string,db='image'){
-    return this.storage.set2(id+'',base64,db);
+  public async saveImage(id: number, base64: string, db = 'image') {
+    return this.storage.set2(id + '', base64, db);
   }
-  public async getImageBase64(id:number,db='image'){
-    return (await this.storage.get2(id+'',db));
+  public async getImageBase64(id: number, db = 'image') {
+    return (await this.storage.get2(id + '', db));
   }
 
   newProductItems(s: Array<IVendingMachineSale>) {
-    this.stock.length=0;
+    this.stock.length = 0;
     s.map(vs => vs.stock).forEach(v => {
-       console.log('stock',v);
+      console.log('stock', v);
 
       if (!this.stock.find(y => y.id == v.id))
         this.stock.push(JSON.parse(JSON.stringify(v)));
@@ -347,7 +347,7 @@ export class ApiService {
   initDemo() {
     return this.http.get<IResModel>(this.url + '/init?machineId=' + this.machineId.machineId, { headers: this.headerBase() });
   }
-  loadVendingSale(isActive='yes') {
+  loadVendingSale(isActive = 'yes') {
     const req = {} as IReqModel;
     req.command = EClientCommand.list;
     req.data = {
@@ -358,21 +358,21 @@ export class ApiService {
     req.token = cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     console.log(`req der`, req);
-    return this.http.post<IResModel>(this.url+'/machineSaleList?isActive='+isActive, req, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/machineSaleList?isActive=' + isActive, req, { headers: this.headerBase() });
   }
 
   loadOnlineMachine() {
     return this.http.get<IResModel>(this.url + '/getOnlineMachines', { headers: this.headerBase() });
   }
   loadDeliveryingBills() {
-    return this.http.post<IResModel>(this.url + '/getDeliveryingBills',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/getDeliveryingBills', { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
-  saveSale(data:any) {
-    
-    return this.http.post<IResModel>(this.url + '/saveMachineSale',{data,token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
+  saveSale(data: any) {
+
+    return this.http.post<IResModel>(this.url + '/saveMachineSale', { data, token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
   recoverSale() {
-    return this.http.post<IResModel>(this.url + '/readMachineSale',{token:cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex)}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/readMachineSale', { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
   loadPaidBills() {
     return this.http.post<IResModel>(this.url + '/getPaidBills', { headers: this.headerBase() });
@@ -380,12 +380,12 @@ export class ApiService {
   loadBills() {
     return this.http.post<IResModel>(this.url + '/getBills', { headers: this.headerBase() });
   }
-  retryProcessBill(T: string,position:number) {
-    return this.http.post<IResModel>(this.url + '/retryProcessBill?T=' + T+'&position='+position, { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
+  retryProcessBill(T: string, position: number) {
+    return this.http.post<IResModel>(this.url + '/retryProcessBill?T=' + T + '&position=' + position, { token: cryptojs.SHA256(this.machineId.machineId + this.machineId.otp).toString(cryptojs.enc.Hex) }, { headers: this.headerBase() });
   }
-  retryProcessBillLocal(T: string,position:number) {
-    const p = {data:{ slot: position },transactionID:T}
-    return this.http.post<IResModel>( 'http://localhost:19006/',p, { headers: this.headerBase() });
+  retryProcessBillLocal(T: string, position: number) {
+    const p = { data: { slot: position }, transactionID: T }
+    return this.http.post<IResModel>('http://localhost:19006/', p, { headers: this.headerBase() });
   }
 
 
@@ -419,15 +419,22 @@ export class ApiService {
     // req.data.clientId = this.clientId.clientId;
     return this.http.post<IResModel>(this.url + '/getFreeProduct', req, { headers: this.headerBase() });
   }
-  showLoading(message = 'loading...',t=15000) {
-    this.load.create({ message, duration: t }).then(r => {
-      r.present();
+  showLoading(message = 'loading...', t = 15000) {
+    return new Promise((resolve, reject) => {
+      this.load.create({ message, duration: t }).then(r => {
+        r.present();
+        resolve(null);
+      });
     });
   }
   dismissLoading() {
-    this.load.getTop().then(v => {
-      v ? this.load.dismiss() : null
+    return new Promise((resolve, reject) => {
+      this.load.getTop().then(v => {
+        v ? this.load.dismiss() : null;
+        resolve(null);
+      });
     })
+
   }
 
 
@@ -442,7 +449,7 @@ export class ApiService {
 
 
   openSoundPleaseSelect(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         this.audioElement.src = '../../assets/machine_sound/please_select.mp3';
         this.audioElement.play();
@@ -454,7 +461,7 @@ export class ApiService {
     });
   }
   openSoundPleaseInsertBanknotes(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         this.audioElement.src = '../../assets/machine_sound/please_insert_banknotes.mp3';
@@ -467,7 +474,7 @@ export class ApiService {
     });
   }
   openSoundComplete(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         this.audioElement.src = '../../assets/machine_sound/complete.mp3';
@@ -480,7 +487,7 @@ export class ApiService {
     });
   }
   openSoundSystemError(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         this.audioElement.src = '../../assets/machine_sound/system_error.mp3';
@@ -493,7 +500,7 @@ export class ApiService {
     });
   }
   openSoundThankYour(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         this.audioElement.src = '../../assets/machine_sound/thank_you.mp3';
@@ -506,7 +513,7 @@ export class ApiService {
     });
   }
   openSoundReady(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         this.audioElement.src = '../../assets/machine_sound/ready.mp3';
@@ -519,28 +526,28 @@ export class ApiService {
     });
   }
 
-    
+
   convertBlobToBase64(blob: Blob): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         let base64: string = '';
         const reader = new FileReader();
         reader.addEventListener('load', event => {
-           resolve(event.target.result as string);
+          resolve(event.target.result as string);
         });
         reader.readAsDataURL(blob);
         console.log(`base64 der`, base64);
-        
+
 
       } catch (error) {
-        resolve(error.message); 
+        resolve(error.message);
       }
     });
   }
 
   convertLocalFilePath(local_path: string): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         // const run = await fetch(local_path);
@@ -554,7 +561,7 @@ export class ApiService {
 
         console.log(`data--->`, run.data);
         resolve(URL.createObjectURL(run.data));
-        
+
         // fetch(this.howtoVideoPlayList[i].video).then(r => r.blob()).then(blob => {
         //   this.howtoVideoPlayList[i].file = blob;
         // });
@@ -562,7 +569,7 @@ export class ApiService {
         // resolve(IENMessage.success);
 
       } catch (error) {
-        resolve(error.message); 
+        resolve(error.message);
       }
     });
   }

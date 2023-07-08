@@ -105,7 +105,9 @@ export class LoadProductListProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                this.apiService.listProduct(this.status).subscribe(r => {
+                // this.apiService.listProduct(this.status).subscribe(r => {
+                    // use this method 
+                    this.apiService.listProduct('yes').subscribe(r => {
                     const response: any = r;
                     if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);

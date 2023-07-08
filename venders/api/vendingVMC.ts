@@ -177,9 +177,17 @@ export class VendingVMC {
                 }
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
+                    //FAFB2106C608000186A0CF.  // if it is 08 then ignore
+                    if(b.substring(10,12)=='08'){
+                        // ignore because it is a report that it was swallowed
+
+                    }else if(b.substring(10,12)=='01'){
+                        // accept for banknote only 
+                        //1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
+
+                    
                     // fafb2106ee01 00000002 cb
                     // fafb2106f501 00000002 d0
-                    // fafb21061008 00000002 3c
                     // fafb2106d501 000186a0 d5 == 100000 == 1000,00
                     // fafb21069101 000186a0 91 == 100000 == 1000,00
                     // fafb2106c301 00030d40 aa == 200000 == 2000,00
@@ -196,6 +204,7 @@ export class VendingVMC {
                         that.firstInit=false;
                         return;
                     }
+
                     const t = Number('-21' + moment.now());
                     const v = that.getNoteValue(b);
                     that.creditPending.push({ raw: b, data: cryptojs.SHA256(that.sock?.machineid + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
@@ -205,6 +214,11 @@ export class VendingVMC {
 
                     });
                     writeLogs(b, -1);
+                    }else{
+
+                    }
+
+
 
                 }
                 else if (b.startsWith('fafb23')) {// receive banknotes

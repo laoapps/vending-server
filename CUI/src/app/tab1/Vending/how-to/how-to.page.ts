@@ -30,8 +30,6 @@ export class HowToPage implements OnInit {
     this.loadAutoPlayState();
     this.loadCurrentPlay();
 
-
-
     // if(!this.platform.is('capacitor')){
     //   this.lists = this.apiService.howtoVideoPlayList;
     //     this.loadAutoPlayState();
