@@ -302,6 +302,7 @@ export class Tab1Page {
           ownerUuid: this.ownerUuid,
           filemanagerURL: this.filemanagerURL
         }
+        console.log(`params`, params);
         const run = await this.loadStockListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
@@ -1170,4 +1171,6 @@ export class Tab1Page {
       r.present();
     })
   }
+
+  
 }

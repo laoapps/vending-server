@@ -80,6 +80,7 @@ export class SalePage implements OnInit {
         console.log(`-->`, r.data);
 
           const base64 = r.data.s.stock.image;
+          r.data.s.stock.image = r.data.s.stock.imageurl;
           this.apiService.addSale(r.data.s)?.subscribe(rx => {
             console.log(`rx`, rx);
             console.log(`rx stock`, rx.data.stock);
