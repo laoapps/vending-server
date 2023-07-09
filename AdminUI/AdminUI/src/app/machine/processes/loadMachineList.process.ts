@@ -156,7 +156,8 @@ export class LoadMachineListProcess {
                 let lists: Array<{ name: string, file: string}> = [];
                 for(let i = 0; i < this.lists.length; i++) {
                     const name = this.lists[i].photo;
-    
+                    
+                    console.log(`--->`,  name.substring(0,4));
                     if (name != '' && name.substring(0,4) != 'data') {
                     
                         const url = `${this.filemanagerURL}${name}`;
