@@ -18,7 +18,7 @@ import { NgParticlesModule } from "ng-particles";
 import {NgPipesModule} from 'ngx-pipes';
 
 // today
-import { VideoPlayer } from '@ionic-native/video-player/ngx';
+// import { VideoPlayer } from '@ionic-native/video-player/ngx';
 
 
 @NgModule({
@@ -29,7 +29,7 @@ import { VideoPlayer } from '@ionic-native/video-player/ngx';
      NgPipesModule
   ],
   providers: [ 
-    VideoPlayer,
+    // VideoPlayer,
     // BarcodeScanner,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage,AppVersion],
   bootstrap: [AppComponent],

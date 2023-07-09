@@ -109,6 +109,7 @@ export class Tab1Page {
   _checkHowTo_Time = 1000 * 60 * 10; // 10 minutes
   _howToT: any;
   _howToPage: HTMLIonModalElement;
+  isFirstLoad =true;
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -180,7 +181,11 @@ export class Tab1Page {
         this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
         // this.loadSaleList();
         // this.initStock();
-        this.loadStock();
+        if(this.isFirstLoad){
+          this.loadStock();
+          this.isFirstLoad=false;
+        }
+        
       });
     });
     // });

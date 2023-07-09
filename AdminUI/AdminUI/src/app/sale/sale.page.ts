@@ -135,13 +135,13 @@ export class SalePage implements OnInit {
     this.apiService.deleteSale(s.id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
-        // this._l.find((v, i) => {
-        //   if (v.id == rx.data.id) {
-        //     this._l.splice(i, 1, ...[rx.data]);
-        //     return true;
-        //   }
-        //   return false;
-        // })
+        this._l.find((v, i) => {
+          if (v.id ==s.id) {
+            this._l.splice(i, 1);
+            return true;
+          }
+          return false;
+        })
       }
       this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
         ry.present();
@@ -153,13 +153,13 @@ export class SalePage implements OnInit {
     this.apiService.disableSale(s.isActive,s.id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
-        // this._l.find((v, i) => {
-        //   if (v.id == rx.data.id) {
-        //     this._l.splice(i, 1, ...[rx.data]);
-        //     return true;
-        //   }
-        //   return false;
-        // })
+        this._l.find((v, i) => {
+          if (v.id == rx.data.id) {
+            this._l.splice(i, 1, ...[rx.data]);
+            return true;
+          }
+          return false;
+        })
       }
       this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
         ry.present();

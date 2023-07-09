@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 })
 export class ApiService {
   offsettz =420;
+  dateformat='yy-MM-dd HH:mm:ss';
   passkeys: string;
   ownerUuid: string;
   name: string;
