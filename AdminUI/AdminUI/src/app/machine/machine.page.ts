@@ -65,7 +65,14 @@ export class MachinePage implements OnInit {
     this.loadMachine();
    
   }
-
+  Refresh(m:string){
+    this.apiService.refreshMachine(m).subscribe(r=>{
+      console.log('refreshMachine',r);
+      if(r.status){
+        alert('Machine '+m+' has been refresh')
+      }
+    });
+  }
   loaddefault() {
     let setList: Array<any> = [];
 

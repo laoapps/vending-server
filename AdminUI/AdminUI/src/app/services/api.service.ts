@@ -278,6 +278,15 @@ export class ApiService {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + '/super_listMachine', {token}, { headers: this.headerBase() });
   }
+  refreshMachine(m:string){
+      const req = {
+        ownerUuid: localStorage.getItem('lva_ownerUuid'),
+        token: localStorage.getItem('lva_token'),
+        m
+      }
+      return this.http.post<IResModel>(this.url + '/refreshMachine', req, { headers: this.headerBase() });
+    }
+  
   listMachine(isActive='all') {
     const req = {
       ownerUuid: localStorage.getItem('lva_ownerUuid'),

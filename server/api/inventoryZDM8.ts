@@ -1678,10 +1678,13 @@ export class InventoryZDM8 implements IBaseClass {
                                 const t = o.data[0]?.imei || '';
                                 if (!a) {
                                     a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l ,imei:t};
+                                    r.data.push(a);
                                 }
-                                else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l  ,a.imei=t}
+                                else { 
+                                    a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l  ,a.imei=t;
+                                }
 
-                                r.data = [a];
+                                // r.data = [a];
                                 r.changed('data', true);
                                 console.log('updating machine setting', r.data);
 
