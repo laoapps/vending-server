@@ -416,17 +416,22 @@ export class InventoryZDM8 implements IBaseClass {
                                 throw new Error("Invalid value" + d.data.value + " " + value);
 
                             // console.log(' value is valid', sale);
+                            let a = machineId?.data?.find(v => v.settingName == 'setting');
+                            let mId='';
+                            if(!a&&a?.imei)mId=a?.imei;
+                            else mId=machineId.machineId;
+
                             const transactionID = Number(
                                 Number(
-                                    machineId.machineId.substring(machineId.machineId.length - 8)
+                                    mId.substring(mId.length - 8)
                                 ) +
                                 "" +
                                 new Date().getTime()
                             );
                             const qr = await this.generateBillMMoney(
-                                machineId.machineId,
+                                mId,
                                 value,
-                                machineId.machineId + '' + transactionID + ""
+                                mId + '' + transactionID + ""
                             );
                             if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
                             const bill = {
@@ -434,7 +439,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 clientId,
                                 qr: qr.qrCode,
                                 transactionID,
-                                machineId: machineId.machineId,
+                                machineId: mId,
                                 hashM: "",
                                 hashP: "",
                                 paymentmethod: d.command,
@@ -1696,7 +1701,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 const z = o.data[0]?.highTemp || 10;
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
-                                const t = o.data[0]?.imei || '';
+                                let t = o.data[0]?.imei || '';
+                                if(t&&t.length<8){
+                                    throw new Error('Length can not be less than 8 ')
+                                }
                                 if (!a) {
                                     a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l ,imei:t};
                                     r.data.push(a);
