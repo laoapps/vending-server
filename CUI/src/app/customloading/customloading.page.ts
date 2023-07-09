@@ -7,7 +7,7 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./customloading.page.scss'],
 })
 export class CustomloadingPage implements OnInit {
-  @Input()message={message:'Loading.....'};
+  @Input()message:any;
   @Input()duration=120000;
   t:any;
   constructor(private modal:ModalController) { }
