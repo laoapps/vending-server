@@ -771,182 +771,182 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
             /// demo
-            router.get(this.path + "/submit_command", async (req, res) => {
-                try {
-                    const machineId = req.query["machineId"] + "";
-                    const position = Number(req.query["position"])
-                        ? Number(req.query["position"])
-                        : 0;
-                    console.log(" WS submit command", machineId, position);
-                    const transactionID = 22331;
-                    const ws: any = this.wsClient.find(
-                        (v) => v["machineId"] + "" == machineId
-                    );
-                    const clientId = ws.clientId;
-                    const m = await machineClientIDEntity.findOne({
-                        where: { machineId },
-                    });
-                    const ownerUuid = m?.ownerUuid || "";
-                    this.getBillProcess((b) => {
-                        b.push({
-                            ownerUuid,
-                            position,
-                            bill: { clientId, machineId } as IVendingMachineBill,
-                            transactionID,
-                        });
-                        this.setBillProces(b);
-                        console.log("submit_command", transactionID, position);
-                        res.send(
-                            PrintSucceeded(
-                                "submit command",
-                                this.ssocket.processOrder(machineId, position, transactionID),
-                                EMessage.succeeded
-                            )
-                        );
-                    });
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError("init", error, EMessage.error));
-                }
-            });
+            // router.get(this.path + "/submit_command", async (req, res) => {
+            //     try {
+            //         const machineId = req.query["machineId"] + "";
+            //         const position = Number(req.query["position"])
+            //             ? Number(req.query["position"])
+            //             : 0;
+            //         console.log(" WS submit command", machineId, position);
+            //         const transactionID = 22331;
+            //         const ws: any = this.wsClient.find(
+            //             (v) => v["machineId"] + "" == machineId
+            //         );
+            //         const clientId = ws.clientId;
+            //         const m = await machineClientIDEntity.findOne({
+            //             where: { machineId },
+            //         });
+            //         const ownerUuid = m?.ownerUuid || "";
+            //         this.getBillProcess((b) => {
+            //             b.push({
+            //                 ownerUuid,
+            //                 position,
+            //                 bill: { clientId, machineId } as IVendingMachineBill,
+            //                 transactionID,
+            //             });
+            //             this.setBillProces(b);
+            //             console.log("submit_command", transactionID, position);
+            //             res.send(
+            //                 PrintSucceeded(
+            //                     "submit command",
+            //                     this.ssocket.processOrder(machineId, position, transactionID),
+            //                     EMessage.succeeded
+            //                 )
+            //             );
+            //         });
+            //     } catch (error) {
+            //         console.log(error);
+            //         res.send(PrintError("init", error, EMessage.error));
+            //     }
+            // });
 
             /// TODO : HERE
-            router.post(
-                this.path + "/getSample",
-                this.checkMachineIdToken.bind(this),
-                //  this.checkMachineDisabled,
-                async (req, res) => {
-                    try {
-                        // return res.send(PrintError('getFreeProduct', [], EMessage.error));
-                        const {
-                            token,
-                            data: { id, position, clientId },
-                        } = req.body;
-                        const machineId = res.locals["machineId"];
-                        const mc = await machineClientIDEntity.findOne({
-                            where: { machineId: machineId?.machineId },
-                        });
-                        const ownerUuid = mc?.ownerUuid || "";
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        const sm = await sEnt.findAll({
-                            where: {
-                                stock: {
-                                    id,
-                                    price: 0,
-                                    // qtty: { [Op.gt]: [0] }
-                                },
-                                position,
-                                isActive: true,
-                            },
-                        });
-                        console.log("sm", sm.length);
-                        const m = sm.find((v) => v.stock.id == id)?.stock;
-                        console.log("s", m);
-                        console.log("token", token, "data,data");
-                        if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
-                        if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
-                        if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
-                        const transactionID = 1000;
-                        // const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
-                        // const clientId = ws.clientId;
-                        this.getBillProcess((b) => {
-                            b.push({
-                                ownerUuid,
-                                position,
-                                bill: { clientId, machineId } as IVendingMachineBill,
-                                transactionID,
-                            });
-                            this.setBillProces(b);
-                            console.log("getFreeProduct", transactionID, position);
+            // router.post(
+            //     this.path + "/getSample",
+            //     this.checkMachineIdToken.bind(this),
+            //     //  this.checkMachineDisabled,
+            //     async (req, res) => {
+            //         try {
+            //             // return res.send(PrintError('getFreeProduct', [], EMessage.error));
+            //             const {
+            //                 token,
+            //                 data: { id, position, clientId },
+            //             } = req.body;
+            //             const machineId = res.locals["machineId"];
+            //             const mc = await machineClientIDEntity.findOne({
+            //                 where: { machineId: machineId?.machineId },
+            //             });
+            //             const ownerUuid = mc?.ownerUuid || "";
+            //             const sEnt = VendingMachineSaleFactory(
+            //                 EEntity.vendingmachinesale + "_" + ownerUuid,
+            //                 dbConnection
+            //             );
+            //             await sEnt.sync();
+            //             const sm = await sEnt.findAll({
+            //                 where: {
+            //                     stock: {
+            //                         id,
+            //                         price: 0,
+            //                         // qtty: { [Op.gt]: [0] }
+            //                     },
+            //                     position,
+            //                     isActive: true,
+            //                 },
+            //             });
+            //             console.log("sm", sm.length);
+            //             const m = sm.find((v) => v.stock.id == id)?.stock;
+            //             console.log("s", m);
+            //             console.log("token", token, "data,data");
+            //             if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
+            //             if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
+            //             if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
+            //             const transactionID = 1000;
+            //             // const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
+            //             // const clientId = ws.clientId;
+            //             this.getBillProcess((b) => {
+            //                 b.push({
+            //                     ownerUuid,
+            //                     position,
+            //                     bill: { clientId, machineId } as IVendingMachineBill,
+            //                     transactionID,
+            //                 });
+            //                 this.setBillProces(b);
+            //                 console.log("getFreeProduct", transactionID, position);
 
-                            const x = this.ssocket.processOrder(
-                                machineId?.machineId + "",
-                                position,
-                                transactionID
-                            );
-                            // writeSucceededRecordLog(m, position);
-                            console.log(" WS submit command", machineId, position, x);
+            //                 const x = this.ssocket.processOrder(
+            //                     machineId?.machineId + "",
+            //                     position,
+            //                     transactionID
+            //                 );
+            //                 // writeSucceededRecordLog(m, position);
+            //                 console.log(" WS submit command", machineId, position, x);
 
-                            res.send(PrintSucceeded("submit command", x, EMessage.succeeded));
-                        });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("getFreeProduct", error, EMessage.error));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/getFreeProduct",
-                this.checkMachineIdToken.bind(this),
-                //  this.checkMachineDisabled,
-                async (req, res) => {
-                    try {
-                        // return res.send(PrintError('getFreeProduct', [], EMessage.error));
-                        const {
-                            token,
-                            data: { id, position, clientId },
-                        } = req.body;
-                        const machineId = res.locals["machineId"];
-                        const mc = await machineClientIDEntity.findOne({
-                            where: { machineId: machineId?.machineId },
-                        });
-                        const ownerUuid = mc?.ownerUuid || "";
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        const sm = await sEnt.findAll({
-                            where: {
-                                stock: {
-                                    id,
-                                    price: 0,
-                                    // qtty: { [Op.gt]: [0] }
-                                },
-                                position,
-                                isActive: true,
-                            },
-                        });
-                        console.log("sm", sm.length);
-                        const m = sm.find((v) => v.stock.id == id)?.stock;
-                        console.log("s", m);
-                        console.log("token", token, "data,data");
-                        if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
-                        if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
-                        if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
-                        const transactionID = 1000;
-                        // const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
-                        // const clientId = ws.clientId;
-                        this.getBillProcess((b) => {
-                            b.push({
-                                ownerUuid,
-                                position,
-                                bill: { clientId, machineId } as IVendingMachineBill,
-                                transactionID,
-                            });
-                            this.setBillProces(b);
-                            console.log("getFreeProduct", transactionID, position);
+            //                 res.send(PrintSucceeded("submit command", x, EMessage.succeeded));
+            //             });
+            //         } catch (error) {
+            //             console.log(error);
+            //             res.send(PrintError("getFreeProduct", error, EMessage.error));
+            //         }
+            //     }
+            // );
+            // router.post(
+            //     this.path + "/getFreeProduct",
+            //     this.checkMachineIdToken.bind(this),
+            //     //  this.checkMachineDisabled,
+            //     async (req, res) => {
+            //         try {
+            //             // return res.send(PrintError('getFreeProduct', [], EMessage.error));
+            //             const {
+            //                 token,
+            //                 data: { id, position, clientId },
+            //             } = req.body;
+            //             const machineId = res.locals["machineId"];
+            //             const mc = await machineClientIDEntity.findOne({
+            //                 where: { machineId: machineId?.machineId },
+            //             });
+            //             const ownerUuid = mc?.ownerUuid || "";
+            //             const sEnt = VendingMachineSaleFactory(
+            //                 EEntity.vendingmachinesale + "_" + ownerUuid,
+            //                 dbConnection
+            //             );
+            //             await sEnt.sync();
+            //             const sm = await sEnt.findAll({
+            //                 where: {
+            //                     stock: {
+            //                         id,
+            //                         price: 0,
+            //                         // qtty: { [Op.gt]: [0] }
+            //                     },
+            //                     position,
+            //                     isActive: true,
+            //                 },
+            //             });
+            //             console.log("sm", sm.length);
+            //             const m = sm.find((v) => v.stock.id == id)?.stock;
+            //             console.log("s", m);
+            //             console.log("token", token, "data,data");
+            //             if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
+            //             if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
+            //             if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
+            //             const transactionID = 1000;
+            //             // const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
+            //             // const clientId = ws.clientId;
+            //             this.getBillProcess((b) => {
+            //                 b.push({
+            //                     ownerUuid,
+            //                     position,
+            //                     bill: { clientId, machineId } as IVendingMachineBill,
+            //                     transactionID,
+            //                 });
+            //                 this.setBillProces(b);
+            //                 console.log("getFreeProduct", transactionID, position);
 
-                            const x = this.ssocket.processOrder(
-                                machineId?.machineId + "",
-                                position,
-                                transactionID
-                            );
-                            // writeSucceededRecordLog(m, position);
-                            console.log(" WS submit command", machineId, position, x);
+            //                 const x = this.ssocket.processOrder(
+            //                     machineId?.machineId + "",
+            //                     position,
+            //                     transactionID
+            //                 );
+            //                 // writeSucceededRecordLog(m, position);
+            //                 console.log(" WS submit command", machineId, position, x);
 
-                            res.send(PrintSucceeded("submit command", x, EMessage.succeeded));
-                        });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("getFreeProduct", error, EMessage.error));
-                    }
-                }
-            );
+            //                 res.send(PrintSucceeded("submit command", x, EMessage.succeeded));
+            //             });
+            //         } catch (error) {
+            //             console.log(error);
+            //             res.send(PrintError("getFreeProduct", error, EMessage.error));
+            //         }
+            //     }
+            // );
 
             router.post(
                 this.path + "/addProduct",
@@ -1553,7 +1553,28 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+            router.post(
+                this.path + "/refreshMachine",
+                this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const {m} = req.body.data;
+                        const ws =this.wsClient.filter(v=>v['machineId']==m);
+                        const w = ws.find(v=>v['clientId']);
+                        const resx = {} as IResModel;
+                        resx.command = EMACHINE_COMMAND.refresh;
+                        resx.message = EMessage.refreshsucceeded;
+                        this.sendWS(w['clientId'],resx)
+                        res.send(PrintSucceeded("refreshMachine", !!w, EMessage.succeeded));
 
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error));
+                    }
+                }
+            );
             router.post(
                 this.path + "/addMachine",
                 this.checkToken,
