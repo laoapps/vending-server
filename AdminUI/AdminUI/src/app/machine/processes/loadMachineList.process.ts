@@ -108,6 +108,7 @@ export class LoadMachineListProcess {
                     if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);
                     this.lists = response.data;
+                    this.lists.find(field => field.stock.photourl = '');
                     console.log(`machine lists`, this.lists);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
@@ -156,7 +157,7 @@ export class LoadMachineListProcess {
                 for(let i = 0; i < this.lists.length; i++) {
                     const name = this.lists[i].photo;
     
-                    if (name != '') {
+                    if (name != '' && name.substring(0,4) != 'data') {
                     
                         const url = `${this.filemanagerURL}${name}`;
                         const run = await fetch(url, { method: 'GET' });
@@ -171,6 +172,7 @@ export class LoadMachineListProcess {
                         if (same != undefined && Object.entries(same).length == 0) {
                             lists.push(obj);
                         }
+                        this.lists[i].photourl = this.lists[i].photo;
                         this.lists[i].photo = file;
     
                     }
@@ -196,7 +198,10 @@ export class LoadMachineListProcess {
 
                 this.lists.filter(list => {
                     this.cashList.find((cash, cash_index) => {
-                        if (list.photo == cash.name) list.photo = cash.file;
+                        if (list.photo == cash.name) {
+                            list.photourl = cash.name;
+                            list.photo = cash.file;
+                        }
                     });
                 });
 
@@ -215,6 +220,7 @@ export class LoadMachineListProcess {
                             file: file
                         }
     
+                        nodata[i].photourl = nodata[i].photo;
                         nodata[i].photo = file;
                         this.cashList.push(obj);
                     }
