@@ -14,6 +14,7 @@ export interface VENDING_PaidValidation extends IBase {
 }
 export interface VENDING_CreateSMC extends IBase {
     cash: number,
+    phonenumber: string,
     description: string
 }
 export interface VENDING_LoadSMC extends IBase {

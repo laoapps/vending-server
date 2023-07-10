@@ -155,6 +155,7 @@ export class SalePage implements OnInit {
       if (rx.status) {
         this._l.find((v, i) => {
           if (v.id == rx.data.id) {
+            rx.data.stock.image = s.stock.image;
             this._l.splice(i, 1, ...[rx.data]);
             return true;
           }

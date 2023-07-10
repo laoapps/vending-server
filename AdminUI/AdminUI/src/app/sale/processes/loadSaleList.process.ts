@@ -1,3 +1,4 @@
+import axios from "axios";
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
@@ -162,8 +163,12 @@ export class LoadSaleListProcess {
                     if (name != '' && name.subscribe(0,4) != 'data') {
                     
                         const url = `${this.filemanagerURL}${name}`;
-                        const run = await fetch(url, { method: 'GET' });
-                        let file = await this.apiService.convertBlobToBase64(await run.blob());
+                        const run = await axios({
+                            method: 'GET',
+                            url: url,
+                            responseType: 'blob'
+                        });
+                        let file = await this.apiService.convertBlobToBase64(run.data);
         
                         const obj = {
                             name: name,
@@ -216,8 +221,12 @@ export class LoadSaleListProcess {
                         console.log(`receive image new`);
 
                         const url = `${this.filemanagerURL}${nodata[i].stock.image}`;
-                        const run = await fetch(url, { method: 'GET' });
-                        const file = await this.apiService.convertBlobToBase64(await run.blob());
+                        const run = await axios({
+                            method: 'GET',
+                            url: url,
+                            responseType: 'blob'
+                        });
+                        let file = await this.apiService.convertBlobToBase64(run.data);
     
                         const obj = {
                             name: nodata[i].stock.image,

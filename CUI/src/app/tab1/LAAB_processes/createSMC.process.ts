@@ -11,6 +11,7 @@ export class CreateSMCProcess {
     private vendingAPIService: VendingAPIService;
     
     private cash: number;
+    private phonenumber: string;
     private description: string;
 
     private detail: any = {} as any;
@@ -67,11 +68,12 @@ export class CreateSMCProcess {
 
     private InitParams(params: any): void {
         this.cash = params.cash;
+        this.phonenumber = params.cash;
         this.description = 'VENDING CASH OUT TO SMART CONTRACT';
     }
 
     private ValidateParams(): string {
-        if (!(this.cash)) return IENMessage.parametersEmpty;
+        if (!(this.cash && this.phonenumber)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -81,6 +83,7 @@ export class CreateSMCProcess {
 
                 const params = {
                     cash: this.cash,
+                    phonenumber: this.phonenumber,
                     description: this.description,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }

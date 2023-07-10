@@ -1,3 +1,4 @@
+import axios from "axios";
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
@@ -105,12 +106,11 @@ export class LoadMachineListProcess {
 
                 this.apiService.listMachine().subscribe(r => {
                     const response: any = r;
+                    console.log(`response`, response);
                     if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);
                     this.lists = response.data;
-                    // console.log('res',response.data);
-                    
-                    this.lists.find(field => field.photo = '');
+                    this.lists.find(field => field.photourl = '');
                     console.log(`machine lists`, this.lists);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
@@ -159,13 +159,16 @@ export class LoadMachineListProcess {
                 for(let i = 0; i < this.lists.length; i++) {
                     const name = this.lists[i].photo;
                     
-                    console.log(`--->`,  name.substring(0,4));
                     if (name != '' && name.substring(0,4) != 'data') {
                     
                         const url = `${this.filemanagerURL}${name}`;
-                        const run = await fetch(url, { method: 'GET' });
-                        let file = await this.apiService.convertBlobToBase64(await run.blob());
-        
+                        const run = await axios({
+                            method: 'GET',
+                            url: url,
+                            responseType: 'blob'
+                        });
+                        let file = await this.apiService.convertBlobToBase64(run.data);
+                        
                         const obj = {
                             name: name,
                             file: file
@@ -199,6 +202,7 @@ export class LoadMachineListProcess {
 
                 if (this.firsttime == true) return resolve(IENMessage.success);
 
+                console.log(`before`, this.lists);
                 this.lists.filter(list => {
                     this.cashList.find((cash, cash_index) => {
                         if (list.photo == cash.name) {
@@ -209,14 +213,20 @@ export class LoadMachineListProcess {
                 });
 
                 const data = this.lists.filter(item => item.photo.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.photo.substring(0,4) != 'data');
+                const nodata = this.lists.filter(item => item.photo.substring(0,4) != '' && item.photo.substring(0,4) != 'data');
+                console.log(`nodedata`, nodata.length);
 
                 if (nodata != undefined && nodata.length > 0)
                 {
                     for(let i = 0; i < nodata.length; i++) {
                         const url = `${this.filemanagerURL}${nodata[i].photo}`;
-                        const run = await fetch(url, { method: 'GET' });
-                        const file = await this.apiService.convertBlobToBase64(await run.blob());
+                        console.log(`url`, url);
+                        const run = await axios({
+                            method: 'GET',
+                            url: url,
+                            responseType: 'blob'
+                        });
+                        let file = await this.apiService.convertBlobToBase64(run.data);
     
                         const obj = {
                             name: nodata[i].photo,

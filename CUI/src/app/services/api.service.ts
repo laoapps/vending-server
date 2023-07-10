@@ -25,21 +25,24 @@ export class ApiService {
   howtoVideoPlayList: Array<any> = [
     {
       id: 1,
-      video: 'assets/video-how-to/video1.mp4',
-      title: 'How to1',
+      video: 'assets/video-how-to/howto1.webm',
+      cover: 'assets/video-how-to/howto1-cover.webp',
+      title: 'How to 1',
       subtitle: 'Video is expend about how to use basic vending function',
       file: ''
     },
     {
       id: 2,
-      video: 'assets/video-how-to/howto2.mov',
+      video: 'assets/video-how-to/howto2.webm',
+      cover: 'assets/video-how-to/howto2-cover.png',
       title: 'How to 2',
       subtitle: 'Video is expend about how to use basic vending function',
       file: ''
     },
     {
       id: 3,
-      video: 'assets/video-how-to/howto3.mov',
+      video: 'assets/video-how-to/howto3.webm',
+      cover: 'assets/video-how-to/howto3-cover.png',
       title: 'How to 3',
       subtitle: 'Video is expend about how to use basic vending function',
       file: ''

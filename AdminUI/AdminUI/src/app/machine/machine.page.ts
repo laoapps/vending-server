@@ -192,7 +192,8 @@ export class MachinePage implements OnInit {
   loadMachine(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-      //  await this.cashingService.clear();
+        // await this.cashingService.clear();
+        // return resolve(IENMessage.success);
         const params = {
           ownerUuid: this.apiService.ownerUuid,
           filemanagerURL: this.filemanagerURL
@@ -204,7 +205,7 @@ export class MachinePage implements OnInit {
         this._l.forEach(v=>{
           if(!Array.isArray(v.data))v.data=[v.data]
           let setting =v.data?.find(vx=>vx?.settingName=='setting');
-          console.log('setting',setting);
+          // console.log('setting',setting);
           
           if(!setting){
             setting={};

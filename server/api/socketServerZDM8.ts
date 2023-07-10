@@ -1,7 +1,7 @@
 import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess, IBillCashIn, EEntity } from '../entities/system.model';
 import cryptojs from 'crypto-js';
-import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineSetting, readMachineLimiterBalance } from '../services/service';
+import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineSetting } from '../services/service';
 import { EventEmitter } from 'events';
 import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
 import { v4 as uuid4 } from 'uuid';
@@ -171,7 +171,13 @@ export class SocketServerZDM8 {
                                 }
                                 console.log(`machine der`, params);
                                 // const limiter =100000;
-                                readMachineLimiterBalance(m.machineId).then(balance=>{
+                                func.Init(params).then(run => {
+                                    const response: any = run;
+                                    console.log(`response`, response);
+                                    if (response.message != IENMessage.success) {
+                                        console.log(`cash validate fail`, response?.message);
+                                        // socket.end();
+                                    }
                                     readMachineSetting(m.machineId).then(r=>{
                                         let setting ={} as any
                                         if(r){
@@ -182,11 +188,17 @@ export class SocketServerZDM8 {
                                                 setting.allowVending=true,setting.allowCashIn=true;setting.lowTemp=5;setting.highTemp=10;setting.light=true;setting.limiter=100000
                                             }
                                         }
-                                        writeMerchantLimiterBalance(x.ownerUuid,balance+'');
+                                        writeMerchantLimiterBalance(x.ownerUuid,response?.balance+'');
                                         // writeMachineLimiter(m.machineId,limiter+'');
-                                        that.updateBalance(m.machineId, {balance:balance||0,limiter:setting.limiter,setting});
-                                    })
-                                })
+                                        that.updateBalance(m.machineId, {balance:response?.balance||0,limiter:setting.limiter,setting});
+                                    });
+                                   
+
+                                }).catch(error => {
+                                    console.log(`cash validation error`, error.message);
+                                    socket.end();
+                                });
+
                             }
                             return;
                         } 

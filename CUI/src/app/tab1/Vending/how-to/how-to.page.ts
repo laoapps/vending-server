@@ -26,7 +26,7 @@ export class HowToPage implements OnInit {
   ngOnInit() {
     
 
-    this.lists = this.apiService.howtoVideoPlayList;
+    this.lists = JSON.parse(JSON.stringify(this.apiService.howtoVideoPlayList));
     this.loadAutoPlayState();
     this.loadCurrentPlay();
 
@@ -45,18 +45,6 @@ export class HowToPage implements OnInit {
     //   }, 1000);
      
     // });
-  }
-
-  testWriteFile() {
-    const writeSecretFile = async () => {
-      await Filesystem.writeFile({
-        path: 'secrets/text.txt',
-        data: 'This is a test',
-        directory: Directory.Documents,
-        encoding: Encoding.UTF8,
-      });
-    };
-    
   }
 
   close() {
@@ -78,49 +66,24 @@ export class HowToPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
         this.currentPlay = this.lists[0];
+        const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
+        howToPlayer.src = this.currentPlay.video;
 
-        // this.videoPlayer.play(this.currentPlay.video).then(() => {
-        //   console.log('video completed');
-        //   this.apiService.simpleMessage(`Video COMPLETE`, 10000);
-        //   }).catch(err => {
-        //   console.log(`video error`, err);
-        //   this.apiService.simpleMessage(`Video ERROR`, 10000);
-        // });
+        let i = setInterval(() => {
 
-        // this.currentPlay.video = await this.apiService.convertLocalFilePath(this.currentPlay.video);
+          const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
 
-        // let i = setInterval(() => {
-        //   const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
-        //   howToPlayer.src = this.currentPlay.video;
+          if (this.autoPlayVideo == true) {
+            autoPlayVideo.checked = true;
 
-        //   const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
-        //   if (this.autoPlayVideo == true) {
-        //     autoPlayVideo.checked = true;
-        //     howToPlayer.src = this.currentPlay.video;
-        //     howToPlayer.play();
-        //   }
-        //   clearInterval(i);
+            howToPlayer.play();
+          }
+          clearInterval(i);
 
-        // });
-        // const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
-        // howToPlayer.disablePictureInPicture = true;
-        
+        });
 
-        
 
         resolve(IENMessage.success);
-
-        // let i = setInterval(() => {
-        //   clearInterval(i);
-
-        //   const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
-        //   if (this.autoPlayVideo == true) {
-        //     autoPlayVideo.checked = true;
-        //     howToPlayer.src = this.currentPlay.video;
-        //     howToPlayer.play();
-        //   }
-        // });
-
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -133,14 +96,13 @@ export class HowToPage implements OnInit {
       try {
         
         const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
-
+        
         const current = this.lists.filter(item => item.id == id)[0];
         if (current.video == undefined) throw new Error(IENMessage.notFoundFile);
 
-        this.currentPlay.video = await this.apiService.convertLocalFilePath(current.video);
-        this.currentPlay.title = current.title;
-        this.currentPlay.subsubtitle = current.subtitle;
-
+        this.currentPlay = current;
+        howToPlayer.src = this.currentPlay.video;
+        howToPlayer.load();
         howToPlayer.play();
         resolve(IENMessage.success);
 

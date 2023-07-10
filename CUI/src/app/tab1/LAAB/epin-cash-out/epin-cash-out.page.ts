@@ -99,6 +99,8 @@ export class EpinCashOutPage implements OnInit {
           cash: this.apiService.cash
         }
 
+        console.log(`params`, params);
+
         let run: any = await this.createSMCProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = 0;

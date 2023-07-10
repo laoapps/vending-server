@@ -1,3 +1,4 @@
+import axios from "axios";
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
@@ -166,8 +167,12 @@ export class LoadProductListProcess {
                     if (name != '' && name.substring(0,4) != 'data') {
                     
                         const url = `${this.filemanagerURL}${name}`;
-                        const run = await fetch(url, { method: 'GET' });
-                        let file = await this.apiService.convertBlobToBase64(await run.blob());
+                        const run = await axios({
+                            method: 'GET',
+                            url: url,
+                            responseType: 'blob'
+                        });
+                        let file = await this.apiService.convertBlobToBase64(run.data);
         
                         const obj = {
                             name: name,
@@ -218,10 +223,15 @@ export class LoadProductListProcess {
                 {
                     for(let i = 0; i < nodata.length; i++) {
                         console.log(`get new`, i+1);
+
                         const url = `${this.filemanagerURL}${nodata[i].image}`;
-                        const run = await fetch(url, { method: 'GET' });
-                        const file = await this.apiService.convertBlobToBase64(await run.blob());
-    
+                        const run = await axios({
+                            method: 'GET',
+                            url: url,
+                            responseType: 'blob'
+                        });
+                        let file = await this.apiService.convertBlobToBase64(run.data);
+
                         const obj = {
                             name: nodata[i].image,
                             file: file

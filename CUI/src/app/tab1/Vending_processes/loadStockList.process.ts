@@ -122,6 +122,7 @@ export class LoadStockListProcess {
                     if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
                     this.lists = response.data;
+                    this.lists.find(field => field.stock.imageurl = '');
 
                     // let list = this.lists.map(item => { return { id: item.id, image: item.image } });
                     // list = list.sort((a,b) => a.id-b.id);
@@ -174,7 +175,7 @@ export class LoadStockListProcess {
                 for(let i = 0; i < this.lists.length; i++) {
                     const name = this.lists[i].stock.image;
                     message.message=' loading image '+name +' -- '+i+'/'+this.lists.length;
-                    if (name != '') {
+                    if (name != '' &&  name.substring(0,4) != 'data') {
                     
                         const url = `${this.filemanagerURL}${name}`;
                         const run = await axios({
@@ -194,6 +195,7 @@ export class LoadStockListProcess {
                         if (same != undefined && Object.entries(same).length == 0) {
                             lists.push(obj);
                         }
+                        this.lists[i].stock.imageurl = this.lists[i].stock.image;
                         this.lists[i].stock.image = file;
                        
                     }
@@ -219,7 +221,10 @@ export class LoadStockListProcess {
 
                 this.lists.forEach((list,i) => {
                     this.cashList.find((cash, cash_index) => {
-                        if (list.stock.image == cash.name) list.stock.image = cash.file;
+                        if (list.stock.image == cash.name) {
+                            list.stock.imageurl = cash.name;
+                            list.stock.image = cash.file;
+                        }
                     });
                     message.message='caching '+i+' name:'+list.stock.image
                 });
@@ -243,6 +248,7 @@ export class LoadStockListProcess {
                             file: file
                         }
     
+                        nodata[i].stock.imageurl = nodata[i].stock.image;
                         nodata[i].stock.image = file;
                         this.cashList.push(obj);
                     }
