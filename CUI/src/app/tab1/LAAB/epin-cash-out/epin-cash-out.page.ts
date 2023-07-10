@@ -113,7 +113,7 @@ export class EpinCashOutPage implements OnInit {
           detail: run.data[0].detail
         }
         const createEPIN = await this.createEPINProcess.Init(params);
-        console.log(`ruunnn`, run);
+        console.log(`ruunnn`, createEPIN);
         if (createEPIN.message != IENMessage.success) throw new Error(run);
 
         const model = {

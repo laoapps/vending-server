@@ -81,9 +81,9 @@ export class FindEPINShortCodeFunc {
                 else 
                 {
                     condition = {
-                        where: {
-                            phonenumber: this.phonenumber
-                        },
+                        // where: {
+                        //     phonenumber: this.phonenumber
+                        // },
                         limit: this.limit,
                         offset: this.offset,
                         order: [[ 'id', 'DESC' ]]
