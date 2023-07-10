@@ -1,5 +1,5 @@
 import * as net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 import { VendingVMC } from './vendingVMC';
 import http from 'http';
@@ -57,7 +57,14 @@ export class SocketClientVMC {
             // { slot: position };
             const command = req.query['command'];
             const param = d.data;
-            if (command == 'process') {
+            if(command=='test'){
+                this.m.command(EZDM8_COMMAND.shippingcontrol,param,-1000).then(r=>{
+                    res.send({ status: 1,data:r, message: 'test OK' });
+                }).catch(e=>{
+                    res.send({ status: 0, message: 'test error',data:e });
+                });
+            }
+            else if (command == 'process') {
 
                 this.processorder(d.transactionID).then(r => {
                     if (r.data.transactionID == d.transactionID) {
