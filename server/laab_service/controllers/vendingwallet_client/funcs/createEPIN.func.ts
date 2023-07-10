@@ -17,6 +17,7 @@ export class CreateEPINFunc {
     private passkeys: string;
     private uuid: string;
     private response: any = {} as any;
+    private errorsection: string = '';
 
     constructor(){}
 
@@ -25,38 +26,46 @@ export class CreateEPINFunc {
             this.transaction = await dbConnection.transaction();
             try {
 
-                console.log(`create epin`, 1);
+                console.log(`create epin -------------------------------`, 1);
+                this.errorsection = '1';
 
                 this.InitParams(params);
 
                 console.log(`create epin`, 2);
+                this.errorsection = '2';
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
                 console.log(`create epin`, 3);
+                this.errorsection = '3';
 
                 const FindVendingWallet = await this.FindVendingWallet();
                 if (FindVendingWallet != IENMessage.success) throw new Error(FindVendingWallet);
 
                 console.log(`create epin`, 4);
+                this.errorsection = '4';
 
                 const FindEPINShortCode = await this.FindEPINShortCode();
                 if (FindEPINShortCode != IENMessage.success) throw new Error(FindEPINShortCode);
 
                 console.log(`create epin`, 5);
+                this.errorsection = '4';
 
                 const UpdateEPINShortCode = await this.UpdateEPINShortCode();
                 if (UpdateEPINShortCode != IENMessage.success) throw new Error(UpdateEPINShortCode);
 
                 console.log(`create epin`, 6);
+                this.errorsection = '5';
 
                 const CreateEPINCoupon = await this.CreateEPINCoupon();
                 if (CreateEPINCoupon != IENMessage.success) throw new Error(CreateEPINCoupon);
 
                 console.log(`create epin`, 7);
+                this.errorsection = '6';
 
                 console.log(`create epin`, 8);
+                this.errorsection = '7';
 
                 await this.transaction.commit();
                 resolve(this.response);
@@ -64,7 +73,7 @@ export class CreateEPINFunc {
             } catch (error) {
 
                 await this.transaction.rollback();
-                resolve(error.message);
+                resolve(`error ${this.errorsection} `+ error.message);
             }
         });
     }
