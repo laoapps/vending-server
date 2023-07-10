@@ -492,8 +492,7 @@ export class InventoryZDM8 implements IBaseClass {
                     this.wsClient.find((v) => {
                         if (
                             v.OPEN &&
-                            v["machineId"] == res.locals["machineId"]?.machineId &&
-                            v["machineId"]
+                            v["machineId"] == req.body.machineId
                         ) {
                             // v.send(JSON.stringify(PrintSucceeded('refresh', true, EMessage.succeeded)));
                             this.sendWSToMachine(

@@ -278,13 +278,8 @@ export class ApiService {
     const token = localStorage.getItem('lva_token');
     return this.http.post<IResModel>(this.url + '/super_listMachine', {token}, { headers: this.headerBase() });
   }
-  refreshMachine(m:string){
-      const req = {
-        ownerUuid: localStorage.getItem('lva_ownerUuid'),
-        token: localStorage.getItem('lva_token'),
-        m
-      }
-      return this.http.post<IResModel>(this.url + '/refreshMachine', req, { headers: this.headerBase() });
+  refreshMachine(data: any){
+      return this.http.post<IResModel>(this.url + '/refreshMachine', data, { headers: this.headerBase() });
     }
   
   listMachine(isActive='all') {
@@ -360,7 +355,6 @@ export class ApiService {
     if (!o.name || !o.price) { alert('Body is empty');return null;}
     return this.http.post<IResModel>(this.url + '/addProduct',{data:o,token}, { headers: this.headerBase() });
   }
-
 
   getFreeProduct(position: number, id: number) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;
