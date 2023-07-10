@@ -108,7 +108,9 @@ export class LoadMachineListProcess {
                     if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);
                     this.lists = response.data;
-                    this.lists.find(field => field.stock.photourl = '');
+                    // console.log('res',response.data);
+                    
+                    this.lists.find(field => field.photo = '');
                     console.log(`machine lists`, this.lists);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));

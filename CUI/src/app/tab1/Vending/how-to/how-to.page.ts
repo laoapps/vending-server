@@ -3,7 +3,7 @@ import { howToVideoJSON } from './video';
 import { ApiService } from 'src/app/services/api.service';
 import { Platform } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
-import { VideoPlayer } from '@ionic-native/video-player/ngx';
+// import { VideoPlayer } from '@ionic-native/video-player/ngx';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
  
 @Component({
@@ -18,7 +18,7 @@ export class HowToPage implements OnInit {
   lists: Array<any> = [];
 
   constructor(
-    private videoPlayer: VideoPlayer,
+    // private videoPlayer: VideoPlayer,
     private apiService: ApiService,
     private platform: Platform,
   ) { }

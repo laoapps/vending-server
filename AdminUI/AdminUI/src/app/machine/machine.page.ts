@@ -22,7 +22,8 @@ import { LoadMachineListProcess } from './processes/loadMachineList.process';
   styleUrls: ['./machine.page.scss'],
 })
 export class MachinePage implements OnInit {
-
+  offsettz = 420;
+  dateformat='yy-MM-dd HH:mm:ss'
   private loadMachineListProcess: LoadMachineListProcess;
 
   ionicStorage: IonicstorageService;
@@ -49,6 +50,8 @@ export class MachinePage implements OnInit {
     private filemanagerAPIService: FilemanagerApiService,
     private cashingService: AppcachingserviceService,
   ) {
+   this.offsettz= this.apiService.offsettz;
+   this.dateformat=this.apiService.dateformat;
     this.loadMachineListProcess = new LoadMachineListProcess(this.apiService, this.cashingService);
     
     this.showImage = this.apiService.showImage;
@@ -62,7 +65,14 @@ export class MachinePage implements OnInit {
     this.loadMachine();
    
   }
-
+  Refresh(m:string){
+    this.apiService.refreshMachine(m).subscribe(r=>{
+      console.log('refreshMachine',r);
+      if(r.status){
+        alert('Machine '+m+' has been refresh')
+      }
+    });
+  }
   loaddefault() {
     let setList: Array<any> = [];
 

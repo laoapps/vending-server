@@ -1017,7 +1017,8 @@ export enum EMessage {
     machineCredit = "machineCredit",
     status = "status",
     adminloginok = "adminloginok",
-    InvalidMachineIdOrOTP = "InvalidMachineIdOrOTP"
+    InvalidMachineIdOrOTP = "InvalidMachineIdOrOTP",
+    refreshsucceeded = "refreshsucceeded"
 }
 export interface IBase {
     id?: number;
@@ -1156,6 +1157,10 @@ export interface IBaseClass {
 
 
 
+
+
+
+
 export enum EMACHINE_COMMAND {
     CREDIT_LAAB_NOTE = 'CREDIT_LAAB_NOTE',
     login = 'login',
@@ -1173,7 +1178,8 @@ export enum EMACHINE_COMMAND {
     stop = "stop",
     setcounter = "setcounter",
     NOTE_REJECTED = "NOTE_REJECTED",
-    waitingt = "waitingt"
+    waitingt = "waitingt",
+    refresh = "refresh"
 }
 
 export interface IMachineClientID extends IBase {

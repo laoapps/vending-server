@@ -58,7 +58,7 @@ export class CreateSMCProcess {
 
             } catch (error) {
 
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });
