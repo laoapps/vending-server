@@ -25,26 +25,26 @@ export class RefreshMachineProcess {
                 
 
 
-                console.log(`cash validation`, 1);
+                console.log(`refresh machine`, 1);
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
-                console.log(`cash validation`, 2);
+                console.log(`refresh machine`, 2);
 
                 this.InitParams(params);
 
-                console.log(`cash validation`, 3);
+                console.log(`refresh machine`, 3);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-                console.log(`cash validation`, 4);
+                console.log(`refresh machine`, 4);
                 
                 const refreshMachine = await this.RefreshMachine();
                 if (refreshMachine != IENMessage.success) throw new Error(refreshMachine);
 
-                console.log(`cash validation`, 5);
+                console.log(`refresh machine`, 5);
 
                 (await this.workload).dismiss();
                 resolve(this.Commit());
@@ -82,7 +82,7 @@ export class RefreshMachineProcess {
                 
                 this.apiService.refreshMachine(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response counter cashout cash`, response);
+                    console.log(`response refresh machine`, response);
                     if (response.status != 1) return resolve(response.message);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));

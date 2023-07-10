@@ -487,30 +487,20 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.creditMachineMMoney(d);
                 res.send({ message: "wait", status: 1 });
             });
-            router.post(this.path + "/refresh", this.checkToken, async (req, res) => {
+            router.post(this.path + "/refreshMachine", this.checkToken, async (req, res) => {
                 try {
-                    this.wsClient.find((v) => {
-                        if (
-                            v.OPEN &&
-                            v["machineId"] == req.body.machineId
-                        ) {
-                            // v.send(JSON.stringify(PrintSucceeded('refresh', true, EMessage.succeeded)));
-                            this.sendWSToMachine(
-                                v["machineId"],
-                                PrintSucceeded("refresh", true, EMessage.succeeded)
-                            );
-                        }
-                    });
-                    // this.wss.clients.forEach(v => {
-                    //     if (v.OPEN && v['machineId'] == res.locals['machineId']?.machineId && v['machineId']) {
-                    //         v.send(JSON.stringify(PrintSucceeded('refresh', true, EMessage.succeeded)));
-                    //     }
-                    // })
+                    const m = req.body.machineId;
+                    const ws =this.wsClient.filter(v=>v['machineId']==m);
+                    const w = ws.find(v=>v['clientId']);
+                    const resx = {} as IResModel;
+                    resx.command = EMACHINE_COMMAND.refresh;
+                    resx.message = EMessage.refreshsucceeded;
+                    this.sendWS(w['clientId'],resx)
+                    res.send(PrintSucceeded("refreshMachine", !!w, EMessage.succeeded));
 
-                    res.send(PrintSucceeded("refresh", true, EMessage.succeeded));
-                } catch (error: any) {
+                } catch (error) {
                     console.log(error);
-                    res.send(PrintError("init", error, error.message));
+                    res.send(PrintError("addProduct", error, EMessage.error));
                 }
             });
             router.post(
@@ -1557,28 +1547,28 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
-            router.post(
-                this.path + "/refreshMachine",
-                this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const {m} = req.body.data;
-                        const ws =this.wsClient.filter(v=>v['machineId']==m);
-                        const w = ws.find(v=>v['clientId']);
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.refresh;
-                        resx.message = EMessage.refreshsucceeded;
-                        this.sendWS(w['clientId'],resx)
-                        res.send(PrintSucceeded("refreshMachine", !!w, EMessage.succeeded));
+            // router.post(
+            //     this.path + "/refreshMachine",
+            //     this.checkToken,
+            //     // this.checkToken.bind(this),
+            //     // this.checkDisabled.bind(this),
+            //     async (req, res) => {
+            //         try {
+            //             const {m} = req.body.data;
+            //             const ws =this.wsClient.filter(v=>v['machineId']==m);
+            //             const w = ws.find(v=>v['clientId']);
+            //             const resx = {} as IResModel;
+            //             resx.command = EMACHINE_COMMAND.refresh;
+            //             resx.message = EMessage.refreshsucceeded;
+            //             this.sendWS(w['clientId'],resx)
+            //             res.send(PrintSucceeded("refreshMachine", !!w, EMessage.succeeded));
 
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error));
-                    }
-                }
-            );
+            //         } catch (error) {
+            //             console.log(error);
+            //             res.send(PrintError("addProduct", error, EMessage.error));
+            //         }
+            //     }
+            // );
             router.post(
                 this.path + "/addMachine",
                 this.checkToken,
