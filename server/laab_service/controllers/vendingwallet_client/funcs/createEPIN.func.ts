@@ -108,7 +108,7 @@ export class CreateEPINFunc {
                             detail: this.detail
                         },
                         EPIN: {
-                            destination: '',
+                            destination: {},
                             coinname: '',
                             name: ''
                         }

@@ -110,7 +110,7 @@ export class ReCreateEPINFunc {
                             }
                         },
                         EPIN: {
-                            destination: '',
+                            destination: {},
                             coinname: ''
                         }
                     }

@@ -270,7 +270,7 @@ export class CreateSMCFunc {
                         bill: this.bill,
                     },
                     EPIN: {
-                        destination: '',
+                        destination: {},
                         coinname: '',
                         name: ''
                     },
