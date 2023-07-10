@@ -114,7 +114,7 @@ export class EpinManagementPage implements OnInit {
       try {
         
         const params = {
-          machineId: this.apiService.currentMachineId,
+          machineId: data.creator,
           phonenumber: this.phonenumber,
           detail: data.SMC.detail
         }

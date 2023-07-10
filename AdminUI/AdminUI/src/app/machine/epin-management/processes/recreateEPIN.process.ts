@@ -67,6 +67,7 @@ export class ReCreateEPINProcess {
 
 
     private InitParams(params: any): void {
+        console.log(`params`, params);
         this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
         this.detail = params.detail;

@@ -45,13 +45,13 @@ export class CreateEPINFunc {
 
                 console.log(`create epin`, 5);
 
-                const CreateEPINCoupon = await this.CreateEPINCoupon();
-                if (CreateEPINCoupon != IENMessage.success) throw new Error(CreateEPINCoupon);
+                const UpdateEPINShortCode = await this.UpdateEPINShortCode();
+                if (UpdateEPINShortCode != IENMessage.success) throw new Error(UpdateEPINShortCode);
 
                 console.log(`create epin`, 6);
 
-                const UpdateEPINShortCode = await this.UpdateEPINShortCode();
-                if (UpdateEPINShortCode != IENMessage.success) throw new Error(UpdateEPINShortCode);
+                const CreateEPINCoupon = await this.CreateEPINCoupon();
+                if (CreateEPINCoupon != IENMessage.success) throw new Error(CreateEPINCoupon);
 
                 console.log(`create epin`, 7);
 
@@ -130,6 +130,35 @@ export class CreateEPINFunc {
         });
     }
 
+    private UpdateEPINShortCode(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                this.connection.EPIN = {
+                    destination: this.detail.items[0].qrcode[0],
+                    coinname: this.coinName,
+                    name: this.detail.sender
+                }
+                const run = await this.connection.save({ transaction: this.transaction });
+                if (!run) return resolve(IENMessage.updateEPINShortCodeFail);
+                this.response = {
+                    EPIN: {
+                        uuid: run.uuid,
+                        destination: this.detail.items[0].qrcode[0],
+                        coinname: this.coinName,
+                        name: this.detail.sender
+                    },
+                    message: IENMessage.success
+                }
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+
     private CreateEPINCoupon(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
@@ -154,34 +183,6 @@ export class CreateEPINFunc {
                 if (run.data.status != 1) return resolve(run.data.message);
 
                 
-                resolve(IENMessage.success);
-
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
-
-    private UpdateEPINShortCode(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-                
-                this.connection.EPIN = {
-                    destination: this.detail.items[0].qrcode[0],
-                    coinname: this.coinName,
-                    name: this.detail.sender
-                }
-                const run = await this.connection.save({ transaction: this.transaction });
-                if (run == null) return resolve(IENMessage.updateEPINShortCodeFail);
-                this.response = {
-                    EPIN: {
-                        uuid: run.uuid,
-                        destination: this.detail.items[0].qrcode[0],
-                        coinname: this.coinName,
-                        name: this.detail.sender
-                    },
-                    message: IENMessage.success
-                }
                 resolve(IENMessage.success);
 
             } catch (error) {
