@@ -1,6 +1,6 @@
 export const howToVideoJSON = [
     {
-        video: '../../../../assets/video-how-to/howto1.mov',
+        video: '../../../../assets/video-how-to/howto1.mp4',
         title: 'How to1',
         subtitle: 'Video is expend about how to use basic vending function'
     },
