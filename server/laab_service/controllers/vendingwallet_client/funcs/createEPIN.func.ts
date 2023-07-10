@@ -152,14 +152,7 @@ export class CreateEPINFunc {
                     name: this.detail.sender
                 }
                 const run = await this.connection.save({ transaction: this.transaction });
-                if (!run) {
-                    this.response = {
-                        error: 'error create epin',
-                        msg: run.data.message
-                    }
-                    return resolve(this.response);
-                    // return resolve(IENMessage.updateEPINShortCodeFail);
-                }
+                if (!run) return resolve(this.response);
                 this.uuid = run.uuid;
 
                 resolve(IENMessage.success);
@@ -192,14 +185,7 @@ export class CreateEPINFunc {
 
                 const run = await axios.post(EPIN_Generate, params);
                 console.log(`response`, run.data);
-                if (run.data.status != 1) {
-                    this.response = {
-                        error: 'error create epin',
-                        msg: run.data.message
-                    }
-                    return resolve(this.response);
-                    // return resolve(run.data.message);
-                }
+                if (run.data.status != 1) return resolve(this.response);
 
                 this.response = {
                     EPIN: {
