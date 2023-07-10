@@ -30,7 +30,9 @@ export class ProductAddPage implements OnInit {
   }
   save() {
     this.s.image =this.imageSrc;
-
+    // console.log(`---->`, this.s.image);
+    this.s.token = localStorage.getItem('lva_token');
+    
     if (!(this.s.image && this.s.token && this.s.file && this.s.filename && this.s.fileuuid)) {
       this.apiService.simpleMessage(IENMessage.parametersEmpty);
       return;
@@ -46,19 +48,24 @@ export class ProductAddPage implements OnInit {
     this.s.file = file;
     this.s.filename = file.name;
     this.s.fileuuid = uuid.v4();
-  
+    
 
     var pattern = /image-*/;  
     var reader = new FileReader();
-
+    reader.addEventListener('load', event => {
+      const s: string = event.target.result as any;
+      (document.querySelector('.product_image') as HTMLImageElement).src = s;
+      this.imageSrc = s;
+      console.log(`img src`, this.imageSrc);
+    });
     if (!file.type.match(pattern)) {
       alert('invalid format');
       return;
     }
 
-    this.loaded = false;
+    // this.loaded = false;
 
-    reader.onload = this._handleReaderLoaded.bind(this);
+    // reader.onload = this._handleReaderLoaded.bind(this);
     reader.readAsDataURL(file);
   }
 

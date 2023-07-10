@@ -30,41 +30,21 @@
       <div class="left">
 
         <div class="main-display">
-          <!-- <video src="assets/video-how-to/video1.mp4"></video> -->
-          <!-- <vg-player>
-              <video [vgMedia]="$any(media)" #media id="singleVideo" preload="auto" controls>
-                  <source src="../../../../assets/video-how-to/video1.mp4" type="video/mp4">
-              </video>
-          </vg-player> -->
-          <!-- <div class="control-options">
-            <a (click)="showFullScreen()" href="javascript:void(0)" class="btn-full-screen"><i class="fa-solid fa-display"></i> Full Screen</a>
-          </div> -->
-          
-          <!-- <video id="how-to-player" controls controlsList="nodownload noplaybackrate nofullscreen"></video> -->
-          <!-- <video id="how-to-player" controls></video> -->
-          <!-- <video id="how-to-player" src="assets/video-how-to/howto1.webm"  controls controlsList="nodownload noplaybackrate nofullscreen"></video> -->
-
           <!-- controls controlsList="nodownload noplaybackrate" -->
-          <video id="how-to-player" src="" preload="metadata" controls controlsList="nodownload noplaybackrate" ></video>
-
+          <video id="how-to-player" class="how-to-player" src="" preload="metadata" controls controlsList="nodownload noplaybackrate" ></video>
+          <img id="how-to-player-cover"  class="how-to-player-cover active" src="../../../../assets/video-how-to/howto1-cover.png" alt="">
           <div class="title">{{ currentPlay.title }}</div>
           <div class="sub-title">{{ currentPlay.subtitle }}</div>
-          <!-- <div id="rmp"></div> -->
         </div>
-        <!-- <video width="320" height="240" controls muted>
-          <source src="assets/video-how-to/howto1.webm" type="video/webm">
-        Your browser does not support the video tag.
-        </video>
-        <video width="320" height="240" controls muted>
-          <source src="../../assets/video-how-to/howto1.webm" type="video/webm">
-        Your browser does not support the video tag.
-        </video> -->
+
       </div>
       <div class="right">
         <div class="main-list">
           <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.id)" href="javascript:void(0)" class="item">
             <div class="left">
-              <video src="{{ list.video }}"  preload="metadata"></video>
+              <!-- <video src="{{ list.video }}"  preload="metadata"></video> -->
+              <!-- <video src="asd"  preload="metadata"></video> -->
+              <img class="list-cover" src="{{ list.cover }}" alt="">
             </div>
             <div class="right">
               <div class="title">{{ list.title }}</div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { CreateSMCProcess } from '../../LAAB_processes/createSMC.process';
@@ -7,6 +7,7 @@ import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
 import { SmcListPage } from '../smc-list/smc-list.page';
 import * as QRCode from 'qrcode';
 import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
+import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
 
 @Component({
   selector: 'app-epin-cash-out',
@@ -15,9 +16,11 @@ import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
 })
 export class EpinCashOutPage implements OnInit {
 
+  @Input() mmoneyCashout: boolean;
+
   private createSMCProcess: CreateSMCProcess;
   private createEPINProcess: CreateEPINProcess;
-
+  private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
   
   showPhonenumberPage: boolean = true;
   showEPINCashoutPage: boolean = false;
@@ -32,6 +35,7 @@ export class EpinCashOutPage implements OnInit {
   ) { 
     this.createSMCProcess = new CreateSMCProcess(this.apiService, this.vendingAPIService);
     this.createEPINProcess = new CreateEPINProcess(this.apiService, this.vendingAPIService);
+    this.mmoneyCashoutValidationProcess = new MMoneyCashOutValidationProcess(this.apiService, this.vendingAPIService);
   }
 
   ngOnInit() {
@@ -69,10 +73,22 @@ export class EpinCashOutPage implements OnInit {
         
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
         if (this.phonenumber != this.placeholder && this.phonenumber.length != 8) throw new Error(IENMessage.invalidPhonenumber);
-        this.phonenumber = `+85620${this.phonenumber}`;
 
-        this.showPhonenumberPage = false;
-        this.showEPINCashoutPage = true;
+        if (this.mmoneyCashout == false) {
+          this.phonenumber = `+85620${this.phonenumber}`;
+          this.showPhonenumberPage = false;
+          this.showEPINCashoutPage = true;
+        } else {
+          const params = {
+            phonenumber: this.phonenumber
+          }
+          const run = await this.mmoneyCashoutValidationProcess.Init(params);
+          if (run.message != IENMessage.success) throw new Error(run);
+          this.apiService.simpleMessage(IENMessage.cashoutMMoneySuccess);
+          this.apiService.modal.dismiss();
+        }
+        
+
 
         resolve(IENMessage.success);
 
@@ -165,4 +181,5 @@ export class EpinCashOutPage implements OnInit {
     });
   }
 
+  
 }

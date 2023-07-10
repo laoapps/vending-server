@@ -1,24 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { SettingControlMenuPage } from './pages/setting-control-menu/setting-control-menu.page';
 import { environment } from 'src/environments/environment';
+import { IENMessage } from '../models/base.model';
+import axios from 'axios';
 
 @Component({
   selector: 'app-setting',
   templateUrl: './setting.page.html',
   styleUrls: ['./setting.page.scss'],
 })
-export class SettingPage implements OnInit {
+export class SettingPage implements OnInit, OnDestroy {
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   url = localStorage.getItem('url') || environment.url;
   machineId = localStorage.getItem('machineId') || '12345678';
   otp = localStorage.getItem('otp') || '111111';
   contact = localStorage.getItem('contact') || '55516321';
+
+  startM: number = 1;
+  endM = 60;
+  testIn:any;
+
   constructor(
     private apiService: ApiService
   ) { }
 
   ngOnInit() {
+  }
+  ngOnDestroy(): void {
+    if (this.testIn) {
+      clearInterval(this.testIn);
+    }
   }
   save() {
     localStorage.setItem('wsurl', this.wsurl)
@@ -34,5 +46,32 @@ export class SettingPage implements OnInit {
       r.present();
     });
   }
+
+  testMotor() {
+    if (!this.testIn) {
+      setInterval(() => {
+        if (this.startM <= this.endM) {
+          const params = {
+            command: 'test',
+            data: {
+              slot: this.startM
+            }
+          }
+          axios.post('http://localhost:19006', params).then(r => this.apiService.simpleMessage(`test motor ${this.startM} success`, 1000)).catch(error => this.apiService.simpleMessage(`test motor ${this.startM} fail`))
+          this.startM+=1;
+
+        } else {
+          this.apiService.simpleMessage(IENMessage.testMotorSuccess);
+          clearInterval(this.testIn);
+          this.testIn = null;
+        }
+      }, 3000)
+    } else {
+      this.apiService.simpleMessage(IENMessage.testMotorSuccess);
+      clearInterval(this.testIn);
+      this.testIn = null;
+    }
+  }
+
 
 }

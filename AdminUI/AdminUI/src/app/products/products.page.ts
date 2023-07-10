@@ -73,7 +73,7 @@ export class ProductsPage implements OnInit {
       ro?.onDidDismiss().then(r => {
         console.log(r);
         if (r.data.s) {
-
+          console.log(`---->`, r.data.s.image);
           const base64 = r.data.s.image;
           const formfile = new FormData();
           const fileuuid = r.data.s.fileuuid;
@@ -95,6 +95,7 @@ export class ProductsPage implements OnInit {
               }, error => this.apiService.simpleMessage(IENMessage.writeFileError));
             }
 
+            console.log(`r_writefile der`, r_writeFile);
             delete r.data.s.file;
             delete r.data.s.fileuuid;
             r.data.s.image = r_writeFile.data[0].info.fileUrl;
@@ -109,8 +110,8 @@ export class ProductsPage implements OnInit {
                   return;
                 }, error => this.apiService.simpleMessage(IENMessage.writeFileError));
               }
-
-              rx.data.s.image = base64;
+              console.log(`rx data`, rx.data);
+              rx.data.image = base64;
               this._l.unshift(rx.data);
             }, error => this.apiService.simpleMessage(IENMessage.addMachineError));
           }, error => this.apiService.simpleMessage(IENMessage.writeFileError));
@@ -173,15 +174,16 @@ export class ProductsPage implements OnInit {
       })
     })
   }
-  disable(id: number) {
-    const s = this._l.find(v => v.id == id);
+  disable(data: any) {
+    const s = this._l.find(v => v.id == data.id);
     if (!s) return alert('Not found')
 
-    this.apiService.disableProduct(s.isActive, id).subscribe(rx => {
+    this.apiService.disableProduct(s.isActive, data.id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
         this._l.find((v, i) => {
           if (v.id == rx.data.id) {
+            rx.data.image = data.image;
             this._l.splice(i, 1, ...[rx.data]);
             return true;
           }

@@ -16,6 +16,7 @@ export class HowToPage implements OnInit {
   currentPlay: any = {} as any;
   autoPlayVideo: boolean = false;  
   lists: Array<any> = [];
+  currentPlaying: boolean = false;
 
   constructor(
     // private videoPlayer: VideoPlayer,
@@ -62,19 +63,34 @@ export class HowToPage implements OnInit {
       this.autoPlayVideo = JSON.parse(local).auto_play_video;
     }
   }
+
   loadCurrentPlay(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
         this.currentPlay = this.lists[0];
-        const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
-        howToPlayer.src = this.currentPlay.video;
+        const howToPlayerCover = (document.querySelector('#how-to-player-cover') as HTMLVideoElement);
 
         let i = setInterval(() => {
-
+          const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
           const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
+          howToPlayer.src = this.currentPlay.video;
+
+          howToPlayerCover.addEventListener('click', () => {
+            if (this.currentPlaying == false) {
+              howToPlayerCover.classList.remove('active');
+              howToPlayer.classList.add('active');
+              howToPlayer.play();
+            }
+          });
 
           if (this.autoPlayVideo == true) {
             autoPlayVideo.checked = true;
+            howToPlayer.src = this.currentPlay.video;
+            setTimeout(() => {
+              howToPlayer.classList.add('active');
+              howToPlayerCover.classList.remove('active');
+              this.currentPlaying = true;
+            }, 1000);
 
             howToPlayer.play();
           }
@@ -96,14 +112,25 @@ export class HowToPage implements OnInit {
       try {
         
         const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
-        
+        const howToPlayerCover = (document.querySelector('#how-to-player-cover') as HTMLVideoElement);
+
         const current = this.lists.filter(item => item.id == id)[0];
         if (current.video == undefined) throw new Error(IENMessage.notFoundFile);
-
         this.currentPlay = current;
+
+        howToPlayer.classList.remove('active');
+        howToPlayerCover.classList.add('active');
+        howToPlayerCover.src = this.currentPlay.cover;
         howToPlayer.src = this.currentPlay.video;
         howToPlayer.load();
         howToPlayer.play();
+        
+        setTimeout(() => {
+          howToPlayer.classList.add('active');
+          howToPlayerCover.classList.remove('active');
+        }, 1000);
+
+
         resolve(IENMessage.success);
 
       } catch (error) {

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { VENDING_CashValidation, VENDING_CashinValidation, VENDING_CreateEPIN, VENDING_CreateSMC, VENDING_LoadSMC, VENDING_PaidValidation, VENDING_ShowVendingWalletCoinBalance, VENDING_TransferValidation } from '../models/vending.model';
+import { VENDING_CashValidation, VENDING_CashinValidation, VENDING_CreateEPIN, VENDING_CreateSMC, VENDING_LoadSMC, VENDING_MMoneyCashoutValidation, VENDING_PaidValidation, VENDING_ShowVendingWalletCoinBalance, VENDING_TransferValidation } from '../models/vending.model';
 
 @Injectable({
   providedIn: 'root'
@@ -38,5 +38,16 @@ export class VendingAPIService {
   }
   transferValidation(params: VENDING_TransferValidation): Observable<any> {
     return this.http.post(this.url + '/laab/client/transfer_validation', params);
+  }
+
+
+
+
+
+
+
+  // MMoney
+  mmoneyCashValidation(params: VENDING_MMoneyCashoutValidation): Observable<any> {
+    return this.http.post(this.url + '/credit_mmoney', params);
   }
 }

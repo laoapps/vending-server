@@ -118,11 +118,11 @@ ion-content {
                     }
                 }
                 
-                video {
+                .how-to-player {
+                    display: none;
                     height: 600px;
-                    // width: 320px;
                     border-radius: 5px;
-                    z-index: 0;
+                    transition: .2s;
 
                     .hello {
                         font-size: 30px;
@@ -130,10 +130,17 @@ ion-content {
                         left: 300px;
                     }
                 }
-                video::-webkit-media-controls-fullscreen-button { display: none; }
-                // video::-webkit-media-controls-download-button {
-                //     display:none;
-                // }
+                .how-to-player-cover {
+                    display: none;
+                    transition: .2s;
+                    height: 601px;
+                    width: 530px;
+                }
+                .how-to-player::-webkit-media-controls-fullscreen-button { display: none; }
+                .how-to-player.active,
+                .how-to-player-cover.active {
+                    display: block;
+                }
                 
 
                 color: #fff;
@@ -185,6 +192,11 @@ ion-content {
                             height: 250px;
                             border-radius: 5px;
                             border: 1px solid #3333;
+                        }
+
+                        .list-cover {
+                            width: 200px;
+                            height: 250px;
                         }
                         
                     }

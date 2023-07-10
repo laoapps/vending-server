@@ -34,6 +34,20 @@ export interface VENDING_TransferValidation extends IBase {
 
 
 
+
+
+
+
+
+// MMoney
+export interface VENDING_MMoneyCashoutValidation extends IBase {
+    phonenumber: string
+}
+
+
+
+
+
 export enum ITopupServiceMenu {
     phone_payment='phone_payment',
     electricity_payment='electricity_payment',

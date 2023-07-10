@@ -1,4 +1,7 @@
 export enum IENMessage {
+    cashoutMMoneySuccess = 'cash out MMoney success',
+    testMotor = 'test motor',
+    testMotorSuccess = 'test motors success',
     notFoundFile = 'not found file',
     vendingSaleListEmpty = 'vending sale list empty',
     loadVendingSaleListFail = 'load vending sale list fail',

@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { LaabCashoutPage } from '../laab-cashout/laab-cashout.page';
 import { EpinCashOutPage } from '../epin-cash-out/epin-cash-out.page';
 import { ControlMenuService } from 'src/app/services/control-menu.service';
+import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
+import { VendingAPIService } from 'src/app/services/vending-api.service';
 
 @Component({
   selector: 'app-stack-cashout',
@@ -15,9 +17,12 @@ export class StackCashoutPage implements OnInit {
     private CONTROL_MENUList: Array<{ name: string, status: boolean }> = [];
     private links: NodeListOf<HTMLLinkElement>;
 
+
   constructor(
-    private apiService: ApiService
-  ) { }
+    private apiService: ApiService,
+    private vendingAPIService: VendingAPIService
+  ) { 
+  }
 
   ngOnInit() {
     this.dynamicControlMenu();
@@ -61,6 +66,20 @@ export class StackCashoutPage implements OnInit {
 
   close() {
     this.apiService.modal.dismiss();
+  }
+
+  mmoneyCashout(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        this.apiService.modal
+          .create({ component: EpinCashOutPage, componentProps: {} })
+          .then((r) => {
+            r.present();
+          });
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
   }
 
   dynamicControlMenu() {
