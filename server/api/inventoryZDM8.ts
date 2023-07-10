@@ -496,7 +496,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const resx = {} as IResModel;
                     resx.command = EMACHINE_COMMAND.refresh;
                     resx.message = EMessage.refreshsucceeded;
-                    this.sendWS(ws['machineId'],resx)
+                    this.sendWSToMachine(ws['machineId'],resx)
                     res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded));
 
                 } catch (error) {
