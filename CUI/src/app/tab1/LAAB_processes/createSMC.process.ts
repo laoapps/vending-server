@@ -68,7 +68,7 @@ export class CreateSMCProcess {
 
     private InitParams(params: any): void {
         this.cash = params.cash;
-        this.phonenumber = params.cash;
+        this.phonenumber = params.phonenumber;
         this.description = 'VENDING CASH OUT TO SMART CONTRACT';
     }
 

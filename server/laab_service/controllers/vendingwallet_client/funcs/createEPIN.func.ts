@@ -105,9 +105,7 @@ export class CreateEPINFunc {
                         creator: this.sender,
                         phonenumber: this.phonenumber,
                         SMC: {
-                            detail: {
-                                link: this.detail.link
-                            }
+                            detail: this.detail
                         },
                         EPIN: {
                             destination: '',
