@@ -108,7 +108,7 @@ export class WsapiService {
 
             break;
           case 'refresh':
-            this.refreshSubscription.next(data.data);
+            this.refreshSubscription.next(data);
             break;
 
           // query today bill
