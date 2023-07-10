@@ -108,6 +108,7 @@ export class WsapiService {
 
             break;
           case 'refresh':
+            console.log(`en`);
             this.refreshSubscription.next(data);
             break;
 

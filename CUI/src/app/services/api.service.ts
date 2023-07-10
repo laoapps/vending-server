@@ -141,6 +141,7 @@ export class ApiService {
     });
 
     this.wsapi.refreshSubscription.subscribe(r => {
+      console.log(`refreshing`, r);
       if (r) {
         setTimeout(() => {
           window.location.reload();
