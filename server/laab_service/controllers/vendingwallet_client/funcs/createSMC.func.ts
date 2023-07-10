@@ -5,6 +5,7 @@ import { IVendingWalletType } from "../../../models/base.model";
 import { genCode, genModel, genQRCode } from "../../../../services/epin.service";
 import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../entities";
 import jwt from "jsonwebtoken";
+import { writeMachineBalance } from "../../../../services/service";
 
 export class CreateSMCFunc {
 
@@ -284,6 +285,8 @@ export class CreateSMCFunc {
                 const run = await epinshortcodeEntity.create(params, { transaction: this.transaction });
                 if (!run) return resolve(IENMessage.createEPINShortCodeFail);
                 
+                writeMachineBalance(this.machineId, '0');
+
                 this.response = {
                     detail: this.detail,
                     bill: this.bill,

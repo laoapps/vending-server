@@ -3,6 +3,7 @@ import axios from "axios";
 import { IENMessage, LAAB_CoinTransfer, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
+import { writeMachineBalance } from "../../../../services/service";
 
 export class ShowVendingWalletCoinBalanceFunc {
 
@@ -133,6 +134,8 @@ export class ShowVendingWalletCoinBalanceFunc {
                 const run = await axios.post(LAAB_ShowMyCoinWalletBalance, params);
                 if (run.data.status != 1) return resolve(IENMessage.notFoundYourMerchantCoin);
 
+                writeMachineBalance(this.machineId, run.data.info.balance);
+
                 this.response = {
                     balance: run.data.info.balance,
                     uuid: this.suuid,
@@ -148,4 +151,5 @@ export class ShowVendingWalletCoinBalanceFunc {
             }
         });
     }
+
 }

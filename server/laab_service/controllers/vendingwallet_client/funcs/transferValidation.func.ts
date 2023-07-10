@@ -2,6 +2,7 @@ import axios from "axios";
 import { IENMessage, LAAB_CoinTransfer, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
+import { writeMachineBalance } from "../../../../services/service";
 
 export class TransferValidationFunc {
 
@@ -129,6 +130,9 @@ export class TransferValidationFunc {
                     description: this.description,
                     qr: JSON.stringify(h)
                 }
+
+                writeMachineBalance(this.machineId, '0');
+
                 this.response = {
                     bill: bill,
                     message: IENMessage.success
