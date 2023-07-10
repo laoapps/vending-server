@@ -492,7 +492,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const m = req.body.machineId;
                     const ws =this.wsClient.find(v=>v['machineId']==m);
                     // const w = ws.find(v=>v['clientId']);
-                    console.log(`----------->`, ws, m);
+                    console.log(`----------->`, m);
                     const resx = {} as IResModel;
                     resx.command = EMACHINE_COMMAND.refresh;
                     resx.message = EMessage.refreshsucceeded;
