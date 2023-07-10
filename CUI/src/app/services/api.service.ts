@@ -117,6 +117,7 @@ export class ApiService {
       try {
         if (!r) return console.log('empty');
         console.log('ws alive subscription', r);
+        
         this.cash = r.balance;
         this.wsAlive.time = new Date();
         this.wsAlive.isAlive = this.checkOnlineStatus();

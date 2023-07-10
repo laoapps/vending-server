@@ -85,7 +85,7 @@ import { Op } from "sequelize";
 import fs from "fs";
 import { getNanoSecTime } from "../services/service";
 import { APIAdminAccess, IENMessage } from "../services/laab.service";
-import { CashValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func";
+import { CashVendingLimiterValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashLimiterValidation.func";
 import {
     BillCashInFactory,
     BillCashInStatic,

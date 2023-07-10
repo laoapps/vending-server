@@ -1,4 +1,4 @@
-import { CashValidationFunc } from "../funcs/cashValidation.func";
+import { CashVendingLimiterValidationFunc } from "../funcs/cashLimiterValidation.func";
 import { Request, Response } from "express";
 import { CashinValidationFunc } from "../funcs/cashinValidation.func";
 import { ShowVendingWalletCoinBalanceFunc } from "../funcs/showVendingWalletCoinBalance.func";
@@ -10,6 +10,7 @@ import { CreateEPINFunc } from "../funcs/createEPIN.func";
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
 import { FindEPINShortCodeFunc } from "../../vendingwallet_admin/funcs/findEPINShortcode.func";
 import { ShowEPINShortCodeFunc } from "../../vendingwallet_admin/funcs/showEPINShortcode.func";
+import { CashVendingWalletValidationFunc } from "../funcs/cashVendingWalletValidation.func";
 
 export class ReadPanel {
 
@@ -34,9 +35,28 @@ export class ReadPanel {
         }
     }
 
-    public CashValidation(req: Request, res: Response) {
+    public CashVendingLimiterValidation(req: Request, res: Response) {
         try {
-            const func = new CashValidationFunc();
+            const func = new CashVendingLimiterValidationFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public CashVendingWalletValidation(req: Request, res: Response) {
+        try {
+            const func = new CashVendingWalletValidationFunc();
             const data = req.body;
             func.Init(data).then(run => {
                 if (run.message != IENMessage.success) {

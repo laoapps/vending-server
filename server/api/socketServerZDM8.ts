@@ -1,9 +1,9 @@
 import net from 'net';
 import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel, IMachineID, ERedisCommand, IBillProcess, IBillCashIn, EEntity } from '../entities/system.model';
 import cryptojs from 'crypto-js';
-import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineSetting } from '../services/service';
+import { readMachineSetting, redisClient, writeLogs, writeMerchantLimiterBalance, writeMachineSetting, readMachineLimiterBalance } from '../services/service';
 import { EventEmitter } from 'events';
-import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
+import { CashVendingLimiterValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashLimiterValidation.func';
 import { v4 as uuid4 } from 'uuid';
 import { dbConnection } from '../entities';
 import { BillCashInStatic, BillCashInFactory } from '../entities/billcash.entity';
@@ -165,12 +165,13 @@ export class SocketServerZDM8 {
                                 /// update balance
                                 const m = mx[0]['machineId'] as IMachineClientID;
 
-                                const func = new CashValidationFunc();
+                                const func = new CashVendingLimiterValidationFunc();
                                 const params = {
                                     machineId: m.machineId
                                 }
                                 console.log(`machine der`, params);
                                 // const limiter =100000;
+                               
                                 func.Init(params).then(run => {
                                     const response: any = run;
                                     console.log(`response`, response);
@@ -178,6 +179,7 @@ export class SocketServerZDM8 {
                                         console.log(`cash validate fail`, response?.message);
                                         // socket.end();
                                     }
+                                    // readMachineLimiterBalance(x.machineId);
                                     readMachineSetting(m.machineId).then(r=>{
                                         let setting ={} as any
                                         if(r){
@@ -409,6 +411,9 @@ export class SocketServerZDM8 {
         this.machineIds.push(...data)
         // this.machineIds.forEach(v=>v.photo='');
         this.initMachineSetting(m);
+        // init machine balance
+        // init merchant limiter
+        // init merchant balance
     }
     initMachineSetting(m: Array<IMachineClientID>){
         m.forEach(v=>{

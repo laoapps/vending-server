@@ -19,7 +19,7 @@ import { dbConnection } from '../entities';
 import { MachineIDFactory, MachineIDStatic } from '../entities/machineid.entity';
 import { IENMessage, Self_CALLBACK_CashinValidation, Self_CALLBACK_CashValidation } from '../services/laab.service';
 import { CashinValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashinValidation.func';
-import { CashValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashValidation.func';
+import { CashVendingLimiterValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashLimiterValidation.func';
 export class CashNV9LAAB
  implements IBaseClass {
     // websocket server for vending controller only
@@ -345,7 +345,7 @@ export class CashNV9LAAB
                                 if (!sock) throw new Error('machine is not online');
                                 this.ssocket.terminateByClientClose(machineId.machineId)
 
-                                const func = new CashValidationFunc();
+                                const func = new CashVendingLimiterValidationFunc();
                                 const params = {
                                     machineId: machineId.machineId
                                 }

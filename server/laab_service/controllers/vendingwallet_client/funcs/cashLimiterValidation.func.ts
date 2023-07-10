@@ -6,7 +6,7 @@ import { vendingWallet } from "../../../../entities";
 import { stringify } from "uuid";
 import { writeMachineBalance } from "../../../../services/service";
 
-export class CashValidationFunc {
+export class CashVendingLimiterValidationFunc {
 
     private machineId:string;
 
@@ -191,7 +191,7 @@ export class CashValidationFunc {
                 this.balance = Number(run.data.info.balance);
                 // if (this.balance <= 100000) return resolve(IENMessage.cashValidationFail);
                 console.log(`balance`, this.balance);
-                writeMachineBalance(this.machineId, String(this.balance));
+                // writeMachineBalance(this.machineId, String(this.balance));
 
                 // let acceptcash: number = 0;
                 // if (this.balance >= 200000) {

@@ -6,7 +6,7 @@ import { dbConnection, vendingWallet } from "../../../../entities";
 import { v4 as uuid4 } from 'uuid';
 import { EClientCommand, EEntity, EPaymentStatus, IVendingMachineSale } from "../../../../entities/system.model";
 import { VendingMachineBillFactory, VendingMachineBillStatic } from "../../../../entities/vendingmachinebill.entity";
-import { redisClient, writeErrorLogs, writeLogs, writeSucceededRecordLog } from "../../../../services/service";
+import { redisClient, writeErrorLogs, writeLogs, writeMachineBalance, writeSucceededRecordLog } from "../../../../services/service";
 
 export class PaidValidationFunc {
 
@@ -208,6 +208,15 @@ export class PaidValidationFunc {
                     message: IENMessage.success
                 }
 
+                const vendingBalance = await redisClient.get('_balance_');
+                if (vendingBalance != undefined && vendingBalance != null) {
+                    const balance = Number(vendingBalance) - this.cash;
+                    writeMachineBalance(this.machineId, String(balance));
+                } else {
+                    writeMachineBalance(this.machineId, String(this.cash));
+                }
+                
+
                 resolve(IENMessage.success);
 
             } catch (error) {
@@ -231,6 +240,7 @@ export class PaidValidationFunc {
                 }
                 console.log(`params`, params);
                 const run = await axios.post(path, params);
+                
                 console.log(`confirm`, run.data);
                 if (run.data.status != 1) {
                     writeErrorLogs(IENMessage.laabConfirmBillFail, run.data);
