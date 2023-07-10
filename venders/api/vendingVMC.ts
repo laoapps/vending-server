@@ -32,7 +32,7 @@ export class VendingVMC {
 
     pendingRetry = 10;// 10s
 
-    firstInit=true;
+    // firstInit=true;
     constructor(sock: SocketClientVMC) {
         this.sock = sock;
         const that = this;
@@ -200,10 +200,10 @@ export class VendingVMC {
                     // new 50k not working
                     // fafb21067c01 00989680 d5 == 10000000 == 100000,00
                     // new 100k not working
-                    if(that.firstInit){
-                        that.firstInit=false;
-                        return;
-                    }
+                    // if(that.firstInit){
+                    //     that.firstInit=false;
+                    //     return;
+                    // }
 
                     const t = Number('-21' + moment.now());
                     const v = that.getNoteValue(b);
@@ -482,7 +482,7 @@ export class VendingVMC {
 
 
                     }
-                    that.firstInit=false;
+                    // that.firstInit=false;
                     break;
                 case EZDM8_COMMAND.logs:
                     const duration = params?.duration || 15;
