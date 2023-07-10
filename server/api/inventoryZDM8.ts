@@ -2532,33 +2532,33 @@ export class InventoryZDM8 implements IBaseClass {
                 });
             });
 
-            /// NEED TO UPDATE AND CHANGE LATER USING SOCKET UPDATE FROM LAAB 06072023
-            setInterval(() => {
-                const onlineId = [];
-                this.ssocket.machineIds.forEach((v, i) => {
-                    if (this.ssocket.findOnlneMachine(v.machineId)) {
-                        setTimeout(() => {
-                            const func = new CashValidationFunc();
-                            const params = {
-                                machineId: v.machineId
-                            }
-                            func.Init(params).then(run => {
-                                const response: any = run;
-                                console.log(`response`, response);
-                                if (response.message != IENMessage.success) {
-                                    console.log(`cash validate fail`, response?.message);
-                                    // socket.end();
-                                }
-                                writeMachineLimiterBalance(v.machineId,response?.balance);
-                            }).catch(error => {
-                                console.log(`cash validation error`, error.message);
-                                // socket.end();
-                            });
-                        }, 100 * i);
-                    }
-                });
+            /// ****#### NEED TO UPDATE AND CHANGE LATER USING SOCKET UPDATE FROM LAAB 06072023
+            // setInterval(() => {
+            //     const onlineId = [];
+            //     this.ssocket.machineIds.forEach((v, i) => {
+            //         if (this.ssocket.findOnlneMachine(v.machineId)) {
+            //             setTimeout(() => {
+            //                 const func = new CashValidationFunc();
+            //                 const params = {
+            //                     machineId: v.machineId
+            //                 }
+            //                 func.Init(params).then(run => {
+            //                     const response: any = run;
+            //                     console.log(`response`, response);
+            //                     if (response.message != IENMessage.success) {
+            //                         console.log(`cash validate fail`, response?.message);
+            //                         // socket.end();
+            //                     }
+            //                     writeMachineLimiterBalance(v.machineId,response?.balance);
+            //                 }).catch(error => {
+            //                     console.log(`cash validation error`, error.message);
+            //                     // socket.end();
+            //                 });
+            //             }, 100 * i);
+            //         }
+            //     });
 
-            }, 10000)
+            // }, 10000)
 
         });
     }

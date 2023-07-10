@@ -3,7 +3,7 @@ import axios from "axios";
 import { IENMessage, LAAB_CoinTransfer, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
-import { redisClient, writeMerchantLimiterBalance } from "../../../../services/service";
+import { redisClient, writeMachineBalance, writeMerchantLimiterBalance } from "../../../../services/service";
 
 export class CashinValidationFunc {
 
@@ -227,7 +227,17 @@ export class CashinValidationFunc {
                 }
 
                 const lastBalance: number = Number(this.balance) - Number(this.cash);
+
+                const vendingBalance = await redisClient.get('_balance_');
+                if (vendingBalance != undefined && vendingBalance != null) {
+                    const balance = Number(vendingBalance) + this.cash;
+                    writeMachineBalance(this.machineId, String(balance));
+                } else {
+                    writeMachineBalance(this.machineId, String(this.cash));
+                }
+                
                 writeMerchantLimiterBalance(this.ownerUuid, lastBalance.toString());
+
 
                 this.response = {
                     bill: bill,
