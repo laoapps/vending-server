@@ -15,6 +15,7 @@ export class CreateEPINFunc {
     private connection: any = {} as any;
     private coinName: string;
     private passkeys: string;
+    private uuid: string;
     private response: any = {} as any;
 
     constructor(){}
@@ -180,15 +181,7 @@ export class CreateEPINFunc {
 
                 const run = await axios.post(EPIN_Generate, params);
                 console.log(`response`, run.data);
-                if (run.data.status != 1) {
-                    this.response.errorder = {}
-                    this.response.errorder = {
-                        message: run.data.message,
-                        text: run.data.message,
-                        eeeee: 'error create epin coupon',
-                    }
-                    return resolve(run.data.message);
-                }
+                if (run.data.status != 1) return resolve({  er: 'error create epin der', ms: run.data.message});
 
                 
                 resolve(IENMessage.success);
