@@ -115,7 +115,9 @@ export class CreateEPINFunc {
                         creator: this.sender,
                         phonenumber: this.phonenumber,
                         SMC: {
-                            detail: this.detail
+                            detail: {
+                                link: this.detail.link
+                            }
                         },
                         EPIN: {
                             destination: '',
@@ -127,9 +129,9 @@ export class CreateEPINFunc {
                 const run = await epinshortcodeEntity.findOne(condition);
                 if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
 
-                // const left: string = JSON.stringify(run.SMC.detail);
-                // const right: string = JSON.stringify(this.detail);
-                // if (left != right) return resolve(IENMessage.detailUmatch);
+                const left: string = JSON.stringify(run.SMC.detail);
+                const right: string = JSON.stringify(this.detail);
+                if (left != right) return resolve(IENMessage.detailUmatch);
 
                 this.connection = run;
                 resolve(IENMessage.success);
