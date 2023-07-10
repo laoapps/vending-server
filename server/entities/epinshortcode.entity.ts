@@ -8,7 +8,7 @@ export interface IEPINShortCode {
     phonenumber: string,
     SMC: any,
     EPIN: {
-        destination: {},
+        destination: any,
         coinname: string,
         name: string
     },
