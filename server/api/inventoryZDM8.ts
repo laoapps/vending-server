@@ -490,14 +490,14 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(this.path + "/refreshMachine", this.checkToken, async (req, res) => {
                 try {
                     const m = req.body.machineId;
-                    const ws =this.wsClient.filter(v=>v['machineId']==m);
-                    const w = ws.find(v=>v['clientId']);
-                    console.log(`----------->`, ws, w, m);
+                    const ws =this.wsClient.find(v=>v['machineId']==m);
+                    // const w = ws.find(v=>v['clientId']);
+                    console.log(`----------->`, ws, m);
                     const resx = {} as IResModel;
                     resx.command = EMACHINE_COMMAND.refresh;
                     resx.message = EMessage.refreshsucceeded;
-                    this.sendWS(w['clientId'],resx)
-                    res.send(PrintSucceeded("refreshMachine", !!w, EMessage.succeeded));
+                    this.sendWS(ws['machineId'],resx)
+                    res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded));
 
                 } catch (error) {
                     console.log(error);
