@@ -3,6 +3,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { TransferValidationProcess } from '../../LAAB_processes/transferValidation.process';
+import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
 
 @Component({
   selector: 'app-laab-cashout',
@@ -13,6 +14,7 @@ export class LaabCashoutPage implements OnInit {
 
   @Input() state: string;
   private transferValidationProcess: TransferValidationProcess;
+  private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
 
   numberList: Array<string> = [];
   placeholder: string = 'ENTER PHONE NUMBER';
@@ -23,6 +25,8 @@ export class LaabCashoutPage implements OnInit {
     public vendingAPIService: VendingAPIService
   ) { 
     this.transferValidationProcess = new TransferValidationProcess(this.apiService, this.vendingAPIService);
+    this.mmoneyCashoutValidationProcess = new MMoneyCashOutValidationProcess(this.apiService, this.vendingAPIService);
+
   }
 
   ngOnInit() {
@@ -59,6 +63,18 @@ export class LaabCashoutPage implements OnInit {
       try {
        
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
+
+        if (this.state == 'MMoney')
+        {
+          const params = {
+            phonenumber: this.phonenumber
+          }
+          const run = await this.mmoneyCashoutValidationProcess.Init(params);
+          if (run.message != IENMessage.success) throw new Error(run);
+          this.apiService.simpleMessage(IENMessage.cashoutMMoneySuccess);
+          this.apiService.modal.dismiss();
+          return resolve(IENMessage.success);
+        }
 
         const params = {
           machineId: localStorage.getItem('machineId'),

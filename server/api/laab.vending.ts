@@ -132,6 +132,13 @@ export class LaabVendingAPI {
 
 
 
+        router.post('/mmoney/client/cashout_validation', this.APIMachineAccess, (req: Request, res: Response) => {
+            message([], IENMessage.notImplemented, IStatus.unsuccess, res);
+        });
+
+
+
+
 
         QCreateMerchant.process((job, done) => {
             const d = job.data;

@@ -16,11 +16,9 @@ import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCasho
 })
 export class EpinCashOutPage implements OnInit {
 
-  @Input() mmoneyCashout: boolean;
 
   private createSMCProcess: CreateSMCProcess;
   private createEPINProcess: CreateEPINProcess;
-  private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
   
   showPhonenumberPage: boolean = true;
   showEPINCashoutPage: boolean = false;
@@ -35,7 +33,6 @@ export class EpinCashOutPage implements OnInit {
   ) { 
     this.createSMCProcess = new CreateSMCProcess(this.apiService, this.vendingAPIService);
     this.createEPINProcess = new CreateEPINProcess(this.apiService, this.vendingAPIService);
-    this.mmoneyCashoutValidationProcess = new MMoneyCashOutValidationProcess(this.apiService, this.vendingAPIService);
   }
 
   ngOnInit() {
@@ -74,22 +71,10 @@ export class EpinCashOutPage implements OnInit {
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
         if (this.phonenumber != this.placeholder && this.phonenumber.length != 8) throw new Error(IENMessage.invalidPhonenumber);
 
-        if (this.mmoneyCashout == false) {
-          this.phonenumber = `+85620${this.phonenumber}`;
-          this.showPhonenumberPage = false;
-          this.showEPINCashoutPage = true;
-        } else {
-          const params = {
-            phonenumber: this.phonenumber
-          }
-          const run = await this.mmoneyCashoutValidationProcess.Init(params);
-          if (run.message != IENMessage.success) throw new Error(run);
-          this.apiService.simpleMessage(IENMessage.cashoutMMoneySuccess);
-          this.apiService.modal.dismiss();
-        }
-        
+        this.showPhonenumberPage = false;
+        this.showEPINCashoutPage = true;
 
-
+      
         resolve(IENMessage.success);
 
       } catch (error) {

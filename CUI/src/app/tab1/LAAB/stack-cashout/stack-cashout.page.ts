@@ -63,6 +63,7 @@ export class StackCashoutPage implements OnInit {
       }
     });
   }
+  
 
   close() {
     this.apiService.modal.dismiss();
@@ -72,7 +73,7 @@ export class StackCashoutPage implements OnInit {
     return new Promise<any>(async (resolve, reject) => {
       try {
         this.apiService.modal
-          .create({ component: EpinCashOutPage, componentProps: {} })
+          .create({ component: EpinCashOutPage, componentProps: { mmoneyCashout: true } })
           .then((r) => {
             r.present();
           });

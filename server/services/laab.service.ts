@@ -53,6 +53,7 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    notImplemented = 'not implemented',
     detailUmatch = 'detail unmatch',
     scanQREPINsuccessButSaveLogEPINShortCodeFail = 'scan QREPIN success but save log EPIN short code fail',
     updateEPINShortCodeFail = 'update EPIN short code fail',
