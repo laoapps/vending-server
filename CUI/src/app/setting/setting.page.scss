@@ -36,3 +36,40 @@
         background: #f5f6f7;
     }
 }
+
+.test-motor-form {
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+
+    span {
+        width: 60px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .display-test-result {
+        margin-top: 15px;
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        padding-bottom: 5px;
+
+        .title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .group {
+           display: grid;
+           grid-template-columns: repeat(3,1fr);
+           grid-gap: 10px;
+
+           a {
+            text-decoration: none;
+            font-size: 12px;
+           }
+        }
+    }
+}

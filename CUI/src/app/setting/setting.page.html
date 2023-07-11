@@ -38,19 +38,40 @@
       </div>
       <div class="text">Control Menu</div>
     </a>
-    <a (click)="openSettingControlMenu()" href="javascript:void(0)" class="item">
+    <a (click)="testMotor()" href="javascript:void(0)" class="item">
       <div class="icon">
-        <i class="fa-solid fa-display"></i>
+        <i class="fa-solid fa-gears"></i>
       </div>
-      <div class="text">Test Motors</div>
+      <div class="text">{{ testInTitle }}</div>
     </a>
   </div>
 
-  <div class="test-motor-list">
+  <div class="test-motor-form">
     <div class="input-group">
-      <span class="input-group-text" id="basic-addon1">@</span>
-      <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+      <span class="input-group-text">Start</span>
+      <input [(ngModel)]="startM" type="number" class="form-control" placeholder="motor start from">
+    </div>
+    <div class="input-group  mt-2">
+      <span class="input-group-text">End</span>
+      <input [(ngModel)]="endM" type="number" class="form-control" placeholder="end of motor">
+    </div>
+    <div class="display-test-result">
+      <div class="left">
+        <div class="title">SUCCESS</div>
+        <div class="group">
+          <a *ngFor="let item of successList; let i = index;" class="text-success" href="javascript:void(0)">Motor: {{ item }}</a>
+        </div>
+        <div class="text">Result: {{ successList.length || 0 }}</div>
+      </div>
+      <div class="right">
+        <div class="title">ERROR</div>
+        <div class="group">
+          <a *ngFor="let item of errorList; let i = index;" class="text-danger" href="javascript:void(0)">Motor: {{ item }}</a>
+        </div>
+        <div class="text">Result: {{ errorList.length || 0 }}</div>
+      </div>
     </div>
   </div>
+
 
 </ion-content>

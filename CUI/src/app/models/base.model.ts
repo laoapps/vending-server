@@ -1,4 +1,6 @@
 export enum IENMessage {
+    endShouldMoreThenStart = 'end should more then start',
+    startShouldLesterThenEnd = 'start should lester then end',
     cashoutMMoneySuccess = 'cash out MMoney success',
     testMotor = 'test motor',
     testMotorSuccess = 'test motors success',

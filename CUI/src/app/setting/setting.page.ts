@@ -20,6 +20,11 @@ export class SettingPage implements OnInit, OnDestroy {
   startM: number = 1;
   endM = 60;
   testIn:any;
+  testInTitle: string = 'test motor';
+
+  successList: Array<number> = [];
+  errorList: Array<number> = [];
+  
 
   constructor(
     private apiService: ApiService
@@ -47,31 +52,109 @@ export class SettingPage implements OnInit, OnDestroy {
     });
   }
 
-  testMotor() {
-    if (!this.testIn) {
-      setInterval(() => {
-        if (this.startM <= this.endM) {
-          const params = {
-            command: 'test',
-            data: {
-              slot: this.startM
-            }
-          }
-          axios.post('http://localhost:19006', params).then(r => this.apiService.simpleMessage(`test motor ${this.startM} success`, 1000)).catch(error => this.apiService.simpleMessage(`test motor ${this.startM} fail`))
-          this.startM+=1;
+  testMotor(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      let start = this.startM;
+      let end = this.endM;
+      try {
 
-        } else {
-          this.apiService.simpleMessage(IENMessage.testMotorSuccess);
+        this.successList = [];
+        this.errorList = [];
+
+        if (!(this.startM && this.endM)) throw new Error(IENMessage.parametersEmpty);
+        if (this.startM > this.endM) throw new Error(IENMessage.startShouldLesterThenEnd);
+        if (this.endM < this.startM) throw new Error(IENMessage.endShouldMoreThenStart);
+
+        if (this.testIn) {
+          this.testInTitle = 'test motor';
           clearInterval(this.testIn);
           this.testIn = null;
+          return;
         }
-      }, 3000)
-    } else {
-      this.apiService.simpleMessage(IENMessage.testMotorSuccess);
-      clearInterval(this.testIn);
-      this.testIn = null;
-    }
+
+        this.testInTitle = 'stop test motor';
+        this.testIn = setInterval(() => {
+
+          
+          if (start <= end)
+          {
+
+            const params = {
+              command: 'test',
+              data: {
+                slot: start
+              }
+            }
+            axios.post(`http://localhost:19006`, params)
+            .then(r => {
+              this.successList.push(start);
+              this.apiService.simpleMessage(`SUCCESS: test motor ${start}`, 1000);
+              start+=1;
+
+            })
+            .catch(error => {
+              this.errorList.push(start);
+              this.apiService.simpleMessage(`ERROR: test motor ${start}`, 1000);
+              start+=1;
+            });
+
+          }
+          else 
+          {
+            this.apiService.simpleMessage(`SUCCESS ${this.successList.length || 0 } ERROR ${this.errorList.length || 0 }`, 1000);
+            clearInterval(this.testIn);
+            this.testIn = null;
+            start = this.startM;
+            end = this.endM;
+            this.testInTitle = 'test motor';
+          }
+
+        }, 3000);
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        if (this.testIn != null) clearInterval(this.testIn);
+        this.testIn = null;
+        start = this.startM;
+        end = this.endM;
+        this.testInTitle = 'test motor';
+        resolve(error.message);
+      }
+    })
   }
+
+  // testMotor() {
+  //   if (!(this.startM && this.endM))
+
+  //   if (!this.testIn) {
+  //     setInterval(() => {
+  //       if (this.startM <= this.endM) {
+  //         const params = {
+  //           command: 'test',
+  //           data: {
+  //             slot: this.startM
+  //           }
+  //         }
+  //         axios.post('', params)
+  //         .then(r => this.apiService.simpleMessage(`test motor ${this.startM} success`, 1000))
+  //         .catch(error => this.apiService.simpleMessage(`test motor ${this.startM} fail`, 1000))
+  //         this.startM+=1;
+
+  //       } else {
+  //         this.apiService.simpleMessage(IENMessage.testMotorSuccess, 1000);
+  //         clearInterval(this.testIn);
+  //         this.testIn = null;
+  //         this.startM = 1;
+  //       }
+  //     }, 5000)
+  //   } else {
+  //     this.apiService.simpleMessage(IENMessage.testMotorSuccess, 1000);
+  //     clearInterval(this.testIn);
+  //     this.testIn = null;
+  //   }
+  // }
 
 
 }

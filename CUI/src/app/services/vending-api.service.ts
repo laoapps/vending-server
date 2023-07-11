@@ -48,6 +48,6 @@ export class VendingAPIService {
 
   // MMoney
   mmoneyCashValidation(params: VENDING_MMoneyCashoutValidation): Observable<any> {
-    return this.http.post(this.url + '/credit_mmoney', params);
+    return this.http.post(this.url + '/mmoney/client/cashout_validation', params);
   }
 }
