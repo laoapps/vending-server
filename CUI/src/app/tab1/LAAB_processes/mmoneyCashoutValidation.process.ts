@@ -84,7 +84,7 @@ export class MMoneyCashOutValidationProcess {
 
                 this.vendingAPIService.mmoneyCashValidation(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response mmoney cash out`, response);
+                    console.log(`response mmoney cash out der`, response);
                     if (response.status != 1) return resolve(response.message);
                     this.result = response.info;
                     resolve(IENMessage.success);
