@@ -56,11 +56,11 @@ export class SocketClientVMC {
             console.log('HTTP REQUEST BODY',d);
             
             // { slot: position };
-            const command = req.query['command'];
-            const param = d.data;
+            // const command = req.query['command'];
+            const {command,slot} = d.data;
             if(command=='test'){
 
-                this.m.command(EZDM8_COMMAND.shippingcontrol,param,-1000).then(r=>{
+                this.m.command(EZDM8_COMMAND.shippingcontrol,{slot},-1000).then(r=>{
                     res.send({ status: 1,data:r, message: 'test OK' });
                 }).catch(e=>{
                     res.send({ status: 0, message: 'test error',data:e });
