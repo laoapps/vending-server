@@ -260,7 +260,7 @@ export function findRealDB(token: string): Promise<string> {
 }
 export function writeMachineSetting(machineId: string, setting: any) {
     try {
-        console.log('writeMachineSetting',machineId,setting);
+        // console.log('writeMachineSetting',machineId,setting);
         
         redisClient.set('_setting_' + machineId, JSON.stringify(setting));
     } catch (error) {
