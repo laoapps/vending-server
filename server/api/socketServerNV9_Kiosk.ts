@@ -422,7 +422,7 @@ export class SocketServerESSPKiosk {
                     res.transactionID = transactionID;
                     res.status = 1;
                     res.data = {};
-                    console.log('writing...', x['machineId']);
+                    // console.log('writing...', x['machineId']);
                     return { status: x.write(JSON.stringify(res) + '\n') };
                 } else {
                     console.log('client id socket not found');
@@ -551,7 +551,7 @@ export class SocketServerESSPKiosk {
                     res.transactionID = transactionID;
                     res.status = 1;
                     res.data = { t: 30 };
-                    console.log('writing...', x['machineId']);
+                    // console.log('writing...', x['machineId']);
                     return { status: x.write(JSON.stringify(res) + '\n') };
                 } else {
                     console.log('client id socket not found');

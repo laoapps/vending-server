@@ -479,7 +479,7 @@ export class SocketServerZDM8 {
                 res.transactionID = transactionID;
                 res.status = 1;
                 res.data = { slot: position };
-                console.log('writing...', x['machineId'], 'POSITION', position);
+                // console.log('writing...', x['machineId'], 'POSITION', position);
                 return { position, status: x.write(JSON.stringify(res) + '\n'),code:1};
             } else {
                 console.log('client id socket not found','pos',position,'t',transactionID);
@@ -508,7 +508,7 @@ export class SocketServerZDM8 {
                 res.message = EMessage.updatebalance;
                 res.status = 1;
                 res.data = balance;
-                console.log('writing...', x['machineId'], 'balance', balance);
+                // console.log('writing...', x['machineId'], 'balance', balance);
                 return { balance, status: x.write(JSON.stringify(res) + '\n'),code:1};
             } else {
                 console.log('client id socket not found','balance',balance);
@@ -536,7 +536,7 @@ export class SocketServerZDM8 {
                 res.message = EMessage.updatelimiter;
                 res.status = 1;
                 res.data = limiter;
-                console.log('writing...', x['machineId'], 'limiter', limiter);
+                // console.log('writing...', x['machineId'], 'limiter', limiter);
                 return { limiter, status: x.write(JSON.stringify(res) + '\n'),code:1};
             } else {
                 console.log('client id socket not found','limiter',limiter);
@@ -564,7 +564,7 @@ export class SocketServerZDM8 {
                 res.command = EZDM8_COMMAND.reports
                 res.message = EMessage.requestReports;
                 res.status = 1;
-                console.log('writing...', x['machineId'], 'limiter');
+                // console.log('writing...', x['machineId'], 'limiter');
                 return {  status: x.write(JSON.stringify(res) + '\n'),code:1};
             } else {
                 console.log('client id socket not found');
@@ -591,7 +591,7 @@ export class SocketServerZDM8 {
                 res.command = EZDM8_COMMAND.logs
                 res.message = EMessage.requestReports;
                 res.status = 1;
-                console.log('writing...', x['machineId'], 'limiter');
+                // console.log('writing...', x['machineId'], 'limiter');
                 return {  status: x.write(JSON.stringify(res) + '\n'),code:1};
             } else {
                 console.log('client id socket not found');
@@ -619,7 +619,7 @@ export class SocketServerZDM8 {
                 res.command = EZDM8_COMMAND.deleteReports
                 res.message = EMessage.deleteReport;
                 res.status = 1;
-                console.log('writing...', x['machineId'], 'limiter');
+                // console.log('writing...', x['machineId'], 'limiter');
                 return { time, status: x.write(JSON.stringify(res) + '\n'),code:1};
             } else {
                 console.log('client id socket not found');

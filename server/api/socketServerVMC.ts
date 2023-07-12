@@ -398,7 +398,7 @@ export class SocketServerVMC  extends SocketEmitter{
                 res.transactionID = transactionID;
                 res.status = 1;
                 res.data = { slot: position };
-                console.log('writing...', x['machineId']);
+                // console.log('writing...', x['machineId']);
                 return { position, status: x.write(JSON.stringify(res)+'\n') };
             } else {
                 console.log('client id socket not found');
