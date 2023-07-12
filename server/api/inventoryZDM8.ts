@@ -424,7 +424,10 @@ export class InventoryZDM8 implements IBaseClass {
                             if(!mId) throw new Error('MMoney need IMEI');
 
 
-                            const transactionID = Number(mId.substring(mId.length - 10) + '' + Math.floor(new Date().getTime() / 100));
+                            const emei: string = String(mId.substring(mId.length - 10));
+                            const time: string = String(Math.floor(new Date().getTime() / 100));
+                            console.log(`emei -->`, emei, emei.length, `time -->`, time, time.length);
+                            const transactionID =  Number(emei + time);
                             // const transactionID = Number(
                             //     Number(
                             //         mId.substring(0, mId.length - 10) // 21
