@@ -420,18 +420,18 @@ export class InventoryZDM8 implements IBaseClass {
                             // console.log(' value is valid', sale);
                             let a = machineId?.data?.find(v => v.settingName == 'setting');
                             let mId='';
-                            if(a&&a?.imei)mId='20'+a?.imei; // for MMoney need 10 digits
+                            if(a&&a?.imei)mId=a?.imei; // for MMoney need 10 digits
                             else throw new Error('MMoney need IMEI');
 
                             const transactionID = Number(
                                 Number(
-                                    mId.substring(mId.length - 8)
+                                    mId.substring(mId.length - 10)
                                 ) +
                                 "" +
                                 new Date().getTime()
                             );
                             const qr = await this.generateBillMMoney(
-                                mId,
+                                machineId.machineId,
                                 value,
                                 mId + '' + transactionID + ""
                             );
@@ -441,7 +441,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 clientId,
                                 qr: qr.qrCode,
                                 transactionID,
-                                machineId: mId,
+                                machineId: machineId.machineId,
                                 hashM: "",
                                 hashP: "",
                                 paymentmethod: d.command,

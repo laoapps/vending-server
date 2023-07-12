@@ -218,8 +218,8 @@ export class CloneSaleProcess {
                     });
                 });
 
-                const data = this.lists.filter(item => item.image.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.image.substring(0,4) != 'data');
+                const data = this.lists.filter(item => item.stock.image.substring(0,4) == 'data');
+                const nodata = this.lists.filter(item => item.stock.image.substring(0,4) != 'data');
 
                 if (nodata != undefined && nodata.length > 0)
                 {
