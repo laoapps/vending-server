@@ -1200,7 +1200,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             });
                                             
                                         }
-
+                                        
                                         for(let i = 0; i < cloneList.length; i++) {
                                             const data = {
                                                 machineId: o.machineId,
@@ -1213,7 +1213,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         const loggg = [list, cloneList, models];
                                         sEnt.bulkCreate(models).then(r_clonestock => {
-                                            if (!r_clonestock) return res.send(PrintError("cloneSale", [], EMessage.cloneStockFail));
+                                            if (!r_clonestock) return res.send(PrintError("cloneSale error", [], EMessage.cloneStockFail));
                                             for(let i = 0; i < models.length; i++) {
                                                 models[i].id = r_clonestock[i].id;
                                                 models[i].uuid = r_clonestock[i].uuid;
@@ -1221,7 +1221,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 models[i].createdAt = r_clonestock[i].createdAt;
                                                 models[i].updatedAt = r_clonestock[i].updatedAt;
                                             }
-                                            res.send(PrintError("cloneSale", models, EMessage.succeeded));
+                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded));
                                         }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                     }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                 }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));

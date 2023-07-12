@@ -112,12 +112,15 @@ export class CloneSaleProcess {
 
                 this.apiService.cloneSale(params).subscribe(r => {
                     const response: any = r;
+                    console.log(`response status`, response.status);
+                    console.log(`response data`, response.data);
                     console.log(`response`, response);
                     if (response.status != 1) return resolve(response.message);
                     this.lists = response.data; 
+                    console.log(`lists`, this.lists);
+                    resolve(IENMessage.success);
                 }, error => resolve(error.message));
 
-                resolve(IENMessage.success);
                 
             } catch (error) {
                 resolve(error.message);
