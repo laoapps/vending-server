@@ -3336,7 +3336,7 @@ export class InventoryZDM8 implements IBaseClass {
                             res.message = EMessage.adminloginok;
                             res.status = 1;
                             const token = d.token as string;
-                            console.log('ws[myMachineId]', ws['myMachineId']);
+                            // console.log('ws[myMachineId]', ws['myMachineId']);
 
                             redisClient.get('_admintoken_' + token).then(r => {
                                 console.log('admintoken', r);
@@ -3424,7 +3424,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     console.log('clientid  setting', x);
                                     console.log('clientid  status', mstatus);
                                     const mArray = ws['myMachineId'] as Array<string>;
-                                    console.log('myMachineId', mArray);
+                                    // console.log('myMachineId', mArray);
                                     let mymstatus = [];
                                     let mymsetting = [];
                                     let mymlimiterbalance = '0';
