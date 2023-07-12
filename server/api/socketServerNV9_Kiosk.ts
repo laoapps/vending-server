@@ -154,7 +154,7 @@ export class SocketServerESSPKiosk {
                                 return;
                             }
                         } else if (d.command == EMACHINE_COMMAND.status) {
-                            console.log('DATA show status here', d.command, d.token, d.data);
+                            // console.log('DATA show status here', d.command, d.token, d.data);
                             const token = d.token
                             const dx = d.data;
                             const x = that.findMachineIdToken(token);
