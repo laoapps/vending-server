@@ -424,13 +424,14 @@ export class InventoryZDM8 implements IBaseClass {
                             if(!mId) throw new Error('MMoney need IMEI');
 
 
-                            const transactionID = Number(
-                                Number(
-                                    mId.substring(0, mId.length - 10) // 21
-                                ) +
-                                "" +
-                                new Date().getTime()
-                            );
+                            const transactionID = Number(mId.substring(mId.length - 10) + '' + Math.floor(new Date().getTime() / 100));
+                            // const transactionID = Number(
+                            //     Number(
+                            //         mId.substring(0, mId.length - 10) // 21
+                            //     ) +
+                            //     "" +
+                            //     new Date().getTime() 
+                            // );
                             const qr = await this.generateBillMMoney(
                                 machineId.machineId,
                                 value,

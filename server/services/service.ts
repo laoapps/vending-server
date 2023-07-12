@@ -207,6 +207,8 @@ export function findPhoneNumberByUuidOnUserManager(uuid: string): Promise<any> {
 export function validateTokenOnUserManager(token: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
         try {
+
+            
             const validateParams: any = {
                 object: "authorize",
                 method: "validateToken",
