@@ -354,7 +354,7 @@ export function writeSucceededRecordLog(m, position) {
 export function writeLogs(m, position, name = 'g_') {
     const da = moment().year() + '_' + moment().month() + '_' + moment().date();
     const logs = process.env._log_path + `/${name}_${da}.json`;
-    console.log('m', m);
+    // console.log('m', m);
     fs.appendFileSync(logs, JSON.stringify({ m, position, time: new Date() }), { flag: 'a+' });
 }
 export function writeErrorLogs(m: string, e: any) {

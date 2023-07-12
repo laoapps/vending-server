@@ -231,7 +231,7 @@ export class SocketServerZDM8 {
                                 //     console.log('DATA re-login PLEASE!');
                                 //     return;
                                 // }
-                                console.log('DATA  Update status here ');
+                                // console.log('DATA  Update status here ');
                                 writeLogs(d, d.command);
                                 that.eventEmitter.emit('MachineResponse',d)
                                 return;
@@ -244,7 +244,7 @@ export class SocketServerZDM8 {
                         } else if (Object.keys(EZDM8_COMMAND).includes(d.command)) {
                             console.log('DATA response from the machine', d);
                             console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
-                            writeLogs(d, d.command);
+                            //  writeLogs(d, d.command);
                             // that.eventEmitter.emit('MachineResponse',d)
                             return;
                         }

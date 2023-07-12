@@ -166,7 +166,7 @@ export class SocketServerM102 {
                                     console.log('DATA re-login PLEASE!');
                                     return;
                                 }
-                                console.log('DATA  Update status here ');
+                                // console.log('DATA  Update status here ');
 
                                 return;
                             } else {

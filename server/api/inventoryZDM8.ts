@@ -2450,7 +2450,7 @@ export class InventoryZDM8 implements IBaseClass {
                     writeMachineStatus(machineId.machineId, re.data);
                     const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
                     const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
-                    console.log('ws', 'wsAdmin', machineId);
+                    // console.log('ws', 'wsAdmin', machineId);
 
                     // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
                     if (ws) {

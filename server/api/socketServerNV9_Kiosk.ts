@@ -177,7 +177,7 @@ export class SocketServerESSPKiosk {
                                     console.log('DATA re-login PLEASE!');
                                     return;
                                 }
-                                console.log('DATA  Update status here ', dx);
+                                // console.log('DATA  Update status here ', dx);
                                 if (dx.command == EMACHINE_COMMAND.CREDIT_NOTE) {
                                     console.log('CREDIT_NOTE response from the machine');
                                     console.log('CREDIT_NOTE need to confirm the ORDER has been completed or not, TODO LATER');
