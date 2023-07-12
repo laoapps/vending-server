@@ -1200,7 +1200,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             });
                                             
                                         }
-                                        
+
                                         for(let i = 0; i < cloneList.length; i++) {
                                             const data = {
                                                 machineId: o.machineId,
@@ -1211,7 +1211,6 @@ export class InventoryZDM8 implements IBaseClass {
                                             models.push(data);
                                         }
 
-                                        const loggg = [list, cloneList, models];
                                         sEnt.bulkCreate(models).then(r_clonestock => {
                                             if (!r_clonestock) return res.send(PrintError("cloneSale error", [], EMessage.cloneStockFail));
                                             for(let i = 0; i < models.length; i++) {
@@ -1221,7 +1220,9 @@ export class InventoryZDM8 implements IBaseClass {
                                                 models[i].createdAt = r_clonestock[i].createdAt;
                                                 models[i].updatedAt = r_clonestock[i].updatedAt;
                                             }
-                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded));
+                                        const loggg = [list, cloneList, models];
+
+                                            res.send(PrintSucceeded("cloneSale success", loggg, EMessage.succeeded));
                                         }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                     }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                 }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
