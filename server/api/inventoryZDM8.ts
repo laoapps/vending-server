@@ -427,7 +427,7 @@ export class InventoryZDM8 implements IBaseClass {
                             // const emei: string = 
                             // console.log(`emei -->`, emei, emei.length, `time -->`, time, time.length);
                             // const transactionID = emei + time;
-                            const transactionID =  Number(String(mId.substring(mId.length - 10)) + String(Math.floor(new Date().getTime() / 100)));
+                            const transactionID =  Number(String(mId.substring(mId.length - 10)) + (new Date().getTime()+'').substring(2));
                             console.log(`transactionID`, transactionID);
                             // const transactionID = Number(
                             //     Number(
