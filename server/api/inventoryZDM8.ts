@@ -1186,9 +1186,8 @@ export class InventoryZDM8 implements IBaseClass {
                             this.machineClientlist.findOne({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachine => {
                                 if (r_findCloneMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfoundCloneMachine));
                                 sEnt.findAndCountAll({ where: { machineId: o.machineId } }).then(r_findMachineStock => {
-                                    if (r_findMachineStock == null) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone));
                                     sEnt.findAndCountAll({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachineStock => {
-                                        if (r_findCloneMachineStock == null) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone));
+                                        if (r_findCloneMachineStock.count == 0) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone));
                                         
                                         let list: Array<any> = r_findMachineStock.rows;
                                         let cloneList: Array<any> = r_findCloneMachineStock.rows;
@@ -1220,7 +1219,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 models[i].createdAt = r_clonestock[i].createdAt;
                                                 models[i].updatedAt = r_clonestock[i].updatedAt;
                                             }
-                                        const loggg = [list, cloneList, models];
+                                        const loggg = [r_clonestock, list, cloneList, models];
 
                                             res.send(PrintSucceeded("cloneSale success", loggg, EMessage.succeeded));
                                         }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
