@@ -420,6 +420,7 @@ export class InventoryZDM8 implements IBaseClass {
                             // console.log(' value is valid', sale);
                             let a = machineId?.data?.find(v => v.settingName == 'setting');
                             let mId=a?.imei; // for MMoney need 10 digits
+                            console.log(`check emei derrrrr`, mId);
                             if(!mId) throw new Error('MMoney need IMEI');
 
                             const transactionID = Number(
