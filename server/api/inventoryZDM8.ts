@@ -4,6 +4,7 @@ import * as WebSocketServer from "ws";
 import { randomUUID } from "crypto";
 import crypto from 'crypto';
 import cryptojs from "crypto-js";
+import * as uuid from "uuid";
 
 import {
     broadCast,
@@ -1196,6 +1197,10 @@ export class InventoryZDM8 implements IBaseClass {
                                             list.find(ml => {
                                                 cloneList = cloneList.filter(mcl => mcl.stock.id !== ml.stock.id);
                                             });
+                                        }
+                                        for(let i = 0; i < cloneList.length; i++) {
+                                            cloneList[i].uuid = uuid.v4();
+                                            cloneList[i].machineId = o.machineId;
                                         }
                                         cloneList.find(item => item.machineId = o.machineId);
                          
