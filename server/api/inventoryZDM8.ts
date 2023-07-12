@@ -3348,7 +3348,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         .then((ry) => {
                                             if (ry) {
                                                 const m = ry.map(v => v.machineId);
-                                                console.log('admintoken owneruuid machines', m);
+                                                // console.log('admintoken owneruuid machines', m);
                                                 ws['myMachineId'] = m;
                                                 ws["clientId"] = uuid4();
                                                 this.wsClient.push(ws);
@@ -3377,7 +3377,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     .then((ry) => {
                                                         if (ry) {
                                                             const m = ry.map(v => v.machineId);
-                                                            console.log('admintoken owneruuid machines', m);
+                                                            // console.log('admintoken owneruuid machines', m);
                                                             redisClient.setEx('_admintoken_' + token, 60 * 60 * 24, ownerUuid);
                                                             ws['myMachineId'] = m;
                                                             ws["clientId"] = uuid4();
