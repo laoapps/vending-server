@@ -383,7 +383,7 @@ export function  machineStatus(x:string):IMachineStatus{
       y= JSON.parse(x);
      b = y.b;
     } catch (error) {
-      console.log('error',error);
+    //   console.log('error',error);
       return {} as IMachineStatus;
     }
     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d

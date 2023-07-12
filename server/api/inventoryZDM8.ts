@@ -2460,7 +2460,7 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.data = re.data;
                         // save to redis
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        console.log('writeMachineStatus', machineId.machineId, re.data);
+                        // console.log('writeMachineStatus', machineId.machineId, re.data);
 
 
                         // send to machine client
@@ -2475,7 +2475,7 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.data = re.data;
                         // save to redis
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        console.log('writeMachineStatus', machineId.machineId, re.data);
+                        // console.log('writeMachineStatus', machineId.machineId, re.data);
                         // send to machine client
                         this.sendWSMyMachine(machineId.machineId, resx);
                     }
