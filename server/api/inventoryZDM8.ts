@@ -1202,10 +1202,10 @@ export class InventoryZDM8 implements IBaseClass {
                                                 cloneList[i].machineId = o.machineId;
                                             }    
                                         }
-
+                                        const loggg = [list, cloneList];
                                         sEnt.bulkCreate(cloneList).then(r_clonestock => {
                                             if (!r_clonestock) return res.send(PrintError("cloneSale", [], EMessage.cloneStockFail));
-                                            res.send(PrintError("cloneSale", cloneList, EMessage.succeeded));
+                                            res.send(PrintError("cloneSale", loggg, EMessage.succeeded));
                                         }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                     }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                 }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
