@@ -1214,7 +1214,13 @@ export class InventoryZDM8 implements IBaseClass {
                                         const loggg = [list, cloneList, models];
                                         sEnt.bulkCreate(models).then(r_clonestock => {
                                             if (!r_clonestock) return res.send(PrintError("cloneSale", [], EMessage.cloneStockFail));
-                                            res.send(PrintError("cloneSale", loggg, EMessage.succeeded));
+                                            for(let i = 0; i < models.length; i++) {
+                                                models[i].uuid = r_clonestock[i].uuid;
+                                                models[i].isActive = r_clonestock[i].isActive;
+                                                models[i].createdAt = r_clonestock[i].createdAt;
+                                                models[i].updatedAt = r_clonestock[i].updatedAt;
+                                            }
+                                            res.send(PrintError("cloneSale", models, EMessage.succeeded));
                                         }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                     }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                 }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
