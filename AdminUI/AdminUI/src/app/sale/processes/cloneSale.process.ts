@@ -112,6 +112,7 @@ export class CloneSaleProcess {
 
                 this.apiService.cloneSale(params).subscribe(r => {
                     const response: any = r;
+                    console.log(`response`, response);
                     if (response.status != 1) return resolve(response.message);
                     this.lists = response.data; 
                 }, error => resolve(error.message));
