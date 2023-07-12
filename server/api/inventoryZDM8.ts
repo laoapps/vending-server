@@ -1221,7 +1221,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             }
                                         const loggg = [r_clonestock, list, cloneList, models];
 
-                                            res.send(PrintSucceeded("cloneSale success", loggg, EMessage.succeeded));
+                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded));
                                         }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                     }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                 }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
