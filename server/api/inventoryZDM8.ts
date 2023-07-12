@@ -1197,16 +1197,15 @@ export class InventoryZDM8 implements IBaseClass {
                                             list.find(ml => {
                                                 cloneList = cloneList.filter(mcl => mcl.stock.id !== ml.stock.id);
                                             });
+                                            for(let i = 0; i < cloneList.length; i++) {
+                                                cloneList[i].uuid = uuid.v4();
+                                                cloneList[i].machineId = o.machineId;
+                                            }    
                                         }
-                                        for(let i = 0; i < cloneList.length; i++) {
-                                            cloneList[i].uuid = uuid.v4();
-                                            cloneList[i].machineId = o.machineId;
-                                        }
-                                        cloneList.find(item => item.machineId = o.machineId);
-                         
+
                                         sEnt.bulkCreate(cloneList).then(r_clonestock => {
                                             if (!r_clonestock) return res.send(PrintError("cloneSale", [], EMessage.cloneStockFail));
-                                            res.send(PrintError("cloneSale", r_clonestock, EMessage.succeeded));
+                                            res.send(PrintError("cloneSale", cloneList, EMessage.succeeded));
                                         }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                     }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
                                 }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
