@@ -9,6 +9,7 @@ import { LoadSaleListProcess } from './processes/loadSaleList.process';
 import { environment } from 'src/environments/environment';
 import { IENMessage } from '../models/base.model';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
+import { CloneSaleProcess } from './processes/cloneSale.process';
 
 @Component({
   selector: 'app-sale',
@@ -19,6 +20,7 @@ export class SalePage implements OnInit {
   @Input()machineId: string;
 
   private loadSaleListProcess: LoadSaleListProcess;
+  private cloneSaleProcess: CloneSaleProcess;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
 
 
@@ -30,6 +32,7 @@ export class SalePage implements OnInit {
     private cashingService: AppcachingserviceService,
     ) {
     this.loadSaleListProcess = new LoadSaleListProcess(this.apiService, this.cashingService);
+    this.cloneSaleProcess = new CloneSaleProcess(this.apiService, this.cashingService);
     this.showImage=this.apiService.showImage;
    }
 
@@ -198,5 +201,51 @@ export class SalePage implements OnInit {
 
       })
     })
+  }
+
+  cloneSale(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const msg = this.apiService.alert.create({
+          header: 'Are you sure !?',
+          subHeader: 'Enter clone machine id',
+          inputs: [
+            {
+              type: 'text',
+              name: 'inputMachineId'
+            }
+          ],
+          buttons: [
+            {
+              text: 'Confirm',
+              handler: async (data) => {
+                console.log(data.inputMachineId);
+                const params = {
+                  ownerUuid: this.apiService.ownerUuid,
+                  filemanagerURL: this.filemanagerURL,
+                  machineId: this.machineId,
+                  cloneMachineId: data.inputMachineId
+                }
+                const run = await this.cloneSaleProcess.Init(params);
+                if (run.message != IENMessage.success) {
+                  this.apiService.simpleMessage(run);
+                  return;
+                }
+                this._l.push(...run.data[0].lists);
+              }
+            },
+            {
+              text: 'Cancel'
+            }
+          ]
+        });
+        (await msg).present();
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
   }
 }

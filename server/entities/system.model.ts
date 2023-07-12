@@ -844,6 +844,9 @@ export enum EPaymentStatus{
     delivered='delivered'
 }
 export enum EMessage {
+    cloneStockFail = 'clone stock fail',
+    notFoundSaleForClone = 'not found sale for clone',
+    notfoundCloneMachine = 'not found clone machine',
     invalidBankNote = 'invalid bank note',
     loginfailed = 'login failed',
     succeeded = 'succeeded',
@@ -1056,6 +1059,10 @@ export interface IVendingMachineSale extends IBase, IBC {
     stock: IStock;
     position: number;
     max: number;
+}
+export interface IVendingCloneMachineSale {
+    cloneMachineId: string,
+    machineId: string
 }
 export interface IVendingMachineBill extends IBase, IBC {
     vendingsales: Array<IVendingMachineSale>;

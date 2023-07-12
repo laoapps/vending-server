@@ -56,6 +56,7 @@ import {
     IHashBankNote,
     IMMoneyLoginCashin,
     IMMoneyRequestRes,
+    IVendingCloneMachineSale,
 } from "../entities/system.model";
 import moment from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -1168,6 +1169,42 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+            router.post(
+                this.path + "/cloneSale",
+                this.checkToken,
+                async (req, res) => {
+                    const ownerUuid = res.locals["ownerUuid"] || "";
+                    const o = req.body.data as IVendingCloneMachineSale;
+                    const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,dbConnection);
+                    await sEnt.sync();
+                    this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r_findMachine => {
+                        if (r_findMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfound));
+                        this.machineClientlist.findOne({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachine => {
+                            if (r_findCloneMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfoundCloneMachine));
+                            sEnt.findAndCountAll({ where: { machineId: o.machineId } }).then(r_findMachineStock => {
+                                if (r_findMachineStock == null) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone));
+                                sEnt.findAndCountAll({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachineStock => {
+                                    if (r_findCloneMachineStock == null) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone));
+                                    
+                                    let list: Array<any> = r_findMachineStock.rows;
+                                    let cloneList: Array<any> = r_findCloneMachineStock.rows;
+
+                                    if (list != undefined && Object.entries(list).length > 0) {
+                                        list.find(ml => {
+                                            cloneList = cloneList.filter(mcl => mcl.id !== ml.id);
+                                        });
+                                    }
+                                    
+                                    sEnt.bulkCreate(cloneList).then(r_clonestock => {
+                                        if (!r_clonestock) return res.send(PrintError("cloneSale", [], EMessage.cloneStockFail));
+                                        res.send(PrintError("cloneSale", r_clonestock, EMessage.succeeded));
+                                    }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
+                                }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
+                            }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
+                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
+                    }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));                    
+                }
+            );
             router.post(
                 this.path + "/addSale",
                 this.checkToken,

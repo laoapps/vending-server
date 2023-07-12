@@ -69,7 +69,8 @@ export class SettingPage implements OnInit, OnDestroy {
           this.testInTitle = 'test motor';
           clearInterval(this.testIn);
           this.testIn = null;
-          return;
+          return resolve(IENMessage.success);
+
         }
 
         this.testInTitle = 'stop test motor';
@@ -87,16 +88,15 @@ export class SettingPage implements OnInit, OnDestroy {
             }
             axios.post(`http://localhost:19006`, params)
             .then(r => {
+              console.log(`response`);
               this.successList.push(start);
               this.apiService.simpleMessage(`SUCCESS: test motor ${start}`, 1000);
-              start+=1;
-
             })
             .catch(error => {
               this.errorList.push(start);
               this.apiService.simpleMessage(`ERROR: test motor ${start}`, 1000);
-              start+=1;
             });
+            start+=1;
 
           }
           else 
@@ -107,11 +107,11 @@ export class SettingPage implements OnInit, OnDestroy {
             start = this.startM;
             end = this.endM;
             this.testInTitle = 'test motor';
+            resolve(IENMessage.success);
           }
 
         }, 3000);
 
-        resolve(IENMessage.success);
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
