@@ -1174,7 +1174,8 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkToken,
                 async (req, res) => {
                     const ownerUuid = res.locals["ownerUuid"] || "";
-                    const o = req.body.data as IVendingCloneMachineSale;
+                    const o = req.body as IVendingCloneMachineSale;
+                    if (!(ownerUuid && o.machineId && o.cloneMachineId)) return res.send(PrintError("cloneSale", [], EMessage.parametersEmpty));
                     const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,dbConnection);
                     await sEnt.sync();
                     this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r_findMachine => {
