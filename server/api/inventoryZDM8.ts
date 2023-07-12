@@ -438,7 +438,8 @@ export class InventoryZDM8 implements IBaseClass {
                             const qr = await this.generateBillMMoney(
                                 machineId.machineId,
                                 value,
-                                mId + '' + transactionID + ""
+                                transactionID + ''
+                                // mId + '' + transactionID + ""
                             );
                             if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
                             const bill = {
