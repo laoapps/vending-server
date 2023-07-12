@@ -429,7 +429,7 @@ export class InventoryZDM8 implements IBaseClass {
                             // const transactionID = emei + time;
                             const x = new Date().getTime();
                             console.log(`xxx der`, x);
-                            const transactionID =  Number(String(mId.substring(mId.length - 10)) + (x+'').substring(2));
+                            const transactionID =  String(mId.substring(mId.length - 10)) + (x+'').substring(2);
                             console.log(`transactionID`, transactionID);
                             // const transactionID = Number(
                             //     Number(
@@ -449,7 +449,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 uuid: uuid4(),
                                 clientId,
                                 qr: qr.qrCode,
-                                transactionID,
+                                transactionID:transactionID as any,
                                 machineId: machineId.machineId,
                                 hashM: "",
                                 hashP: "",
