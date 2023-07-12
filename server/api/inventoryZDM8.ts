@@ -3460,7 +3460,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             // const ml = JSON.parse((await readMachineLimiter(element)) || '100000');
                                             mymlimiter.push({ machineId: element, limiter: setting.limiter });
                                         }
-                                        console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
+                                        // console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
                                     } catch (error) {
                                         console.log('parsing error setting', error);
                                         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
