@@ -161,7 +161,7 @@ export class CloneSaleProcess {
     
                 let lists: Array<{ name: string, file: string}> = [];
                 for(let i = 0; i < this.lists.length; i++) {
-                    const name = this.lists[i].image;
+                    const name = this.lists[i].stock.image;
     
                     if (name != '' && name.substring(0,4) != 'data') {
                     
@@ -182,8 +182,8 @@ export class CloneSaleProcess {
                         if (same != undefined && Object.entries(same).length == 0) {
                             lists.push(obj);
                         }
-                        this.lists[i].imageurl = this.lists[i].image;
-                        this.lists[i].image = file;
+                        this.lists[i].stock.imageurl = this.lists[i].image;
+                        this.lists[i].stock.image = file;
     
                     }
                     if (i == this.lists.length-1) {
@@ -208,9 +208,9 @@ export class CloneSaleProcess {
 
                 this.lists.filter(list => {
                     this.cashList.find((cash, cash_index) => {
-                        if (list.image == cash.name) {
-                            list.imageurl = cash.name;
-                            list.image = cash.file;
+                        if (list.stock.image == cash.name) {
+                            list.stock.imageurl = cash.name;
+                            list.stock.image = cash.file;
                         }
                     });
                 });
@@ -236,8 +236,8 @@ export class CloneSaleProcess {
                             file: file
                         }
     
-                        nodata[i].imageurl = nodata[i].image;
-                        nodata[i].image = file;
+                        nodata[i].stock.imageurl = nodata[i].image;
+                        nodata[i].stock.image = file;
                         this.cashList.push(obj);
                     }
                     data.push(...nodata);
