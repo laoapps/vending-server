@@ -89,8 +89,10 @@ export class ShowEPINShortCodeFunc {
                         where: {
                             ownerUuid: this.ownerUuid,
                             counter: {
-                                hash: {[Op.ne]: ''},
-                                info: {[Op.ne]: ''}
+                                cash: {
+                                    hash: {[Op.ne]: ''},
+                                    info: {[Op.ne]: ''}
+                                }
                             }
                         },
                         limit: this.limit,
