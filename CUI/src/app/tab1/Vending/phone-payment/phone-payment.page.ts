@@ -57,9 +57,11 @@ export class PhonePaymentPage implements OnInit {
   }
   processDigits(digit: string) {
     if (this.phonenumber == this.placeholder) {
-      this.phonenumber = digit;
+      if (digit != '0') {
+        this.phonenumber = digit;
+      }
     } else {
-      if (this.phonenumber.length < 8) {
+      if (this.phonenumber.length < 10) {
         this.phonenumber += digit;
       }
     }
@@ -76,27 +78,31 @@ export class PhonePaymentPage implements OnInit {
     this.validateSubtitle();
   }
   validateSubtitle() {
-    this.digit = String(this.phonenumber.substring(0,1));
-    if (this.digit == '2') {
-      this.subtitle = 'You are using ETL';
-    }
-    else if (this.digit == '5') {
-      this.subtitle = 'You are using Lao Telecom';
-    }
-    else if (this.digit == '7') {
-      this.subtitle = 'You are using T-Plus';
-    }
-    else if (this.digit == '8') {
-      this.subtitle = 'You are using Best Telcome';
-    }
-    else if (this.digit == '9') {
-      this.subtitle = 'You are using ETL';
-    }
-    else if (this.digit == this.placeholder || this.digit == 'E') {
+    this.digit = String(this.phonenumber.substring(0,3));
+    if (this.digit != undefined && this.digit.length > 2) {
+      if (this.digit == '202' || this.digit == '302') {
+        this.subtitle = 'You are using ETL';
+      }
+      else if (this.digit == '205' || this.digit == '305') {
+        this.subtitle = 'You are using Lao Telecom';
+      }
+      else if (this.digit == '207' || this.digit == '307') {
+        this.subtitle = 'You are using T-Plus';
+      }
+      else if (this.digit == '208' || this.digit == '308') {
+        this.subtitle = 'You are using Best Telcome';
+      }
+      else if (this.digit == '209' || this.digit == '203') {
+        this.subtitle = 'You are using ETL';
+      }
+      else if (this.digit == this.placeholder || this.digit == 'ENT') {
+        this.subtitle = 'LTC, Best, Unitel, ETL, T-Plus';
+      }
+      else {
+        this.subtitle = 'Invalid phone number';
+      }
+    } else {
       this.subtitle = 'LTC, Best, Unitel, ETL, T-Plus';
-    }
-    else {
-      this.subtitle = 'Invalid phone number';
     }
   }
   next(): Promise<any> {
@@ -104,7 +110,6 @@ export class PhonePaymentPage implements OnInit {
       try {
         
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
-        if (this.phonenumber != this.placeholder && this.phonenumber.length != 8) throw new Error(IENMessage.invalidPhonenumber);
 
         const validate = this.digitModel.find(item => item.digit==this.digit);
         if (validate == undefined) throw new Error(IENMessage.invalidPhonenumber);

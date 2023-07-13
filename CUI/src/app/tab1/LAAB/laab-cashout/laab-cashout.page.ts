@@ -42,9 +42,11 @@ export class LaabCashoutPage implements OnInit {
 
   processDigits(digit: string) {
     if (this.phonenumber == this.placeholder) {
-      this.phonenumber = digit;
+      if (digit != '0') {
+        this.phonenumber = digit;
+      }
     } else {
-      if (this.phonenumber.length < 8) {
+      if (this.phonenumber.length < 10) {
         this.phonenumber += digit;
       }
     }

@@ -49,7 +49,7 @@ export class EpinCashOutPage implements OnInit {
     if (this.phonenumber == this.placeholder) {
       this.phonenumber = digit;
     } else {
-      if (this.phonenumber.length < 8) {
+      if (this.phonenumber.length < 10) {
         this.phonenumber += digit;
       }
     }
@@ -69,7 +69,7 @@ export class EpinCashOutPage implements OnInit {
       try {
         
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
-        if (this.phonenumber != this.placeholder && this.phonenumber.length != 8) throw new Error(IENMessage.invalidPhonenumber);
+        if (this.phonenumber != this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
 
         this.showPhonenumberPage = false;
         this.showEPINCashoutPage = true;

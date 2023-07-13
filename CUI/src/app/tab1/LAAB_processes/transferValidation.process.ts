@@ -82,7 +82,7 @@ export class TransferValidationProcess {
             try {
 
                 const params = {
-                    receiver: `+85620` + this.receiver,
+                    receiver: `+856` + this.receiver,
                     cash: this.cash,
                     description: this.description,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
