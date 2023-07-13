@@ -6,12 +6,12 @@ import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../en
 
 export class ShowEPINShortCodeFunc {
 
-    private machineId:string;
+    private ownerUuid: string;
     private page: number;
     private limit: number;
+    private counter: boolean;
 
     private offset: number;
-    private sender: string;
     private response: any = {} as any;
 
     constructor(){}
@@ -31,8 +31,8 @@ export class ShowEPINShortCodeFunc {
 
                 console.log(`find epin short code`, 3);
 
-                const FindVendingWallet = await this.FindVendingWallet();
-                if (FindVendingWallet != IENMessage.success) throw new Error(FindVendingWallet);
+                const FindMerchant = await this.FindMerchant();
+                if (FindMerchant != IENMessage.success) throw new Error(FindMerchant);
 
                 console.log(`find epin short code`, 4);
 
@@ -51,24 +51,25 @@ export class ShowEPINShortCodeFunc {
     }
 
     private InitParams(params: any) {
-        this.machineId = params.machineId;
+        this.ownerUuid = params.ownerUuid;
         this.page = params.page;
         this.limit = params.limit;
+        this.counter = params.counter ? params.counter : false;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.page && this.limit)) return IENMessage.parametersEmpty;
+        if (!(this.ownerUuid && this.page && this.limit)) return IENMessage.parametersEmpty;
+        
         this.limit = Number(this.page - 1) * Number(this.limit);
         return IENMessage.success;
     }
 
-    private FindVendingWallet(): Promise<any> {
+    private FindMerchant(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
-                if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
-                this.sender = translateUToSU(run.uuid);
+                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.merchant } });
+                if (run == null) return resolve(IENMessage.notFoundYourMerchant);
                 resolve(IENMessage.success);
 
             } catch (error) {
@@ -80,15 +81,39 @@ export class ShowEPINShortCodeFunc {
     private FindEPINShortCode(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                
-                const condition: any = {
-                    where: {
-                        creator: this.sender
-                    },
-                    limit: this.limit,
-                    offset: this.offset,
-                    order: [[ 'id', 'DESC' ]]
+
+                let condition: any = {} as any;
+                if (this.counter == true)
+                {
+                    condition = {
+                        where: {
+                            ownerUuid: this.ownerUuid,
+                            counter: {
+                                hash: {[Op.ne]: ''},
+                                info: {[Op.ne]: ''}
+                            }
+                        },
+                        limit: this.limit,
+                        offset: this.offset,
+                        order: [[ 'id', 'DESC' ]]
+                    }
                 }
+                else 
+                {
+                    condition = {
+                        where: {
+                            ownerUuid: this.ownerUuid,
+                            counter: {
+                                hash: '',
+                                info: ''
+                            }
+                        },
+                        limit: this.limit,
+                        offset: this.offset,
+                        order: [[ 'id', 'DESC' ]]
+                    }
+                }
+                 
                 const run = await epinshortcodeEntity.findAndCountAll(condition);
                
                 this.response = {

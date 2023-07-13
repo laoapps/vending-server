@@ -163,7 +163,7 @@ export interface VENDING_ShowVendingWalletReport extends IBase {
     limit: number
 }
 export interface VENDING_ShowEPINShortCodeList extends IBase {
-    machineId: string,
+    counter: boolean,
     page: number,
     limit: number
 }

@@ -263,6 +263,7 @@ export class CreateSMCFunc {
             try {
                 
                 const params = {
+                    ownerUuid: this.ownerUuid,
                     creator: this.sender,
                     phonenumber: this.phonenumber,
                     SMC: {
@@ -271,8 +272,7 @@ export class CreateSMCFunc {
                     },
                     EPIN: {
                         destination: '',
-                        coinname: '',
-                        name: ''
+                        coinname: ''
                     },
                     counter: {
                         cash:{

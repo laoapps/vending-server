@@ -11,6 +11,7 @@ export class CreateEPINFunc {
     private phonenumber: string;
     private detail: any = {} as any;
 
+    private ownerUuid: string;
     private sender: string;
     private connection: any = {} as any;
     private coinName: string;
@@ -95,6 +96,7 @@ export class CreateEPINFunc {
                 
                 let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
                 if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
+                this.ownerUuid = run.ownerUuid;
                 this.sender = translateUToSU(run.uuid);
                 this.coinName = run.coinName;
                 this.passkeys = run.passkeys;
@@ -112,6 +114,7 @@ export class CreateEPINFunc {
                 
                 const condition = {
                     where: {
+                        ownerUuid: this.ownerUuid,
                         creator: this.sender,
                         phonenumber: this.phonenumber,
                         SMC: {
@@ -121,8 +124,7 @@ export class CreateEPINFunc {
                         },
                         EPIN: {
                             destination: '',
-                            coinname: '',
-                            name: ''
+                            coinname: ''
                         }
                     }
                 }
@@ -144,8 +146,7 @@ export class CreateEPINFunc {
                 
                 this.connection.EPIN = {
                     destination: this.detail.items[0].qrcode[0],
-                    coinname: this.coinName,
-                    name: this.detail.sender
+                    coinname: this.coinName
                 }
                 const run = await this.connection.save({ transaction: this.transaction });
                 if (!run) return resolve(this.response);

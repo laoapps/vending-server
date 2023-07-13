@@ -4,13 +4,13 @@ export interface IEPINShortCode {
     id?: number,
     uuid?: string,
     isActive?: boolean,
+    ownerUuid: string,
     creator: string, // vending uuid
     phonenumber: string,
     SMC: any,
     EPIN: {
         destination: string,
-        coinname: string,
-        name: string
+        coinname: string
     },
     counter: {
         cash: {
@@ -45,6 +45,9 @@ export let EPINShortCodeFactory = (name: string, con: Sequelize): any => {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true
+        },
+        ownerUuid: {
+            type: DataTypes.STRING,
         },
         creator: {
             type: DataTypes.STRING,
