@@ -115,6 +115,7 @@ export class ShowEPINShortCodeFunc {
                 }
                  
                 const run = await epinshortcodeEntity.findAndCountAll(condition);
+                console.log(`admin show epin short code`, run.count, run.rows);
                
                 this.response = {
                     rows: run.rows,
