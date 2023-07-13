@@ -93,4 +93,82 @@
 
   <div class="space"></div>
 
+  <div class="epin-management-container">
+
+    <div class="item-card">
+
+      <div class="item-card-header">
+        <div class="left">
+         
+          <a href="javascript:void(0)" class="item">STATUS: {{ counter }}</a>
+
+        </div>
+        <div class="right">
+          <div class="input-group box-search">
+            <span class="input-group-text">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input type="text" class="form-control" placeholder="Search">
+          </div>
+        </div>
+      </div>
+
+      <div class="item-card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td>#</td>
+                <td>phone number</td>
+                <td>SMC</td>
+                <td>EPIN</td>
+                <td>Counter</td>
+                <td>Time</td>
+                <td>Action</td>
+              </tr>
+            </thead>
+            <tbody *ngFor="let list of lists; let i = index">
+              <tr>
+                <td>{{ list.uuid }}</td>
+                <td>{{ list.phonenumber }}</td>
+                <td>{{ list.SMC.detail.price | number }}</td>
+                <td>{{ list.EPIN.destination }}</td>
+                <td>{{ list.counter.cash.hash }}</td>
+                <td>{{ list.createdAt }}</td>
+                <td>
+
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="item-card-footer">
+        <div class="left">
+          <ul class="pagination">
+            <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'" >
+                <button (click)="manageListPage(btn.page)" class="page-link" >{{btn.name}}</button>
+            </li>
+          </ul>
+        </div>
+        <div class="right">
+          <div class="show-group">
+            <div class="left">Show</div>
+            <div class="right">
+              <select class="form-select">
+                <option selected>{{ limit }}</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
 </ion-content>

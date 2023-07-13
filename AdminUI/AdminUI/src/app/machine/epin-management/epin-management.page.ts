@@ -7,6 +7,7 @@ import * as moment from 'moment';
 import * as momenttimezone from 'moment-timezone';
 import { ReCreateEPINProcess } from './processes/recreateEPIN.process';
 import { CounterCashout_CashProcess } from './../epin-management/processes/counterCashout_cash.process';
+import { ShowEPINShortCodeListProcess } from './processes/showEPINShortCodeList.process';
 
 @Component({
   selector: 'app-epin-management',
@@ -17,13 +18,14 @@ export class EpinManagementPage implements OnInit {
 
   @Input() machineId: string;
 
+  private showEPINShortCodeListProcess: ShowEPINShortCodeListProcess;
   private findEPINShortCodeListProcess: FindEPINShortCodeListProcess;
   private recreateEPINProcess: ReCreateEPINProcess;
   private counterCashout_cashProcess: CounterCashout_CashProcess;
 
+  counter: boolean = false;
   showTable: boolean = false;
   phonenumber: string;
-  time: string;
 
   lists: any[] = [];
   currentPage: number = 1;
@@ -35,12 +37,15 @@ export class EpinManagementPage implements OnInit {
     private apiService: ApiService,
     private vendingAPIServgice: VendingAPIService
   ) { 
+    this.showEPINShortCodeListProcess = new ShowEPINShortCodeListProcess(this.apiService, this.vendingAPIServgice);
     this.findEPINShortCodeListProcess = new FindEPINShortCodeListProcess(this.apiService, this.vendingAPIServgice);
     this.recreateEPINProcess = new ReCreateEPINProcess(this.apiService, this.vendingAPIServgice);
     this.counterCashout_cashProcess = new CounterCashout_CashProcess(this.apiService, this.vendingAPIServgice);
   }
 
-  ngOnInit() {}
+  async ngOnInit() {
+    await this.showList();
+  }
 
   close() {
     this.apiService.modal.dismiss();
@@ -50,21 +55,56 @@ export class EpinManagementPage implements OnInit {
     this.lists = [];
     this.showTable = false;
   }
-  getTime(e: Event) {
-    this.time = momenttimezone((e.target as HTMLInputElement).value).tz("Asia/Vientiane").format('D/M/YYYY HH:mm:ss');
-    console.log(`change`, this.time);
+  // getTime(e: Event) {
+  //   this.time = momenttimezone((e.target as HTMLInputElement).value).tz("Asia/Vientiane").format('D/M/YYYY HH:mm:ss');
+  //   console.log(`change`, this.time);
+  // }
+  showList(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        this.lists = [];
+        this.btnList = [];
+        
+        
+        const params = {
+          counter: this.counter,
+          page: this.currentPage,
+          limit: this.limit,
+        }
+        console.log(`params`, params);
+        const run = await this.showEPINShortCodeListProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        if (run.data[0].count == 0) {
+          this.showTable = false;
+          throw new Error(IENMessage.notFoundAnyDataList);
+        }
+        this.showTable = true;
+
+        this.lists = run.data[0].rows;
+        this.count = Number(run.data[0].count);
+
+        const totalPage = Math.ceil(this.count / this.limit);
+        this.btnList = this.apiService.paginations(this.currentPage, totalPage);
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
   }
   findList(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
-        console.log(`time`, this.time);
+      
 
         if (!(this.phonenumber)) throw new Error(IENMessage.pleaseEnterPhonenumber);
         
         const params = {
           phonenumber: this.phonenumber,
-          time: this.time || '',
           page: this.currentPage,
           limit: this.limit,
         }
