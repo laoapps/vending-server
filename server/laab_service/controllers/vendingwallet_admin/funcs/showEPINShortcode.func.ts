@@ -104,8 +104,10 @@ export class ShowEPINShortCodeFunc {
                         where: {
                             ownerUuid: this.ownerUuid,
                             counter: {
-                                hash: '',
-                                info: ''
+                                cash: {
+                                    hash: '',
+                                    info: ''
+                                }
                             }
                         },
                         limit: this.limit,
@@ -113,7 +115,6 @@ export class ShowEPINShortCodeFunc {
                         order: [[ 'id', 'DESC' ]]
                     }
                 }
-                 
                 const run = await epinshortcodeEntity.findAndCountAll(condition);
                 console.log(`admin show epin short code`, run.count, run.rows);
                
