@@ -7,10 +7,10 @@ import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../en
 export class ReCreateEPINFunc {
 
     private transaction: Transaction;
-    private machineId:string;
     private phonenumber: string;
     private detail: any = {} as any;
 
+    private ownerUuid: string;
     private sender: string;
     private connection: any = {} as any;
     private coinName: string;
@@ -35,8 +35,8 @@ export class ReCreateEPINFunc {
 
                 console.log(`create epin`, 3);
 
-                const FindVendingWallet = await this.FindVendingWallet();
-                if (FindVendingWallet != IENMessage.success) throw new Error(FindVendingWallet);
+                const FindMerchant = await this.FindMerchant();
+                if (FindMerchant != IENMessage.success) throw new Error(FindMerchant);
 
                 console.log(`create epin`, 4);
 
@@ -69,22 +69,23 @@ export class ReCreateEPINFunc {
     }
 
     private InitParams(params: any) {
-        this.machineId = params.machineId;
+        this.ownerUuid = params.ownerUuid;
         this.phonenumber = params.phonenumber;
         this.detail = params.detail;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.detail)) return IENMessage.parametersEmpty;
+        if (!(this.ownerUuid && this.phonenumber && this.detail)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
-    private FindVendingWallet(): Promise<any> {
+    private FindMerchant(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
-                if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
+                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.merchant } });
+                if (run == null) return resolve(IENMessage.notFoundYourMerchant);
+                this.ownerUuid = run.ownerUuid;
                 this.sender = translateUToSU(run.uuid);
                 this.coinName = run.coinName;
                 this.passkeys = run.passkeys;
@@ -102,6 +103,7 @@ export class ReCreateEPINFunc {
                 
                 const condition = {
                     where: {
+                        ownerUuid: this.ownerUuid,
                         creator: this.sender,
                         phonenumber: this.phonenumber,
                         SMC: {

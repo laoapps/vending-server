@@ -96,19 +96,73 @@ export class EpinManagementPage implements OnInit {
       }
     });
   }
-  findList(): Promise<any> {
+  refreshList(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        this.lists = [];
+        this.btnList = [];
+        this.currentPage = 1;
+        
+        
+        const params = {
+          counter: this.counter,
+          page: this.currentPage,
+          limit: this.limit,
+        }
+        const run = await this.showEPINShortCodeListProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        if (run.data[0].count == 0) {
+          this.showTable = false;
+          throw new Error(IENMessage.notFoundAnyDataList);
+        }
+        this.showTable = true;
+
+        this.lists = run.data[0].rows;
+        this.count = Number(run.data[0].count);
+
+        const totalPage = Math.ceil(this.count / this.limit);
+        this.btnList = this.apiService.paginations(this.currentPage, totalPage);
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  resetSearchList(e: Event): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        let value: any = (e.target as HTMLSelectElement).value;
+        if (value == '') {
+          this.currentPage = 1;
+          const run = await this.showList();
+          if (run != IENMessage.success) throw new Error(run);
+        }
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message); 
+      }
+    });
+  }
+  searchList(page?: number): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
       
-
-        if (!(this.phonenumber)) throw new Error(IENMessage.pleaseEnterPhonenumber);
+        this.currentPage = page ? page : this.currentPage;
         
         const params = {
           phonenumber: this.phonenumber,
           page: this.currentPage,
           limit: this.limit,
         }
-        console.log(`params`, params);
         const run = await this.findEPINShortCodeListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
@@ -137,14 +191,69 @@ export class EpinManagementPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
+        let run: any = {} as any;
         this.currentPage = page;
-        const run = await this.findList();
-        if (run != IENMessage.success) throw new Error(run);
 
+        if (this.phonenumber != undefined && this.phonenumber != '' && Object.entries(this.phonenumber).length > 0) {
+          run = await this.searchList();   
+        } else 
+        {
+          run = await this.showList(); 
+        }
+
+        if (run != IENMessage.success) throw new Error(run);
         resolve(IENMessage.success);
 
       } catch (error) {
         resolve(error.message);
+      }
+    });
+  }
+
+  switchShowLimit(e: Event): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const value = Number((e.target as HTMLSelectElement).value);
+        if (value != this.limit) {
+          this.currentPage = 1;
+          this.limit = value;
+          const run = await this.showList();
+          if (run != IENMessage.success) throw new Error(run);
+          this.phonenumber = '';
+        }
+        
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message); 
+      }
+    });
+  }
+  switchShowStatus(e: Event): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        let value: any = (e.target as HTMLSelectElement).value;
+        if (value == 'true') value = true;
+        else value = false;
+
+        if (value != this.counter) {
+          this.currentPage = 1;
+          this.counter = value;
+          const run = await this.showList();
+          if (run != IENMessage.success) throw new Error(run);
+          this.phonenumber = '';
+        }
+        
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message); 
       }
     });
   }
@@ -201,5 +310,6 @@ export class EpinManagementPage implements OnInit {
       }
     });
   }
+
 
 }

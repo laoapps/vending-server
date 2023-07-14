@@ -172,6 +172,10 @@ ion-content {
                     border-radius: 5px;
                     border: 1px solid  #3333;
                     transition: .2s;
+
+                    i {
+                        padding-right: 5px;
+                    }
                 }
                 .item:hover {
                     background: #941946;
@@ -202,6 +206,28 @@ ion-content {
             margin-top: 15px;
             display: flex;
             flex-direction: column;
+
+            .btn-action {
+                text-decoration: none;
+                color: #333;
+                background: #f5f6f7;
+                border: 1px solid #3333;
+                border-radius: 5px;
+                height: 40px;
+                min-width: 150px;
+                padding: 0px 5px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: .2s;
+
+                i {
+                    padding-right: 5px;
+                }
+            }
+            .btn-action:hover {
+                background: #e7e7e7;
+            }
         }
 
         .item-card-footer {
@@ -226,6 +252,10 @@ ion-content {
                     select {
                         width: 100px;
                     }
+
+                    .form-select-status {
+                        width: 150px;
+                    }
                 }
             }
         }
@@ -243,4 +273,19 @@ textarea {
 
 .input-group-text:hover {
     background: #e7e7e7;
+}
+
+.pagination {
+    margin: 0;
+    padding: 0;
+}
+
+.page-item.active > .page-link{
+    background: #A41D4F;
+    border: 1px solid #A41D4F;
+}
+
+.page-link {
+    color: #333;
+    font-size: 12px;
 }
