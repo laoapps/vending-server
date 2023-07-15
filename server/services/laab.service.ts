@@ -53,6 +53,7 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    notFoundMachineIdOrEmei = 'not found machine id or emei',
     notFoundMachineForRemove = 'not found machine for remove',
     thisSubAdminHasAlreadyProvidedThisMachine = 'this sub admin has already provided this machine',
     otherSubadminHasAlreadyProvidedThisMachine = 'other sub admin has already provided this machine',

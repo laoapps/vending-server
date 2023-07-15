@@ -2,7 +2,7 @@ import { Op, Transaction } from "sequelize";
 import axios from "axios";
 import { EPIN_Generate, IENMessage, LAAB_CoinTransfer, LAAB_CreateCouponCoinWalletSMC, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_GenerateVendingOTP, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
-import { dbConnection, epinshortcodeEntity, subadminEntity, vendingWallet } from "../../../../entities";
+import { dbConnection, epinshortcodeEntity, machineClientIDEntity, subadminEntity, vendingWallet } from "../../../../entities";
 
 export class AddProvideToSubadmin {
 
@@ -45,6 +45,9 @@ export class AddProvideToSubadmin {
 
                 const FindData = await this.FindData();
                 if (FindData != IENMessage.success) throw new Error(FindData);
+
+                const FindMachineAndEmei = await this.FindMachineAndEmei();
+                if (FindMachineAndEmei != IENMessage.success) throw new Error(FindMachineAndEmei);
 
                 console.log(`create epin`, 4);
 
@@ -121,6 +124,33 @@ export class AddProvideToSubadmin {
 
                 if (run.ownerUuid != this.ownerUuid || run.phonenumber != this.phonenumber) return resolve(IENMessage.dataUnmatch);
                 this.connection = run;
+                
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private FindMachineAndEmei(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                const condition: any = {
+                    where: {
+                        ownerUuid: this.ownerUuid,
+                        machineId: this.machineId,
+                        data: [
+                            {
+                                emei: this.emei
+                            }
+                        ]
+                    }
+                }
+
+                const run = await machineClientIDEntity.findOne(condition);
+                if (run == null) return resolve(IENMessage.notFoundMachineIdOrEmei);
                 
                 resolve(IENMessage.success);
 

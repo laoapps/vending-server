@@ -1,4 +1,5 @@
 export enum IENMessage {
+    thisMachineHasAlreadyAdded = 'this machine has already added',
     invalidPhonenumber = 'invalid phone number',
     createNewSubadminSuccess = 'create new sub admin success',
     refreshMachineSuccess = 'refresh machine success',

@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
+import { AddProvideToSubadminProcess } from '../processes/addProvideToSubadmin.process';
+import { IENMessage } from 'src/app/models/base.model';
 
 @Component({
   selector: 'app-manage-subadmin-info',
@@ -12,11 +14,13 @@ export class ManageSubadminInfoPage implements OnInit {
   @Input() manageSubadminPage: any;
   @Input() list: any;
 
+  private addProvideToSubadminProcess: AddProvideToSubadminProcess;
+
   constructor(
     private apiService: ApiService,
     private vendingAPIService: VendingAPIService
   ) { 
-
+    this.addProvideToSubadminProcess = new AddProvideToSubadminProcess(this.apiService, this.vendingAPIService);
   }
 
   ngOnInit() {
@@ -26,6 +30,60 @@ export class ManageSubadminInfoPage implements OnInit {
     this.apiService.modal.dismiss();
   }
 
+  addProvideToSubadmin(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
 
+        const alert = this.apiService.alert.create({
+          header: 'Add Provide',
+          subHeader: 'Please enter machine id and emei',
+          inputs: [
+            {
+              type: 'text',
+              placeholder: 'Enter machine id',
+              name: 'input_machineid'
+            },
+            {
+              type: 'text',
+              placeholder: 'Enter emei',
+              name: 'input_emei'
+            },
+          ],
+          buttons: [
+            {
+              text: 'Add',
+              handler: async (data) => {
+                const duplicate = this.list.provides.filter(item => item.machineId == data.input_machineid && item.emei == data.input_emei);
+                if (duplicate != undefined && Object.entries(duplicate).length > 0) {
+                  this.apiService.simpleMessage(IENMessage.thisMachineHasAlreadyAdded);
+                  return;
+                }
+                const params = {
+                  id: this.list.id,
+                  phonenumber: this.list.phonenumber,
+                  machineId: data.input_machineid,
+                  emei: data.input_emei
+                }
+                let run: any = await this.addProvideToSubadminProcess.Init(params);
+                if (run.message != IENMessage.success) {
+                  this.apiService.simpleMessage(run);
+                  return;
+                }                
+
+                this.list.provides.unshift(params);
+                resolve(IENMessage.success);
+              }
+            },
+            'Cancel'
+          ]
+        });
+        (await alert).present();
+        
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
 
 }
