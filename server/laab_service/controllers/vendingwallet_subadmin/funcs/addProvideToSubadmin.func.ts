@@ -141,16 +141,14 @@ export class AddProvideToSubadmin {
                     where: {
                         ownerUuid: this.ownerUuid,
                         machineId: this.machineId,
-                        data: [
-                            {
-                                emei: this.emei
-                            }
-                        ]
                     }
                 }
 
                 const run = await machineClientIDEntity.findOne(condition);
-                if (run == null) return resolve(IENMessage.notFoundMachineIdOrEmei);
+                if (run == null) return resolve(IENMessage.notFoundMachine);
+
+                const find = run.data.find(item => item.emei == this.emei);
+                if (find == undefined) return resolve(IENMessage.incorrectEmei);
                 
                 resolve(IENMessage.success);
 

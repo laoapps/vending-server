@@ -144,6 +144,6 @@ export class VendingAPIService {
     return this.http.post(this.url + '/laab/sub_admin/delete_subadmin', params);
   }
   addProvideToSubadmin(params: VENDING_AddProvideToSubadmin): Observable<any> {
-    return this.http.post(this.url + '/laab/sub_admin/add_provide_subadmin', params);
+    return this.http.post(this.url + '/laab/sub_admin/add_provide_to_subadmin', params);
   }
 }
