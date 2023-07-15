@@ -166,16 +166,16 @@ export class AddProvideToSubadmin {
                 if (duplicate != undefined && Object.entries(duplicate).length > 0) return resolve(IENMessage.thisSubAdminHasAlreadyProvidedThisMachine);
 
 
-                const condition: any = {
-                    where: {
-                        ownerUuid: this.ownerUuid,
-                        phonenumber: {[Op.ne]: this.phonenumber},
-                        provides: {[Op.contains]:{ machineId: this.machineId, imei: this.imei }}
-                    }
-                }
+                // const condition: any = {
+                //     where: {
+                //         ownerUuid: this.ownerUuid,
+                //         phonenumber: {[Op.ne]: this.phonenumber},
+                //         provides: {[Op.contains]:[{ machineId: this.machineId, imei: this.imei }]}
+                //     }
+                // }
 
-                const run = await subadminEntity.findOne(condition);
-                if (run != null) return resolve(IENMessage.otherSubadminHasAlreadyProvidedThisMachine);
+                // const run = await subadminEntity.findOne(condition);
+                // if (run != null) return resolve(IENMessage.otherSubadminHasAlreadyProvidedThisMachine);
                 
                 resolve(IENMessage.success);
 
@@ -197,8 +197,6 @@ export class AddProvideToSubadmin {
                 if (!run) return resolve(IENMessage.commitFail);
 
                 this.response = {
-                    list: this.connection.provides,
-                    list1: previousList,
                     message: IENMessage.success
                 }
 

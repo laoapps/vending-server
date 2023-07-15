@@ -11,7 +11,7 @@ export class RemoveProvideFromSubadminFunc {
     private ownerUuid: string;
     private phonenumber: string;
     private machineId: string;
-    private emei: string;
+    private imei: string;
 
     private coinListId: string;
     private coinCode: string;
@@ -75,11 +75,11 @@ export class RemoveProvideFromSubadminFunc {
         this.ownerUuid = params.ownerUuid;
         this.phonenumber = params.phonenumber;
         this.machineId = params.machineId;
-        this.emei = params.emei;
+        this.imei = params.imei;
     }
 
     private ValidateParams(): string {
-        if (!(this.uuid && this.ownerUuid && this.phonenumber && this.machineId && this.emei)) return IENMessage.parametersEmpty;
+        if (!(this.uuid && this.ownerUuid && this.phonenumber && this.machineId && this.imei)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -118,7 +118,7 @@ export class RemoveProvideFromSubadminFunc {
                 if (run.ownerUuid != this.ownerUuid || run.phonenumber != this.phonenumber) return resolve(IENMessage.dataUnmatch);
                 this.connection = run;
 
-                const find = this.connection.provides.filter(item => item.machineId == this.machineId && item.emei == this.emei);
+                const find = this.connection.provides.filter(item => item.machineId == this.machineId && item.imei == this.imei);
                 if (find != undefined && Object.entries(find).length == 0) return resolve(IENMessage.notFoundMachineForRemove);
                 
                 resolve(IENMessage.success);
@@ -133,7 +133,9 @@ export class RemoveProvideFromSubadminFunc {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                this.connection.provides = this.connection.provides.filter(item => item.machineId != this.machineId && item.emei != this.emei);
+                let previousList: Array<{ machineId: string, imei: string }> = JSON.parse(JSON.stringify(this.connection.provides));
+                previousList = previousList.filter(item => item.machineId != this.machineId && item.imei != this.imei);
+                this.connection.provides = previousList;
 
                 const run = await this.connection.save({ transaction: this.transaction });
                 if (!run) return resolve(IENMessage.commitFail);
@@ -141,7 +143,7 @@ export class RemoveProvideFromSubadminFunc {
                 this.response = {
                     message: IENMessage.success
                 }
-                
+
                 resolve(IENMessage.success);
 
             } catch (error) {

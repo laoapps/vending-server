@@ -103,6 +103,19 @@ ion-content {
             .btn-add:hover {
                 background: #e7e7e7;
             }
+
+            .btn-remove {
+                background: #f5f6f7;
+                border: 1px solid #3333;
+                border-radius: 5px;
+                color: #333;
+                height: 38px;
+                min-width: 100px;
+                transition: .2s;
+            }
+            .btn-remove:hover {
+                background: #e7e7e7;
+            }
         }
     }
 }
