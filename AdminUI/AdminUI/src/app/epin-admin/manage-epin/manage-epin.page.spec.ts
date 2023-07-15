@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { EpinManagementPage } from './epin-management.page';
+import { ManageEpinPage } from './manage-epin.page';
 
-describe('EpinManagementPage', () => {
-  let component: EpinManagementPage;
-  let fixture: ComponentFixture<EpinManagementPage>;
+describe('ManageEpinPage', () => {
+  let component: ManageEpinPage;
+  let fixture: ComponentFixture<ManageEpinPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ EpinManagementPage ],
+      declarations: [ ManageEpinPage ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EpinManagementPage);
+    fixture = TestBed.createComponent(ManageEpinPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

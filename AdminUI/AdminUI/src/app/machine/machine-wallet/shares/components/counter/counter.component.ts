@@ -5,8 +5,8 @@ import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as moment from 'moment';
 import * as momenttimezone from 'moment-timezone';
-import { ReCreateEPINProcess } from '../../../../epin-management/processes/recreateEPIN.process';
-import { CounterCashout_CashProcess } from '../../../../epin-management/processes/counterCashout_cash.process';
+import { ReCreateEPINProcess } from '../../../../../epin-admin/processes/recreateEPIN.process';
+import { CounterCashout_CashProcess } from '../../../../../epin-admin/processes/counterCashout_cash.process';
 
 @Component({
   selector: 'app-counter',

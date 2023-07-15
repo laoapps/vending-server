@@ -1,0 +1,144 @@
+ion-content {
+    --ion-background-color: #f5f6f7;
+}
+
+.section-navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 999999;
+    background: #A41D4F;
+    color: #fff;
+    padding: 0px 10px;
+    box-shadow: 0px 2px 5px rgba(0,0,0, .2);
+
+    .left {
+        display: flex;
+        align-items: center;
+
+        .btn-back {
+            text-decoration: none;
+            color: #fff;
+            font-size: 20px;
+            margin-right: 25px;
+        }
+
+        .item-text {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    }
+
+    .right {
+        display: flex;
+        align-items: center;
+
+        .item, .item-underline {
+            text-decoration: none;
+            color: #fff;
+            display: flex;
+
+            .text {
+                padding-left: 8px;
+            }
+        }
+
+        .item-underline:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.space {
+    margin-top: 55px;
+}
+
+.epin-management-container {
+    margin: 10px;
+
+    
+    .item-card {
+        background: #fff;
+        border-radius: 5px;
+        box-shadow: 0px 2px 5px rgba(0,0,0, .2);
+        display: flex;
+        flex-direction: column;
+    
+        .item-card-header {
+            background: #f5f6f7;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            padding: 0px 10px;
+            height: 70px;
+            justify-content: center;
+            border-bottom: 1px solid #3333;
+            margin: 10px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+    
+            .title {
+                font-size: 20px;
+                font-weight: bold;
+            }
+    
+            .text {
+                font-size: 14px;
+                font-weight: 300;
+            }
+        }
+    
+        .item-card-body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+    
+            .btn-validate {
+                background: #A41D4F;
+                color: #fff;
+                border-radius: 5px;
+                border: 1px solid #3333;
+                height: 40px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: .2s;
+                text-decoration: none;
+                width: 180px;
+    
+                i {
+                    padding-right: 5px;
+                }
+            }
+            .btn-validate:hover {
+                background: #8d1843;
+            }
+    
+            .btn-action {
+                background: #fff;
+                color: #333;
+                border-radius: 5px;
+                border: 1px solid #3333;
+                height: 50px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: .2s;
+                text-decoration: none;
+                width: 150px;
+                margin-top: 5px;
+    
+                i {
+                    padding-right: 5px;
+                }
+            }
+            .btn-action:hover {
+                background: #e7e7e7;
+            }
+        }
+    }
+
+}

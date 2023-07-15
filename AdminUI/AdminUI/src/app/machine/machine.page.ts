@@ -8,7 +8,7 @@ import { LaabApiService } from '../services/laab-api.service';
 import { LAAB_FindMachineLimiter, LAAB_FindMachineWallet, LAAB_RegisterMachineLimiter, LAAB_RegisterMachineWallet, LAAB_ShowMachineCoinWalletBalance, LAAB_ShowMachineCoinWalletByGroup, LAAB_ShowMachineLimiterBalance, LAAB_ShowMachineWalletBalance } from '../models/laab.model';
 import { IENMessage, IVendingRoles } from '../models/base.model';
 import { MachineWalletPage } from './machine-wallet/machine-wallet.page';
-import { EpinManagementPage } from './epin-management/epin-management.page';
+import { EpinAdminPage } from '../epin-admin/epin-admin.page';
 import { FilemanagerApiService } from '../services/filemanager-api.service';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import { environment } from 'src/environments/environment';
@@ -397,12 +397,12 @@ export class MachinePage implements OnInit {
     });
   }
 
-  epinManagement() {
-    console.log(`list`, this._l);
-    this.apiService.showModal(EpinManagementPage, { }).then(r => {
-      r.present();
-    });
-  }
+  // epinManagement() {
+  //   console.log(`list`, this._l);
+  //   this.apiService.showModal(EpinAdminPage, { }).then(r => {
+  //     r.present();
+  //   });
+  // }
 
   refreshMachine(machineId: string): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {

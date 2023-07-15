@@ -12,6 +12,7 @@ import { MachineIDFactory, MachineIDStatic } from "./machineid.entity";
 import { MachineClientID, MachineClientIDFactory, MachineClientIDStatic } from "./machineclientid.entity";
 import { VendingWalletFactory, VendingWalletStatic } from "./vw.entity";
 import { EPINShortCodeFactory, EPINShortCodeStatic } from "./epinshortcode.entity";
+import { SubadminFactory, SubadminStatic } from "./subadmin.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -30,6 +31,7 @@ export let machineIDHistoryEntity:MachineIDStatic;
 // LAAB
 export let vendingWallet: VendingWalletStatic;
 export let epinshortcodeEntity: EPINShortCodeStatic;
+export let subadminEntity: SubadminStatic;
 
 export const initDB =()=>{
     vendingWallet = VendingWalletFactory(EEntity.vendingwallet, dbConnection).sync().then(() => {
@@ -37,8 +39,12 @@ export const initDB =()=>{
         vendingWallet = VendingWalletFactory(EEntity.vendingwallet, dbConnection);
     });
     epinshortcodeEntity = EPINShortCodeFactory(EEntity.epinshortcode, dbConnection).sync().then(() => {
-        console.log(`vending wallet sync`);
+        console.log(`epin shortcode entity sync`);
         epinshortcodeEntity = EPINShortCodeFactory(EEntity.epinshortcode, dbConnection);
+    });
+    subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection).sync().then(() => {
+        console.log(`sub admin entity sync`);
+        subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection);
     });
 
     bankNoteEntity = BankNoteFactory(EEntity.banknote,dbConnection); // public 

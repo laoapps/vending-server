@@ -1,0 +1,185 @@
+import { Op, Transaction } from "sequelize";
+import axios from "axios";
+import { EPIN_Generate, IENMessage, LAAB_CoinTransfer, LAAB_CreateCouponCoinWalletSMC, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_GenerateVendingOTP, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
+import { IVendingWalletType } from "../../../models/base.model";
+import { dbConnection, epinshortcodeEntity, subadminEntity, vendingWallet } from "../../../../entities";
+
+export class AddProvideToSubadmin {
+
+    private transaction: Transaction;
+    private uuid: string;
+    private ownerUuid: string;
+    private phonenumber: string;
+    private machineId: string;
+    private emei: string;
+
+    private coinListId: string;
+    private coinCode: string;
+
+    private sender: string;
+    private connection: any = {} as any;
+    private coinName: string;
+    private passkeys: string;
+    private response: any = {} as any;
+
+    constructor(){}
+
+    public Init(params: any): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            this.transaction = await dbConnection.transaction();
+            try {
+
+                console.log(`create epin`, 1);
+
+                this.InitParams(params);
+
+                console.log(`create epin`, 2);
+
+                const ValidateParams = this.ValidateParams();
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+
+                console.log(`create epin`, 3);
+
+                const FindMerchant = await this.FindMerchant();
+                if (FindMerchant != IENMessage.success) throw new Error(FindMerchant);
+
+                const FindData = await this.FindData();
+                if (FindData != IENMessage.success) throw new Error(FindData);
+
+                console.log(`create epin`, 4);
+
+                const FindDuplicate = await this.FindDuplicate();
+                if (FindDuplicate != IENMessage.success) throw new Error(FindDuplicate);
+
+                console.log(`create epin`, 5);
+
+                console.log(`create epin`, 6);
+
+                const AddNewProvide = await this.AddNewProvide();
+                if (AddNewProvide != IENMessage.success) throw new Error(AddNewProvide);
+
+                console.log(`create epin`, 7);
+
+                console.log(`create epin`, 8);
+
+                await this.transaction.commit();
+                resolve(this.response);
+
+            } catch (error) {
+
+                await this.transaction.rollback();
+                resolve(error.message);
+            }
+        });
+    }
+
+    private InitParams(params: any) {
+        this.uuid = params.uuid;
+        this.ownerUuid = params.ownerUuid;
+        this.phonenumber = params.phonenumber;
+        this.machineId = params.machineId;
+        this.emei = params.emei;
+    }
+
+    private ValidateParams(): string {
+        if (!(this.uuid && this.ownerUuid && this.phonenumber && this.machineId && this.emei)) return IENMessage.parametersEmpty;
+        return IENMessage.success;
+    }
+
+    private FindMerchant(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.merchant } });
+                if (run == null) return resolve(IENMessage.notFoundYourMerchant);
+                this.sender = translateUToSU(run.uuid);
+                this.coinListId = run.coinListId;
+                this.coinCode = run.coinCode;
+                this.coinName = run.coinName;
+                this.passkeys = run.passkeys;
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private FindData(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                const condition: any = {
+                    where: {
+                        uuid: this.uuid
+                    }
+                }
+
+                const run = await subadminEntity.findOne(condition);
+                if (run == null) return resolve(IENMessage.invalidData);
+
+                if (run.ownerUuid != this.ownerUuid || run.phonenumber != this.phonenumber) return resolve(IENMessage.dataUnmatch);
+                this.connection = run;
+                
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private FindDuplicate(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                const duplicate = this.connection.provides.filter(item => item.machineId == this.machineId && item.emei == this.emei);
+                if (duplicate != undefined && Object.entries(duplicate).length > 0) return resolve(IENMessage.thisSubAdminHasAlreadyProvidedThisMachine);
+
+                const condition: any = {
+                    where: {
+                        ownerUuid: this.ownerUuid,
+                        phonenumber: {[Op.ne]: this.phonenumber},
+                        provides: {
+                           machineId: this.machineId,
+                           emei: this.emei
+                        }
+                    }
+                }
+
+                const run = await subadminEntity.findOne(condition);
+                if (run != null) return resolve(IENMessage.otherSubadminHasAlreadyProvidedThisMachine);
+                
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private AddNewProvide(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                let previousList: Array<{ machineId: string, emei: string }> = this.connection.provides;
+                previousList.unshift({ machineId: this.machineId, emei: this.emei });
+                this.connection.provides = previousList;
+
+                const run = await this.connection.save({ transaction: this.transaction });
+                if (!run) return resolve(IENMessage.commitFail);
+
+                this.response = {
+                    message: IENMessage.success
+                }
+
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+
+}

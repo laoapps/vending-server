@@ -169,7 +169,6 @@ export interface VENDING_ShowEPINShortCodeList extends IBase {
 }
 export interface VENDING_FindEPINShortCodeList extends IBase {
     phonenumber: string,
-    time?: string,
     page: number,
     limit: number
 }

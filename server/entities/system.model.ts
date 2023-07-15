@@ -3234,6 +3234,7 @@ export enum EEntity {
     machineclientid = "machineclientid",
     vendingmachinebillpaid = "vendingmachinebillpaid",
     vendingwallet = 'vendingwallet',
-    epinshortcode = 'epinshortcode'
+    epinshortcode = 'epinshortcode',
+    subadmin = 'subadmin',
 }
 

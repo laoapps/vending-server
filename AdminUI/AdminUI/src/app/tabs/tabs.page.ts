@@ -4,6 +4,8 @@ import { MyaccountPage } from '../myaccount/myaccount.page';
 import { MachinePage } from '../machine/machine.page';
 import { ProductsPage } from '../products/products.page';
 import { SalePage } from '../sale/sale.page';
+import { EpinAdminPage } from '../epin-admin/epin-admin.page';
+import { EpinSubadminPage } from '../epin-subadmin/epin-subadmin.page';
 
 @Component({
   selector: 'app-tabs',
@@ -40,17 +42,22 @@ export class TabsPage implements OnInit {
             r?.present();
             r.onDidDismiss().then(() => {});
           });
-        break;
+          break;
         case 2:
           this.apiService.showModal(MachinePage,{}).then(r=>{r?.present()});
-        break;
+          break;
         case 3:
           this.apiService.showModal(ProductsPage,{}).then(r=>{r?.present()});
-        break;
+          break;
         case 4:
           this.apiService.showModal(SalePage,{}).then(r=>{r?.present()});
-        break;
-
+          break;
+        case 5:
+          this.apiService.showModal(EpinAdminPage,{}).then(r=>{r?.present()});
+          break;
+        case 6:
+          this.apiService.showModal(EpinSubadminPage,{}).then(r=>{r?.present()});
+          break;
     
       default:
         break;

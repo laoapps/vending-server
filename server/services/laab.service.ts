@@ -53,6 +53,15 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    notFoundMachineForRemove = 'not found machine for remove',
+    thisSubAdminHasAlreadyProvidedThisMachine = 'this sub admin has already provided this machine',
+    otherSubadminHasAlreadyProvidedThisMachine = 'other sub admin has already provided this machine',
+    thisMachineIdHasAlreadyProvided = 'this machine id has already provided',
+    dataUnmatch = 'data unmatch',
+    invalidData = 'invalid data',
+    createSubadminFail = 'create sub admin fail',
+    subadminHasAlreadyCreateByThisOwnerVending = 'sub admin has already created by this owner vending',
+    subadminHasNotLAABAccount = 'sub admin has not LAAB account',
     notImplemented = 'not implemented',
     detailUmatch = 'detail unmatch',
     scanQREPINsuccessButSaveLogEPINShortCodeFail = 'scan QREPIN success but save log EPIN short code fail',

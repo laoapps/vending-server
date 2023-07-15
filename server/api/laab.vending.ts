@@ -5,6 +5,8 @@ import { ReadPanel as AdminReadPanel } from "../laab_service/controllers/vending
 import { WritePanel as AdminWritePanel } from "../laab_service/controllers/vendingwallet_admin/panels/write.panel";
 import { ReadPanel as ClientReadPanel } from "../laab_service/controllers/vendingwallet_client/panels/read.panel";
 import { WritePanel as ClientWritePanel } from "../laab_service/controllers/vendingwallet_client/panels/write.panel";
+import { ReadPanel as SubadminReadPanel } from "../laab_service/controllers/vendingwallet_subadmin/panels/read.panel";
+import { WritePanel as SubadminWritePanel } from "../laab_service/controllers/vendingwallet_subadmin/panels/write.panel";
 import { redisHost, redisPort } from '../services/service';
 import { SocketServerZDM8 } from './socketServerZDM8';
 import { APIAdminAccess, IENMessage, IStatus, message } from '../services/laab.service';
@@ -26,6 +28,10 @@ export let QCreateEPIN = new Queue('QCreateEPIN', { defaultJobOptions: { removeO
 export let QReCreateEPIN = new Queue('QReCreateEPIN', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCounterCashout_CashValidation = new Queue('QCounterCashout_CashValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
+
+export let QCreateSubadmin = new Queue('QCreateSubadmin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QAddProvideSubadmin = new Queue('QAddProvideSubadmin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QRemoveProvideSubadmin = new Queue('QRemoveProvideSubadmin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
 export class LaabVendingAPI {
 
@@ -54,6 +60,14 @@ export class LaabVendingAPI {
     private clientReadPanel: ClientReadPanel;
     private clientWritePanel: ClientWritePanel;
 
+    private subadminQueues: any = {
+        QCreateSubadmin: QCreateSubadmin,
+        QAddProvideSubadmin: QAddProvideSubadmin,
+        QRemoveProvideSubadmin: QRemoveProvideSubadmin,
+    }
+    private subadminReadPanel: SubadminReadPanel;
+    private subadminWritePanel: SubadminWritePanel;
+
     constructor(router: Router,ssocket:SocketServerZDM8) {
         this.ssocket = ssocket;
         this.adminReadPanel = new AdminReadPanel();
@@ -61,6 +75,9 @@ export class LaabVendingAPI {
 
         this.clientReadPanel = new ClientReadPanel();
         this.clientWritePanel = new ClientWritePanel(this.clientQueues);
+
+        this.subadminReadPanel = new SubadminReadPanel();
+        this.subadminWritePanel = new SubadminWritePanel(this.subadminQueues);
 
 
         // merchant
@@ -135,6 +152,18 @@ export class LaabVendingAPI {
         router.post('/mmoney/client/cashout_validation', this.APIMachineAccess, (req: Request, res: Response) => {
             message([], IENMessage.notImplemented, IStatus.unsuccess, res);
         });
+
+
+
+
+
+        // vending subadmin
+        router.post('/laab/sub_admin/create_subadmin', APIAdminAccess, this.subadminWritePanel.CreateSubadmin.bind(this.subadminWritePanel));
+        router.post('/laab/sub_admin/add_provide_subadmin', APIAdminAccess, this.subadminWritePanel.AddProvideToSubadmin.bind(this.subadminWritePanel));
+        router.post('/laab/sub_admin/remove_provide_subadmin', APIAdminAccess, this.subadminWritePanel.RemoveProvideFromSubadmin.bind(this.subadminWritePanel));
+        router.post('/laab/sub_admin/show_subadmin', APIAdminAccess, this.subadminReadPanel.ShowSubadmin.bind(this.subadminReadPanel));
+        router.post('/laab/sub_admin/find_subadmin', APIAdminAccess, this.subadminReadPanel.FindSubadmin.bind(this.subadminReadPanel));
+
 
 
 
@@ -218,6 +247,32 @@ export class LaabVendingAPI {
             const d = job.data;
             const data = d.data;
             this.clientWritePanel._CreateEPIN(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+
+
+
+
+        // sub admin
+        QCreateSubadmin.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.subadminWritePanel._CreateSubadmin(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QCreateEPIN.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.subadminWritePanel._AddProvideToSubadmin(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QCreateEPIN.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.subadminWritePanel._RemoveProvideFromSubadmin(data).then(r => {
                 done(null, r);
             }).catch(error => done(error, null));
         });

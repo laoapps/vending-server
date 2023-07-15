@@ -84,7 +84,7 @@
   <div class="section-navbar">
     <div class="left">
       <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-      <div class="item-text">EPIN Management</div>
+      <div class="item-text">Manage EPIN</div>
     </div>
     <div class="right">
 
@@ -135,8 +135,8 @@
                 <td *ngIf="list?.counter?.cash?.hash != ''">Receive</td>
                 <td>{{ list.createdAt }}</td>
                 <td>
-                  <a *ngIf="!list?.EPIN?.destination" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Recreate EPIN</a>
-                  <a *ngIf="list?.counter?.cash?.hash == ''" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-wallet"></i> Give cash</a>
+                  <a *ngIf="!list?.EPIN?.destination" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Recreate EPIN</a>
+                  <a *ngIf="list?.counter?.cash?.hash == ''" (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-wallet"></i> Give cash</a>
                 </td>
               </tr>
             </tbody>

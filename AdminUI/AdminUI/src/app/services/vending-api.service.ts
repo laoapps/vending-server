@@ -116,6 +116,9 @@ export class VendingAPIService {
   recreateEPIN(params: VENDING_ReCreateEPIN): Observable<any> {
     return this.http.post(this.url + '/laab/admin/recreate_epin', params);
   }
+  findEPINShortCodeListForSubadmin(params: VENDING_FindEPINShortCodeList): Observable<any> {
+    return this.http.post(this.url + '/laab/client/find_epinshortcode', params);
+  }
 
 
 

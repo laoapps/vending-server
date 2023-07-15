@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { EpinManagementPage } from './epin-management.page';
+import { ManageSubadminPage } from './manage-subadmin.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: EpinManagementPage
+    component: ManageSubadminPage
   }
 ];
 
@@ -14,4 +14,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class EpinManagementPageRoutingModule {}
+export class ManageSubadminPageRoutingModule {}

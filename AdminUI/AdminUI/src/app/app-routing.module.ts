@@ -142,7 +142,19 @@ const routes: Routes = [
   },
   {
     path: 'epin-management',
-    loadChildren: () => import('./machine/epin-management/epin-management.module').then( m => m.EpinManagementPageModule)
+    loadChildren: () => import('./epin-admin/epin-admin.module').then( m => m.EpinAdminPageModule)
+  },
+  {
+    path: 'epin-subadmin',
+    loadChildren: () => import('./epin-subadmin/epin-subadmin.module').then( m => m.EpinSubadminPageModule)
+  },
+  {
+    path: 'manage-subadmin',
+    loadChildren: () => import('./epin-admin/manage-subadmin/manage-subadmin.module').then( m => m.ManageSubadminPageModule)
+  },
+  {
+    path: 'manage-epin',
+    loadChildren: () => import('./epin-admin/manage-epin/manage-epin.module').then( m => m.ManageEpinPageModule)
   }
 ];
 @NgModule({

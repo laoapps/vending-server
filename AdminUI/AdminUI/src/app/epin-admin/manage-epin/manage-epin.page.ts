@@ -1,22 +1,20 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
-import { FindEPINShortCodeListProcess } from './processes/findEPINShortCodeList.process';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as moment from 'moment';
 import * as momenttimezone from 'moment-timezone';
-import { ReCreateEPINProcess } from './processes/recreateEPIN.process';
-import { CounterCashout_CashProcess } from './../epin-management/processes/counterCashout_cash.process';
-import { ShowEPINShortCodeListProcess } from './processes/showEPINShortCodeList.process';
+import { CounterCashout_CashProcess } from '../processes/counterCashout_cash.process';
+import { FindEPINShortCodeListProcess } from '../processes/findEPINShortCodeList.process';
+import { ReCreateEPINProcess } from '../processes/recreateEPIN.process';
+import { ShowEPINShortCodeListProcess } from '../processes/showEPINShortCodeList.process';
 
 @Component({
-  selector: 'app-epin-management',
-  templateUrl: './epin-management.page.html',
-  styleUrls: ['./epin-management.page.scss'],
+  selector: 'app-manage-epin',
+  templateUrl: './manage-epin.page.html',
+  styleUrls: ['./manage-epin.page.scss'],
 })
-export class EpinManagementPage implements OnInit {
-
-  @Input() machineId: string;
+export class ManageEpinPage implements OnInit {
 
   private showEPINShortCodeListProcess: ShowEPINShortCodeListProcess;
   private findEPINShortCodeListProcess: FindEPINShortCodeListProcess;
@@ -42,6 +40,7 @@ export class EpinManagementPage implements OnInit {
     this.recreateEPINProcess = new ReCreateEPINProcess(this.apiService, this.vendingAPIServgice);
     this.counterCashout_cashProcess = new CounterCashout_CashProcess(this.apiService, this.vendingAPIServgice);
   }
+
 
   async ngOnInit() {
     await this.showList();
@@ -156,9 +155,12 @@ export class EpinManagementPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
       
+        this.lists = [];
+        this.btnList = [];
         this.currentPage = page ? page : this.currentPage;
         
         const params = {
+          counter: this.counter,
           phonenumber: this.phonenumber,
           page: this.currentPage,
           limit: this.limit,

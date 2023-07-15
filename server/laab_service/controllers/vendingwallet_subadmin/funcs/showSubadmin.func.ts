@@ -2,16 +2,15 @@ import { Op, Transaction } from "sequelize";
 import axios from "axios";
 import { EPIN_Generate, IENMessage, LAAB_CoinTransfer, LAAB_CreateCouponCoinWalletSMC, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_GenerateVendingOTP, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
-import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../entities";
+import { dbConnection, subadminEntity, vendingWallet } from "../../../../entities";
 
-export class FindEPINShortCodeFunc {
+export class ShowSubadminFunc {
 
-    private phonenumber: string;
+    private ownerUuid: string;
     private page: number;
     private limit: number;
 
     private offset: number;
-    private sender: string;
     private response: any = {} as any;
 
     constructor(){}
@@ -31,10 +30,13 @@ export class FindEPINShortCodeFunc {
 
                 console.log(`find epin short code`, 3);
 
+                const FindMerchant = await this.FindMerchant();
+                if (FindMerchant != IENMessage.success) throw new Error(FindMerchant);
+
                 console.log(`find epin short code`, 4);
 
-                const FindEPINShortCode = await this.FindEPINShortCode();
-                if (FindEPINShortCode != IENMessage.success) throw new Error(FindEPINShortCode);
+                const FindData = await this.FindData();
+                if (FindData != IENMessage.success) throw new Error(FindData);
 
                 console.log(`find epin short code`, 5);
 
@@ -48,36 +50,45 @@ export class FindEPINShortCodeFunc {
     }
 
     private InitParams(params: any) {
-        this.phonenumber = params.phonenumber;
+        this.ownerUuid = params.ownerUuid;
         this.page = params.page;
         this.limit = params.limit;
     }
 
     private ValidateParams(): string {
-        if (!(this.phonenumber && this.page && this.limit)) return IENMessage.parametersEmpty;
+        if (!(this.ownerUuid && this.page && this.limit)) return IENMessage.parametersEmpty;
+        
         this.offset = Number(this.page - 1) * Number(this.limit);
         return IENMessage.success;
     }
 
-    private FindEPINShortCode(): Promise<any> {
+    private FindMerchant(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
+                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.merchant } });
+                if (run == null) return resolve(IENMessage.notFoundYourMerchant);
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private FindData(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
                 const condition: any = {
                     where: {
-                        phonenumber: this.phonenumber,
-                        SMC: {[Op.ne]: {}},
-                        EPIN: {
-                            destination: {[Op.ne]: ''},
-                            coinname: {[Op.ne]: ''}
-                        }
+                        ownerUuid: this.ownerUuid
                     },
                     limit: this.limit,
                     offset: this.offset,
                     order: [[ 'id', 'DESC' ]]
                 }
-                const run = await epinshortcodeEntity.findAndCountAll(condition);
-                if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
+                const run = await subadminEntity.findAndCountAll(condition);
                
                 this.response = {
                     rows: run.rows,

@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { EpinManagementPageRoutingModule } from './epin-management-routing.module';
+import { ManageEpinPageRoutingModule } from './manage-epin-routing.module';
 
-import { EpinManagementPage } from './epin-management.page';
+import { ManageEpinPage } from './manage-epin.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    EpinManagementPageRoutingModule
+    ManageEpinPageRoutingModule
   ],
-  declarations: [EpinManagementPage]
+  declarations: [ManageEpinPage]
 })
-export class EpinManagementPageModule {}
+export class ManageEpinPageModule {}
