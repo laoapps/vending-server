@@ -189,7 +189,7 @@ export class AddProvideToSubadmin {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                let previousList: Array<{ machineId: string, imei: string }> = this.connection.provides;
+                let previousList: Array<{ machineId: string, imei: string }> = JSON.parse(JSON.stringify(this.connection.provides));
                 previousList.unshift({ machineId: this.machineId, imei: this.imei });
                 this.connection.provides = previousList;
 
