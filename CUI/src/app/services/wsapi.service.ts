@@ -27,7 +27,7 @@ export class WsapiService {
   constructor() {
   }
   connect(url: string, machineId: string, otp: string) {
-    console.log(`connnn`, machineId);
+    console.log(`connnn`, machineId, url);
     this.wsurl = url;
     this.webSocket = new WebSocket(this.wsurl);
 

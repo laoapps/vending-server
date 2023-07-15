@@ -42,10 +42,10 @@ export const initDB =()=>{
         console.log(`epin shortcode entity sync`);
         epinshortcodeEntity = EPINShortCodeFactory(EEntity.epinshortcode, dbConnection);
     });
-    subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection).sync().then(() => {
-        console.log(`sub admin entity sync`);
-        subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection);
-    });
+    // subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection).sync().then(() => {
+    //     console.log(`sub admin entity sync`);
+    //     subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection);
+    // });
 
     bankNoteEntity = BankNoteFactory(EEntity.banknote,dbConnection); // public 
     bankNoteEntity.sync().then(r=>{
