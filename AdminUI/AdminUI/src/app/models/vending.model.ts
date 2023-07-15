@@ -212,3 +212,7 @@ export interface VENDING_FindSubadminList extends IBase {
 export interface VENDING_CreateSubadmin extends IBase {
     phonenumber: string
 }
+export interface VENDING_DeleteSubadmin extends IBase {
+    id: number,
+    phonenumber: string
+}

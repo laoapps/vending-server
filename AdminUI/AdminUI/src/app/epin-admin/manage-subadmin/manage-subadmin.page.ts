@@ -5,6 +5,8 @@ import { FindSubadminListProcess } from '../processes/findSubadminList.process';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { IENMessage } from 'src/app/models/base.model';
 import { ManageSubadminCreatePage } from '../manage-subadmin-create/manage-subadmin-create.page';
+import { DeleteSubadminProcess } from '../processes/deleteSubadmin.process';
+import { ManageSubadminInfoPage } from '../manage-subadmin-info/manage-subadmin-info.page';
 
 @Component({
   selector: 'app-manage-subadmin',
@@ -15,6 +17,8 @@ export class ManageSubadminPage implements OnInit {
 
   private showSubadminListProcess: ShowSubadminListProcess;
   private findSubadminListProcess: FindSubadminListProcess;
+  private deleteSubadminProcess: DeleteSubadminProcess;
+
   phonenumber: string;
 
   lists: any[] = [];
@@ -29,6 +33,7 @@ export class ManageSubadminPage implements OnInit {
   ) { 
     this.showSubadminListProcess = new ShowSubadminListProcess(this.apiService, this.vendingAPIServgice);
     this.findSubadminListProcess = new FindSubadminListProcess(this.apiService, this.vendingAPIServgice);
+    this.deleteSubadminProcess = new DeleteSubadminProcess(this.apiService, this.vendingAPIServgice);
   }
 
 
@@ -198,7 +203,7 @@ export class ManageSubadminPage implements OnInit {
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
-        resolve(error.message); 
+        resolve(error.message);
       }
     });
   }
@@ -211,14 +216,64 @@ export class ManageSubadminPage implements OnInit {
       r.present();
     });
   }
-  public autoUpdateAfterManageSubadminCreate(list: any) {
+  autoUpdateAfterManageSubadminCreate(list: any) {
     if (this.lists != undefined && Object.entries(this.lists).length == this.limit) {
       this.lists.splice(-1);
     }
     this.lists.unshift(list);
   }
+  deleteSubadmin(list: any): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
 
-  
+        const alert = this.apiService.alert.create({
+          header: 'Are your sure !?',
+          subHeader: 'Do you want to delete this sub admin ?',
+          buttons: [
+            {
+              text: 'Confirm',
+              handler: async () => {
+                const params = {
+                  id: list.id,
+                  phonenumber: list.phonenumber
+                }
+                let run: any = await this.deleteSubadminProcess.Init(params);
+                if (run.message != IENMessage.success) {
+                  this.apiService.simpleMessage(run);
+                  return;
+                }
+
+                this.lists = this.lists.filter(item => item.id !== list.id);
+                if (this.lists != undefined && Object.entries(this.lists).length == 0) {
+                  run = await this.showList();
+                  if (run != IENMessage.success) {
+                    this.apiService.simpleMessage(run);
+                    return;
+                  }
+                }
+                resolve(IENMessage.success);
+              }
+            },
+            'Cancel'
+          ]
+        });
+        (await alert).present();
+        
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  openManageSubadminInfo(list: any) {
+    const props = {
+      manageSubadminPage: this,
+      list: list
+    }
+    this.apiService.showModal(ManageSubadminInfoPage, props).then(r => {
+      r.present();
+    });
+  }
  
 
 

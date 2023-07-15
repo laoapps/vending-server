@@ -48,10 +48,12 @@
                 <td>{{ i+1 }}</td>
                 <td>{{ list.phonenumber }}</td>
                 <td>
+                  <div *ngIf="list?.provides != undefined && list?.provides.length == 0" class="">No Provide</div>
                   <div class="" *ngFor="let provide of list.provides; let provide_index = index">Machine: {{provide.machineId}} Emei: {{ provide.emei }} </div>
                 </td>
                 <td>
-
+                  <button (click)="deleteSubadmin(list)" class="btn-delete ms-1"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                  <button (click)="openManageSubadminInfo(list)" class="btn-delete ms-1"><i class="fa-solid fa-ellipsis"></i></button>
                 </td>
               </tr>
             </tbody>

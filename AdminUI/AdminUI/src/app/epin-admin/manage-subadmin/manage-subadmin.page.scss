@@ -230,6 +230,20 @@ ion-content {
             .btn-action:hover {
                 background: #e7e7e7;
             }
+            
+            .btn-delete {
+                background: #f5f6f7;
+                border: 1px solid #3333;
+                border-radius: 5px;
+                color: #333;
+                height: 38px;
+                min-width: 100px;
+                transition: .2s;
+            }
+            .btn-delete:hover {
+                background: #e7e7e7;
+            }
+
         }
 
         .item-card-footer {

@@ -7,7 +7,7 @@ import { dbConnection, epinshortcodeEntity, subadminEntity, vendingWallet } from
 export class AddProvideToSubadmin {
 
     private transaction: Transaction;
-    private uuid: string;
+    private id: string;
     private ownerUuid: string;
     private phonenumber: string;
     private machineId: string;
@@ -74,7 +74,7 @@ export class AddProvideToSubadmin {
     }
 
     private InitParams(params: any) {
-        this.uuid = params.uuid;
+        this.id = params.id;
         this.ownerUuid = params.ownerUuid;
         this.phonenumber = params.phonenumber;
         this.machineId = params.machineId;
@@ -82,7 +82,7 @@ export class AddProvideToSubadmin {
     }
 
     private ValidateParams(): string {
-        if (!(this.uuid && this.ownerUuid && this.phonenumber && this.machineId && this.emei)) return IENMessage.parametersEmpty;
+        if (!(this.id && this.ownerUuid && this.phonenumber && this.machineId && this.emei)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -111,7 +111,8 @@ export class AddProvideToSubadmin {
 
                 const condition: any = {
                     where: {
-                        uuid: this.uuid
+                        ownerUuid: this.ownerUuid,
+                        id: this.id
                     }
                 }
 
