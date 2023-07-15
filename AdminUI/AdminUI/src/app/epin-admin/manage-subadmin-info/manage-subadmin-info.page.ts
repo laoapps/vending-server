@@ -36,7 +36,7 @@ export class ManageSubadminInfoPage implements OnInit {
 
         const alert = this.apiService.alert.create({
           header: 'Add Provide',
-          subHeader: 'Please enter machine id and emei',
+          subHeader: 'Please enter machine id and imei',
           inputs: [
             {
               type: 'text',
@@ -45,7 +45,7 @@ export class ManageSubadminInfoPage implements OnInit {
             },
             {
               type: 'text',
-              placeholder: 'Enter emei',
+              placeholder: 'Enter imei',
               name: 'input_imei'
             },
           ],
@@ -53,7 +53,8 @@ export class ManageSubadminInfoPage implements OnInit {
             {
               text: 'Add',
               handler: async (data) => {
-                const duplicate = this.list.provides.filter(item => item.machineId == data.input_machineid && item.emei == data.input_imei);
+                const duplicate = this.list.provides.filter(item => item.machineId == data.input_machineid && item.imei == data.input_imei);
+
                 if (duplicate != undefined && Object.entries(duplicate).length > 0) {
                   this.apiService.simpleMessage(IENMessage.thisMachineHasAlreadyAdded);
                   return;

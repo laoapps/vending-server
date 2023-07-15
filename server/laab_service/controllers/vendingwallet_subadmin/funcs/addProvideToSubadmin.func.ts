@@ -148,7 +148,7 @@ export class AddProvideToSubadmin {
                 if (run == null) return resolve(IENMessage.notFoundMachine);
 
                 const find = run.data.filter(item => item.imei == this.imei);
-                if (find == undefined) return resolve(IENMessage.incorrectImei);
+                if (find != undefined && Object.entries(find).length == 0) return resolve(IENMessage.incorrectImei);
                 
                 resolve(IENMessage.success);
 
