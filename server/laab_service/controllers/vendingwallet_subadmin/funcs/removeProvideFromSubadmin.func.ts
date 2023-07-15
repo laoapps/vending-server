@@ -7,7 +7,7 @@ import { dbConnection, epinshortcodeEntity, subadminEntity, vendingWallet } from
 export class RemoveProvideFromSubadminFunc {
 
     private transaction: Transaction;
-    private uuid: string;
+    private id: number;
     private ownerUuid: string;
     private phonenumber: string;
     private machineId: string;
@@ -71,7 +71,7 @@ export class RemoveProvideFromSubadminFunc {
     }
 
     private InitParams(params: any) {
-        this.uuid = params.uuid;
+        this.id = params.id;
         this.ownerUuid = params.ownerUuid;
         this.phonenumber = params.phonenumber;
         this.machineId = params.machineId;
@@ -79,7 +79,7 @@ export class RemoveProvideFromSubadminFunc {
     }
 
     private ValidateParams(): string {
-        if (!(this.uuid && this.ownerUuid && this.phonenumber && this.machineId && this.imei)) return IENMessage.parametersEmpty;
+        if (!(this.id && this.ownerUuid && this.phonenumber && this.machineId && this.imei)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -108,7 +108,7 @@ export class RemoveProvideFromSubadminFunc {
 
                 const condition: any = {
                     where: {
-                        uuid: this.uuid
+                        id: this.id
                     }
                 }
 
