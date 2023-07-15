@@ -262,14 +262,14 @@ export class LaabVendingAPI {
                 done(null, r);
             }).catch(error => done(error, null));
         });
-        QCreateEPIN.process((job, done) => {
+        QAddProvideSubadmin.process((job, done) => {
             const d = job.data;
             const data = d.data;
             this.subadminWritePanel._AddProvideToSubadmin(data).then(r => {
                 done(null, r);
             }).catch(error => done(error, null));
         });
-        QCreateEPIN.process((job, done) => {
+        QRemoveProvideSubadmin.process((job, done) => {
             const d = job.data;
             const data = d.data;
             this.subadminWritePanel._RemoveProvideFromSubadmin(data).then(r => {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ApiService } from 'src/app/services/api.service';
 
 @Component({
   selector: 'app-manage-subadmin',
@@ -7,9 +8,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ManageSubadminPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    private apiService: ApiService
+  ) { }
 
   ngOnInit() {
+  }
+
+  close() {
+    this.apiService.modal.dismiss();
   }
 
 }

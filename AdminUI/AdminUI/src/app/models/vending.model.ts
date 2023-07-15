@@ -193,3 +193,14 @@ export interface VENDING_CounterCashout_cash extends IBase {
     coinname: string,
     name: string
 }
+
+
+
+
+
+
+// sub admin
+export interface VENDING_ShowSubadminList extends IBase {
+    page: number,
+    limit: number
+}

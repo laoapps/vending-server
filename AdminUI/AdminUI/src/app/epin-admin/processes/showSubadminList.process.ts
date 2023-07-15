@@ -3,7 +3,7 @@ import { ApiService } from "src/app/services/api.service";
 import { LaabApiService } from "src/app/services/laab-api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 
-export class ShowEPINShortCodeListProcess {
+export class ShowSubadminListProcess {
 
     private workload: any = {} as any;
 
