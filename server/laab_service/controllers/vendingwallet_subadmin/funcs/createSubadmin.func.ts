@@ -162,6 +162,7 @@ export class CreateSubAdminFunc {
                 if (!run) return resolve(IENMessage.commitFail);
 
                 this.response = {
+                    commit_id: run.id,
                     message: IENMessage.success
                 }
                 resolve(IENMessage.success);
