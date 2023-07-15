@@ -1,4 +1,5 @@
 export enum IENMessage {
+    invalidPhonenumber = 'invalid phone number',
     createNewSubadminSuccess = 'create new sub admin success',
     refreshMachineSuccess = 'refresh machine success',
     loadListFail = 'load list fail',

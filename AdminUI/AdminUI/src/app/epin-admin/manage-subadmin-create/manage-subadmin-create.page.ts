@@ -37,7 +37,7 @@ export class ManageSubadminCreatePage implements OnInit {
 
 
         const params = {
-          phonenumber: `+85620${this.phonenumber}`
+          phonenumber: this.phonenumber
         }
         const run = await this.createSubadminProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);

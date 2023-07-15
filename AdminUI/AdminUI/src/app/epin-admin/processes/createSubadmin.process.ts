@@ -66,6 +66,8 @@ export class CreateSubadminProcess {
 
     private ValidateParams(): string {
         if (!(this.phonenumber && this.token)) return IENMessage.parametersEmpty;
+        if (this.phonenumber.length < 8) return IENMessage.invalidPhonenumber;
+        
         return IENMessage.success;
     }
 
