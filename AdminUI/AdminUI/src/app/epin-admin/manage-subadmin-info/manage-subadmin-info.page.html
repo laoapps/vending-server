@@ -36,7 +36,7 @@
                 <td>{{ provide.machineId }}</td>
                 <td>{{ provide.imei }}</td>
                 <td>
-                  <button class="btn-remove"><i class="fa-solid fa-arrow-up"></i> Remove</button>
+                  <button (click)="removeProvideToSubadmin(provide)" class="btn-remove"><i class="fa-solid fa-arrow-up"></i> Remove</button>
                 </td>
               </tr>
             </tbody>

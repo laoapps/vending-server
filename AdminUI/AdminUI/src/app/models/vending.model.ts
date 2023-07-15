@@ -222,3 +222,4 @@ export interface VENDING_AddProvideToSubadmin extends IBase {
     machineId: string,
     imei: string
 }
+export interface VENDING_RemoveProvideToSubadmin extends VENDING_AddProvideToSubadmin {}

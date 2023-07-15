@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { VENDING_ReCreateEPIN, VENDING_CreateMerchant, VENDING_CreateMerchantCoin, VENDING_CreateVendingLimiter, VENDING_CreateVendingLimiterCoin, VENDING_CreateVendingWallet, VENDING_CreateVendingWalletCoin, VENDING_FindEPINShortCodeList, VENDING_FindMerchant, VENDING_FindMerchantCoin, VENDING_FindVendingCoin, VENDING_FindVendingLimiter, VENDING_FindVendingLimiterCoin, VENDING_FindVendingWallet, VENDING_FindVendingWalletCoin, VENDING_Login, VENDING_MerchantCoinTransfer, VENDING_QRHashVerify, VENDING_ShowEPINShortCodeList, VENDING_ShowMerchantCoinBalance, VENDING_ShowMerchantReport, VENDING_ShowVendingLimiterCoinBalance, VENDING_ShowVendingLimiterReport, VENDING_ShowVendingWalletCoinBalance, VENDING_ShowVendingWalletReport, VENDING_TextHashVerify, VENDING_VendingLimiterCoinTransfer, VENDING_VendingWalletCoinTransfer, VENDING_CounterCashout_cash, VENDING_ShowSubadminList, VENDING_FindSubadminList, VENDING_CreateSubadmin, VENDING_DeleteSubadmin, VENDING_AddProvideToSubadmin } from '../models/vending.model';
+import { VENDING_ReCreateEPIN, VENDING_CreateMerchant, VENDING_CreateMerchantCoin, VENDING_CreateVendingLimiter, VENDING_CreateVendingLimiterCoin, VENDING_CreateVendingWallet, VENDING_CreateVendingWalletCoin, VENDING_FindEPINShortCodeList, VENDING_FindMerchant, VENDING_FindMerchantCoin, VENDING_FindVendingCoin, VENDING_FindVendingLimiter, VENDING_FindVendingLimiterCoin, VENDING_FindVendingWallet, VENDING_FindVendingWalletCoin, VENDING_Login, VENDING_MerchantCoinTransfer, VENDING_QRHashVerify, VENDING_ShowEPINShortCodeList, VENDING_ShowMerchantCoinBalance, VENDING_ShowMerchantReport, VENDING_ShowVendingLimiterCoinBalance, VENDING_ShowVendingLimiterReport, VENDING_ShowVendingWalletCoinBalance, VENDING_ShowVendingWalletReport, VENDING_TextHashVerify, VENDING_VendingLimiterCoinTransfer, VENDING_VendingWalletCoinTransfer, VENDING_CounterCashout_cash, VENDING_ShowSubadminList, VENDING_FindSubadminList, VENDING_CreateSubadmin, VENDING_DeleteSubadmin, VENDING_AddProvideToSubadmin, VENDING_RemoveProvideToSubadmin } from '../models/vending.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
@@ -145,5 +145,8 @@ export class VendingAPIService {
   }
   addProvideToSubadmin(params: VENDING_AddProvideToSubadmin): Observable<any> {
     return this.http.post(this.url + '/laab/sub_admin/add_provide_to_subadmin', params);
+  }
+  removeProvideToSubadmin(params: VENDING_RemoveProvideToSubadmin): Observable<any> {
+    return this.http.post(this.url + '/laab/sub_admin/remove_provide_from_subadmin', params);
   }
 }

@@ -3,7 +3,7 @@ import { ApiService } from "src/app/services/api.service";
 import { LaabApiService } from "src/app/services/laab-api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 
-export class AddProvideToSubadminProcess {
+export class RemoveProvideToSubadminProcess {
 
     private workload: any = {} as any;
 
@@ -87,7 +87,7 @@ export class AddProvideToSubadminProcess {
                     token: this.token
                 }
 
-                this.vendingAPIServgice.addProvideToSubadmin(params).subscribe(r => {
+                this.vendingAPIServgice.removeProvideToSubadmin(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response create sub admin`, response);
                     if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);

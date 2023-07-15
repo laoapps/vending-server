@@ -274,7 +274,13 @@ export class ManageSubadminPage implements OnInit {
       r.present();
     });
   }
- 
+  autoUpdateAfterRemoveProvideFromSubadmin(list: any) {
+    this.lists.filter(item => {
+      if (item.id == list.id) {
+        item.provides = list.provides;
+      }
+    });
+  }
 
 
 
