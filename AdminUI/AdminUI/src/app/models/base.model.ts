@@ -1,4 +1,5 @@
 export enum IENMessage {
+    createNewSubadminSuccess = 'create new sub admin success',
     refreshMachineSuccess = 'refresh machine success',
     loadListFail = 'load list fail',
     loadProductListFail = 'load product list fail',

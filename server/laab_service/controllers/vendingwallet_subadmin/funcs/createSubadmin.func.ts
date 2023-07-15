@@ -128,8 +128,8 @@ export class CreateSubAdminFunc {
 
                 const params = {
                     sender: this.phonenumber,
-                    coinListId: this.coinListId,
-                    coinCode: this.coinCode,
+                    coin_list_id: this.coinListId,
+                    coin_code: this.coinCode,
 
                     // access by passkey
                     phonenumber: this.sender,

@@ -211,7 +211,7 @@ export class ManageSubadminPage implements OnInit {
       r.present();
     });
   }
-  autoUpdateAfterManageSubadminCreate(list: any) {
+  public autoUpdateAfterManageSubadminCreate(list: any) {
     if (this.lists != undefined && Object.entries(this.lists).length == this.limit) {
       this.lists.splice(-1);
     }

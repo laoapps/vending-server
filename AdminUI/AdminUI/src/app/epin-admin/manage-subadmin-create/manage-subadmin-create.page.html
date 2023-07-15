@@ -17,9 +17,9 @@
       <div class="item-card-body">
         <div class="form-group">
           <label for="">Phone number</label>
-          <input type="text" placeholder="Enter phone number" class="form-control">
+          <input [(ngModel)]="phonenumber" type="text" placeholder="Enter phone number" class="form-control">
         </div>
-        <button class="btn-submit">Submit</button>
+        <button (click)="createSubadmin()" class="btn-submit">Submit</button>
       </div>
     </div>
   </div>
