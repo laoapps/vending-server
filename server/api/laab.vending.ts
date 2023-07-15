@@ -30,6 +30,7 @@ export let QCounterCashout_CashValidation = new Queue('QCounterCashout_CashValid
 
 
 export let QCreateSubadmin = new Queue('QCreateSubadmin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QDeleteSubadmin = new Queue('QDeleteSubadmin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QAddProvideSubadmin = new Queue('QAddProvideSubadmin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QRemoveProvideSubadmin = new Queue('QRemoveProvideSubadmin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 
@@ -62,6 +63,7 @@ export class LaabVendingAPI {
 
     private subadminQueues: any = {
         QCreateSubadmin: QCreateSubadmin,
+        QDeleteSubadmin: QDeleteSubadmin,
         QAddProvideSubadmin: QAddProvideSubadmin,
         QRemoveProvideSubadmin: QRemoveProvideSubadmin,
     }
@@ -159,6 +161,7 @@ export class LaabVendingAPI {
 
         // vending subadmin
         router.post('/laab/sub_admin/create_subadmin', APIAdminAccess, this.subadminWritePanel.CreateSubadmin.bind(this.subadminWritePanel));
+        router.post('/laab/sub_admin/delete_subadmin', APIAdminAccess, this.subadminWritePanel.DeleteSubadmin.bind(this.subadminWritePanel));
         router.post('/laab/sub_admin/add_provide_subadmin', APIAdminAccess, this.subadminWritePanel.AddProvideToSubadmin.bind(this.subadminWritePanel));
         router.post('/laab/sub_admin/remove_provide_subadmin', APIAdminAccess, this.subadminWritePanel.RemoveProvideFromSubadmin.bind(this.subadminWritePanel));
         router.post('/laab/sub_admin/show_subadmin', APIAdminAccess, this.subadminReadPanel.ShowSubadmin.bind(this.subadminReadPanel));
@@ -259,6 +262,13 @@ export class LaabVendingAPI {
             const d = job.data;
             const data = d.data;
             this.subadminWritePanel._CreateSubadmin(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QDeleteSubadmin.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.subadminWritePanel._DeleteSubadmin(data).then(r => {
                 done(null, r);
             }).catch(error => done(error, null));
         });

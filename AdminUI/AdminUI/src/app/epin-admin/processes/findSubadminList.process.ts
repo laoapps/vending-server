@@ -3,13 +3,14 @@ import { ApiService } from "src/app/services/api.service";
 import { LaabApiService } from "src/app/services/laab-api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 
-export class ShowSubadminListProcess {
+export class FindSubadminListProcess {
 
     private workload: any = {} as any;
 
     private apiService: ApiService;
     private vendingAPIServgice: VendingAPIService;
 
+    private phonenumber: string;
     private page: number;
     private limit: number;
 
@@ -62,13 +63,14 @@ export class ShowSubadminListProcess {
     }
 
     private InitParams(params: any): void {
+        this.phonenumber = params.phonenumber;
         this.page = params.page;
         this.limit = params.limit;
         this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
-        if (!(this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -77,12 +79,13 @@ export class ShowSubadminListProcess {
             try {
 
                 const params = {
+                    phonenumber: this.phonenumber,
                     page: this.page,
                     limit: this.limit,
                     token: this.token
                 }
 
-                this.vendingAPIServgice.showSubadminList(params).subscribe(r => {
+                this.vendingAPIServgice.findSubadminList(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response show sub admin`, response);
                     if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);

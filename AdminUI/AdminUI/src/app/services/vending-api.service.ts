@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { VENDING_ReCreateEPIN, VENDING_CreateMerchant, VENDING_CreateMerchantCoin, VENDING_CreateVendingLimiter, VENDING_CreateVendingLimiterCoin, VENDING_CreateVendingWallet, VENDING_CreateVendingWalletCoin, VENDING_FindEPINShortCodeList, VENDING_FindMerchant, VENDING_FindMerchantCoin, VENDING_FindVendingCoin, VENDING_FindVendingLimiter, VENDING_FindVendingLimiterCoin, VENDING_FindVendingWallet, VENDING_FindVendingWalletCoin, VENDING_Login, VENDING_MerchantCoinTransfer, VENDING_QRHashVerify, VENDING_ShowEPINShortCodeList, VENDING_ShowMerchantCoinBalance, VENDING_ShowMerchantReport, VENDING_ShowVendingLimiterCoinBalance, VENDING_ShowVendingLimiterReport, VENDING_ShowVendingWalletCoinBalance, VENDING_ShowVendingWalletReport, VENDING_TextHashVerify, VENDING_VendingLimiterCoinTransfer, VENDING_VendingWalletCoinTransfer, VENDING_CounterCashout_cash } from '../models/vending.model';
+import { VENDING_ReCreateEPIN, VENDING_CreateMerchant, VENDING_CreateMerchantCoin, VENDING_CreateVendingLimiter, VENDING_CreateVendingLimiterCoin, VENDING_CreateVendingWallet, VENDING_CreateVendingWalletCoin, VENDING_FindEPINShortCodeList, VENDING_FindMerchant, VENDING_FindMerchantCoin, VENDING_FindVendingCoin, VENDING_FindVendingLimiter, VENDING_FindVendingLimiterCoin, VENDING_FindVendingWallet, VENDING_FindVendingWalletCoin, VENDING_Login, VENDING_MerchantCoinTransfer, VENDING_QRHashVerify, VENDING_ShowEPINShortCodeList, VENDING_ShowMerchantCoinBalance, VENDING_ShowMerchantReport, VENDING_ShowVendingLimiterCoinBalance, VENDING_ShowVendingLimiterReport, VENDING_ShowVendingWalletCoinBalance, VENDING_ShowVendingWalletReport, VENDING_TextHashVerify, VENDING_VendingLimiterCoinTransfer, VENDING_VendingWalletCoinTransfer, VENDING_CounterCashout_cash, VENDING_ShowSubadminList, VENDING_FindSubadminList, VENDING_CreateSubadmin } from '../models/vending.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
@@ -126,5 +126,18 @@ export class VendingAPIService {
   
   counterCashout_cash(params: VENDING_CounterCashout_cash): Observable<any> {
     return this.http.post(this.url + '/laab/admin/counter_cashout_cash_validation', params);
+  }
+  
+
+
+  // sub admin
+  showSubadminList(params: VENDING_ShowSubadminList): Observable<any> {
+    return this.http.post(this.url + '/laab/sub_admin/show_subadmin', params);
+  }
+  findSubadminList(params: VENDING_FindSubadminList): Observable<any> {
+    return this.http.post(this.url + '/laab/sub_admin/find_subadmin', params);
+  }
+  createSubadmin(params: VENDING_CreateSubadmin): Observable<any> {
+    return this.http.post(this.url + '/laab/sub_admin/create_subadmin', params);
   }
 }

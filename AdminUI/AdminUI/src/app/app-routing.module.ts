@@ -155,7 +155,15 @@ const routes: Routes = [
   {
     path: 'manage-epin',
     loadChildren: () => import('./epin-admin/manage-epin/manage-epin.module').then( m => m.ManageEpinPageModule)
-  }
+  },
+  {
+    path: 'manage-subadmin-info',
+    loadChildren: () => import('./epin-admin/manage-subadmin-info/manage-subadmin-info.module').then( m => m.ManageSubadminInfoPageModule)
+  },
+  {
+    path: 'manage-subadmin-create',
+    loadChildren: () => import('./epin-admin/manage-subadmin-create/manage-subadmin-create.module').then( m => m.ManageSubadminCreatePageModule)
+  },
 ];
 @NgModule({
   imports: [

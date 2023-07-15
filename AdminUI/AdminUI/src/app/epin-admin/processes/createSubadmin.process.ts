@@ -3,18 +3,15 @@ import { ApiService } from "src/app/services/api.service";
 import { LaabApiService } from "src/app/services/laab-api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 
-export class ShowSubadminListProcess {
+export class CreateSubadminProcess {
 
     private workload: any = {} as any;
 
     private apiService: ApiService;
     private vendingAPIServgice: VendingAPIService;
 
-    private page: number;
-    private limit: number;
+    private phonenumber: string;
 
-    private rows: Array<any> = [];
-    private count: number;
     private token: string;
 
     constructor(
@@ -45,8 +42,8 @@ export class ShowSubadminListProcess {
 
                 console.log(`show epin short code list`, 4);
 
-                const ShowReport = await this.ShowReport();
-                if (ShowReport != IENMessage.success) throw new Error(ShowReport);
+                const CreateSubadmin = await this.CreateSubadmin();
+                if (CreateSubadmin != IENMessage.success) throw new Error(CreateSubadmin);
 
                 console.log(`show epin short code list`, 5);
 
@@ -62,32 +59,28 @@ export class ShowSubadminListProcess {
     }
 
     private InitParams(params: any): void {
-        this.page = params.page;
-        this.limit = params.limit;
+        this.phonenumber = params.phonenumber;
         this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
-        if (!(this.page && this.limit && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
-    private ShowReport(): Promise<any> {
+    private CreateSubadmin(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 const params = {
-                    page: this.page,
-                    limit: this.limit,
+                    phonenumber: this.phonenumber,
                     token: this.token
                 }
 
-                this.vendingAPIServgice.showSubadminList(params).subscribe(r => {
+                this.vendingAPIServgice.createSubadmin(params).subscribe(r => {
                     const response: any = r;
-                    console.log(`response show sub admin`, response);
+                    console.log(`response create sub admin`, response);
                     if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);
-                    this.rows = response.info.rows;
-                    this.count = response.info.count;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -100,8 +93,6 @@ export class ShowSubadminListProcess {
     private Commit(): any {
         const response = {
             data: [{
-                rows: this.rows,
-                count: this.count
             }],
             message: IENMessage.success
         }

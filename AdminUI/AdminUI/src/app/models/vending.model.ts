@@ -204,3 +204,11 @@ export interface VENDING_ShowSubadminList extends IBase {
     page: number,
     limit: number
 }
+export interface VENDING_FindSubadminList extends IBase {
+    phonenumber: string,
+    page: number,
+    limit: number
+}
+export interface VENDING_CreateSubadmin extends IBase {
+    phonenumber: string
+}

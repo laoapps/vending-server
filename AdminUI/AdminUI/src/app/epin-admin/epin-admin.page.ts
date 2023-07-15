@@ -27,7 +27,7 @@ export class EpinAdminPage implements OnInit {
     private apiService: ApiService
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
       
   }
 

@@ -1,4 +1,4 @@
-<!-- 
+
 <ion-content>
 
   <div class="section-navbar">
@@ -19,6 +19,7 @@
 
       <div class="item-card-header">
         <div class="left">
+          <a (click)="openManageSubadminCreate()" href="javascript:void(0)" class="item"><i class="fa-solid fa-circle-plus"></i> Create</a>
           <a (click)="refreshList()" href="javascript:void(0)" class="item"><i class="fa-solid fa-rotate"></i> Refresh</a>
         </div>
         <div class="right">
@@ -80,16 +81,6 @@
             </div>
           </div>
 
-          <div class="show-group">
-            <div class="left">Status</div>
-            <div class="right">
-              <select (change)="switchShowStatus($event)" class="form-select form-select-status">
-                <option selected>Unreceive</option>
-                <option value="false">Unreceive</option>
-                <option value="true">Receive</option>
-              </select>
-            </div>
-          </div>
 
         </div>
       </div>
@@ -98,4 +89,4 @@
 
   </div>
 
-</ion-content> -->
+</ion-content>

@@ -38,26 +38,26 @@ export class TabsPage implements OnInit {
     // }
     switch (i) {
       case 1:
-          this.apiService.showModal(MyaccountPage,{}).then(r=>{
-            r?.present();
-            r.onDidDismiss().then(() => {});
-          });
-          break;
-        case 2:
-          this.apiService.showModal(MachinePage,{}).then(r=>{r?.present()});
-          break;
-        case 3:
-          this.apiService.showModal(ProductsPage,{}).then(r=>{r?.present()});
-          break;
-        case 4:
-          this.apiService.showModal(SalePage,{}).then(r=>{r?.present()});
-          break;
-        case 5:
-          this.apiService.showModal(EpinAdminPage,{}).then(r=>{r?.present()});
-          break;
-        case 6:
-          this.apiService.showModal(EpinSubadminPage,{}).then(r=>{r?.present()});
-          break;
+        this.apiService.showModal(MyaccountPage,{}).then(r=>{
+          r?.present();
+          r.onDidDismiss().then(() => {});
+        });
+        break;
+      case 2:
+        this.apiService.showModal(MachinePage,{}).then(r=>{r?.present()});
+        break;
+      case 3:
+        this.apiService.showModal(ProductsPage,{}).then(r=>{r?.present()});
+        break;
+      case 4:
+        this.apiService.showModal(SalePage,{}).then(r=>{r?.present()});
+        break;
+      case 5:
+        this.apiService.showModal(EpinAdminPage,{}).then(r=>{r?.present()});
+        break;
+      case 6:
+        this.apiService.showModal(EpinSubadminPage,{}).then(r=>{r?.present()});
+        break;
     
       default:
         break;

@@ -42,8 +42,8 @@ export class ManageEpinPage implements OnInit {
   }
 
 
-  async ngOnInit() {
-    await this.showList();
+  ngOnInit() {
+    this.showList();
   }
 
   close() {
