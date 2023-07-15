@@ -165,14 +165,12 @@ export class AddProvideToSubadmin {
                 const duplicate = this.connection.provides.filter(item => item.machineId == this.machineId && item.imei == this.imei);
                 if (duplicate != undefined && Object.entries(duplicate).length > 0) return resolve(IENMessage.thisSubAdminHasAlreadyProvidedThisMachine);
 
+
                 const condition: any = {
                     where: {
                         ownerUuid: this.ownerUuid,
                         phonenumber: {[Op.ne]: this.phonenumber},
-                        provides: {
-                           machineId: this.machineId,
-                           imei: this.imei
-                        }
+                        provides: {[Op.contains]:{ machineId: this.machineId, imei: this.imei }}
                     }
                 }
 
@@ -199,6 +197,8 @@ export class AddProvideToSubadmin {
                 if (!run) return resolve(IENMessage.commitFail);
 
                 this.response = {
+                    list: this.connection.provides,
+                    list1: previousList,
                     message: IENMessage.success
                 }
 
