@@ -407,7 +407,7 @@ export class SocketServerZDM8 {
     initMachineId(m: Array<IMachineClientID>) {
         this.machineIds.length = 0;
         const data = JSON.parse(JSON.stringify(m));
-        console.log(`initMachineId`, data);
+        // console.log(`initMachineId`, data);
         this.machineIds.push(...data)
         // this.machineIds.forEach(v=>v.photo='');
         this.initMachineSetting(m);
