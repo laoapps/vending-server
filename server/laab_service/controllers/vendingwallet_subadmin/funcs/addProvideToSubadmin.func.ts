@@ -11,7 +11,7 @@ export class AddProvideToSubadmin {
     private ownerUuid: string;
     private phonenumber: string;
     private machineId: string;
-    private emei: string;
+    private imei: string;
 
     private coinListId: string;
     private coinCode: string;
@@ -81,11 +81,11 @@ export class AddProvideToSubadmin {
         this.ownerUuid = params.ownerUuid;
         this.phonenumber = params.phonenumber;
         this.machineId = params.machineId;
-        this.emei = params.emei;
+        this.imei = params.imei;
     }
 
     private ValidateParams(): string {
-        if (!(this.id && this.ownerUuid && this.phonenumber && this.machineId && this.emei)) return IENMessage.parametersEmpty;
+        if (!(this.id && this.ownerUuid && this.phonenumber && this.machineId && this.imei)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -147,8 +147,8 @@ export class AddProvideToSubadmin {
                 const run = await machineClientIDEntity.findOne(condition);
                 if (run == null) return resolve(IENMessage.notFoundMachine);
 
-                const find = run.data.find(item => item.emei == this.emei);
-                if (find == undefined) return resolve(IENMessage.incorrectEmei);
+                const find = run.data.filter(item => item.imei == this.imei);
+                if (find == undefined) return resolve(IENMessage.incorrectImei);
                 
                 resolve(IENMessage.success);
 
@@ -162,7 +162,7 @@ export class AddProvideToSubadmin {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                const duplicate = this.connection.provides.filter(item => item.machineId == this.machineId && item.emei == this.emei);
+                const duplicate = this.connection.provides.filter(item => item.machineId == this.machineId && item.imei == this.imei);
                 if (duplicate != undefined && Object.entries(duplicate).length > 0) return resolve(IENMessage.thisSubAdminHasAlreadyProvidedThisMachine);
 
                 const condition: any = {
@@ -171,7 +171,7 @@ export class AddProvideToSubadmin {
                         phonenumber: {[Op.ne]: this.phonenumber},
                         provides: {
                            machineId: this.machineId,
-                           emei: this.emei
+                           imei: this.imei
                         }
                     }
                 }
@@ -191,8 +191,8 @@ export class AddProvideToSubadmin {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                let previousList: Array<{ machineId: string, emei: string }> = this.connection.provides;
-                previousList.unshift({ machineId: this.machineId, emei: this.emei });
+                let previousList: Array<{ machineId: string, imei: string }> = this.connection.provides;
+                previousList.unshift({ machineId: this.machineId, imei: this.imei });
                 this.connection.provides = previousList;
 
                 const run = await this.connection.save({ transaction: this.transaction });

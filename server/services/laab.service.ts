@@ -53,7 +53,7 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
-    incorrectEmei = 'incorrect emei',
+    incorrectImei = 'incorrect imei',
     notFoundMachine = 'not found machine id',
     notFoundMachineIdOrEmei = 'not found machine id or emei',
     notFoundMachineForRemove = 'not found machine for remove',

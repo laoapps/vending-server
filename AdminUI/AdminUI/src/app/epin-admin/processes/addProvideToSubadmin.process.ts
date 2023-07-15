@@ -13,7 +13,7 @@ export class AddProvideToSubadminProcess {
     private id: number;
     private phonenumber: string;
     private machineId: string;
-    private emei: string;
+    private imei: string;
 
     private token: string;
 
@@ -65,12 +65,12 @@ export class AddProvideToSubadminProcess {
         this.id = params.id;
         this.phonenumber = params.phonenumber;
         this.machineId = params.machineId;
-        this.emei = params.emei;
+        this.imei = params.imei;
         this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
-        if (!(this.id && this.phonenumber && this.machineId && this.emei && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.id && this.phonenumber && this.machineId && this.imei && this.token)) return IENMessage.parametersEmpty;
         
         return IENMessage.success;
     }
@@ -83,7 +83,7 @@ export class AddProvideToSubadminProcess {
                     id: this.id,
                     phonenumber: this.phonenumber,
                     machineId: this.machineId,
-                    emei: this.emei,
+                    imei: this.imei,
                     token: this.token
                 }
 

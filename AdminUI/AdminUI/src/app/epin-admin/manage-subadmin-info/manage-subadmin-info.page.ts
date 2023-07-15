@@ -46,14 +46,14 @@ export class ManageSubadminInfoPage implements OnInit {
             {
               type: 'text',
               placeholder: 'Enter emei',
-              name: 'input_emei'
+              name: 'input_imei'
             },
           ],
           buttons: [
             {
               text: 'Add',
               handler: async (data) => {
-                const duplicate = this.list.provides.filter(item => item.machineId == data.input_machineid && item.emei == data.input_emei);
+                const duplicate = this.list.provides.filter(item => item.machineId == data.input_machineid && item.emei == data.input_imei);
                 if (duplicate != undefined && Object.entries(duplicate).length > 0) {
                   this.apiService.simpleMessage(IENMessage.thisMachineHasAlreadyAdded);
                   return;
@@ -62,7 +62,7 @@ export class ManageSubadminInfoPage implements OnInit {
                   id: this.list.id,
                   phonenumber: this.list.phonenumber,
                   machineId: data.input_machineid,
-                  emei: data.input_emei
+                  imei: data.input_imei
                 }
                 let run: any = await this.addProvideToSubadminProcess.Init(params);
                 if (run.message != IENMessage.success) {

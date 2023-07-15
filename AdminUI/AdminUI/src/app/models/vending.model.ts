@@ -220,5 +220,5 @@ export interface VENDING_AddProvideToSubadmin extends IBase {
     id: number,
     phonenumber: string,
     machineId: string,
-    emei: string
+    imei: string
 }
