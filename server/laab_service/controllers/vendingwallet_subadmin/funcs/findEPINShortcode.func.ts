@@ -56,7 +56,7 @@ export class FindEPINShortCodeFunc {
     }
 
     private InitParams(params: any) {
-        this.ownerUuid = params.ownerUuid;
+        this.ownerUuid = params.ownerPhonenumber.substring(6);
         this.phonenumber = params.phonenumber; // search keyword
         this.page = params.page;
         this.limit = params.limit;

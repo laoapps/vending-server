@@ -159,6 +159,7 @@ export function APIAdminAccess(req: Request, res: Response, next: NextFunction) 
         func.Init(data).then(run => {
             if (run.message != IENMessage.success) throw new Error(run);
             req.body.ownerUuid = run.uuid;
+            req.body.ownerPhonenumber = run.phonenumber;
             // res.locals['ownerUuid'] = run.uuid;
             // res.locals['phonenumber'] = run.phonenumber;
             next();
