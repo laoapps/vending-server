@@ -74,7 +74,7 @@ export class TransferValidationFunc {
 
     private ValidateParams(): string {
         if (!(this.machineId && this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
-
+        this.receiver = `+856${this.receiver}`;
         return IENMessage.success;
     }
 
