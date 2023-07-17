@@ -11,8 +11,6 @@ export class FindEPINShortCodeListProcess {
     private vendingAPIServgice: VendingAPIService;
 
     private phonenumber: string;
-    private counter: string;
-    private time: string;
     private page: number;
     private limit: number;
 
@@ -66,8 +64,6 @@ export class FindEPINShortCodeListProcess {
 
     private InitParams(params: any): void {
         this.phonenumber = params.phonenumber;
-        this.counter = params.counter;
-        this.time = params.time;
         this.page = params.page;
         this.limit = params.limit;
         this.token = localStorage.getItem('lva_token');
@@ -84,8 +80,6 @@ export class FindEPINShortCodeListProcess {
 
                 const params = {
                     phonenumber: this.phonenumber,
-                    counter: this.counter,
-                    time: this.time,
                     page: this.page,
                     limit: this.limit,
                     token: this.token

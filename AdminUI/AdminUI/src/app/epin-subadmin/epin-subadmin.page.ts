@@ -13,7 +13,6 @@ export class EpinSubadminPage implements OnInit {
 
   private findEPINShortCodeListProcess: FindEPINShortCodeListProcess;
 
-  counter: boolean = false;
   showTable: boolean = false;
   phonenumber: string;
 
@@ -42,16 +41,14 @@ export class EpinSubadminPage implements OnInit {
     this.showTable = false;
   }
 
-  searchList(page?: number): Promise<any> {
+  searchList(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
       
         this.lists = [];
         this.btnList = [];
-        this.currentPage = page ? page : this.currentPage;
         
         const params = {
-          counter: this.counter,
           phonenumber: this.phonenumber,
           page: this.currentPage,
           limit: this.limit,
