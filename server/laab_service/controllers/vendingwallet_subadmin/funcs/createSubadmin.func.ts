@@ -43,13 +43,13 @@ export class CreateSubAdminFunc {
 
                 console.log(`create epin`, 4);
 
-                const FindDuplicate = await this.FindDuplicate();
-                if (FindDuplicate != IENMessage.success) throw new Error(FindDuplicate);
-
                 console.log(`create epin`, 5);
 
                 const FindSubAdminCoinWallet = await this.FindSubAdminCoinWallet();
                 if (FindSubAdminCoinWallet != IENMessage.success) throw new Error(FindSubAdminCoinWallet);
+
+                const FindDuplicate = await this.FindDuplicate();
+                if (FindDuplicate != IENMessage.success) throw new Error(FindDuplicate);
 
                 console.log(`create epin`, 6);
 
@@ -100,28 +100,6 @@ export class CreateSubAdminFunc {
         });
     }
 
-    private FindDuplicate(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-
-                const condition: any = {
-                    where: {
-                        ownerUuid: this.ownerUuid,
-                        phonenumber: this.phonenumber
-                    }
-                }
-
-                const run = await subadminEntity.findOne(condition);
-                if (run != null) return resolve(IENMessage.subadminHasAlreadyCreateByThisOwnerVending);
-                
-                resolve(IENMessage.success);
-
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
-
     private FindSubAdminCoinWallet(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
@@ -139,7 +117,30 @@ export class CreateSubAdminFunc {
                 const run = await axios.post(LAAB_FindMyCoinWallet, params);
                 console.log(`run`, run.data);
                 if (run.data.status != 1) return resolve(IENMessage.subadminHasNotLAABAccount);
+                this.phonenumber = run.data.info.name;
 
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private FindDuplicate(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                const condition: any = {
+                    where: {
+                        ownerUuid: this.ownerUuid,
+                        phonenumber: this.phonenumber
+                    }
+                }
+
+                const run = await subadminEntity.findOne(condition);
+                if (run != null) return resolve(IENMessage.subadminHasAlreadyCreateByThisOwnerVending);
+                
                 resolve(IENMessage.success);
 
             } catch (error) {

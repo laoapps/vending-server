@@ -246,7 +246,7 @@ class VerifyToken {
 
                 const response = {
                     phonenumber: run.data.data[0].phoneNumber,
-                    uuid: run.data.data[0].uuid,
+                    uuid: run.data.data[0],
                     message: IENMessage.success
                 }
                 resolve(response);
