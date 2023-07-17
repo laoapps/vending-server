@@ -85,6 +85,7 @@ export class CreateSubadminProcess {
                     console.log(`response create sub admin`, response);
                     if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);
                     this.id = response.info.commit_id;
+                    this.phonenumber = response.info.phonenumber;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 
@@ -97,7 +98,8 @@ export class CreateSubadminProcess {
     private Commit(): any {
         const response = {
             data: [{
-                id: this.id
+                id: this.id,
+                phonenumber: this.phonenumber
             }],
             message: IENMessage.success
         }

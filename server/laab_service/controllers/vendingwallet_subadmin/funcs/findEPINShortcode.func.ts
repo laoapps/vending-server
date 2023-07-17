@@ -114,6 +114,10 @@ export class FindEPINShortCodeFunc {
                     where: {
                         ownerUuid: this.adminOwnerUuid,
                         phonenumber: this.ownerUuid,
+                        SMC: {[Op.ne]: {}},
+                        EPIN: {
+                            destination: {[Op.ne]: ''}
+                        },
                         counter: {
                             cash: {
                                 hash: '',
@@ -126,7 +130,7 @@ export class FindEPINShortCodeFunc {
                     order: [[ 'id', 'DESC' ]]
                 }
                 const run = await epinshortcodeEntity.findAndCountAll(condition);
-               
+                console.log(`sub admin find epin short code`, run);
                 this.response = {
                     rows: run.rows,
                     count: run.count,

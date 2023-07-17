@@ -44,7 +44,7 @@ export class ManageSubadminCreatePage implements OnInit {
         
         const model = {
           id: run.data[0].id,
-          phonenumber: this.phonenumber,
+          phonenumber: run.data[0].phonenumber,
           provides: []
         }
 
