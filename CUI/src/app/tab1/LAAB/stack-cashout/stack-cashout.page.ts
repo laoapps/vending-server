@@ -69,20 +69,6 @@ export class StackCashoutPage implements OnInit {
     this.apiService.modal.dismiss();
   }
 
-  mmoneyCashout(): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      try {
-        this.apiService.modal
-          .create({ component: EpinCashOutPage, componentProps: { mmoneyCashout: true } })
-          .then((r) => {
-            r.present();
-          });
-      } catch (error) {
-        resolve(error.message);
-      }
-    });
-  }
-
   dynamicControlMenu() {
     this.CONTROL_MENUList = JSON.parse(JSON.stringify(this.apiService.controlMenuService.CONTROL_MENUList));
 

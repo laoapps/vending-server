@@ -166,6 +166,7 @@ export class LaabVendingAPI {
         router.post('/laab/sub_admin/remove_provide_from_subadmin', APIAdminAccess, this.subadminWritePanel.RemoveProvideFromSubadmin.bind(this.subadminWritePanel));
         router.post('/laab/sub_admin/show_subadmin', APIAdminAccess, this.subadminReadPanel.ShowSubadmin.bind(this.subadminReadPanel));
         router.post('/laab/sub_admin/find_subadmin', APIAdminAccess, this.subadminReadPanel.FindSubadmin.bind(this.subadminReadPanel));
+        router.post('/laab/sub_admin/find_epinshortcode', APIAdminAccess, this.subadminReadPanel.FindEPINShortcode.bind(this.subadminReadPanel));
 
 
 

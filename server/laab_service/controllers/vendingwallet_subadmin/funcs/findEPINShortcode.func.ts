@@ -112,8 +112,8 @@ export class FindEPINShortCodeFunc {
 
                 const condition: any = {
                     where: {
-                        ownerUuid: this.ownerUuid,
-                        phonenumber: this.phonenumber,
+                        ownerUuid: this.adminOwnerUuid,
+                        phonenumber: this.ownerUuid,
                         counter: {
                             cash: {
                                 hash: '',
