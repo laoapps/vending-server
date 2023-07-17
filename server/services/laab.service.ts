@@ -241,12 +241,12 @@ class VerifyToken {
                 }
                 console.log(`--->`, validateTokenData);
                 const run = await axios.post(USERMANAGER_URL, validateTokenData, SetHeaders);
-                console.log(`response`, run.data);
+                console.log(`response verify`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
 
                 const response = {
                     phonenumber: run.data.data[0].phoneNumber,
-                    uuid: run.data.data[0],
+                    uuid: run.data.data[0].uuid,
                     message: IENMessage.success
                 }
                 resolve(response);
