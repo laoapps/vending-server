@@ -117,7 +117,7 @@ export class CreateSubAdminFunc {
                 const run = await axios.post(LAAB_FindMyCoinWallet, params);
                 console.log(`run`, run.data);
                 if (run.data.status != 1) return resolve(IENMessage.subadminHasNotLAABAccount);
-                this.phonenumber = run.data.info.name;
+                this.phonenumber = run.data.info.name.split('_')[1];
 
                 resolve(IENMessage.success);
 
@@ -164,6 +164,7 @@ export class CreateSubAdminFunc {
 
                 this.response = {
                     commit_id: run.id,
+                    phonenumber: this.phonenumber,
                     message: IENMessage.success
                 }
                 resolve(IENMessage.success);
