@@ -105,7 +105,6 @@ export class FindEPINShortCodeFunc {
             }
         });
     }
-
     private FindEPINShortCode(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
@@ -113,7 +112,7 @@ export class FindEPINShortCodeFunc {
                 const condition: any = {
                     where: {
                         ownerUuid: this.adminOwnerUuid,
-                        phonenumber: this.ownerUuid,
+                        phonenumber: this.phonenumber,
                         SMC: {[Op.ne]: {}},
                         EPIN: {
                             destination: {[Op.ne]: ''}
@@ -130,7 +129,7 @@ export class FindEPINShortCodeFunc {
                     order: [[ 'id', 'DESC' ]]
                 }
                 const run = await epinshortcodeEntity.findAndCountAll(condition);
-                console.log(`sub admin find epin short code`, run);
+                // console.log(`sub admin find epin short code`, run);
                 this.response = {
                     rows: run.rows,
                     count: run.count,
