@@ -56,7 +56,7 @@
                 <td>{{ list.counter.cash.hash }}</td>
                 <td>{{ list.createdAt }}</td>
                 <td>
-
+                  <button (click)="generateScan(list)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate Scan</button>
                 </td>
               </tr>
             </tbody>

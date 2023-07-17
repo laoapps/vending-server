@@ -3,6 +3,7 @@ import { FindEPINShortCodeListProcess } from './processes/findEPINShortCodeList.
 import { IENMessage } from '../models/base.model';
 import { ApiService } from '../services/api.service';
 import { VendingAPIService } from '../services/vending-api.service';
+import * as QRCode from 'qrcode';
 
 @Component({
   selector: 'app-epin-subadmin',
@@ -89,6 +90,39 @@ export class EpinSubadminPage implements OnInit {
         resolve(IENMessage.success);
 
       } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+
+  generateScan(list: any): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        // const model = {
+        //   type: 'EQR',
+        //   mode: 'EPIN',
+        //   destination: list.EPIN.destination,
+        //   options: {
+        //     coinname: list.EPIN.coin,
+        //     name: run.data[0].detail.sender
+        //   }
+        // }
+        // console.log(`params`, model);
+        // QRCode.toDataURL(JSON.stringify(model)).then(async r => {
+        //   const props = {
+        //     qrImage: r,
+        //     code: run.data[0].detail.items[0].code[0] 
+        //   }
+        //   this.apiService.modal.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
+        //     r.present();
+        //     this.apiService.modal.dismiss();
+        //     resolve(IENMessage.success);
+        //   });
+        // });
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
     });

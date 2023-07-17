@@ -272,7 +272,8 @@ export class CreateSMCFunc {
                     },
                     EPIN: {
                         destination: '',
-                        coinname: ''
+                        coinname: '',
+                        name: ''
                     },
                     counter: {
                         cash:{

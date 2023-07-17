@@ -124,7 +124,8 @@ export class CreateEPINFunc {
                         },
                         EPIN: {
                             destination: '',
-                            coinname: ''
+                            coinname: '',
+                            name: ''
                         }
                     }
                 }
@@ -146,7 +147,8 @@ export class CreateEPINFunc {
                 
                 this.connection.EPIN = {
                     destination: this.detail.items[0].qrcode[0],
-                    coinname: this.coinName
+                    coinname: this.coinName,
+                    name: this.detail.sender
                 }
                 const run = await this.connection.save({ transaction: this.transaction });
                 if (!run) return resolve(this.response);
