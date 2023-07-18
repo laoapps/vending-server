@@ -3,7 +3,7 @@
   <div class="section-navbar">
     <div class="left">
       <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-      <div class="item-text">EPIN Management</div>
+      <div class="item-text">EPIN Sub-Admin</div>
     </div>
     <div class="right">
 
@@ -15,14 +15,14 @@
   <div class="epin-management-container">
     <div class="item-card">
       <div class="item-card-header">
-        <div class="title">Counter</div>
-        <div class="text">Control cash by counter</div>
+        <div class="title">Sub-admin Member</div>
+        <div class="text">Find EPIN</div>
       </div>
       <div class="item-card-body">
         
         <div class="search-group">
           <div class="form-group">
-            <label for="">Phone number <span class="text-danger">*</span></label>
+            <label for="">Phone number or code<span class="text-danger">*</span></label>
             <div class="input-group mb-3">
               <input (keyup)="resetList($event)" [(ngModel)]="phonenumber" type="text" placeholder="Enter phone number or code" class="form-control">
               <span class="input-group-text">

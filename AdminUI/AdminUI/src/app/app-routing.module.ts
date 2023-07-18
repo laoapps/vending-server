@@ -164,6 +164,10 @@ const routes: Routes = [
     path: 'manage-subadmin-create',
     loadChildren: () => import('./epin-admin/manage-subadmin-create/manage-subadmin-create.module').then( m => m.ManageSubadminCreatePageModule)
   },
+  {
+    path: 'epin-showcode',
+    loadChildren: () => import('./epin-subadmin/epin-showcode/epin-showcode.module').then( m => m.EpinShowcodePageModule)
+  },
 ];
 @NgModule({
   imports: [
