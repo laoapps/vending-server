@@ -165,7 +165,15 @@ export class ApiService {
         this.deductOrderUpdate(x.position);
         x.stock.qtty--;
 
-
+        // # save to machine
+        this.saveSale(this.vendingOnSale).subscribe(r=>{
+          console.log(r);
+          if(r.status){
+            console.log(`save sale success`);
+          } else {
+            this.simpleMessage(IENMessage.saveSaleFail);
+          }
+        })
         // this.clearWaitingT();
 
         // PLAY SOUNDS

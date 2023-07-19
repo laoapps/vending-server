@@ -33,8 +33,8 @@ export class CreateSMCProcess {
 
                 console.log(`create smc`, 1);
 
-                // this.workload = this.apiService.load.create({ message: 'loading...' });
-                // (await this.workload).present();
+                this.workload = this.apiService.load.create({ message: 'loading...' });
+                (await this.workload).present();
 
                 console.log(`create smc`, 2);
 
@@ -52,14 +52,14 @@ export class CreateSMCProcess {
 
                 console.log(`create smc`, 5);
 
-                // (await this.workload).dismiss();
+                (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
 
             } catch (error) {
 
-                // (await this.workload).dismiss();
+                (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });

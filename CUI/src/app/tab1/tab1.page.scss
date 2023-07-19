@@ -371,28 +371,53 @@ div.scrollmenu {
     gap: 10px;
 
     .cash-balance {
-        // font-family: 'tahoma';
-        // font-family: 'Fjalla One', sans-serif;
-        // font-family: 'JetBrains Mono', monospace;
-        font-family: 'Shippori Mincho B1', serif;
-        // background: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin: 0 auto;
+        // display: flex;
+        // flex-direction: column;
 
+        font-family: 'Shippori Mincho B1', serif;
         background: rgb(255,255,255);
         background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(84,84,84,1) 0%, rgba(47,45,47,1) 100%, rgba(221,57,50,1) 100%);
-
         color: #fff;
         padding: 10px;
         border-radius: 5px;
         font-size: 50px;
         font-weight: bold;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         width: 100%;
         height: 130px;
         box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
         letter-spacing: 15px;
         overflow: hidden;
+
+        img {
+            position: absolute;
+            // box-shadow: 0px 0px 50px #F6BE3B;
+            border-radius: 50px;
+            width: 120px;
+            height: 120px;
+            opacity: .4;
+        }
+
+        .balance {
+            position: relative;
+            // box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
+        }
+
+        // .left {
+        //     img {
+        //         position: relative;
+        //         right: 15px;
+        //         top: 3px;
+        //         box-shadow: 0px 0px 10px #F6BE3B;
+        //         border-radius: 50px;
+        //         width: 40px;
+        //         height: 40px;
+        //     }
+        // }
     }
 
     .item {

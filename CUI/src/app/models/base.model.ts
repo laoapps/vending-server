@@ -1,4 +1,5 @@
 export enum IENMessage {
+    saveSaleFail = 'save sale fail',
     endShouldMoreThenStart = 'end should more then start',
     startShouldLesterThenEnd = 'start should lester then end',
     cashoutMMoneySuccess = 'cash out MMoney success',

@@ -49,8 +49,8 @@ export class CashVendingWalletValidationFunc {
 
                 console.log(`cash validation`, 5);
 
-                const FindVendingLimiterLAABWallet = await this.FindVendingLimiterLAABWallet();
-                if (FindVendingLimiterLAABWallet != IENMessage.success) throw new Error(FindVendingLimiterLAABWallet);
+                const FindVendingWalletLAABWallet = await this.FindVendingWalletLAABWallet();
+                if (FindVendingWalletLAABWallet != IENMessage.success) throw new Error(FindVendingWalletLAABWallet);
 
                 console.log(`cash validation`, 6);
 
@@ -116,7 +116,7 @@ export class CashVendingWalletValidationFunc {
         });
     }
     
-    private FindVendingLimiterLAABWallet(): Promise<any> {
+    private FindVendingWalletLAABWallet(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 // const suuid = translateUToSU(this.uuid);
