@@ -122,7 +122,7 @@ export class AddProvideToSubadmin {
                 const run = await subadminEntity.findOne(condition);
                 if (run == null) return resolve(IENMessage.invalidData);
 
-                if (run.ownerUuid != this.ownerUuid || run.phonenumber != this.phonenumber) return resolve(IENMessage.dataUnmatch);
+                if (run.ownerUuid != this.ownerUuid || run.data.phonenumber != this.phonenumber) return resolve(IENMessage.dataUnmatch);
                 this.connection = run;
                 
                 resolve(IENMessage.success);
