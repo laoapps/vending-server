@@ -139,13 +139,23 @@
           <label>{{sl.stock.name}}</label>
         </ion-item>
         <ion-item >
+
+          <!-- image in list
           <div *ngIf="sl.stock.price==0;else elsebuystock">
             <img style="width: 200px;height:300px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="buyMMoney(sl)">
           </div>
           <ng-template #elsebuystock>
             <img style="width: 200px;height:300px" [src]="sl.stock.image.includes(';base64,')?sl.stock.image:this.url+'/public/'+sl.stock.image" (click)="addOrder(sl)">
+          </ng-template> -->
 
+          <div *ngIf="sl.stock.price==0;else elsebuystock">
+            <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="buyMMoney(sl)">
+          </div>
+          <ng-template #elsebuystock>
+            <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="addOrder(sl)">
           </ng-template>
+
+          
         </ion-item>
         <ion-item>
           <div *ngIf="sl.stock.price==0;else elsestock">
@@ -213,8 +223,9 @@
 
             <div class="scrollmenu">
               <div class="order-item" *ngFor="let o of orders; let i=index;" color="primary">
-                <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> <img
-                  [src]="o.stock.image.includes(';base64,')?o.stock.image:this.url+'/public/'+o.stock.image" style="width:50px;height:120px; margin:0px">
+                <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> 
+                <!-- <img [src]="o.stock.image.includes(';base64,')?o.stock.image:this.url+'/public/'+o.stock.image" style="width:50px;height:120px; margin:0px"> -->
+                <img [src]="apiService?.imageList[o.stock.image]" style="width:50px;height:120px; margin:0px">
                 <div>
                   <div>{{o.stock.name}}</div><div>{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})</div>
                 </div>

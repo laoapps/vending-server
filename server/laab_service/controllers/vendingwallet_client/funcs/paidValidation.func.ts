@@ -6,7 +6,9 @@ import { dbConnection, vendingWallet } from "../../../../entities";
 import { v4 as uuid4 } from 'uuid';
 import { EClientCommand, EEntity, EPaymentStatus, IVendingMachineSale } from "../../../../entities/system.model";
 import { VendingMachineBillFactory, VendingMachineBillStatic } from "../../../../entities/vendingmachinebill.entity";
-import { redisClient, writeErrorLogs, writeLogs, writeMachineBalance, writeSucceededRecordLog } from "../../../../services/service";
+import { readMachineBalance, redisClient, writeErrorLogs, writeLogs, writeMachineBalance, writeSucceededRecordLog } from "../../../../services/service";
+import { CashVendingLimiterValidationFunc } from "./cashLimiterValidation.func";
+import { CashVendingWalletValidationFunc } from "./cashVendingWalletValidation.func";
 
 export class PaidValidationFunc {
 
@@ -172,7 +174,7 @@ export class PaidValidationFunc {
     private TransferCoin(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-
+                const vendingBalance = readMachineBalance(this.machineId);
                 const params = {
                     coin_list_id: this.coinListId,
                     coin_code: this.coinCode,
@@ -186,7 +188,7 @@ export class PaidValidationFunc {
                     phonenumber: this.sender,
                     passkeys: this.passkeys
                 }
-                const run = await axios.post(LAAB_CoinTransfer, params);
+                let run: any = await axios.post(LAAB_CoinTransfer, params);
                 if (run.data.status != 1) return resolve(run.data.message);
 
                 const h ={
@@ -208,15 +210,16 @@ export class PaidValidationFunc {
                     message: IENMessage.success
                 }
 
-                const vendingBalance = await redisClient.get('_balance_');
+                
                 if (vendingBalance != undefined && vendingBalance != null) {
                     const balance = Number(vendingBalance) - this.cash;
                     writeMachineBalance(this.machineId, String(balance));
-                } else {
-                    writeMachineBalance(this.machineId, String(this.cash));
+                    return resolve(IENMessage.success);
                 }
-                
 
+                run = await new CashVendingWalletValidationFunc().Init({ machineId: this.machineId });
+                if (run.message != IENMessage.success) return resolve(run);
+                writeMachineBalance(this.machineId, String(run.balance));
                 resolve(IENMessage.success);
 
             } catch (error) {

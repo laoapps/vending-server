@@ -13,7 +13,8 @@
       <ion-item *ngFor="let s of stock" style="float:left">
         <ion-item-divider>  
           <ion-icon name="trash-bin-sharp" color="danger" (click)="removeStock(s.id)"></ion-icon> 
-        <ion-label><img style="width: 100px;height:240px" [src]="s.image.includes(';base64,')?s.image:this.url+'/public/'+s.image" (click)="select(s.id)"></ion-label>  
+        <!-- <ion-label><img style="width: 100px;height:240px" [src]="s.image.includes(';base64,')?s.image:this.url+'/public/'+s.image" (click)="select(s.id)"></ion-label>   -->
+        <ion-label><img style="width: 100px;height:240px" [src]="apiService?.imageList[s?.image]" (click)="select(s.id)"></ion-label>  
         <ion-label> {{s.name}}</ion-label>
         <ion-label> {{s.price}}</ion-label>
 

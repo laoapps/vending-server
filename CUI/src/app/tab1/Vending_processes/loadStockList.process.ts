@@ -18,6 +18,8 @@ export class LoadStockListProcess {
 
     // properties
     private lists: Array<any> = [];
+    private images: Array<any> = [];
+    private imageObject: any = {} as any;
     private cashList: Array<{ name: string, file: string }> = [];
     private firsttime: boolean = false;
 
@@ -122,6 +124,7 @@ export class LoadStockListProcess {
                     if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
                     this.lists = response.data;
+                    this.images = this.lists.map(item => { return { name: item.stock.image, file: item.stock.image } });
                     this.lists.find(field => field.stock.imageurl = '');
 
                     // let list = this.lists.map(item => { return { id: item.id, image: item.image } });
@@ -171,15 +174,17 @@ export class LoadStockListProcess {
             
                 if (this.firsttime == false) return resolve(IENMessage.success);
     
-                let lists: Array<{ name: string, file: string}> = [];
-                for(let i = 0; i < this.lists.length; i++) {
-                    const name = this.lists[i].stock.image;
-                    message.message=' loading image '+name +' -- '+i+'/'+this.lists.length;
+                let images: Array<{ name: string, file: string}> = [];
+                for(let i = 0; i < this.images.length; i++) {
+                    const name = this.images[i].name;
+                    message.message=' loading image '+name +' -- '+i+'/'+this.images.length;
                     if (name != '' &&  name.substring(0,4) != 'data') {
                     
-                        const url = `${this.filemanagerURL}${name}`;
+                        // const url = `${this.filemanagerURL}download/${name}`;
+                        const url = `${this.filemanagerURL}downloadphoto?url=${name}&w=100&h=248`;
+
                         const run = await axios({
-                            method: 'GET',
+                            method: 'POST',
                             url: url,
                             responseType: 'blob'
                         });
@@ -187,21 +192,21 @@ export class LoadStockListProcess {
         
                         const obj = {
                             name: name,
-                            file: file,
-
+                            file: file
                         }
         
-                        const same = lists.filter(item => item.name == name);
+                        const same = images.filter(item => item.name == name);
                         if (same != undefined && Object.entries(same).length == 0) {
-                            lists.push(obj);
+                            images.push(obj);
                         }
-                        this.lists[i].stock.imageurl = this.lists[i].stock.image;
-                        this.lists[i].stock.image = file;
+
+                        // this.lists[i].stock.imageurl = this.lists[i].stock.image;
+                        // this.lists[i].stock.image = file;
                        
                     }
-                    if (i == this.lists.length-1) {
-                        console.log(`first time save`, this.ownerUuid, this.lists, lists);
-                        await this.cashingService.set(this.ownerUuid, lists);
+                    if (i == this.images.length-1) {
+                        this.images = images;
+                        await this.cashingService.set(this.ownerUuid, images);
                     }
                 }
     
@@ -219,43 +224,45 @@ export class LoadStockListProcess {
 
                 if (this.firsttime == true) return resolve(IENMessage.success);
 
-                this.lists.forEach((list,i) => {
+                this.images.forEach((list,i) => {
                     this.cashList.find((cash, cash_index) => {
-                        if (list.stock.image == cash.name) {
-                            list.stock.imageurl = cash.name;
-                            list.stock.image = cash.file;
+                        if (list.name == cash.name) {
+                            list.file = cash.file;
+                            // list.stock.imageurl = cash.name;
+                            // list.stock.image = cash.file;
                         }
                     });
-                    message.message='caching '+i+' name:'+list.stock.image
+                    message.message='caching '+i+' name:'+list.image
                 });
 
-                const data = this.lists.filter(item => item.stock.image.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.stock.image.substring(0,4) != 'data');
+                const data = this.images.filter(item => item.file.substring(0,4) == 'data');
+                const nodata = this.images.filter(item => item.file.substring(0,4) != 'data');
 
                 if (nodata != undefined && nodata.length > 0)
                 {
                     for(let i = 0; i < nodata.length; i++) {
-                        const url = `${this.filemanagerURL}${nodata[i].stock.image}`;
+                        // const url = `${this.filemanagerURL}download/${nodata[i].name}`;
+                        const url = `${this.filemanagerURL}downloadphoto?url=${nodata[i].name}&w=100&h=248`;
                         const run = await axios({
-                            method: 'GET',
+                            method: 'POST',
                             url: url,
                             responseType: 'blob'
                         });
                         const file = await this.apiService.convertBlobToBase64(run.data);
     
                         const obj = {
-                            name: nodata[i].stock.image,
+                            name: nodata[i].name,
                             file: file
                         }
     
-                        nodata[i].stock.imageurl = nodata[i].stock.image;
-                        nodata[i].stock.image = file;
+                        // nodata[i].stock.imageurl = nodata[i].stock.image;
+                        // nodata[i].stock.image = file;
                         this.cashList.push(obj);
                     }
                     data.push(...nodata);
                 }
 
-                this.lists = data;
+                this.images = data;
                 await this.cashingService.set(this.ownerUuid, this.cashList);
 
                 resolve(IENMessage.success);
@@ -267,10 +274,19 @@ export class LoadStockListProcess {
     }
 
     private Commit(): any {
-        console.log(`commit list`, this.lists);
+        
+        this.images.forEach(list=>{
+            Object.keys(list).forEach(k =>{
+                if(k=='name')
+                this.imageObject[list.name] = list.file;
+            });
+        });
+
         const response = {
             data: [{
                 lists: this.lists,
+                images: this.images,
+                imageObject: this.imageObject,
                 cashList: this.cashList
             }],
             message: IENMessage.success

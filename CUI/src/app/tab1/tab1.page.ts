@@ -70,7 +70,7 @@ export class Tab1Page {
   private links: NodeListOf<HTMLLinkElement>;
 
   private ownerUuid: string;
-  filemanagerURL: string = environment.filemanagerurl + 'download/';
+  filemanagerURL: string = environment.filemanagerurl;
 
 
 
@@ -295,10 +295,13 @@ export class Tab1Page {
     });
   }
 
+
   loadStock(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
+        // 100 x 240
+
         // await this.cashingService.remove(this.ownerUuid);
         // return resolve(IENMessage.success);
 
@@ -312,6 +315,7 @@ export class Tab1Page {
         if (run.message != IENMessage.success) throw new Error(run);
 
         this.apiService.newProductItems(run.data[0].lists);
+        this.apiService.imageList = run.data[0].imageObject;
 
         const s = await this.storage.get('saleStock', 'stock');
         const saleitems = JSON.parse(
@@ -661,14 +665,17 @@ export class Tab1Page {
     Object.keys(this.getTotalSale).forEach((k) => {
       this.getTotalSale[k] = t[k];
     });
+    console.log(`-->`, this.getTotalSale);
     // return this.summarizeOrder;
   }
   getTotal() {
     const o = this.orders;
+    console.log(`get total der`, o);
     const q = o.reduce((a, b) => {
       return a + b.stock.qtty;
     }, 0);
     const t = o.reduce((a, b) => {
+      // console.log(`a`, a, `b`, b.stock.qtty, b.stock.price, b.stock.qtty * b.stock.price);
       return a + b.stock.qtty * b.stock.price;
     }, 0);
     return { q, t };

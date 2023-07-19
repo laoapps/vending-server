@@ -3,6 +3,10 @@ import * as jwt from 'jsonwebtoken';
 import {createClient}from 'redis';
 import { compareSync, hashSync } from 'bcryptjs';
 import axios from "axios";
+import crypto from 'crypto';
+import EC from 'elliptic';
+const ec = new EC.ec('secp256k1');
+
 
 const short = require('short-uuid');
 const translate = short();
@@ -261,6 +265,36 @@ class VerifyToken {
     
 }
 
-export enum ILAABKeys {
-    jwtotp = `ea718210b4d4dbcfdb0a663f8d914891aa20c38f265d8c6fe9c49f543de35555163d094bc3ec7dc9551216287dd2bb09991cc96ab07b2b4bd5cc1cd122c81399a557fd02bf18e8deb45fddd2fd35919c`
+export class LAABHashService {
+
+    constructor() {}
+
+    public CalculateHash(s: string) {
+        return crypto.createHash('sha256').update(s).digest('hex');
+    }
+
+    public Sign(hashTx: string = '', privateKey: string) {
+        try {
+            // Convert string to buffer 
+            let data = Buffer.from(hashTx, 'hex');
+            // Sign the data and returned signature in buffer 
+            let signature = ec.sign(data, Buffer.from(privateKey, 'hex'), 'base64');
+            // Convert returned buffer to base64
+            // Export DER encoded signature in Array
+            let derSign = signature.toDER('hex');
+            return derSign;
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    }
 }
+
+export enum IFranchiseStockSignature {
+    publickey = `0484d25a8e14a1de4b92fa688a1ee75a9b7d615abb51c382f3fd5bbb09dcefaf366ff43508a84c56fab1e89221e9cc1a193109f5998d599fecaa1c860f48f95de3`,
+    privatekey = `64bc06884c540d86f8c5c72097aca12a5fd03640a66b2e40039545d1f4975207`
+}
+
+// export enum ILAABKeys {
+//     jwtotp = `ea718210b4d4dbcfdb0a663f8d914891aa20c38f265d8c6fe9c49f543de35555163d094bc3ec7dc9551216287dd2bb09991cc96ab07b2b4bd5cc1cd122c81399a557fd02bf18e8deb45fddd2fd35919c`
+// }

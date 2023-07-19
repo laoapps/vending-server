@@ -36,7 +36,7 @@ export class HashService {
     public static keyPair={
         publicKey: '045e90911daa613989aab76e834e54c6e3db9f840447dbb3c67ef4323a852ee4a322e32b479d3513b6fd6d37f5f467df35c14d7149f1c570b082e18a2ccc8e6764',
         privateKey: '6db46c2659c80cea3d0a0b9b815fef60ba57bde271b5f2348e9c27f71fbbd269'
-      }
+    }
     //TOUYA-RA
 }
 

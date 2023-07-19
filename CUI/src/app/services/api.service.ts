@@ -62,6 +62,8 @@ export class ApiService {
   name: string;
   laabuuid: string;
 
+  imageList: any={};
+
 
 
 
@@ -577,6 +579,9 @@ export class ApiService {
         resolve(error.message);
       }
     });
+  }
+  displayImage(name: string) {
+    return this.imageList[name].filter(item => item.name == name)[0]?.file;
   }
 }
 

@@ -76,7 +76,9 @@ export class FindEPINShortCodeFunc {
                 const condition: any = {
                     where: {
                         isActive: true,
-                        phonenumber: this.ownerUuid
+                        data: {
+                            uuid: this.ownerUuid
+                        }
                     }
                 }
                 const run = await subadminEntity.findOne(condition);

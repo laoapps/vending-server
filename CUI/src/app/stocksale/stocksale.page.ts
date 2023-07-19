@@ -56,7 +56,7 @@ export class StocksalePage implements OnInit {
       const x =[];
       this.apiService.vendingOnSale.forEach(v=>{
         const e= JSON.parse(JSON.stringify(v));
-        e.stock.image='';
+
         x.push(e);
       })
       this.apiService.saveSale(this.apiService.vendingOnSale).subscribe(r=>{
@@ -118,7 +118,7 @@ export class StocksalePage implements OnInit {
           const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
           // console.log('r.data',r.data);
            console.log('s',s);
-          
+          console.log(`sale stock`, this.saleStock);
           const x = this.saleStock.find(v => v.position == position);
           const qtt = x.stock.qtty;
            if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);

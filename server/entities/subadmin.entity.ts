@@ -5,7 +5,10 @@ export interface ISubadmin {
     uuid?: string,
     isActive?: boolean,
     ownerUuid: string,
-    phonenumber: string,
+    data: {
+        uuid: string,
+        phonenumber: string
+    },
     provides: Array<any>
 }
 export interface SubadminAttributes extends ISubadmin { }
@@ -37,8 +40,9 @@ export let SubadminFactory = (name: string, con: Sequelize): any => {
         ownerUuid: {
             type: DataTypes.STRING,
         },
-        phonenumber: {
-            type: DataTypes.STRING,
+        data: {
+            type: DataTypes.JSONB,
+            allowNull: false
         },
         provides: {
             type: DataTypes.JSONB

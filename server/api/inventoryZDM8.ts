@@ -69,6 +69,7 @@ import {
 } from "../entities/machineid.entity";
 import {
     dbConnection,
+    laabHashService,
     machineClientIDEntity,
     machineIDEntity,
     stockEntity,
@@ -86,13 +87,14 @@ import {
 import { Op } from "sequelize";
 import fs from "fs";
 import { getNanoSecTime } from "../services/service";
-import { APIAdminAccess, IENMessage } from "../services/laab.service";
+import { APIAdminAccess, IENMessage, IFranchiseStockSignature } from "../services/laab.service";
 import { CashVendingLimiterValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashLimiterValidation.func";
 import {
     BillCashInFactory,
     BillCashInStatic,
 } from "../entities/billcash.entity";
 import { CashinValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashinValidation.func";
+import { FranchiseStockFactory } from "../entities/franchisestock.entity";
 export class InventoryZDM8 implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
@@ -1242,6 +1244,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }               
                 }
             );
+            // normal version
             router.post(
                 this.path + "/addSale",
                 this.checkToken,
@@ -1453,54 +1456,6 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
             router.post(
-                this.path + "/saveMachineSale",
-                // this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        // writeMachineSale(machineId.machineId,d.data);
-                        res.send(
-                            PrintSucceeded(
-                                "saveMachineSale",
-                                writeMachineSale(machineId.machineId, JSON.stringify(d.data)),
-                                EMessage.succeeded
-                            )
-                        );
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/readMachineSale",
-                // this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-
-                        res.send(
-                            PrintSucceeded(
-                                "readMachineSale",
-                                JSON.parse(readMachineSale(machineId.machineId)),
-                                EMessage.succeeded
-                            )
-                        );
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
-                    }
-                }
-            );
-            router.post(
                 this.path + "/listSale",
                 this.checkToken,
                 // this.checkToken.bind(this),
@@ -1533,6 +1488,132 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+            // redis
+            // need to save to database as blockchain
+            router.post(
+                this.path + "/saveMachineSale",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
+                        await sEnt.sync();
+
+                       // sign
+
+                       const run = await sEnt.findOne({order:[['id', 'desc']]});
+                       const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
+                       const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
+
+                       if (run == null) {
+
+                            sEnt.create({
+                                data:d.data,
+                                hashM:sign,
+                                hashP:'null'
+                            }).then(r =>  console.log(`save stock success`)).catch(error => console.log(`save stock fail`));
+                       } else{
+
+                        sEnt.create({
+                            data:d.data,
+                            hashM: sign,
+                            hashP: run.hashM
+                        }).then(r =>  console.log(`save stock success`)).catch(error => console.log(`save stock fail`));
+                       }
+                        
+                        res.send(
+                            PrintSucceeded(
+                                "saveMachineSale",
+                                writeMachineSale(machineId.machineId, JSON.stringify(d.data)),
+                                EMessage.succeeded
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
+
+            router.post(
+                this.path + "/readMachineSale",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        // const isActive = req.query['isActive'];
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+
+                        res.send(
+                            PrintSucceeded(
+                                "readMachineSale",
+                                JSON.parse(readMachineSale(machineId.machineId)),
+                                EMessage.succeeded
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
+
+            router.post(
+                this.path + "/refillMachineSale",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        // const isActive = req.query['isActive'];
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        // writeMachineSale(machineId.machineId,d.data);
+                        const sEnt = FranchiseStockFactory(
+                            EEntity.franchisestock + "_" + machineId.machineId,
+                            dbConnection
+                        );
+                       await  sEnt.sync();
+
+                       // sign
+
+                       const c =await sEnt.findOne({order:[['id', 'desc']]});
+                      
+                        
+                        res.send(
+                            PrintSucceeded(
+                                "refillMachineSale",
+                                c.data,
+                                EMessage.succeeded
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
+
+
+
+            // franchise
+            // list product from hangmi
+            // list products from hangmi with product id
+            // owner has to request to purchase 
+            // pay
+            // hangmi update sale with the purchasing request
+           // save to database
+           // cui request to update ( refresh, refill)
+
+
+
+
 
             router.post(
                 this.path + "/machineSaleList",

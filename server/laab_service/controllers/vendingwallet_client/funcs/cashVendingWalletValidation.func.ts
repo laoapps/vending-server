@@ -11,7 +11,6 @@ export class CashVendingWalletValidationFunc {
     private machineId:string;
 
     private sender: string;
-    private receiver: string;
     private ownerUuid: string;
     private coinListId: string;
     private coinCode: string;
@@ -50,8 +49,8 @@ export class CashVendingWalletValidationFunc {
 
                 console.log(`cash validation`, 5);
 
-                const FindVendingWalletLAABWallet = await this.FindVendingWalletLAABWallet();
-                if (FindVendingWalletLAABWallet != IENMessage.success) throw new Error(FindVendingWalletLAABWallet);
+                const FindVendingLimiterLAABWallet = await this.FindVendingLimiterLAABWallet();
+                if (FindVendingLimiterLAABWallet != IENMessage.success) throw new Error(FindVendingLimiterLAABWallet);
 
                 console.log(`cash validation`, 6);
 
@@ -88,7 +87,7 @@ export class CashVendingWalletValidationFunc {
                 let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
                 if (run == null) return resolve(IENMessage.notFoundYourMerchant);
                 this.ownerUuid = run.ownerUuid;
-                this.receiver = translateUToSU(run.uuid);
+                this.sender = translateUToSU(run.uuid);
                 resolve(IENMessage.success);
 
             } catch (error) {
@@ -101,10 +100,9 @@ export class CashVendingWalletValidationFunc {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.vendingWallet } });
+                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.vendingLimiter } });
                 if (run == null) return resolve(IENMessage.notFoundYourMerchant);
                 this.uuid = run.uuid;
-                this.sender = translateUToSU(run.uuid);
                 this.suuid = translateUToSU(run.uuid);
                 this.coinListId = run.coinListId;
                 this.coinCode = run.coinCode;
@@ -118,20 +116,19 @@ export class CashVendingWalletValidationFunc {
         });
     }
     
-    private FindVendingWalletLAABWallet(): Promise<any> {
+    private FindVendingLimiterLAABWallet(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 // const suuid = translateUToSU(this.uuid);
 
                 const params = {
-                    sender: this.suuid,
+                    sender: this.sender,
 
                     // access by passkey
                     phonenumber: this.suuid,
                     passkeys: this.passkeys
                 }
                 const run = await axios.post(LAAB_FindMyWallet, params);
-                console.log(`FindVendingWalletLAABWallet`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
                 this.name = this.coinListId + '_' + run.data.info.name + '__' + this.coinCode;
                 resolve(IENMessage.success);
