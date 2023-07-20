@@ -3,7 +3,8 @@ import axios from "axios";
 import { IENMessage, LAAB_CoinTransfer, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
-import { redisClient, writeMachineBalance, writeMerchantLimiterBalance } from "../../../../services/service";
+import { readMachineBalance, redisClient, writeMachineBalance, writeMerchantLimiterBalance } from "../../../../services/service";
+import { CashVendingWalletValidationFunc } from "./cashVendingWalletValidation.func";
 
 export class CashinValidationFunc {
 
@@ -228,12 +229,14 @@ export class CashinValidationFunc {
 
                 const lastBalance: number = Number(this.balance) - Number(this.cash);
 
-                const vendingBalance = await redisClient.get('_balance_');
+                const vendingBalance = await readMachineBalance(this.machineId);
                 if (vendingBalance != undefined && vendingBalance != null) {
                     const balance = Number(vendingBalance) + this.cash;
                     writeMachineBalance(this.machineId, String(balance));
                 } else {
-                    writeMachineBalance(this.machineId, String(this.cash));
+                    const run = await new CashVendingWalletValidationFunc().Init({ machineId: this.machineId });
+                    if (run.message != IENMessage.success) return resolve(run);
+                    writeMachineBalance(this.machineId, String(run.balance));
                 }
                 
                 writeMerchantLimiterBalance(this.ownerUuid, lastBalance.toString());
