@@ -136,7 +136,9 @@ export class CreateSubAdminFunc {
                 const condition: any = {
                     where: {
                         ownerUuid: this.ownerUuid,
-                        phonenumber: this.phonenumber
+                        data: {
+                            phonenumber: this.phonenumber
+                        }
                     }
                 }
 
