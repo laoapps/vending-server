@@ -2200,7 +2200,7 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log(`creditMachineMMoney`, 1);
 
                         func.Init(params).then(run => {
-                            if (run.message != IENMessage.success) return reject(run);
+                            if (run.message != IENMessage.success) return resolve(run);
                             let model = {
                                 ownerUuid: run.ownerUuid,
                                 data: {
