@@ -69,7 +69,8 @@ export class LaabCashoutPage implements OnInit {
         if (this.state == 'MMoney')
         {
           const params = {
-            phonenumber: this.phonenumber
+            phonenumber: this.phonenumber,
+            cashInValue: 1100
           }
           const run = await this.mmoneyCashoutValidationProcess.Init(params);
           if (run.message != IENMessage.success) throw new Error(run);

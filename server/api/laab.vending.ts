@@ -10,6 +10,7 @@ import { WritePanel as SubadminWritePanel } from "../laab_service/controllers/ve
 import { redisHost, redisPort } from '../services/service';
 import { SocketServerZDM8 } from './socketServerZDM8';
 import { APIAdminAccess, IENMessage, IStatus, message } from '../services/laab.service';
+import { InventoryZDM8 } from './inventoryZDM8';
 
 events.defaultMaxListeners = 100;
 events.EventEmitter.prototype.setMaxListeners(100);
@@ -38,6 +39,7 @@ export class LaabVendingAPI {
 
     private ports = 31223;
     private ssocket: SocketServerZDM8 = {} as SocketServerZDM8;
+    private inventoryZDM8: InventoryZDM8;
 
     private adminQueues: any = {
         QCreateMerchant:QCreateMerchant,
@@ -70,8 +72,10 @@ export class LaabVendingAPI {
     private subadminReadPanel: SubadminReadPanel;
     private subadminWritePanel: SubadminWritePanel;
 
-    constructor(router: Router,ssocket:SocketServerZDM8) {
+    constructor(router: Router,ssocket:SocketServerZDM8, inventoryZDM8: InventoryZDM8) {
         this.ssocket = ssocket;
+        this.inventoryZDM8 = inventoryZDM8;
+        
         this.adminReadPanel = new AdminReadPanel();
         this.adminWritePanel = new AdminWritePanel(this.adminQueues);
 
@@ -152,7 +156,16 @@ export class LaabVendingAPI {
 
 
         router.post('/mmoney/client/cashout_validation', this.APIMachineAccess, (req: Request, res: Response) => {
-            message([], IENMessage.notImplemented, IStatus.unsuccess, res);
+            const d = req.body;
+            this.inventoryZDM8.creditMachineMMoney(d).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.unsuccess, res);
+                }
+            }).catch(error => message([], error.message, IStatus.unsuccess, res))
+            // message([], IENMessage.notImplemented, IStatus.unsuccess, res);
         });
 
 

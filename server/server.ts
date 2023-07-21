@@ -78,7 +78,7 @@ CreateDatabase("")
     const laabkiosk = new CashNV9LAAB(app, wss2, laabkioskssock);
 
     // laab
-    const laabVendingAPI = new LaabVendingAPI(app, invZDM8.ssocket);
+    const laabVendingAPI = new LaabVendingAPI(app, invZDM8.ssocket, invZDM8);
     const sss = Array<IBaseClass>();
     sss.push(
       // invM102,

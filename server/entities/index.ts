@@ -14,6 +14,7 @@ import { VendingWalletFactory, VendingWalletStatic } from "./vw.entity";
 import { EPINShortCodeFactory, EPINShortCodeStatic } from "./epinshortcode.entity";
 import { SubadminFactory, SubadminStatic } from "./subadmin.entity";
 import { LAABHashService } from "../services/laab.service";
+import { VendingCashoutMMoneyFactory, VendingCashoutMMoneyStatic } from "./vendingcashoutmmoney.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -27,6 +28,7 @@ export let vendingMachineBillEntity:VendingMachineBillStatic;
 export let machineIDEntity:MachineIDStatic;
 export let machineClientIDEntity:MachineClientIDStatic;
 export let machineIDHistoryEntity:MachineIDStatic;
+export let machineCashoutMMoneyEntity: VendingCashoutMMoneyStatic;
 
 
 
@@ -49,6 +51,10 @@ export const initDB =()=>{
     subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection).sync().then(() => {
         console.log(`sub admin entity sync`);
         subadminEntity = SubadminFactory(EEntity.subadmin, dbConnection);
+    });
+    machineCashoutMMoneyEntity = VendingCashoutMMoneyFactory(EEntity.vendingcashoutmmoney, dbConnection).sync().then(() => {
+        console.log(`vending cashout mmoney entity sync`);
+        machineCashoutMMoneyEntity = VendingCashoutMMoneyFactory(EEntity.vendingcashoutmmoney, dbConnection);
     });
 
     bankNoteEntity = BankNoteFactory(EEntity.banknote,dbConnection); // public 

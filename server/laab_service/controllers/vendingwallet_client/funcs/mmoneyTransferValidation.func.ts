@@ -4,10 +4,10 @@ import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
 import { writeMachineBalance } from "../../../../services/service";
 
-// cashout money from vending to merchant
-export class TransferValidationFunc {
+// after cashout to mmoney success this function will transfer laab coin amount to mmoney finance wallet
+export class MmoneyTransferValidationFunc {
 
-
+    private mmoneyfinance: string = 'e9b4f7c0-278c-11ee-90e5-232e20c314f2';
     private machineId:string;
     private receiver: string;
     private cash: number;
@@ -46,6 +46,7 @@ export class TransferValidationFunc {
 
                 const FindVendingMerchant = await this.FindVendingMerchant();
                 if (FindVendingMerchant != IENMessage.success) throw new Error(FindVendingMerchant);
+
                 console.log(`transfer validation`, 5);
 
                 console.log(`transfer validation`, 6);
@@ -70,14 +71,13 @@ export class TransferValidationFunc {
 
     private InitParams(params: any) {
         this.machineId = params.machineId;
-        this.receiver = params.receiver;
+        this.receiver = this.mmoneyfinance;
         this.cash = params.cash;
         this.description = params.description;
     }
 
     private ValidateParams(): string {
         if (!(this.machineId && this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
-        this.receiver = `+856${this.receiver}`;
         return IENMessage.success;
     }
 
@@ -89,7 +89,6 @@ export class TransferValidationFunc {
                 if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
                 this.ownerUuid = run.ownerUuid;
                 this.sender = translateUToSU(run.uuid);
-
                 
                 resolve(IENMessage.success);
 
@@ -154,7 +153,9 @@ export class TransferValidationFunc {
                 writeMachineBalance(this.machineId, '0');
 
                 this.response = {
+                    ownerUuid: this.ownerUuid,
                     bill: bill,
+                    h: h,
                     message: IENMessage.success
                 }
 
