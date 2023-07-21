@@ -108,6 +108,7 @@ export class ShowVendingWalletCoinBalanceFunc {
                     phonenumber: this.suuid,
                     passkeys: this.passkeys
                 }
+                console.log(`params der ni`, params);
                 const run = await axios.post(LAAB_FindMyWallet, params);
                 if (run.data.status != 1) return resolve(run.data.message);
                 this.name = this.coinListId + '_' + run.data.info.name + '__' + this.coinCode;
