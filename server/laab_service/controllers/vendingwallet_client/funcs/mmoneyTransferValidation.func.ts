@@ -134,6 +134,7 @@ export class MmoneyTransferValidationFunc {
                     passkeys: this.passkeys
                 }
                 const run = await axios.post(LAAB_CoinTransfer, params);
+                console.log(`response transfer coin der`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
 
                 const h ={
