@@ -90,6 +90,7 @@ export class TransferValidationFunc {
                 if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
                 this.ownerUuid = run.ownerUuid;
                 this.sender = translateUToSU(run.uuid);
+                this.passkeys = run.passkeys;
 
                 
                 resolve(IENMessage.success);
@@ -108,7 +109,6 @@ export class TransferValidationFunc {
                 if (run == null) return resolve(IENMessage.notFoundYourMerchant);
                 this.coinListId = run.coinListId;
                 this.coinCode = run.coinCode;
-                this.passkeys = run.passkeys;
 
                 resolve(IENMessage.success);
 
