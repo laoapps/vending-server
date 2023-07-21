@@ -3083,7 +3083,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     processRefillMmoney(msisdn: string, transID: string, value: number, remark: string, accessToken) {
         return new Promise<any>((resolve, reject) => {
-            this.requestMmoneyCashin(msisdn, transID, value, remark).then(r => {
+            this.requestMmoneyCashin(msisdn, transID, value,accessToken, remark).then(r => {
                 console.log('DATA requestMmoneyCashin', r);
                 // {
                 //     "22162": "73494",
