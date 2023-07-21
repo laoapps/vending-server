@@ -133,7 +133,7 @@ export class MmoneyTransferValidationFunc {
                     phonenumber: this.sender,
                     passkeys: this.passkeys
                 }
-                console.log(`params`, params);
+                console.log(`params der ni`, params);
                 const run = await axios.post(LAAB_CoinTransfer, params);
                 console.log(`response transfer coin der`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);
