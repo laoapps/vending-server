@@ -2196,6 +2196,9 @@ export class InventoryZDM8 implements IBaseClass {
                             machineId: machineId.machineId,
                         };
                         const func = new MmoneyTransferValidationFunc();
+
+                        console.log(`creditMachineMMoney`, 1);
+
                         func.Init(params).then(run => {
                             if (run.message != IENMessage.success) return reject(run);
                             let model = {
@@ -2212,15 +2215,22 @@ export class InventoryZDM8 implements IBaseClass {
                                 message: ''
                             }
                             
+                            console.log(`creditMachineMMoney`, 2);
+
                             machineCashoutMMoneyEntity.create(model).then(run_createLAABLog => {
+                                console.log(`creditMachineMMoney`, 3, run_createLAABLog);
                                 if (!run_createLAABLog) return resolve(IENMessage.createLAABBillFail);
                                 this.refillMMoney(phonenumber,  transactionID, cashInValue, params.description).then(refill => {
+                                    console.log(`creditMachineMMoney`, 4, refill);
                                     machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
+                                        console.log(`creditMachineMMoney`, 5, run_findbill);
                                         if (run_findbill == null) return resolve(IENMessage.notFoundBill);
                                         machineCashoutMMoneyEntity.update({ MMoney: refill }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
+                                            console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                             if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                             model.MMoney = refill;
                                             model.message = IENMessage.success;
+                                            console.log(`creditMachineMMoney`, 7);
                                             resolve(model);
                                         }).catch(error => resolve(error.message));
                                     }).catch(error => resolve(error.message));
