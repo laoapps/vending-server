@@ -14,6 +14,7 @@ export class TransferValidationFunc {
     private description: string;
 
     private sender: string;
+    private suuid: string;
     private ownerUuid: string;
     private coinListId: string;
     private coinCode: string;
@@ -108,7 +109,7 @@ export class TransferValidationFunc {
                 this.coinListId = run.coinListId;
                 this.coinCode = run.coinCode;
                 this.passkeys = run.passkeys;
-                
+
                 resolve(IENMessage.success);
 
             } catch (error) {
