@@ -41,7 +41,10 @@ export interface VENDING_TransferValidation extends IBase {
 
 // MMoney
 export interface VENDING_MMoneyCashoutValidation extends IBase {
-    phonenumber: string
+    data: {
+        phonenumber: string,
+        cashInValue: number
+    }
 }
 
 

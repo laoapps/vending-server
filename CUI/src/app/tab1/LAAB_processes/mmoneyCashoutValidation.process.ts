@@ -11,6 +11,7 @@ export class MMoneyCashOutValidationProcess {
     private vendingAPIService: VendingAPIService;
     
     private phonenumber: string;
+    private cash: number;
     private result: any = {} as any;y
 
     constructor(
@@ -64,11 +65,12 @@ export class MMoneyCashOutValidationProcess {
 
     private InitParams(params: any): void {
         this.phonenumber = params.phonenumber;
+        this.cash = params.cash;
     }
 
     private ValidateParams(): string {
-        if (!(this.phonenumber)) return IENMessage.parametersEmpty;
-        if (this.phonenumber.length < 8 || this.phonenumber.length > 8) return IENMessage.invalidPhonenumber;
+        if (!(this.phonenumber && this.cash)) return IENMessage.parametersEmpty;
+        if (this.phonenumber.length < 10 || this.phonenumber.length > 10) return IENMessage.invalidPhonenumber;
 
         return IENMessage.success;
     }
@@ -78,7 +80,10 @@ export class MMoneyCashOutValidationProcess {
             try {
 
                 const params = {
-                    phonenumber: this.phonenumber,
+                    data: {
+                        phonenumber: this.phonenumber,
+                        cashInValue: this.cash,
+                    },
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
 

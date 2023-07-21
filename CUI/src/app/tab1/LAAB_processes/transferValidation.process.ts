@@ -73,7 +73,7 @@ export class TransferValidationProcess {
 
     private ValidateParams(): string {
         if (!(this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
-        if (this.receiver.length != 8) return IENMessage.invalidPhonenumber;
+        if (this.receiver.length != 10) return IENMessage.invalidPhonenumber;
         return IENMessage.success;
     }
 

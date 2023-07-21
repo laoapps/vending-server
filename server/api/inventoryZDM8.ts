@@ -2152,22 +2152,8 @@ export class InventoryZDM8 implements IBaseClass {
                 // imei
                 d.transactionID = new Date().getTime();
 
-                let ack = await readACKConfirmCashIn(phonenumber + '' + d.transactionID);
                 let machineId = this.ssocket.findMachineIdToken(d.token);
                 if (!machineId) throw new Error("machine is not exit");
-        
-
-                if (!ack) {
-                    // double check in database
-                    const r = await this.loadBillCash(machineId.machineId, d.transactionID)
-                    if (r?.length) {
-                        await writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
-                        ack = 'yes';
-                    } else
-                        await writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
-                } else {
-                    throw new Error('TOO FAST ' + phonenumber + '' + d.transactionID);
-                }
 
 
 
@@ -2184,38 +2170,6 @@ export class InventoryZDM8 implements IBaseClass {
                     that.ssocket.listOnlineMachines()
                 );
 
-                console.log('FOUND ACK EXIST TRANSACTIONID', ack, d.transactionID);
-
-                const bsi = this.createBN(ws['clientId'], d.transactionID + '', machineId.machineId)
-
-                if (ack) {
-                    // reconfirm
-                    readMachineSetting(machineId.machineId).then(async r => {
-                        let setting = {} as any
-                        if (r) {
-                            try {
-                                setting = JSON.parse(r);
-                            } catch (error) {
-                                console.log('error parsing setting 2', error);
-                                setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
-                            }
-                        }
-                        // const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
-                        // const limiter = await readMachineLimiter(machineId.machineId);
-                        this.updateBillCash(bsi, machineId.machineId, d.transactionID);
-                        await writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
-                        // that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
-                        ws.send(
-                            JSON.stringify(
-                                PrintSucceeded(d.command, res, EMessage.succeeded)
-                            )
-                        )
-                        // finish the process allow next queque with exist TransactionID
-                        console.log('finish the process allow next queque with exist TransactionID', d.transactionID);
-                    })
-
-                    return reject(new Error('Duplicated transaction ID'));
-                } else {
                     // create new bill for new credit
                     if (!machineId) throw new Error("machine is not exist");
                     const sock = that.ssocket.findOnlneMachine(machineId.machineId);
@@ -2257,22 +2211,22 @@ export class InventoryZDM8 implements IBaseClass {
                                 MMoney: {},
                                 message: ''
                             }
-
+                            
                             machineCashoutMMoneyEntity.create(model).then(run_createLAABLog => {
-                                if (!run_createLAABLog) return reject(IENMessage.createLAABBillFail);
+                                if (!run_createLAABLog) return resolve(IENMessage.createLAABBillFail);
                                 this.refillMMoney(phonenumber,  transactionID, cashInValue, params.description).then(refill => {
                                     machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
-                                        if (run_findbill == null) return reject(IENMessage.notFoundBill);
+                                        if (run_findbill == null) return resolve(IENMessage.notFoundBill);
                                         machineCashoutMMoneyEntity.update({ MMoney: refill }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-                                            if (!run_createMMoneyLog) return reject(IENMessage.createMMoneyBillFail);
+                                            if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                             model.MMoney = refill;
                                             model.message = IENMessage.success;
                                             resolve(model);
-                                        }).catch(error => reject(error.message));
-                                    }).catch(error => reject(error.message));
-                                }).catch(error => reject(error.message));
-                            }).catch(error => reject(error.message));
-                        }).catch(error => reject(error.message));
+                                        }).catch(error => resolve(error.message));
+                                    }).catch(error => resolve(error.message));
+                                }).catch(error => resolve(error.message));
+                            }).catch(error => resolve(error.message));
+                        }).catch(error => resolve(error.message));
 
 
                         // **** old function ****
@@ -2357,7 +2311,6 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         return reject(new Error('Token not FOUND'));
                     }
-                }
             } catch (error) {
                 console.log('error credit machine', error,);
                 return reject(error);
