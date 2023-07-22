@@ -121,56 +121,7 @@ export class ApiService {
       }
 
     })
-    this.wsapi.billProcessSubscription.subscribe(r => {
-      if (!r) return console.log('empty');
-      console.log('ws process subscription', r);
-      const message = 'processing slot ' + r.position.position + `==>${r.position.status}` + '; ' + r?.bill?.vendingsales?.find(v => v.position == r.position)?.stock?.name;
 
-
-      // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-      const x = this.vendingOnSale.find(v => v.position == r.position.position);
-      console.log('X', x, r.position, x && r.position.status);
-
-      if (x && r.position.status) {
-        this.deductOrderUpdate(x.position);
-
-        x.stock.qtty--;
-        // PLAY SOUNDS
-        // this.audio = new Audio('assets/khopchay.mp3');
-        // this.audio.play();
-        this.toast.create({ message, duration: 2000 }).then(r => {
-          r.present();
-        });
-
-        
-        this.storage.get('bill_', 'bills').then(rx => {
-          const b = rx.v as Array<IBillProcess>;
-          const bills = b ? b : [];
-          bills.push(r);
-          this.storage.set('bill_', bills, 'bills')
-        })
-
-
-      } else if (!r.position.status) {
-        // PLAY SOUNDS
-        // this.audio = new Audio('assets/labob.mp3');
-        // this.audio.play();
-        this.alert.create({
-          header: 'Alert', message, buttons: [
-            {
-              text: 'OK',
-              role: 'confirm',
-              handler: () => {
-              },
-            },
-          ]
-        }).then(v => v.present());
-      }
-      this.dismissModal();
-      this.storage.set('saleStock', this.vendingOnSale, 'stock');
-
-      // });
-    })
   }
   public   validateDB(){
       

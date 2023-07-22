@@ -338,6 +338,7 @@ export function writeMachineSale(machineId: string,value:string) {
         fs.writeFileSync(p+'/'+machineId,value,{encoding:'utf-8'});
         console.log('path writeMachineSale',p);
         redisClient.set('_MachineSale_' + machineId, value);
+        console.log(`write la der`, value);
         return machineId;
     } catch (error) {
         console.log('errro writeMachineSale',error);

@@ -1511,21 +1511,27 @@ export class InventoryZDM8 implements IBaseClass {
                        const run = await sEnt.findOne({order:[['id', 'desc']]});
                        const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
                        const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
-
+                        console.log(`d data der`, d.data);
                        if (run == null) {
 
                             sEnt.create({
                                 data:d.data,
                                 hashM:sign,
                                 hashP:'null'
-                            }).then(r =>  console.log(`save stock success`)).catch(error => console.log(`save stock fail`));
+                            }).then(r =>  {
+                                console.log(`save stock success`);
+                            }).catch(error => console.log(`save stock fail`));
+
                        } else{
 
                         sEnt.create({
                             data:d.data,
                             hashM: sign,
                             hashP: run.hashM
-                        }).then(r =>  console.log(`save stock success`)).catch(error => console.log(`save stock fail`));
+                        }).then(r =>  {
+                            console.log(`save stock success`);
+                        }).catch(error => console.log(`save stock fail`));
+
                        }
 
                        console.log(`----> machine id der`, machineId.machineId);

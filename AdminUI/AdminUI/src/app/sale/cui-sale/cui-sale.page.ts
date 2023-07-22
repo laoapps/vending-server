@@ -41,8 +41,13 @@ export class CuiSalePage implements OnInit {
         console.log(`params`, params);
         const run = await this.cuisaleProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        this.lists = run.data[0].lists;
+        this.lists = run.data[0].lists.data;
 
+        this.lists.sort((a, b) => {
+          if (a.position < b.position) return -1;
+          return 1;
+        });
+        console.log(`sort list`, this.lists);
         resolve(IENMessage.success);
 
 

@@ -151,6 +151,7 @@ export class ApiService {
       }
 
     });
+    const that = this;
     this.wsapi.billProcessSubscription.subscribe(r => {
       if (!r) return console.log('empty');
       console.log('ws process subscription', r);
@@ -158,28 +159,31 @@ export class ApiService {
 
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-      const x = this.vendingOnSale.find(v => v.position == r.position);
+      const x = that.vendingOnSale.find(v => v.position == r.position);
       console.log('X', x, r.position, x && r.position);
 
       if (x && r.position) {
-        this.deductOrderUpdate(x.position);
+        that.deductOrderUpdate(x.position);
         x.stock.qtty--;
 
         // # save to machine
-        this.saveSale(this.vendingOnSale).subscribe(r=>{
+        console.log('saveSale',that.vendingOnSale);
+        
+        that.saveSale(that.vendingOnSale).subscribe(r=>{
           console.log(r);
           if(r.status){
             console.log(`save sale success`);
           } else {
-            this.simpleMessage(IENMessage.saveSaleFail);
+            that.simpleMessage(IENMessage.saveSaleFail);
           }
-        })
+        });
+        
         // this.clearWaitingT();
 
         // PLAY SOUNDS
-        this.audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
-        this.audio.play();
-        this.toast.create({ message, duration: 2000 }).then(r => {
+        that.audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
+        that.audio.play();
+        that.toast.create({ message, duration: 2000 }).then(r => {
           r.present();
         });
 
