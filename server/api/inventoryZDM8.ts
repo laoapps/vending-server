@@ -1568,7 +1568,7 @@ export class InventoryZDM8 implements IBaseClass {
             );
             router.post(
                 this.path + "/readMachineSaleForAdmin",
-                // this.checkToken,
+                this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
