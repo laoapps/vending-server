@@ -314,13 +314,14 @@ export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
 
 }
-export function readMachineSale(machineId: string) {
+export async function readMachineSale(machineId: string) {
     // return redisClient.get('_machineSale_' + machineId);
     try {
-        const p =path.resolve(__dirname, '..');
-        console.log('path readMachineSale',p);
+        // const p =path.resolve(__dirname, '..');
+        // console.log('path readMachineSale',p);
         
-        return fs.readFileSync(p+'/'+machineId,{encoding:'utf-8'});
+        // return fs.readFileSync(p+'/'+machineId,{encoding:'utf-8'});
+        return await redisClient.get('_MachineSale_' + machineId);
     } catch (error) {
             console.log('errro readMachineSale',error);
             
@@ -334,8 +335,8 @@ export function writeMachineSale(machineId: string,value:string) {
         const p =path.resolve(__dirname, '..');
         fs.writeFileSync(p+'/'+machineId,value,{encoding:'utf-8'});
         console.log('path writeMachineSale',p);
-        
-        return p;
+        redisClient.set('_MachineSale_' + machineId, value);
+        return machineId;
     } catch (error) {
         console.log('errro writeMachineSale',error);
     }

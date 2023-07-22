@@ -76,7 +76,7 @@ export class StocksalePage implements OnInit {
     alert('Are you going to recover sale from online');
     const p=prompt('please type 12345678');
     if(p=='12345678'){
-      this.apiService.showLoading();
+      await this.apiService.showLoading();
       this.apiService.recoverSale().subscribe(r=>{
         console.log(r);
         if(r.status){

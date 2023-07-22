@@ -359,8 +359,8 @@ export class ApiService {
     if (!o.name || !o.price) { alert('Body is empty');return null;}
     return this.http.post<IResModel>(this.url + '/addProduct',{data:o,token}, { headers: this.headerBase() });
   }
-  readMachineSale(data: any) {
-    return this.http.post<IResModel>(this.url + '/readMachineSale',{machineId: data.machineId}, { headers: this.headerBase() });
+  readMachineSaleForAdmin(data: any) {
+    return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin',{machineId: data.machineId}, { headers: this.headerBase() });
   }
 
   getFreeProduct(position: number, id: number) {

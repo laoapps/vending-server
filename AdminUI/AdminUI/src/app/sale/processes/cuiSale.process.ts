@@ -74,7 +74,7 @@ export class CUISaleProcess {
                     machineId: this.machineId
                 }
 
-                this.apiService.readMachineSale(params).subscribe(r => {
+                this.apiService.readMachineSaleForAdmin(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response cui sale`, response);
                     if (response.status != 1) return resolve(response.message);
