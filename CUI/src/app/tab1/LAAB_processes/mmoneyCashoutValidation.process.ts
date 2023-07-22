@@ -30,8 +30,8 @@ export class MMoneyCashOutValidationProcess {
 
                 console.log(`cash validation`, 1);
 
-                // this.workload = this.apiService.load.create({ message: 'loading...' });
-                // (await this.workload).present();
+                this.workload = this.apiService.load.create({ message: 'loading...' });
+                (await this.workload).present();
 
                 console.log(`cash validation`, 2);
 
@@ -49,14 +49,14 @@ export class MMoneyCashOutValidationProcess {
 
                 console.log(`cash validation`, 5);
 
-                // (await this.workload).dismiss();
+                (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
 
             } catch (error) {
 
-                // (await this.workload).dismiss();
+                (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });

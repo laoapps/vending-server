@@ -6,6 +6,7 @@ import { LaabGoPage } from '../../LAAB/laab-go/laab-go.page';
 import * as cryptojs from 'crypto-js';
 import { IENMessage } from 'src/app/models/base.model';
 import qrlogo from 'qrcode-with-logos';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-vending-go',
@@ -23,6 +24,7 @@ export class VendingGoPage implements OnInit {
   quantity: number = 0;
   total: number = 0;
   constructor(
+    private modal: ModalController,
     public apiService: ApiService
   ) { }
 
@@ -129,6 +131,7 @@ export class VendingGoPage implements OnInit {
           total: this.total,
           balance: sum_refund,
           paidLAAB: paidLAAB,
+          vendingGoPage: this.modal
         };
         console.log(`props`, props);
 

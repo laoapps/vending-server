@@ -2234,7 +2234,9 @@ export class InventoryZDM8 implements IBaseClass {
                                             resolve(model);
                                         }).catch(error => resolve(error.message));
                                     }).catch(error => resolve(error.message));
-                                }).catch(error => resolve(error.message));
+                                }).catch(error => {
+                                    resolve(error.message);
+                                });
                             }).catch(error => resolve(error.message));
                         }).catch(error => resolve(error.message));
 

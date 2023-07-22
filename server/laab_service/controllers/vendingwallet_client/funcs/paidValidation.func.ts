@@ -210,9 +210,9 @@ export class PaidValidationFunc {
                     message: IENMessage.success
                 }
 
-                
+                console.log(`vending balance der ni`, vendingBalance, this.cash);
                 if (vendingBalance != undefined && vendingBalance != null) {
-                    const balance = Number(vendingBalance) - this.cash;
+                    const balance = Number(vendingBalance) - Number(this.cash);
                     writeMachineBalance(this.machineId, String(balance));
                     return resolve(IENMessage.success);
                 }
