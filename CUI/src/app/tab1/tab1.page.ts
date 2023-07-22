@@ -53,6 +53,7 @@ import { HowtoPageModule } from '../howto/howto.module';
 import { HowToPage } from './Vending/how-to/how-to.page';
 import { LoadStockListProcess } from './Vending_processes/loadStockList.process';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
+import Swal from "sweetalert2";
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -1063,6 +1064,7 @@ export class Tab1Page {
         
         if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
         
+        // ##here
         this.apiService.modal.create({ component: StackCashoutPage }).then(r => {
           r.present();
         });
@@ -1071,7 +1073,7 @@ export class Tab1Page {
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
-      } 
+      }
     });
   }
 

@@ -290,11 +290,8 @@ export class ManageEpinPage implements OnInit {
   counterCashout_Cash(data: any): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
-        if (data.counter.cash != undefined && data.counter.cash != '') throw new Error(IENMessage.thisEPINHasAlreadyCashedOut);
-
+        console.log(`data`, data);
         const params = {
-          machineId: this.apiService.currentMachineId,
           phonenumber: this.phonenumber,
           destination: data.EPIN.destination,
           coinname: data.EPIN.coinname,

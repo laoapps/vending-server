@@ -28,12 +28,10 @@ export class TransferValidationProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-
-
                 console.log(`paid validation`, 1);
 
-                // this.workload = this.apiService.load.create({ message: 'loading...' });
-                // (await this.workload).present();
+                this.workload = this.apiService.load.create({ message: 'loading...' });
+                (await this.workload).present();
 
                 console.log(`paid validation`, 2);
 
@@ -51,14 +49,14 @@ export class TransferValidationProcess {
 
                 console.log(`paid validation`, 5);
 
-                // (await this.workload).dismiss();
+                (await this.workload).dismiss();
                 resolve(this.Commit());
 
                 // console.log(`validate merchant account`, 6);
 
             } catch (error) {
 
-                // (await this.workload).dismiss();
+                (await this.workload).dismiss();
                 resolve(error.message);     
             }
         });
@@ -82,7 +80,7 @@ export class TransferValidationProcess {
             try {
 
                 const params = {
-                    receiver: `+856` + this.receiver,
+                    receiver: this.receiver,
                     cash: this.cash,
                     description: this.description,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)

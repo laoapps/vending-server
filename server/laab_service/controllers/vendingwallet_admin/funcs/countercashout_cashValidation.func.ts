@@ -1,5 +1,5 @@
 import axios from "axios";
-import { EPIN_FindQRScan, EPIN_QRScan, IENMessage, LAAB_CoinTransfer, translateUToSU } from "../../../../services/laab.service";
+import { EPIN_FindQRScan, EPIN_QRScan, IENMessage, LAAB_CoinTransfer, translateSUToU, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { dbConnection, epinshortcodeEntity, vendingWallet } from "../../../../entities";
 import { Op, Transaction } from "sequelize";
@@ -8,7 +8,6 @@ import { Op, Transaction } from "sequelize";
 export class CounterCashout_CashValidationFunc {
 
     private transaction: Transaction;
-    private machineId:string;
 
     private phonenumber: string;
     private destination: string;
@@ -42,6 +41,9 @@ export class CounterCashout_CashValidationFunc {
 
                 console.log(`counter cash out cash validation`, 3);
 
+                const FindEPINShortCode = await this.FindEPINShortCode();
+                if (FindEPINShortCode != IENMessage.success) throw new Error(FindEPINShortCode);
+
                 const FindVendingWallet = await this.FindVendingWallet();
                 if (FindVendingWallet != IENMessage.success) throw new Error(FindVendingWallet);
 
@@ -49,9 +51,6 @@ export class CounterCashout_CashValidationFunc {
 
                 const FindMerchant = await this.FindMerchant();
                 if (FindMerchant != IENMessage.success) throw new Error(FindMerchant);
-
-                const FindEPINShortCode = await this.FindEPINShortCode();
-                if (FindEPINShortCode != IENMessage.success) throw new Error(FindEPINShortCode);
 
                 console.log(`counter cash out cash validation`, 5);
 
@@ -84,48 +83,15 @@ export class CounterCashout_CashValidationFunc {
     }
 
     private InitParams(params: any) {
-        this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
         this.destination = params.destination;
         this.coinname = params.coinname;
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.destination && this.coinname)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.destination && this.coinname)) return IENMessage.parametersEmpty;
 
         return IENMessage.success;
-    }
-
-    private FindVendingWallet(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-                
-                let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
-                if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
-                this.ownerUuid = run.ownerUuid;
-                this.creator = translateUToSU(run.uuid);
-                resolve(IENMessage.success);
-
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
-
-    private FindMerchant(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-                
-                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.merchant } });
-                if (run == null) return resolve(IENMessage.notFoundYourMerchant);
-                this.sender = translateUToSU(run.uuid);
-                this.passkeys = run.passkeys;
-                resolve(IENMessage.success);
-
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
     }
 
     private FindEPINShortCode(): Promise<any> {
@@ -134,7 +100,6 @@ export class CounterCashout_CashValidationFunc {
                 
                 const condition = {
                     where: {
-                        creator: this.creator,
                         phonenumber: this.phonenumber,
                         SMC: {[Op.ne]: {}},
                         EPIN: {
@@ -151,8 +116,41 @@ export class CounterCashout_CashValidationFunc {
                 }
                 const run = await epinshortcodeEntity.findOne(condition);
                 if (run == null) return resolve(IENMessage.notFoundEPINShortCode);
-               
+                this.creator = translateSUToU(run.creator);
+
                 this.connection = run;
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+
+    private FindVendingWallet(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                let run: any = await vendingWallet.findOne({ where: { uuid: this.creator, walletType: IVendingWalletType.vendingWallet } });
+                if (run == null) return resolve(IENMessage.notFoundYourVendingWallet);
+                this.ownerUuid = run.ownerUuid;
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private FindMerchant(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.merchant } });
+                if (run == null) return resolve(IENMessage.notFoundYourMerchant);
+                this.sender = translateUToSU(run.uuid);
+                this.passkeys = run.passkeys;
                 resolve(IENMessage.success);
 
             } catch (error) {

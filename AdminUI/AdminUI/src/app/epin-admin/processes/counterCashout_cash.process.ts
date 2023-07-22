@@ -10,7 +10,6 @@ export class CounterCashout_CashProcess {
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
     
-    private machineId: string;
     private phonenumber: string;
     private destination: string;
     private coinname: string;
@@ -69,7 +68,6 @@ export class CounterCashout_CashProcess {
 
 
     private InitParams(params: any): void {
-        this.machineId = params.machineId;
         this.phonenumber = params.phonenumber;
         this.destination = params.destination;
         this.coinname = params.coinname;
@@ -79,7 +77,7 @@ export class CounterCashout_CashProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId && this.phonenumber && this.destination && this.coinname && this.name && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.destination && this.coinname && this.name && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -88,7 +86,6 @@ export class CounterCashout_CashProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId,
                     phonenumber: this.phonenumber,
                     destination: this.destination,
                     coinname: this.coinname,

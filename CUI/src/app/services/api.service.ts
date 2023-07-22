@@ -591,5 +591,9 @@ export class ApiService {
   displayImage(name: string) {
     return this.imageList[name].filter(item => item.name == name)[0]?.file;
   }
+
+  formatMoney(s: number) {
+    return  s.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  }
 }
 

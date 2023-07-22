@@ -7,11 +7,11 @@ import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCasho
 import Swal from 'sweetalert2';
 
 @Component({
-  selector: 'app-laab-cashout',
-  templateUrl: './laab-cashout.page.html',
-  styleUrls: ['./laab-cashout.page.scss'],
+  selector: 'app-mmoney-cashout',
+  templateUrl: './mmoney-cashout.page.html',
+  styleUrls: ['./mmoney-cashout.page.scss'],
 })
-export class LaabCashoutPage implements OnInit {
+export class MmoneyCashoutPage implements OnInit {
 
   @Input() stackCashoutPage: any;
 
@@ -69,20 +69,17 @@ export class LaabCashoutPage implements OnInit {
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
         let moneyFormat = this.apiService.formatMoney(this.apiService.cash).toString();
         moneyFormat = moneyFormat.split('.00')[0];
+
         const params = {
-          machineId: localStorage.getItem('machineId'),
-          receiver: this.phonenumber,
-          cash: this.apiService.cash,
-          description: 'VENDING CASH OUT TO ANOTHER LAAB ACCOUNT'
+          phonenumber: this.phonenumber,
+          cash: 1100 // debug here
         }
-
-        const run = await this.transferValidationProcess.Init(params);
+        const run = await this.mmoneyCashoutValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-
         Swal.fire({
           icon: 'success',
-          title: 'LAAB Cash out',
-          text: `LAAB account ${this.phonenumber} receive about ${moneyFormat}`,
+          title: 'MMoney Cash out',
+          text: `MMoney account ${this.phonenumber} receive about ${moneyFormat}`,
           heightAuto: false,
           showConfirmButton: true,
           confirmButtonText: 'OK',
@@ -98,7 +95,7 @@ export class LaabCashoutPage implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'MMoney Cash out',
-          text: `Cash out from vending between LAAB fail`,
+          text: `Cash out from vending between MMoney fail`,
           showConfirmButton: true,
           confirmButtonText: 'OK',
           confirmButtonColor: '#EE3124',
@@ -112,4 +109,5 @@ export class LaabCashoutPage implements OnInit {
   close() {
     this.apiService.modal.dismiss();
   }
+
 }

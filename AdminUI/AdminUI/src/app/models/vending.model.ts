@@ -187,7 +187,6 @@ export interface VENDING_ReCreateEPIN extends IBase {
 
 
 export interface VENDING_CounterCashout_cash extends IBase {
-    machineId: string,
     phonenumber: string,
     destination: string,
     coinname: string,

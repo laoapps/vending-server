@@ -6,6 +6,8 @@ import { EpinCashOutPage } from '../epin-cash-out/epin-cash-out.page';
 import { ControlMenuService } from 'src/app/services/control-menu.service';
 import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
+import { MmoneyCashoutPage } from '../mmoney-cashout/mmoney-cashout.page';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-stack-cashout',
@@ -19,6 +21,7 @@ export class StackCashoutPage implements OnInit {
 
 
   constructor(
+    private modal: ModalController,
     private apiService: ApiService,
     private vendingAPIService: VendingAPIService
   ) { 
@@ -28,14 +31,35 @@ export class StackCashoutPage implements OnInit {
     this.dynamicControlMenu();
   }
 
-  laabCashout(state: string): Promise<any> {
+  mmoneyCashout(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (this.apiService.cash == 0)
           throw new Error(IENMessage.thereIsNotBalance);
 
         const props = {
-          state: state
+          stackCashoutPage: this.modal
+        };
+        this.apiService.modal
+          .create({ component: MmoneyCashoutPage, componentProps: props })
+          .then((r) => {
+            r.present();
+            resolve(IENMessage.success);
+          });
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  laabCashout(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if (this.apiService.cash == 0)
+          throw new Error(IENMessage.thereIsNotBalance);
+
+        const props = {
+          stackCashoutPage: this.modal
         };
         this.apiService.modal
           .create({ component: LaabCashoutPage, componentProps: props })

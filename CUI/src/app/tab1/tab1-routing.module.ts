@@ -58,6 +58,10 @@ const routes: Routes = [
   {
     path: 'how-to',
     loadChildren: () => import('./Vending/how-to/how-to.module').then( m => m.HowToPageModule)
+  },
+  {
+    path: 'mmoney-cashout',
+    loadChildren: () => import('./LAAB/mmoney-cashout/mmoney-cashout.module').then( m => m.MmoneyCashoutPageModule)
   }
 ];
 

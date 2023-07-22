@@ -8,6 +8,7 @@ import { ExploreContainerComponentModule } from '../explore-container/explore-co
 import { Tab1PageRoutingModule } from './tab1-routing.module';
 // import { NotifierModule } from 'angular-notifier';
 import { OrderModule } from 'ngx-order-pipe';
+import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 @NgModule({
   imports: [
     IonicModule,
@@ -16,7 +17,9 @@ import { OrderModule } from 'ngx-order-pipe';
     ExploreContainerComponentModule,
     Tab1PageRoutingModule,
     // NotifierModule,
-     OrderModule
+     OrderModule,
+     SweetAlert2Module,
+     
   ],
   declarations: [Tab1Page]
 })
