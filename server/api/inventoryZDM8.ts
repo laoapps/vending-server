@@ -1527,6 +1527,8 @@ export class InventoryZDM8 implements IBaseClass {
                             hashP: run.hashM
                         }).then(r =>  console.log(`save stock success`)).catch(error => console.log(`save stock fail`));
                        }
+
+                       console.log(`----> machine id der`, machineId.machineId);
                         
                         res.send(
                             PrintSucceeded(

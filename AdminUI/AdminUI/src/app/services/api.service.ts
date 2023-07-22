@@ -360,7 +360,7 @@ export class ApiService {
     return this.http.post<IResModel>(this.url + '/addProduct',{data:o,token}, { headers: this.headerBase() });
   }
   readMachineSaleForAdmin(data: any) {
-    return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin',{machineId: data.machineId}, { headers: this.headerBase() });
+    return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin',data, { headers: this.headerBase() });
   }
 
   getFreeProduct(position: number, id: number) {

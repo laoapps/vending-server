@@ -322,7 +322,7 @@ export class Tab1Page {
         const saleitems = JSON.parse(
           JSON.stringify(s?.v ? s.v : [])
         ) as Array<IVendingMachineSale>;
-
+        console.log(`saleitems`, saleitems);
         this.saleList.sort((a, b) => {
           if (a.position < b.position) return -1;
         });

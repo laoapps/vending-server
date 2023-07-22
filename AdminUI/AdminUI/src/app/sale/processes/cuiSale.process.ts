@@ -12,6 +12,7 @@ export class CUISaleProcess {
 
     private machineId: string;
 
+    private token: string;
     private lists: Array<any> = [];
 
 
@@ -59,10 +60,11 @@ export class CUISaleProcess {
 
     private InitParams(params: any): void {
         this.machineId = params.machineId;
+        this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
-        if (!(this.machineId)) return IENMessage.parametersEmpty;
+        if (!(this.machineId && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -71,7 +73,8 @@ export class CUISaleProcess {
             try {
 
                 const params = {
-                    machineId: this.machineId
+                    machineId: this.machineId,
+                    token: this.token
                 }
 
                 this.apiService.readMachineSaleForAdmin(params).subscribe(r => {
