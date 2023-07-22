@@ -2,7 +2,7 @@ import axios from "axios";
 import { IENMessage, LAAB_CoinTransfer, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
-import { writeMachineBalance } from "../../../../services/service";
+import { readMachineBalance, writeMachineBalance } from "../../../../services/service";
 
 // after cashout to mmoney success this function will transfer laab coin amount to mmoney finance wallet
 export class MmoneyTransferValidationFunc {
@@ -120,6 +120,8 @@ export class MmoneyTransferValidationFunc {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
+                const vendingBalance = await readMachineBalance(this.machineId);
+
                 const params = {
                     coin_list_id: this.coinListId,
                     coin_code: this.coinCode,
@@ -165,7 +167,10 @@ export class MmoneyTransferValidationFunc {
                         limitBlock: 10,
 
                         phonenumber: this.sender,
-                        passkeys: this.passkeys
+                        passkeys: this.passkeys,
+
+                        machineId: this.machineId,
+                        vendingBalance: Number(vendingBalance)
                     },
                     ownerUuid: this.ownerUuid,
                     bill: bill,

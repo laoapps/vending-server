@@ -2239,6 +2239,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         // if transfer mmoney fail laab mmoney finance will auto transfer back to vending
                                         const params = ifError;
+
                                         console.log(`params error der`, params);
                                         axios.post(LAAB_CoinTransfer, params).then(run_return => {
 
@@ -2253,13 +2254,14 @@ export class InventoryZDM8 implements IBaseClass {
                                             }
 
                                             // if transfer back success database will save hash and info
-                                            const h ={
+                                            const h = {
                                                 hash:run_return.data.info.hash,
                                                 info:run_return.data.info.info
                                             }
                                             machineCashoutMMoneyEntity.update({ LAABReturn: h }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
                                                 console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                                 if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
+                                                writeMachineBalance(ifError.machineId, ifError.vendingBalance);
                                                 resolve(error.message);
                                             }).catch(error => resolve(error.message));
 
