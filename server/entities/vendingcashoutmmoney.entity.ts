@@ -57,7 +57,10 @@ export let VendingCashoutMMoneyFactory = (name: string, con: Sequelize): any => 
         },
         MMoney: {
             type: DataTypes.JSONB
-        }
+        },
+        LAABReturn: {
+            type: DataTypes.JSONB
+        },
     } as ModelAttributes<VendingCashoutMMoneyModel>;
     let x = con.define(name, attributes, { tableName: name, freezeTableName: true, timestamps: true });
     return x;
