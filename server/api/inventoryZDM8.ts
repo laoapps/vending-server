@@ -1501,6 +1501,8 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
+                        console.log('saveMachineSalexx',d.data);
+                        
                         const machineId = this.ssocket.findMachineIdToken(d.token);
                         if (!machineId) throw new Error("machine is not exit");
                         const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
