@@ -1525,7 +1525,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 hashM:sign,
                                 hashP:'null'
                             }).then(r =>  {
-                                console.log(`save stock success`);
+                                console.log(`save stock successxxxxxx`);
                             }).catch(error => console.log(`save stock fail`));
 
                        } else{
@@ -1535,7 +1535,7 @@ export class InventoryZDM8 implements IBaseClass {
                             hashM: sign,
                             hashP: run.hashM
                         }).then(r =>  {
-                            console.log(`save stock success`);
+                            console.log(`save stock successxxx`);
                         }).catch(error => console.log(`save stock fail`));
 
                        }
