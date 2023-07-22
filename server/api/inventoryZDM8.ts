@@ -1576,6 +1576,7 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const machineId = req.body.machineId;
+                        console.log(`readMachineSaleForAdmin`, machineId);
                         // const isActive = req.query['isActive'];
                         if (!machineId) throw new Error("machine is not exit");
                         res.send(
