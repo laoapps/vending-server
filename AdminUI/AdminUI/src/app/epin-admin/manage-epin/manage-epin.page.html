@@ -136,7 +136,7 @@
                 <td>{{ list.createdAt }}</td>
                 <td>
                   <a *ngIf="!list?.EPIN?.destination" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Recreate EPIN</a>
-                  <a *ngIf="list?.counter?.cash?.hash == ''" (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-wallet"></i> Give cash</a>
+                  <a *ngIf="list?.counter?.cash?.hash == ''" (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-wallet"></i> Grap cash</a>
                 </td>
               </tr>
             </tbody>

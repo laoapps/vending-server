@@ -155,6 +155,18 @@ export class MmoneyTransferValidationFunc {
                 writeMachineBalance(this.machineId, '0');
 
                 this.response = {
+                    ifError: {
+                        coin_list_id: this.coinListId,
+                        coin_code: this.coinCode,
+                        sender: this.mmoneyfinance,
+                        receiver: this.sender,
+                        amount: this.cash,
+                        description: this.description,
+                        limitBlock: 10,
+
+                        phonenumber: this.sender,
+                        passkeys: this.passkeys
+                    },
                     ownerUuid: this.ownerUuid,
                     bill: bill,
                     h: h,

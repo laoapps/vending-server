@@ -88,7 +88,7 @@ import {
 import { Op } from "sequelize";
 import fs from "fs";
 import { getNanoSecTime } from "../services/service";
-import { APIAdminAccess, IENMessage, IFranchiseStockSignature } from "../services/laab.service";
+import { APIAdminAccess, IENMessage, IFranchiseStockSignature, LAAB_CoinTransfer } from "../services/laab.service";
 import { CashVendingLimiterValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashLimiterValidation.func";
 import {
     BillCashInFactory,
@@ -2201,6 +2201,8 @@ export class InventoryZDM8 implements IBaseClass {
 
                         func.Init(params).then(run => {
                             if (run.message != IENMessage.success) return resolve(run);
+                            const ifError = run.ifError;
+                            delete run.ifError;
                             let model = {
                                 ownerUuid: run.ownerUuid,
                                 data: {
@@ -2220,11 +2222,11 @@ export class InventoryZDM8 implements IBaseClass {
                             machineCashoutMMoneyEntity.create(model).then(run_createLAABLog => {
                                 console.log(`creditMachineMMoney`, 3, run_createLAABLog);
                                 if (!run_createLAABLog) return resolve(IENMessage.createLAABBillFail);
-                                this.refillMMoney(phonenumber,  transactionID, cashInValue, params.description).then(refill => {
-                                    console.log(`creditMachineMMoney`, 4, refill);
-                                    machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
-                                        console.log(`creditMachineMMoney`, 5, run_findbill);
-                                        if (run_findbill == null) return resolve(IENMessage.notFoundBill);
+                                machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
+                                    console.log(`creditMachineMMoney`, 4, run_findbill);
+                                    if (run_findbill == null) return resolve(IENMessage.notFoundBill);
+                                    this.refillMMoney(phonenumber,  transactionID, cashInValue, params.description).then(refill => {
+                                        console.log(`creditMachineMMoney`, 5, refill);
                                         machineCashoutMMoneyEntity.update({ MMoney: refill }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
                                             console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                             if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
@@ -2233,10 +2235,45 @@ export class InventoryZDM8 implements IBaseClass {
                                             console.log(`creditMachineMMoney`, 7);
                                             resolve(model);
                                         }).catch(error => resolve(error.message));
-                                    }).catch(error => resolve(error.message));
-                                }).catch(error => {
-                                    resolve(error.message);
-                                });
+                                    }).catch(error => {
+
+                                        // if transfer mmoney fail laab mmoney finance will auto transfer back to vending
+                                        const params = ifError.LAAB;
+                                        axios.post(LAAB_CoinTransfer, params).then(run_return => {
+
+                                            // if transfer back fail database will save data log
+                                            if (run_return.data.status != 1) {
+                                                machineCashoutMMoneyEntity.update({ LAABReturn: run_return.data }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
+                                                    console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                                    if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
+                                                    resolve(error.message);
+                                                }).catch(error => resolve(error.message));
+                                                return resolve(run_return.data.message);
+                                            }
+
+                                            // if transfer back success database will save hash and info
+                                            const h ={
+                                                hash:run_return.data.info.hash,
+                                                info:run_return.data.info.info
+                                            }
+                                            machineCashoutMMoneyEntity.update({ LAABReturn: h }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
+                                                console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                                if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
+                                                resolve(error.message);
+                                            }).catch(error => resolve(error.message));
+
+                                        }).catch(error => {
+                                            
+                                            // if transfer back and everything fail database will save error data
+                                            machineCashoutMMoneyEntity.update({ LAABReturn: error.message }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
+                                                console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                                if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
+                                                resolve(error.message);
+                                            }).catch(error => resolve(error.message));
+                                        });
+                        
+                                    });
+                                }).catch(error => resolve(error.message));
                             }).catch(error => resolve(error.message));
                         }).catch(error => resolve(error.message));
 
@@ -3053,7 +3090,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // this.loginTokenList.push({ m: r, t: transID });
                     console.log('DATA mmMoneyLogin', re);
 
-                    this.processRefillMmoney(msisdn, transID, amount, description, re.accessToken).then(r => {
+                    this.processRefillMmoney(msisdn, transID, amount, description, re.accessToken + 'heloo').then(r => {
                         console.log('DATA processRefillMmoney', r);
                         resolve(r)
                     }).catch(e => {

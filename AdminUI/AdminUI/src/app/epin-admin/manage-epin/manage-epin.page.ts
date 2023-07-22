@@ -292,7 +292,7 @@ export class ManageEpinPage implements OnInit {
       try {
         console.log(`data`, data);
         const params = {
-          phonenumber: this.phonenumber,
+          phonenumber: data.phonenumber,
           destination: data.EPIN.destination,
           coinname: data.EPIN.coinname,
           name: data.EPIN.name
@@ -301,7 +301,14 @@ export class ManageEpinPage implements OnInit {
         const run = await this.counterCashout_cashProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         
-        this.lists = this.lists.filter(item => item.uuid == data.uuid);
+        if (this.lists != undefined && this.lists.length == 1) {
+          await this.showList();
+        } else {
+          this.lists = this.lists.filter(item => item.uuid !== data.uuid);
+        }
+        
+
+        resolve(IENMessage.success);
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
