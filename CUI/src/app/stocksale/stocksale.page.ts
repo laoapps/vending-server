@@ -23,7 +23,7 @@ export class StocksalePage implements OnInit {
   constructor(public apiService: ApiService,
     public alertController:AlertController,
     public storage: IonicStorageService) {
-    this.saleStock = apiService.vendingOnSale;
+    this.saleStock = ApiService.vendingOnSale;
     this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
     console.log(`TEST SALE STOCK`, this.saleStock);
     // this.stock=apiService.stock;
@@ -54,12 +54,12 @@ export class StocksalePage implements OnInit {
     if(p=='12345678'){
       this.apiService.showLoading();
       const x =[];
-      this.apiService.vendingOnSale.forEach(v=>{
+      ApiService.vendingOnSale.forEach(v=>{
         const e= JSON.parse(JSON.stringify(v));
 
         x.push(e);
       })
-      this.apiService.saveSale(this.apiService.vendingOnSale).subscribe(r=>{
+      this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r=>{
         console.log(r);
         
         if(r.status){
@@ -80,13 +80,13 @@ export class StocksalePage implements OnInit {
       this.apiService.recoverSale().subscribe(r=>{
         console.log(r);
         if(r.status){
-          this.apiService.vendingOnSale.length=0;
+          ApiService.vendingOnSale.length=0;
           // r.data.forEach(v=>{
           //   this.apiService.vendingOnSale.push(v);
           // })
           console.log('recover',r.data);
           
-          this.apiService.vendingOnSale.push(...r.data)
+          ApiService.vendingOnSale.push(...r.data)
         }
         this.apiService.dismissLoading();
         this.apiService.toast.create({message:r.message, duration: 200}).then(r=>{
@@ -262,11 +262,11 @@ export class StocksalePage implements OnInit {
   doFilter(){
     if(this.search)
     {
-      this.saleStock = this.apiService.vendingOnSale.filter(v=>(v.position+'').includes(this.search.toLowerCase())||(v.stock.name.toLowerCase()).includes(this.search.toLowerCase()));
+      this.saleStock = ApiService.vendingOnSale.filter(v=>(v.position+'').includes(this.search.toLowerCase())||(v.stock.name.toLowerCase()).includes(this.search.toLowerCase()));
       this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
     }
     else {
-      this.saleStock = this.apiService.vendingOnSale;
+      this.saleStock = ApiService.vendingOnSale;
       this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
     }
   }

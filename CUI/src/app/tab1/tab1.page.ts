@@ -168,7 +168,7 @@ export class Tab1Page {
       console.log('loading sale list');
 
       // }, 1000);
-      this.vendingOnSale = this.apiService.vendingOnSale;
+      this.vendingOnSale = ApiService.vendingOnSale;
       this.vendingBillPaid = this.apiService.vendingBillPaid;
       this.vendingBill = this.apiService.vendingBill;
       this.onlineMachines = this.apiService.onlineMachines;
@@ -447,7 +447,7 @@ export class Tab1Page {
             .create({ message: r.message, duration: 2000 })
             .then((r) => {
               r.present();
-              const y = this.apiService.vendingOnSale.find(
+              const y = ApiService.vendingOnSale.find(
                 (v) => v.position == x.position
               );
               y.stock.qtty--;
@@ -457,7 +457,7 @@ export class Tab1Page {
               // PLAY SOUNDS
               this.storage.set(
                 'saleStock',
-                this.apiService.vendingOnSale,
+                ApiService.vendingOnSale,
                 'stock'
               );
             });

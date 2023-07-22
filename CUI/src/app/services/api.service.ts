@@ -83,7 +83,7 @@ export class ApiService {
 
   wsAlive = {} as IAlive;
 
-  vendingOnSale = new Array<IVendingMachineSale>();
+  public static vendingOnSale = new Array<IVendingMachineSale>();
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
@@ -159,7 +159,7 @@ export class ApiService {
 
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-      const x = that.vendingOnSale.find(v => v.position == r.position);
+      const x = ApiService.vendingOnSale.find(v => v.position == r.position);
       console.log('X', x, r.position, x && r.position);
 
       if (x && r.position) {
@@ -167,9 +167,9 @@ export class ApiService {
         x.stock.qtty--;
 
         // # save to machine
-        console.log('saveSale',that.vendingOnSale);
+        console.log('saveSale',ApiService.vendingOnSale);
         
-        that.saveSale(that.vendingOnSale).subscribe(r=>{
+        that.saveSale(ApiService.vendingOnSale).subscribe(r=>{
           console.log(r);
           if(r.status){
             console.log(`save sale success`);
@@ -223,8 +223,8 @@ export class ApiService {
       //     }
       // })
       // this.dismissModal();
-      console.log(`vendingOnSale-->`, this.vendingOnSale);
-      this.storage.set('saleStock', this.vendingOnSale, 'stock');
+      console.log(`vendingOnSale-->`, ApiService.vendingOnSale);
+      this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
 
       // });
     });
