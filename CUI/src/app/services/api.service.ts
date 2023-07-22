@@ -163,20 +163,13 @@ export class ApiService {
       console.log('X', x, r.position, x && r.position);
 
       if (x && r.position) {
-        that.deductOrderUpdate(x.position);
         x.stock.qtty--;
+        that.deductOrderUpdate(x.position);
 
         // # save to machine
         console.log('saveSale',ApiService.vendingOnSale);
         
-        that.saveSale(ApiService.vendingOnSale).subscribe(r=>{
-          console.log(r);
-          if(r.status){
-            console.log(`save sale success`);
-          } else {
-            that.simpleMessage(IENMessage.saveSaleFail);
-          }
-        }); 
+       
         
         // this.clearWaitingT();
 

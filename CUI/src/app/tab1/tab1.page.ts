@@ -190,9 +190,25 @@ export class Tab1Page {
       });
     });
     // });
-
+    const that = this;
     this.apiService.onDeductOrderUpdate((position) => {
       try {
+        // const x = JSON.parse(JSON.stringify(that.vendingOnSale));
+        // console.log('before SAVE ==>',x);
+        setTimeout(() => {
+          that.apiService.saveSale(that.vendingOnSale).subscribe(r=>{
+            console.log(r);
+            if(r.status){
+              console.log(`save sale success`);
+            } else {
+              this.apiService.simpleMessage(IENMessage.saveSaleFail);
+            }
+          }); 
+        }, 500);
+      
+
+
+        // for stack order UI
         const ind = this.orders.findIndex((v) => v.position == position);
         if (ind != -1) this.orders.splice(ind, 1);
       } catch (error) {
@@ -591,9 +607,21 @@ export class Tab1Page {
   addOrder(x: IVendingMachineSale) {
     try {
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
-
+      
       if (this.WSAPIService?.setting_allowVending == false) {
-        this.apiService.simpleMessage('Vending is closed');
+        // this.apiService.simpleMessage('Vending is closed');
+        const alert = Swal.fire({
+          icon: 'error',
+          title: 'Vender is out of service',
+          text: `Please, try again later`,
+          showConfirmButton: true,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#EE3124',
+          heightAuto: false
+        });
+        setTimeout(() => {
+          Swal.close();
+        }, 2000);
         return;
       }
       this.setActive();
