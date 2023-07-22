@@ -1509,7 +1509,10 @@ export class InventoryZDM8 implements IBaseClass {
                        // sign
 
                        const run = await sEnt.findOne({order:[['id', 'desc']]});
+                       console.log(`run der`, run);
+                       
                        const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
+                       console.log(`calculate der`, calculate);
                        const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
                         console.log(`sign der`, sign);
                         console.log(`d data der`, d.data);
