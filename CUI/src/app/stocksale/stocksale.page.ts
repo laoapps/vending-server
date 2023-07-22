@@ -52,7 +52,7 @@ export class StocksalePage implements OnInit {
     alert('Are you going to save sale to online');
     const p=prompt('please type 12345678');
     if(p=='12345678'){
-      this.apiService.showLoading();
+      await this.apiService.showLoading();
       const x =[];
       ApiService.vendingOnSale.forEach(v=>{
         const e= JSON.parse(JSON.stringify(v));
