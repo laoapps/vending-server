@@ -314,7 +314,7 @@ export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
 
 }
-export async function readMachineSale(machineId: string) {
+export  function readMachineSale(machineId: string) {
     // return redisClient.get('_machineSale_' + machineId);
     try {
         // const p =path.resolve(__dirname, '..');
