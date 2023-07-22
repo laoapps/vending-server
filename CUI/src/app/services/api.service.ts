@@ -176,7 +176,7 @@ export class ApiService {
           } else {
             that.simpleMessage(IENMessage.saveSaleFail);
           }
-        });
+        }); 
         
         // this.clearWaitingT();
 

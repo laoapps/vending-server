@@ -1511,6 +1511,7 @@ export class InventoryZDM8 implements IBaseClass {
                        const run = await sEnt.findOne({order:[['id', 'desc']]});
                        const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
                        const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
+                        console.log(`sign der`, sign);
                         console.log(`d data der`, d.data);
                        if (run == null) {
 
