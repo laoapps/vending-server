@@ -3095,7 +3095,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // this.loginTokenList.push({ m: r, t: transID });
                     console.log('DATA mmMoneyLogin', re);
 
-                    this.processRefillMmoney(msisdn, transID, amount, description, re.accessToken + 'heloo').then(r => {
+                    this.processRefillMmoney(msisdn, transID, amount, description, re.accessToken).then(r => {
                         console.log('DATA processRefillMmoney', r);
                         resolve(r)
                     }).catch(e => {

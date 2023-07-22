@@ -101,6 +101,8 @@ export class MmoneyCashoutPage implements OnInit {
           confirmButtonColor: '#EE3124',
           heightAuto: false
         });
+        this.stackCashoutPage.dismiss();
+        this.apiService.modal.dismiss();
         // this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
