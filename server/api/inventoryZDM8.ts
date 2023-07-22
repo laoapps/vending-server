@@ -2239,6 +2239,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         // if transfer mmoney fail laab mmoney finance will auto transfer back to vending
                                         const params = ifError;
+                                        console.log(`params error der`, params);
                                         axios.post(LAAB_CoinTransfer, params).then(run_return => {
 
                                             // if transfer back fail database will save data log

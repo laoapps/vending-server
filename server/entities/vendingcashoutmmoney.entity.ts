@@ -16,10 +16,7 @@ export interface IVendingCashoutMMoney {
         hash: string,
         info: string
     },
-    LAABReturn: {
-        hash: string,
-        info: string
-    }
+    LAABReturn: {},
     MMoney: any,
 }
 export interface VendingCashoutMMoneyAttributes extends IVendingCashoutMMoney { }
