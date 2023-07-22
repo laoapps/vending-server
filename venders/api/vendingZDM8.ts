@@ -97,6 +97,11 @@ export class VendingZDM8 {
 
                 // if (buffer.length == 4) {
                 // confirm any 
+                ///01 10 20 01 00 02 1B C8 confirm motor control
+                if('0110200100021BC8'.toLowerCase()==b){
+                    that.processPending.shift();
+                }
+                   
                 sock.send(b, that.transactionID);      
                 that.transactionID = -1;
                 b = '';
@@ -183,7 +188,7 @@ export class VendingZDM8 {
                         // try if data didn't confirm 
                         
                         this.processPending.push({command,params,transactionID:transactionID+''});
-                        this.command(command, params, transactionID);
+                        // this.command(command, params, transactionID);
 
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)

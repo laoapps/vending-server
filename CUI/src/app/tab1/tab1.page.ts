@@ -348,17 +348,35 @@ export class Tab1Page {
         
         const initVendingWalletCoinBalance = await this.initVendingWalletCoinBalance();
         if (initVendingWalletCoinBalance != IENMessage.success) throw new Error(initVendingWalletCoinBalance);
-
-        this.vendingOnSale.push(...saleitems);
-        this.saleList.push(...this.vendingOnSale);
-        if (this.saleList[0]?.position == 0) this.compensation = 1;
-
-        setTimeout(() => {
-          this.showBills();
-        }, 1000);
-
-
-        resolve(IENMessage.success);
+        if(saleitems.length){
+          this.vendingOnSale.push(...saleitems);
+          this.saleList.push(...this.vendingOnSale);
+          if (this.saleList[0]?.position == 0) this.compensation = 1;
+  
+          setTimeout(() => {
+            this.showBills();
+          }, 1000);
+  
+  
+          resolve(IENMessage.success);
+        }else{
+          this.apiService.recoverSale().subscribe(r=>{
+            console.log(r);
+            if(r.status){
+              ApiService.vendingOnSale.length=0;
+              // r.data.forEach(v=>{
+              //   this.apiService.vendingOnSale.push(v);
+              // })
+              console.log('recover',r.data);
+              
+              ApiService.vendingOnSale.push(...r.data)
+            }
+            this.apiService.toast.create({message:r.message, duration: 200}).then(r=>{
+              r.present();
+            })
+          })
+        }
+        
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
