@@ -2244,12 +2244,12 @@ export class InventoryZDM8 implements IBaseClass {
 
                                             // if transfer back fail database will save data log
                                             if (run_return.data.status != 1) {
+                                                console.log(`return error`, run_return.data);
                                                 machineCashoutMMoneyEntity.update({ LAABReturn: run_return.data }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
                                                     console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                                     if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                                     resolve(error.message);
                                                 }).catch(error => resolve(error.message));
-                                                return resolve(run_return.data.message);
                                             }
 
                                             // if transfer back success database will save hash and info
