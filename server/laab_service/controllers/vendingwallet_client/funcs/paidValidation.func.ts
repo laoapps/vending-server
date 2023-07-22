@@ -174,7 +174,7 @@ export class PaidValidationFunc {
     private TransferCoin(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                const vendingBalance = readMachineBalance(this.machineId);
+                const vendingBalance = await readMachineBalance(this.machineId);
                 const params = {
                     coin_list_id: this.coinListId,
                     coin_code: this.coinCode,
