@@ -19,7 +19,7 @@ export class RemainingbilllocalPage implements OnInit {
 
   }
   findImage(id:number){
-    return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
+    return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
   }
   retryProcessBill(transactionID:string,position:number){
     this.apiService.retryProcessBillLocal(transactionID,position).subscribe(r=>{

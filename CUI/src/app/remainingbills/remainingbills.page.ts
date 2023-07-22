@@ -28,16 +28,16 @@ export class RemainingbillsPage implements OnInit {
 
   }
   findImage(id:number){
-    return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
+    return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
   }
   findPrice(id:number){
-    return this.apiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
+    return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
   }
   retryProcessBill(transactionID:string,position:number){
     if (this.canclick == true) {
       this.apiService.showLoading('',30000);
       this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
-        console.log(`vending on sale`, this.apiService.vendingOnSale);
+        console.log(`vending on sale`, ApiService.vendingOnSale);
         console.log('retryProcessBill',r);
         if(r.status){
           await this.apiService.openSoundComplete();
