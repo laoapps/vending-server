@@ -361,15 +361,25 @@ export class Tab1Page {
           resolve(IENMessage.success);
         }else{
           this.apiService.recoverSale().subscribe(r=>{
-            console.log(r);
+            // console.log(r);
             if(r.status){
               ApiService.vendingOnSale.length=0;
-              // r.data.forEach(v=>{
-              //   this.apiService.vendingOnSale.push(v);
-              // })
               console.log('recover',r.data);
               
               ApiService.vendingOnSale.push(...r.data)
+              this.saleList.push(...this.vendingOnSale);
+              if (this.saleList[0]?.position == 0) this.compensation = 1;
+      
+              setTimeout(() => {
+                this.showBills();
+              }, 1000);
+      
+              this.storage.set(
+                'saleStock',
+                ApiService.vendingOnSale,
+                'stock'
+              );
+              resolve(IENMessage.success);
             }
             this.apiService.toast.create({message:r.message, duration: 200}).then(r=>{
               r.present();
