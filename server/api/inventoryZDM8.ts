@@ -1566,6 +1566,30 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+            router.post(
+                this.path + "/readMachineSaleForAdmin",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId;
+                        // const isActive = req.query['isActive'];
+                        if (!machineId) throw new Error("machine is not exit");
+                        res.send(
+                            PrintSucceeded(
+                                "readMachineSale",
+                                JSON.parse(readMachineSale(machineId)),
+                                EMessage.succeeded
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
+            
 
             router.post(
                 this.path + "/refillMachineSale",

@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import { IENMessage } from '../models/base.model';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import { CloneSaleProcess } from './processes/cloneSale.process';
+import { CuiSalePage } from './cui-sale/cui-sale.page';
 
 @Component({
   selector: 'app-sale',
@@ -18,6 +19,7 @@ import { CloneSaleProcess } from './processes/cloneSale.process';
 })
 export class SalePage implements OnInit {
   @Input()machineId: string;
+  @Input() otp: string;
 
   private loadSaleListProcess: LoadSaleListProcess;
   private cloneSaleProcess: CloneSaleProcess;
@@ -246,6 +248,15 @@ export class SalePage implements OnInit {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
+    });
+  }
+  cuisale() {
+    const props = {
+      machineId: this.machineId,
+      otp: this.otp
+    }
+    this.apiService.showModal(CuiSalePage, props).then(r => {
+      r.present();
     });
   }
 }

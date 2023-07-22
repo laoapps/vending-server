@@ -369,9 +369,9 @@ export class MachinePage implements OnInit {
 
     })
   }
-  sale(s: string) {
+  sale(s: string, otp: string) {
     console.log(`sale id`, s);
-    this.apiService.showModal(SalePage, { machineId: s }).then(ro => {
+    this.apiService.showModal(SalePage, { machineId: s, otp: otp }).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         console.log(r);

@@ -168,6 +168,10 @@ const routes: Routes = [
     path: 'epin-showcode',
     loadChildren: () => import('./epin-subadmin/epin-showcode/epin-showcode.module').then( m => m.EpinShowcodePageModule)
   },
+  {
+    path: 'cui-sale',
+    loadChildren: () => import('./sale/cui-sale/cui-sale.module').then( m => m.CuiSalePageModule)
+  },
 ];
 @NgModule({
   imports: [
