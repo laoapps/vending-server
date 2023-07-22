@@ -323,7 +323,7 @@ export async function readMachineSale(machineId: string) {
         // return fs.readFileSync(p+'/'+machineId,{encoding:'utf-8'});
         console.log();
         
-        return await redisClient.get('_MachineSale_' + machineId);
+        return redisClient.get('_MachineSale_' + machineId);
     } catch (error) {
             console.log('errro readMachineSale',error);
             
