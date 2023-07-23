@@ -15,7 +15,8 @@ export class SocketClientZDM8 {
 
     // creating a custom socket client and connecting it....
     client = new net.Socket();
-    port = 51223;
+    // port = 51223;// new server
+    port = 31223
     host = 'laoapps.com';
     machineid = '12345678';
     otp = '111111';
@@ -30,7 +31,9 @@ export class SocketClientZDM8 {
         this.token = cryptojs.SHA256(this.machineid + this.otp).toString(cryptojs.enc.Hex)
     }
     processorder(transactionID: number) {
-        return axios.post('http://laoapps.com:9006/zdm8', { transactionID,command:'processorder' });
+        // return axios.post('http://laoapps.com:9006/zdm8', { transactionID,command:'processorder' }); // new server
+        return axios.post('http://laoapps.com:9009/zdm8', { transactionID,command:'processorder' });
+
     }
     initWebServer() {
         const app = express();
