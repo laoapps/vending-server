@@ -39,7 +39,7 @@ import { SerialPort } from 'serialport';
             const str = Number(i).toString(16);
             return str.length === 1 ? '0' + str : str;
         }
-        const x = '0110200100020414010000ff92' ;
+        const x = '0110200100020410010100ff32' ;
         console.log('x', x);
 
         port.write(Buffer.from(x, 'hex'), (e) => {

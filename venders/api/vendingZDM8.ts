@@ -44,7 +44,7 @@ export class VendingZDM8 {
                     clearLogsDays();
                     that.countProcessClearLog -= 2;
                 }
-                console.log('pending retry======= ', that.pendingRetry, 'credit pending------', that.creditPending);
+                console.log(that.pendingRetry, 'credit pending------', that.creditPending);
                 const cp = that.creditPending[0];
                 if (cp) {
                     if (that.pendingRetry <= 0) {
@@ -58,7 +58,7 @@ export class VendingZDM8 {
                 }else{
                     that.pendingRetry = 10;
                 }
-
+                console.log('processPendingRetry retry======= ', that.processPendingRetry,);
                 const pp = that.processPending[0];
                 if (pp) {
                     if (that.processPendingRetry <= 0) {
@@ -191,6 +191,7 @@ export class VendingZDM8 {
                         
                         this.processPending.push({command,params,transactionID:transactionID+''});
                         // this.command(command, params, transactionID);
+                        // 01 10 20 01 00 02 04 10 01 01 00 ff 32
                         // 01 10 20 01 00 02 04 14 01 00 00 ff 92
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
