@@ -172,7 +172,8 @@ export class SocketClientZDM8 {
         }, 5000);
     }
     send(data: any, transactionID: number, command = EMACHINE_COMMAND.status) {
-        const req = {} as IReqModel;
+        try {
+              const req = {} as IReqModel;
         req.command = command;
         req.time = new Date().toString();
         req.token = this.token;
@@ -182,6 +183,11 @@ export class SocketClientZDM8 {
             if (e)
                 console.log('SEND error on send', e);
         });
+        } catch (error) {
+            console.log('send error',error);
+            
+        }
+      
     }
     close() {
         this.client.end();

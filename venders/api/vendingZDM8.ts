@@ -81,31 +81,33 @@ export class VendingZDM8 {
         this.port.on("open", function () {
             console.log('open serial communication');
             // Listens to incoming data
-            that.port.on('data', function (data: any) {
-                console.log('data', data);
-                b += data.toString('hex');
-                console.log('buffer', b);
-                
+            
+        });
+        that.port.on('data', function (data) {
+            console.log('data', data.toString('hex'));
+            b += data.toString('hex');
+            console.log('hex buffer', b);
+            
 
-                // read bill accepted
-                // const t = Number('-21' + moment.now());
-                // that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
-                // send to server
-                //sock.send(buffer, that.transactionID);    
-                // writeLogs(b, -1);
+            // read bill accepted
+            // const t = Number('-21' + moment.now());
+            // that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
+            // send to server
+            //sock.send(buffer, that.transactionID);    
+            // writeLogs(b, -1);
 
 
-                // if (buffer.length == 4) {
-                // confirm any 
-                ///01 10 20 01 00 02 1B C8 confirm motor control
-                if('0110200100021BC8'.toLowerCase()==b){
-                    that.processPending.shift();
-                }
-                   
-                sock.send(b, that.transactionID);      
-                that.transactionID = -1;
-                b = '';
-            });
+            // if (buffer.length == 4) {
+            // confirm any 
+            // 01 86 04 43 a3
+            ///01 10 20 01 00 02 1B C8 confirm motor control
+            if('0110200100021bc8'.toLowerCase()==b.toLowerCase()){
+                that.processPending.shift();
+            }
+               
+            sock.send(b, that.transactionID);      
+            that.transactionID = -1;
+            b = '';
         });
 
     }
@@ -181,7 +183,7 @@ export class VendingZDM8 {
                     case EZDM8_COMMAND.shippingcontrol:
                         const slot = int2hex(params.slot);
                         const isspring = '01';
-                        const dropdetect = '00';
+                        const dropdetect = '01';
                         const liftsystem = '00';
                         buff = [pcbarray, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
                         check = this.checkSum(buff)
@@ -189,7 +191,7 @@ export class VendingZDM8 {
                         
                         this.processPending.push({command,params,transactionID:transactionID+''});
                         // this.command(command, params, transactionID);
-
+                        // 01 10 20 01 00 02 04 14 01 00 00 ff 92
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
                         // ● 10: Function code
