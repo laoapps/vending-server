@@ -16,6 +16,10 @@ import { SerialPort } from 'serialport';
             return '';
         }
     }
+    function int2hex(i: number) {
+        const str = Number(i).toString(16);
+        return str.length === 1 ? '0' + str : str;
+    }
 
     // const buff = ['01', '03', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00']
 
@@ -35,11 +39,11 @@ import { SerialPort } from 'serialport';
             b += new String(data);
             console.log('buffer', b);
         });
-        function int2hex(i: number) {
-            const str = Number(i).toString(16);
-            return str.length === 1 ? '0' + str : str;
-        }
-        const x = '0110200100020410010100ff32' ;
+      
+        // 0110200100020410010100ff32
+        const buff =['01','10','20','01','00','02','04','14','01','00','00'];
+        const check = checkSum(buff)
+        const x =  buff.join('') + check ;
         console.log('x', x);
 
         port.write(Buffer.from(x, 'hex'), (e) => {
