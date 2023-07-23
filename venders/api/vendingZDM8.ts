@@ -37,7 +37,8 @@ export class VendingZDM8 {
             try {
                 console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate));
 
- 
+                // TODO : LATER
+                // if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
                 if (that.countProcessClearLog <= 0) {
                     that.countProcessClearLog = 60 * 60 * 24;
                 } else {
