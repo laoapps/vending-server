@@ -21,6 +21,7 @@ import axios from "axios";
   providedIn: 'root'
 })
 export class ApiService {
+  muteSound=false;
 
   howtoVideoPlayList: Array<any> = [
     {
@@ -459,6 +460,16 @@ export class ApiService {
 
 
   audioElement: HTMLAudioElement = {} as any;
+  playSound(path:string){
+    try {
+      if(this.muteSound)return;
+      this.audioElement.src = path;
+      this.audioElement.play();
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
   simpleMessage(text: string, time: number = 2000) {
     this.toast.create({ message: text, duration: time }).then(r => r.present());
   }
@@ -473,9 +484,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-please-report.mp3',
     ]
       try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -490,10 +499,8 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-let-us-serve-you3.mp3',
         '../../assets/lao-voices/lo-la-let-us-serve-you4.mp3',
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -507,10 +514,8 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-waiting-for-your-item.mp3',
         '../../assets/lao-voices/lo-la-m-waiting-for-your-item2.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -522,10 +527,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-f-view-video-for-more-info.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -542,10 +545,8 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-please-buy-more.mp3',
         '../../assets/lao-voices/lo-la-m-thank-you.mp3',
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -560,10 +561,8 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-wish-much-luck.mp3',
         '../../assets/lao-voices/lo-la-m-wish-the-best-luck-always.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -575,10 +574,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-cashout-on-the-right-hand.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -590,10 +587,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-completed.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -605,10 +600,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-what-is-your-payment-method.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -620,10 +613,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-laab-payment.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -635,10 +626,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-mmoney-payment.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -650,10 +639,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-input-laab-phonenumber.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -665,10 +652,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-input-mmoney-phonenumber.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -680,10 +665,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-input-secret-password.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -695,10 +678,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-laab-increased.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -710,10 +691,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-other-services.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -726,10 +705,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-please-select.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -741,10 +718,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-please-topup-or-insert-bank-note.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -756,10 +731,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-select-target.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -771,10 +744,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-target-is-epin.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -786,10 +757,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-transfer-to-mmoney.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -801,10 +770,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-transfer-to-laab.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -816,10 +783,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-tickets-exist.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
@@ -831,10 +796,8 @@ export class ApiService {
       const arr =[
         '../../assets/lao-voices/lo-la-m-we-have-some-changes.mp3'
     ]
-      try {
-        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
-        this.audioElement.play();
-
+       try {
+        this.playSound( arr[Math.floor(Math.random() * arr.length)]);
         resolve(IENMessage.success);
       } catch (error) {
         resolve(error.message);
