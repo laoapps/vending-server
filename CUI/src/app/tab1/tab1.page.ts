@@ -404,6 +404,17 @@ export class Tab1Page {
         this.vendingOnSale.forEach((v) => (v.updatedAt = u));
         s.unshift(...this.vendingOnSale);
         this.storage.set(k + '_', s, k);
+
+        // setTimeout(() => {
+        //   this.apiService.saveSale(s).subscribe(r=>{
+        //     console.log(r);
+        //     if(r.status){
+        //       console.log(`save sale success`);
+        //     } else {
+        //       this.apiService.simpleMessage(IENMessage.saveSaleFail);
+        //     }
+        //   }); 
+        // }, 500);
       });
 
       // } else {

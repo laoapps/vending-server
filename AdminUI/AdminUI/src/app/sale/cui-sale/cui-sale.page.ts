@@ -12,6 +12,7 @@ export class CuiSalePage implements OnInit {
 
   @Input() machineId: string;
   @Input() otp: string;
+  @Input() _l: Array<any>;
 
   private cuisaleProcess: CUISaleProcess;
 
@@ -42,12 +43,19 @@ export class CuiSalePage implements OnInit {
         const run = await this.cuisaleProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.lists = run.data[0].lists.data;
+        console.log(`list`, this.lists);
+        if (this.lists != undefined && this.lists.length > 0) {
+          const instock = this.lists.filter(item => item.stock.id != -1);
+          for(let i = 0; i < instock.length; i++) {
+            for(let j = 0; j < this._l.length; j++) {
+              if (instock[i].stock != '' && instock[i].stock.image == this._l[j].stock.imageurl) {
+                instock[i].stock.image = this._l[j].stock.image;
+              }
+            }
+          }
+          this.lists = instock;
+        }
 
-        this.lists.sort((a, b) => {
-          if (a.position < b.position) return -1;
-          return 1;
-        });
-        console.log(`sort list`, this.lists);
         resolve(IENMessage.success);
 
 

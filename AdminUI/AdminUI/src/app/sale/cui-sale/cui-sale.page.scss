@@ -55,3 +55,71 @@ ion-content {
 .space {
     margin-top: 55px;
 }
+
+.cuisale-container {
+    margin: 10px;
+
+    .list-container {
+        display: grid;
+        grid-template-columns: repeat(5,1fr);
+        grid-gap: 10px;
+
+        .item {
+            text-decoration: none;
+            background: #fff;
+            box-shadow: 0px 2px 5px rgba(0,0,0, .2);
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            transition: .2s;
+
+            .object {
+                display: flex;
+                justify-content: space-between;
+
+                .text {
+                    color: #333;
+                    padding: 0px 5px;
+                }
+            }
+
+            .item-header {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 25px;
+
+                img {
+                    width: 100px;
+                    height: 100px;
+                }
+            }
+            .item-body {
+                margin-top: 15px;
+                display: flex;
+                flex-direction: column;
+                
+
+                .name {
+                    color: #333;
+                    font-size: 16px;
+                    font-weight: bold;
+                    text-align: center;
+                }
+
+                .detail {
+                    display: flex;
+                    justify-content: center;
+                    gap: 10px;
+                    color: #333;
+                    
+                    i { color: #A41D4F; }
+                }
+            }
+        }
+        .item:hover {
+            background: #f5f6f7;
+        }
+    }
+}

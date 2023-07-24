@@ -64,7 +64,7 @@ export class SalePage implements OnInit {
         }
         const run = await this.loadSaleListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-
+        console.log(`---->`, run.data[0].lists);
         this._l.push(...run.data[0].lists);
 
         resolve(IENMessage.success);
@@ -253,7 +253,8 @@ export class SalePage implements OnInit {
   cuisale() {
     const props = {
       machineId: this.machineId,
-      otp: this.otp
+      otp: this.otp,
+      _l: this._l
     }
     this.apiService.showModal(CuiSalePage, props).then(r => {
       r.present();

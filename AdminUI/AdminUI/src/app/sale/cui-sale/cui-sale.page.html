@@ -3,7 +3,7 @@
   <div class="section-navbar">
     <div class="left">
       <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-      <div class="item-text">CUI Sale</div>
+      <div class="item-text">CUI Sale - Machine ID {{ machineId }}</div>
     </div>
     <div class="right">
 
@@ -14,13 +14,26 @@
 
   <div class="cuisale-container">
 
+
+
     <div class="list-container">
-      <a *ngFor href="javascript:void(0)" class="item">
-        <div class="image">
-          <img src="" alt="">
+      <a *ngFor="let list of lists; let i = index" href="javascript:void(0)" class="item">
+        <div class="object">
+          <div class="text"><i class="fa-solid fa-check-to-slot"></i> {{ list?.position }}</div>
         </div>
-        <div class="text">
-          <div class="qty">0</div>
+        <div class="item-header">
+          <img src="{{ list?.stock?.image }}" alt="">
+        </div>
+        <div class="item-body">
+
+          <div class="name">{{ list.stock.name }}</div>
+          <div class="detail">
+            <div class="left"><i class="fa-solid fa-money-bill-wave"></i> {{ list?.stock?.price | number }}</div>
+            <div class="right"><i class="fa-solid fa-box"></i> {{ list?.stock?.qtty | number }}</div>
+          </div>
+
+        </div>
+        <div class="item-footer">
         </div>
       </a>
     </div>
