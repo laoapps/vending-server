@@ -21,6 +21,52 @@ import axios from "axios";
   providedIn: 'root'
 })
 export class ApiService {
+  vendingGoPageSound() {
+    this.soundPaymentMethod();
+    setTimeout(() => {
+      this.soundMmoneyPaymentMethod();
+    }, 2000);
+    setTimeout(() => {
+      this.soundLaabPaymentMethod();
+    }, 3000);
+  }
+  epinCashOutPageSound() {
+    this.soundTargetEPIN();
+    setTimeout(() => {
+      this.soundInputSecretPassword();
+    }, 2000);
+  }
+  initGreetingSound() {
+    this.soundGreeting();
+              setTimeout(() => {
+                this.soundPleaseVisit();
+              }, 5000);
+  
+              setTimeout(() => {
+                
+                if(new Date().getTime()%2){
+                  setTimeout(() => {
+                    this.soundPointToCashOut();
+                  }, 5000);
+                  setTimeout(() => {
+                    this.soundPleaseViewVideo();
+                  }, 10000);
+                  setTimeout(() => {
+                    this.soundCheckTicketsExist();
+                  }, 15000);
+                  setTimeout(() => {
+                    if(this.cash>0)this.soundMachineHasSomeChanges();
+                  }, 20000);
+                }
+                
+              }, 10000);
+  }
+  endProcessBillSound() {
+     this.soundCompleted();
+          // setTimeout(() => {
+          //     this.soundThankYou();
+          // }, 2000);
+  }
   muteSound=false;
 
   howtoVideoPlayList: Array<any> = [
@@ -178,10 +224,7 @@ export class ApiService {
         // this.clearWaitingT();
 
         // PLAY SOUNDS
-        this.soundCompleted();
-        setTimeout(() => {
-          this.soundThankYou();
-        }, 2000);
+        this.endProcessBillSound();
         that.toast.create({ message, duration: 2000 }).then(r => {
           r.present();
         });

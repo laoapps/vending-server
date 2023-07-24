@@ -190,29 +190,7 @@ export class Tab1Page {
 
           setInterval(()=>{
             if(this.autopilot.auto>=6){
-              this.apiService.soundGreeting();
-              setTimeout(() => {
-                this.apiService.soundPleaseVisit();
-              }, 5000);
-  
-              setTimeout(() => {
-                
-                if(new Date().getTime()%2){
-                  setTimeout(() => {
-                    this.apiService.soundPointToCashOut();
-                  }, 5000);
-                  setTimeout(() => {
-                    this.apiService.soundPleaseViewVideo();
-                  }, 10000);
-                  setTimeout(() => {
-                    this.apiService.soundCheckTicketsExist();
-                  }, 15000);
-                  setTimeout(() => {
-                    if(this.apiService.cash>0)this.apiService.soundMachineHasSomeChanges();
-                  }, 20000);
-                }
-                
-              }, 10000);
+              this.apiService.initGreetingSound();
               this.autopilot.auto=0;
             }else{
               this.autopilot.auto++;
