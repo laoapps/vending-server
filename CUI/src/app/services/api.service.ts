@@ -96,8 +96,7 @@ export class ApiService {
   constructor(
     public controlMenuService: ControlMenuService,
 
-
-
+   
     public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
@@ -113,7 +112,8 @@ export class ApiService {
     this.machineId.otp = localStorage.getItem('otp') || '111111';
     this.wsapi.connect(this.wsurl, this.machineId.machineId, this.machineId.otp);
 
-
+ // LOAD MUTESOUND SETTING HERE 
+      this.muteSound;
     this.wsapi.aliveSubscription.subscribe(r => {
       console.log('ALIVE', r);
 
