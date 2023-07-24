@@ -29,6 +29,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
   }
 
   async ngOnInit() {
+    this.apiService.autopilot.auto=0;
     this.loadQR();
     this.initTime();
     await this.balanceRefresh();
@@ -85,6 +86,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
               count = 0;
             } else {
               clearInterval(this.counterRefreshBalance);
+              this.apiService.soundLaabIncreased();
               this.apiService.simpleMessage(IENMessage.laabCashinSuccess);
               this.apiService.modal.dismiss();
               resolve(IENMessage.success);

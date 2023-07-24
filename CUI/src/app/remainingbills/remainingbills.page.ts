@@ -39,6 +39,9 @@ export class RemainingbillsPage implements OnInit {
         console.log('retryProcessBill',r);
         if(r.status){
           await this.apiService.soundCompleted();
+          setTimeout(() => {
+              this.apiService.soundThankYou();
+          }, 2000);
           this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
             r.present();
           });

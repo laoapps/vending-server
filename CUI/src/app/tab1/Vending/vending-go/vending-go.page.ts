@@ -29,6 +29,7 @@ export class VendingGoPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.apiService.autopilot.auto=0;
     this.summarizeOrder = JSON.parse(JSON.stringify(this.orders));
     this.summarizeOrder.forEach((item) => (item.stock.image = ''));
 
@@ -83,6 +84,9 @@ export class VendingGoPage implements OnInit {
                 })
                 .then((r) => {
                   r.present();
+
+
+            this.apiService.soundMmoneyPaymentMethod();
                 });
             });
           // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
@@ -145,6 +149,7 @@ export class VendingGoPage implements OnInit {
           .create({ component: LaabGoPage, componentProps: props })
           .then((r) => {
             r.present();
+            this.apiService.soundLaabPaymentMethod();
           });
       } catch (error) {
         await this.apiService.soundPleaseTopUpValue();

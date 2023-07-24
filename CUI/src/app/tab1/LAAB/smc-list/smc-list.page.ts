@@ -39,6 +39,7 @@ export class SmcListPage implements OnInit {
   }
 
   async ngOnInit() {
+    this.apiService.autopilot.auto=0;
     this.loadHideList();
     await this.loadSMC();
 

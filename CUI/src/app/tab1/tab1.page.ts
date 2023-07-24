@@ -111,7 +111,7 @@ export class Tab1Page {
   _howToT: any;
   _howToPage: HTMLIonModalElement;
   isFirstLoad =true;
-  autopilot=0;
+  autopilot={auto:0};
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -123,7 +123,7 @@ export class Tab1Page {
     private WSAPIService: WsapiService,
     private cashingService: AppcachingserviceService,
   ) {
-
+    this.autopilot=this.apiService.autopilot;
 
 
     this.dynamicControlMenu();
@@ -189,7 +189,7 @@ export class Tab1Page {
         if(this.isFirstLoad){
 
           setInterval(()=>{
-            if(this.autopilot>=6){
+            if(this.autopilot.auto>=6){
               this.apiService.soundGreeting();
               setTimeout(() => {
                 this.apiService.soundPleaseVisit();
@@ -213,9 +213,9 @@ export class Tab1Page {
                 }
                 
               }, 10000);
-              this.autopilot=0;
+              this.autopilot.auto=0;
             }else{
-              this.autopilot++;
+              this.autopilot.auto++;
             }
            
           },10000)
@@ -319,7 +319,7 @@ export class Tab1Page {
 
             if(this.saleList?.length) this.saleList.length=0;
 
-            // console.log(' this.vendingOnSale.length 2', this.vendingOnSale.length);
+            // console.log(' this.vendingOnSale.length 2', this.~vendingOnSale.length);
             // console.log(`sale list der 1`, this.saleList.length);
 
             this.vendingOnSale.push(...saleitems);
@@ -455,7 +455,7 @@ export class Tab1Page {
     console.log(x, this.getPassword());
 
     // if (environment.production)
-      if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.machineId?.otp) || x.length < 12) return;
+      if (!this.getPassword().endsWith(x?.substring(6))||!x?.startsWith(this.machineId?.otp) || x?.length < 12) return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then((r) => {
       r.data;
@@ -681,11 +681,12 @@ export class Tab1Page {
 
   addOrder(x: IVendingMachineSale) {
     try {
-      this.autopilot=0;
+      this.autopilot.auto=0;
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
       
       if (this.WSAPIService?.setting_allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
+        this.apiService.soundSystemError();
         const alert = Swal.fire({
           icon: 'error',
           title: 'Vender is out of service',

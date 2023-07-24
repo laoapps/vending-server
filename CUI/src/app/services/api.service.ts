@@ -82,7 +82,7 @@ export class ApiService {
   clientId = {} as IClientId;
 
   wsAlive = {} as IAlive;
-
+  autopilot={auto:0};
   public static vendingOnSale = new Array<IVendingMachineSale>();
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
@@ -90,7 +90,7 @@ export class ApiService {
   test = { test: false };
   static __T: any;
   static waiting_T: any
-  audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
+ 
   _machineStatus = { status: {} as IMachineStatus } as any;
   constructor(
     public controlMenuService: ControlMenuService,
@@ -177,8 +177,10 @@ export class ApiService {
         // this.clearWaitingT();
 
         // PLAY SOUNDS
-        that.audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
-        that.audio.play();
+        this.soundCompleted();
+        setTimeout(() => {
+          this.soundThankYou();
+        }, 2000);
         that.toast.create({ message, duration: 2000 }).then(r => {
           r.present();
         });
@@ -189,8 +191,7 @@ export class ApiService {
 
       } else if (!r.position) {
         // PLAY SOUNDS
-        this.audio = new Audio('assets/labob.mp3');
-        this.audio.play();
+        this.soundSystemError();
         this.alert.create({
           header: 'Alert', message, buttons: [
             {
@@ -677,7 +678,7 @@ export class ApiService {
   soundInputSecretPassword(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       const arr =[
-        '../../assets/lao-voices/lo-la-secret-password.mp3'
+        '../../assets/lao-voices/lo-la-m-input-secret-password.mp3'
     ]
       try {
         this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];

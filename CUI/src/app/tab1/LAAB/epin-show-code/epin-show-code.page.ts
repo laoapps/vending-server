@@ -18,6 +18,7 @@ export class EpinShowCodePage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.apiService.autopilot.auto=0;
     this.loadQR();
   }
 

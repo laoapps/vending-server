@@ -32,6 +32,7 @@ export class MmoneyCashoutPage implements OnInit {
   }
 
   ngOnInit() {
+    this.apiService.autopilot.auto=0;
     this.loadNumberList();
     this.apiService.soundInputMmoneyPhonenumber();
   }

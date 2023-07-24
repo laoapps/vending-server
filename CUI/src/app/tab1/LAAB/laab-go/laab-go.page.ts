@@ -29,6 +29,7 @@ export class LaabGoPage implements OnInit {
   }
 
   ngOnInit() {
+    this.apiService.autopilot.auto=0;
     console.log(`total`, this.total, this.balance);
   }
 

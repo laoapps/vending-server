@@ -28,6 +28,8 @@ export class StackCashoutPage implements OnInit {
   }
 
   ngOnInit() {
+    this.apiService.autopilot.auto=0;
+    this.apiService.soundSelectTarget();
     this.dynamicControlMenu();
   }
 

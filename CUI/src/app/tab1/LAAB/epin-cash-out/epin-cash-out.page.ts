@@ -36,8 +36,13 @@ export class EpinCashOutPage implements OnInit {
   }
 
   ngOnInit() {
+    this.apiService.autopilot.auto=0;
     this.loadNumberList();
     this.apiService.soundTargetEPIN();
+    setTimeout(() => {
+      this.apiService.soundInputSecretPassword();
+    }, 2000);
+   
   }
   loadNumberList(): void {
     for(let i = 1; i < 10; i++) {

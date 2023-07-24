@@ -25,7 +25,7 @@ export class HowToPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    
+    this.apiService.autopilot.auto=0;
 
     this.lists = JSON.parse(JSON.stringify(this.apiService.howtoVideoPlayList));
     this.loadAutoPlayState();
