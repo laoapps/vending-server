@@ -33,6 +33,7 @@ export class LaabCashoutPage implements OnInit {
 
   ngOnInit() {
     this.loadNumberList();
+    this.apiService.soundInputLaabPhonenumber();
   }
 
   loadNumberList(): void {

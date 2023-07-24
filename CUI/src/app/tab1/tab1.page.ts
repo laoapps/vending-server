@@ -80,7 +80,7 @@ export class Tab1Page {
   _machineStatus = { status: {} as IMachineStatus } as any;
 
   production = environment.production;
-  audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
+
 
   mmLogo = 'assets/icon/mmoney.png';
 
@@ -111,6 +111,7 @@ export class Tab1Page {
   _howToT: any;
   _howToPage: HTMLIonModalElement;
   isFirstLoad =true;
+  autopilot=0;
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -122,6 +123,9 @@ export class Tab1Page {
     private WSAPIService: WsapiService,
     private cashingService: AppcachingserviceService,
   ) {
+
+
+
     this.dynamicControlMenu();
 
     this._machineStatus = this.apiService._machineStatus;
@@ -183,6 +187,39 @@ export class Tab1Page {
         // this.loadSaleList();
         // this.initStock();
         if(this.isFirstLoad){
+
+          setInterval(()=>{
+            if(this.autopilot>=6){
+              this.apiService.soundGreeting();
+              setTimeout(() => {
+                this.apiService.soundPleaseVisit();
+              }, 5000);
+  
+              setTimeout(() => {
+                
+                if(new Date().getTime()%2){
+                  setTimeout(() => {
+                    this.apiService.soundPointToCashOut();
+                  }, 5000);
+                  setTimeout(() => {
+                    this.apiService.soundPleaseViewVideo();
+                  }, 10000);
+                  setTimeout(() => {
+                    this.apiService.soundCheckTicketsExist();
+                  }, 15000);
+                  setTimeout(() => {
+                    if(this.apiService.cash>0)this.apiService.soundMachineHasSomeChanges();
+                  }, 20000);
+                }
+                
+              }, 10000);
+              this.autopilot=0;
+            }else{
+              this.autopilot++;
+            }
+           
+          },10000)
+
           this.loadStock();
           this.isFirstLoad=false;
         }
@@ -513,8 +550,7 @@ export class Tab1Page {
             });
         }
         setTimeout(() => {
-          this.audio = new Audio('assets/mixkit-female-says-thank-you-380.wav');
-          this.audio.play();
+          this.apiService.soundThankYou();
           this.apiService.dismissLoading();
         }, 3000);
       });
@@ -634,6 +670,7 @@ export class Tab1Page {
 
   addOrder(x: IVendingMachineSale) {
     try {
+      this.autopilot=0;
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
       
       if (this.WSAPIService?.setting_allowVending == false) {
@@ -809,6 +846,7 @@ export class Tab1Page {
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = run.data[0].vendingWalletCoinBalance;
+        if(this.apiService.cash>0) this.apiService.soundMachineHasSomeChanges();
         resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -836,7 +874,7 @@ export class Tab1Page {
 
         resolve(IENMessage.success);
       } catch (error) {
-        await this.apiService.openSoundSystemError();
+        await this.apiService.soundSystemError();
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -938,7 +976,7 @@ export class Tab1Page {
         }
         console.log(`sum total`, sum_total);
         if (this.apiService.cash < sum_total) {
-          await this.apiService.openSoundPleaseInsertBanknotes();
+          await this.apiService.soundPleaseTopUpValue();
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
         const sum_refund = this.apiService.cash - sum_total;
@@ -1056,7 +1094,7 @@ export class Tab1Page {
       try {
         if (this.apiService.cash == 0)
           throw new Error(IENMessage.thereIsNotBalance);
-
+       
         const props = {};
         this.apiService.modal
           .create({ component: LaabCashoutPage, componentProps: props })
@@ -1066,6 +1104,7 @@ export class Tab1Page {
           });
       } catch (error) {
         this.apiService.simpleMessage(error.message);
+        this.apiService.soundPleaseTopUpValue();
         resolve(error.message);
       }
     });
@@ -1082,6 +1121,7 @@ export class Tab1Page {
             .showModal(RemainingbillsPage, { r: this.apiService.pb })
             .then((r) => {
               r.present();
+             
             });
       } else {
         this.apiService.toast

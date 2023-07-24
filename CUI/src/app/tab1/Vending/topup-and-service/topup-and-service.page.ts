@@ -20,6 +20,7 @@ export class TopupAndServicePage implements OnInit {
 
   ngOnInit() {
     this.lists = topupServiceMenuJSON;
+    this.apiService.soundOtherServices();
   }
 
   close() {

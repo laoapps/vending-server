@@ -23,9 +23,7 @@ export class RemainingbillsPage implements OnInit {
   async ngOnInit() {
     console.log('R',this.r);
     console.log(`here`);
-    await this.apiService.openSoundPleaseSelect();
-    
-
+    await this.apiService.soundPleaseSelect();
   }
   findImage(id:number){
     return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
@@ -40,7 +38,7 @@ export class RemainingbillsPage implements OnInit {
         console.log(`vending on sale`, ApiService.vendingOnSale);
         console.log('retryProcessBill',r);
         if(r.status){
-          await this.apiService.openSoundComplete();
+          await this.apiService.soundCompleted();
           this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
             r.present();
           });
@@ -60,7 +58,7 @@ export class RemainingbillsPage implements OnInit {
           // this.apiService.modal.dismiss();
           // this.apiService.myTab1.reshowBills(count);
         } else{
-          await this.apiService.openSoundSystemError();
+          await this.apiService.soundSystemError();
         }
         this.apiService.simpleMessage(r.message);
         setTimeout(()=>{

@@ -1,17 +1,17 @@
 export const howToVideoJSON = [
     {
         video: '../../../../assets/video-how-to/howto1.webm',
-        title: 'How to1',
-        subtitle: 'Video is expend about how to use basic vending function'
+        title: 'How to 1',
+        subtitle: '1'
     },
     {
         video: '../../../../assets/video-how-to/howto2.webm',
         title: 'How to 2',
-        subtitle: 'Video is expend about how to use basic vending function'
+        subtitle: '2'
     },
     {
         video: '../../../../assets/video-how-to/howto3.webm',
         title: 'How to 3',
-        subtitle: 'Video is expend about how to use basic vending function'
+        subtitle: '3'
     }
 ]
