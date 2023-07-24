@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { IonicStorageService } from '../ionic-storage.service';
 import { ApiService } from '../services/api.service';
@@ -12,7 +12,7 @@ import { AlertController } from '@ionic/angular';
   templateUrl: './stocksale.page.html',
   styleUrls: ['./stocksale.page.scss'],
 })
-export class StocksalePage implements OnInit {
+export class StocksalePage implements OnInit,OnDestroy {
 
   saleStock=new Array <IVendingMachineSale>();
   stock = new Array<IStock>();
@@ -27,6 +27,18 @@ export class StocksalePage implements OnInit {
     this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
     console.log(`TEST SALE STOCK`, this.saleStock);
     // this.stock=apiService.stock;
+  }
+  ngOnDestroy(): void {
+    this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r=>{
+      console.log(r);
+      
+      if(r.status){
+
+      }
+      this.apiService.toast.create({message:r.message, duration: 2000}).then(r=>{
+        r.present();
+      })
+    })
   }
   refillAll(){
     const conf =confirm('Are you sure ?');
@@ -52,7 +64,7 @@ export class StocksalePage implements OnInit {
     alert('Are you going to save sale to online');
     const p=prompt('please type 12345678');
     if(p=='12345678'){
-      this.apiService.showLoading();
+      await this.apiService.showLoading();
       const x =[];
       ApiService.vendingOnSale.forEach(v=>{
         const e= JSON.parse(JSON.stringify(v));

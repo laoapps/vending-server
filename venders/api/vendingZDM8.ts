@@ -37,14 +37,15 @@ export class VendingZDM8 {
             try {
                 console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate));
 
- 
+                // TODO : LATER
+                // if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
                 if (that.countProcessClearLog <= 0) {
                     that.countProcessClearLog = 60 * 60 * 24;
                 } else {
                     clearLogsDays();
                     that.countProcessClearLog -= 2;
                 }
-                console.log('pending retry======= ', that.pendingRetry, 'credit pending------', that.creditPending);
+                console.log(that.pendingRetry, 'credit pending------', that.creditPending);
                 const cp = that.creditPending[0];
                 if (cp) {
                     if (that.pendingRetry <= 0) {
@@ -58,7 +59,7 @@ export class VendingZDM8 {
                 }else{
                     that.pendingRetry = 10;
                 }
-
+                console.log('processPendingRetry retry======= ', that.processPendingRetry,);
                 const pp = that.processPending[0];
                 if (pp) {
                     if (that.processPendingRetry <= 0) {
@@ -81,26 +82,33 @@ export class VendingZDM8 {
         this.port.on("open", function () {
             console.log('open serial communication');
             // Listens to incoming data
-            that.port.on('data', function (data: any) {
-                console.log('data', data);
-                b += data.toString('hex');
-                console.log('buffer', b);
-                
+            
+        });
+        that.port.on('data', function (data) {
+            console.log('data', data.toString('hex'));
+            b += data.toString('hex');
+            console.log('hex buffer', b);
+            
 
-                // read bill accepted
-                // const t = Number('-21' + moment.now());
-                // that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
-                // send to server
-                //sock.send(buffer, that.transactionID);    
-                // writeLogs(b, -1);
+            // read bill accepted
+            // const t = Number('-21' + moment.now());
+            // that.creditPending.push({ data: cryptojs.SHA256(that.sock?.machineid + '' + that.getNoteValue(b)).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE });
+            // send to server
+            //sock.send(buffer, that.transactionID);    
+            // writeLogs(b, -1);
 
 
-                // if (buffer.length == 4) {
-                // confirm any 
-                sock.send(b, that.transactionID);      
-                that.transactionID = -1;
-                b = '';
-            });
+            // if (buffer.length == 4) {
+            // confirm any 
+            // 01 86 04 43 a3
+            ///01 10 20 01 00 02 1B C8 confirm motor control
+            if('0110200100021bc8'.toLowerCase()==b.toLowerCase()){
+                that.processPending.shift();
+            }
+               
+            sock.send(b, that.transactionID);      
+            that.transactionID = -1;
+            b = '';
         });
 
     }
@@ -183,8 +191,9 @@ export class VendingZDM8 {
                         // try if data didn't confirm 
                         
                         this.processPending.push({command,params,transactionID:transactionID+''});
-                        this.command(command, params, transactionID);
-
+                        // this.command(command, params, transactionID);
+                        // 01 10 20 01 00 02 04 10 01 01 00 ff 32
+                        // 01 10 20 01 00 02 04 14 01 00 00 ff 92
                         // 01 10 20 01 00 02 04 00 01 01 00 FB F2
                         // ● 01: Slave address (driver board address, settable)
                         // ● 10: Function code

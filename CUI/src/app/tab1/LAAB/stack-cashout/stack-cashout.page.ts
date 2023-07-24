@@ -48,6 +48,7 @@ export class StackCashoutPage implements OnInit {
           });
       } catch (error) {
         this.apiService.simpleMessage(error.message);
+        this.apiService.soundPleaseTopUpValue();
         resolve(error.message);
       }
     });
@@ -69,6 +70,7 @@ export class StackCashoutPage implements OnInit {
           });
       } catch (error) {
         this.apiService.simpleMessage(error.message);
+        this.apiService.soundPleaseTopUpValue();
         resolve(error.message);
       }
     });

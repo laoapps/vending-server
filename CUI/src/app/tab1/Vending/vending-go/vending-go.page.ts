@@ -40,6 +40,13 @@ export class VendingGoPage implements OnInit {
     }
     
     console.log(`sum total`, this.total);
+    this.apiService.soundPaymentMethod();
+    setTimeout(() => {
+      this.apiService.soundMmoneyPaymentMethod();
+    }, 2000);
+    setTimeout(() => {
+      this.apiService.soundLaabPaymentMethod();
+    }, 3000);
   }
 
   buyManyMMoney() {
@@ -102,7 +109,6 @@ export class VendingGoPage implements OnInit {
       try {
 
         if (this.apiService.cash < this.total) {
-          await this.apiService.openSoundPleaseInsertBanknotes();
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
         const sum_refund = this.apiService.cash - this.total;
@@ -141,6 +147,7 @@ export class VendingGoPage implements OnInit {
             r.present();
           });
       } catch (error) {
+        await this.apiService.soundPleaseTopUpValue();
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }

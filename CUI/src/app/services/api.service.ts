@@ -28,7 +28,7 @@ export class ApiService {
       video: 'assets/video-how-to/howto1.webm',
       cover: 'assets/video-how-to/howto1-cover.webp',
       title: 'How to 1',
-      subtitle: 'Video is expend about how to use basic vending function',
+      subtitle: 'Step 1',
       file: ''
     },
     {
@@ -36,7 +36,7 @@ export class ApiService {
       video: 'assets/video-how-to/howto2.webm',
       cover: 'assets/video-how-to/howto2-cover.png',
       title: 'How to 2',
-      subtitle: 'Video is expend about how to use basic vending function',
+      subtitle: 'Step 2',
       file: ''
     },
     {
@@ -44,7 +44,7 @@ export class ApiService {
       video: 'assets/video-how-to/howto3.webm',
       cover: 'assets/video-how-to/howto3-cover.png',
       title: 'How to 3',
-      subtitle: 'Video is expend about how to use basic vending function',
+      subtitle: 'Step 3',
       file: ''
     }
   ];
@@ -130,8 +130,11 @@ export class ApiService {
         //   }, 3000);
         //   this.validateDB();
         // }
-        if (r.balance)
+        if (r.balance){
+          if(this.cash<r.balance)this.soundLaabIncreased();
           this.cash = r.balance;
+        }
+         
 
         this._machineStatus.status = r.data.mstatus;
         this._machineStatus.status.temp = hex2dec(this._machineStatus.status.temp)
@@ -460,10 +463,16 @@ export class ApiService {
   }
 
 
-  openSoundPleaseSelect(): Promise<any> {
+  soundSystemError(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-f-call-center-service.mp3',
+        '../../assets/lao-voices/lo-la-f-sorry-check-the-system.mp3',
+        '../../assets/lao-voices/lo-la-m-sorry-check-the-system.mp3',
+        '../../assets/lao-voices/lo-la-m-please-report.mp3',
+    ]
       try {
-        this.audioElement.src = '../../assets/machine_sound/please_select.mp3';
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -472,11 +481,16 @@ export class ApiService {
       }
     });
   }
-  openSoundPleaseInsertBanknotes(): Promise<any> {
+  soundPleaseVisit(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-f-let-us-serve-you.mp3',
+        '../../assets/lao-voices/lo-la-m-let-us-serve-you.mp3',
+        '../../assets/lao-voices/lo-la-let-us-serve-you3.mp3',
+        '../../assets/lao-voices/lo-la-let-us-serve-you4.mp3',
+    ]
       try {
-
-        this.audioElement.src = '../../assets/machine_sound/please_insert_banknotes.mp3';
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -485,11 +499,15 @@ export class ApiService {
       }
     });
   }
-  openSoundComplete(): Promise<any> {
+  soundPleaseWait(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-f-please-wait.mp3',
+        '../../assets/lao-voices/lo-la-m-waiting-for-your-item.mp3',
+        '../../assets/lao-voices/lo-la-m-waiting-for-your-item2.mp3'
+    ]
       try {
-
-        this.audioElement.src = '../../assets/machine_sound/complete.mp3';
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -498,11 +516,13 @@ export class ApiService {
       }
     });
   }
-  openSoundSystemError(): Promise<any> {
+  soundPleaseViewVideo(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-f-view-video-for-more-info.mp3'
+    ]
       try {
-
-        this.audioElement.src = '../../assets/machine_sound/system_error.mp3';
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -511,11 +531,18 @@ export class ApiService {
       }
     });
   }
-  openSoundThankYour(): Promise<any> {
+  soundThankYou(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-f-wish-much-luck.mp3',
+        '../../assets/lao-voices/lo-la-f-wish-the-best-luck-always.mp3',
+        '../../assets/lao-voices/lo-la-m-wish-much-luck.mp3',
+        '../../assets/lao-voices/lo-la-m-wish-the-best-luck-always.mp3',
+        '../../assets/lao-voices/lo-la-m-please-buy-more.mp3',
+        '../../assets/lao-voices/lo-la-m-thank-you.mp3',
+    ]
       try {
-
-        this.audioElement.src = '../../assets/machine_sound/thank_you.mp3';
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -524,11 +551,166 @@ export class ApiService {
       }
     });
   }
-  openSoundReady(): Promise<any> {
+  soundGreeting(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-f-wish-much-luck.mp3',
+        '../../assets/lao-voices/lo-la-f-wish-the-best-luck-always.mp3',
+        '../../assets/lao-voices/lo-la-m-wish-much-luck.mp3',
+        '../../assets/lao-voices/lo-la-m-wish-the-best-luck-always.mp3'
+    ]
       try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
 
-        this.audioElement.src = '../../assets/machine_sound/ready.mp3';
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundPointToCashOut(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-cashout-on-the-right-hand.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundCompleted(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-completed.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundPaymentMethod(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-what-is-your-payment-method.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundLaabPaymentMethod(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-laab-payment.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundMmoneyPaymentMethod(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-mmoney-payment.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundInputLaabPhonenumber(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-input-laab-phonenumber.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundInputMmoneyPhonenumber(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-input-mmoney-phonenumber.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundInputSecretPassword(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-secret-password.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundLaabIncreased(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-laab-increased.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundOtherServices(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-other-services.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -538,6 +720,126 @@ export class ApiService {
     });
   }
 
+  soundPleaseSelect(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-please-select.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundPleaseTopUpValue(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-please-topup-or-insert-bank-note.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundSelectTarget(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-select-target.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundTargetEPIN(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-target-is-epin.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundTargetMMoney(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-transfer-to-mmoney.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundTargetLAAB(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-transfer-to-laab.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundCheckTicketsExist(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-tickets-exist.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+  soundMachineHasSomeChanges(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr =[
+        '../../assets/lao-voices/lo-la-m-we-have-some-changes.mp3'
+    ]
+      try {
+        this.audioElement.src = arr[Math.floor(Math.random() * arr.length)];
+        this.audioElement.play();
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
 
   convertBlobToBase64(blob: Blob): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
