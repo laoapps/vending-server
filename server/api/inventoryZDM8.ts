@@ -74,6 +74,7 @@ import {
     machineClientIDEntity,
     machineIDEntity,
     stockEntity,
+    vendingMachineSaleReportEntity,
 } from "../entities";
 import {
     MachineClientID,
@@ -1609,7 +1610,19 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         
-                        
+                        const d = req.body;
+                        let condition: any = {} as any;
+
+                        // **** report all sale today **** fixed
+                        condition = {
+                            where: {
+
+                            }
+                        }
+
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        if (!machineId) throw new Error("machine is not exit");
+                        const ent = vendingMachineSaleReportEntity
 
                     } catch (error) {
                         console.log(error);

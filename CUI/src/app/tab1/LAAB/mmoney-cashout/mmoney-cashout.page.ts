@@ -87,7 +87,7 @@ export class MmoneyCashoutPage implements OnInit {
           confirmButtonText: 'OK',
           confirmButtonColor: '#28B463'
         });
-        this.apiService.cash = 0;
+        this.apiService.cash = Number(this.apiService.cash) - 1100;
         this.stackCashoutPage.dismiss();
         this.apiService.modal.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);
