@@ -41,13 +41,7 @@ export class VendingGoPage implements OnInit {
     }
     
     console.log(`sum total`, this.total);
-    this.apiService.soundPaymentMethod();
-    setTimeout(() => {
-      this.apiService.soundMmoneyPaymentMethod();
-    }, 2000);
-    setTimeout(() => {
-      this.apiService.soundLaabPaymentMethod();
-    }, 3000);
+    this.apiService.vendingGoPageSound()
   }
 
   buyManyMMoney() {

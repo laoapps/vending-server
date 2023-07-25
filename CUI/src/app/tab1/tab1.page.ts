@@ -178,6 +178,7 @@ export class Tab1Page {
         this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
         // this.loadSaleList();
         // this.initStock();
+<<<<<<< HEAD
         if (this.isFirstLoad) {
           setInterval(() => {
             if (this.autopilot.auto >= 6) {
@@ -205,6 +206,15 @@ export class Tab1Page {
               }, 10000);
               this.autopilot.auto = 0;
             } else {
+=======
+        if(this.isFirstLoad){
+
+          setInterval(()=>{
+            if(this.autopilot.auto>=6){
+              this.apiService.initGreetingSound();
+              this.autopilot.auto=0;
+            }else{
+>>>>>>> 6bef951179abe5a2ef74feddbc519ff42841177a
               this.autopilot.auto++;
             }
           }, 10000);
