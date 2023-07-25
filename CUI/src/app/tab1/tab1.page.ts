@@ -53,7 +53,7 @@ import { HowtoPageModule } from '../howto/howto.module';
 import { HowToPage } from './Vending/how-to/how-to.page';
 import { LoadStockListProcess } from './Vending_processes/loadStockList.process';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
-import Swal from "sweetalert2";
+import Swal from 'sweetalert2';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -67,20 +67,16 @@ export class Tab1Page {
   private cashinValidationProcess: CashinValidationProcess;
   private loadStockListProcess: LoadStockListProcess;
 
-  private CONTROL_MENUList: Array<{ name: string, status: boolean }> = [];
+  private CONTROL_MENUList: Array<{ name: string; status: boolean }> = [];
   private links: NodeListOf<HTMLLinkElement>;
 
   private ownerUuid: string;
   filemanagerURL: string = environment.filemanagerurl;
 
-
-
-
   acceptcash: number;
   _machineStatus = { status: {} as IMachineStatus } as any;
 
   production = environment.production;
-
 
   mmLogo = 'assets/icon/mmoney.png';
 
@@ -110,8 +106,8 @@ export class Tab1Page {
   _checkHowTo_Time = 1000 * 60 * 10; // 10 minutes
   _howToT: any;
   _howToPage: HTMLIonModalElement;
-  isFirstLoad =true;
-  autopilot={auto:0};
+  isFirstLoad = true;
+  autopilot = { auto: 0 };
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -121,18 +117,14 @@ export class Tab1Page {
     public appCaching: CachingService,
     private vendingAPIService: VendingAPIService,
     private WSAPIService: WsapiService,
-    private cashingService: AppcachingserviceService,
+    private cashingService: AppcachingserviceService
   ) {
-    this.autopilot=this.apiService.autopilot;
-
-
+    this.autopilot = this.apiService.autopilot;
+    const that = this;
     this.dynamicControlMenu();
 
     this._machineStatus = this.apiService._machineStatus;
     this.autoUpdateCash();
-
-
-
 
     this.loadVendingWalletCoinBalanceProcess =
       new LoadVendingWalletCoinBalanceProcess(
@@ -186,18 +178,16 @@ export class Tab1Page {
         this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
         // this.loadSaleList();
         // this.initStock();
-        if(this.isFirstLoad){
-
-          setInterval(()=>{
-            if(this.autopilot.auto>=6){
+        if (this.isFirstLoad) {
+          setInterval(() => {
+            if (this.autopilot.auto >= 6) {
               this.apiService.soundGreeting();
               setTimeout(() => {
                 this.apiService.soundPleaseVisit();
               }, 5000);
-  
+
               setTimeout(() => {
-                
-                if(new Date().getTime()%2){
+                if (new Date().getTime() % 2) {
                   setTimeout(() => {
                     this.apiService.soundPointToCashOut();
                   }, 5000);
@@ -208,50 +198,123 @@ export class Tab1Page {
                     this.apiService.soundCheckTicketsExist();
                   }, 15000);
                   setTimeout(() => {
-                    if(this.apiService.cash>0)this.apiService.soundMachineHasSomeChanges();
+                    if (this.apiService.cash > 0)
+                      this.apiService.soundMachineHasSomeChanges();
                   }, 20000);
                 }
-                
               }, 10000);
-              this.autopilot.auto=0;
-            }else{
+              this.autopilot.auto = 0;
+            } else {
               this.autopilot.auto++;
             }
-           
-          },10000)
+          }, 10000);
 
           this.loadStock();
-          this.isFirstLoad=false;
+          this.isFirstLoad = false;
         }
-        
       });
+      this.apiService.onDeductOrderUpdate((position) => {
+        try {
+          // const x = JSON.parse(JSON.stringify(that.vendingOnSale));
+          // console.log('before SAVE ==>',x);
+          // setTimeout(() => {
+          // this.storage.get('saleStock', 'stock').then((s) => {
+          //   try {
+          //     console.log(`storage get`, s);
+
+          //     const saleitems = JSON.parse(
+          //       JSON.stringify(s?.v ? s.v : [])
+          //     ) as Array<IVendingMachineSale>;
+          //     that.apiService.saveSale(saleitems).subscribe((r) => {
+          //       console.log(r);
+          //       if (r.status) {
+          //         console.log(`save sale success`);
+          //       } else {
+          //         this.apiService.simpleMessage(IENMessage.saveSaleFail);
+          //       }
+          //     });
+          //   } catch (error) {
+          //     console.log('error', error);
+          //   }
+          // });
+
+          // }, 1000);
+
+          // for stack order UI
+          const ind = this.orders.findIndex((v) => v.position == position);
+          if (ind != -1) this.orders.splice(ind, 1);
+        } catch (error) {
+          console.log(' error on event emitter');
+        }
+      });
+
+      // const vsale = this.saleList;
+      // this.apiService.wsapi.onBillProcess((r) => {
+      //   if (!r) return console.log('empty');
+      //   console.log('ws process subscription', r);
+      //   const message =
+      //     'processing slot ' +
+      //     r.position +
+      //     `==>${r.position}` +
+      //     '; ' +
+      //     r?.bill?.vendingsales?.find((v) => v.position == r.position)?.stock
+      //       ?.name;
+
+      //   // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
+
+      //   const x = vsale.find((v) => {
+      //     if (v.position == r.position) {
+      //       v.stock.qtty--;
+      //       return true;
+      //     }
+      //   });
+      //   console.log('X', x, r.position, x && r.position);
+
+      //   if (x && r.position) {
+      //     // # save to machine
+      //     console.log('saveSale', vsale);
+
+      //     // this.clearWaitingT();
+
+      //     // PLAY SOUNDS
+      //     this.apiService.soundCompleted();
+      //     setTimeout(() => {
+      //       this.apiService.soundThankYou();
+      //     }, 2000);
+      //     that.apiService.toast
+      //       .create({ message, duration: 2000 })
+      //       .then((r) => {
+      //         r.present();
+      //       });
+
+      //     r.bill.updatedAt = new Date();
+      //   } else if (!r.position) {
+      //     // PLAY SOUNDS
+      //     this.apiService.soundSystemError();
+      //     this.apiService.alert
+      //       .create({
+      //         header: 'Alert',
+      //         message,
+      //         buttons: [
+      //           {
+      //             text: 'OK',
+      //             role: 'confirm',
+      //             handler: () => {},
+      //           },
+      //         ],
+      //       })
+      //       .then((v) => v.present());
+      //   }
+
+      //   console.log(`vendingOnSale-->`, vsale);
+      //   this.storage.set('saleStock', vsale, 'stock').then((r) => {
+      //     // that.deductOrderUpdate(x.position);
+      //   });
+
+      //   // });
+      // });
     });
     // });
-    const that = this;
-    this.apiService.onDeductOrderUpdate((position) => {
-      try {
-        // const x = JSON.parse(JSON.stringify(that.vendingOnSale));
-        // console.log('before SAVE ==>',x);
-        setTimeout(() => {
-          that.apiService.saveSale(that.vendingOnSale).subscribe(r=>{
-            console.log(r);
-            if(r.status){
-              console.log(`save sale success`);
-            } else {
-              this.apiService.simpleMessage(IENMessage.saveSaleFail);
-            }
-          }); 
-        }, 500);
-      
-
-
-        // for stack order UI
-        const ind = this.orders.findIndex((v) => v.position == position);
-        if (ind != -1) this.orders.splice(ind, 1);
-      } catch (error) {
-        console.log(' error on event emitter');
-      }
-    });
 
     setTimeout(() => {
       // this.checkHowTo();
@@ -259,9 +322,8 @@ export class Tab1Page {
   }
   setActive() {
     console.log('active');
-    this._checkHowTo_Time = this._checkHowTo_Duration+1000;
+    this._checkHowTo_Time = this._checkHowTo_Duration + 1000;
   }
-
 
   autoUpdateCash() {
     this.WSAPIService.balanceUpdateSubscription.subscribe(async (r) => {
@@ -278,82 +340,70 @@ export class Tab1Page {
     // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().subscribe((r) => {
       try {
-         console.log(`load vending sale`, r.data);
-      if (r.status) {
-        const saleServer = r.data as Array<IVendingMachineSale>;
-        console.log('saleServer', saleServer);
+        console.log(`load vending sale`, r.data);
+        if (r.status) {
+          const saleServer = r.data as Array<IVendingMachineSale>;
+          console.log('saleServer', saleServer);
 
-        this.apiService.newProductItems(saleServer);
-        // saleServer.forEach(async (v,i)=>{
-        //   setTimeout(async () => {
-        //     await this.apiService.saveImage(v.stock.id,v.stock.image);
-        //   }, 100*i);
-         
-        // })
-        // window.location.reload();
-        this.initVendingWalletCoinBalance().then(() => {});
-        this.storage.get('saleStock', 'stock').then((s) => {
-          try {
+          this.apiService.newProductItems(saleServer);
+          // saleServer.forEach(async (v,i)=>{
+          //   setTimeout(async () => {
+          //     await this.apiService.saveImage(v.stock.id,v.stock.image);
+          //   }, 100*i);
 
-            console.log(`storage get`, s);
+          // })
+          // window.location.reload();
+          this.initVendingWalletCoinBalance().then(() => {});
+          this.storage.get('saleStock', 'stock').then((s) => {
+            try {
+              console.log(`storage get`, s);
 
-            const saleitems = JSON.parse(
-              JSON.stringify(s?.v ? s.v : [])
-            ) as Array<IVendingMachineSale>;
+              const saleitems = JSON.parse(
+                JSON.stringify(s?.v ? s.v : [])
+              ) as Array<IVendingMachineSale>;
 
+              // console.log(`sale server`, JSON.stringify(saleServer.map(item => { return { uuid: item.stock.uuid } })));
 
+              console.log(`saleitems`, saleitems);
 
-            // console.log(`sale server`, JSON.stringify(saleServer.map(item => { return { uuid: item.stock.uuid } })));
+              // reset everytime ws activate
+              // console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
 
-            console.log(`saleitems`, saleitems);
+              if (this.vendingOnSale?.length) this.vendingOnSale.length = 0;
 
-            this.saleList.sort((a, b) => {
-              if (a.position < b.position) return -1;
-            });
-            console.log(`sale list der ni`, this.saleList);
+              if (this.saleList?.length) this.saleList.length = 0;
 
-            // reset everytime ws activate
-            // console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
+              // console.log(' this.vendingOnSale.length 2', this.~vendingOnSale.length);
+              // console.log(`sale list der 1`, this.saleList.length);
 
-            if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
+              this.vendingOnSale.push(...saleitems);
+              this.saleList.push(...this.vendingOnSale);
+              if (this.saleList[0]?.position == 0) this.compensation = 1;
+              this.saleList.sort((a, b) => {
+                if (a.position < b.position) return -1;
+              });
+              console.log(`sale list der ni`, this.saleList);
+              setTimeout(() => {
+                this.showBills();
+              }, 1000);
 
-            if(this.saleList?.length) this.saleList.length=0;
-
-            // console.log(' this.vendingOnSale.length 2', this.~vendingOnSale.length);
-            // console.log(`sale list der 1`, this.saleList.length);
-
-            this.vendingOnSale.push(...saleitems);
-            this.saleList.push(...this.vendingOnSale);
-            if (this.saleList[0]?.position == 0) this.compensation = 1;
-  
-            setTimeout(() => {
-              this.showBills();
-            }, 1000);
-  
-            
-  
-            console.log(`sale list der 2`, this.saleList.length);
-          } catch (error) {
-            console.log('error',error);
-             
-          }
-         
-        });
-      } else {
-        alert(r.message);
-      }
+              console.log(`sale list der 2`, this.saleList.length);
+            } catch (error) {
+              console.log('error', error);
+            }
+          });
+        } else {
+          alert(r.message);
+        }
       } catch (error) {
-        console.log('error',error);
+        console.log('error', error);
       }
-     
     });
   }
 
-
   loadStock(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
         // 100 x 240
 
         // await this.cashingService.remove(this.ownerUuid);
@@ -362,8 +412,8 @@ export class Tab1Page {
         // save image
         const params = {
           ownerUuid: this.ownerUuid,
-          filemanagerURL: this.filemanagerURL
-        }
+          filemanagerURL: this.filemanagerURL,
+        };
         console.log(`params`, params);
         const run = await this.loadStockListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
@@ -376,64 +426,60 @@ export class Tab1Page {
           JSON.stringify(s?.v ? s.v : [])
         ) as Array<IVendingMachineSale>;
         console.log(`saleitems`, saleitems);
-        this.saleList.sort((a, b) => {
-          if (a.position < b.position) return -1;
-        });
 
-        if (this.vendingOnSale?.length) this.vendingOnSale.length=0;
-        if(this.saleList?.length) this.saleList.length=0;
-        
-        const initVendingWalletCoinBalance = await this.initVendingWalletCoinBalance();
-        if (initVendingWalletCoinBalance != IENMessage.success) throw new Error(initVendingWalletCoinBalance);
-        if(saleitems.length){
+        if (this.vendingOnSale?.length) this.vendingOnSale.length = 0;
+        if (this.saleList?.length) this.saleList.length = 0;
+
+        const initVendingWalletCoinBalance =
+          await this.initVendingWalletCoinBalance();
+        if (initVendingWalletCoinBalance != IENMessage.success)
+          throw new Error(initVendingWalletCoinBalance);
+        if (saleitems.length) {
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
           if (this.saleList[0]?.position == 0) this.compensation = 1;
-  
+
+          this.saleList.sort((a, b) => {
+            if (a.position < b.position) return -1;
+          });
           setTimeout(() => {
             this.showBills();
           }, 1000);
-  
-  
+
           resolve(IENMessage.success);
-        }else{
-          this.apiService.recoverSale().subscribe(r=>{
+        } else {
+          this.apiService.recoverSale().subscribe((r) => {
             // console.log(r);
-            if(r.status){
-              ApiService.vendingOnSale.length=0;
-              console.log('recover',r.data);
-              
-              ApiService.vendingOnSale.push(...r.data)
+            if (r.status) {
+              ApiService.vendingOnSale.length = 0;
+              console.log('recover', r.data);
+
+              ApiService.vendingOnSale.push(...r.data);
               this.saleList.push(...this.vendingOnSale);
               if (this.saleList[0]?.position == 0) this.compensation = 1;
-      
+              this.saleList.sort((a, b) => {
+                if (a.position < b.position) return -1;
+              });
               setTimeout(() => {
                 this.showBills();
               }, 1000);
-      
-              this.storage.set(
-                'saleStock',
-                ApiService.vendingOnSale,
-                'stock'
-              );
+
+              this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
               resolve(IENMessage.success);
             }
-            this.apiService.toast.create({message:r.message, duration: 200}).then(r=>{
-              r.present();
-            })
-          })
+            this.apiService.toast
+              .create({ message: r.message, duration: 200 })
+              .then((r) => {
+                r.present();
+              });
+          });
         }
-        
-
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
     });
   }
-
-
-
 
   endCount() {
     if (this.timeoutHandler) {
@@ -455,7 +501,12 @@ export class Tab1Page {
     console.log(x, this.getPassword());
 
     // if (environment.production)
-      if (!this.getPassword().endsWith(x?.substring(6))||!x?.startsWith(this.machineId?.otp) || x?.length < 12) return;
+    if (
+      !this.getPassword().endsWith(x?.substring(6)) ||
+      !x?.startsWith(this.machineId?.otp) ||
+      x?.length < 12
+    )
+      return;
     const m = await this.apiService.showModal(StocksalePage);
     m.onDidDismiss().then((r) => {
       r.data;
@@ -478,7 +529,7 @@ export class Tab1Page {
         //     } else {
         //       this.apiService.simpleMessage(IENMessage.saveSaleFail);
         //     }
-        //   }); 
+        //   });
         // }, 500);
       });
 
@@ -547,11 +598,7 @@ export class Tab1Page {
 
               this.storage.set('bill_' + new Date().getTime(), y, 'bills');
               // PLAY SOUNDS
-              this.storage.set(
-                'saleStock',
-                ApiService.vendingOnSale,
-                'stock'
-              );
+              this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
             });
         } else {
           this.apiService.toast
@@ -681,9 +728,9 @@ export class Tab1Page {
 
   addOrder(x: IVendingMachineSale) {
     try {
-      this.autopilot.auto=0;
+      this.autopilot.auto = 0;
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
-      
+
       if (this.WSAPIService?.setting_allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
@@ -694,7 +741,7 @@ export class Tab1Page {
           showConfirmButton: true,
           confirmButtonText: 'OK',
           confirmButtonColor: '#EE3124',
-          heightAuto: false
+          heightAuto: false,
         });
         setTimeout(() => {
           Swal.close();
@@ -704,12 +751,13 @@ export class Tab1Page {
       this.setActive();
       if (!x) return alert('not found');
       const ord = this.orders.filter((v) => v.position == x.position);
-      if (ord.length) if (ord.length >= ord[0]?.max) return alert('Out of Stock');
+      if (ord.length)
+        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
       console.log('ID', x);
       console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
-  
+
       this.apiService.showLoading('', 500);
-  
+
       // if (this.orders.find(v => v.position == x.position)) {
       //   const mx = x.max;
       //   // const summ = this.getSummarizeOrder();
@@ -717,7 +765,7 @@ export class Tab1Page {
       //   const re = this.orders.find(v => {
       //     const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
       //     console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
-  
+
       //     return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
       //   });
       //    console.log('0x0r',this.orders, mx, re);
@@ -727,11 +775,11 @@ export class Tab1Page {
       //   }, 1000);
       //     return alert('Out of Stock');
       //   }
-  
+
       // }
-  
+
       // if (x.stock.qtty <= 0) alert('Out Of order');
-  
+
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
       y.stock.qtty = 1;
       console.log('y', y);
@@ -741,14 +789,12 @@ export class Tab1Page {
       // setTimeout(() => {
       this.apiService.dismissLoading();
       // }, 1000);
-  
+
       // });
     } catch (error) {
-      console.log('error',error);
-      alert(JSON.stringify(error))
-      
+      console.log('error', error);
+      alert(JSON.stringify(error));
     }
-   
   }
   checkCartCount(position: number) {
     return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;
@@ -858,7 +904,8 @@ export class Tab1Page {
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = run.data[0].vendingWalletCoinBalance;
-        if(this.apiService.cash>0) this.apiService.soundMachineHasSomeChanges();
+        if (this.apiService.cash > 0)
+          this.apiService.soundMachineHasSomeChanges();
         resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -1052,9 +1099,12 @@ export class Tab1Page {
   laabCashin(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-
-        const disable = this.apiService.controlMenuService.disableControlMenuFunction('menu-laab-cashin');
-        if (disable == undefined || disable == false) return resolve(IENMessage.success);
+        const disable =
+          this.apiService.controlMenuService.disableControlMenuFunction(
+            'menu-laab-cashin'
+          );
+        if (disable == undefined || disable == false)
+          return resolve(IENMessage.success);
 
         // const machineId: string = localStorage.getItem('machineId');
         let params: any = {};
@@ -1106,7 +1156,7 @@ export class Tab1Page {
       try {
         if (this.apiService.cash == 0)
           throw new Error(IENMessage.thereIsNotBalance);
-       
+
         const props = {};
         this.apiService.modal
           .create({ component: LaabCashoutPage, componentProps: props })
@@ -1133,7 +1183,6 @@ export class Tab1Page {
             .showModal(RemainingbillsPage, { r: this.apiService.pb })
             .then((r) => {
               r.present();
-             
             });
       } else {
         this.apiService.toast
@@ -1169,14 +1218,16 @@ export class Tab1Page {
   public openStackCashOutPage(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        
-        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
-        
+        if (this.apiService.cash == 0)
+          throw new Error(IENMessage.thereIsNotBalance);
+
         // ##here
-        this.apiService.modal.create({ component: StackCashoutPage }).then(r => {
-          r.present();
-        });
-        
+        this.apiService.modal
+          .create({ component: StackCashoutPage })
+          .then((r) => {
+            r.present();
+          });
+
         resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -1186,47 +1237,49 @@ export class Tab1Page {
   }
 
   public ShowMMoneyAppLink() {
-
     // this.refreshControlMenuList();
 
-    const ios_link: string = 'https://apps.apple.com/la/app/m-money/id1513863808';
-    const android_link: string = 'https://play.google.com/store/apps/details?id=com.ltc.wallet';
+    const ios_link: string =
+      'https://apps.apple.com/la/app/m-money/id1513863808';
+    const android_link: string =
+      'https://play.google.com/store/apps/details?id=com.ltc.wallet';
     const props = {
-      links: [android_link, ios_link]
-    }
-    this.apiService.modal.create({ component: MmoneyIosAndroidDownloadPage, componentProps: props }).then(r => {
-      r.present();
-    });
+      links: [android_link, ios_link],
+    };
+    this.apiService.modal
+      .create({
+        component: MmoneyIosAndroidDownloadPage,
+        componentProps: props,
+      })
+      .then((r) => {
+        r.present();
+      });
   }
-
-
-
 
   dynamicControlMenu() {
     this.refreshControlMenuList();
     let i = setInterval(() => {
       if (this.links == undefined) {
-        this.links = (document.querySelectorAll('.control-menu') as NodeListOf<HTMLLinkElement>);
-        ControlMenuService.tab1PageLinks = this.links
-      } 
+        this.links = document.querySelectorAll(
+          '.control-menu'
+        ) as NodeListOf<HTMLLinkElement>;
+        ControlMenuService.tab1PageLinks = this.links;
+      }
 
       this.links = ControlMenuService.tab1PageLinks;
       this.animateControlMenu(this.links);
 
-      this.apiService.controlMenuService.CONTROL_MENU.subscribe(r => {
+      this.apiService.controlMenuService.CONTROL_MENU.subscribe((r) => {
         if (r) this.animateControlMenu(this.links, r);
       });
       clearInterval(i);
-
     });
   }
   animateControlMenu(links: NodeListOf<HTMLLinkElement>, res?: any) {
-    links.forEach(item => {
+    links.forEach((item) => {
       const name = item.className.split(' ')[2];
-      if (res)
-      {
-        res.forEach(menu => {
-
+      if (res) {
+        res.forEach((menu) => {
           if (name == menu.name) {
             if (menu.status == true) {
               item.classList.add('active');
@@ -1235,11 +1288,8 @@ export class Tab1Page {
             }
           }
         });
-      }
-      else 
-      {
-        this.CONTROL_MENUList.forEach(menu => {
-
+      } else {
+        this.CONTROL_MENUList.forEach((menu) => {
           if (name == menu.name) {
             if (menu.status == true) {
               item.classList.add('active');
@@ -1252,27 +1302,28 @@ export class Tab1Page {
     });
   }
   refreshControlMenuList() {
-    this.CONTROL_MENUList = JSON.parse(JSON.stringify(this.apiService.controlMenuService.CONTROL_MENUList));
+    this.CONTROL_MENUList = JSON.parse(
+      JSON.stringify(this.apiService.controlMenuService.CONTROL_MENUList)
+    );
   }
-  
-
-
-
 
   public openTopupAndServicePage(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        
-        
-        this.apiService.modal.create({ component: TopupAndServicePage, cssClass: 'dialog-fullscreen' }).then(r => {
-          r.present();
-        });
-        
+        this.apiService.modal
+          .create({
+            component: TopupAndServicePage,
+            cssClass: 'dialog-fullscreen',
+          })
+          .then((r) => {
+            r.present();
+          });
+
         resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
-      } 
+      }
     });
   }
 
@@ -1282,17 +1333,23 @@ export class Tab1Page {
       getTotalSale: this.getTotalSale,
       bills: this.bills,
       machineId: this.machineId,
-      orders: this.orders
-    }
-    this.apiService.modal.create({ component: VendingGoPage, componentProps: props }).then(r => {
-      r.present();
-    })
+      orders: this.orders,
+    };
+    this.apiService.modal
+      .create({ component: VendingGoPage, componentProps: props })
+      .then((r) => {
+        r.present();
+      });
   }
   openHowToPage() {
-    this.apiService.modal.create({ component: HowToPage, componentProps: {}, cssClass: 'dialog-fullscreen'}).then(r => {
-      r.present();
-    })
+    this.apiService.modal
+      .create({
+        component: HowToPage,
+        componentProps: {},
+        cssClass: 'dialog-fullscreen',
+      })
+      .then((r) => {
+        r.present();
+      });
   }
-
-  
 }

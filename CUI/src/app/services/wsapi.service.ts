@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
-import { EMACHINE_COMMAND, IAlive, IBillProcess, IClientId, IReqModel, IResModel, IVendingMachineBill } from './syste.model';
+import { EMACHINE_COMMAND, IAlive, IBillProcess, IClientId, IReqModel, IResModel, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import * as cryptojs from 'crypto-js';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { EventEmitter } from 'events';
 @Injectable({
   providedIn: 'root'
 })
 export class WsapiService {
+  // vsales: IVendingMachineSale[];
   setting_allowCashIn: boolean = false;
   setting_allowVending: boolean = false;
 
@@ -15,6 +17,9 @@ export class WsapiService {
   retries = 1;
   machineId: string;
   otp: string;
+
+  eventEmmiter= new EventEmitter();
+
   public balanceUpdateSubscription = new BehaviorSubject<number>(0);
   public loginSubscription = new BehaviorSubject<IClientId>(null);
   public aliveSubscription = new BehaviorSubject<IAlive>(null);
@@ -24,7 +29,13 @@ export class WsapiService {
   public refreshSubscription = new BehaviorSubject<boolean>(false);
 
   retry: any;
+  // vsales=new Array<IVendingMachineSale>();
   constructor() {
+  }
+  onBillProcess(cb:(data)=>void){
+    if(cb){
+      this.eventEmmiter.on('billProcessSubscription',cb);
+    }
   }
   connect(url: string, machineId: string, otp: string) {
     console.log(`connnn`, machineId, url);
@@ -88,7 +99,8 @@ export class WsapiService {
             break;
           case 'confirm':
             console.log('confirm', data);
-            this.billProcessSubscription.next(data)
+            this.billProcessSubscription.next(data);
+            this.eventEmmiter.emit('billProcessSubscription',data);
             break;
             
           case 'waitingt':

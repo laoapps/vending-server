@@ -40,10 +40,10 @@ export const FranchiseStockFactory = (name: string, sequelize: Sequelize):Franch
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
         },
-        hashP:{
+        hashM: {
             type: DataTypes.STRING,
         },
-        hashM: {
+        hashP:{
             type: DataTypes.STRING,
         },
         data:{

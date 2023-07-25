@@ -1604,6 +1604,19 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+            router.post(
+                this.path + "/saveMachineSaleReport",
+                async (req, res) => {
+                    try {
+                        
+                        
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
             
 
             router.post(

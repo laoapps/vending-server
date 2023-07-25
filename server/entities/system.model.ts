@@ -4263,6 +4263,7 @@ export enum EEntity {
     epinshortcode = 'epinshortcode',
     subadmin = 'subadmin',
     franchisestock = "franchisestock",
-    vendingcashoutmmoney = 'vendingcashoutmmoney'
+    vendingcashoutmmoney = 'vendingcashoutmmoney',
+    vendingmachinesalereport = 'vendingmachinesalereport'
 }
 

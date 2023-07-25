@@ -15,6 +15,7 @@ import { EPINShortCodeFactory, EPINShortCodeStatic } from "./epinshortcode.entit
 import { SubadminFactory, SubadminStatic } from "./subadmin.entity";
 import { LAABHashService } from "../services/laab.service";
 import { VendingCashoutMMoneyFactory, VendingCashoutMMoneyStatic } from "./vendingcashoutmmoney.entity";
+import { VendingMachineSaleReportFactory, VendingMachineSaleReportStatic } from "./vendingmachinesalereport.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -29,6 +30,7 @@ export let machineIDEntity:MachineIDStatic;
 export let machineClientIDEntity:MachineClientIDStatic;
 export let machineIDHistoryEntity:MachineIDStatic;
 export let machineCashoutMMoneyEntity: VendingCashoutMMoneyStatic;
+export let vendingMachineSaleReportEntity: VendingMachineSaleReportStatic;
 
 
 
@@ -56,11 +58,14 @@ export const initDB =()=>{
         console.log(`vending cashout mmoney entity sync`);
         machineCashoutMMoneyEntity = VendingCashoutMMoneyFactory(EEntity.vendingcashoutmmoney, dbConnection);
     });
+    vendingMachineSaleReportEntity = VendingMachineSaleReportFactory(EEntity.vendingmachinesalereport, dbConnection).sync().then(() => {
+        console.log(`vending machine sale report entity sync`);
+        vendingMachineSaleReportEntity = VendingMachineSaleReportFactory(EEntity.vendingmachinesalereport, dbConnection);
+    });
 
     bankNoteEntity = BankNoteFactory(EEntity.banknote,dbConnection); // public 
     bankNoteEntity.sync().then(r=>{
         console.log('bankNoteEntity synced',r);
-        
     });
 
     billCashEntity = BillCashInFactory(EEntity.billcash+'_',dbConnection); // private for user
