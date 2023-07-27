@@ -3,6 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { IBillProcess } from '../services/syste.model';
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+import { IENMessage } from '../models/base.model';
 
 @Component({
   selector: 'app-qrpay',
@@ -22,10 +23,15 @@ export class QrpayPage implements OnInit,OnDestroy {
   }
 
   ngOnInit() {
+    const that = this;
     if(this._T)clearTimeout(this._T)
     this._T = setTimeout(() => {
       this.modal.dismiss();
     },1000*60*15);
+   this.apiService.onStockDeduct((data)=>{
+    console.log('onStockDeduct',data);
+    that.modal.dismiss();
+   })
   }
   refresh(){
     this.apiService.loadDeliveryingBills().subscribe(r => {

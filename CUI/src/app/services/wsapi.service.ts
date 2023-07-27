@@ -34,7 +34,7 @@ export class WsapiService {
   }
   onBillProcess(cb:(data)=>void){
     if(cb){
-      this.eventEmmiter.on('billProcessSubscription',cb);
+      this.eventEmmiter.on('billProcess',cb);
     }
   }
   connect(url: string, machineId: string, otp: string) {
@@ -99,8 +99,8 @@ export class WsapiService {
             break;
           case 'confirm':
             console.log('confirm', data);
-            this.billProcessSubscription.next(data);
-            this.eventEmmiter.emit('billProcessSubscription',data);
+            // this.billProcessSubscription.next(data);
+            this.eventEmmiter.emit('billProcess',data);
             break;
             
           case 'waitingt':
