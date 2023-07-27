@@ -241,11 +241,11 @@ export class PaidValidationFunc {
 
                 // same order
                 let duplicate = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.id == obj.id) !== index
+                    arr.findIndex((item) => item.stock.id == obj.stock.id) !== index
                 )
                 // original
                 let unique = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.id == obj.id) === index
+                    arr.findIndex((item) => item.stock.id == obj.stock.id) === index
                 )
 
                 console.log(`show duplicate`, duplicate, `show unique`, unique);
@@ -257,12 +257,12 @@ export class PaidValidationFunc {
 
                     for(let i = 0; i < unique.length; i++) {
                         for(let j = 0; j < duplicate.length; j++) {
-                            if (unique[i].id == duplicate[j].id) {
-                                unique[i].qty += duplicate[j].qty;
+                            if (unique[i].stock.id == duplicate[j].stock.id) {
+                                unique[i].stock.qty += duplicate[j].stock.qty;
 
 
                                 unique[i].subqty = unique[i].qty;
-                                unique[i].subtotal = unique[i].qty * unique[i].price;
+                                unique[i].subtotal = unique[i].stock.qty * unique[i].stock.price;
                             }
                         }
                         subqty += unique[i].subqty;
@@ -288,7 +288,7 @@ export class PaidValidationFunc {
                     let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
                     for(let i = 0; i < predata.length; i++) {
                         for(let j = 0; j < unique.length; j++) {
-                            if (predata[i].id == unique[j].id) {
+                            if (predata[i].stock.id == unique[j].stock.id) {
                                 predata[i].subqty += unique[j].subqty;
                                 predata[i].subtotal += Number(predata[i].subtotal) + Number(unique[j].subtotal);
                             }
