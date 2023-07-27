@@ -87,7 +87,7 @@ export class ApiService {
           // }, 2000);
   }
   muteSound=false;
-
+  eventEmmiter= new EventEmitter();
   howtoVideoPlayList: Array<any> = [
     {
       id: 1,
@@ -240,6 +240,7 @@ export class ApiService {
           return true;
         }
       });
+      this.eventEmitter.emit('stockdeduct',x);
       this.saveSale(vsales).subscribe((r) => {
         console.log(r);
         if (r.status) {
@@ -321,10 +322,15 @@ export class ApiService {
 
     // this.initLocalHowToVideoPlayList();
   }
-
-  public getVSales() {
-    return ApiService.vendingOnSale;
+  public onStockDeduct(cb:(data)=>void){
+    if(cb){
+      this.eventEmmiter.on('stockdeduct',cb);
+    }
   }
+
+  // public getVSales() {
+  //   return ApiService.vendingOnSale;
+  // }
   public validateDB() {}
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);
