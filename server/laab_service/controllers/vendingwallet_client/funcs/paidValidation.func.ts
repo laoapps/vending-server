@@ -69,6 +69,9 @@ export class PaidValidationFunc {
 
                 console.log(`paid validation`, 8);
 
+                const SaveMachineSaleReport = await this.SaveMachineSaleReport();
+                if (SaveMachineSaleReport != IENMessage.success) throw new Error(SaveMachineSaleReport);
+
                 const CallBackConfirmBill = await this.CallBackConfirmBill();
                 if (CallBackConfirmBill != IENMessage.success) throw new Error(CallBackConfirmBill);
 
