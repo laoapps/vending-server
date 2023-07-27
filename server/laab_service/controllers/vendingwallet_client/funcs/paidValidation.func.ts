@@ -247,12 +247,13 @@ export class PaidValidationFunc {
                 let unique = arr.filter((obj, index) => 
                     arr.findIndex((item) => item.id == obj.id) === index
                 )
+
+                console.log(`show duplicate`, duplicate, `show unique`, unique);
                 
                 // merge same order
-                let checkFilter: boolean = duplicate != undefined && Object.entries(duplicate).length > 0;
                 let subqty: number = 0;
                 let subtotal: number = 0;
-                if (checkFilter == true) {
+                if (duplicate != undefined && Object.entries(duplicate).length > 0) {
 
                     for(let i = 0; i < unique.length; i++) {
                         for(let j = 0; j < duplicate.length; j++) {
