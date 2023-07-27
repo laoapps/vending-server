@@ -261,10 +261,19 @@ export class PaidValidationFunc {
                                 unique[i].stock.qty += duplicate[j].stock.qty;
 
 
-                                unique[i].subqty = unique[i].qty;
+                                unique[i].subqty = unique[i].stock.qty;
                                 unique[i].subtotal = unique[i].stock.qty * unique[i].stock.price;
                             }
                         }
+                        subqty += unique[i].subqty;
+                        subtotal += unique[i].subtotal;
+                    }
+                }
+                else 
+                {
+                    for(let i = 0; i < unique.leave; i++) {
+                        unique[i].subqty = unique[i].stock.qty;
+                        unique[i].subtotal = unique[i].stock.qty * unique[i].stock.price;
                         subqty += unique[i].subqty;
                         subtotal += unique[i].subtotal;
                     }
