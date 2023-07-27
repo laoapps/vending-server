@@ -271,7 +271,7 @@ export class PaidValidationFunc {
                 }
                 else 
                 {
-                    for(let i = 0; i < unique.leave; i++) {
+                    for(let i = 0; i < unique.length; i++) {
                         unique[i].subqty = unique[i].stock.qty;
                         unique[i].subtotal = unique[i].stock.qty * unique[i].stock.price;
                         subqty += unique[i].subqty;
