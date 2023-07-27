@@ -282,7 +282,7 @@ export class PaidValidationFunc {
                     for(let i = 0; i < unique.length; i++) {
                         let setarray = {
                             id: unique[i].stock.id,
-                            name: unique[i].stock.id,
+                            name: unique[i].stock.name,
                             price: unique[i].stock.price,
                             qtty: unique[i].stock.qtty,
                             total: unique[i].stock.qtty * unique[i].stock.price
