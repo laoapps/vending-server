@@ -251,31 +251,43 @@ export class PaidValidationFunc {
                 console.log(`show duplicate`, duplicate, `show unique`, unique);
                 
                 // merge same order
-                let subqty: number = 0;
-                let subtotal: number = 0;
+                let array: Array<any> = [];
+
                 if (duplicate != undefined && Object.entries(duplicate).length > 0) {
 
                     for(let i = 0; i < unique.length; i++) {
-                        for(let j = 0; j < duplicate.length; j++) {
-                            if (unique[i].stock.id == duplicate[j].stock.id) {
-                                unique[i].stock.qty += duplicate[j].stock.qty;
-
-
-                                unique[i].subqty = unique[i].stock.qty;
-                                unique[i].subtotal = unique[i].stock.qty * unique[i].stock.price;
-                            }
+                        let setarray = {
+                            id: unique[i].stock.id,
+                            name: unique[i].stock.id,
+                            price: unique[i].stock.price,
+                            qtty: unique[i].stock.qtty,
+                            total: 0
                         }
-                        subqty += unique[i].subqty;
-                        subtotal += unique[i].subtotal;
+
+                        for(let j = 0; j < duplicate.length; j++) {
+
+                            if (unique[i].stock.id == duplicate[j].stock.id) {
+                                setarray.qtty += duplicate[j].stock.qtty;
+                            }
+
+                        }
+                        
+                        setarray.total += setarray.qtty * setarray.price;
+                        array.push(setarray);
                     }
+                    
                 }
                 else 
                 {
                     for(let i = 0; i < unique.length; i++) {
-                        unique[i].subqty = unique[i].stock.qty;
-                        unique[i].subtotal = unique[i].stock.qty * unique[i].stock.price;
-                        subqty += unique[i].subqty;
-                        subtotal += unique[i].subtotal;
+                        let setarray = {
+                            id: unique[i].stock.id,
+                            name: unique[i].stock.id,
+                            price: unique[i].stock.price,
+                            qtty: unique[i].stock.qtty,
+                            total: unique[i].stock.qtty * unique[i].stock.price
+                        }
+                        array.push(setarray);
                     }
                 }
 
@@ -285,9 +297,9 @@ export class PaidValidationFunc {
 
                     const model = {
                         machineId: this.machineId,
-                        data: unique,
-                        subqty: subqty,
-                        subtotal: subtotal
+                        data: array,
+                        subqty: array.reduce((a,b) => a + b.qtty, 0),
+                        subtotal: array.reduce((a,b) => a + b.total, 0)
                     }
                     console.log(`model der`, model);
                     const save = await vendingMachineSaleReportEntity.create(model);
@@ -296,18 +308,19 @@ export class PaidValidationFunc {
                 } else {
 
                     let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
+
                     for(let i = 0; i < predata.length; i++) {
-                        for(let j = 0; j < unique.length; j++) {
-                            if (predata[i].stock.id == unique[j].stock.id) {
-                                predata[i].subqty += unique[j].subqty;
-                                predata[i].subtotal += Number(predata[i].subtotal) + Number(unique[j].subtotal);
+                        for(let j = 0; j < array.length; j++) {
+                            if (predata[i].id == array[j].id) {
+                                predata[i].qtty += array[j].qtty;
+                                predata[i].total += array[j].total;
                             }
                         }
                     }
 
                     run.data = predata;
-                    run.subqty = Number(run.subqty) + Number(subqty);
-                    run.subtotal = Number(run.subtotal) + Number(subtotal);
+                    run.subqty = predata.reduce((a,b) => a + b.qtty ,0);
+                    run.subtotal = predata.reduce((a,b) => a + b.total ,0);
 
                     const save = await run.save();
                     if (!save) return resolve(IENMessage.saveSaleReportFail);
