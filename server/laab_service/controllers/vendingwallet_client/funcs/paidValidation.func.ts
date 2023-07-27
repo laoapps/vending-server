@@ -280,6 +280,7 @@ export class PaidValidationFunc {
                         subqty: subqty,
                         subtotal: subtotal
                     }
+                    console.log(`model der`, model);
                     const save = await vendingMachineSaleReportEntity.create(model);
                     if (!save) return resolve(IENMessage.saveSaleReportFail);
 
