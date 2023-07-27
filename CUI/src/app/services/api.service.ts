@@ -543,7 +543,7 @@ export class ApiService {
       position,
       clientId: this.clientId.clientId,
       id,
-    };
+    }; 
     req.ip;
     req.time = new Date().toString();
     req.token = cryptojs

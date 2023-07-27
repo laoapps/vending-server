@@ -44,6 +44,7 @@ export class CuiSalePage implements OnInit {
         if (run.message != IENMessage.success) throw new Error(run);
         this.lists = run.data[0].lists.data;
         console.log(`list`, this.lists);
+        
         if (this.lists != undefined && this.lists.length > 0) {
           const instock = this.lists.filter(item => item.stock.id != -1);
           for(let i = 0; i < instock.length; i++) {

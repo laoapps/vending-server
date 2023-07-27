@@ -4,8 +4,16 @@ export interface IVendingMachineSaleReport {
     id?: number,
     uuid?: string,
     isActive?: boolean,
+    createdAt?: Date,
+    updatedAt?: Date,
     machineId: string,
-    data: any,
+    data: Array<{
+        id: string,
+        name: string,
+        price: number,
+        subqty: number,
+        subtotal: number
+    }>,
     subqty: number,
     subtotal: number
 }

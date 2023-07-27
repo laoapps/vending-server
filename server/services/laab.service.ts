@@ -57,6 +57,8 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    saveSaleReportFail = 'save sale report fail',
+    invalidReportParameters = 'invalid report parameters',
     createMMoneyBillFail = 'create MMoney bill fail',
     notFoundBill = 'not found bill',
     createLAABBillFail = 'create LAAB bill fail',

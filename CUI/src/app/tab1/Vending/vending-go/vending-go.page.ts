@@ -41,6 +41,7 @@ export class VendingGoPage implements OnInit {
     }
     
     console.log(`sum total`, this.total);
+    console.log(`summarizeOrder`, this.summarizeOrder);
     this.apiService.vendingGoPageSound()
   }
 

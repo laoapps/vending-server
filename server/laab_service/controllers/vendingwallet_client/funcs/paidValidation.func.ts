@@ -1,8 +1,8 @@
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import axios from "axios";
 import { IENMessage, LAAB_CoinTransfer, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
-import { dbConnection, vendingWallet } from "../../../../entities";
+import { dbConnection, vendingMachineSaleReportEntity, vendingWallet } from "../../../../entities";
 import { v4 as uuid4 } from 'uuid';
 import { EClientCommand, EEntity, EPaymentStatus, IVendingMachineSale } from "../../../../entities/system.model";
 import { VendingMachineBillFactory, VendingMachineBillStatic } from "../../../../entities/vendingmachinebill.entity";
@@ -220,6 +220,86 @@ export class PaidValidationFunc {
                 run = await new CashVendingWalletValidationFunc().Init({ machineId: this.machineId });
                 if (run.message != IENMessage.success) return resolve(run);
                 writeMachineBalance(this.machineId, String(run.balance));
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private SaveMachineSaleReport(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const timenow = new Date();
+                const arr = this.paidLAAB.ids;
+                if (arr != undefined && Object.entries(arr).length == 0) return resolve(IENMessage.invalidReportParameters);
+
+                // same order
+                let duplicate = arr.filter((obj, index) => 
+                    arr.findIndex((item) => item.id == obj.id) !== index
+                )
+                // original
+                let unique = arr.filter((obj, index) => 
+                    arr.findIndex((item) => item.id == obj.id) === index
+                )
+                
+                // merge same order
+                let checkFilter: boolean = duplicate != undefined && Object.entries(duplicate).length > 0;
+                let subqty: number = 0;
+                let subtotal: number = 0;
+                if (checkFilter == true) {
+
+                    for(let i = 0; i < unique.length; i++) {
+                        for(let j = 0; j < duplicate.length; j++) {
+                            if (unique[i].id == duplicate[j].id) {
+                                unique[i].qty += duplicate[j].qty;
+
+
+                                unique[i].subqty = unique[i].qty;
+                                unique[i].subtotal = unique[i].qty * unique[i].price;
+                            }
+                        }
+                        subqty += unique[i].subqty;
+                        subtotal += unique[i].subtotal;
+                    }
+                }
+
+
+                const run = await vendingMachineSaleReportEntity.findOne({ where: { machineId: this.machineId, createdAt: {[Op.gte]: timenow} } });
+                if (run == null) {         
+
+                    const model = {
+                        machineId: this.machineId,
+                        data: unique,
+                        subqty: subqty,
+                        subtotal: subtotal
+                    }
+                    const save = await vendingMachineSaleReportEntity.create(model);
+                    if (!save) return resolve(IENMessage.saveSaleReportFail);
+
+                } else {
+
+                    let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
+                    for(let i = 0; i < predata.length; i++) {
+                        for(let j = 0; j < unique.length; j++) {
+                            if (predata[i].id == unique[j].id) {
+                                predata[i].subqty += unique[j].subqty;
+                                predata[i].subtotal += Number(predata[i].subtotal) + Number(unique[j].subtotal);
+                            }
+                        }
+                    }
+
+                    run.data = predata;
+                    run.subqty = Number(run.subqty) + Number(subqty);
+                    run.subtotal = Number(run.subtotal) + Number(subtotal);
+
+                    const save = await run.save();
+                    if (!save) return resolve(IENMessage.saveSaleReportFail);
+
+                }
+
                 resolve(IENMessage.success);
 
             } catch (error) {
