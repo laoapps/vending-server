@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import { CUISaleProcess } from '../processes/cuiSale.process';
 import { IENMessage } from 'src/app/models/base.model';
+import { SaleReportPage } from '../sale-report/sale-report.page';
 
 @Component({
   selector: 'app-cui-sale',
@@ -67,5 +68,13 @@ export class CuiSalePage implements OnInit {
     });
   }
 
-
+  saleRport() {
+    const props = {
+      machineId: this.machineId,
+      otp: this.otp
+    }
+    this.apiService.showModal(SaleReportPage, props).then(r => {
+      r.present();
+    });
+  }
 }

@@ -69,9 +69,6 @@ export class PaidValidationFunc {
 
                 console.log(`paid validation`, 8);
 
-                const SaveMachineSaleReport = await this.SaveMachineSaleReport();
-                if (SaveMachineSaleReport != IENMessage.success) throw new Error(SaveMachineSaleReport);
-
                 const CallBackConfirmBill = await this.CallBackConfirmBill();
                 if (CallBackConfirmBill != IENMessage.success) throw new Error(CallBackConfirmBill);
 
@@ -223,110 +220,6 @@ export class PaidValidationFunc {
                 run = await new CashVendingWalletValidationFunc().Init({ machineId: this.machineId });
                 if (run.message != IENMessage.success) return resolve(run);
                 writeMachineBalance(this.machineId, String(run.balance));
-                resolve(IENMessage.success);
-
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
-
-    private SaveMachineSaleReport(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-                
-                const timenow = new Date();
-                const arr = this.paidLAAB.data.ids;
-                if (arr != undefined && Object.entries(arr).length == 0) return resolve(IENMessage.invalidReportParameters);
-
-                // same order
-                let duplicate = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.stock.id == obj.stock.id) !== index
-                )
-                // original
-                let unique = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.stock.id == obj.stock.id) === index
-                )
-
-                console.log(`show duplicate`, duplicate, `show unique`, unique);
-                
-                // merge same order
-                let array: Array<any> = [];
-
-                if (duplicate != undefined && Object.entries(duplicate).length > 0) {
-
-                    for(let i = 0; i < unique.length; i++) {
-                        let setarray = {
-                            id: unique[i].stock.id,
-                            name: unique[i].stock.id,
-                            price: unique[i].stock.price,
-                            qtty: unique[i].stock.qtty,
-                            total: 0
-                        }
-
-                        for(let j = 0; j < duplicate.length; j++) {
-
-                            if (unique[i].stock.id == duplicate[j].stock.id) {
-                                setarray.qtty += duplicate[j].stock.qtty;
-                            }
-
-                        }
-                        
-                        setarray.total += setarray.qtty * setarray.price;
-                        array.push(setarray);
-                    }
-                    
-                }
-                else 
-                {
-                    for(let i = 0; i < unique.length; i++) {
-                        let setarray = {
-                            id: unique[i].stock.id,
-                            name: unique[i].stock.name,
-                            price: unique[i].stock.price,
-                            qtty: unique[i].stock.qtty,
-                            total: unique[i].stock.qtty * unique[i].stock.price
-                        }
-                        array.push(setarray);
-                    }
-                }
-
-
-                const run = await vendingMachineSaleReportEntity.findOne({ where: { machineId: this.machineId, createdAt: {[Op.gte]: timenow} } });
-                if (run == null) {         
-
-                    const model = {
-                        machineId: this.machineId,
-                        data: array,
-                        subqty: array.reduce((a,b) => a + b.qtty, 0),
-                        subtotal: array.reduce((a,b) => a + b.total, 0)
-                    }
-                    console.log(`model der`, model);
-                    const save = await vendingMachineSaleReportEntity.create(model);
-                    if (!save) return resolve(IENMessage.saveSaleReportFail);
-
-                } else {
-
-                    let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
-
-                    for(let i = 0; i < predata.length; i++) {
-                        for(let j = 0; j < array.length; j++) {
-                            if (predata[i].id == array[j].id) {
-                                predata[i].qtty += array[j].qtty;
-                                predata[i].total += array[j].total;
-                            }
-                        }
-                    }
-
-                    run.data = predata;
-                    run.subqty = predata.reduce((a,b) => a + b.qtty ,0);
-                    run.subtotal = predata.reduce((a,b) => a + b.total ,0);
-
-                    const save = await run.save();
-                    if (!save) return resolve(IENMessage.saveSaleReportFail);
-
-                }
-
                 resolve(IENMessage.success);
 
             } catch (error) {

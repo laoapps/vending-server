@@ -23,6 +23,7 @@ export class VendingGoPage implements OnInit {
 
   quantity: number = 0;
   total: number = 0;
+
   constructor(
     private modal: ModalController,
     public apiService: ApiService
@@ -42,6 +43,7 @@ export class VendingGoPage implements OnInit {
     
     console.log(`sum total`, this.total);
     console.log(`summarizeOrder`, this.summarizeOrder);
+
     this.apiService.vendingGoPageSound()
   }
 

@@ -172,6 +172,10 @@ const routes: Routes = [
     path: 'cui-sale',
     loadChildren: () => import('./sale/cui-sale/cui-sale.module').then( m => m.CuiSalePageModule)
   },
+  {
+    path: 'sale-report',
+    loadChildren: () => import('./sale/sale-report/sale-report.module').then( m => m.SaleReportPageModule)
+  },
 ];
 @NgModule({
   imports: [

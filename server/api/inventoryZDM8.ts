@@ -58,6 +58,7 @@ import {
     IMMoneyLoginCashin,
     IMMoneyRequestRes,
     IVendingCloneMachineSale,
+    ISaveMachineSaleReport,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -1635,6 +1636,36 @@ export class InventoryZDM8 implements IBaseClass {
                             PrintSucceeded(
                                 "refillMachineSale",
                                 c.data,
+                                EMessage.succeeded
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error));
+                    }
+                }
+            );
+
+
+
+
+
+
+            router.post(
+                this.path + "/saveMachineSaleReport",
+                this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        // const isActive = req.query['isActive'];
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        if (!machineId) throw new Error("machine is not exit");
+                        res.send(
+                            PrintSucceeded(
+                                "readMachineSale",
+                                JSON.parse(await readMachineSale(machineId.machineId)),
                                 EMessage.succeeded
                             )
                         );
@@ -3792,7 +3823,7 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
     
-    saveMachineSaleReport(params: any): Promise<any> {
+    SaveMachineSaleReport(params: ISaveMachineSaleReport): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
@@ -3802,31 +3833,53 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // same order
                 let duplicate = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.id == obj.id) !== index
+                    arr.findIndex((item) => item.stock.id == obj.stock.id) !== index
                 )
                 // original
                 let unique = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.id == obj.id) === index
+                    arr.findIndex((item) => item.stock.id == obj.stock.id) === index
                 )
+
+                console.log(`show duplicate`, duplicate, `show unique`, unique);
                 
                 // merge same order
-                let checkFilter: boolean = duplicate != undefined && Object.entries(duplicate).length > 0;
-                let subqty: number = 0;
-                let subtotal: number = 0;
-                if (checkFilter == true) {
+                let array: Array<any> = [];
+
+                if (duplicate != undefined && Object.entries(duplicate).length > 0) {
 
                     for(let i = 0; i < unique.length; i++) {
-                        for(let j = 0; j < duplicate.length; j++) {
-                            if (unique[i].id == duplicate[j].id) {
-                                unique[i].qty += duplicate[j].qty;
-
-
-                                unique[i].subqty = unique[i].qty;
-                                unique[i].subtotal = unique[i].qty * unique[i].price;
-                            }
+                        let setarray = {
+                            id: unique[i].stock.id,
+                            name: unique[i].stock.id,
+                            price: unique[i].stock.price,
+                            qtty: unique[i].stock.qtty,
+                            total: 0
                         }
-                        subqty += unique[i].subqty;
-                        subtotal += unique[i].subtotal;
+
+                        for(let j = 0; j < duplicate.length; j++) {
+
+                            if (unique[i].stock.id == duplicate[j].stock.id) {
+                                setarray.qtty += duplicate[j].stock.qtty;
+                            }
+
+                        }
+                        
+                        setarray.total += setarray.qtty * setarray.price;
+                        array.push(setarray);
+                    }
+                    
+                }
+                else 
+                {
+                    for(let i = 0; i < unique.length; i++) {
+                        let setarray = {
+                            id: unique[i].stock.id,
+                            name: unique[i].stock.name,
+                            price: unique[i].stock.price,
+                            qtty: unique[i].stock.qtty,
+                            total: unique[i].stock.qtty * unique[i].stock.price
+                        }
+                        array.push(setarray);
                     }
                 }
 
@@ -3836,28 +3889,30 @@ export class InventoryZDM8 implements IBaseClass {
 
                     const model = {
                         machineId: params.machineId,
-                        data: unique,
-                        subqty: subqty,
-                        subtotal: subtotal
+                        data: array,
+                        subqty: array.reduce((a,b) => a + b.qtty, 0),
+                        subtotal: array.reduce((a,b) => a + b.total, 0)
                     }
+                    console.log(`model der`, model);
                     const save = await vendingMachineSaleReportEntity.create(model);
                     if (!save) return resolve(IENMessage.saveSaleReportFail);
 
                 } else {
 
                     let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
+
                     for(let i = 0; i < predata.length; i++) {
-                        for(let j = 0; j < unique.length; j++) {
-                            if (predata[i].id == unique[j].id) {
-                                predata[i].subqty += unique[j].subqty;
-                                predata[i].subtotal += Number(predata[i].subtotal) + Number(unique[j].subtotal);
+                        for(let j = 0; j < array.length; j++) {
+                            if (predata[i].id == array[j].id) {
+                                predata[i].qtty += array[j].qtty;
+                                predata[i].total += array[j].total;
                             }
                         }
                     }
 
                     run.data = predata;
-                    run.subqty = Number(run.subqty) + Number(subqty);
-                    run.subtotal = Number(run.subtotal) + Number(subtotal);
+                    run.subqty = predata.reduce((a,b) => a + b.qtty ,0);
+                    run.subtotal = predata.reduce((a,b) => a + b.total ,0);
 
                     const save = await run.save();
                     if (!save) return resolve(IENMessage.saveSaleReportFail);
@@ -3867,7 +3922,7 @@ export class InventoryZDM8 implements IBaseClass {
                 resolve(IENMessage.success);
 
             } catch (error) {
-                resolve(error.message);     
+                resolve(error.message);
             }
         });
     }

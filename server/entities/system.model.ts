@@ -2221,3 +2221,8 @@ export enum EEntity {
     vendingcashoutmmoney = 'vendingcashoutmmoney',
     vendingmachinesalereport = 'vendingmachinesalereport'
 }
+
+export interface ISaveMachineSaleReport {
+    machineId: string,
+    data: Array<any>
+}
