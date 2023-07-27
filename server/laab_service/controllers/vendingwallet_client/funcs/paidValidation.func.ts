@@ -236,7 +236,7 @@ export class PaidValidationFunc {
             try {
                 
                 const timenow = new Date();
-                const arr = this.paidLAAB.ids;
+                const arr = this.paidLAAB.data.ids;
                 if (arr != undefined && Object.entries(arr).length == 0) return resolve(IENMessage.invalidReportParameters);
 
                 // same order
