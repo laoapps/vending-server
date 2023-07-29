@@ -2,8 +2,7 @@
 
   <!-- <ion-toolbar mode="ios" > -->
   <!-- <ion-title style="height: 160px; "> -->
-  <div class="box" [style] = "apiService._cuiSetting.imgHeader">
-    {{apiService._cuiSetting.imgHeader}}
+  <div class="box" [ngStyle] = "apiService._cuiSetting.imgHeader">
     <div>
       <img [src]="apiService._cuiSetting.imgLogo||mmLogo" (press)="holdCount()" (touchend)="endCount()" (click)="manageStock()" />
     </div>

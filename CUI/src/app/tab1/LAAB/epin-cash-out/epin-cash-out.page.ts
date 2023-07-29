@@ -98,7 +98,7 @@ export class EpinCashOutPage implements OnInit {
         let params: any = {
           machineId: localStorage.getItem('machineId'),
           phonenumber: this.phonenumber,
-          cash: this.apiService.cash
+          cash: this.apiService.cash.amount
         }
 
         console.log(`params`, params);

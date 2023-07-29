@@ -890,7 +890,7 @@ export class Tab1Page {
         const params = {};
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash = run.data[0].vendingWalletCoinBalance;
+        this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
         resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -905,7 +905,7 @@ export class Tab1Page {
         const params = {};
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash = run.data[0].vendingWalletCoinBalance;
+        this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
         if (this.apiService.cash.amount > 0)
           this.apiService.soundMachineHasSomeChanges();
         resolve(IENMessage.success);
@@ -931,7 +931,7 @@ export class Tab1Page {
         };
         run = await this.cashinValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash.amount = Number(this.apiService.cash) + Number(cashList);
+        this.apiService.cash.amount = Number(this.apiService.cash.amount) + Number(cashList);
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -1061,7 +1061,7 @@ export class Tab1Page {
 
         const props = {
           machineId: localStorage.getItem('machineId'),
-          cash: this.apiService.cash,
+          cash: this.apiService.cash.amount,
           quantity: sum_quantity,
           total: sum_total,
           balance: sum_refund,
