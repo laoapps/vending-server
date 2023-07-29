@@ -31,9 +31,44 @@ export class RemainingbillsPage implements OnInit {
   findPrice(id:number){
     return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
   }
+  // local
   retryProcessBill(transactionID:string,position:number){
     if (this.canclick == true) {
       this.apiService.showLoading('',30000);
+      const isRemote= localStorage.getItem('remoteProcess');
+      if(!isRemote)
+      this.apiService.retryProcessBillLocal(transactionID,position).subscribe(async r=>{
+        console.log(`vending on sale`, ApiService.vendingOnSale);
+        console.log('retryProcessBill',r);
+        if(r.status){
+          this.apiService.soundThankYou()
+          this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
+            r.present();
+          });
+          let count: number = 0;
+          console.log(`lleng`, this.r);
+          if (this.r != undefined && Object.entries(this.r).length > 1) {
+            count = this.r.length - 1;
+          } else {
+            count = 0;
+          }
+          const i=this.r.findIndex(v=>v.position==position);
+          this.r.splice(i,1);
+         
+          if (this.r != undefined && this.r.length == 0) {
+            this.apiService,this.modal.dismiss();
+          }
+          // this.apiService.modal.dismiss();
+          // this.apiService.myTab1.reshowBills(count);
+        } else{
+          await this.apiService.soundSystemError();
+        }
+        this.apiService.simpleMessage(r.message);
+        setTimeout(()=>{
+          this.apiService.dismissLoading();
+        },3000)
+      })
+      else
       this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
         console.log(`vending on sale`, ApiService.vendingOnSale);
         console.log('retryProcessBill',r);
@@ -68,6 +103,44 @@ export class RemainingbillsPage implements OnInit {
       }); 
     }
   }
+  // remote
+  // retryProcessBill(transactionID:string,position:number){
+  //   if (this.canclick == true) {
+  //     this.apiService.showLoading('',30000);
+  //     this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
+  //       console.log(`vending on sale`, ApiService.vendingOnSale);
+  //       console.log('retryProcessBill',r);
+  //       if(r.status){
+  //         this.apiService.soundThankYou()
+  //         this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
+  //           r.present();
+  //         });
+  //         let count: number = 0;
+  //         console.log(`lleng`, this.r);
+  //         if (this.r != undefined && Object.entries(this.r).length > 1) {
+  //           count = this.r.length - 1;
+  //         } else {
+  //           count = 0;
+  //         }
+  //         const i=this.r.findIndex(v=>v.position==position);
+  //         this.r.splice(i,1);
+         
+  //         if (this.r != undefined && this.r.length == 0) {
+  //           this.apiService,this.modal.dismiss();
+  //         }
+  //         // this.apiService.modal.dismiss();
+  //         // this.apiService.myTab1.reshowBills(count);
+  //       } else{
+  //         await this.apiService.soundSystemError();
+  //       }
+  //       this.apiService.simpleMessage(r.message);
+  //       setTimeout(()=>{
+  //         this.apiService.dismissLoading();
+  //       },3000)
+        
+  //     }); 
+  //   }
+  // }
   getPrice() {
     return this.r.find(item => item)
   }

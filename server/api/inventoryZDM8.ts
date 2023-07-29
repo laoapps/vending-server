@@ -75,7 +75,6 @@ import {
     machineClientIDEntity,
     machineIDEntity,
     stockEntity,
-    vendingMachineSaleReportEntity,
 } from "../entities";
 import {
     MachineClientID,
@@ -311,6 +310,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 res.send(PrintError(d.command, e, EMessage.error));
                             });
                     } else if (d.command == "processorder") {
+                        // update bill for local process
                         console.log("process orders", d);
                         // c.wallet_ids
                         try {
@@ -1606,7 +1606,6 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
-
             
 
             router.post(

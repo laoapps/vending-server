@@ -6,6 +6,7 @@ import { SerialPort } from 'serialport';
 import { SocketClientZDM8 } from './socketClient.zdm8';
 import crc from 'crc';
 import moment from 'moment';
+import { Bcc } from 'node-bcc';
 export class VendingZDM8 {
     port = new SerialPort({ path: '/dev/ttyS1', baudRate: 9600 }, function (err) {
         if (err) {

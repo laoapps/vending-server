@@ -23,7 +23,7 @@ export class VendingZDM8 {
     creditPending = new Array<{ command: any, data: any, transactionID: string, t: number }>();
     processPending = new Array<{command: any, params: any, transactionID: string}>();
     setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
-
+    machinestatus = '';
     lastupdate = 0;
     pendingRetry = 10;// 10s
 

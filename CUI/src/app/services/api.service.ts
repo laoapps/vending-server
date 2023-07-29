@@ -168,6 +168,7 @@ export class ApiService {
     public load: LoadingController,
     public alert: AlertController
   ) {
+    if(!localStorage.getItem('remoteProcess'))localStorage.setItem('remoteProcess','yes')
     const that = this;
     this.wsapi = wsapi;
     // this.zone.runOutsideAngular(() => {
@@ -516,7 +517,7 @@ export class ApiService {
     );
   }
   retryProcessBillLocal(T: string, position: number) {
-    const p = { data: { slot: position }, transactionID: T };
+    const p = {command:'process', data: { slot: position }, transactionID: T };
     return this.http.post<IResModel>('http://localhost:19006/', p, {
       headers: this.headerBase(),
     });
