@@ -168,7 +168,7 @@ export class ApiService {
     public load: LoadingController,
     public alert: AlertController
   ) {
-    if(!localStorage.getItem('remoteProcess'))localStorage.setItem('remoteProcess','yes')
+    if(!localStorage.getItem('remoteProcess'))localStorage.setItem('remoteProcess','yes');
     const that = this;
     this.wsapi = wsapi;
     // this.zone.runOutsideAngular(() => {
