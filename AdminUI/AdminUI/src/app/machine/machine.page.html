@@ -100,8 +100,12 @@
                         <div style="float: left;"> <ion-icon name="bulb-sharp"></ion-icon><ion-checkbox [(ngModel)]="settings[p.machineId].light"></ion-checkbox> </div>
              
                         <div style="float: left;"> <ion-icon name="snow-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> </div>
-                        <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input>
-                      </div>
+                        <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input> </div>
+                          <hr/>
+                          <div style="float: left;"> <ion-icon name="image-outline"></ion-icon>Photo header<ion-input type="text" [(ngModel)]="settings[p.machineId].imgHeader"></ion-input> </div>
+                          <div style="float: left;"> <ion-icon name="images-outline"></ion-icon>Photo Footer<ion-input type="text" [(ngModel)]="settings[p.machineId].imgFooter"></ion-input></div>
+                          <div style="float: left;"> <ion-icon name="camera-outline"></ion-icon>Logo<ion-input type="text" [(ngModel)]="settings[p.machineId].imgLogo"></ion-input></div>
+
                     </td>
                      <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button> 
                     <td>

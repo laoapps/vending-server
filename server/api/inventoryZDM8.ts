@@ -75,6 +75,7 @@ import {
     machineClientIDEntity,
     machineIDEntity,
     stockEntity,
+    vendingMachineSaleReportEntity,
 } from "../entities";
 import {
     MachineClientID,
@@ -1923,16 +1924,23 @@ export class InventoryZDM8 implements IBaseClass {
                                 const z = o.data[0]?.highTemp || 10;
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
+
+                                const imgh = o.data[0]?.imgHeader ;
+                                const imgf = o.data[0]?.imgFooter ;
+                                const imgl = o.data[0]?.imgLogo ;
                                 let t = o.data[0]?.imei || '';
                                 if(t&&t.length<8){
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l ,imei:t};
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l ,imei:t,imgHeader:imgh,imgFooter:imgf,imgLogo:imgl};
                                     r.data.push(a);
                                 }
                                 else { 
                                     a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l  ,a.imei=t;
+                                    a.imgHeader=imgh;
+                                    a.imgFooter=imgf;
+                                    a.imgLogo=imgl;
                                 }
 
                                 // r.data = [a];
@@ -3659,8 +3667,6 @@ export class InventoryZDM8 implements IBaseClass {
                                     let mymlimiter = [];
                                     let setting = {} as any;
                                     try {
-
-
                                         let y = [];
                                         if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true,setting.imei='' }
                                         else {
@@ -3881,11 +3887,8 @@ export class InventoryZDM8 implements IBaseClass {
                         array.push(setarray);
                     }
                 }
-
-
                 const run = await vendingMachineSaleReportEntity.findOne({ where: { machineId: params.machineId, createdAt: {[Op.gte]: timenow} } });
                 if (run == null) {         
-
                     const model = {
                         machineId: params.machineId,
                         data: array,
@@ -3895,11 +3898,8 @@ export class InventoryZDM8 implements IBaseClass {
                     console.log(`model der`, model);
                     const save = await vendingMachineSaleReportEntity.create(model);
                     if (!save) return resolve(IENMessage.saveSaleReportFail);
-
                 } else {
-
                     let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
-
                     for(let i = 0; i < predata.length; i++) {
                         for(let j = 0; j < array.length; j++) {
                             if (predata[i].id == array[j].id) {
@@ -3908,14 +3908,12 @@ export class InventoryZDM8 implements IBaseClass {
                             }
                         }
                     }
-
                     run.data = predata;
                     run.subqty = predata.reduce((a,b) => a + b.qtty ,0);
                     run.subtotal = predata.reduce((a,b) => a + b.total ,0);
 
                     const save = await run.save();
                     if (!save) return resolve(IENMessage.saveSaleReportFail);
-
                 }
 
                 resolve(IENMessage.success);

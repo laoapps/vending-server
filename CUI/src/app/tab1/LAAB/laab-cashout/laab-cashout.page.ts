@@ -69,12 +69,12 @@ export class LaabCashoutPage implements OnInit {
       try {
        
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
-        let moneyFormat = this.apiService.formatMoney(this.apiService.cash).toString();
+        let moneyFormat = this.apiService.formatMoney(this.apiService.cash.amount).toString();
         moneyFormat = moneyFormat.split('.00')[0];
         const params = {
           machineId: localStorage.getItem('machineId'),
           receiver: this.phonenumber,
-          cash: this.apiService.cash,
+          cash: this.apiService.cash.amount,
           description: 'VENDING CASH OUT TO ANOTHER LAAB ACCOUNT'
         }
 
@@ -90,7 +90,7 @@ export class LaabCashoutPage implements OnInit {
           confirmButtonText: 'OK',
           confirmButtonColor: '#28B463'
         });
-        this.apiService.cash = 0;
+        this.apiService.cash.amount = 0;
         this.stackCashoutPage.dismiss();
         this.apiService.modal.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);

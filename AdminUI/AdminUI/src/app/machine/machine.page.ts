@@ -181,6 +181,9 @@ export class MachinePage implements OnInit {
             setting.highTemp=15;
             setting.light=true;
             setting.imei='';
+            setting.imgHeader='';
+            setting.imgFooter='';
+            setting.imgLogo='';
           }
           this.settings[v.machineId]=setting;
         })

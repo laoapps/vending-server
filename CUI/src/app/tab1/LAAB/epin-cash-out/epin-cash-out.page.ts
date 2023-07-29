@@ -93,7 +93,7 @@ export class EpinCashOutPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
        console.log(`--->`, this.phonenumber);
-        if (this.apiService.cash == 0) throw new Error(IENMessage.thereIsNotBalance);
+        if (this.apiService.cash.amount == 0) throw new Error(IENMessage.thereIsNotBalance);
 
         let params: any = {
           machineId: localStorage.getItem('machineId'),
@@ -105,7 +105,7 @@ export class EpinCashOutPage implements OnInit {
 
         let run: any = await this.createSMCProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash = 0;
+        this.apiService.cash.amount = 0;
 
         console.log(`afer create skc`, run.data);
 

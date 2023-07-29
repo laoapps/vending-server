@@ -68,7 +68,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
   balanceRefresh(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        this.currentCash = this.apiService.cash;
+        this.currentCash = this.apiService.cash.amount;
 
         let count = 0;
         const params = {
@@ -82,7 +82,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
             console.log(`response`, run);
             this.apiService.cash = run.data[0].vendingWalletCoinBalance;
             console.log(`current cash`, this.currentCash, `cash`, this.apiService.cash);
-            if (this.currentCash == this.apiService.cash) {
+            if (this.currentCash == this.apiService.cash.amount) {
               count = 0;
             } else {
               clearInterval(this.counterRefreshBalance);

@@ -69,7 +69,7 @@ export class MmoneyCashoutPage implements OnInit {
       try {
        
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
-        let moneyFormat = this.apiService.formatMoney(this.apiService.cash).toString();
+        let moneyFormat = this.apiService.formatMoney(this.apiService.cash.amount).toString();
         moneyFormat = moneyFormat.split('.00')[0];
 
         const params = {
@@ -87,7 +87,7 @@ export class MmoneyCashoutPage implements OnInit {
           confirmButtonText: 'OK',
           confirmButtonColor: '#28B463'
         });
-        this.apiService.cash = Number(this.apiService.cash) - 1100;
+        this.apiService.cash.amount = Number(this.apiService.cash.amount);
         this.stackCashoutPage.dismiss();
         this.apiService.modal.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);

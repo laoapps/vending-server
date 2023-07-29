@@ -200,7 +200,7 @@ export class Tab1Page {
                     this.apiService.soundCheckTicketsExist();
                   }, 15000);
                   setTimeout(() => {
-                    if(this.apiService.cash>0)this.apiService.soundMachineHasSomeChanges();
+                    if(this.apiService.cash.amount>0)this.apiService.soundMachineHasSomeChanges();
                   }, 20000);
                 }
                 
@@ -906,7 +906,7 @@ export class Tab1Page {
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash = run.data[0].vendingWalletCoinBalance;
-        if (this.apiService.cash > 0)
+        if (this.apiService.cash.amount > 0)
           this.apiService.soundMachineHasSomeChanges();
         resolve(IENMessage.success);
       } catch (error) {
@@ -931,7 +931,7 @@ export class Tab1Page {
         };
         run = await this.cashinValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash = Number(this.apiService.cash) + Number(cashList);
+        this.apiService.cash.amount = Number(this.apiService.cash) + Number(cashList);
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -1036,11 +1036,11 @@ export class Tab1Page {
             this.summarizeOrder[i].stock.price;
         }
         console.log(`sum total`, sum_total);
-        if (this.apiService.cash < sum_total) {
+        if (this.apiService.cash.amount < sum_total) {
           await this.apiService.soundPleaseTopUpValue();
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
-        const sum_refund = this.apiService.cash - sum_total;
+        const sum_refund = this.apiService.cash.amount - sum_total;
 
         const paidLAAB = {
           command: EClientCommand.paidLAAB,
@@ -1156,7 +1156,7 @@ export class Tab1Page {
   laabCashout(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if (this.apiService.cash == 0)
+        if (this.apiService.cash.amount == 0)
           throw new Error(IENMessage.thereIsNotBalance);
 
         const props = {};
@@ -1220,7 +1220,7 @@ export class Tab1Page {
   public openStackCashOutPage(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if (this.apiService.cash == 0)
+        if (this.apiService.cash.amount == 0)
           throw new Error(IENMessage.thereIsNotBalance);
 
         // ##here

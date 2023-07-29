@@ -74,7 +74,7 @@ export class ApiService {
                     this.soundCheckTicketsExist();
                   }, 15000);
                   setTimeout(() => {
-                    if(this.cash>0)this.soundMachineHasSomeChanges();
+                    if(this.cash.amount>0)this.soundMachineHasSomeChanges();
                   }, 20000);
                 }
                 
@@ -120,7 +120,7 @@ export class ApiService {
 
   myTab1: Tab1Page;
 
-  cash: number = 0;
+  cash={amount:0};
   coinListId: string;
   coinCode: string;
   coinName: string;
@@ -153,6 +153,7 @@ export class ApiService {
   static waiting_T: any;
 
   _machineStatus = { status: {} as IMachineStatus } as any;
+  _cuiSetting={} as any;
   constructor(
     public controlMenuService: ControlMenuService,
 
@@ -188,7 +189,7 @@ export class ApiService {
         if (!r) return console.log('empty');
         console.log('ws alive subscription', r);
 
-        this.cash = r.balance;
+        this.cash.amount = r.balance;
         this.wsAlive.time = new Date();
         this.wsAlive.isAlive = this.checkOnlineStatus();
         this.test.test = r?.test;
@@ -199,14 +200,20 @@ export class ApiService {
         //   this.validateDB();
         // }
         if (r.balance) {
-          if (this.cash < r.balance) this.soundLaabIncreased();
-          this.cash = r.balance;
+          if (this.cash.amount < r.balance) this.soundLaabIncreased();
+          this.cash.amount = r.balance;
         }
 
         this._machineStatus.status = r.data.mstatus;
         this._machineStatus.status.temp = hex2dec(
           this._machineStatus.status.temp
         );
+        this._cuiSetting = r.data.setting;
+        if(!this._cuiSetting?.imgHeader)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')  rgb(255, 255, 255) no-repeat center fixed";
+        // if(!this._cuiSetting.imgFooter)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
+        // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
+
+
       } catch (error) {
         console.log('error', error);
       }

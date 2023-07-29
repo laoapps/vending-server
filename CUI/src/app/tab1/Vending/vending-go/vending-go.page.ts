@@ -109,10 +109,10 @@ export class VendingGoPage implements OnInit {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        if (this.apiService.cash < this.total) {
+        if (this.apiService.cash.amount < this.total) {
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
-        const sum_refund = this.apiService.cash - this.total;
+        const sum_refund = this.apiService.cash.amount - this.total;
 
         const paidLAAB = {
           command: EClientCommand.paidLAAB,

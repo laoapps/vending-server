@@ -15,7 +15,7 @@
 
     </div>
     <div class="laab-card-body">
-      <div class="cash-balance">{{ apiService.cash | number }}</div>
+      <div class="cash-balance">{{ apiService.cash.amount | number }}</div>
      <div class="balance-text">{{ phonenumber }}</div>
      <div class="number-list">
       <div class="left">
@@ -58,7 +58,7 @@
           <div class="form-group">
             <div class="item">
               <div class="text">Vending Balance</div>
-              <div class="value"><i class="fa-solid fa-wallet"></i> {{ apiService.cash | number }}</div>
+              <div class="value"><i class="fa-solid fa-wallet"></i> {{ apiService.cash.amount | number }}</div>
             </div>
             <div class="item">
               <div class="text">Phone Number</div>
