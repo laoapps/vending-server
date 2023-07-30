@@ -54,6 +54,7 @@ import { HowToPage } from './Vending/how-to/how-to.page';
 import { LoadStockListProcess } from './Vending_processes/loadStockList.process';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import Swal from 'sweetalert2';
+import { AdsPage } from '../ads/ads.page';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -179,9 +180,19 @@ export class Tab1Page {
         // this.loadSaleList();
         // this.initStock();
         if(this.isFirstLoad){
-
+          let adsOn =false
           setInterval(()=>{
             if(this.autopilot.auto>=6){
+              // load ads when no active
+              if(!adsOn)
+              this.apiService.showModal(AdsPage).then(r=>{
+                r.present();
+                adsOn=true;
+                r.onDidDismiss().then(rx=>{
+                  adsOn=false;
+                })
+              })
+
               this.apiService.soundGreeting();
               setTimeout(() => {
                 this.apiService.soundPleaseVisit();
@@ -206,6 +217,7 @@ export class Tab1Page {
                 
               }, 10000);
               this.autopilot.auto=0;
+              
             }else{
               this.autopilot.auto++;
             }

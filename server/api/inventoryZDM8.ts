@@ -59,6 +59,7 @@ import {
     IMMoneyRequestRes,
     IVendingCloneMachineSale,
     ISaveMachineSaleReport,
+    IAds,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -69,6 +70,7 @@ import {
     MachineIDStatic,
 } from "../entities/machineid.entity";
 import {
+    adsEntity,
     dbConnection,
     laabHashService,
     machineCashoutMMoneyEntity,
@@ -1494,6 +1496,161 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+            /// ADS
+            // add ads
+            router.post(
+                this.path + "/addAds",
+                this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const ads = d.data as IAds;
+                        adsEntity
+                            .create(ads)
+                            .then((r) => {
+                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded));
+                            })
+                            .catch((e) => {
+                                console.log("error addAds", e);
+
+                                res.send(PrintError("addAds", e, EMessage.error));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addAds", error, EMessage.error));
+                    }
+                }
+            );
+            // clone ads
+            router.post(
+                this.path + "/cloneAds",
+                this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const id = d.data.id as number;
+                        adsEntity.findByPk(id).then(a=>{
+                            if(a)
+                            adsEntity
+                            .create(a.toJSON())
+                            .then((r) => {
+                                res.send(PrintSucceeded("cloneAds", r, EMessage.succeeded));
+                            })
+                            .catch((e) => {
+                                console.log("error cloneAds", e);
+
+                                res.send(PrintError("cloneAds", e, EMessage.error));
+                            });
+                            else
+                            res.send(PrintError("cloneAds failed not exist ", e, EMessage.error));
+                        }).catch(error=>{
+                            console.log(error);
+                        res.send(PrintError("cloneAds", error, EMessage.error));
+                        })
+                       
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("cloneAds", error, EMessage.error));
+                    }
+                }
+            );
+            // remove ads
+            router.post(
+                this.path + "/removeAds",
+                this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const ads = d.data.ads as IAds;
+                        const id = d.data.id as number
+                        adsEntity
+                            .create(ads)
+                            .then((r) => {
+                                r.destroy();
+                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded));
+                            })
+                            .catch((e) => {
+                                console.log("error addAds", e);
+
+                                res.send(PrintError("addAds", e, EMessage.error));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addAds", error, EMessage.error));
+                    }
+                }
+            );
+            /// remove machines from ads
+            router.post(
+                this.path + "/removeMachineFromAds",
+                this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const machines = d.data.machines as Array<string>;
+                        const id = d.data.id as number;
+                        adsEntity
+                            .findByPk(id)
+                            .then((r) => {
+                                r.machines=r.machines.filter(v=>!machines.includes(v));
+                                r.changed('machines',true);
+                                r.save();
+                                res.send(PrintSucceeded("removeMachineFromAds", r, EMessage.succeeded));
+                            })
+                            .catch((e) => {
+                                console.log("error lremoveMachineFromAds", e);
+
+                                res.send(PrintError("removeMachineFromAds", e, EMessage.error));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("removeMachineFromAds", error, EMessage.error));
+                    }
+                }
+            );
+            // load ads
+            router.post(
+                this.path + "/loadAds",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const existIds = d.data.existIds as Array<number>;
+                        console.log('loadAds',d.data);
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        
+                        adsEntity
+                            .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
+                            .then((r) => {
+                                if(!existIds.length)
+                                res.send(PrintSucceeded("loadAds", r, EMessage.succeeded));
+
+                                else
+                                res.send(PrintSucceeded("loadAds", r.filter(rx=>!existIds.includes(rx.id)), EMessage.succeeded));
+                            })
+                            .catch((e) => {
+                                console.log("error loadAds", e);
+
+                                res.send(PrintError("loadAds", e, EMessage.error));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("loadAds", error, EMessage.error));
+                    }
+                }
+            );
+
+            // Save Sale
             // redis
             // need to save to database as blockchain
             router.post(

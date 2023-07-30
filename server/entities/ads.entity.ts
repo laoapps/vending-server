@@ -1,15 +1,14 @@
 import { BuildOptions, DataTypes, Model, ModelAttributes, Sequelize } from "sequelize";
-import { ISubadmin } from "./system.model";
+import { IAds } from "./system.model";
 
-
-export interface SubadminAttributes extends ISubadmin { }
-export interface SubadminModel extends Model<SubadminAttributes>, SubadminAttributes { }
-export type SubadminStatic = typeof Model & {
-    new(values?: object, options?: BuildOptions): SubadminModel;
+export interface AdsAttributes extends IAds { }
+export interface AdsModel extends Model<AdsAttributes>, AdsAttributes { }
+export type AdsStatic = typeof Model & {
+    new(values?: object, options?: BuildOptions): AdsModel;
 }
 
-export let SubadminFactory = (name: string, con: Sequelize): any => {
-    const attributes: ModelAttributes<SubadminModel> = {
+export let AdsFactory = (name: string, con: Sequelize): any => {
+    const attributes: ModelAttributes<AdsModel> = {
         id: {   
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -28,17 +27,19 @@ export let SubadminFactory = (name: string, con: Sequelize): any => {
             allowNull: false,
             defaultValue: true
         },
-        ownerUuid: {
-            type: DataTypes.STRING,
+        name: {
+            type: DataTypes.STRING
         },
-        data: {
-            type: DataTypes.JSONB,
-            allowNull: false
+        description: {
+            type: DataTypes.STRING
         },
-        provides: {
+        machines: {
+            type: DataTypes.JSONB
+        },
+        adsMedia: {
             type: DataTypes.JSONB
         }   
-    } as ModelAttributes<SubadminModel>;
+    } as ModelAttributes<AdsModel>;
     let x = con.define(name, attributes, { tableName: name, freezeTableName: true, timestamps: true });
     return x;
 }

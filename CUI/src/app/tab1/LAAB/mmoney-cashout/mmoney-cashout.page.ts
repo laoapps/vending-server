@@ -74,7 +74,7 @@ export class MmoneyCashoutPage implements OnInit {
 
         const params = {
           phonenumber: this.phonenumber,
-          cash: 1100 // debug here
+          cash: this.apiService.cash.amount // debug here
         }
         const run = await this.mmoneyCashoutValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
@@ -87,7 +87,7 @@ export class MmoneyCashoutPage implements OnInit {
           confirmButtonText: 'OK',
           confirmButtonColor: '#28B463'
         });
-        this.apiService.cash.amount = Number(this.apiService.cash.amount);
+        // this.apiService.cash.amount = Number(this.apiService.cash.amount);
         this.stackCashoutPage.dismiss();
         this.apiService.modal.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);

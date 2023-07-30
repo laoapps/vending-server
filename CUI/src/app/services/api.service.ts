@@ -517,6 +517,19 @@ export class ApiService {
       headers: this.headerBase(),
     });
   }
+  // if there is a new ads then remove the old ones 
+  loadAds(existIds:Array<number>) {
+    return this.http.post<IResModel>(
+      this.url + '/loadAds',
+      {
+        existIds,
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase() }
+    );
+  }
   retryProcessBill(T: string, position: number) {
     return this.http.post<IResModel>(
       this.url + '/retryProcessBill?T=' + T + '&position=' + position,

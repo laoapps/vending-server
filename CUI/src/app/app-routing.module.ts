@@ -61,6 +61,10 @@ const routes: Routes = [
   {
     path: 'customloading',
     loadChildren: () => import('./customloading/customloading.module').then( m => m.CustomloadingPageModule)
+  },
+  {
+    path: 'ads',
+    loadChildren: () => import('./ads/ads.module').then( m => m.AdsPageModule)
   }
 ];
 @NgModule({

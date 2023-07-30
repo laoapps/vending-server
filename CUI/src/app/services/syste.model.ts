@@ -743,7 +743,12 @@ export interface IBC {
     hashM: string;
    
 }
-
+export interface IAdsMedia {
+    name:string;
+    description:string;
+    url:string;
+    type:string//webm,png
+}
 export interface IStock extends IBase, IBC{
     name: string;
     image: string;

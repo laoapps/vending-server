@@ -2202,6 +2202,7 @@ export const data = [{
 
 ]
 
+
 export enum EEntity {
     banknote = 'banknote',
     billcash = "billcash",
@@ -2219,10 +2220,35 @@ export enum EEntity {
     subadmin = 'subadmin',
     franchisestock = "franchisestock",
     vendingcashoutmmoney = 'vendingcashoutmmoney',
-    vendingmachinesalereport = 'vendingmachinesalereport'
+    vendingmachinesalereport = 'vendingmachinesalereport',
+    ads = "ads"
 }
 
 export interface ISaveMachineSaleReport {
     machineId: string,
     data: Array<any>
+}
+
+export interface IAdsMedia {
+    name:string;
+    description:string;
+    url:string;
+    type:string//webm,png
+}
+export interface IAds extends IBase{
+    name:string;
+    description:string;
+    machines:Array<string>;
+    adsMedia:Array<IAdsMedia>
+}
+export interface ISubadmin {
+    id?: number,
+    uuid?: string,
+    isActive?: boolean,
+    ownerUuid: string,
+    data: {
+        uuid: string,
+        phonenumber: string
+    },
+    provides: Array<any>
 }
