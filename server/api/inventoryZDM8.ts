@@ -4198,34 +4198,23 @@ class loadVendingMachineSaleBillReport {
             if (this.parseToDate > this.currentdate) return IENMessage.invalidateToDate;
         }
 
-        // const date = new Date(this.fromDate);
-        // const addday = date.setDate(date.getDate() + 1);
-        // this.fromDate = String(new Date(addday));
-
         return IENMessage.success;
     }
 
     private SetCondition(): void {
         if (this.parseFromDate == this.parseToDate) {
-            console.log(`condition 1`, this.parseFromDate, this.parseToDate);
-            this.condition = {
-                where: {
-                    paymentstatus: 'paid',
-                    createdAt: {[Op.gt]: this.fromDate}
-                },
-                order: [[ 'id', 'DESC' ]]
-            }
-        } else {
-            console.log(`condition 2`, this.parseFromDate, this.parseToDate);
-            this.condition = {
-                where: {
-                    paymentstatus: 'paid',
-                    createdAt:{[Op.between]:[this.fromDate, this.toDate]}
-                },
-                order: [[ 'id', 'DESC' ]]
-            }
+            const date = new Date(this.fromDate);
+            const addday = date.setDate(date.getDate() + 1);
+            this.toDate = String(new Date(addday));
+        } 
+
+        this.condition = {
+            where: {
+                paymentstatus: 'paid',
+                createdAt:{[Op.between]:[this.fromDate, this.toDate]}
+            },
+            order: [[ 'id', 'DESC' ]]
         }
-        console.log(`condition der`, this.condition);
 
     }
 

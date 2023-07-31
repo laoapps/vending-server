@@ -130,7 +130,7 @@ export class SaleReportPage implements OnInit {
     if (this.datetimeCustom == true) {
       currentdate = this.fromDate;
     } else {
-      currentdate = `From ${this.toDate} between ${this.fromDate}`;
+      currentdate = `From ${this.toDate} to ${this.fromDate}`;
     }
     const props = {
       machineId: this.machineId,
