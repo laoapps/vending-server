@@ -4207,6 +4207,7 @@ class loadVendingMachineSaleBillReport {
 
     private SetCondition(): void {
         if (this.fromDate == this.toDate) {
+            console.log(`condition 1`);
             this.condition = {
                 where: {
                     paymentstatus: 'paid',
@@ -4215,6 +4216,7 @@ class loadVendingMachineSaleBillReport {
                 order: [[ 'id', 'DESC' ]]
             }
         } else {
+            console.log(`condition 1`);
             this.condition = {
                 where: {
                     paymentstatus: 'paid',
