@@ -60,7 +60,7 @@ import {
     IVendingCloneMachineSale,
     ISaveMachineSaleReport,
     IAds,
-    ILoadVendingMachineBillReport,
+    ILoadVendingMachineSaleBillReport,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -1859,12 +1859,12 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
 
                         const data = req.body;
-                        const parmas: ILoadVendingMachineBillReport = {
+                        const parmas: ILoadVendingMachineSaleBillReport = {
                             ownerUuid: res.locals["ownerUuid"],
                             beginDate: data.beginDate,
                             revertDate: data.revertDate
                         }
-                        this.loadVendingMachineBillReport(parmas).then(run => {
+                        this.loadVendingMachineSaleBillReport(parmas).then(run => {
                             if (run.message != IENMessage.success) {
                                 res.send(PrintError("report", run, EMessage.error));
                                 return;
@@ -4115,11 +4115,11 @@ export class InventoryZDM8 implements IBaseClass {
     //     });
     // }
 
-    loadVendingMachineBillReport(params: ILoadVendingMachineBillReport): Promise<any> {
+    loadVendingMachineSaleBillReport(params: ILoadVendingMachineSaleBillReport): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                const func = new LoadVendingMachineBillReport();
+                const func = new loadVendingMachineSaleBillReport();
                 const run = await func.Init(params);
                 if (run.message != IENMessage.success) throw new Error(run);
 
@@ -4133,7 +4133,7 @@ export class InventoryZDM8 implements IBaseClass {
 }
 
 
-class LoadVendingMachineBillReport {
+class loadVendingMachineSaleBillReport {
 
     private ownerUuid: string;
     private beginDate: string;
@@ -4147,7 +4147,7 @@ class LoadVendingMachineBillReport {
     private response: any = {} as any;
     constructor() {} 
 
-    public Init(params: ILoadVendingMachineBillReport): Promise<any> {
+    public Init(params: ILoadVendingMachineSaleBillReport): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
@@ -4174,7 +4174,7 @@ class LoadVendingMachineBillReport {
         });
     }
 
-    private InitParams(params: ILoadVendingMachineBillReport): void {
+    private InitParams(params: ILoadVendingMachineSaleBillReport): void {
         this.ownerUuid = params.ownerUuid;
         this.beginDate = params.beginDate;
         this.revertDate = params.revertDate;

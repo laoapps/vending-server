@@ -2253,7 +2253,7 @@ export interface ISubadmin {
     provides: Array<any>
 }
 
-export interface ILoadVendingMachineBillReport {
+export interface ILoadVendingMachineSaleBillReport {
     ownerUuid: string,
     beginDate: string,
     revertDate: string
