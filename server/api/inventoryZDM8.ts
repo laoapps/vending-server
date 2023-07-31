@@ -1854,26 +1854,25 @@ export class InventoryZDM8 implements IBaseClass {
             // REPORT
             router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
-                // this.checkToken,
+                this.checkToken,
                 (req, res) => {
                     try {
-                        res.send(PrintSucceeded("report", [], EMessage.succeeded));
 
-                        // const data = req.body;
-                        // const parmas: ILoadVendingMachineSaleBillReport = {
-                        //     ownerUuid: res.locals["ownerUuid"],
-                        //     beginDate: data.beginDate,
-                        //     revertDate: data.revertDate
-                        // }
-                        // this.loadVendingMachineSaleBillReport(parmas).then(run => {
-                        //     if (run.message != IENMessage.success) {
-                        //         res.send(PrintError("report", run, EMessage.error));
-                        //         return;
-                        //     }
-                        //     res.send(PrintSucceeded("report", run, EMessage.succeeded));
-                        // }).catch(error => {
-                        //     res.send(PrintError("report", error, EMessage.error));
-                        // });
+                        const data = req.body;
+                        const parmas: ILoadVendingMachineSaleBillReport = {
+                            ownerUuid: res.locals["ownerUuid"],
+                            beginDate: data.beginDate,
+                            revertDate: data.revertDate
+                        }
+                        this.loadVendingMachineSaleBillReport(parmas).then(run => {
+                            if (run.message != IENMessage.success) {
+                                res.send(PrintError("report", run, EMessage.error));
+                                return;
+                            }
+                            res.send(PrintSucceeded("report", run, EMessage.succeeded));
+                        }).catch(error => {
+                            res.send(PrintError("report", error, EMessage.error));
+                        });
                         
                     } catch (error) {
                         res.send(PrintError("report", error, EMessage.error));
