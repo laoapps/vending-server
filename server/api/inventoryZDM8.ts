@@ -4202,13 +4202,24 @@ class loadVendingMachineSaleBillReport {
     }
 
     private SetCondition(): void {
-        this.condition = {
-            where: {
-                paymentstatus: 'paid',
-                createdAt:{[Op.between]:[this.fromDate, this.toDate]}
-            },
-            order: [[ 'id', 'DESC' ]]
+        if (this.fromDate == this.toDate) {
+            this.condition = {
+                where: {
+                    paymentstatus: 'paid',
+                    createdAt: {[Op.gt]: this.fromDate}
+                },
+                order: [[ 'id', 'DESC' ]]
+            }
+        } else {
+            this.condition = {
+                where: {
+                    paymentstatus: 'paid',
+                    createdAt:{[Op.between]:[this.fromDate, this.toDate]}
+                },
+                order: [[ 'id', 'DESC' ]]
+            }
         }
+
     }
 
     private Connection(): void {
