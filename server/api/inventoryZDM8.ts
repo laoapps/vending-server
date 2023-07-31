@@ -4202,10 +4202,10 @@ class loadVendingMachineSaleBillReport {
     }
 
     private SetCondition(): void {
-        const date = new Date(this.fromDate);
+        const date = new Date(this.toDate);
         const addday = date.setDate(date.getDate() + 1);
         this.toDate = String(new Date(addday));
-        
+
         this.condition = {
             where: {
                 paymentstatus: 'paid',
