@@ -4236,7 +4236,7 @@ class loadVendingMachineSaleBillReport {
                 resolve(IENMessage.success);
             }
             catch (error) {
-
+                resolve(error.message);
             }
         });
     }
