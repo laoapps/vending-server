@@ -4219,6 +4219,7 @@ class loadVendingMachineSaleBillReport {
                 order: [[ 'id', 'DESC' ]]
             }
         }
+        console.log(`condition der`, this.condition);
 
     }
 

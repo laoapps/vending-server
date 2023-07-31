@@ -89,15 +89,18 @@ export class SaleReportPage implements OnInit {
   process(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
+        this.lists = [];
         this.display = false;
+        console.log(this.moredatetimeCustom, this.datetimeCustom);
 
         let params: any = {} as any;
-        if (this.datetimeCustom = true) {
+        if (this.datetimeCustom == true) {
           params = {
             fromDate: this.fromDate,
             toDate: this.fromDate
           }
-        } else {
+
+        } else if (this.moredatetimeCustom == true) {
           params = {
             fromDate: this.fromDate,
             toDate: this.toDate
@@ -111,7 +114,7 @@ export class SaleReportPage implements OnInit {
         this.count = run.data[0].count;
         this.saleDetailList = run.data[0].saleDetailList;
         this.saleSumerizeList = run.data[0].saleSumerizeList;
-        
+        console.log(this.moredatetimeCustom, this.datetimeCustom);
         if (this.count > 0) this.display = true;
         resolve(IENMessage.success);
 

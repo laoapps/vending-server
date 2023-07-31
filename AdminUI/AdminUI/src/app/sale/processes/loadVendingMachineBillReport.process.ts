@@ -99,8 +99,12 @@ export class LoadVendingMachineSaleBillReportProcess {
         this.parsefromDate = new Date(this.fromDate).getTime();
         this.parseToDate = new Date(this.toDate).getTime();
 
-        if (this.parsefromDate > this.currentdate) return IENMessage.invalidFromDate;
-        if (this.parsefromDate < this.parseToDate) return IENMessage.invalidateToDate;
+        if (this.parsefromDate == this.parseToDate) {
+            if (this.parsefromDate > this.currentdate) return IENMessage.invalidFromDate;
+        } else {
+            if (this.parsefromDate > this.parseToDate) return IENMessage.invalidFromDate;
+            if (this.parseToDate > this.currentdate) return IENMessage.invalidateToDate;
+        }
 
         return IENMessage.success;
     }
