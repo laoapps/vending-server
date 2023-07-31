@@ -3,23 +3,40 @@
 
   <div class="section-header">
     <div class="title">Reports</div>
-    <div class="sub-title">There are your generated sale reports of <span>{{ machineId }}</span> vending machine on your own of the platform.</div>
-  </div>
-
-  <div class="section-buttons">
-    <a href="javascript:void(0)" class="item active">Today</a>
-    <a href="javascript:void(0)" class="item">Date Custom</a>
-    <a href="javascript:void(0)" class="item">More Date Custom</a>
+    <div class="sub-title">There are your generated sale reports of vending machine on your own of the platform.</div>
   </div>
 
   <div class="section-filter">
+    <div *ngIf="datetimeCustom == true" class="single-group">
+      <div class="form-group">
+        <label for="">Date (Specific)</label>
+        <input [(ngModel)]="beginDate" type="date" class="form-control full">
+      </div>
+    </div>
+
+    <div *ngIf="moredatetimeCustom == true" class="single-group">
+      <div class="form-group">
+        <label for="">Date (Begin)</label>
+        <input [(ngModel)]="beginDate" type="date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="">Date (Revert)</label>
+        <input [(ngModel)]="revertDate" type="date" class="form-control">
+      </div>
+    </div>
 
   </div>
 
-  <div class="section-table">
+  <div class="section-buttons">
+    <a (click)="process()" href="javascript:void(0)" class="item-process"><i class="fa-solid fa-arrows-rotate"></i> Process</a>
+    <a (click)="displayDateTimeCustom()" href="javascript:void(0)" class="item active">Date/Time Custom</a>
+    <a (click)="displayMoreDateTimeCustom()" href="javascript:void(0)" class="item">More Date/Time Custom</a>
+  </div>
+
+  <div *ngIf="display == true" class="section-table">
     <div class="table-responsive">
       <table class="table table-bordered table-hover">
-        <thead>
+        <thead class="fw-bold">
           <tr>
             <td>#</td>
             <td>Product</td>
@@ -28,6 +45,9 @@
             <td>Total Sale</td>
           </tr>
         </thead>
+        <tbody>
+
+        </tbody>
       </table>
     </div>
   </div>

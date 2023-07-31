@@ -313,6 +313,9 @@ export class ApiService {
   readMachineSaleForAdmin(data: any) {
     return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin',data, { headers: this.headerBase() });
   }
+  loadVendingMachineSaleBillReport(data: any) {
+    return this.http.post(this.url + '/loadVendingMachineSaleBillReport',data, { headers: this.headerBase() });
+  }
 
   getFreeProduct(position: number, id: number) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;

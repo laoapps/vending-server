@@ -1,4 +1,6 @@
 export enum IENMessage {
+    invalidateRevertDate = 'invalid revert date',
+    invalidBeginDate = 'invalid begin date',
     thisMachineHasAlreadyAdded = 'this machine has already added',
     invalidPhonenumber = 'invalid phone number',
     createNewSubadminSuccess = 'create new sub admin success',
