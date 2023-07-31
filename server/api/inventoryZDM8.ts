@@ -4206,7 +4206,7 @@ class loadVendingMachineSaleBillReport {
     }
 
     private SetCondition(): void {
-        if (this.fromDate == this.toDate) {
+        if (this.parseFromDate == this.parseToDate) {
             console.log(`condition 1`);
             this.condition = {
                 where: {
