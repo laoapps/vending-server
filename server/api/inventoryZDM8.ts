@@ -4207,7 +4207,7 @@ class loadVendingMachineSaleBillReport {
 
     private SetCondition(): void {
         if (this.parseFromDate == this.parseToDate) {
-            console.log(`condition 1`);
+            console.log(`condition 1`, this.parseFromDate, this.parseToDate);
             this.condition = {
                 where: {
                     paymentstatus: 'paid',
@@ -4216,7 +4216,7 @@ class loadVendingMachineSaleBillReport {
                 order: [[ 'id', 'DESC' ]]
             }
         } else {
-            console.log(`condition 1`);
+            console.log(`condition 2`, this.parseFromDate, this.parseToDate);
             this.condition = {
                 where: {
                     paymentstatus: 'paid',
