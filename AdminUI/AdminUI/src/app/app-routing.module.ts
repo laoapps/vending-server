@@ -176,6 +176,10 @@ const routes: Routes = [
     path: 'sale-report',
     loadChildren: () => import('./sale/sale-report/sale-report.module').then( m => m.SaleReportPageModule)
   },
+  {
+    path: 'sale-report-view',
+    loadChildren: () => import('./sale-report-view/sale-report-view.module').then( m => m.SaleReportViewPageModule)
+  },
 ];
 @NgModule({
   imports: [

@@ -4,14 +4,15 @@
   <div class="section-header">
     <div class="title">Reports</div>
     <div class="sub-title">There are your generated sale reports of vending machine on your own of the platform.</div>
+
   </div>
 
   <div class="section-filter">
     <div *ngIf="datetimeCustom == true" class="single-group">
-      <div class="form-group">
-        <label for="">Date (Specific)</label>
-        <input [(ngModel)]="beginDate" type="date" class="form-control full">
-      </div>
+        <div class="form-group">
+          <label for="">Date (Begin)</label>
+          <input [(ngModel)]="beginDate" type="date" class="form-control full">
+        </div>
     </div>
 
     <div *ngIf="moredatetimeCustom == true" class="single-group">
@@ -34,6 +35,16 @@
   </div>
 
   <div *ngIf="display == true" class="section-table">
+    
+    <div class="btn-list">
+      <a *ngFor="let export of exportOptions; let i = index" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="{{ export.icon }}"></i>
+        </div>
+        <div class="text">{{ export.text }}</div>
+      </a>
+    </div>
+
     <div class="table-responsive">
       <table class="table table-bordered table-hover">
         <thead class="fw-bold">
@@ -43,10 +54,20 @@
             <td>Price</td>
             <td>Total Quantity</td>
             <td>Total Sale</td>
+            <td>Action</td>
           </tr>
         </thead>
-        <tbody>
-
+        <tbody *ngFor="let sale of saleSumerizeList; let i = index">
+          <tr>
+            <td>{{ i+1 }}</td>
+            <td>{{ sale.name }}</td>
+            <td>{{ sale.price | number }}</td>
+            <td>{{ sale.qtty | number }}</td>
+            <td>{{ sale.total | number }}</td>
+            <td>
+              <button (click)="view(sale)" class="btn btn-view">View</button>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

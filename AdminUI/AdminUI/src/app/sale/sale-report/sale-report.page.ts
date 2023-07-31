@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { LoadVendingMachineSaleBillReportProcess } from '../processes/loadVendingMachineBillReport.process';
+import { SaleReportViewPage } from 'src/app/sale-report-view/sale-report-view.page';
 
 @Component({
   selector: 'app-sale-report',
@@ -19,11 +20,25 @@ export class SaleReportPage implements OnInit {
   moredatetimeCustom: boolean = false;
   display: boolean = false;
 
-
   beginDate: string;
   revertDate: string;
 
+  lists: Array<any> = [];
+  count: number = 0;
+  saleDetailList: Array<any> = [];
+  saleSumerizeList: Array<any> = [];
 
+  exportOptions: Array<any> = [
+    {
+      icon: 'fa-solid fa-file-pdf text-danger',
+      text: 'Export PDF'
+    },
+    {
+      icon: 'fa-solid fa-file-excel text-success',
+      text: 'Export Excel'
+    }
+  ];
+  
   constructor(
     public apiService: ApiService
   ) { 
@@ -74,6 +89,7 @@ export class SaleReportPage implements OnInit {
   process(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
+        this.display = false;
 
         let params: any = {} as any;
         if (this.datetimeCustom = true) {
@@ -91,14 +107,36 @@ export class SaleReportPage implements OnInit {
         const run = await this.loadVendingMachineSaleBillReportProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         
+        this.lists = run.data[0].lists;
+        this.count = run.data[0].count;
+        this.saleDetailList = run.data[0].saleDetailList;
+        this.saleSumerizeList = run.data[0].saleSumerizeList;
         
-        this.display = true;
+        if (this.count > 0) this.display = true;
         resolve(IENMessage.success);
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message); 
       }
+    });
+  }
+
+  view(list: any): void {
+    let currentdate: string = '';
+    if (this.datetimeCustom == true) {
+      currentdate = this.beginDate;
+    } else {
+      currentdate = `From ${this.revertDate} between ${this.beginDate}`;
+    }
+    const props = {
+      machineId: this.machineId,
+      currentdate: currentdate,
+      list: list,
+      saleDetailList: this.saleDetailList
+    }
+    this.apiService.showModal(SaleReportViewPage, props).then(r => {
+      r.present();
     });
   }
 }

@@ -28,7 +28,7 @@
 
     .item-process {
         text-decoration: none;
-        background: #28B463;
+        background: #A41D4F;
         color: #fff;
         border-radius: 20px;
         display: flex;
@@ -44,7 +44,7 @@
         }
     }
     .item-process:hover {
-        background: #239B56;
+        background: #7f173d;
     }
 
     .item {
@@ -111,4 +111,46 @@
 
 .section-table {
     margin: 45px 10px 10px 10px;
+
+    .btn-list {
+        margin-top: 20px;
+        padding-bottom: 20px;
+        display: flex;
+        gap: 10px;
+
+        .item {
+            background: #fff;
+            box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            text-decoration: none;
+
+            
+        }
+    }
+
+    .btn-view {
+        background: #fff;
+        border: 1px solid #3333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 40px;
+        transition: .2s;
+    }
+    .btn-view:hover {
+        background: #f5f6f7;
+    }
+}
+.input-group-text {
+    background: #fff;
+    transition: .2s;
+}
+.input-group-text:hover {
+    background: #f5f6f7;
 }

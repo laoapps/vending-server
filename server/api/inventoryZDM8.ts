@@ -4205,14 +4205,7 @@ class loadVendingMachineSaleBillReport {
         this.condition = {
             where: {
                 paymentstatus: 'paid',
-                [Op.and]: [
-                    {
-                        createdAt: {[Op.gte]: this.revertDate},
-                    },
-                    {
-                        createdAt: {[Op.lt]: this.beginDate},
-                    }
-                ]
+                createdAt:{[Op.between]:[this.beginDate, this.revertDate]}
             },
             order: [[ 'id', 'DESC' ]]
         }
