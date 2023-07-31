@@ -11,14 +11,14 @@ export class LoadVendingMachineSaleBillReportProcess {
     private apiService: ApiService;
     
     // parameters
-    private beginDate: string;
-    private revertDate: string;
+    private fromDate: string;
+    private toDate: string;
     private token: string;
 
     // properties
     private currentdate: number;
-    private parseBeginDate: number;
-    private parseRevertDate: number;
+    private parsefromDate: number;
+    private parseToDate: number;
     private count: number;
     private lists: Array<any> = [];
     private saleDetailList: Array<any> = [];
@@ -81,28 +81,27 @@ export class LoadVendingMachineSaleBillReportProcess {
         this.uniqueorder = [];
         this.duplicateorder = [];
 
-        this.beginDate = params.beginDate;
-        this.revertDate = params.revertDate;
+        this.fromDate = params.fromDate;
+        this.toDate = params.toDate;
         this.token = localStorage.getItem('lva_token');
 
     }
 
     private ValidateParams(): string {
-        if (!(this.beginDate && this.revertDate && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.fromDate && this.toDate && this.token)) return IENMessage.parametersEmpty;
         
-        // this.beginDate = this.beginDate.replace('/', '-');
         const year = new Date().getFullYear();
         const month =  Number(new Date().getMonth() + 1) > 9 ?  Number(new Date().getMonth() + 1) : '0' +  Number(new Date().getMonth() + 1);
         const day = new Date().getDate();
         const time = year + '-' + month + '-' + day;
 
         this.currentdate = new Date(time).getTime();
-        this.parseBeginDate = new Date(this.beginDate).getTime();
-        this.parseRevertDate = new Date(this.revertDate).getTime();
+        this.parsefromDate = new Date(this.fromDate).getTime();
+        this.parseToDate = new Date(this.toDate).getTime();
 
-        if (this.parseBeginDate > this.currentdate) return IENMessage.invalidBeginDate;
-        if (this.parseBeginDate < this.parseRevertDate) return IENMessage.invalidateRevertDate;
-        
+        if (this.parsefromDate > this.currentdate) return IENMessage.invalidFromDate;
+        if (this.parsefromDate < this.parseToDate) return IENMessage.invalidateToDate;
+
         return IENMessage.success;
     }
 
@@ -112,8 +111,8 @@ export class LoadVendingMachineSaleBillReportProcess {
             try {
 
                 const params = {
-                    beginDate: this.beginDate,
-                    revertDate: this.revertDate,
+                    fromDate: this.fromDate,
+                    toDate: this.toDate,
                     token: this.token
                 }
 

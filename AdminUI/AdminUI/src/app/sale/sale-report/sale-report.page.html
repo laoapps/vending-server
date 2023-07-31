@@ -10,19 +10,19 @@
   <div class="section-filter">
     <div *ngIf="datetimeCustom == true" class="single-group">
         <div class="form-group">
-          <label for="">Date (Begin)</label>
-          <input [(ngModel)]="beginDate" type="date" class="form-control full">
+          <label for="">Date (Special)</label>
+          <input [(ngModel)]="fromDate" type="date" class="form-control full">
         </div>
     </div>
 
     <div *ngIf="moredatetimeCustom == true" class="single-group">
       <div class="form-group">
-        <label for="">Date (Begin)</label>
-        <input [(ngModel)]="beginDate" type="date" class="form-control">
+        <label for="">Date (From)</label>
+        <input [(ngModel)]="fromDate" type="date" class="form-control">
       </div>
       <div class="form-group">
-        <label for="">Date (Revert)</label>
-        <input [(ngModel)]="revertDate" type="date" class="form-control">
+        <label for="">Date (To)</label>
+        <input [(ngModel)]="toDate" type="date" class="form-control">
       </div>
     </div>
 

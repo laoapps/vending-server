@@ -20,8 +20,8 @@ export class SaleReportPage implements OnInit {
   moredatetimeCustom: boolean = false;
   display: boolean = false;
 
-  beginDate: string;
-  revertDate: string;
+  fromDate: string;
+  toDate: string;
 
   lists: Array<any> = [];
   count: number = 0;
@@ -82,8 +82,8 @@ export class SaleReportPage implements OnInit {
     }
   }
   clearInput() {
-    this.beginDate = undefined;
-    this.revertDate = undefined;
+    this.fromDate = undefined;
+    this.toDate = undefined;
   }
 
   process(): Promise<any> {
@@ -94,13 +94,13 @@ export class SaleReportPage implements OnInit {
         let params: any = {} as any;
         if (this.datetimeCustom = true) {
           params = {
-            beginDate: this.beginDate,
-            revertDate: this.beginDate
+            fromDate: this.fromDate,
+            toDate: this.fromDate
           }
         } else {
           params = {
-            beginDate: this.beginDate,
-            revertDate: this.revertDate
+            fromDate: this.fromDate,
+            toDate: this.toDate
           }
         }
 
@@ -125,9 +125,9 @@ export class SaleReportPage implements OnInit {
   view(list: any): void {
     let currentdate: string = '';
     if (this.datetimeCustom == true) {
-      currentdate = this.beginDate;
+      currentdate = this.fromDate;
     } else {
-      currentdate = `From ${this.revertDate} between ${this.beginDate}`;
+      currentdate = `From ${this.toDate} between ${this.fromDate}`;
     }
     const props = {
       machineId: this.machineId,

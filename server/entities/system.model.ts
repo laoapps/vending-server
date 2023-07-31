@@ -2255,6 +2255,6 @@ export interface ISubadmin {
 
 export interface ILoadVendingMachineSaleBillReport {
     ownerUuid: string,
-    beginDate: string,
-    revertDate: string
+    fromDate: string,
+    toDate: string
 }

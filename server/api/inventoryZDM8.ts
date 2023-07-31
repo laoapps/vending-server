@@ -1861,8 +1861,8 @@ export class InventoryZDM8 implements IBaseClass {
                         const data = req.body;
                         const parmas: ILoadVendingMachineSaleBillReport = {
                             ownerUuid: res.locals["ownerUuid"],
-                            beginDate: data.beginDate,
-                            revertDate: data.revertDate
+                            fromDate: data.fromDate,
+                            toDate: data.toDate
                         }
                         this.loadVendingMachineSaleBillReport(parmas).then(run => {
                             if (run.message != IENMessage.success) {
@@ -4136,8 +4136,8 @@ export class InventoryZDM8 implements IBaseClass {
 class loadVendingMachineSaleBillReport {
 
     private ownerUuid: string;
-    private beginDate: string;
-    private revertDate: string;
+    private fromDate: string;
+    private toDate: string;
 
     private currentdate: number;
     private parseBeginDate: number;
@@ -4176,27 +4176,27 @@ class loadVendingMachineSaleBillReport {
 
     private InitParams(params: ILoadVendingMachineSaleBillReport): void {
         this.ownerUuid = params.ownerUuid;
-        this.beginDate = params.beginDate;
-        this.revertDate = params.revertDate;
+        this.fromDate = params.fromDate;
+        this.toDate = params.toDate;
     }
 
     private ValidateParams(): string {
-        if (!(this.ownerUuid && this.beginDate && this.revertDate)) return IENMessage.parametersEmpty;
+        if (!(this.ownerUuid && this.fromDate && this.toDate)) return IENMessage.parametersEmpty;
 
         this.currentdate = new Date(new Date().getFullYear() + '/' + Number(new Date().getMonth() + 1) + '/' + new Date().getDate()).getTime();
         return IENMessage.success;
     }
 
     private ValidateBeginDate(): string {
-        this.parseBeginDate = new Date(this.beginDate).getTime();
-        this.parseRevertDate = new Date(this.revertDate).getTime();
+        this.parseBeginDate = new Date(this.fromDate).getTime();
+        this.parseRevertDate = new Date(this.toDate).getTime();
 
         if (this.parseBeginDate > this.currentdate) return IENMessage.invalidBeginDate;
         if (this.parseBeginDate < this.parseRevertDate) return IENMessage.invalidateRevertDate;
         
-        const date = new Date(this.beginDate);
+        const date = new Date(this.fromDate);
         const addday = date.setDate(date.getDate() + 1);
-        this.beginDate = String(new Date(addday));
+        this.fromDate = String(new Date(addday));
 
         return IENMessage.success;
     }
@@ -4205,7 +4205,7 @@ class loadVendingMachineSaleBillReport {
         this.condition = {
             where: {
                 paymentstatus: 'paid',
-                createdAt:{[Op.between]:[this.beginDate, this.revertDate]}
+                createdAt:{[Op.between]:[this.fromDate, this.toDate]}
             },
             order: [[ 'id', 'DESC' ]]
         }
