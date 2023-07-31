@@ -4,6 +4,7 @@ import { SettingControlMenuPage } from './pages/setting-control-menu/setting-con
 import { environment } from 'src/environments/environment';
 import { IENMessage } from '../models/base.model';
 import axios from 'axios';
+import { IonicStorageService } from '../ionic-storage.service';
 
 @Component({
   selector: 'app-setting',
@@ -27,7 +28,8 @@ export class SettingPage implements OnInit, OnDestroy {
   
 
   constructor(
-    private apiService: ApiService
+    private apiService: ApiService,
+    public storage: IonicStorageService
   ) { }
 
   ngOnInit() {
@@ -43,8 +45,21 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('machineId', this.machineId)
     localStorage.setItem('otp', this.otp)
     localStorage.setItem('contact', this.contact)
-    window.location.reload();
+    this.storage.set('saleStock',[], 'stock').then(r=>{
+      console.log('reset',r);
+      window.location.reload();
+    }).catch(e=>{
+      console.log('reset error',e);
+    });
   }
+  reset(){
+    this.storage.set('saleStock',[], 'stock').then(r=>{
+      console.log('reset',r);
+      window.location.reload();
+    }).catch(e=>{
+      console.log('reset error',e);
+    });
+   }
 
   openSettingControlMenu() {
     this.apiService.modal.create({ component: SettingControlMenuPage, cssClass: 'dialog-fullscreen' }).then(r => {

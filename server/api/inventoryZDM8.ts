@@ -60,6 +60,7 @@ import {
     IVendingCloneMachineSale,
     ISaveMachineSaleReport,
     IAds,
+    ILoadVendingMachineBillReport,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -88,6 +89,7 @@ import { VendingMachineSaleFactory } from "../entities/vendingmachinesale.entity
 import {
     VendingMachineBillFactory,
     VendingMachineBillModel,
+    VendingMachineBillStatic,
 } from "../entities/vendingmachinebill.entity";
 import { Op } from "sequelize";
 import fs from "fs";
@@ -1845,6 +1847,38 @@ export class InventoryZDM8 implements IBaseClass {
            // cui request to update ( refresh, refill)
 
 
+
+
+
+
+            // REPORT
+            router.post(
+                this.path + "/loadVendingMachineSaleBillReport",
+                this.checkToken,
+                (req, res) => {
+                    try {
+
+                        const data = req.body;
+                        const parmas: ILoadVendingMachineBillReport = {
+                            ownerUuid: res.locals["ownerUuid"],
+                            beginDate: data.beginDate,
+                            revertDate: data.revertDate
+                        }
+                        this.loadVendingMachineBillReport(parmas).then(run => {
+                            if (run.message != IENMessage.success) {
+                                res.send(PrintError("report", run, EMessage.error));
+                                return;
+                            }
+                            res.send(PrintSucceeded("listSale", run, EMessage.succeeded));
+                        }).catch(error => {
+                            res.send(PrintError("report", error, EMessage.error));
+                        });
+                        
+                    } catch (error) {
+                        res.send(PrintError("report", error, EMessage.error));
+                    }
+                }
+            );
 
 
 
@@ -3985,101 +4019,227 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
     
-    SaveMachineSaleReport(params: ISaveMachineSaleReport): Promise<any> {
+    // SaveMachineSaleReport(params: ISaveMachineSaleReport): Promise<any> {
+    //     return new Promise<any> (async (resolve, reject) => {
+    //         try {
+                
+    //             const timenow = new Date();
+    //             const arr = params.data;
+    //             if (arr != undefined && Object.entries(arr).length == 0) return resolve(IENMessage.invalidReportParameters);
+
+    //             // same order
+    //             let duplicate = arr.filter((obj, index) => 
+    //                 arr.findIndex((item) => item.stock.id == obj.stock.id) !== index
+    //             )
+    //             // original
+    //             let unique = arr.filter((obj, index) => 
+    //                 arr.findIndex((item) => item.stock.id == obj.stock.id) === index
+    //             )
+
+    //             console.log(`show duplicate`, duplicate, `show unique`, unique);
+                
+    //             // merge same order
+    //             let array: Array<any> = [];
+
+    //             if (duplicate != undefined && Object.entries(duplicate).length > 0) {
+
+    //                 for(let i = 0; i < unique.length; i++) {
+    //                     let setarray = {
+    //                         id: unique[i].stock.id,
+    //                         name: unique[i].stock.id,
+    //                         price: unique[i].stock.price,
+    //                         qtty: unique[i].stock.qtty,
+    //                         total: 0
+    //                     }
+
+    //                     for(let j = 0; j < duplicate.length; j++) {
+
+    //                         if (unique[i].stock.id == duplicate[j].stock.id) {
+    //                             setarray.qtty += duplicate[j].stock.qtty;
+    //                         }
+
+    //                     }
+                        
+    //                     setarray.total += setarray.qtty * setarray.price;
+    //                     array.push(setarray);
+    //                 }
+                    
+    //             }
+    //             else 
+    //             {
+    //                 for(let i = 0; i < unique.length; i++) {
+    //                     let setarray = {
+    //                         id: unique[i].stock.id,
+    //                         name: unique[i].stock.name,
+    //                         price: unique[i].stock.price,
+    //                         qtty: unique[i].stock.qtty,
+    //                         total: unique[i].stock.qtty * unique[i].stock.price
+    //                     }
+    //                     array.push(setarray);
+    //                 }
+    //             }
+    //             const run = await vendingMachineSaleReportEntity.findOne({ where: { machineId: params.machineId, createdAt: {[Op.gte]: timenow} } });
+    //             if (run == null) {         
+    //                 const model = {
+    //                     machineId: params.machineId,
+    //                     data: array,
+    //                     subqty: array.reduce((a,b) => a + b.qtty, 0),
+    //                     subtotal: array.reduce((a,b) => a + b.total, 0)
+    //                 }
+    //                 console.log(`model der`, model);
+    //                 const save = await vendingMachineSaleReportEntity.create(model);
+    //                 if (!save) return resolve(IENMessage.saveSaleReportFail);
+    //             } else {
+    //                 let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
+    //                 for(let i = 0; i < predata.length; i++) {
+    //                     for(let j = 0; j < array.length; j++) {
+    //                         if (predata[i].id == array[j].id) {
+    //                             predata[i].qtty += array[j].qtty;
+    //                             predata[i].total += array[j].total;
+    //                         }
+    //                     }
+    //                 }
+    //                 run.data = predata;
+    //                 run.subqty = predata.reduce((a,b) => a + b.qtty ,0);
+    //                 run.subtotal = predata.reduce((a,b) => a + b.total ,0);
+
+    //                 const save = await run.save();
+    //                 if (!save) return resolve(IENMessage.saveSaleReportFail);
+    //             }
+
+    //             resolve(IENMessage.success);
+
+    //         } catch (error) {
+    //             resolve(error.message);
+    //         }
+    //     });
+    // }
+
+    loadVendingMachineBillReport(params: ILoadVendingMachineBillReport): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
+
+                const func = new LoadVendingMachineBillReport();
+                const run = await func.Init(params);
+                if (run.message != IENMessage.success) throw new Error(run);
+
+                resolve(run);
+
+            } catch (error) {
+                resolve(error.message);    
+            }
+        });
+    }
+}
+
+
+class LoadVendingMachineBillReport {
+
+    private ownerUuid: string;
+    private beginDate: string;
+    private revertDate: string;
+
+    private currentdate: number;
+    private parseBeginDate: number;
+    private parseRevertDate: number;
+    private condition: any = {} as any;
+    private vendingMachineBillEntity: VendingMachineBillStatic;
+    private response: any = {} as any;
+    constructor() {} 
+
+    public Init(params: ILoadVendingMachineBillReport): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                this.InitParams(params);
+
+                const ValidateParams = this.ValidateParams();
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+
+                const ValidateBeginDate = this.ValidateBeginDate();
+                if (ValidateBeginDate != IENMessage.success) throw new Error(ValidateBeginDate);
+
+                this.SetCondition();
                 
-                const timenow = new Date();
-                const arr = params.data;
-                if (arr != undefined && Object.entries(arr).length == 0) return resolve(IENMessage.invalidReportParameters);
+                this.Connection();
 
-                // same order
-                let duplicate = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.stock.id == obj.stock.id) !== index
-                )
-                // original
-                let unique = arr.filter((obj, index) => 
-                    arr.findIndex((item) => item.stock.id == obj.stock.id) === index
-                )
+                const Report = await this.Report();
+                if (Report != IENMessage.success) throw new Error(Report);
 
-                console.log(`show duplicate`, duplicate, `show unique`, unique);
-                
-                // merge same order
-                let array: Array<any> = [];
-
-                if (duplicate != undefined && Object.entries(duplicate).length > 0) {
-
-                    for(let i = 0; i < unique.length; i++) {
-                        let setarray = {
-                            id: unique[i].stock.id,
-                            name: unique[i].stock.id,
-                            price: unique[i].stock.price,
-                            qtty: unique[i].stock.qtty,
-                            total: 0
-                        }
-
-                        for(let j = 0; j < duplicate.length; j++) {
-
-                            if (unique[i].stock.id == duplicate[j].stock.id) {
-                                setarray.qtty += duplicate[j].stock.qtty;
-                            }
-
-                        }
-                        
-                        setarray.total += setarray.qtty * setarray.price;
-                        array.push(setarray);
-                    }
-                    
-                }
-                else 
-                {
-                    for(let i = 0; i < unique.length; i++) {
-                        let setarray = {
-                            id: unique[i].stock.id,
-                            name: unique[i].stock.name,
-                            price: unique[i].stock.price,
-                            qtty: unique[i].stock.qtty,
-                            total: unique[i].stock.qtty * unique[i].stock.price
-                        }
-                        array.push(setarray);
-                    }
-                }
-                const run = await vendingMachineSaleReportEntity.findOne({ where: { machineId: params.machineId, createdAt: {[Op.gte]: timenow} } });
-                if (run == null) {         
-                    const model = {
-                        machineId: params.machineId,
-                        data: array,
-                        subqty: array.reduce((a,b) => a + b.qtty, 0),
-                        subtotal: array.reduce((a,b) => a + b.total, 0)
-                    }
-                    console.log(`model der`, model);
-                    const save = await vendingMachineSaleReportEntity.create(model);
-                    if (!save) return resolve(IENMessage.saveSaleReportFail);
-                } else {
-                    let predata: Array<any> = JSON.parse(JSON.stringify(run.data));
-                    for(let i = 0; i < predata.length; i++) {
-                        for(let j = 0; j < array.length; j++) {
-                            if (predata[i].id == array[j].id) {
-                                predata[i].qtty += array[j].qtty;
-                                predata[i].total += array[j].total;
-                            }
-                        }
-                    }
-                    run.data = predata;
-                    run.subqty = predata.reduce((a,b) => a + b.qtty ,0);
-                    run.subtotal = predata.reduce((a,b) => a + b.total ,0);
-
-                    const save = await run.save();
-                    if (!save) return resolve(IENMessage.saveSaleReportFail);
-                }
-
-                resolve(IENMessage.success);
+                resolve(this.response);
 
             } catch (error) {
                 resolve(error.message);
             }
         });
     }
-}
 
+    private InitParams(params: ILoadVendingMachineBillReport): void {
+        this.ownerUuid = params.ownerUuid;
+        this.beginDate = params.beginDate;
+        this.revertDate = params.revertDate;
+    }
+
+    private ValidateParams(): string {
+        if (!(this.ownerUuid && this.beginDate && this.revertDate)) return IENMessage.parametersEmpty;
+
+        this.currentdate = new Date(new Date().getFullYear() + '/' + Number(new Date().getMonth() + 1) + '/' + new Date().getDate()).getTime();
+        return IENMessage.success;
+    }
+
+    private ValidateBeginDate(): string {
+        this.parseBeginDate = new Date(this.beginDate).getTime();
+        this.parseRevertDate = new Date(this.revertDate).getTime();
+
+        if (this.parseBeginDate > this.currentdate) return IENMessage.invalidBeginDate;
+        if (this.parseBeginDate < this.parseRevertDate) return IENMessage.invalidateRevertDate;
+        
+        const date = new Date(this.beginDate);
+        const addday = date.setDate(date.getDate() + 1);
+        this.beginDate = String(new Date(addday));
+
+        return IENMessage.success;
+    }
+
+    private SetCondition(): void {
+        this.condition = {
+            where: {
+                paymentstatus: 'paid',
+                [Op.and]: [
+                    {
+                        createdAt: {[Op.gte]: this.revertDate},
+                    },
+                    {
+                        createdAt: {[Op.lt]: this.beginDate},
+                    }
+                ]
+            },
+            order: [[ 'id', 'DESC' ]]
+        }
+    }
+
+    private Connection(): void {
+        this.vendingMachineBillEntity = VendingMachineBillFactory(EEntity.vendingmachinesalereport + '_' + this.ownerUuid, dbConnection);
+    }
+
+    private Report(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const run = await this.vendingMachineBillEntity.findAndCountAll(this.condition);
+                this.response = {
+                    rows: run.rows,
+                    count: run.count,
+                    message: IENMessage.success
+                }
+
+                resolve(IENMessage.success);
+            }
+            catch (error) {
+
+            }
+        });
+    }
+    
+}
 
