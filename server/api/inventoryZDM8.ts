@@ -4194,9 +4194,9 @@ class loadVendingMachineSaleBillReport {
         if (this.parseBeginDate > this.currentdate) return IENMessage.invalidBeginDate;
         if (this.parseBeginDate < this.parseRevertDate) return IENMessage.invalidateRevertDate;
         
-        const date = new Date(this.fromDate);
-        const addday = date.setDate(date.getDate() + 1);
-        this.fromDate = String(new Date(addday));
+        // const date = new Date(this.fromDate);
+        // const addday = date.setDate(date.getDate() + 1);
+        // this.fromDate = String(new Date(addday));
 
         return IENMessage.success;
     }
