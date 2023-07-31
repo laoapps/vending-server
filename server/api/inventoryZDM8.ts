@@ -4219,7 +4219,7 @@ class loadVendingMachineSaleBillReport {
     }
 
     private Connection(): void {
-        this.vendingMachineBillEntity = VendingMachineBillFactory(EEntity.vendingmachinesalereport + '_' + this.ownerUuid, dbConnection);
+        this.vendingMachineBillEntity = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + this.ownerUuid, dbConnection);
     }
 
     private Report(): Promise<any> {
@@ -4242,4 +4242,5 @@ class loadVendingMachineSaleBillReport {
     }
     
 }
+
 
