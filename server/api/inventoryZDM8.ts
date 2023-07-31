@@ -1853,7 +1853,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             // REPORT
             router.post(
-                this.path + "/loadVendingMachineSaleBillReport",
+                this.path + "/zzz",
                 // this.checkToken,
                 (req, res) => {
                     try {
