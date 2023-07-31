@@ -57,6 +57,8 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    invalidateToDate = 'invalid to date',
+    invalidFromDate = 'invalid from date',
     invalidateRevertDate = 'invalid revert date',
     invalidBeginDate = 'invalid begin date',
     saveSaleReportFail = 'save sale report fail',

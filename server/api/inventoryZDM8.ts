@@ -4140,8 +4140,8 @@ class loadVendingMachineSaleBillReport {
     private toDate: string;
 
     private currentdate: number;
-    private parseBeginDate: number;
-    private parseRevertDate: number;
+    private parseFromDate: number;
+    private parseToDate: number;
     private condition: any = {} as any;
     private vendingMachineBillEntity: VendingMachineBillStatic;
     private response: any = {} as any;
@@ -4188,12 +4188,16 @@ class loadVendingMachineSaleBillReport {
     }
 
     private ValidateBeginDate(): string {
-        this.parseBeginDate = new Date(this.fromDate).getTime();
-        this.parseRevertDate = new Date(this.toDate).getTime();
+        this.parseFromDate = new Date(this.fromDate).getTime();
+        this.parseToDate = new Date(this.toDate).getTime();
 
-        if (this.parseBeginDate > this.currentdate) return IENMessage.invalidBeginDate;
-        if (this.parseBeginDate < this.parseRevertDate) return IENMessage.invalidateRevertDate;
-        
+        if (this.parseFromDate == this.parseToDate) {
+            if (this.parseFromDate > this.currentdate) return IENMessage.invalidFromDate;
+        } else {
+            if (this.parseFromDate > this.parseToDate) return IENMessage.invalidFromDate;
+            if (this.parseToDate > this.currentdate) return IENMessage.invalidateToDate;
+        }
+
         // const date = new Date(this.fromDate);
         // const addday = date.setDate(date.getDate() + 1);
         // this.fromDate = String(new Date(addday));
