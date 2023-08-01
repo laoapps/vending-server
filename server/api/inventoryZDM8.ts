@@ -1729,10 +1729,22 @@ export class InventoryZDM8 implements IBaseClass {
                         // const isActive = req.query['isActive'];
                         const machineId = this.ssocket.findMachineIdToken(d.token);
                         if (!machineId) throw new Error("machine is not exit");
+
+                        let list: any = {} as any;
+                        const run = await readMachineSale(machineId.machineId);
+                        if (run != null) {
+                            list = run;
+                        } else {
+                            const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
+                            await sEnt.sync();
+
+                            list = await sEnt.findOne({order:[['id', 'desc']]});
+                        }
+
                         res.send(
                             PrintSucceeded(
                                 "readMachineSale",
-                                JSON.parse(await readMachineSale(machineId.machineId)),
+                                JSON.parse(list),
                                 EMessage.succeeded
                             )
                         );

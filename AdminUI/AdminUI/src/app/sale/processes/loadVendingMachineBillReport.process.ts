@@ -100,6 +100,7 @@ export class LoadVendingMachineSaleBillReportProcess {
         this.parseToDate = new Date(this.toDate).getTime();
 
         if (this.parsefromDate == this.parseToDate) {
+            console.log(`-->`, this.parsefromDate, this.parseToDate);
             if (this.parsefromDate > this.currentdate) return IENMessage.invalidFromDate;
         } else {
             if (this.parsefromDate > this.parseToDate) return IENMessage.invalidFromDate;

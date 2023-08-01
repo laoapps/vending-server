@@ -180,6 +180,10 @@ const routes: Routes = [
     path: 'sale-report-view',
     loadChildren: () => import('./sale-report-view/sale-report-view.module').then( m => m.SaleReportViewPageModule)
   },
+  {
+    path: 'advertisement',
+    loadChildren: () => import('./superadmin/advertisement/advertisement.module').then( m => m.AdvertisementPageModule)
+  },
 ];
 @NgModule({
   imports: [

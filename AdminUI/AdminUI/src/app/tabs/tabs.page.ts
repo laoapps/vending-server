@@ -6,6 +6,7 @@ import { ProductsPage } from '../products/products.page';
 import { SalePage } from '../sale/sale.page';
 import { EpinAdminPage } from '../epin-admin/epin-admin.page';
 import { EpinSubadminPage } from '../epin-subadmin/epin-subadmin.page';
+import { AdvertisementPage } from '../superadmin/advertisement/advertisement.page';
 
 @Component({
   selector: 'app-tabs',
@@ -57,6 +58,9 @@ export class TabsPage implements OnInit {
         break;
       case 6:
         this.apiService.showModal(EpinSubadminPage,{}).then(r=>{r?.present()});
+        break;
+      case 7:
+        this.apiService.showModal(AdvertisementPage,{}).then(r=>{r?.present()});
         break;
     
       default:
