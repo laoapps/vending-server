@@ -91,8 +91,8 @@ export class LoadVendingMachineSaleBillReportProcess {
         if (!(this.fromDate && this.toDate && this.token)) return IENMessage.parametersEmpty;
         
         const year = new Date().getFullYear();
-        const month =  Number(new Date().getMonth() + 1) > 9 ?  Number(new Date().getMonth() + 1) : '0' +  Number(new Date().getMonth() + 1);
-        const day = new Date().getDate();
+        const month =  Number(new Date().getMonth() + 1) < 10 ? '0' + Number(new Date().getMonth() + 1) : Number(new Date().getMonth() + 1);
+        const day = Number(new Date().getDate()) < 10 ? '0' + new Date().getDate() : new Date().getDate();
         const time = year + '-' + month + '-' + day;
 
         this.currentdate = new Date(time).getTime();
@@ -100,7 +100,6 @@ export class LoadVendingMachineSaleBillReportProcess {
         this.parseToDate = new Date(this.toDate).getTime();
 
         if (this.parsefromDate == this.parseToDate) {
-            console.log(`-->`, this.parsefromDate, this.parseToDate);
             if (this.parsefromDate > this.currentdate) return IENMessage.invalidFromDate;
         } else {
             if (this.parsefromDate > this.parseToDate) return IENMessage.invalidFromDate;
@@ -129,7 +128,7 @@ export class LoadVendingMachineSaleBillReportProcess {
                     this.count = response.data.count;
 
                     const list = JSON.parse(JSON.stringify(this.lists));
-                    const stock = list.map(obj => obj.vendingsales.map(item => { return { time: item.updatedAt, stock: item.stock } }));
+                    const stock = list.map(obj => obj.vendingsales.map(item => { return { time: obj.updatedAt, stock: item.stock } }));
                     console.log(`stock`, stock);
                     stock.find(item => {
                         this.saleDetailList.push(...item);
@@ -167,6 +166,13 @@ export class LoadVendingMachineSaleBillReportProcess {
                         this.uniqueorder[i].qtty += this.duplicateorder[j].qtty;
                     }
                 }
+                this.uniqueorder[i].total = this.uniqueorder[i].qtty * this.uniqueorder[i].price;
+            }
+        }
+        else 
+        {
+            for(let i = 0; i < this.uniqueorder.length; i++) {
+                this.uniqueorder[i].total = 0;
                 this.uniqueorder[i].total = this.uniqueorder[i].qtty * this.uniqueorder[i].price;
             }
         }

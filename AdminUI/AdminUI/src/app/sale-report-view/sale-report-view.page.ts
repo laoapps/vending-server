@@ -44,6 +44,7 @@ export class SaleReportViewPage implements OnInit {
     if (this.saleDetailList != undefined && Object.entries(this.saleDetailList).length > 0) {
       const parseList = JSON.parse(JSON.stringify(this.saleDetailList));
       this.filterList = parseList.filter(item => item.stock.id == this.list.id);
+      console.log(`ff`, this.filterList);
       
       for(let i = 0; i < this.filterList.length; i++) {
         this.filterList[i].stock.total = 0;

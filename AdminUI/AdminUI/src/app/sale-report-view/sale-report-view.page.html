@@ -52,7 +52,8 @@
         <tbody *ngFor="let filter of filterListShow; let i = index">
           <tr>
             <td>{{ i+1 }}</td>
-            <td>{{ filter?.time | date:'yyyy-MM-dd HH:mm:ss':'420' }}</td>
+            <!-- <td>{{ filter?.time | date:'yyyy-MM-dd HH:mm:ss': 420 }}</td> -->
+            <td>{{ filter?.time | date: 'yyyy-MM-dd HH:mm:ss':'+7'  }}</td>
             <td>{{ filter?.stock?.name }}</td>
             <td>{{ filter?.stock?.price | number }}</td>
             <td>{{ filter?.stock?.qtty | number }}</td>

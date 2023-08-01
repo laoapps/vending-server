@@ -134,6 +134,30 @@
         }
     }
 
+    .sum-data {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        grid-gap: 10px;
+        padding-bottom: 10px;
+
+        .group {
+            display: flex;
+            flex-direction: column;
+
+            .text {
+                color: #333;
+                font-size: 14px;
+                font-weight: 300;
+            }
+
+            .value {
+                color: #A41D4F;
+                font-size: 16px;
+                font-weight: bold;
+            }
+        }
+    }
+
     .btn-view {
         background: #fff;
         border: 1px solid #3333;

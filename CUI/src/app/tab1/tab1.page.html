@@ -1,5 +1,6 @@
 <ion-header>
 
+
   <!-- <ion-toolbar mode="ios" > -->
   <!-- <ion-title style="height: 160px; "> -->
   <div class="box" [ngStyle] = "apiService._cuiSetting.imgHeader">
@@ -25,6 +26,8 @@
 
     </a>
     <div (click)="laabCashin()" class="cash-balance control-menu menu-laab-cashin active"><img src="../../assets/logo/LAAB-logo.png" alt=""> {{ apiService.cash.amount | number }}</div>
+  <button (click)="openads()">openads</button>
+    
     <!-- <div class="cash-balance">0  <img src="../../assets/logo/LAAB-logo.png" alt=""></div> -->
     <!-- <div class="cash-balance">99,000,000 <img src="../../assets/logo/LAAB-logo.png" alt=""></div> -->
 

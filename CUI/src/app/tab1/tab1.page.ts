@@ -184,14 +184,14 @@ export class Tab1Page {
           setInterval(()=>{
             if(this.autopilot.auto>=6){
               // load ads when no active
-              if(!adsOn)
-              this.apiService.showModal(AdsPage).then(r=>{
-                r.present();
-                adsOn=true;
-                r.onDidDismiss().then(rx=>{
-                  adsOn=false;
-                })
-              })
+              // if(!adsOn)
+              // this.apiService.showModal(AdsPage).then(r=>{
+              //   r.present();
+              //   adsOn=true;
+              //   r.onDidDismiss().then(rx=>{
+              //     adsOn=false;
+              //   })
+              // })
 
               this.apiService.soundGreeting();
               setTimeout(() => {
@@ -1365,5 +1365,16 @@ export class Tab1Page {
       .then((r) => {
         r.present();
       });
+  }
+  openads() {
+    this.apiService.modal
+    .create({
+      component: AdsPage,
+      componentProps: {},
+      cssClass: 'dialog-fullscreen',
+    })
+    .then((r) => {
+      r.present();
+    });
   }
 }

@@ -45,6 +45,25 @@
       </a>
     </div>
 
+    <div class="sum-data">
+      <div class="group">
+        <div class="text">Machine</div>
+        <div class="value">{{ machineId }}</div>
+      </div>
+      <div class="group">
+        <div class="text">Date</div>
+        <div class="value">{{ currentdate }}</div>
+      </div>
+      <div class="group">
+        <div class="text">SubQTY</div>
+        <div class="value">{{ sum_qtty | number }}</div>
+      </div>
+      <div class="group">
+        <div class="text">Subtotal</div>
+        <div class="value">{{ sum_total | number }}</div>
+      </div>
+    </div>
+
     <div class="table-responsive">
       <table class="table table-bordered table-hover">
         <thead class="fw-bold">

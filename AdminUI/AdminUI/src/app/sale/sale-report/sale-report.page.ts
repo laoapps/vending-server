@@ -28,6 +28,10 @@ export class SaleReportPage implements OnInit {
   saleDetailList: Array<any> = [];
   saleSumerizeList: Array<any> = [];
 
+  currentdate: string = '';
+  sum_qtty: number = 0;
+  sum_total: number = 0;
+
   exportOptions: Array<any> = [
     {
       icon: 'fa-solid fa-file-pdf text-danger',
@@ -91,7 +95,6 @@ export class SaleReportPage implements OnInit {
       try {
         this.lists = [];
         this.display = false;
-        console.log(this.moredatetimeCustom, this.datetimeCustom);
 
         let params: any = {} as any;
         if (this.datetimeCustom == true) {
@@ -99,12 +102,15 @@ export class SaleReportPage implements OnInit {
             fromDate: this.fromDate,
             toDate: this.fromDate
           }
+          this.currentdate = this.fromDate;
 
         } else if (this.moredatetimeCustom == true) {
           params = {
             fromDate: this.fromDate,
             toDate: this.toDate
           }
+          this.currentdate = `From ${this.toDate} to ${this.fromDate}`;
+
         }
 
         const run = await this.loadVendingMachineSaleBillReportProcess.Init(params);
@@ -114,8 +120,12 @@ export class SaleReportPage implements OnInit {
         this.count = run.data[0].count;
         this.saleDetailList = run.data[0].saleDetailList;
         this.saleSumerizeList = run.data[0].saleSumerizeList;
-        console.log(this.moredatetimeCustom, this.datetimeCustom);
         if (this.count > 0) this.display = true;
+
+        console.log(`saleSumerizeList der`, this.saleSumerizeList);
+        this.sum_qtty = this.saleSumerizeList.reduce((a, b) => a + b.qtty, 0);
+        this.sum_total = this.saleSumerizeList.reduce((a, b) => a + b.total, 0);
+
         resolve(IENMessage.success);
 
       } catch (error) {
@@ -126,15 +136,9 @@ export class SaleReportPage implements OnInit {
   }
 
   view(list: any): void {
-    let currentdate: string = '';
-    if (this.datetimeCustom == true) {
-      currentdate = this.fromDate;
-    } else {
-      currentdate = `From ${this.toDate} to ${this.fromDate}`;
-    }
     const props = {
       machineId: this.machineId,
-      currentdate: currentdate,
+      currentdate: this.currentdate,
       list: list,
       saleDetailList: this.saleDetailList
     }
