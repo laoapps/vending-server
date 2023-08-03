@@ -143,3 +143,18 @@ ion-content {
     }
 
 }
+
+.pagination {
+    margin: 0;
+    padding: 0;
+}
+
+.page-item.active > .page-link{
+    background: #A41D4F;
+    border: 1px solid #A41D4F;
+}
+
+.page-link {
+    color: #333;
+    font-size: 12px;
+}

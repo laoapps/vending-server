@@ -120,6 +120,7 @@ export class CreateSubAdminFunc {
                 if (run.data.status != 1) return resolve(IENMessage.subadminHasNotLAABAccount);
 
                 this.uuid = run.data.info.name.split('_')[1];
+                if (this.uuid == this.ownerUuid) return resolve(IENMessage.youCanNotAddYourOwnToBeSubadminRole);
 
                 resolve(IENMessage.success);
 

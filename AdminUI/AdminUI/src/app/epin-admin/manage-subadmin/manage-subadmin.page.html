@@ -46,7 +46,7 @@
             <tbody *ngFor="let list of lists; let i = index">
               <tr>
                 <td>{{ i+1 }}</td>
-                <td>{{ list.phonenumber }}</td>
+                <td>{{ list?.data?.phonenumber }}</td>
                 <td>
                   <div *ngIf="list?.provides != undefined && list?.provides.length == 0" class="">No Provide</div>
                   <div class="" *ngFor="let provide of list.provides; let provide_index = index">Machine: {{provide.machineId}} Imei: {{ provide.imei }} </div>

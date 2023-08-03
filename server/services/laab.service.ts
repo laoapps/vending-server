@@ -57,6 +57,7 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    youCanNotAddYourOwnToBeSubadminRole = 'you can not add your own to be sub admin role',
     invalidateToDate = 'invalid to date',
     invalidFromDate = 'invalid from date',
     invalidateRevertDate = 'invalid revert date',
