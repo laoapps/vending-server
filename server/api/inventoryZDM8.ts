@@ -2228,6 +2228,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         let array: Array<any> = [];
                         let condition: any = {} as any;
+                        console.log(`show subadmin der`, subadmin);
                         if (subadmin == null) {
                             condition = {
                                 where: {
