@@ -100,16 +100,18 @@ export class SaleReportPage implements OnInit {
         if (this.datetimeCustom == true) {
           params = {
             fromDate: this.fromDate,
-            toDate: this.fromDate
+            toDate: this.fromDate,
+            machineId: this.machineId
           }
           this.currentdate = this.fromDate;
 
         } else if (this.moredatetimeCustom == true) {
           params = {
             fromDate: this.fromDate,
-            toDate: this.toDate
+            toDate: this.toDate,
+            machineId: this.machineId
           }
-          this.currentdate = `From ${this.toDate} to ${this.fromDate}`;
+          this.currentdate = `From ${this.fromDate} to ${this.toDate}`;
 
         }
 
@@ -123,8 +125,8 @@ export class SaleReportPage implements OnInit {
         if (this.count > 0) this.display = true;
 
         console.log(`saleSumerizeList der`, this.saleSumerizeList);
-        this.sum_qtty = this.saleSumerizeList.reduce((a, b) => a + b.qtty, 0);
-        this.sum_total = this.saleSumerizeList.reduce((a, b) => a + b.total, 0);
+        this.sum_qtty = this.saleSumerizeList.reduce((a, b) => a + b.stock.qtty, 0);
+        this.sum_total = this.saleSumerizeList.reduce((a, b) => a + b.stock.total, 0);
 
         resolve(IENMessage.success);
 

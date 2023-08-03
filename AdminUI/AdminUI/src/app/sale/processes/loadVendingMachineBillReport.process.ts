@@ -11,6 +11,7 @@ export class LoadVendingMachineSaleBillReportProcess {
     private apiService: ApiService;
     
     // parameters
+    private machineId: string;
     private fromDate: string;
     private toDate: string;
     private token: string;
@@ -83,12 +84,13 @@ export class LoadVendingMachineSaleBillReportProcess {
 
         this.fromDate = params.fromDate;
         this.toDate = params.toDate;
+        this.machineId = params.machineId;
         this.token = localStorage.getItem('lva_token');
 
     }
 
     private ValidateParams(): string {
-        if (!(this.fromDate && this.toDate && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.fromDate && this.toDate && this.token && this.machineId)) return IENMessage.parametersEmpty;
         
         const year = new Date().getFullYear();
         const month =  Number(new Date().getMonth() + 1) < 10 ? '0' + Number(new Date().getMonth() + 1) : Number(new Date().getMonth() + 1);
@@ -117,6 +119,7 @@ export class LoadVendingMachineSaleBillReportProcess {
                 const params = {
                     fromDate: this.fromDate,
                     toDate: this.toDate,
+                    machineId: this.machineId,
                     token: this.token
                 }
 
@@ -128,7 +131,7 @@ export class LoadVendingMachineSaleBillReportProcess {
                     this.count = response.data.count;
 
                     const list = JSON.parse(JSON.stringify(this.lists));
-                    const stock = list.map(obj => obj.vendingsales.map(item => { return { time: obj.updatedAt, stock: item.stock } }));
+                    const stock = list.map(obj => obj.vendingsales.map(item => { return { machineId: obj.machineId, time: obj.updatedAt, stock: item.stock } }));
                     console.log(`stock`, stock);
                     stock.find(item => {
                         this.saleDetailList.push(...item);
@@ -147,33 +150,33 @@ export class LoadVendingMachineSaleBillReportProcess {
     private FetchOrder(): void {
         let allsale: Array<any> = [];
         let cloneSaleDetailList: Array<any> = JSON.parse(JSON.stringify(this.saleDetailList));
-        allsale = cloneSaleDetailList.map(item => item.stock);
+        allsale = cloneSaleDetailList.map(item => { return { stock: item.stock, machineId: item.machineId } });
         console.log(`allsale`, allsale);
 
         this.uniqueorder = allsale.filter((obj, index) => 
-            allsale.findIndex(item => item.id == obj.id) == index
+            allsale.findIndex(item => item.stock.id == obj.stock.id) == index
         );
         this.duplicateorder = allsale.filter((obj, index) => 
-            allsale.findIndex(item => item.id == obj.id) != index
+            allsale.findIndex(item => item.stock.id == obj.stock.id) != index
         );
 
         if (this.duplicateorder != undefined && Object.entries(this.duplicateorder).length > 0) {
             for(let i = 0; i < this.uniqueorder.length; i++) {
-                this.uniqueorder[i].total = 0;
+                this.uniqueorder[i].stock.total = 0;
 
                 for(let j = 0; j < this.duplicateorder.length; j++) {
-                    if (this.uniqueorder[i].id == this.duplicateorder[j].id) {
-                        this.uniqueorder[i].qtty += this.duplicateorder[j].qtty;
+                    if (this.uniqueorder[i].stock.id == this.duplicateorder[j].stock.id) {
+                        this.uniqueorder[i].stock.qtty += this.duplicateorder[j].stock.qtty;
                     }
                 }
-                this.uniqueorder[i].total = this.uniqueorder[i].qtty * this.uniqueorder[i].price;
+                this.uniqueorder[i].stock.total = this.uniqueorder[i].stock.qtty * this.uniqueorder[i].stock.price;
             }
         }
         else 
         {
             for(let i = 0; i < this.uniqueorder.length; i++) {
-                this.uniqueorder[i].total = 0;
-                this.uniqueorder[i].total = this.uniqueorder[i].qtty * this.uniqueorder[i].price;
+                this.uniqueorder[i].stock.total = 0;
+                this.uniqueorder[i].stock.total = this.uniqueorder[i].stock.qtty * this.uniqueorder[i].stock.price;
             }
         }
 

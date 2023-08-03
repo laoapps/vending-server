@@ -1041,6 +1041,14 @@ export interface IBC {
     hashM?: string;
 
 }
+export interface ILogActivity extends IBase {
+    ownerUuid: string;
+    superadmin: string;
+    subadmin: string;
+    url: string;
+    body:any;
+    error:boolean
+}
 export interface IStock extends IBase, IBC {
     name: string;
     image: string;

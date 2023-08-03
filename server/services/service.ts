@@ -8,7 +8,8 @@ import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel } fr
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
-
+import { Request,Response } from 'express';
+import { logEntity } from '../entities';
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
 
@@ -36,14 +37,41 @@ redisClient.connect();
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
-
-
-export function PrintSucceeded(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
+export function returnLog(req:Request,res:Response,error=false){
+    return {superadmin:res.locals['superadmin']+'',subadmin:res.locals['subadmin']+'',ownerUuid:res.locals['ownerUuid']+'',url:req.protocol + "://" + req.get('host') + req.originalUrl,body:req.body,error}
+}
+export function logUserActivity(data:{superadmin:string,subadmin:string,ownerUuid:string,url:string,body:any,error:boolean}) {
+    try {
+        const superadmin =data.superadmin;
+        const subadmin = data.subadmin;
+        const ownerUuid= data.ownerUuid;
+        const url = data.url;
+        const body = data.body;
+        const error = data.error;
+        logEntity.create({superadmin,subadmin,ownerUuid,url,body,error})
+        // const url =req.protocol + "://" + req.get('host') + req.originalUrl;
+        // if (data.ownerUuid) {
+        //     if (data.superadmin) {
+                
+        //     } 
+        //     else if (data.subadmin) {
+                
+        //     } 
+        //     //....
+        // } 
+    } catch (error) {
+        console.log(error);
+    }
+}
+export function PrintSucceeded(command: string, data: any, message: string,log:{superadmin:string,subadmin:string,ownerUuid:string,url:string,body:any,error:boolean}=null, transactionID: number = -1, code: string = '0'): IResModel {
+    if(log)
+    logUserActivity(log);
     return {
         command, data, message, code, status: 1, transactionID
     } as IResModel;
 }
-export function PrintError(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
+export function PrintError(command: string, data: any, message: string,log:{superadmin:string,subadmin:string,ownerUuid:string,url:string,body:any,error:boolean}=null,  transactionID: number = -1, code: string = '0'): IResModel {
+    logUserActivity(log);
     return {
         command, data: data, message, code, status: 0, transactionID
     } as IResModel;
@@ -64,7 +92,7 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
                         //d.data = x;
                         console.log('sending to ', uuid);
 
-                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded)));
+                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded,null)));
                         return;
                     }
                 }

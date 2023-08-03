@@ -69,6 +69,7 @@
         <thead class="fw-bold">
           <tr>
             <td>#</td>
+            <td>Machine</td>
             <td>Product</td>
             <td>Price</td>
             <td>Total Quantity</td>
@@ -79,10 +80,11 @@
         <tbody *ngFor="let sale of saleSumerizeList; let i = index">
           <tr>
             <td>{{ i+1 }}</td>
-            <td>{{ sale.name }}</td>
-            <td>{{ sale.price | number }}</td>
-            <td>{{ sale.qtty | number }}</td>
-            <td>{{ sale.total | number }}</td>
+            <td>{{ sale.machineId }}</td>
+            <td>{{ sale.stock.name }}</td>
+            <td>{{ sale.stock.price | number }}</td>
+            <td>{{ sale.stock.qtty | number }}</td>
+            <td>{{ sale.stock.total | number }}</td>
             <td>
               <button (click)="view(sale)" class="btn btn-view">View</button>
             </td>

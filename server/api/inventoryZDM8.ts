@@ -29,6 +29,8 @@ import {
     readMachineSale,
     base64ToFile,
     writeMachineLimiterBalance,
+    findUuidByPhoneNumberOnUserManager,
+    returnLog,
 } from "../services/service";
 import {
     EClientCommand,
@@ -172,7 +174,7 @@ export class InventoryZDM8 implements IBaseClass {
         const { token } = req.body;
         res.locals["machineId"] = this.ssocket.findMachineIdToken(token);
         if (!res.locals["machineId"]) {
-            return res.send(PrintError("MachineNotFound", [], EMessage.error));
+            return res.send(PrintError("MachineNotFound", [], EMessage.error,null));
         } else next();
     }
     checkMachineDisabled(req: Request, res: Response, next: NextFunction) {
@@ -180,12 +182,12 @@ export class InventoryZDM8 implements IBaseClass {
             .then((r) => {
                 if (r) {
                     return res.send(
-                        PrintError("machine was disabled", [], EMessage.error)
+                        PrintError("machine was disabled", [], EMessage.error,null)
                     );
                 } else next();
             })
             .catch((e) => {
-                return res.send(PrintError("checkMachineDisabled", e, EMessage.error));
+                return res.send(PrintError("checkMachineDisabled", e, EMessage.error,null));
             });
     }
     isMachineDisabled(machineId: string) {
@@ -306,14 +308,15 @@ export class InventoryZDM8 implements IBaseClass {
                                     PrintSucceeded(
                                         d.command,
                                         { bill: r, transactionID: c.tranid_client },
-                                        EMessage.succeeded
+                                        EMessage.succeeded,
+                                        returnLog(req,res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("error confirmMMoney");
                                 writeLogs(c, "", "_E_Confirm");
-                                res.send(PrintError(d.command, e, EMessage.error));
+                                res.send(PrintError(d.command, e, EMessage.error,null));
                             });
                     } else if (d.command == "processorder") {
                         // update bill for local process
@@ -341,18 +344,19 @@ export class InventoryZDM8 implements IBaseClass {
                                                 position,
                                                 transactionID
                                             ),
-                                            EMessage.succeeded
+                                            EMessage.succeeded,
+                                            null
                                         )
                                     );
                                 } else {
                                     res.send(
-                                        PrintError("submit command", [], "position not found")
+                                        PrintError("submit command", [], "position not found",null)
                                     );
                                 }
                             });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("init", error, EMessage.error));
+                            res.send(PrintError("init", error, EMessage.error,null));
                         }
                     } else {
                         const clientId = d.data.clientId + "";
@@ -387,10 +391,10 @@ export class InventoryZDM8 implements IBaseClass {
                             sEnt
                                 .findAll()
                                 .then((r) => {
-                                    res.send(PrintSucceeded("listSale", r, EMessage.succeeded));
+                                    res.send(PrintSucceeded("listSale", r, EMessage.succeeded,null));
                                 })
                                 .catch((e) => {
-                                    res.send(PrintError("listSale", e, EMessage.error));
+                                    res.send(PrintError("listSale", e, EMessage.error,null));
                                 });
                         } else if (d.command == EClientCommand.buyMMoney) {
                             console.log(" buyMMoney" + d.data.value);
@@ -492,25 +496,29 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log("SET transactionID by owner", ownerUuid);
 
                                 redisClient.setEx(transactionID + "--_", 60 * 15, ownerUuid);
-                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
+                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded,null));
                             });
                         } else {
-                            res.send(PrintError(d.command, [], EMessage.notsupport));
+                            res.send(PrintError(d.command, [], EMessage.notsupport,null));
                         }
                     }
                 } catch (error: any) {
                     console.log("error", error);
                     res.send(
-                        PrintError(d.command, this.production || error, error.message)
+                        PrintError(d.command, this.production || error, error.message,null)
                     );
                 }
             });
-            router.post(this.path + "/creditMMoney", (req, res) => {
-                const d = req.body as IReqModel;
-                // this.creditMachineMMoney(d);
-                // res.send({ message: "wait", status: 1 });
-            });
-            router.post(this.path + "/refreshMachine", this.checkToken, async (req, res) => {
+            // router.post(this.path + "/creditMMoney", (req, res) => {
+            //     const d = req.body as IReqModel;
+            //     // this.creditMachineMMoney(d);
+            //     // res.send({ message: "wait", status: 1 });
+            // });
+            router.post(this.path + "/refreshMachine",
+            this.checkSuperAdmin,
+            this.checkSubAdmin,
+            this.checkAdmin,
+              async (req, res) => {
                 try {
                     const m = req.body.machineId;
                     const ws =this.wsClient.find(v=>v['machineId']==m);
@@ -521,11 +529,11 @@ export class InventoryZDM8 implements IBaseClass {
                     resx.message = EMessage.refreshsucceeded;
                     resx.data = true;
                     this.sendWSToMachine(ws['machineId'],resx)
-                    res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded));
+                    res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded,returnLog(req,res)));
 
                 } catch (error) {
                     console.log(error);
-                    res.send(PrintError("addProduct", error, EMessage.error));
+                    res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
                 }
             });
             router.post(
@@ -551,13 +559,14 @@ export class InventoryZDM8 implements IBaseClass {
                                 PrintSucceeded(
                                     "getDeliveryingBills",
                                     b.filter((v) => v.ownerUuid == ownerUuid),
-                                    EMessage.succeeded
+                                    EMessage.succeeded,returnLog(req,res)
+                                    
                                 )
                             );
                         });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getDeliveryingBills", error, EMessage.error));
+                        res.send(PrintError("getDeliveryingBills", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -580,14 +589,14 @@ export class InventoryZDM8 implements IBaseClass {
                                 where: { machineId, paymentstatus: EPaymentStatus.paid },
                             })
                             .then((r) => {
-                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
-                                res.send(PrintError("init", e, EMessage.error));
+                                res.send(PrintError("init", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getPaidBills", error, EMessage.error));
+                        res.send(PrintError("getPaidBills", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -609,14 +618,14 @@ export class InventoryZDM8 implements IBaseClass {
                         entx
                             .findAll({ where: { machineId } })
                             .then((r) => {
-                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
-                                res.send(PrintError("getBills", e, EMessage.error));
+                                res.send(PrintError("getBills", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getBills", error, EMessage.error));
+                        res.send(PrintError("getBills", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -637,7 +646,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const mx = allMachines.find(v => v.m == machineId);
                         if (mx) {
                             if (moment().diff(moment(mx.t), 'milliseconds') < 3000) return res.send(
-                                PrintError("retryProcessBill", [], EMessage.error + ' too fast')
+                                PrintError("retryProcessBill", [], EMessage.error + ' too fast',returnLog(req,res,true))
                             );
                             mx.t = moment.now();
                         } else {
@@ -692,26 +701,26 @@ export class InventoryZDM8 implements IBaseClass {
                                         PrintSucceeded(
                                             "retryProcessBill",
                                             { position, bill: x?.bill, transactionID, pos },
-                                            EMessage.succeeded
+                                            EMessage.succeeded,returnLog(req,res)
                                         )
                                     );
                                 } else {
                                     res.send(
-                                        PrintError("retryProcessBill", pos, EMessage.error)
+                                        PrintError("retryProcessBill", pos, EMessage.error,returnLog(req,res,true))
                                     );
                                 }
                             } catch (error) {
-                                console.log("error retryProcessBill", error);
+                                console.log("error retryProcessBill", error,returnLog(req,res,true));
 
                                 res.send(
-                                    PrintError("retryProcessBill", error, EMessage.error)
+                                    PrintError("retryProcessBill", error, EMessage.error,returnLog(req,res,true))
                                 );
                             }
                         });
                         // }, 1000);
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("retryProcessBill", error, EMessage.error));
+                        res.send(PrintError("retryProcessBill", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -733,15 +742,15 @@ export class InventoryZDM8 implements IBaseClass {
                             .findAll()
                             .then((r) => {
                                 res.send(
-                                    PrintSucceeded("getAllPaidBills", r, EMessage.succeeded)
+                                    PrintSucceeded("getAllPaidBills", r, EMessage.succeeded,returnLog(req,res))
                                 );
                             })
                             .catch((e) => {
-                                res.send(PrintError("getAllPaidBills", e, EMessage.error));
+                                res.send(PrintError("getAllPaidBills", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getAllPaidBills", error, EMessage.error));
+                        res.send(PrintError("getAllPaidBills", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -762,14 +771,14 @@ export class InventoryZDM8 implements IBaseClass {
                         entx
                             .findAll()
                             .then((r) => {
-                                res.send(PrintSucceeded("getAllBills", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("getAllBills", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
-                                res.send(PrintError("getAllBills", e, EMessage.error));
+                                res.send(PrintError("getAllBills", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getAllBills", error, EMessage.error));
+                        res.send(PrintError("getAllBills", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -781,11 +790,12 @@ export class InventoryZDM8 implements IBaseClass {
                             "init",
                             this.ssocket.listOnlineMachines(),
                             EMessage.succeeded
+                            ,returnLog(req,res)
                         )
                     );
                 } catch (error) {
                     console.log(error);
-                    res.send(PrintError("init", error, EMessage.error));
+                    res.send(PrintError("init", error, EMessage.error,returnLog(req,res,true)));
                 }
             });
 
@@ -969,7 +979,10 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(
                 this.path + "/addProduct",
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -984,7 +997,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const o = req.body.data as IStock;
                             if (!o.name || !o.price)
                                 return res.send(
-                                    PrintError("addProduct", [], EMessage.bodyIsEmpty)
+                                    PrintError("addProduct", [], EMessage.bodyIsEmpty,returnLog(req,res,true))
                                 );
                             // let base64Image = o.image.split(';base64,').pop();
                             // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
@@ -992,26 +1005,28 @@ export class InventoryZDM8 implements IBaseClass {
                             sEnt
                                 .create(o)
                                 .then((r) => {
-                                    res.send(PrintSucceeded("addProduct", r, EMessage.succeeded));
+                                    res.send(PrintSucceeded("addProduct", r, EMessage.succeeded,returnLog(req,res)));
                                 })
                                 .catch((e) => {
                                     console.log("error add product", e);
 
-                                    res.send(PrintError("addProduct", e, EMessage.error));
+                                    res.send(PrintError("addProduct", e, EMessage.error,returnLog(req,res,true)));
                                 });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("addProduct", error, EMessage.error));
+                            res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error));
+                        res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
                 this.path + "/disableProduct",
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -1034,7 +1049,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("disableProduct", [], EMessage.error)
+                                        PrintError("disableProduct", [], EMessage.error,returnLog(req,res,true))
                                     );
                                 console.log('disableproduct', r);
 
@@ -1046,23 +1061,26 @@ export class InventoryZDM8 implements IBaseClass {
                                         "disableProduct",
                                         await r.save(),
                                         EMessage.succeeded
+                                        ,returnLog(req,res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("error disable product", e);
 
-                                res.send(PrintError("disableProduct", e, EMessage.error));
+                                res.send(PrintError("disableProduct", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("disableProduct", error, EMessage.error));
+                        res.send(PrintError("disableProduct", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
                 this.path + "/deleteProduct",
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -1080,7 +1098,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("deleteProduct", [], EMessage.error)
+                                        PrintError("deleteProduct", [], EMessage.error,returnLog(req,res,true))
                                     );
                                 console.log('deleteProduct', r);
                                 res.send(
@@ -1088,22 +1106,388 @@ export class InventoryZDM8 implements IBaseClass {
                                         "deleteProduct",
                                         r,
                                         EMessage.succeeded
+                                        ,returnLog(req,res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("error deleteProduct", e);
 
-                                res.send(PrintError("deleteProduct", e, EMessage.error));
+                                res.send(PrintError("deleteProduct", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("deleteProduct", error, EMessage.error));
+                        res.send(PrintError("deleteProduct", error, EMessage.error,returnLog(req,res,true)));
+                    }
+                }
+            );
+           
+
+            router.post(
+                this.path + "/listProduct",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const isActive = req.query['isActive'];
+                        let actives = [];
+                        if (isActive == 'all') actives.push(...[true, false]);
+                        else actives.push(...isActive == 'yes' ? [true] : [false]);
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const sEnt = StockFactory(
+                            EEntity.product + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        sEnt
+                            .findAll({ where: { isActive: { [Op.or]: actives } } })
+                            .then((r) => {
+                                res.send(PrintSucceeded("listProduct", r, EMessage.succeeded,returnLog(req,res)));
+                            })
+                            .catch((e) => {
+                                console.log("error list product", e);
+
+                                res.send(PrintError("listProduct", e, EMessage.error,returnLog(req,res,true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listProduct", error, EMessage.error,returnLog(req,res,true)));
+                    }
+                }
+            );
+
+            router.post(
+                this.path + "/cloneSale",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const o = req.body as IVendingCloneMachineSale;
+                        if (!(ownerUuid && o.machineId && o.cloneMachineId)) return res.send(PrintError("cloneSale", [], EMessage.parametersEmpty,returnLog(req,res,true)));
+                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,dbConnection);
+                        await sEnt.sync();
+                        this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r_findMachine => {
+                            if (r_findMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfound,returnLog(req,res,true)));
+                            this.machineClientlist.findOne({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachine => {
+                                if (r_findCloneMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfoundCloneMachine,returnLog(req,res,true)));
+                                sEnt.findAndCountAll({ where: { machineId: o.machineId } }).then(r_findMachineStock => {
+                                    sEnt.findAndCountAll({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachineStock => {
+                                        if (r_findCloneMachineStock.count == 0) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone,returnLog(req,res,true)));
+                                        
+                                        let list: Array<any> = r_findMachineStock.rows;
+                                        let cloneList: Array<any> = r_findCloneMachineStock.rows;
+                                        let models: Array<any> = [];
+
+                                        if (list != undefined && Object.entries(list).length > 0) {
+                                            list.find(ml => {
+                                                cloneList = cloneList.filter(mcl => mcl.stock.id !== ml.stock.id);
+                                            });
+                                            
+                                        }
+
+                                        for(let i = 0; i < cloneList.length; i++) {
+                                            const data = {
+                                                machineId: o.machineId,
+                                                stock: cloneList[i].stock,
+                                                position: cloneList[i].position,
+                                                max: cloneList[i].max
+                                            }   
+                                            models.push(data);
+                                        }
+
+                                        sEnt.bulkCreate(models).then(r_clonestock => {
+                                            if (!r_clonestock) return res.send(PrintError("cloneSale error", [], EMessage.cloneStockFail,returnLog(req,res,true)));
+                                            for(let i = 0; i < models.length; i++) {
+                                                models[i].id = r_clonestock[i].id;
+                                                models[i].uuid = r_clonestock[i].uuid;
+                                                models[i].isActive = r_clonestock[i].isActive;
+                                                models[i].createdAt = r_clonestock[i].createdAt;
+                                                models[i].updatedAt = r_clonestock[i].updatedAt;
+                                            }
+                                        const loggg = [r_clonestock, list, cloneList, models];
+
+                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded,returnLog(req,res)));
+                                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
+                                    }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
+                                }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
+                            }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
+                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));     
+
+                    } catch (error) {
+                        res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true)));
+                    }               
+                }
+            );
+            // normal version
+            router.post(
+                this.path + "/addSale",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    const ownerUuid = res.locals["ownerUuid"] || "";
+                    const o = req.body.data as IVendingMachineSale;
+                    const sEnt = VendingMachineSaleFactory(
+                        EEntity.vendingmachinesale + "_" + ownerUuid,
+                        dbConnection
+                    );
+                    await sEnt.sync();
+                    this.machineClientlist
+                        .findOne({ where: { machineId: o.machineId } })
+                        .then((r) => {
+                            if (!r)
+                                return res.send(PrintError("addSale", [], EMessage.notfound,returnLog(req,res,true)));
+                            if (!o.machineId || Number(o.position) == Number.NaN)
+                                return res.send(
+                                    PrintError("addSale", [], EMessage.bodyIsEmpty,returnLog(req,res,true))
+                                );
+                            const pEnt = StockFactory(
+                                EEntity.product + "_" + ownerUuid,
+                                dbConnection
+                            );
+                            pEnt.findByPk(o.stock.id).then((p) => {
+                                if (!p)
+                                    return res.send(
+                                        PrintError("addSale", [], EMessage.productNotFound,returnLog(req,res,true))
+                                    );
+                                p.qtty = 0;
+                                o.stock = p;
+                                console.log('addSale',o);
+                                
+                                sEnt
+                                    .findOne({ where: { position: o.position, machineId: o.machineId } })
+                                    .then((rx) => {
+                                        if (rx)
+                                            return res.send(
+                                                PrintError("addSale", [], EMessage.duplicatedPosition,returnLog(req,res,true))
+                                            );
+                                        sEnt
+                                            .create(o)
+                                            .then((r) => {
+                                                res.send(
+                                                    PrintSucceeded("addSale", r, EMessage.succeeded,returnLog(req,res))
+                                                );
+                                            })
+                                            .catch((e) => {
+                                                console.log("error add sale", e);
+                                                res.send(PrintError("addSale", e, EMessage.error,returnLog(req,res,true)));
+                                            });
+                                    })
+                                    .catch((e) => {
+                                        console.log(e);
+
+                                        res.send(PrintError("addSale", e, EMessage.error,returnLog(req,res,true)));
+                                    });
+                            });
+                        });
+                }
+            );
+            router.post(
+                this.path + "/deleteSale",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const id = Number(req.query["id"]);
+                        const sEnt = VendingMachineSaleFactory(
+                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        sEnt
+                            .destroy({ where: { id } })
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(PrintError("deleteSale", [], EMessage.error,returnLog(req,res,true)));
+
+                                res.send(PrintSucceeded("deleteSale", r, EMessage.succeeded,returnLog(req,res)));
+                            })
+                            .catch((e) => {
+                                console.log("error deleteSale", e);
+
+                                res.send(PrintError("deleteSale", e, EMessage.error,returnLog(req,res,true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("deleteSale", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
+                this.path + "/disableSale",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const id = Number(req.query["id"]);
+                        const isActive = req.query["isActive"] + '' == 'no'
+                            ? false
+                            : true;
+                        const sEnt = VendingMachineSaleFactory(
+                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        sEnt
+                            .findByPk(id)
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("disableSale", [], EMessage.error,returnLog(req,res,true))
+                                    );
+                                r.isActive = isActive;
+                                r.changed("isActive", true);
+                                res.send(
+                                    PrintSucceeded(
+                                        "disableSale",
+                                        await r.save(),
+                                        EMessage.succeeded
+                                        ,returnLog(req,res)
+                                    )
+                                );
+                            })
+                            .catch((e) => {
+                                console.log("error disable product", e);
+
+                                res.send(PrintError("disableSale", e, EMessage.error,returnLog(req,res,true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("disableSale", error, EMessage.error,returnLog(req,res,true)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/updateSale",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const o = req.body.data as IVendingMachineSale;
+                        const sEnt = VendingMachineSaleFactory(
+                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+
+                        sEnt
+                            .findByPk(o.id)
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("updateSale", [], EMessage.notfound,returnLog(req,res,true))
+                                    );
+                                const pEnt = StockFactory(
+                                    EEntity.product + "_" + ownerUuid,
+                                    dbConnection
+                                );
+                                pEnt
+                                    .findByPk(o.stock.id)
+                                    .then(async (p) => {
+                                        if (!p)
+                                            return res.send(
+                                                PrintError("updateSale", [], EMessage.productNotFound,returnLog(req,res,true))
+                                            );
+
+                                        Object.keys(o).forEach((k) => {
+                                            console.log("changing", r[k]);
+                                            if (["stock", "max"].includes(k)) {
+                                                r[k] = o[k];
+                                                r.changed("stock", true);
+                                                console.log("changed", r[k]);
+                                            }
+                                        });
+                                        // r.changed('stock', true);
+                                        console.log("update Sale", r);
+
+                                        res.send(
+                                            PrintSucceeded(
+                                                "updateSale",
+                                                await r.save(),
+                                                EMessage.succeeded
+                                                ,returnLog(req,res)
+                                            )
+                                        );
+                                    })
+                                    .catch((e) => {
+                                        console.log("error updatesale", e);
+                                        res.send(PrintError("updateSale", e, EMessage.error,returnLog(req,res,true)));
+                                    });
+                            })
+                            .catch((e) => {
+                                console.log("error updatesale", e);
+
+                                res.send(PrintError("updateSale", e, EMessage.error,returnLog(req,res,true)));
+                            });
+                    } catch (error) {
+                        console.log("error update sale", error);
+                        res.send(PrintError("updateSale", error, EMessage.error,returnLog(req,res,true)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/listSale",
+
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const isActive = req.query['isActive'];
+                        let actives = [];
+                        if (isActive == 'all') actives.push(...[true, false]);
+                        else actives.push(...isActive == 'yes' ? [true] : [false]);
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const sEnt = VendingMachineSaleFactory(
+                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        sEnt
+                            .findAll({ where: { isActive: { [Op.or]: actives } } })
+                            .then((r) => {
+                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded,returnLog(req,res)));
+                            })
+                            .catch((e) => {
+                                console.log("error list sale", e);
+
+                                res.send(PrintError("listSale", e, EMessage.error,returnLog(req,res,true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                    }
+                }
+            );
+
+            /// ADS 
+            ///list
+            router.post(
                 this.path + "/listAds",
+                this.checkSuperAdmin,
+                this.authorizeSuperAdmin,
                 // this.checkToken,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
@@ -1149,361 +1533,18 @@ export class InventoryZDM8 implements IBaseClass {
                                 url: 'https://www.youtube.com/shorts/9J3M-vh2oGs'
                             }
                         ];
-                        res.send(PrintSucceeded("listAds", r, EMessage.succeeded));
+                        res.send(PrintSucceeded("listAds", r, EMessage.succeeded,returnLog(req,res)));
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listProduct", error, EMessage.error));
+                        res.send(PrintError("listProduct", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
-
-            router.post(
-                this.path + "/listProduct",
-                this.checkToken,
-                // this.checkToken,
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const isActive = req.query['isActive'];
-                        let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const sEnt = StockFactory(
-                            EEntity.product + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives } } })
-                            .then((r) => {
-                                res.send(PrintSucceeded("listProduct", r, EMessage.succeeded));
-                            })
-                            .catch((e) => {
-                                console.log("error list product", e);
-
-                                res.send(PrintError("listProduct", e, EMessage.error));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listProduct", error, EMessage.error));
-                    }
-                }
-            );
-
-            router.post(
-                this.path + "/cloneSale",
-                this.checkToken,
-                async (req, res) => {
-                    try {
-                        
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const o = req.body as IVendingCloneMachineSale;
-                        if (!(ownerUuid && o.machineId && o.cloneMachineId)) return res.send(PrintError("cloneSale", [], EMessage.parametersEmpty));
-                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,dbConnection);
-                        await sEnt.sync();
-                        this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r_findMachine => {
-                            if (r_findMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfound));
-                            this.machineClientlist.findOne({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachine => {
-                                if (r_findCloneMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfoundCloneMachine));
-                                sEnt.findAndCountAll({ where: { machineId: o.machineId } }).then(r_findMachineStock => {
-                                    sEnt.findAndCountAll({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachineStock => {
-                                        if (r_findCloneMachineStock.count == 0) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone));
-                                        
-                                        let list: Array<any> = r_findMachineStock.rows;
-                                        let cloneList: Array<any> = r_findCloneMachineStock.rows;
-                                        let models: Array<any> = [];
-
-                                        if (list != undefined && Object.entries(list).length > 0) {
-                                            list.find(ml => {
-                                                cloneList = cloneList.filter(mcl => mcl.stock.id !== ml.stock.id);
-                                            });
-                                            
-                                        }
-
-                                        for(let i = 0; i < cloneList.length; i++) {
-                                            const data = {
-                                                machineId: o.machineId,
-                                                stock: cloneList[i].stock,
-                                                position: cloneList[i].position,
-                                                max: cloneList[i].max
-                                            }   
-                                            models.push(data);
-                                        }
-
-                                        sEnt.bulkCreate(models).then(r_clonestock => {
-                                            if (!r_clonestock) return res.send(PrintError("cloneSale error", [], EMessage.cloneStockFail));
-                                            for(let i = 0; i < models.length; i++) {
-                                                models[i].id = r_clonestock[i].id;
-                                                models[i].uuid = r_clonestock[i].uuid;
-                                                models[i].isActive = r_clonestock[i].isActive;
-                                                models[i].createdAt = r_clonestock[i].createdAt;
-                                                models[i].updatedAt = r_clonestock[i].updatedAt;
-                                            }
-                                        const loggg = [r_clonestock, list, cloneList, models];
-
-                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded));
-                                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
-                                    }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
-                                }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
-                            }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));
-                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error)));     
-
-                    } catch (error) {
-                        res.send(PrintError("cloneSale", error, EMessage.error));
-                    }               
-                }
-            );
-            // normal version
-            router.post(
-                this.path + "/addSale",
-                this.checkToken,
-                // this.checkToken,
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    const ownerUuid = res.locals["ownerUuid"] || "";
-                    const o = req.body.data as IVendingMachineSale;
-                    const sEnt = VendingMachineSaleFactory(
-                        EEntity.vendingmachinesale + "_" + ownerUuid,
-                        dbConnection
-                    );
-                    await sEnt.sync();
-                    this.machineClientlist
-                        .findOne({ where: { machineId: o.machineId } })
-                        .then((r) => {
-                            if (!r)
-                                return res.send(PrintError("addSale", [], EMessage.notfound));
-                            if (!o.machineId || Number(o.position) == Number.NaN)
-                                return res.send(
-                                    PrintError("addSale", [], EMessage.bodyIsEmpty)
-                                );
-                            const pEnt = StockFactory(
-                                EEntity.product + "_" + ownerUuid,
-                                dbConnection
-                            );
-                            pEnt.findByPk(o.stock.id).then((p) => {
-                                if (!p)
-                                    return res.send(
-                                        PrintError("addSale", [], EMessage.productNotFound)
-                                    );
-                                p.qtty = 0;
-                                o.stock = p;
-                                console.log('addSale',o);
-                                
-                                sEnt
-                                    .findOne({ where: { position: o.position, machineId: o.machineId } })
-                                    .then((rx) => {
-                                        if (rx)
-                                            return res.send(
-                                                PrintError("addSale", [], EMessage.duplicatedPosition)
-                                            );
-                                        sEnt
-                                            .create(o)
-                                            .then((r) => {
-                                                res.send(
-                                                    PrintSucceeded("addSale", r, EMessage.succeeded)
-                                                );
-                                            })
-                                            .catch((e) => {
-                                                console.log("error add sale", e);
-                                                res.send(PrintError("addSale", e, EMessage.error));
-                                            });
-                                    })
-                                    .catch((e) => {
-                                        console.log(e);
-
-                                        res.send(PrintError("addSale", e, EMessage.error));
-                                    });
-                            });
-                        });
-                }
-            );
-            router.post(
-                this.path + "/deleteSale",
-                this.checkToken,
-                // this.checkToken,
-                // this.checkMachineDisabled,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = Number(req.query["id"]);
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .destroy({ where: { id } })
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(PrintError("deleteSale", [], EMessage.error));
-
-                                res.send(PrintSucceeded("deleteSale", r, EMessage.succeeded));
-                            })
-                            .catch((e) => {
-                                console.log("error deleteSale", e);
-
-                                res.send(PrintError("deleteSale", e, EMessage.error));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("deleteSale", error, EMessage.error));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/disableSale",
-                this.checkToken,
-                // this.checkToken,
-                // this.checkMachineDisabled,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = Number(req.query["id"]);
-                        const isActive = req.query["isActive"] + '' == 'no'
-                            ? false
-                            : true;
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findByPk(id)
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(
-                                        PrintError("disableSale", [], EMessage.error)
-                                    );
-                                r.isActive = isActive;
-                                r.changed("isActive", true);
-                                res.send(
-                                    PrintSucceeded(
-                                        "disableSale",
-                                        await r.save(),
-                                        EMessage.succeeded
-                                    )
-                                );
-                            })
-                            .catch((e) => {
-                                console.log("error disable product", e);
-
-                                res.send(PrintError("disableSale", e, EMessage.error));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("disableSale", error, EMessage.error));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/updateSale",
-                this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const o = req.body.data as IVendingMachineSale;
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-
-                        sEnt
-                            .findByPk(o.id)
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(
-                                        PrintError("updateSale", [], EMessage.notfound)
-                                    );
-                                const pEnt = StockFactory(
-                                    EEntity.product + "_" + ownerUuid,
-                                    dbConnection
-                                );
-                                pEnt
-                                    .findByPk(o.stock.id)
-                                    .then(async (p) => {
-                                        if (!p)
-                                            return res.send(
-                                                PrintError("updateSale", [], EMessage.productNotFound)
-                                            );
-
-                                        Object.keys(o).forEach((k) => {
-                                            console.log("changing", r[k]);
-                                            if (["stock", "max"].includes(k)) {
-                                                r[k] = o[k];
-                                                r.changed("stock", true);
-                                                console.log("changed", r[k]);
-                                            }
-                                        });
-                                        // r.changed('stock', true);
-                                        console.log("update Sale", r);
-
-                                        res.send(
-                                            PrintSucceeded(
-                                                "updateSale",
-                                                await r.save(),
-                                                EMessage.succeeded
-                                            )
-                                        );
-                                    })
-                                    .catch((e) => {
-                                        console.log("error updatesale", e);
-                                        res.send(PrintError("updateSale", e, EMessage.error));
-                                    });
-                            })
-                            .catch((e) => {
-                                console.log("error updatesale", e);
-
-                                res.send(PrintError("updateSale", e, EMessage.error));
-                            });
-                    } catch (error) {
-                        console.log("error update sale", error);
-                        res.send(PrintError("updateSale", error, EMessage.error));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/listSale",
-                this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const isActive = req.query['isActive'];
-                        let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives } } })
-                            .then((r) => {
-                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded));
-                            })
-                            .catch((e) => {
-                                console.log("error list sale", e);
-
-                                res.send(PrintError("listSale", e, EMessage.error));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
-                    }
-                }
-            );
-
-            /// ADS
             // add ads
             router.post(
                 this.path + "/addAds",
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.authorizeSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1513,23 +1554,24 @@ export class InventoryZDM8 implements IBaseClass {
                         adsEntity
                             .create(ads)
                             .then((r) => {
-                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error addAds", e);
 
-                                res.send(PrintError("addAds", e, EMessage.error));
+                                res.send(PrintError("addAds", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addAds", error, EMessage.error));
+                        res.send(PrintError("addAds", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             // clone ads
             router.post(
                 this.path + "/cloneAds",
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1541,30 +1583,31 @@ export class InventoryZDM8 implements IBaseClass {
                             adsEntity
                             .create(a.toJSON())
                             .then((r) => {
-                                res.send(PrintSucceeded("cloneAds", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("cloneAds", r, EMessage.succeeded,returnLog(req,res,true)));
                             })
                             .catch((e) => {
                                 console.log("error cloneAds", e);
 
-                                res.send(PrintError("cloneAds", e, EMessage.error));
+                                res.send(PrintError("cloneAds", e, EMessage.error,returnLog(req,res,true)));
                             });
                             else
-                            res.send(PrintError("cloneAds failed not exist ", e, EMessage.error));
+                            res.send(PrintError("cloneAds failed not exist ", e, EMessage.error,returnLog(req,res,true)));
                         }).catch(error=>{
                             console.log(error);
-                        res.send(PrintError("cloneAds", error, EMessage.error));
+                        res.send(PrintError("cloneAds", error, EMessage.error,returnLog(req,res,true)));
                         })
                        
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("cloneAds", error, EMessage.error));
+                        res.send(PrintError("cloneAds", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             // remove ads
             router.post(
                 this.path + "/removeAds",
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1576,23 +1619,24 @@ export class InventoryZDM8 implements IBaseClass {
                             .create(ads)
                             .then((r) => {
                                 r.destroy();
-                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error addAds", e);
 
-                                res.send(PrintError("addAds", e, EMessage.error));
+                                res.send(PrintError("addAds", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addAds", error, EMessage.error));
+                        res.send(PrintError("addAds", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             /// remove machines from ads
             router.post(
                 this.path + "/removeMachineFromAds",
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.authorizeSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1606,16 +1650,16 @@ export class InventoryZDM8 implements IBaseClass {
                                 r.machines=r.machines.filter(v=>!machines.includes(v));
                                 r.changed('machines',true);
                                 r.save();
-                                res.send(PrintSucceeded("removeMachineFromAds", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("removeMachineFromAds", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error lremoveMachineFromAds", e);
 
-                                res.send(PrintError("removeMachineFromAds", e, EMessage.error));
+                                res.send(PrintError("removeMachineFromAds", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("removeMachineFromAds", error, EMessage.error));
+                        res.send(PrintError("removeMachineFromAds", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -1636,19 +1680,19 @@ export class InventoryZDM8 implements IBaseClass {
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
                             .then((r) => {
                                 if(!existIds.length)
-                                res.send(PrintSucceeded("loadAds", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("loadAds", r, EMessage.succeeded,returnLog(req,res)));
 
                                 else
-                                res.send(PrintSucceeded("loadAds", r.filter(rx=>!existIds.includes(rx.id)), EMessage.succeeded));
+                                res.send(PrintSucceeded("loadAds", r.filter(rx=>!existIds.includes(rx.id)), EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error loadAds", e);
 
-                                res.send(PrintError("loadAds", e, EMessage.error));
+                                res.send(PrintError("loadAds", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("loadAds", error, EMessage.error));
+                        res.send(PrintError("loadAds", error, EMessage.error,returnLog(req,res)));
                     }
                 }
             );
@@ -1710,11 +1754,12 @@ export class InventoryZDM8 implements IBaseClass {
                                 "saveMachineSale",
                                 writeMachineSale(machineId.machineId, JSON.stringify(d.data)),
                                 EMessage.succeeded
+                                ,returnLog(req,res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
+                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -1747,17 +1792,20 @@ export class InventoryZDM8 implements IBaseClass {
                                 "readMachineSale",
                                 JSON.parse(list),
                                 EMessage.succeeded
+                                ,returnLog(req,res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
+                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
                 this.path + "/readMachineSaleForAdmin",
-                this.checkToken,
+                this.checkAdmin,
+                this.checkSubAdmin,
+                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1771,11 +1819,12 @@ export class InventoryZDM8 implements IBaseClass {
                                 "readMachineSale",
                                 JSON.parse(await readMachineSale(machineId)),
                                 EMessage.succeeded
+                                ,returnLog(req,res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
+                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -1809,11 +1858,12 @@ export class InventoryZDM8 implements IBaseClass {
                                 "refillMachineSale",
                                 c.data,
                                 EMessage.succeeded
+                                ,returnLog(req,res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
+                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -1825,7 +1875,9 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(
                 this.path + "/saveMachineSaleReport",
-                this.checkToken,
+                this.checkAdmin,
+                this.checkSubAdmin,
+                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1839,11 +1891,12 @@ export class InventoryZDM8 implements IBaseClass {
                                 "readMachineSale",
                                 JSON.parse(await readMachineSale(machineId.machineId)),
                                 EMessage.succeeded
+                                ,returnLog(req,res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
+                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -1867,7 +1920,9 @@ export class InventoryZDM8 implements IBaseClass {
             // REPORT
             router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
-                this.checkToken,
+                this.checkAdmin,
+                this.checkSubAdmin,
+                this.checkSuperAdmin,
                 (req, res) => {
                     try {
 
@@ -1881,16 +1936,16 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         this.loadVendingMachineSaleBillReport(parmas).then(run => {
                             if (run.message != IENMessage.success) {
-                                res.send(PrintError("report", run, EMessage.error));
+                                res.send(PrintError("report", run, EMessage.error,returnLog(req,res,true)));
                                 return;
                             }
-                            res.send(PrintSucceeded("report", run, EMessage.succeeded));
+                            res.send(PrintSucceeded("report", run, EMessage.succeeded,returnLog(req,res)));
                         }).catch(error => {
-                            res.send(PrintError("report", error, EMessage.error));
+                            res.send(PrintError("report", error, EMessage.error,returnLog(req,res,true)));
                         });
                         
                     } catch (error) {
-                        res.send(PrintError("report", error, EMessage.error));
+                        res.send(PrintError("report", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -1927,22 +1982,24 @@ export class InventoryZDM8 implements IBaseClass {
                         sEnt
                             .findAll({ where: { isActive: { [Op.or]: actives },machineId:machineId.machineId } })
                             .then((r) => {
-                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded));
+                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error list sale", e);
 
-                                res.send(PrintError("listSale", e, EMessage.error));
+                                res.send(PrintError("listSale", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error));
+                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
                 this.path + "/listSaleByMachine",
-                this.checkToken,
+                this.checkAdmin,
+                this.checkSubAdmin,
+                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1987,16 +2044,16 @@ export class InventoryZDM8 implements IBaseClass {
                                     });
                                 }
                                 res.send(
-                                    PrintSucceeded("listSaleByMachine", array, EMessage.succeeded)
+                                    PrintSucceeded("listSaleByMachine", array, EMessage.succeeded,returnLog(req,res))
                                 );
                             })
                             .catch((e) => {
                                 console.log("error listSaleByMachine", e);
-                                res.send(PrintError("listSaleByMachine", e, EMessage.error));
+                                res.send(PrintError("listSaleByMachine", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSaleByMachine", error, EMessage.error));
+                        res.send(PrintError("listSaleByMachine", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -2004,11 +2061,14 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/reportStock",
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.checkAdmin,
+                this.checkSubAdmin,
+                this.checkSuperAdmin,
                 async (req, res) => {
                     try {
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("reportStock", error, EMessage.error));
+                        res.send(PrintError("reportStock", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -2034,11 +2094,13 @@ export class InventoryZDM8 implements IBaseClass {
             //         }
             //     }
             // );
+
             router.post(
                 this.path + "/addMachine",
-                this.checkToken,
+                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.authorizeSuperAdmin,
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
@@ -2046,11 +2108,11 @@ export class InventoryZDM8 implements IBaseClass {
                         o.ownerUuid = ownerUuid || "";
                         if (!o.otp || !o.machineId)
                             return res.send(
-                                PrintError("addMachine", [], EMessage.bodyIsEmpty)
+                                PrintError("addMachine", [], EMessage.bodyIsEmpty,returnLog(req,res,true))
                             );
                         if (o.machineId.length != 8 || Number.isNaN(o.machineId) || Number.isNaN(o.otp))
                             return res.send(
-                                PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP)
+                                PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP,returnLog(req,res,true))
                             );
 
                         const x = await this.machineClientlist.findOne({
@@ -2062,28 +2124,29 @@ export class InventoryZDM8 implements IBaseClass {
                                 .create(o)
                                 .then((r) => {
                                     this.refreshMachines();
-                                    res.send(PrintSucceeded("addMachine", r, EMessage.succeeded));
+                                    res.send(PrintSucceeded("addMachine", r, EMessage.succeeded,returnLog(req,res)));
                                 })
                                 .catch((e) => {
                                     console.log(e);
-                                    res.send(PrintError("addMachine", e, EMessage.error));
+                                    res.send(PrintError("addMachine", e, EMessage.error,returnLog(req,res,true)));
                                 });
                         } else {
                             res.send(
-                                PrintError("addMachine", "Machine ID exist", EMessage.error)
+                                PrintError("addMachine", "Machine ID exist", EMessage.error,returnLog(req,res,true))
                             );
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error));
+                        res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
                 this.path + "/updateMachine",
-                this.checkToken,
+                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.authorizeSuperAdmin,
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
@@ -2094,7 +2157,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("updateMachine", [], EMessage.notfound)
+                                        PrintError("updateMachine", [], EMessage.notfound,returnLog(req,res,true))
                                     );
                                 r.otp = o.otp ? o.otp : r.otp;
                                 // r.machineId = o.machineId ? o.machineId : r.machineId;
@@ -2106,23 +2169,27 @@ export class InventoryZDM8 implements IBaseClass {
                                         "updateMachine",
                                         await r.save(),
                                         EMessage.succeeded
+                                        ,returnLog(req,res)
                                     )
                                 );
                                 this.refreshMachines();
                             })
                             .catch((e) => {
                                 console.log("Error updateMachine", e);
-                                res.send(PrintError("updateMachine", e, EMessage.error));
+                                res.send(PrintError("updateMachine", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("updateMachine", error, EMessage.error));
+                        res.send(PrintError("updateMachine", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
                 this.path + "/updateMachineSetting",
-                this.checkToken,
+               
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -2138,7 +2205,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("updateMachineSetting", [], EMessage.notfound)
+                                        PrintError("updateMachineSetting", [], EMessage.notfound,returnLog(req,res,true))
                                     );
                                 if (!r.data) r.data = [];
 
@@ -2184,6 +2251,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         "updateMachineSetting",
                                         await r.save(),
                                         EMessage.succeeded
+                                        ,returnLog(req,res)
                                     )
                                 );
                                 this.refreshMachines();
@@ -2191,17 +2259,19 @@ export class InventoryZDM8 implements IBaseClass {
                             })
                             .catch((e) => {
                                 console.log("Error updateMachineSetting", e);
-                                res.send(PrintError("updateMachineSetting", e, EMessage.error));
+                                res.send(PrintError("updateMachineSetting", e, EMessage.error,returnLog(req,res,true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("updateMachineSetting", error, EMessage.error));
+                        res.send(PrintError("updateMachineSetting", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
             router.post(
                 this.path + "/disableMachine",
-                this.checkToken.bind(this),
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
@@ -2215,7 +2285,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("disableMachine", [], EMessage.notfound)
+                                        PrintError("disableMachine", [], EMessage.notfound,returnLog(req,res,true))
                                     );
                                 r.isActive = isActive;
                                 // r.changed('isActive',true);
@@ -2225,16 +2295,17 @@ export class InventoryZDM8 implements IBaseClass {
                                         "disableMachine",
                                         await r?.save(),
                                         EMessage.succeeded
+                                        ,returnLog(req,res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("Error disableMachine", e);
-                                res.send(PrintError("disableMachine", e, EMessage.error));
+                                res.send(PrintError("disableMachine", e, EMessage.error,returnLog(req,res)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("disableMachine", error, EMessage.error));
+                        res.send(PrintError("disableMachine", error, EMessage.error,returnLog(req,res,true)));
                     }
                 }
             );
@@ -2242,118 +2313,189 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/listMachine",
                 //APIAdminAccess,
-                this.checkToken,
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
                         const isActive = req.query['isActive'];
-                        const subadmin = res.locals['subadmin'];
+
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
 
-                        let array: Array<any> = [];
-                        let condition: any = {} as any;
-                        console.log(`show subadmin der`, subadmin);
-                        if (subadmin == null) {
-                            condition = {
-                                where: {
-                                    ownerUuid, 
-                                    isActive: { [Op.or]: actives }
-                                }
+                        this.machineClientlist.findAll({
+                            where: {
+                                ownerUuid, 
+                                isActive: { [Op.or]: actives }
                             }
-                        } else {
-                            condition = {
-                                where: {
-                                    ownerUuid: subadmin, 
-                                    isActive: { [Op.or]: actives }
-                                }
-                            }
-                        }
-                        this.machineClientlist.findAll(condition).then((r) => {
-                            array = r;
-                            if (subadmin != null) {
-                                array = r.map(item => {
-                                    return {
-                                        readonly: true,
-                                        photo: item.photo,
-                                        machineId: item.machineId,
-                                        otp: item.otp,
-                                    }
-                                });
-                            }
-                            res.send(PrintSucceeded("listMachine", array, EMessage.succeeded));
+                        }).then((r) => {
+                            res.send(PrintSucceeded("listMachine", r, EMessage.succeeded,returnLog(req,res,true)));
                         })
                         .catch((e) => {
                             console.log("Error list machine", e);
-                            res.send(PrintError("listMachine", e, EMessage.error));
+                            res.send(PrintError("listMachine", e, EMessage.error,returnLog(req,res,true)));
                         });
                         
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listMachine", error, EMessage.error));
+                        res.send(PrintError("listMachine", error, EMessage.error,returnLog(req,res)));
                     }
                 }
             );
-            router.post(
-                this.path + "/super_listMachine",
-                // this.checkToken.bind(this),
-                // this.isSuper.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        this.machineClientlist
-                            .findAll()
-                            .then((r) => {
-                                res.send(PrintSucceeded("listMachine", r, EMessage.succeeded));
-                            })
-                            .catch((e) => {
-                                console.log("Error list machine", e);
-                                res.send(PrintError("listMachine", e, EMessage.error));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listMachine", error, EMessage.error));
-                    }
-                }
-            );
+            // router.post(
+            //     this.path + "/super_listMachine",
+            //     // this.checkToken.bind(this),
+            //     // this.isSuper.bind(this),
+            //     // this.checkDisabled.bind(this),
+            //     async (req, res) => {
+            //         try {
+            //             this.machineClientlist
+            //                 .findAll()
+            //                 .then((r) => {
+            //                     res.send(PrintSucceeded("listMachine", r, EMessage.succeeded));
+            //                 })
+            //                 .catch((e) => {
+            //                     console.log("Error list machine", e);
+            //                     res.send(PrintError("listMachine", e, EMessage.error));
+            //                 });
+            //         } catch (error) {
+            //             console.log(error);
+            //             res.send(PrintError("listMachine", error, EMessage.error));
+            //         }
+            //     }
+            // );
         } catch (error) {
             console.log(error);
         }
     }
-
-    checkToken(req: Request, res: Response, next: NextFunction) {
+    authorizeSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            const token = req.body.token;
-            if (!token) throw new Error(EMessage.tokenNotFound);
-            findRealDB(token)
-                .then((r) => {
-                    const ownerUuid = r;
-                    if (!ownerUuid) throw new Error(EMessage.notfound);
-                    // req['gamerUuid'] = gamerUuid;
-                    res.locals["ownerUuid"] = ownerUuid;
+            if(!res.locals["superadmin"])throw new Error('You are not superadmin');
 
-                    subadminEntity.findOne({ where: { data: { uuid: ownerUuid } } }).then(subadmin => {
-                        if(subadmin != null) {
-                            res.locals["subadmin"] = subadmin.ownerUuid;
-                        }
-                        next();
-                    }).catch(error => {
-                        console.log(error);
-                        res.status(400).end();
-                    });
-                })
-                .catch((e) => {
-                    console.log(e);
-                    res.status(400).end();
-                });
         } catch (error) {
             console.log(error);
 
             res.status(400).end();
         }
     }
+    authorizeSubAdmin(req: Request, res: Response, next: NextFunction) {
+        try {
+            if(!res.locals["subadmin"])throw new Error('You are not Sub admin');
+
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).end();
+        }
+    }
+    checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
+        try {
+                const token = req.body.token;
+                const phoneNumber = req.query.shopPhonenumber+'';
+                if (!token) throw new Error(EMessage.tokenNotFound);
+                findRealDB(token).then(async (r) => {
+                    const uuid = r;
+                    if (!uuid) throw new Error(EMessage.notfound);
+                    // req['gamerUuid'] = gamerUuid;
+                    res.locals["superadmin"] = uuid;
+                    res.locals["ownerUuid"] = await findUuidByPhoneNumberOnUserManager(phoneNumber);  
+                    next();
+                })
+                .catch((e) => {
+                    console.log(e);
+                    res.status(400).end();
+                });
+
+
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).end();
+        }
+    }
+    checkSubAdmin(req: Request, res: Response, next: NextFunction) {
+            try {
+                if (res.locals['ownerUuid']) {
+                    next();
+                } 
+                else {
+                    const token = req.body.token;
+                    const phoneNumber = req.query.shopPhonenumber+'';
+                    if (!token) throw new Error(EMessage.tokenNotFound);
+                    findRealDB(token).then(async (r) => {
+                        const uuid = r;
+                        if (!uuid) throw new Error(EMessage.notfound);
+                        // req['gamerUuid'] = gamerUuid;
+                        res.locals["subadmin"] = uuid;
+                        const ownerUuid= await findUuidByPhoneNumberOnUserManager(phoneNumber);
+                        if(ownerUuid){
+                            subadminEntity.findOne({ where: { data: { uuid },ownerUuid } }).then(subadmin => {
+                                if(subadmin != null) {
+                                    res.locals["ownerUuid"] = subadmin.ownerUuid;
+                                }else{
+                                    res.locals["ownerUuid"]=uuid;
+                                    res.locals["subadmin"] = '';
+                                }
+                                next();
+                            }).catch(error => {
+                                console.log(error);
+                                res.status(400).end();
+                            });
+                        }else{
+                            res.locals["ownerUuid"]=uuid; 
+                            res.locals["subadmin"] = '';
+                            next();
+                        }
+                        
+        
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                        res.status(400).end();
+                    });
+                }
+
+            } catch (error) {
+                console.log(error);
+
+                res.status(400).end();
+            }
+        }
+    checkAdmin(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (res.locals['ownerUuid']) {
+                next();
+            } 
+            else 
+            {
+                const token = req.body.token;
+                if (!token) throw new Error(EMessage.tokenNotFound);
+                findRealDB(token)
+                    .then((r) => {
+                        const ownerUuid = r;
+                        if (!ownerUuid) throw new Error(EMessage.notfound);
+                        // req['gamerUuid'] = gamerUuid;
+                        res.locals["ownerUuid"] = ownerUuid;
+                        next();
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                        res.status(400).end();
+                    });
+            }
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).end();
+        }
+    }
+
+
+   
     getBillProcess(cb: (b: IBillProcess[]) => void) {
         const k = "clientResponse";
         try {
@@ -2709,7 +2851,7 @@ export class InventoryZDM8 implements IBaseClass {
                     } else {
                         // throw new Error(EMessage.MachineIdNotFound)
                         ws.send(
-                            JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound))
+                            JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound,null))
                         );
                         return reject(new Error('Token not FOUND'));
                     }
@@ -2800,7 +2942,7 @@ export class InventoryZDM8 implements IBaseClass {
                     that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
                     ws?.send(
                         JSON.stringify(
-                            PrintSucceeded(d.command, res, EMessage.succeeded)
+                            PrintSucceeded(d.command, res, EMessage.succeeded,null)
                         )
                     )
                     // finish the process allow next queque with exist TransactionID
@@ -2831,7 +2973,7 @@ export class InventoryZDM8 implements IBaseClass {
                     if (hn == undefined || Object.entries(hn).length == 0) {
                         ws?.send(
                             JSON.stringify(
-                                PrintError(d.command, [], EMessage.invalidBankNote + " 0")
+                                PrintError(d.command, [], EMessage.invalidBankNote + " 0",null)
                             )
                         );
                         return;
@@ -2840,7 +2982,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const bn = this.notes.find((v) => v.value == hn?.value);
                     if (bn == undefined || Object.entries(bn).length == 0) {
                         ws?.send(
-                            JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote))
+                            JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote,null))
                         );
                         return;
                     }
@@ -2885,7 +3027,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
                                 ws?.send(
                                     JSON.stringify(
-                                        PrintSucceeded(d.command, res, EMessage.succeeded)
+                                        PrintSucceeded(d.command, res, EMessage.succeeded,null)
                                     )
                                 )
                             })
@@ -2901,7 +3043,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.updateInsuffBillCash(bsi);
                             }
 
-                            ws?.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                            ws?.send(JSON.stringify(PrintError(d.command, [], error.message,null)));
                         });
 
                     // const requestor = this.requestors.find(v => v.transID == d.data.transID);
@@ -2910,7 +3052,7 @@ export class InventoryZDM8 implements IBaseClass {
                 } else {
                     // throw new Error(EMessage.MachineIdNotFound)
                     ws?.send(
-                        JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound))
+                        JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound,null))
                     );
                 }
             }
@@ -3830,7 +3972,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.wsClient.push(ws);
                                 return ws.send(
                                     JSON.stringify(
-                                        PrintSucceeded(d.command, res, EMessage.succeeded)
+                                        PrintSucceeded(d.command, res, EMessage.succeeded,null)
                                     )
                                 );
                             } else throw new Error(EMessage.MachineIdNotFound);
@@ -3858,7 +4000,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 this.wsClient.push(ws);
                                                 ws.send(
                                                     JSON.stringify(
-                                                        PrintSucceeded(d.command, res, EMessage.succeeded)
+                                                        PrintSucceeded(d.command, res, EMessage.succeeded,null)
                                                     ));
                                             }
                                             else ws.close(0);
@@ -3888,7 +4030,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                             this.wsClient.push(ws);
                                                             ws.send(
                                                                 JSON.stringify(
-                                                                    PrintSucceeded(d.command, res, EMessage.succeeded)
+                                                                    PrintSucceeded(d.command, res, EMessage.succeeded,null)
                                                                 ));
                                                         }
                                                         else ws.close(0);
@@ -3976,6 +4118,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 "ping",
                                                 { command: "ping", production: this.production, balance: r, limiter, merchant, mymmachinebalance, mymlimiterbalance, setting, mstatus, mymstatus, mymsetting, mymlimiter },
                                                 EMessage.succeeded
+                                                ,null
                                             )
                                         )
                                     );
@@ -3992,7 +4135,7 @@ export class InventoryZDM8 implements IBaseClass {
                         ws.close();
                     } catch (error: any) {
                         console.log(" WS error", error);
-                        ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                        ws.send(JSON.stringify(PrintError(d.command, [], error.message,null)));
                     }
                 };
             });

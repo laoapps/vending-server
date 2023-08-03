@@ -2,7 +2,7 @@
 
   <div class="section-header">
     <div class="title">Reports</div>
-    <div class="sub-title">Machine {{ machineId }} view sale history {{ currentdate }}</div>
+    <div class="sub-title">Machine {{ list.machineid }} view sale history {{ currentdate }}</div>
 
     <div class="btn-list">
       <a *ngFor="let export of exportOptions; let i = index" href="javascript:void(0)" class="item">
@@ -18,7 +18,7 @@
     <div class="sum-data">
       <div class="group">
         <div class="text">Machine</div>
-        <div class="value">{{ machineId }}</div>
+        <div class="value">{{ list.machineId }}</div>
       </div>
       <div class="group">
         <div class="text">Date</div>
@@ -26,15 +26,15 @@
       </div>
       <div class="group">
         <div class="text">Product</div>
-        <div class="value">{{ list.name }}</div>
+        <div class="value">{{ list.stock.name }}</div>
       </div>
       <div class="group">
         <div class="text">SubQTY</div>
-        <div class="value">{{ list.qtty | number }}</div>
+        <div class="value">{{ list.stock.qtty | number }}</div>
       </div>
       <div class="group">
         <div class="text">Subtotal</div>
-        <div class="value">{{ list.total | number }}</div>
+        <div class="value">{{ list.stock.total | number }}</div>
       </div>
     </div>
     <div class="table-responsive">

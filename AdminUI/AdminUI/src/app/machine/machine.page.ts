@@ -15,6 +15,7 @@ import { environment } from 'src/environments/environment';
 import { IonicstorageService } from '../services/ionicstorage.service';
 import { LoadMachineListProcess } from './processes/loadMachineList.process';
 import { RefreshMachineProcess } from './processes/refreshMachine.process';
+import { SaleReportPage } from '../sale/sale-report/sale-report.page';
 
 
 @Component({
@@ -444,6 +445,15 @@ export class MachinePage implements OnInit {
         this.apiService.simpleMessage(error.message);
         resolve(error.message); 
       }
+    });
+  }
+
+  allSaleReport() {
+    const props = {
+      machineId: 'all'
+    }
+    this.apiService.showModal(SaleReportPage, props).then(r => {
+      r.present();
     });
   }
 
