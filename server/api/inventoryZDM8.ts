@@ -1973,6 +1973,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             id: item.id,
                                             max: item.max,
                                             position: item.position,
+                                            updatedAt: item.updatedAt,
                                             stock: {
                                                 name: item.stock.name,
                                                 price: item.stock.price
