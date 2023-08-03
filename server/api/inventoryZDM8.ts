@@ -1951,13 +1951,15 @@ export class InventoryZDM8 implements IBaseClass {
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        let ownerUuid = res.locals["ownerUuid"] || "";
                         const machineId = req.query["machineId"] + "";
 
 
                         let array: Array<any> = [];
+                        if (subadmin != null) { ownerUuid = subadmin }
+                        
                         const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + subadmin ? subadmin : ownerUuid,
+                            EEntity.vendingmachinesale + "_" + ownerUuid,
                             dbConnection
                         );
                         await sEnt.sync();
