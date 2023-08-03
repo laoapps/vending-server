@@ -29,6 +29,8 @@ export class SalePage implements OnInit {
 
   showImage:(p:string)=>string;
   _l = new Array<IVendingMachineSale>();
+  readonly: boolean;
+
   constructor(
     public apiService: ApiService, 
     private cashingService: AppcachingserviceService,
@@ -64,8 +66,9 @@ export class SalePage implements OnInit {
         }
         const run = await this.loadSaleListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        console.log(`---->`, run.data[0].lists);
+        console.log(`---->`, run.data[0].readonly);
         this._l.push(...run.data[0].lists);
+        this.readonly = run.data[0].readonly;
 
         resolve(IENMessage.success);
 
