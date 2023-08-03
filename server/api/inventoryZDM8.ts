@@ -1957,7 +1957,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         let array: Array<any> = [];
                         if (subadmin != null) { ownerUuid = subadmin }
-                        
+
                         const sEnt = VendingMachineSaleFactory(
                             EEntity.vendingmachinesale + "_" + ownerUuid,
                             dbConnection
@@ -1978,7 +1978,8 @@ export class InventoryZDM8 implements IBaseClass {
                                             updatedAt: item.updatedAt,
                                             stock: {
                                                 name: item.stock.name,
-                                                price: item.stock.price
+                                                price: item.stock.price,
+                                                image: item.stock.image,
                                             }
                                         }
                                     });
