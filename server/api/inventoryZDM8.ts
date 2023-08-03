@@ -1946,21 +1946,42 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const isActive = req.query['isActive'];
+                        const subadmin = res.locals['subadmin'];
+
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const machineId = req.query["machineId"] + "";
+
+
+                        let array: Array<any> = [];
                         const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                            EEntity.vendingmachinesale + "_" + subadmin ? subadmin : ownerUuid,
                             dbConnection
                         );
                         await sEnt.sync();
+
                         sEnt
                             .findAll({ where: { machineId, isActive: { [Op.or]: actives } } })
                             .then((r) => {
+                                array = r;
+                                if (subadmin != null) {
+                                    array = r.map(item => {
+                                        return {
+                                            readonly: true,
+                                            id: item.id,
+                                            max: item.max,
+                                            position: item.position,
+                                            stock: {
+                                                name: item.stock.name,
+                                                price: item.stock.price
+                                            }
+                                        }
+                                    });
+                                }
                                 res.send(
-                                    PrintSucceeded("listSaleByMachine", r, EMessage.succeeded)
+                                    PrintSucceeded("listSaleByMachine", array, EMessage.succeeded)
                                 );
                             })
                             .catch((e) => {

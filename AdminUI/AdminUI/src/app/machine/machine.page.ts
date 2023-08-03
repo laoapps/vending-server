@@ -45,7 +45,7 @@ export class MachinePage implements OnInit {
   showImage: (p: string) => string;
   settings = {} as any;
   myMachineStatus=new Array<{machineId:string,mstatus:IMachineStatus}>();
-  readonly: boolean = false;
+  readonly: boolean;
 
   constructor(
     public apiService: ApiService, 
