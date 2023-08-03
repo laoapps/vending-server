@@ -2220,54 +2220,31 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const isActive = req.query['isActive'];
+                        const subadmin = res.locals['subadmin'];
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
 
-
-                        subadminEntity.findOne({ where: { ownerUuid: ownerUuid, isActive: true } }).then(run_admin => {
-                            if (run_admin != null) {
-                                this.machineClientlist.findAll({ where: { ownerUuid, isActive: { [Op.or]: actives } } }).then((r) => {
-                                    res.send(PrintSucceeded("listMachine", r, EMessage.succeeded));
-                                })
-                                .catch((e) => {
-                                    console.log("Error list machine", e);
-                                    res.send(PrintError("listMachine", e, EMessage.error));
+                        let array: Array<any> = [];
+                        this.machineClientlist.findAll({ where: { ownerUuid, isActive: { [Op.or]: actives } } }).then((r) => {
+                            array = r;
+                            if (subadmin == true) {
+                                array = r.map(item => {
+                                    return {
+                                        readonly: true,
+                                        photo: item.photo,
+                                        machineId: item.machineId,
+                                        otp: item.otp,
+                                    }
                                 });
                             }
-                            subadminEntity.findOne({ where: { data: { uuid: ownerUuid }, isActive: true } }).then(run_subadmin => {
-                                if (run_subadmin == null) {
-                                    res.send(PrintError("listMachine", [], EMessage.invalidDataAccess));
-                                }
-
-                                this.machineClientlist.findAll({ where: { ownerUuid: run_subadmin.ownerUuid, isActive: { [Op.or]: actives } } }).then((r) => {
-                                    let array: Array<any> = [];
-                                    array = r.map(item => {
-                                        return {
-                                            readonly: true,
-                                            photo: item.photo,
-                                            machineId: item.machineId,
-                                            otp: item.otp,
-                                        }
-                                    });
-                                    res.send(PrintSucceeded("listMachine", array, EMessage.succeeded));
-                                })
-                                .catch((e) => {
-                                    console.log("Error list machine", e);
-                                    res.send(PrintError("listMachine", e, EMessage.error));
-                                });
-    
-                            }).catch(error => {
-                                console.log(error);
-                                res.send(PrintError("listMachine", error, EMessage.error));
-                            });
-                        }).catch(error => {
-                            console.log(error);
-                            res.send(PrintError("listMachine", error, EMessage.error));
+                            res.send(PrintSucceeded("listMachine", array, EMessage.succeeded));
+                        })
+                        .catch((e) => {
+                            console.log("Error list machine", e);
+                            res.send(PrintError("listMachine", e, EMessage.error));
                         });
-
-
                         
                     } catch (error) {
                         console.log(error);
@@ -2312,7 +2289,16 @@ export class InventoryZDM8 implements IBaseClass {
                     if (!ownerUuid) throw new Error(EMessage.notfound);
                     // req['gamerUuid'] = gamerUuid;
                     res.locals["ownerUuid"] = ownerUuid;
-                    next();
+
+                    subadminEntity.findOne({ where: { data: { uuid: ownerUuid } } }).then(subadmin => {
+                        if(subadmin != null) {
+                            res.locals["subadmin"] = true;
+                        }
+                        next();
+                    }).catch(error => {
+                        console.log(error);
+                        res.status(400).end();
+                    });
                 })
                 .catch((e) => {
                     console.log(e);

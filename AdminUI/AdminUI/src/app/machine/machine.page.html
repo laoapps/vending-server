@@ -59,8 +59,9 @@
               <a href="javascript:void(0)" class="btn-item-reload"><i class="fa-solid fa-arrows-rotate"></i> Reload</a>
             </div>
           </div>
-
-          <div class="item-card-body">
+          
+          
+          <div *ngIf="readonly == false" class="item-card-body">
             <div class="table-responsive">
               <table class="table table-bordered">
                 <thead>
@@ -77,7 +78,6 @@
                 <tbody *ngFor="let p of _l; let i = index">
                   <tr>
                     <td>{{ i+1 }}</td>
-                    <!-- <td><ion-img class="product_image" [src]="showImage(p.photo)"></ion-img></td> -->
                     <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
                     <td>{{p.machineId}}</td>
                     <td>{{p.otp}}</td>
@@ -117,6 +117,35 @@
                       <div>Status </div>
                       <p>temp:{{findMachine(p?.machineId)?.temp}}</p>
                       <p>last Update:{{findMachine(p?.machineId)?.lastUpdate|date:'offsettz||420'}}</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
+
+
+          <div *ngIf="readonly == true" class="item-card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <td>No</td>
+                    <td>Image</td>
+                    <td>Machince ID</td>
+                    <td>OTP</td>
+                  </tr>
+                </thead>
+                <tbody *ngFor="let p of _l; let i = index">
+                  <tr>
+                    <td>{{ i+1 }}</td>
+                    <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
+                    <td>{{p.machineId}}</td>
+                    <td>{{p.otp}}</td>
+                    <td>
+                      <button (click)="sale(p.machineId, p.otp)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Sale</button>
                     </td>
                   </tr>
                 </tbody>

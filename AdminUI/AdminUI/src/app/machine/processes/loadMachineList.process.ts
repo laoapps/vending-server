@@ -252,9 +252,10 @@ export class LoadMachineListProcess {
     }
 
     private Commit(): any {
-        console.log(`commit list`, this.lists);
+        const readonly = this.lists.filter(item => item.readonly == true)[0]?.readonly;
         const response = {
             data: [{
+                readonly: readonly ? readonly : false,
                 lists: this.lists
             }],
             message: IENMessage.success

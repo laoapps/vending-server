@@ -45,6 +45,7 @@ export class MachinePage implements OnInit {
   showImage: (p: string) => string;
   settings = {} as any;
   myMachineStatus=new Array<{machineId:string,mstatus:IMachineStatus}>();
+  readonly: boolean = false;
 
   constructor(
     public apiService: ApiService, 
@@ -208,6 +209,9 @@ export class MachinePage implements OnInit {
         if (run.message != IENMessage.success) throw new Error(run);
 
         this._l.push(...run.data[0].lists);
+        this.readonly = run.data[0]?.readonly;
+        if (this.readonly == true) return resolve(IENMessage.success);
+
         this._l.forEach(v=>{
           if(!Array.isArray(v.data))v.data=[v.data]
           let setting =v.data?.find(vx=>vx?.settingName=='setting');
