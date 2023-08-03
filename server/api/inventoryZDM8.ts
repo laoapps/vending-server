@@ -2244,7 +2244,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 }
                             }
                         }
-                        this.machineClientlist.findAll({ where: { ownerUuid, isActive: { [Op.or]: actives } } }).then((r) => {
+                        this.machineClientlist.findAll(condition).then((r) => {
                             array = r;
                             if (subadmin != null) {
                                 array = r.map(item => {
