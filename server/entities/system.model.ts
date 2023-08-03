@@ -847,6 +847,7 @@ export enum EPaymentStatus{
     delivered='delivered'
 }
 export enum EMessage {
+    invalidDataAccess = 'invalid data access',
     parametersEmpty = 'parameters empty',
     cloneStockFail = 'clone stock fail',
     notFoundSaleForClone = 'not found sale for clone',

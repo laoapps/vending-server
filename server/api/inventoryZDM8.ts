@@ -78,6 +78,7 @@ import {
     machineClientIDEntity,
     machineIDEntity,
     stockEntity,
+    subadminEntity,
     vendingMachineSaleReportEntity,
 } from "../entities";
 import {
@@ -2223,16 +2224,51 @@ export class InventoryZDM8 implements IBaseClass {
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
                         const ownerUuid = res.locals["ownerUuid"] || "";
-                        this.machineClientlist
-                            .findAll({ where: { ownerUuid, isActive: { [Op.or]: actives } } })
-                            .then((r) => {
-                                res.send(PrintSucceeded("listMachine", r, EMessage.succeeded));
-                            })
-                            .catch((e) => {
-                                console.log("Error list machine", e);
 
-                                res.send(PrintError("listMachine", e, EMessage.error));
+
+                        subadminEntity.findOne({ where: { ownerUuid: ownerUuid, isActive: true } }).then(run_admin => {
+                            if (run_admin != null) {
+                                this.machineClientlist.findAll({ where: { ownerUuid, isActive: { [Op.or]: actives } } }).then((r) => {
+                                    res.send(PrintSucceeded("listMachine", r, EMessage.succeeded));
+                                })
+                                .catch((e) => {
+                                    console.log("Error list machine", e);
+                                    res.send(PrintError("listMachine", e, EMessage.error));
+                                });
+                            }
+                            subadminEntity.findOne({ where: { data: { uuid: ownerUuid }, isActive: true } }).then(run_subadmin => {
+                                if (run_subadmin == null) {
+                                    res.send(PrintError("listMachine", [], EMessage.invalidDataAccess));
+                                }
+
+                                this.machineClientlist.findAll({ where: { ownerUuid: run_subadmin.ownerUuid, isActive: { [Op.or]: actives } } }).then((r) => {
+                                    let array: Array<any> = [];
+                                    array = r.map(item => {
+                                        return {
+                                            readonly: true,
+                                            photo: item.photo,
+                                            machineId: item.machineId,
+                                            otp: item.otp,
+                                        }
+                                    });
+                                    res.send(PrintSucceeded("listMachine", array, EMessage.succeeded));
+                                })
+                                .catch((e) => {
+                                    console.log("Error list machine", e);
+                                    res.send(PrintError("listMachine", e, EMessage.error));
+                                });
+    
+                            }).catch(error => {
+                                console.log(error);
+                                res.send(PrintError("listMachine", error, EMessage.error));
                             });
+                        }).catch(error => {
+                            console.log(error);
+                            res.send(PrintError("listMachine", error, EMessage.error));
+                        });
+
+
+                        
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("listMachine", error, EMessage.error));
