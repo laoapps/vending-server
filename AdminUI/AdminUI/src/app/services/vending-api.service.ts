@@ -127,6 +127,10 @@ export class VendingAPIService {
   }
   
 
+  // global
+  findEPINShortCodeListForGlobal(params: VENDING_FindEPINShortCodeList): Observable<any> {
+    return this.http.post(this.url + '/laab/client/find_epinshortcode', params);
+  }
 
   // sub admin
   findEPINShortCodeListForSubadmin(params: VENDING_FindEPINShortCodeList): Observable<any> {

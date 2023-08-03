@@ -30,7 +30,7 @@ export class SaleReportViewPage implements OnInit {
   btnList: Array<any> = [];
   count: number = 0;
   page: number = 1;
-  limit: number = 5;
+  limit: number = 10;
 
   constructor(
     public apiService: ApiService
@@ -54,8 +54,8 @@ export class SaleReportViewPage implements OnInit {
       const totalPage = Math.ceil(this.count / this.limit);
       this.btnList = this.apiService.paginations(this.page, totalPage);
 
-      if (this.filterList != undefined && this.filterList.length > 5) {
-        for(let i = 0; i < 5; i++) {
+      if (this.filterList != undefined && this.filterList.length > this.limit) {
+        for(let i = 0; i < this.limit; i++) {
           this.filterListShow.push(this.filterList[i]);
         }
       } else {
@@ -63,8 +63,8 @@ export class SaleReportViewPage implements OnInit {
           this.filterListShow.push(this.filterList[i]);
         }
       }
-      for(let i = 0; i < this.filterList.length; i+=5) {
-        const data = this.filterList.slice(i, i + 5);
+      for(let i = 0; i < this.filterList.length; i+=this.limit) {
+        const data = this.filterList.slice(i, i + this.limit);
         this.filterListGroup.push(data);
       }
 
@@ -74,7 +74,7 @@ export class SaleReportViewPage implements OnInit {
   managePage(page: number) {
     let selected = page - 1;
     this.filterListShow = this.filterListGroup[selected];
-    const totalPage = Math.ceil(this.filterList.length / 5);
+    const totalPage = Math.ceil(this.filterList.length / this.limit);
     this.btnList = this.apiService.paginations(page, totalPage);
   }
 

@@ -184,6 +184,10 @@ const routes: Routes = [
     path: 'advertisement',
     loadChildren: () => import('./superadmin/advertisement/advertisement.module').then( m => m.AdvertisementPageModule)
   },
+  {
+    path: 'find-my-epin',
+    loadChildren: () => import('./find-my-epin/find-my-epin.module').then( m => m.FindMyEpinPageModule)
+  },
 ];
 @NgModule({
   imports: [

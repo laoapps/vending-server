@@ -150,6 +150,7 @@ export class LaabVendingAPI {
         router.post('/laab/client/cash_in_validation', this.APIMachineAccess, this.clientReadPanel.CashinValidation.bind(this.clientReadPanel));
         router.post('/laab/client/load_smart_contract', this.APIMachineAccess, this.clientReadPanel.LoadSMC.bind(this.clientReadPanel));
         router.post('/laab/client/transfer_validation', this.APIMachineAccess, this.clientReadPanel.TransferValidation.bind(this.clientReadPanel));
+        router.post('/laab/client/find_epinshortcode', APIAdminAccess, this.clientReadPanel.FindEPINShortcode.bind(this.clientReadPanel));
 
 
 
