@@ -8,9 +8,8 @@ import { CreateSMCFunc } from "../funcs/createSMC.func";
 import { LoadSMCFunc } from "../funcs/loadSMC.func";
 import { CreateEPINFunc } from "../funcs/createEPIN.func";
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
-import { FindEPINShortCodeFunc } from "../../vendingwallet_admin/funcs/findEPINShortcode.func";
-import { ShowEPINShortCodeFunc } from "../../vendingwallet_admin/funcs/showEPINShortcode.func";
 import { CashVendingWalletValidationFunc } from "../funcs/cashVendingWalletValidation.func";
+import { FindEPINShortCodeFunc } from "../funcs/findEPINShortcode.func";
 
 export class ReadPanel {
 
