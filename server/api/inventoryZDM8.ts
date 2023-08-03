@@ -2227,9 +2227,25 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
 
                         let array: Array<any> = [];
+                        let condition: any = {} as any;
+                        if (subadmin == null) {
+                            condition = {
+                                where: {
+                                    ownerUuid, 
+                                    isActive: { [Op.or]: actives }
+                                }
+                            }
+                        } else {
+                            condition = {
+                                where: {
+                                    ownerUuid: subadmin, 
+                                    isActive: { [Op.or]: actives }
+                                }
+                            }
+                        }
                         this.machineClientlist.findAll({ where: { ownerUuid, isActive: { [Op.or]: actives } } }).then((r) => {
                             array = r;
-                            if (subadmin == true) {
+                            if (subadmin != null) {
                                 array = r.map(item => {
                                     return {
                                         readonly: true,
@@ -2292,7 +2308,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     subadminEntity.findOne({ where: { data: { uuid: ownerUuid } } }).then(subadmin => {
                         if(subadmin != null) {
-                            res.locals["subadmin"] = true;
+                            res.locals["subadmin"] = subadmin.ownerUuid;
                         }
                         next();
                     }).catch(error => {
