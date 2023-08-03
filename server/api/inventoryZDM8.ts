@@ -1875,6 +1875,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const subadmin = res.locals['subadmin'];
                         const parmas: ILoadVendingMachineSaleBillReport = {
                             ownerUuid: subadmin == null ? res.locals["ownerUuid"] : subadmin,
+                            machineId: data.machineId,
                             fromDate: data.fromDate,
                             toDate: data.toDate
                         }
@@ -4215,6 +4216,7 @@ class loadVendingMachineSaleBillReport {
     private ownerUuid: string;
     private fromDate: string;
     private toDate: string;
+    private machineId: string;
 
     private currentdate: number;
     private parseFromDate: number;
@@ -4255,10 +4257,11 @@ class loadVendingMachineSaleBillReport {
         this.ownerUuid = params.ownerUuid;
         this.fromDate = params.fromDate;
         this.toDate = params.toDate;
+        this.machineId = params.machineId;
     }
 
     private ValidateParams(): string {
-        if (!(this.ownerUuid && this.fromDate && this.toDate)) return IENMessage.parametersEmpty;
+        if (!(this.ownerUuid && this.fromDate && this.toDate && this.machineId)) return IENMessage.parametersEmpty;
 
         this.currentdate = new Date(new Date().getFullYear() + '/' + Number(new Date().getMonth() + 1) + '/' + new Date().getDate()).getTime();
         return IENMessage.success;
@@ -4283,12 +4286,26 @@ class loadVendingMachineSaleBillReport {
         const addday = date.setDate(date.getDate() + 1);
         this.toDate = String(new Date(addday));
 
-        this.condition = {
-            where: {
-                paymentstatus: 'paid',
-                createdAt:{[Op.between]:[this.fromDate, this.toDate]}
-            },
-            order: [[ 'id', 'DESC' ]]
+        if (this.machineId == 'all') {
+
+            this.condition = {
+                where: {
+                    paymentstatus: 'paid',
+                    createdAt:{[Op.between]:[this.fromDate, this.toDate]}
+                },
+                order: [[ 'id', 'DESC' ]]
+            }
+        }
+        else 
+        {
+            this.condition = {
+                where: {
+                    paymentstatus: 'paid',
+                    machineId: this.machineId,
+                    createdAt:{[Op.between]:[this.fromDate, this.toDate]}
+                },
+                order: [[ 'id', 'DESC' ]]
+            }
         }
 
     }
