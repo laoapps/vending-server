@@ -156,6 +156,7 @@ export class Tab1Page {
     platform.ready().then(() => {
       this.ownerUuid = localStorage.getItem('machineId');
       this.apiService.audioElement = document.createElement('audio');
+      this.apiService.backGroundMusicElement = document.createElement('audio');
       console.log('Width: ' + (this.swidth = platform.width()));
       console.log('Height: ' + (this.sheight = platform.height()));
       console.log('screen width', this.swidth, 'screen height', this.sheight);

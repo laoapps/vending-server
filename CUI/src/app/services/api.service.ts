@@ -86,7 +86,10 @@ export class ApiService {
     //     this.soundThankYou();
     // }, 2000);
   }
+  backGroundMusicElement: HTMLAudioElement = {} as any;
   muteSound = false;
+  backgrounSound = true;
+
   eventEmmiter = new EventEmitter();
   howtoVideoPlayList: Array<any> = [
     {
@@ -154,6 +157,7 @@ export class ApiService {
 
   _machineStatus = { status: {} as IMachineStatus } as any;
   _cuiSetting = {} as any;
+  musicVolume=6;
   constructor(
     public controlMenuService: ControlMenuService,
 
@@ -172,6 +176,13 @@ export class ApiService {
     if (!localStorage.getItem('remoteProcess')) localStorage.setItem('remoteProcess', 'yes');
     const that = this;
     this.wsapi = wsapi;
+    this.muteSound = localStorage.getItem('isRobotMuted')?true:false;
+    this.backgrounSound = localStorage.getItem('isMusicMuted')?true:false;
+    this.musicVolume = localStorage.getItem('musicVolume')?Number(localStorage.getItem('musicVolume')):6;
+    setTimeout(() => {
+      this.playBackGroundMusic();
+    }, 3000);
+    
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = localStorage.getItem('machineId') || '12345678';
     this.machineId.otp = localStorage.getItem('otp') || '111111';
@@ -604,6 +615,18 @@ export class ApiService {
   }
 
   audioElement: HTMLAudioElement = {} as any;
+  playBackGroundMusic(path ='../../assets/background_music.mp3'){
+    try {
+      if (this.backgrounSound) return;
+      this.backGroundMusicElement.src = path;
+      this.backGroundMusicElement.loop=true;
+      this.backGroundMusicElement.volume=this.musicVolume/100;
+      this.backGroundMusicElement.play();
+    } catch (error) {
+      console.log(error);
+
+    }
+  }
   playSound(path: string) {
     try {
       if (this.muteSound) return;

@@ -27,6 +27,18 @@
       <ion-input [(ngModel)]="contact"></ion-input>
     </ion-item>
     <ion-item>
+      <ion-label>Mute Robot Sound</ion-label>
+      <ion-checkbox [(ngModel)]="isRobotMuted"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>Mute Music</ion-label>
+      <ion-checkbox [(ngModel)]="isMusicMuted"></ion-checkbox>
+    </ion-item>
+    <ion-item *ngIf="!isMusicMuted">
+      <ion-label>Music volume</ion-label>
+      <ion-range [(ngModel)]="musicVolume" min="0" max="100" aria-label="Range with pin" [pin]="true" [pinFormatter]="pinFormatter" ></ion-range>
+    </ion-item>
+    <ion-item>
      <ion-button (click)="save()">SAVE</ion-button>
     </ion-item>
   </ion-list>
