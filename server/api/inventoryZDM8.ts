@@ -2395,7 +2395,7 @@ export class InventoryZDM8 implements IBaseClass {
     checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
                 const token = req.body.token;
-                const phoneNumber = req.query.shopPhonenumber+'';
+                const phoneNumber = req.body.shopPhonenumber+'';
                 if (!token) throw new Error(EMessage.tokenNotFound);
                 findRealDB(token).then(async (r) => {
                     const uuid = r;
@@ -2410,7 +2410,6 @@ export class InventoryZDM8 implements IBaseClass {
                     res.status(400).end();
                 });
 
-
         } catch (error) {
             console.log(error);
 
@@ -2424,7 +2423,7 @@ export class InventoryZDM8 implements IBaseClass {
                 } 
                 else {
                     const token = req.body.token;
-                    const phoneNumber = req.query.shopPhonenumber+'';
+                    const phoneNumber = req.body.shopPhonenumber+'';
                     if (!token) throw new Error(EMessage.tokenNotFound);
                     findRealDB(token).then(async (r) => {
                         const uuid = r;

@@ -18,6 +18,10 @@ export class LoginPage implements OnInit {
   phonenumber: string;
   password: string;
 
+  adminAuthentication: boolean = true;
+  subadminAuthenticaition: boolean = false;
+  superadminAuthentication: boolean = false;
+
   constructor(
     private apiService: ApiService,
     private laabAPIService: LaabApiService,
