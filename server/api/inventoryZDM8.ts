@@ -1551,16 +1551,35 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const d = req.body as IReqModel;
                         const ads = d.data as IAds;
-                        adsEntity
-                            .create(ads)
-                            .then((r) => {
+
+                        if (!(ads.name && ads.description)) {
+                            res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                        }
+
+                        if (ads.machines != undefined && Object.entries(ads.machines).length == 0 || ads.adsMedia != undefined && Object.entries(ads.adsMedia).length == 0) {
+                            res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                        }
+
+                        ads.adsMedia.find(item => {
+                            if (!(item.name && item.description && item.url && item.type)) {
+                                res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                            }
+                        });
+
+                        machineClientIDEntity.findAll({where: { machineId: {[Op.in]: ads.machines}}}).then(run_machine => {
+                            if (run_machine == undefined || Object.entries(run_machine).length != Object.entries(ads.machines).length) {
+                                res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                            }
+                            adsEntity.create(ads).then((r) => {
                                 res.send(PrintSucceeded("addAds", r, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
-                                console.log("error addAds", e);
-
                                 res.send(PrintError("addAds", e, EMessage.error,returnLog(req,res,true)));
                             });
+                        }).catch(error => {
+                            res.send(PrintError("addAds", error, EMessage.error,returnLog(req,res,true)));
+                        });
+                        
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("addAds", error, EMessage.error,returnLog(req,res,true)));
