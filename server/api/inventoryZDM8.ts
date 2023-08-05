@@ -1700,7 +1700,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
                             .then((r) => {
 
-                                const deletingArray = r.filter(v=>!existIds.includes(v.id)).map(v=>v.id);
+                                const deletingArray = r.filter(v=>!existIds.includes(v.id));
                                 console.log(`deletingArray`, deletingArray);
                                 // const existInlocal = r.filter(v=>existIds.includes(v.id));
                                 const latest = r.filter(v=>existIds.includes(v.id)).sort((a:any,b:any) => b.createdAt-a.createdAt)[0];
