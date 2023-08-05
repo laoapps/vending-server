@@ -1699,24 +1699,29 @@ export class InventoryZDM8 implements IBaseClass {
                         adsEntity
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
                             .then((r) => {
-                                const response: any = r;
 
                                 const deletingArray = r.filter(v=>!existIds.includes(v.id)).map(v=>v.id);
+                                console.log(`deletingArray`, deletingArray);
                                 // const existInlocal = r.filter(v=>existIds.includes(v.id));
                                 const latest = r.filter(v=>existIds.includes(v.id)).sort((a:any,b:any) => b.createdAt-a.createdAt)[0];
+                                console.log(`latest`, latest);
+
                                 const newArray= r.filter(v=>new Date(v.createdAt).getTime()> new Date(latest.createdAt).getTime());
+                                console.log(`newArray`, newArray);
+                                
                                 // return empty with id if that id not exist in the datahase
 
                                 // return empty array if the id is exist 
 
                                 // return array with id if there is no id in local 
 
-
-                                if(!existIds.length)
                                 res.send(PrintSucceeded("loadAds", {deletingArray,newArray}, EMessage.succeeded,returnLog(req,res)));
 
-                                else
-                                res.send(PrintSucceeded("loadAds", r.filter(rx=>!existIds.includes(rx.id)), EMessage.succeeded,returnLog(req,res)));
+                                // if(!existIds.length)
+                                // res.send(PrintSucceeded("loadAds", {deletingArray,newArray}, EMessage.succeeded,returnLog(req,res)));
+
+                                // else
+                                // res.send(PrintSucceeded("loadAds", r.filter(rx=>!existIds.includes(rx.id)), EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error loadAds", e);
