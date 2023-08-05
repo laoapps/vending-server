@@ -1704,9 +1704,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 const deletingArray =[];
                                 if(!latest) return res.send(PrintSucceeded("loadAds", {deletingArray: existIds,newArray:r,latest}, EMessage.succeeded,returnLog(req,res)));
                                  console.log(`deletingArray`, deletingArray);
-                                 r.forEach(v=>{
-                                    if(!existIds.includes(v.id))deletingArray.push(v.id);
-                                 });
+                                 existIds.forEach(v=>{
+                                    if(!r.find(r=>r.id==v))deletingArray.push(v);
+                                 })
                                
                                 const newArray= r.filter(v=>new Date(v.createdAt).getTime() > new Date(latest.createdAt).getTime());
                                 console.log(`newArray`, newArray);
