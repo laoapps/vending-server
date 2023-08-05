@@ -1553,22 +1553,22 @@ export class InventoryZDM8 implements IBaseClass {
                         const ads = d.data as IAds;
 
                         if (!(ads.name && ads.description)) {
-                            res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
                         }
 
                         if (ads.machines != undefined && Object.entries(ads.machines).length == 0 || ads.adsMedia != undefined && Object.entries(ads.adsMedia).length == 0) {
-                            res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
                         }
 
                         ads.adsMedia.find(item => {
                             if (!(item.name && item.description && item.url && item.type)) {
-                                res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
                             }
                         });
 
                         machineClientIDEntity.findAll({where: { machineId: {[Op.in]: ads.machines}}}).then(run_machine => {
                             if (run_machine == undefined || Object.entries(run_machine).length != Object.entries(ads.machines).length) {
-                                res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
                             }
                             adsEntity.create(ads).then((r) => {
                                 res.send(PrintSucceeded("addAds", r, EMessage.succeeded,returnLog(req,res)));
