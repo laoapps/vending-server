@@ -847,6 +847,7 @@ export enum EPaymentStatus{
     delivered='delivered'
 }
 export enum EMessage {
+    notfoundmachine = 'notfoundmachine',
     invalidMachine = 'invalid machine',
     invalidDataAccess = 'invalid data access',
     parametersEmpty = 'parameters empty',

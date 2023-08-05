@@ -1694,6 +1694,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const existIds = d.data.existIds as Array<number>;
                         console.log('loadAds',d.data);
                         const machineId = this.ssocket.findMachineIdToken(d.token);
+                        if (!(machineId.machineId)) throw new Error(EMessage.notfoundmachine);
                         
                         adsEntity
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
