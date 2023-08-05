@@ -1702,30 +1702,15 @@ export class InventoryZDM8 implements IBaseClass {
                                 const latest = r.filter(v=>existIds.includes(v.id)).sort((a:any,b:any) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
                                 console.log(`latest`, latest);
                                 const deletingArray =[];
+                                if(!latest) return res.send(PrintSucceeded("loadAds", {deletingArray: existIds,newArray:r,latest}, EMessage.succeeded,returnLog(req,res)));
+                                 console.log(`deletingArray`, deletingArray);
                                  r.filter(v=>new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime()).forEach(v=>{
                                     if(!existIds.includes(v.id))deletingArray.push(v.id);
                                  });
- 
-                                console.log(`deletingArray`, deletingArray);
-                                // const existInlocal = r.filter(v=>existIds.includes(v.id));
-                                
-
+                               
                                 const newArray= r.filter(v=>new Date(v.createdAt).getTime() > new Date(latest.createdAt).getTime());
                                 console.log(`newArray`, newArray);
-                                
-                                // return empty with id if that id not exist in the datahase
-
-                                // return empty array if the id is exist 
-
-                                // return array with id if there is no id in local 
-
                                 res.send(PrintSucceeded("loadAds", {deletingArray: deletingArray.map(item => item.id),newArray,latest}, EMessage.succeeded,returnLog(req,res)));
-
-                                // if(!existIds.length)
-                                // res.send(PrintSucceeded("loadAds", {deletingArray,newArray}, EMessage.succeeded,returnLog(req,res)));
-
-                                // else
-                                // res.send(PrintSucceeded("loadAds", r.filter(rx=>!existIds.includes(rx.id)), EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error loadAds", e);
