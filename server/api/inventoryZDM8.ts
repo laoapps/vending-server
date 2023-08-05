@@ -1699,12 +1699,12 @@ export class InventoryZDM8 implements IBaseClass {
                         adsEntity
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
                             .then((r) => {
-
-                                const deletingArray = r.filter(v=>!existIds.includes(v.id));
-                                console.log(`deletingArray`, deletingArray);
-                                // const existInlocal = r.filter(v=>existIds.includes(v.id));
                                 const latest = r.sort((a:any,b:any) => b.createdAt-a.createdAt)[0];
                                 console.log(`latest`, latest);
+                                const deletingArray = r.filter(v=>!existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
+                                console.log(`deletingArray`, deletingArray);
+                                // const existInlocal = r.filter(v=>existIds.includes(v.id));
+                                
 
                                 const newArray= r.filter(v=>new Date(v.createdAt).getTime()> new Date(latest.createdAt).getTime());
                                 console.log(`newArray`, newArray);
@@ -1715,7 +1715,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 // return array with id if there is no id in local 
 
-                                res.send(PrintSucceeded("loadAds", {deletingArray,newArray}, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("loadAds", {deletingArray: deletingArray.map(item => item.id),newArray,latest}, EMessage.succeeded,returnLog(req,res)));
 
                                 // if(!existIds.length)
                                 // res.send(PrintSucceeded("loadAds", {deletingArray,newArray}, EMessage.succeeded,returnLog(req,res)));
