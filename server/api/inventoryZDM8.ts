@@ -1568,7 +1568,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         machineClientIDEntity.findAll({where: { machineId: {[Op.in]: ads.machines}}}).then(run_machine => {
                             if (run_machine == undefined || Object.entries(run_machine).length != Object.entries(ads.machines).length) {
-                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                                return res.send(PrintError("addAds", e, EMessage.invalidMachine,returnLog(req,res,true)));
                             }
                             adsEntity.create(ads).then((r) => {
                                 res.send(PrintSucceeded("addAds", r, EMessage.succeeded,returnLog(req,res)));
