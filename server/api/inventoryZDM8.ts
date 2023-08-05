@@ -1702,7 +1702,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const latest = r.filter(v=>existIds.includes(v.id))?.sort((a:any,b:any) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
                                 console.log(`latest`, latest);
                                 const deletingArray =new Array<number>();
-                                if(!latest) return res.send(PrintSucceeded("loadAds", {deletingArray: existIds,newArray:r,latest}, EMessage.succeeded,returnLog(req,res)));
+                                if(!latest) return res.send(PrintSucceeded("loadAds", {deletingArray: existIds,newArray:r}, EMessage.succeeded,returnLog(req,res)));
                                  console.log(`deletingArray`, deletingArray);
                                  existIds.forEach(v=>{
                                     if(!r.find(r=>r.id==v))deletingArray.push(v);
@@ -1710,7 +1710,7 @@ export class InventoryZDM8 implements IBaseClass {
                                
                                 const newArray= r.filter(v=>new Date(v.createdAt).getTime() > new Date(latest.createdAt).getTime());
                                 console.log(`newArray`, newArray);
-                                res.send(PrintSucceeded("loadAds", {deletingArray: deletingArray.map(item => item),newArray,latest}, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("loadAds", {deletingArray: deletingArray.map(item => item),newArray}, EMessage.succeeded,returnLog(req,res)));
                             })
                             .catch((e) => {
                                 console.log("error loadAds", e);

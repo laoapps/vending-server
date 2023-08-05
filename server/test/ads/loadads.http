@@ -4,7 +4,7 @@ Content-Type: application/json
 {
     "token": "79f7928f3deb7436d6e110dfae37e8f80ea9c65f55ea84eb449895b63bc5909e",
     "data": {
-        "existIds":[1,2,4,6]
+        "existIds":[1,2,3]
     }
 
 }
