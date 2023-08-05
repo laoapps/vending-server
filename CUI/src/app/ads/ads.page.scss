@@ -4,3 +4,15 @@
     content: '';
     background: #bcbcbc;
 }
+
+.ads-container {
+
+    .item {
+        height: 80vh;
+        width: 100vw;
+    }
+
+    .ads-video {
+        object-fit: cover;
+    }
+}

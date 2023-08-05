@@ -2375,6 +2375,7 @@ export class InventoryZDM8 implements IBaseClass {
     authorizeSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             if(!res.locals["superadmin"])throw new Error('You are not superadmin');
+            next();
 
         } catch (error) {
             console.log(error);
@@ -2385,6 +2386,7 @@ export class InventoryZDM8 implements IBaseClass {
     authorizeSubAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             if(!res.locals["subadmin"])throw new Error('You are not Sub admin');
+            next();
 
         } catch (error) {
             console.log(error);

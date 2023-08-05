@@ -17,34 +17,39 @@
 
 
 
-<ion-content>
+<ion-content (click)="exit()">
 
-  <div class="ads-backdrop">
-    
-    <div id="ads-container" class="carousel slide carousel-fade" data-bs-ride="carousel">
-      <div class="carousel-inner">
-        <div class="carousel-item active">
-          <video autoplay="true" src="../../assets/ads/1.webm" data-bs-interval="10000"></video>
-        </div>
-        <div class="carousel-item">
-          <img src="../../assets/ads/2.png" class="d-block w-100" alt="...">
-        </div>
-        <div class="carousel-item">
-          <img src="../../assets/ads/3.jpg" class="d-block w-100" alt="...">
-        </div>
+  <div class="ads-container">
+    <img *ngIf="currentType == 'image'" src="{{ currentUrl }}" alt="" class="item">
+    <video *ngIf="currentType == 'video'" src="{{ currentUrl }}" class="item ads-video"></video>
+  </div>
+
+  <!-- <div class="ads-container">
+    <a *ngFor="let ads of adsList; let i = index" href="javascript:void(0)" class="item">
+      <img *ngIf="ads?.type == 'image'" src="{{ ads.url }}" class="ads-image" alt="">
+      <video *ngIf="ads?.type == 'video'" src="{{ ads.url }}" class="ads-video"></video>
+    </a>
+  </div> -->
+
+  
+  <!-- <div class="ads-backdrop">
+    <div id="carouselExampleInterval" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+  
       </div>
-      <button class="carousel-control-prev" type="button" data-bs-target="#ads-container" data-bs-slide="prev">
+      <div class="carousel-inner">
+  
+      </div>
+      <button hidden class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Previous</span>
       </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#ads-container" data-bs-slide="next">
+      <button hidden class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="next">
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Next</span>
       </button>
     </div>
-
-
-
-  </div>
+  </div> -->
 
 </ion-content>
+

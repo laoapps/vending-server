@@ -21,7 +21,6 @@ import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 // today
 // import { VideoPlayer } from '@ionic-native/video-player/ngx';
 
-
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,
