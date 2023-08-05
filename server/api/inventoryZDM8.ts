@@ -1701,7 +1701,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then((r) => {
                                 const latest = r.sort((a:any,b:any) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
                                 console.log(`latest`, latest);
-                                const deletingArray = r.filter(v=>!existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
+                                const deletingArray = r.filter(v=>existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
                                 console.log(`deletingArray`, deletingArray);
                                 // const existInlocal = r.filter(v=>existIds.includes(v.id));
                                 
