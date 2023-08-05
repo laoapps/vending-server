@@ -1701,7 +1701,12 @@ export class InventoryZDM8 implements IBaseClass {
                             .then((r) => {
                                 const latest = r.filter(v=>existIds.includes(v.id)).sort((a:any,b:any) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
                                 console.log(`latest`, latest);
-                                const deletingArray = r.filter(v=>!existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
+                                const deletingArray = r.filter(v=>existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
+                                const deletingArray2 = r.filter(v=>!existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
+                                const deletingArray3 = r.filter(v=>!existIds.includes(v.id));
+                                const deletingArray4 = r.filter(v=>new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
+                                const deletingArray5 = r.filter(v=>!existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
+
                                 console.log(`deletingArray`, deletingArray);
                                 // const existInlocal = r.filter(v=>existIds.includes(v.id));
                                 
@@ -1715,7 +1720,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 // return array with id if there is no id in local 
 
-                                res.send(PrintSucceeded("loadAds", {deletingArray: deletingArray.map(item => item.id),newArray,latest}, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("loadAds", {deletingArray2,deletingArray3,deletingArray4,deletingArray: deletingArray.map(item => item.id),newArray,latest}, EMessage.succeeded,returnLog(req,res)));
 
                                 // if(!existIds.length)
                                 // res.send(PrintSucceeded("loadAds", {deletingArray,newArray}, EMessage.succeeded,returnLog(req,res)));
