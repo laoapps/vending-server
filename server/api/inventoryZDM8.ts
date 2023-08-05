@@ -1699,7 +1699,7 @@ export class InventoryZDM8 implements IBaseClass {
                         adsEntity
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
                             .then((r) => {
-                                const latest = r.sort((a:any,b:any) => b.createdAt-a.createdAt)[0];
+                                const latest = r.sort((a:any,b:any) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
                                 console.log(`latest`, latest);
                                 const deletingArray = r.filter(v=>!existIds.includes(v.id)&&new Date(v.createdAt).getTime()<= new Date(latest.createdAt).getTime());
                                 console.log(`deletingArray`, deletingArray);
