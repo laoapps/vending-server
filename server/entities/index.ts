@@ -43,9 +43,9 @@ export let subadminEntity: SubadminStatic;
 
 export const initDB =()=>{
     laabHashService = new LAABHashService();
-    LogActivityFactory(EEntity.ads, dbConnection).sync().then(() => {
+    LogActivityFactory(EEntity.logactivity, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);
-        logEntity = LogActivityFactory(EEntity.ads, dbConnection);
+        logEntity = LogActivityFactory(EEntity.logactivity, dbConnection);
     });
     adsEntity = AdsFactory(EEntity.ads, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);

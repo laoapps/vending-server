@@ -2230,7 +2230,8 @@ export enum EEntity {
     franchisestock = "franchisestock",
     vendingcashoutmmoney = 'vendingcashoutmmoney',
     vendingmachinesalereport = 'vendingmachinesalereport',
-    ads = "ads"
+    ads = "ads",
+    logactivity = 'logactivity'
 }
 
 export interface ISaveMachineSaleReport {
