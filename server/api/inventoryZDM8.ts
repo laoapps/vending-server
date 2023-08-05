@@ -1553,16 +1553,16 @@ export class InventoryZDM8 implements IBaseClass {
                         const ads = d.data as IAds;
 
                         if (!(ads.name && ads.description)) {
-                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty+'1',returnLog(req,res,true)));
                         }
 
                         if (ads.machines != undefined && Object.entries(ads.machines).length == 0 || ads.adsMedia != undefined && Object.entries(ads.adsMedia).length == 0) {
-                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty+'2',returnLog(req,res,true)));
                         }
 
                         ads.adsMedia.find(item => {
                             if (!(item.name && item.description && item.url && item.type)) {
-                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty,returnLog(req,res,true)));
+                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty+'3',returnLog(req,res,true)));
                             }
                         });
 
