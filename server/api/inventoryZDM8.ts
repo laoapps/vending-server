@@ -133,8 +133,8 @@ export class InventoryZDM8 implements IBaseClass {
     // mmoneypassword = "dbk@2022";
     // mmoneyusername= '2c7eb4906d4ab65f72fc3d3c8eebeb65';
 
-    qrmmoneywallet_id =2558105967
-    qrmmoneypassword  = 112233
+    qrmmoneywallet_id = 2558105967
+    qrmmoneypassword = 112233
     // msisdn=2052743838  // machine 5010
     qrmmoneyusername = '32f2d9a78d94a935e2e6052d229f301e'
 
@@ -184,7 +184,7 @@ export class InventoryZDM8 implements IBaseClass {
         const { token } = req.body;
         res.locals["machineId"] = this.ssocket.findMachineIdToken(token);
         if (!res.locals["machineId"]) {
-            return res.send(PrintError("MachineNotFound", [], EMessage.error,null));
+            return res.send(PrintError("MachineNotFound", [], EMessage.error, null));
         } else next();
     }
     checkMachineDisabled(req: Request, res: Response, next: NextFunction) {
@@ -192,12 +192,12 @@ export class InventoryZDM8 implements IBaseClass {
             .then((r) => {
                 if (r) {
                     return res.send(
-                        PrintError("machine was disabled", [], EMessage.error,null)
+                        PrintError("machine was disabled", [], EMessage.error, null)
                     );
                 } else next();
             })
             .catch((e) => {
-                return res.send(PrintError("checkMachineDisabled", e, EMessage.error,null));
+                return res.send(PrintError("checkMachineDisabled", e, EMessage.error, null));
             });
     }
     isMachineDisabled(machineId: string) {
@@ -319,14 +319,14 @@ export class InventoryZDM8 implements IBaseClass {
                                         d.command,
                                         { bill: r, transactionID: c.tranid_client },
                                         EMessage.succeeded,
-                                        returnLog(req,res)
+                                        returnLog(req, res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("error confirmMMoney");
                                 writeLogs(c, "", "_E_Confirm");
-                                res.send(PrintError(d.command, e, EMessage.error,null));
+                                res.send(PrintError(d.command, e, EMessage.error, null));
                             });
                     } else if (d.command == "processorder") {
                         // update bill for local process
@@ -336,7 +336,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const { token, transactionID } = d.data;
                             const machineId =
                                 this.ssocket.findMachineIdToken(token)?.machineId;
-                                if (!machineId) throw new Error("machine is not exit");
+                            if (!machineId) throw new Error("machine is not exit");
                             this.getBillProcess((b) => {
                                 const position = b.find(
                                     (v) => v.transactionID == transactionID
@@ -360,13 +360,13 @@ export class InventoryZDM8 implements IBaseClass {
                                     );
                                 } else {
                                     res.send(
-                                        PrintError("submit command", [], "position not found",null)
+                                        PrintError("submit command", [], "position not found", null)
                                     );
                                 }
                             });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("init", error, EMessage.error,null));
+                            res.send(PrintError("init", error, EMessage.error, null));
                         }
                     } else {
                         const clientId = d.data.clientId + "";
@@ -401,10 +401,10 @@ export class InventoryZDM8 implements IBaseClass {
                             sEnt
                                 .findAll()
                                 .then((r) => {
-                                    res.send(PrintSucceeded("listSale", r, EMessage.succeeded,null));
+                                    res.send(PrintSucceeded("listSale", r, EMessage.succeeded, null));
                                 })
                                 .catch((e) => {
-                                    res.send(PrintError("listSale", e, EMessage.error,null));
+                                    res.send(PrintError("listSale", e, EMessage.error, null));
                                 });
                         } else if (d.command == EClientCommand.buyMMoney) {
                             console.log(" buyMMoney" + d.data.value);
@@ -446,16 +446,16 @@ export class InventoryZDM8 implements IBaseClass {
 
                             // console.log(' value is valid', sale);
                             let a = machineId?.data?.find(v => v.settingName == 'setting');
-                            let mId=a?.imei+''; // for MMoney need 10 digits
+                            let mId = a?.imei + ''; // for MMoney need 10 digits
                             console.log(`check emei derrrrr`, mId);
-                            if(!mId) throw new Error('MMoney need IMEI');
+                            if (!mId) throw new Error('MMoney need IMEI');
 
 
                             // const emei: string = 
                             // console.log(`emei -->`, emei, emei.length, `time -->`, time, time.length);
                             // const transactionID = emei + time;
                             const x = new Date().getTime();
-                            const transactionID =  String(mId.substring(mId.length - 10)) + (x+'').substring(2);
+                            const transactionID = String(mId.substring(mId.length - 10)) + (x + '').substring(2);
                             console.log(`transactionID`, transactionID);
                             // const transactionID = Number(
                             //     Number(
@@ -475,7 +475,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 uuid: uuid4(),
                                 clientId,
                                 qr: qr.qrCode,
-                                transactionID:transactionID as any,
+                                transactionID: transactionID as any,
                                 machineId: machineId.machineId,
                                 hashM: "",
                                 hashP: "",
@@ -506,16 +506,16 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log("SET transactionID by owner", ownerUuid);
 
                                 redisClient.setEx(transactionID + "--_", 60 * 15, ownerUuid);
-                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded,null));
+                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else {
-                            res.send(PrintError(d.command, [], EMessage.notsupport,null));
+                            res.send(PrintError(d.command, [], EMessage.notsupport, null));
                         }
                     }
                 } catch (error: any) {
                     console.log("error", error);
                     res.send(
-                        PrintError(d.command, this.production || error, error.message,null)
+                        PrintError(d.command, this.production || error, error.message, null)
                     );
                 }
             });
@@ -525,27 +525,27 @@ export class InventoryZDM8 implements IBaseClass {
             //     // res.send({ message: "wait", status: 1 });
             // });
             router.post(this.path + "/refreshMachine",
-            this.checkSuperAdmin,
-            this.checkSubAdmin,
-            this.checkAdmin,
-              async (req, res) => {
-                try {
-                    const m = req.body.machineId;
-                    const ws =this.wsClient.find(v=>v['machineId']==m);
-                    // const w = ws.find(v=>v['clientId']);
-                    console.log(`----------->`, m);
-                    const resx = {} as IResModel;
-                    resx.command = EMACHINE_COMMAND.refresh;
-                    resx.message = EMessage.refreshsucceeded;
-                    resx.data = true;
-                    this.sendWSToMachine(ws['machineId'],resx)
-                    res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded,returnLog(req,res)));
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req.body.machineId;
+                        const ws = this.wsClient.find(v => v['machineId'] == m);
+                        // const w = ws.find(v=>v['clientId']);
+                        console.log(`----------->`, m);
+                        const resx = {} as IResModel;
+                        resx.command = EMACHINE_COMMAND.refresh;
+                        resx.message = EMessage.refreshsucceeded;
+                        resx.data = true;
+                        this.sendWSToMachine(ws['machineId'], resx)
+                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
 
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
-                }
-            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(
                 this.path + "/getDeliveryingBills",
                 this.checkMachineIdToken.bind(this),
@@ -569,14 +569,14 @@ export class InventoryZDM8 implements IBaseClass {
                                 PrintSucceeded(
                                     "getDeliveryingBills",
                                     b.filter((v) => v.ownerUuid == ownerUuid),
-                                    EMessage.succeeded,returnLog(req,res)
-                                    
+                                    EMessage.succeeded, returnLog(req, res)
+
                                 )
                             );
                         });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getDeliveryingBills", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("getDeliveryingBills", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -599,14 +599,14 @@ export class InventoryZDM8 implements IBaseClass {
                                 where: { machineId, paymentstatus: EPaymentStatus.paid },
                             })
                             .then((r) => {
-                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
-                                res.send(PrintError("init", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("init", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getPaidBills", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("getPaidBills", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -628,14 +628,14 @@ export class InventoryZDM8 implements IBaseClass {
                         entx
                             .findAll({ where: { machineId } })
                             .then((r) => {
-                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
-                                res.send(PrintError("getBills", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("getBills", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getBills", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("getBills", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -656,7 +656,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const mx = allMachines.find(v => v.m == machineId);
                         if (mx) {
                             if (moment().diff(moment(mx.t), 'milliseconds') < 3000) return res.send(
-                                PrintError("retryProcessBill", [], EMessage.error + ' too fast',returnLog(req,res,true))
+                                PrintError("retryProcessBill", [], EMessage.error + ' too fast', returnLog(req, res, true))
                             );
                             mx.t = moment.now();
                         } else {
@@ -711,26 +711,26 @@ export class InventoryZDM8 implements IBaseClass {
                                         PrintSucceeded(
                                             "retryProcessBill",
                                             { position, bill: x?.bill, transactionID, pos },
-                                            EMessage.succeeded,returnLog(req,res)
+                                            EMessage.succeeded, returnLog(req, res)
                                         )
                                     );
                                 } else {
                                     res.send(
-                                        PrintError("retryProcessBill", pos, EMessage.error,returnLog(req,res,true))
+                                        PrintError("retryProcessBill", pos, EMessage.error, returnLog(req, res, true))
                                     );
                                 }
                             } catch (error) {
-                                console.log("error retryProcessBill", error,returnLog(req,res,true));
+                                console.log("error retryProcessBill", error, returnLog(req, res, true));
 
                                 res.send(
-                                    PrintError("retryProcessBill", error, EMessage.error,returnLog(req,res,true))
+                                    PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true))
                                 );
                             }
                         });
                         // }, 1000);
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("retryProcessBill", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -752,15 +752,15 @@ export class InventoryZDM8 implements IBaseClass {
                             .findAll()
                             .then((r) => {
                                 res.send(
-                                    PrintSucceeded("getAllPaidBills", r, EMessage.succeeded,returnLog(req,res))
+                                    PrintSucceeded("getAllPaidBills", r, EMessage.succeeded, returnLog(req, res))
                                 );
                             })
                             .catch((e) => {
-                                res.send(PrintError("getAllPaidBills", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("getAllPaidBills", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getAllPaidBills", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("getAllPaidBills", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -781,14 +781,14 @@ export class InventoryZDM8 implements IBaseClass {
                         entx
                             .findAll()
                             .then((r) => {
-                                res.send(PrintSucceeded("getAllBills", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("getAllBills", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
-                                res.send(PrintError("getAllBills", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("getAllBills", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getAllBills", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("getAllBills", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -800,12 +800,12 @@ export class InventoryZDM8 implements IBaseClass {
                             "init",
                             this.ssocket.listOnlineMachines(),
                             EMessage.succeeded
-                            ,returnLog(req,res)
+                            , returnLog(req, res)
                         )
                     );
                 } catch (error) {
                     console.log(error);
-                    res.send(PrintError("init", error, EMessage.error,returnLog(req,res,true)));
+                    res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
                 }
             });
 
@@ -992,7 +992,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
-                
+
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
@@ -1007,7 +1007,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const o = req.body.data as IStock;
                             if (!o.name || !o.price)
                                 return res.send(
-                                    PrintError("addProduct", [], EMessage.bodyIsEmpty,returnLog(req,res,true))
+                                    PrintError("addProduct", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
                                 );
                             // let base64Image = o.image.split(';base64,').pop();
                             // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
@@ -1015,20 +1015,20 @@ export class InventoryZDM8 implements IBaseClass {
                             sEnt
                                 .create(o)
                                 .then((r) => {
-                                    res.send(PrintSucceeded("addProduct", r, EMessage.succeeded,returnLog(req,res)));
+                                    res.send(PrintSucceeded("addProduct", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
                                     console.log("error add product", e);
 
-                                    res.send(PrintError("addProduct", e, EMessage.error,returnLog(req,res,true)));
+                                    res.send(PrintError("addProduct", e, EMessage.error, returnLog(req, res, true)));
                                 });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
+                            res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1059,7 +1059,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("disableProduct", [], EMessage.error,returnLog(req,res,true))
+                                        PrintError("disableProduct", [], EMessage.error, returnLog(req, res, true))
                                     );
                                 console.log('disableproduct', r);
 
@@ -1071,18 +1071,18 @@ export class InventoryZDM8 implements IBaseClass {
                                         "disableProduct",
                                         await r.save(),
                                         EMessage.succeeded
-                                        ,returnLog(req,res)
+                                        , returnLog(req, res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("error disable product", e);
 
-                                res.send(PrintError("disableProduct", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("disableProduct", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("disableProduct", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("disableProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1104,11 +1104,11 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .destroy({where :{id}})
+                            .destroy({ where: { id } })
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("deleteProduct", [], EMessage.error,returnLog(req,res,true))
+                                        PrintError("deleteProduct", [], EMessage.error, returnLog(req, res, true))
                                     );
                                 console.log('deleteProduct', r);
                                 res.send(
@@ -1116,22 +1116,22 @@ export class InventoryZDM8 implements IBaseClass {
                                         "deleteProduct",
                                         r,
                                         EMessage.succeeded
-                                        ,returnLog(req,res)
+                                        , returnLog(req, res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("error deleteProduct", e);
 
-                                res.send(PrintError("deleteProduct", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("deleteProduct", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("deleteProduct", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("deleteProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
-           
+
 
             router.post(
                 this.path + "/listProduct",
@@ -1155,16 +1155,16 @@ export class InventoryZDM8 implements IBaseClass {
                         sEnt
                             .findAll({ where: { isActive: { [Op.or]: actives } } })
                             .then((r) => {
-                                res.send(PrintSucceeded("listProduct", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("listProduct", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 console.log("error list product", e);
 
-                                res.send(PrintError("listProduct", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("listProduct", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listProduct", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1176,20 +1176,20 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkAdmin,
                 async (req, res) => {
                     try {
-                        
+
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const o = req.body as IVendingCloneMachineSale;
-                        if (!(ownerUuid && o.machineId && o.cloneMachineId)) return res.send(PrintError("cloneSale", [], EMessage.parametersEmpty,returnLog(req,res,true)));
-                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,dbConnection);
+                        if (!(ownerUuid && o.machineId && o.cloneMachineId)) return res.send(PrintError("cloneSale", [], EMessage.parametersEmpty, returnLog(req, res, true)));
+                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid, dbConnection);
                         await sEnt.sync();
                         this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r_findMachine => {
-                            if (r_findMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfound,returnLog(req,res,true)));
+                            if (r_findMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfound, returnLog(req, res, true)));
                             this.machineClientlist.findOne({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachine => {
-                                if (r_findCloneMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfoundCloneMachine,returnLog(req,res,true)));
+                                if (r_findCloneMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfoundCloneMachine, returnLog(req, res, true)));
                                 sEnt.findAndCountAll({ where: { machineId: o.machineId } }).then(r_findMachineStock => {
                                     sEnt.findAndCountAll({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachineStock => {
-                                        if (r_findCloneMachineStock.count == 0) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone,returnLog(req,res,true)));
-                                        
+                                        if (r_findCloneMachineStock.count == 0) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone, returnLog(req, res, true)));
+
                                         let list: Array<any> = r_findMachineStock.rows;
                                         let cloneList: Array<any> = r_findCloneMachineStock.rows;
                                         let models: Array<any> = [];
@@ -1198,40 +1198,40 @@ export class InventoryZDM8 implements IBaseClass {
                                             list.find(ml => {
                                                 cloneList = cloneList.filter(mcl => mcl.stock.id !== ml.stock.id);
                                             });
-                                            
+
                                         }
 
-                                        for(let i = 0; i < cloneList.length; i++) {
+                                        for (let i = 0; i < cloneList.length; i++) {
                                             const data = {
                                                 machineId: o.machineId,
                                                 stock: cloneList[i].stock,
                                                 position: cloneList[i].position,
                                                 max: cloneList[i].max
-                                            }   
+                                            }
                                             models.push(data);
                                         }
 
                                         sEnt.bulkCreate(models).then(r_clonestock => {
-                                            if (!r_clonestock) return res.send(PrintError("cloneSale error", [], EMessage.cloneStockFail,returnLog(req,res,true)));
-                                            for(let i = 0; i < models.length; i++) {
+                                            if (!r_clonestock) return res.send(PrintError("cloneSale error", [], EMessage.cloneStockFail, returnLog(req, res, true)));
+                                            for (let i = 0; i < models.length; i++) {
                                                 models[i].id = r_clonestock[i].id;
                                                 models[i].uuid = r_clonestock[i].uuid;
                                                 models[i].isActive = r_clonestock[i].isActive;
                                                 models[i].createdAt = r_clonestock[i].createdAt;
                                                 models[i].updatedAt = r_clonestock[i].updatedAt;
                                             }
-                                        const loggg = [r_clonestock, list, cloneList, models];
+                                            const loggg = [r_clonestock, list, cloneList, models];
 
-                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded,returnLog(req,res)));
-                                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
-                                    }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
-                                }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
-                            }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));
-                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true))));     
+                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded, returnLog(req, res)));
+                                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
+                                    }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
+                                }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
+                            }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
+                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
 
                     } catch (error) {
-                        res.send(PrintError("cloneSale", error, EMessage.error,returnLog(req,res,true)));
-                    }               
+                        res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true)));
+                    }
                 }
             );
             // normal version
@@ -1254,10 +1254,10 @@ export class InventoryZDM8 implements IBaseClass {
                         .findOne({ where: { machineId: o.machineId } })
                         .then((r) => {
                             if (!r)
-                                return res.send(PrintError("addSale", [], EMessage.notfound,returnLog(req,res,true)));
+                                return res.send(PrintError("addSale", [], EMessage.notfound, returnLog(req, res, true)));
                             if (!o.machineId || Number(o.position) == Number.NaN)
                                 return res.send(
-                                    PrintError("addSale", [], EMessage.bodyIsEmpty,returnLog(req,res,true))
+                                    PrintError("addSale", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
                                 );
                             const pEnt = StockFactory(
                                 EEntity.product + "_" + ownerUuid,
@@ -1266,35 +1266,35 @@ export class InventoryZDM8 implements IBaseClass {
                             pEnt.findByPk(o.stock.id).then((p) => {
                                 if (!p)
                                     return res.send(
-                                        PrintError("addSale", [], EMessage.productNotFound,returnLog(req,res,true))
+                                        PrintError("addSale", [], EMessage.productNotFound, returnLog(req, res, true))
                                     );
                                 p.qtty = 0;
                                 o.stock = p;
-                                console.log('addSale',o);
-                                
+                                console.log('addSale', o);
+
                                 sEnt
                                     .findOne({ where: { position: o.position, machineId: o.machineId } })
                                     .then((rx) => {
                                         if (rx)
                                             return res.send(
-                                                PrintError("addSale", [], EMessage.duplicatedPosition,returnLog(req,res,true))
+                                                PrintError("addSale", [], EMessage.duplicatedPosition, returnLog(req, res, true))
                                             );
                                         sEnt
                                             .create(o)
                                             .then((r) => {
                                                 res.send(
-                                                    PrintSucceeded("addSale", r, EMessage.succeeded,returnLog(req,res))
+                                                    PrintSucceeded("addSale", r, EMessage.succeeded, returnLog(req, res))
                                                 );
                                             })
                                             .catch((e) => {
                                                 console.log("error add sale", e);
-                                                res.send(PrintError("addSale", e, EMessage.error,returnLog(req,res,true)));
+                                                res.send(PrintError("addSale", e, EMessage.error, returnLog(req, res, true)));
                                             });
                                     })
                                     .catch((e) => {
                                         console.log(e);
 
-                                        res.send(PrintError("addSale", e, EMessage.error,returnLog(req,res,true)));
+                                        res.send(PrintError("addSale", e, EMessage.error, returnLog(req, res, true)));
                                     });
                             });
                         });
@@ -1320,18 +1320,18 @@ export class InventoryZDM8 implements IBaseClass {
                             .destroy({ where: { id } })
                             .then(async (r) => {
                                 if (!r)
-                                    return res.send(PrintError("deleteSale", [], EMessage.error,returnLog(req,res,true)));
+                                    return res.send(PrintError("deleteSale", [], EMessage.error, returnLog(req, res, true)));
 
-                                res.send(PrintSucceeded("deleteSale", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("deleteSale", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 console.log("error deleteSale", e);
 
-                                res.send(PrintError("deleteSale", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("deleteSale", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("deleteSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("deleteSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1359,7 +1359,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("disableSale", [], EMessage.error,returnLog(req,res,true))
+                                        PrintError("disableSale", [], EMessage.error, returnLog(req, res, true))
                                     );
                                 r.isActive = isActive;
                                 r.changed("isActive", true);
@@ -1368,18 +1368,18 @@ export class InventoryZDM8 implements IBaseClass {
                                         "disableSale",
                                         await r.save(),
                                         EMessage.succeeded
-                                        ,returnLog(req,res)
+                                        , returnLog(req, res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("error disable product", e);
 
-                                res.send(PrintError("disableSale", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("disableSale", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("disableSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("disableSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1405,7 +1405,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("updateSale", [], EMessage.notfound,returnLog(req,res,true))
+                                        PrintError("updateSale", [], EMessage.notfound, returnLog(req, res, true))
                                     );
                                 const pEnt = StockFactory(
                                     EEntity.product + "_" + ownerUuid,
@@ -1416,7 +1416,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     .then(async (p) => {
                                         if (!p)
                                             return res.send(
-                                                PrintError("updateSale", [], EMessage.productNotFound,returnLog(req,res,true))
+                                                PrintError("updateSale", [], EMessage.productNotFound, returnLog(req, res, true))
                                             );
 
                                         Object.keys(o).forEach((k) => {
@@ -1435,23 +1435,23 @@ export class InventoryZDM8 implements IBaseClass {
                                                 "updateSale",
                                                 await r.save(),
                                                 EMessage.succeeded
-                                                ,returnLog(req,res)
+                                                , returnLog(req, res)
                                             )
                                         );
                                     })
                                     .catch((e) => {
                                         console.log("error updatesale", e);
-                                        res.send(PrintError("updateSale", e, EMessage.error,returnLog(req,res,true)));
+                                        res.send(PrintError("updateSale", e, EMessage.error, returnLog(req, res, true)));
                                     });
                             })
                             .catch((e) => {
                                 console.log("error updatesale", e);
 
-                                res.send(PrintError("updateSale", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("updateSale", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log("error update sale", error);
-                        res.send(PrintError("updateSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("updateSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1478,16 +1478,16 @@ export class InventoryZDM8 implements IBaseClass {
                         sEnt
                             .findAll({ where: { isActive: { [Op.or]: actives } } })
                             .then((r) => {
-                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 console.log("error list sale", e);
 
-                                res.send(PrintError("listSale", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("listSale", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1543,10 +1543,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 url: 'https://www.youtube.com/shorts/9J3M-vh2oGs'
                             }
                         ];
-                        res.send(PrintSucceeded("listAds", r, EMessage.succeeded,returnLog(req,res)));
+                        res.send(PrintSucceeded("listAds", r, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listProduct", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1563,36 +1563,36 @@ export class InventoryZDM8 implements IBaseClass {
                         const ads = d.data as IAds;
 
                         if (!(ads.name && ads.description)) {
-                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty+'1',returnLog(req,res,true)));
+                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty + '1', returnLog(req, res, true)));
                         }
 
                         if (ads.machines != undefined && Object.entries(ads.machines).length == 0 || ads.adsMedia != undefined && Object.entries(ads.adsMedia).length == 0) {
-                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty+'2',returnLog(req,res,true)));
+                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty + '2', returnLog(req, res, true)));
                         }
 
                         ads.adsMedia.find(item => {
                             if (!(item.name && item.description && item.url && item.type)) {
-                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty+'3',returnLog(req,res,true)));
+                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty + '3', returnLog(req, res, true)));
                             }
                         });
 
-                        machineClientIDEntity.findAll({where: { machineId: {[Op.in]: ads.machines}}}).then(run_machine => {
+                        machineClientIDEntity.findAll({ where: { machineId: { [Op.in]: ads.machines } } }).then(run_machine => {
                             if (run_machine == undefined || Object.entries(run_machine).length != Object.entries(ads.machines).length) {
-                                return res.send(PrintError("addAds", e, EMessage.invalidMachine,returnLog(req,res,true)));
+                                return res.send(PrintError("addAds", e, EMessage.invalidMachine, returnLog(req, res, true)));
                             }
                             adsEntity.create(ads).then((r) => {
-                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded, returnLog(req, res)));
                             })
-                            .catch((e) => {
-                                res.send(PrintError("addAds", e, EMessage.error,returnLog(req,res,true)));
-                            });
+                                .catch((e) => {
+                                    res.send(PrintError("addAds", e, EMessage.error, returnLog(req, res, true)));
+                                });
                         }).catch(error => {
-                            res.send(PrintError("addAds", error, EMessage.error,returnLog(req,res,true)));
+                            res.send(PrintError("addAds", error, EMessage.error, returnLog(req, res, true)));
                         });
-                        
+
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addAds", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("addAds", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1607,28 +1607,28 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const d = req.body as IReqModel;
                         const id = d.data.id as number;
-                        adsEntity.findByPk(id).then(a=>{
-                            if(a)
-                            adsEntity
-                            .create(a.toJSON())
-                            .then((r) => {
-                                res.send(PrintSucceeded("cloneAds", r, EMessage.succeeded,returnLog(req,res,true)));
-                            })
-                            .catch((e) => {
-                                console.log("error cloneAds", e);
+                        adsEntity.findByPk(id).then(a => {
+                            if (a)
+                                adsEntity
+                                    .create(a.toJSON())
+                                    .then((r) => {
+                                        res.send(PrintSucceeded("cloneAds", r, EMessage.succeeded, returnLog(req, res, true)));
+                                    })
+                                    .catch((e) => {
+                                        console.log("error cloneAds", e);
 
-                                res.send(PrintError("cloneAds", e, EMessage.error,returnLog(req,res,true)));
-                            });
+                                        res.send(PrintError("cloneAds", e, EMessage.error, returnLog(req, res, true)));
+                                    });
                             else
-                            res.send(PrintError("cloneAds failed not exist ", e, EMessage.error,returnLog(req,res,true)));
-                        }).catch(error=>{
+                                res.send(PrintError("cloneAds failed not exist ", e, EMessage.error, returnLog(req, res, true)));
+                        }).catch(error => {
                             console.log(error);
-                        res.send(PrintError("cloneAds", error, EMessage.error,returnLog(req,res,true)));
+                            res.send(PrintError("cloneAds", error, EMessage.error, returnLog(req, res, true)));
                         })
-                       
+
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("cloneAds", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("cloneAds", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1648,16 +1648,16 @@ export class InventoryZDM8 implements IBaseClass {
                             .create(ads)
                             .then((r) => {
                                 r.destroy();
-                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 console.log("error addAds", e);
 
-                                res.send(PrintError("addAds", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("addAds", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addAds", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("addAds", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1676,19 +1676,19 @@ export class InventoryZDM8 implements IBaseClass {
                         adsEntity
                             .findByPk(id)
                             .then((r) => {
-                                r.machines=r.machines.filter(v=>!machines.includes(v));
-                                r.changed('machines',true);
+                                r.machines = r.machines.filter(v => !machines.includes(v));
+                                r.changed('machines', true);
                                 r.save();
-                                res.send(PrintSucceeded("removeMachineFromAds", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("removeMachineFromAds", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 console.log("error lremoveMachineFromAds", e);
 
-                                res.send(PrintError("removeMachineFromAds", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("removeMachineFromAds", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("removeMachineFromAds", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("removeMachineFromAds", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1702,34 +1702,34 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const d = req.body as IReqModel;
                         const existIds = d.data.existIds as Array<number>;
-                        console.log('loadAds',d.data);
+                        console.log('loadAds', d.data);
                         const machineId = this.ssocket.findMachineIdToken(d.token);
                         if (!(machineId.machineId)) throw new Error(EMessage.notfoundmachine);
-                        
+
                         adsEntity
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
                             .then((r) => {
-                                const latest = r.filter(v=>existIds.includes(v.id))?.sort((a:any,b:any) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
+                                const latest = r.filter(v => existIds.includes(v.id))?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
                                 console.log(`latest`, latest);
-                                const deletingArray =new Array<number>();
-                                if(!latest) return res.send(PrintSucceeded("loadAds", {deletingArray: existIds,newArray:r}, EMessage.succeeded,returnLog(req,res)));
-                                 console.log(`deletingArray`, deletingArray);
-                                 existIds.forEach(v=>{
-                                    if(!r.find(r=>r.id==v))deletingArray.push(v);
-                                 })
-                               
-                                const newArray= r.filter(v=>new Date(v.createdAt).getTime() > new Date(latest.createdAt).getTime());
+                                const deletingArray = new Array<number>();
+                                if (!latest) return res.send(PrintSucceeded("loadAds", { deletingArray: existIds, newArray: r }, EMessage.succeeded, returnLog(req, res)));
+                                console.log(`deletingArray`, deletingArray);
+                                existIds.forEach(v => {
+                                    if (!r.find(r => r.id == v)) deletingArray.push(v);
+                                })
+
+                                const newArray = r.filter(v => new Date(v.createdAt).getTime() > new Date(latest.createdAt).getTime());
                                 console.log(`newArray`, newArray);
-                                res.send(PrintSucceeded("loadAds", {deletingArray: deletingArray.map(item => item),newArray}, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("loadAds", { deletingArray: deletingArray.map(item => item), newArray }, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 console.log("error loadAds", e);
 
-                                res.send(PrintError("loadAds", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("loadAds", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("loadAds", error, EMessage.error,returnLog(req,res)));
+                        res.send(PrintError("loadAds", error, EMessage.error, returnLog(req, res)));
                     }
                 }
             );
@@ -1745,58 +1745,58 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
-                        console.log('saveMachineSalexx',d.data);
-                        
+                        console.log('saveMachineSalexx', d.data);
+
                         const machineId = this.ssocket.findMachineIdToken(d.token);
                         if (!machineId) throw new Error("machine is not exit");
                         const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
                         await sEnt.sync();
 
-                       // sign
+                        // sign
 
-                       const run = await sEnt.findOne({order:[['id', 'desc']]});
-                       console.log(`run der`, run);
-                       
-                       const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
-                       console.log(`calculate der`, calculate);
-                       const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
+                        const run = await sEnt.findOne({ order: [['id', 'desc']] });
+                        console.log(`run der`, run);
+
+                        const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
+                        console.log(`calculate der`, calculate);
+                        const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
                         console.log(`sign der`, sign);
                         console.log(`d data der`, d.data);
-                       if (run == null) {
+                        if (run == null) {
 
                             sEnt.create({
-                                data:d.data,
-                                hashM:sign,
-                                hashP:'null'
-                            }).then(r =>  {
+                                data: d.data,
+                                hashM: sign,
+                                hashP: 'null'
+                            }).then(r => {
                                 console.log(`save stock successxxxxxx`);
                             }).catch(error => console.log(`save stock fail`));
 
-                       } else{
+                        } else {
 
-                        sEnt.create({
-                            data:d.data,
-                            hashM: sign,
-                            hashP: run.hashM
-                        }).then(r =>  {
-                            console.log(`save stock successxxx`);
-                        }).catch(error => console.log(`save stock fail`));
+                            sEnt.create({
+                                data: d.data,
+                                hashM: sign,
+                                hashP: run.hashM
+                            }).then(r => {
+                                console.log(`save stock successxxx`);
+                            }).catch(error => console.log(`save stock fail`));
 
-                       }
+                        }
 
-                       console.log(`----> machine id der`, machineId.machineId);
-                        
+                        console.log(`----> machine id der`, machineId.machineId);
+
                         res.send(
                             PrintSucceeded(
                                 "saveMachineSale",
                                 writeMachineSale(machineId.machineId, JSON.stringify(d.data)),
                                 EMessage.succeeded
-                                ,returnLog(req,res)
+                                , returnLog(req, res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1821,7 +1821,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
                             await sEnt.sync();
 
-                            list = await sEnt.findOne({order:[['id', 'desc']]});
+                            list = await sEnt.findOne({ order: [['id', 'desc']] });
                         }
 
                         res.send(
@@ -1829,12 +1829,12 @@ export class InventoryZDM8 implements IBaseClass {
                                 "readMachineSale",
                                 JSON.parse(list),
                                 EMessage.succeeded
-                                ,returnLog(req,res)
+                                , returnLog(req, res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1856,16 +1856,16 @@ export class InventoryZDM8 implements IBaseClass {
                                 "readMachineSale",
                                 JSON.parse(await readMachineSale(machineId)),
                                 EMessage.succeeded
-                                ,returnLog(req,res)
+                                , returnLog(req, res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
-            
+
 
             router.post(
                 this.path + "/refillMachineSale",
@@ -1883,24 +1883,24 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.franchisestock + "_" + machineId.machineId,
                             dbConnection
                         );
-                       await  sEnt.sync();
+                        await sEnt.sync();
 
-                       // sign
+                        // sign
 
-                       const c =await sEnt.findOne({order:[['id', 'desc']]});
-                      
-                        
+                        const c = await sEnt.findOne({ order: [['id', 'desc']] });
+
+
                         res.send(
                             PrintSucceeded(
                                 "refillMachineSale",
                                 c.data,
                                 EMessage.succeeded
-                                ,returnLog(req,res)
+                                , returnLog(req, res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1928,12 +1928,12 @@ export class InventoryZDM8 implements IBaseClass {
                                 "readMachineSale",
                                 JSON.parse(await readMachineSale(machineId.machineId)),
                                 EMessage.succeeded
-                                ,returnLog(req,res)
+                                , returnLog(req, res)
                             )
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -1946,8 +1946,8 @@ export class InventoryZDM8 implements IBaseClass {
             // owner has to request to purchase 
             // pay
             // hangmi update sale with the purchasing request
-           // save to database
-           // cui request to update ( refresh, refill)
+            // save to database
+            // cui request to update ( refresh, refill)
 
 
 
@@ -1973,16 +1973,16 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         this.loadVendingMachineSaleBillReport(parmas).then(run => {
                             if (run.message != IENMessage.success) {
-                                res.send(PrintError("report", run, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
                                 return;
                             }
-                            res.send(PrintSucceeded("report", run, EMessage.succeeded,returnLog(req,res)));
+                            res.send(PrintSucceeded("report", run, EMessage.succeeded, returnLog(req, res)));
                         }).catch(error => {
-                            res.send(PrintError("report", error, EMessage.error,returnLog(req,res,true)));
+                            res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
                         });
-                        
+
                     } catch (error) {
-                        res.send(PrintError("report", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -2001,7 +2001,7 @@ export class InventoryZDM8 implements IBaseClass {
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const machineId=this.ssocket.findMachineIdToken(d.token);
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
                         if (!machineId) throw new Error("machine is not exit");
                         const m = await machineClientIDEntity.findOne({
                             where: {
@@ -2017,18 +2017,18 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives },machineId:machineId.machineId } })
+                            .findAll({ where: { isActive: { [Op.or]: actives }, machineId: machineId.machineId } })
                             .then((r) => {
-                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded,returnLog(req,res)));
+                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 console.log("error list sale", e);
 
-                                res.send(PrintError("listSale", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("listSale", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -2081,16 +2081,16 @@ export class InventoryZDM8 implements IBaseClass {
                                     });
                                 }
                                 res.send(
-                                    PrintSucceeded("listSaleByMachine", array, EMessage.succeeded,returnLog(req,res))
+                                    PrintSucceeded("listSaleByMachine", array, EMessage.succeeded, returnLog(req, res))
                                 );
                             })
                             .catch((e) => {
                                 console.log("error listSaleByMachine", e);
-                                res.send(PrintError("listSaleByMachine", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("listSaleByMachine", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSaleByMachine", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("listSaleByMachine", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -2105,7 +2105,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("reportStock", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("reportStock", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -2145,11 +2145,11 @@ export class InventoryZDM8 implements IBaseClass {
                         o.ownerUuid = ownerUuid || "";
                         if (!o.otp || !o.machineId)
                             return res.send(
-                                PrintError("addMachine", [], EMessage.bodyIsEmpty,returnLog(req,res,true))
+                                PrintError("addMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
                             );
                         if (o.machineId.length != 8 || Number.isNaN(o.machineId) || Number.isNaN(o.otp))
                             return res.send(
-                                PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP,returnLog(req,res,true))
+                                PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP, returnLog(req, res, true))
                             );
 
                         const x = await this.machineClientlist.findOne({
@@ -2161,20 +2161,20 @@ export class InventoryZDM8 implements IBaseClass {
                                 .create(o)
                                 .then((r) => {
                                     this.refreshMachines();
-                                    res.send(PrintSucceeded("addMachine", r, EMessage.succeeded,returnLog(req,res)));
+                                    res.send(PrintSucceeded("addMachine", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
                                     console.log(e);
-                                    res.send(PrintError("addMachine", e, EMessage.error,returnLog(req,res,true)));
+                                    res.send(PrintError("addMachine", e, EMessage.error, returnLog(req, res, true)));
                                 });
                         } else {
                             res.send(
-                                PrintError("addMachine", "Machine ID exist", EMessage.error,returnLog(req,res,true))
+                                PrintError("addMachine", "Machine ID exist", EMessage.error, returnLog(req, res, true))
                             );
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -2194,7 +2194,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("updateMachine", [], EMessage.notfound,returnLog(req,res,true))
+                                        PrintError("updateMachine", [], EMessage.notfound, returnLog(req, res, true))
                                     );
                                 r.otp = o.otp ? o.otp : r.otp;
                                 // r.machineId = o.machineId ? o.machineId : r.machineId;
@@ -2206,24 +2206,24 @@ export class InventoryZDM8 implements IBaseClass {
                                         "updateMachine",
                                         await r.save(),
                                         EMessage.succeeded
-                                        ,returnLog(req,res)
+                                        , returnLog(req, res)
                                     )
                                 );
                                 this.refreshMachines();
                             })
                             .catch((e) => {
                                 console.log("Error updateMachine", e);
-                                res.send(PrintError("updateMachine", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("updateMachine", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("updateMachine", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("updateMachine", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
             router.post(
                 this.path + "/updateMachineSetting",
-               
+
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
@@ -2242,7 +2242,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("updateMachineSetting", [], EMessage.notfound,returnLog(req,res,true))
+                                        PrintError("updateMachineSetting", [], EMessage.notfound, returnLog(req, res, true))
                                     );
                                 if (!r.data) r.data = [];
 
@@ -2260,22 +2260,22 @@ export class InventoryZDM8 implements IBaseClass {
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
 
-                                const imgh = o.data[0]?.imgHeader ;
-                                const imgf = o.data[0]?.imgFooter ;
-                                const imgl = o.data[0]?.imgLogo ;
+                                const imgh = o.data[0]?.imgHeader;
+                                const imgf = o.data[0]?.imgFooter;
+                                const imgl = o.data[0]?.imgLogo;
                                 let t = o.data[0]?.imei || '';
-                                if(t&&t.length<8){
+                                if (t && t.length < 8) {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l ,imei:t,imgHeader:imgh,imgFooter:imgf,imgLogo:imgl};
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl };
                                     r.data.push(a);
                                 }
-                                else { 
-                                    a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l  ,a.imei=t;
-                                    a.imgHeader=imgh;
-                                    a.imgFooter=imgf;
-                                    a.imgLogo=imgl;
+                                else {
+                                    a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l, a.imei = t;
+                                    a.imgHeader = imgh;
+                                    a.imgFooter = imgf;
+                                    a.imgLogo = imgl;
                                 }
 
                                 // r.data = [a];
@@ -2288,7 +2288,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         "updateMachineSetting",
                                         await r.save(),
                                         EMessage.succeeded
-                                        ,returnLog(req,res)
+                                        , returnLog(req, res)
                                     )
                                 );
                                 this.refreshMachines();
@@ -2296,11 +2296,11 @@ export class InventoryZDM8 implements IBaseClass {
                             })
                             .catch((e) => {
                                 console.log("Error updateMachineSetting", e);
-                                res.send(PrintError("updateMachineSetting", e, EMessage.error,returnLog(req,res,true)));
+                                res.send(PrintError("updateMachineSetting", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("updateMachineSetting", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("updateMachineSetting", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -2322,7 +2322,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("disableMachine", [], EMessage.notfound,returnLog(req,res,true))
+                                        PrintError("disableMachine", [], EMessage.notfound, returnLog(req, res, true))
                                     );
                                 r.isActive = isActive;
                                 // r.changed('isActive',true);
@@ -2332,17 +2332,17 @@ export class InventoryZDM8 implements IBaseClass {
                                         "disableMachine",
                                         await r?.save(),
                                         EMessage.succeeded
-                                        ,returnLog(req,res)
+                                        , returnLog(req, res)
                                     )
                                 );
                             })
                             .catch((e) => {
                                 console.log("Error disableMachine", e);
-                                res.send(PrintError("disableMachine", e, EMessage.error,returnLog(req,res)));
+                                res.send(PrintError("disableMachine", e, EMessage.error, returnLog(req, res)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("disableMachine", error, EMessage.error,returnLog(req,res,true)));
+                        res.send(PrintError("disableMachine", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
@@ -2353,7 +2353,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
-                
+
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
@@ -2366,20 +2366,20 @@ export class InventoryZDM8 implements IBaseClass {
 
                         this.machineClientlist.findAll({
                             where: {
-                                ownerUuid, 
+                                ownerUuid,
                                 isActive: { [Op.or]: actives }
                             }
                         }).then((r) => {
-                            res.send(PrintSucceeded("listMachine", r, EMessage.succeeded,returnLog(req,res,true)));
+                            res.send(PrintSucceeded("listMachine", r, EMessage.succeeded, returnLog(req, res, true)));
                         })
-                        .catch((e) => {
-                            console.log("Error list machine", e);
-                            res.send(PrintError("listMachine", e, EMessage.error,returnLog(req,res,true)));
-                        });
-                        
+                            .catch((e) => {
+                                console.log("Error list machine", e);
+                                res.send(PrintError("listMachine", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listMachine", error, EMessage.error,returnLog(req,res)));
+                        res.send(PrintError("listMachine", error, EMessage.error, returnLog(req, res)));
                     }
                 }
             );
@@ -2412,7 +2412,7 @@ export class InventoryZDM8 implements IBaseClass {
     authorizeSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             console.log('authorizeSuperAdmin');
-            if(!res.locals["superadmin"])throw new Error('You are not superadmin');
+            if (!res.locals["superadmin"]) throw new Error('You are not superadmin');
             next();
 
         } catch (error) {
@@ -2424,7 +2424,7 @@ export class InventoryZDM8 implements IBaseClass {
     authorizeSubAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             console.log('authorizeSubAdmin');
-            if(!res.locals["subadmin"])throw new Error('You are not Sub admin');
+            if (!res.locals["subadmin"]) throw new Error('You are not Sub admin');
             next();
 
         } catch (error) {
@@ -2436,19 +2436,26 @@ export class InventoryZDM8 implements IBaseClass {
     checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             console.log('checkSupAdmin');
-                const token = req.body.token;
-                const phoneNumber = req.body.shopPhonenumber+'';
-                if (!token) throw new Error(EMessage.tokenNotFound);
-                findRealDB(token).then( (r) => {
-                    const uuid = r;
-                    if (!uuid) throw new Error(EMessage.notfound);
-                    // req['gamerUuid'] = gamerUuid;
-                    res.locals["superadmin"] = uuid;
-                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r=>{
-                        res.locals["ownerUuid"] =r;
-                     });  
+            const token = req.body.token;
+            const phoneNumber = req.body.shopPhonenumber + '';
+            if (!token) throw new Error(EMessage.tokenNotFound);
+            findRealDB(token).then((r) => {
+                const uuid = r;
+                if (!uuid) throw new Error(EMessage.notfound);
+                // req['gamerUuid'] = gamerUuid;
+                res.locals["superadmin"] = uuid;
+                if (phoneNumber) {
+                    findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
+                        res.locals["ownerUuid"] = r;
+                        next();
+                    });
+                } else {
+                    res.locals["ownerUuid"] = uuid;
                     next();
-                })
+                }
+
+
+            })
                 .catch((e) => {
                     console.log(e);
                     res.status(400).end();
@@ -2462,65 +2469,71 @@ export class InventoryZDM8 implements IBaseClass {
     }
     checkSubAdmin(req: Request, res: Response, next: NextFunction) {
         console.log('checkSubAdmin');
-        
-            try {
-                if (res.locals['ownerUuid']) {
-                    next();
-                } 
-                else {
-                    const token = req.body.token;
-                    const phoneNumber = req.body.shopPhonenumber+'';
-                    if (!token) throw new Error(EMessage.tokenNotFound);
-                    findRealDB(token).then( (r) => {
-                        const uuid = r;
-                        if (!uuid) throw new Error(EMessage.notfound);
-                        // req['gamerUuid'] = gamerUuid;
-                        res.locals["subadmin"] = uuid;
-                          findUuidByPhoneNumberOnUserManager(phoneNumber).then(r=>{
-                            const ownerUuid=r;
-                            if(ownerUuid){
-                            subadminEntity.findOne({ where: { data: { uuid },ownerUuid } }).then(subadmin => {
-                                if(subadmin != null) {
-                                    res.locals["ownerUuid"] = subadmin.ownerUuid;
-                                }else{
-                                    res.locals["ownerUuid"]=uuid;
-                                    res.locals["subadmin"] = '';
-                                }
+
+        try {
+            if (res.locals['ownerUuid']) {
+                next();
+            }
+            else {
+                const token = req.body.token;
+                const phoneNumber = req.body.shopPhonenumber + '';
+                if (!token) throw new Error(EMessage.tokenNotFound);
+                findRealDB(token).then((r) => {
+                    const uuid = r;
+                    if (!uuid) throw new Error(EMessage.notfound);
+                    // req['gamerUuid'] = gamerUuid;
+                    res.locals["subadmin"] = uuid;
+                    if (phoneNumber) {
+                        findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
+                            const ownerUuid = r;
+                            if (ownerUuid) {
+                                subadminEntity.findOne({ where: { data: { uuid }, ownerUuid } }).then(subadmin => {
+                                    if (subadmin != null) {
+                                        res.locals["ownerUuid"] = subadmin.ownerUuid;
+                                    } else {
+                                        res.locals["ownerUuid"] = uuid;
+                                        res.locals["subadmin"] = '';
+                                    }
+                                    next();
+                                }).catch(error => {
+                                    console.log(error);
+                                    res.status(400).end();
+                                });
+                            } else {
+                                res.locals["ownerUuid"] = uuid;
+                                res.locals["subadmin"] = '';
                                 next();
-                            }).catch(error => {
-                                console.log(error);
-                                res.status(400).end();
-                            });
-                        }else{
-                            res.locals["ownerUuid"]=uuid; 
-                            res.locals["subadmin"] = '';
-                            next();
-                        }
+                            }
                         });
-                        
-                        
-        
-                    })
+                    } else {
+                        res.locals["ownerUuid"] = uuid;
+                        res.locals["subadmin"] = '';
+                        next();
+                    }
+
+
+
+
+                })
                     .catch((e) => {
                         console.log(e);
                         res.status(400).end();
                     });
-                }
-
-            } catch (error) {
-                console.log(error);
-
-                res.status(400).end();
             }
+
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).end();
         }
+    }
     checkAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             console.log('checkAdmin');
             if (res.locals['ownerUuid']) {
                 next();
-            } 
-            else 
-            {
+            }
+            else {
                 const token = req.body.token;
                 if (!token) throw new Error(EMessage.tokenNotFound);
                 findRealDB(token)
@@ -2544,7 +2557,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
 
 
-   
+
     getBillProcess(cb: (b: IBillProcess[]) => void) {
         const k = "clientResponse";
         try {
@@ -2709,201 +2722,201 @@ export class InventoryZDM8 implements IBaseClass {
                     that.ssocket.listOnlineMachines()
                 );
 
-                    // create new bill for new credit
-                    if (!machineId) throw new Error("machine is not exist");
-                    const sock = that.ssocket.findOnlneMachine(machineId.machineId);
-                    if (!sock) throw new Error("machine is not online");
-                    if (d?.token) {
-                        console.log("billCashIn", d?.data);
+                // create new bill for new credit
+                if (!machineId) throw new Error("machine is not exist");
+                const sock = that.ssocket.findOnlneMachine(machineId.machineId);
+                if (!sock) throw new Error("machine is not online");
+                if (d?.token) {
+                    console.log("billCashIn", d?.data);
 
-                        // *** cash in here
-                        const bn = { amount: cashInValue, channel: -1 * cashInValue, value: cashInValue } as IBankNote;
+                    // *** cash in here
+                    const bn = { amount: cashInValue, channel: -1 * cashInValue, value: cashInValue } as IBankNote;
 
-                        // start Cash In MMoney
-                        // ##here
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        if (!machineId) throw new Error("Invalid token");
-                        let a = machineId?.data?.find(v => v.settingName == 'setting');
-                        let mId=a?.imei+''; // for MMoney need 10 digits\
-                        if(!mId) throw new Error('MMoney need IMEI');
-                        const x = new Date().getTime();
-                        const transactionID =  String(mId.substring(mId.length - 10)) + (x+'').substring(2);
+                    // start Cash In MMoney
+                    // ##here
+                    const machineId = this.ssocket.findMachineIdToken(d.token);
+                    if (!machineId) throw new Error("Invalid token");
+                    let a = machineId?.data?.find(v => v.settingName == 'setting');
+                    let mId = a?.imei + ''; // for MMoney need 10 digits\
+                    if (!mId) throw new Error('MMoney need IMEI');
+                    const x = new Date().getTime();
+                    const transactionID = String(mId.substring(mId.length - 10)) + (x + '').substring(2);
 
-                        const params = {
-                            cash: cashInValue,
-                            description: "LAAB CASH OUT TO MMONEY",
-                            machineId: machineId.machineId,
-                        };
-                        const func = new MmoneyTransferValidationFunc();
+                    const params = {
+                        cash: cashInValue,
+                        description: "LAAB CASH OUT TO MMONEY",
+                        machineId: machineId.machineId,
+                    };
+                    const func = new MmoneyTransferValidationFunc();
 
-                        console.log(`creditMachineMMoney`, 1);
+                    console.log(`creditMachineMMoney`, 1);
 
-                        func.Init(params).then(run => {
-                            if (run.message != IENMessage.success) return resolve(run);
-                            const ifError = run.ifError;
-                            delete run.ifError;
-                            let model = {
-                                ownerUuid: run.ownerUuid,
-                                data: {
-                                    phonenumber: phonenumber,
-                                    transactionID: transactionID,
-                                    cashInValue: cashInValue,
-                                    description: params.description,
-                                    machineId: machineId.machineId
-                                },
-                                LAAB: run.h,
-                                MMoney: {},
-                                message: ''
-                            }
-                            
-                            console.log(`creditMachineMMoney`, 2);
+                    func.Init(params).then(run => {
+                        if (run.message != IENMessage.success) return resolve(run);
+                        const ifError = run.ifError;
+                        delete run.ifError;
+                        let model = {
+                            ownerUuid: run.ownerUuid,
+                            data: {
+                                phonenumber: phonenumber,
+                                transactionID: transactionID,
+                                cashInValue: cashInValue,
+                                description: params.description,
+                                machineId: machineId.machineId
+                            },
+                            LAAB: run.h,
+                            MMoney: {},
+                            message: ''
+                        }
 
-                            machineCashoutMMoneyEntity.create(model).then(run_createLAABLog => {
-                                console.log(`creditMachineMMoney`, 3, run_createLAABLog);
-                                if (!run_createLAABLog) return resolve(IENMessage.createLAABBillFail);
-                                machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
-                                    console.log(`creditMachineMMoney`, 4, run_findbill);
-                                    if (run_findbill == null) return resolve(IENMessage.notFoundBill);
-                                    this.refillMMoney(phonenumber,  transactionID, cashInValue, params.description).then(refill => {
-                                        console.log(`creditMachineMMoney`, 5, refill);
-                                        machineCashoutMMoneyEntity.update({ MMoney: refill }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
+                        console.log(`creditMachineMMoney`, 2);
+
+                        machineCashoutMMoneyEntity.create(model).then(run_createLAABLog => {
+                            console.log(`creditMachineMMoney`, 3, run_createLAABLog);
+                            if (!run_createLAABLog) return resolve(IENMessage.createLAABBillFail);
+                            machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
+                                console.log(`creditMachineMMoney`, 4, run_findbill);
+                                if (run_findbill == null) return resolve(IENMessage.notFoundBill);
+                                this.refillMMoney(phonenumber, transactionID, cashInValue, params.description).then(refill => {
+                                    console.log(`creditMachineMMoney`, 5, refill);
+                                    machineCashoutMMoneyEntity.update({ MMoney: refill }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
+                                        console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                        if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
+                                        model.MMoney = refill;
+                                        model.message = IENMessage.success;
+                                        console.log(`creditMachineMMoney`, 7);
+                                        resolve(model);
+                                    }).catch(error => resolve(error.message));
+                                }).catch(error => {
+
+                                    // if transfer mmoney fail laab mmoney finance will auto transfer back to vending
+                                    const params = ifError;
+
+                                    console.log(`params error der`, params);
+                                    axios.post(LAAB_CoinTransfer, params).then(run_return => {
+                                        console.log(`return error 1`, run_return.data);
+
+                                        // if transfer back fail database will save data log
+                                        if (run_return.data.status != 1) {
+                                            console.log(`return error`, run_return.data);
+                                            machineCashoutMMoneyEntity.update({ LAABReturn: run_return.data }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
+                                                console.log(`save return bill br sum led`, run_return.data);
+                                                if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
+                                                resolve(error.message);
+                                            }).catch(error => resolve(error.message));
+                                        }
+
+                                        // if transfer back success database will save hash and info
+                                        const h = {
+                                            hash: run_return.data.info.hash,
+                                            info: run_return.data.info.info
+                                        }
+                                        machineCashoutMMoneyEntity.update({ LAABReturn: h }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
                                             console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                             if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
-                                            model.MMoney = refill;
-                                            model.message = IENMessage.success;
-                                            console.log(`creditMachineMMoney`, 7);
-                                            resolve(model);
-                                        }).catch(error => resolve(error.message));
+                                            writeMachineBalance(ifError.machineId, ifError.vendingBalance);
+                                            resolve(error.message);
+                                        }).catch(error => resolve(`update bill return br sum led 001` + error.message));
+
                                     }).catch(error => {
 
-                                        // if transfer mmoney fail laab mmoney finance will auto transfer back to vending
-                                        const params = ifError;
+                                        // if transfer back and everything fail database will save error data
+                                        machineCashoutMMoneyEntity.update({ LAABReturn: error.message }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
 
-                                        console.log(`params error der`, params);
-                                        axios.post(LAAB_CoinTransfer, params).then(run_return => {
-                                            console.log(`return error 1`, run_return.data);
-
-                                            // if transfer back fail database will save data log
-                                            if (run_return.data.status != 1) {
-                                                console.log(`return error`, run_return.data);
-                                                machineCashoutMMoneyEntity.update({ LAABReturn: run_return.data }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-                                                    console.log(`save return bill br sum led`, run_return.data);
-                                                    if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
-                                                    resolve(error.message);
-                                                }).catch(error => resolve(error.message));
-                                            }
-
-                                            // if transfer back success database will save hash and info
-                                            const h = {
-                                                hash:run_return.data.info.hash,
-                                                info:run_return.data.info.info
-                                            }
-                                            machineCashoutMMoneyEntity.update({ LAABReturn: h }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-                                                console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
-                                                if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
-                                                writeMachineBalance(ifError.machineId, ifError.vendingBalance);
-                                                resolve(error.message);
-                                            }).catch(error => resolve(`update bill return br sum led 001` + error.message));
-
-                                        }).catch(error => {
-                                            
-                                            // if transfer back and everything fail database will save error data
-                                            machineCashoutMMoneyEntity.update({ LAABReturn: error.message }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-
-                                                console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
-                                                if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
-                                                resolve(error.message);
-                                            }).catch(error => resolve(`update bill return br sum led 002`+ error.message));
-                                        });
-                        
+                                            console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                            if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
+                                            resolve(error.message);
+                                        }).catch(error => resolve(`update bill return br sum led 002` + error.message));
                                     });
-                                }).catch(error => resolve(error.message));
+
+                                });
                             }).catch(error => resolve(error.message));
                         }).catch(error => resolve(error.message));
+                    }).catch(error => resolve(error.message));
 
 
-                        // **** old function ****
-                        // this.refillMMoney(phonenumber,  transactionID, cashInValue, 'LAAB CASH OUT TO MMONEY').then(rm => {
+                    // **** old function ****
+                    // this.refillMMoney(phonenumber,  transactionID, cashInValue, 'LAAB CASH OUT TO MMONEY').then(rm => {
 
-                        //     // start transfer in LAAB -- TO MMONEY WALLET
-                        //     const func = new CashinValidationFunc();
-                        //     const params = {
-                        //         cash: cashInValue,
-                        //         description: "VENDING LAAB CASH IN",
-                        //         machineId: machineId.machineId,
-                        //     };
-                        //     console.log(`cash in validation params`, params);
-                        //     func
-                        //         .Init(params)
-                        //         .then((run) => {
-                        //             console.log('RECORD THIS TRANSACTIION AS IT has been doen');
-                        //             // finish the process allow next queque 
-                        //             console.log('finish the process allow next queque ');
-                        //             writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
-                        //             console.log(`response cash in validation`, run);
-                        //             if (run.message != IENMessage.success) throw new Error(run);
-                        //             bsi.bankNotes.push(bn);
-                        //             res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
-                        //             that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
-                        //             console.log(`sw sender`, d.command, res.data);
-                        //             // redisClient.set('_balance_' + ws['clientId'], bn.value);
-                        //             // writeMachineBalance(machineId.machineId, bn.value + '');
-                        //             readMachineSetting(machineId.machineId).then(async r => {
-                        //                 let setting = {} as any
-                        //                 if (r) {
-                        //                     try {
-                        //                         setting = JSON.parse(r);
-                        //                     } catch (error) {
-                        //                         console.log('error parsing setting 2', error);
-                        //                         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;
-                        //                         return reject(error);
-                        //                     }
-                        //                 }
-                        //                 // const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
-                        //                 // const limiter = await readMachineLimiter(machineId.machineId);
+                    //     // start transfer in LAAB -- TO MMONEY WALLET
+                    //     const func = new CashinValidationFunc();
+                    //     const params = {
+                    //         cash: cashInValue,
+                    //         description: "VENDING LAAB CASH IN",
+                    //         machineId: machineId.machineId,
+                    //     };
+                    //     console.log(`cash in validation params`, params);
+                    //     func
+                    //         .Init(params)
+                    //         .then((run) => {
+                    //             console.log('RECORD THIS TRANSACTIION AS IT has been doen');
+                    //             // finish the process allow next queque 
+                    //             console.log('finish the process allow next queque ');
+                    //             writeACKConfirmCashIn(phonenumber + '' + d.transactionID);
+                    //             console.log(`response cash in validation`, run);
+                    //             if (run.message != IENMessage.success) throw new Error(run);
+                    //             bsi.bankNotes.push(bn);
+                    //             res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
+                    //             that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
+                    //             console.log(`sw sender`, d.command, res.data);
+                    //             // redisClient.set('_balance_' + ws['clientId'], bn.value);
+                    //             // writeMachineBalance(machineId.machineId, bn.value + '');
+                    //             readMachineSetting(machineId.machineId).then(async r => {
+                    //                 let setting = {} as any
+                    //                 if (r) {
+                    //                     try {
+                    //                         setting = JSON.parse(r);
+                    //                     } catch (error) {
+                    //                         console.log('error parsing setting 2', error);
+                    //                         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;
+                    //                         return reject(error);
+                    //                     }
+                    //                 }
+                    //                 // const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
+                    //                 // const limiter = await readMachineLimiter(machineId.machineId);
 
-                        //                 // that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
-                        //                 ws.send(
-                        //                     JSON.stringify(
-                        //                         PrintSucceeded(d.command, res, EMessage.succeeded)
-                        //                     )
-                        //                 )
-                        //                 return resolve(rm)
-                        //             })
-                        //         })
-                        //         .catch((error) => {
-                        //             console.log(`error cash in validation`, error.message);
-                        //             bsi.badBankNotes.push(bn);
-                        //             res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
-                        //             that.updateBadBillCash(bsi, machineId?.machineId, bsi?.transactionID);
+                    //                 // that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
+                    //                 ws.send(
+                    //                     JSON.stringify(
+                    //                         PrintSucceeded(d.command, res, EMessage.succeeded)
+                    //                     )
+                    //                 )
+                    //                 return resolve(rm)
+                    //             })
+                    //         })
+                    //         .catch((error) => {
+                    //             console.log(`error cash in validation`, error.message);
+                    //             bsi.badBankNotes.push(bn);
+                    //             res.data = { clientId: ws["clientId"], billCashIn: bsi, bn };
+                    //             that.updateBadBillCash(bsi, machineId?.machineId, bsi?.transactionID);
 
-                        //             if (error.transferFail == true) {
-                        //                 console.log(`error`, error.message);
-                        //                 this.updateInsuffBillCash(bsi);
+                    //             if (error.transferFail == true) {
+                    //                 console.log(`error`, error.message);
+                    //                 this.updateInsuffBillCash(bsi);
 
-                        //             }
+                    //             }
 
-                        //             ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
-                        //             return reject(error);
-                        //         });
+                    //             ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
+                    //             return reject(error);
+                    //         });
 
-                        // }).catch(e => {
-                        //     console.log('refillMMoney', e);
-                        //     reject(e);
-                        // })
+                    // }).catch(e => {
+                    //     console.log('refillMMoney', e);
+                    //     reject(e);
+                    // })
 
 
 
-                        // const requestor = this.requestors.find(v => v.transID == d.data.transID);
+                    // const requestor = this.requestors.find(v => v.transID == d.data.transID);
 
-                        // if (!requestor) throw new Error('Requestor is not exist');
-                    } else {
-                        // throw new Error(EMessage.MachineIdNotFound)
-                        ws.send(
-                            JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound,null))
-                        );
-                        return reject(new Error('Token not FOUND'));
-                    }
+                    // if (!requestor) throw new Error('Requestor is not exist');
+                } else {
+                    // throw new Error(EMessage.MachineIdNotFound)
+                    ws.send(
+                        JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound, null))
+                    );
+                    return reject(new Error('Token not FOUND'));
+                }
             } catch (error) {
                 console.log('error credit machine', error,);
                 return reject(error);
@@ -2918,7 +2931,7 @@ export class InventoryZDM8 implements IBaseClass {
             let machineId = this.ssocket.findMachineIdToken(d.token);
             let ack = await readACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
 
-            if (ack!='yes') {
+            if (ack != 'yes') {
                 // double check in database
                 const r = await this.loadBillCash(machineId.machineId, d.transactionID)
                 if (r?.length) {
@@ -2937,8 +2950,8 @@ export class InventoryZDM8 implements IBaseClass {
             const ws = that.wsClient.find(
                 (v) => v["machineId"] == machineId.machineId + ""
             );
-            let wsclientId='';
-            if(ws)wsclientId=ws["clientId"];
+            let wsclientId = '';
+            if (ws) wsclientId = ws["clientId"];
             const res = {} as IResModel;
 
             res.command = d.command;
@@ -2952,7 +2965,7 @@ export class InventoryZDM8 implements IBaseClass {
             console.log('FOUND ACK EXIST TRANSACTIONID', ack, d.transactionID);
 
             const bsi = {} as IBillCashIn;
-            bsi.clientId =wsclientId;
+            bsi.clientId = wsclientId;
             bsi.createdAt = new Date();
             bsi.updatedAt = bsi.createdAt;
             bsi.transactionID = d.transactionID;
@@ -2972,7 +2985,7 @@ export class InventoryZDM8 implements IBaseClass {
             // bsi.requestor = requestor;
             bsi.machineId = machineId.machineId;
 
-            if (ack=='yes') {
+            if (ack == 'yes') {
                 // reconfirm
                 readMachineSetting(machineId.machineId).then(async r => {
                     let setting = {} as any
@@ -2981,7 +2994,7 @@ export class InventoryZDM8 implements IBaseClass {
                             setting = JSON.parse(r);
                         } catch (error) {
                             console.log('error parsing setting 2', error);
-                            setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
+                            setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
                         }
                     }
                     const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
@@ -2991,7 +3004,7 @@ export class InventoryZDM8 implements IBaseClass {
                     that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
                     ws?.send(
                         JSON.stringify(
-                            PrintSucceeded(d.command, res, EMessage.succeeded,null)
+                            PrintSucceeded(d.command, res, EMessage.succeeded, null)
                         )
                     )
                     // finish the process allow next queque with exist TransactionID
@@ -3022,7 +3035,7 @@ export class InventoryZDM8 implements IBaseClass {
                     if (hn == undefined || Object.entries(hn).length == 0) {
                         ws?.send(
                             JSON.stringify(
-                                PrintError(d.command, [], EMessage.invalidBankNote + " 0",null)
+                                PrintError(d.command, [], EMessage.invalidBankNote + " 0", null)
                             )
                         );
                         return;
@@ -3031,7 +3044,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const bn = this.notes.find((v) => v.value == hn?.value);
                     if (bn == undefined || Object.entries(bn).length == 0) {
                         ws?.send(
-                            JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote,null))
+                            JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote, null))
                         );
                         return;
                     }
@@ -3067,7 +3080,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         setting = JSON.parse(r);
                                     } catch (error) {
                                         console.log('error parsing setting 2', error);
-                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
+                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
                                     }
                                 }
                                 const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
@@ -3076,7 +3089,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
                                 ws?.send(
                                     JSON.stringify(
-                                        PrintSucceeded(d.command, res, EMessage.succeeded,null)
+                                        PrintSucceeded(d.command, res, EMessage.succeeded, null)
                                     )
                                 )
                             })
@@ -3092,7 +3105,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.updateInsuffBillCash(bsi);
                             }
 
-                            ws?.send(JSON.stringify(PrintError(d.command, [], error.message,null)));
+                            ws?.send(JSON.stringify(PrintError(d.command, [], error.message, null)));
                         });
 
                     // const requestor = this.requestors.find(v => v.transID == d.data.transID);
@@ -3101,7 +3114,7 @@ export class InventoryZDM8 implements IBaseClass {
                 } else {
                     // throw new Error(EMessage.MachineIdNotFound)
                     ws?.send(
-                        JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound,null))
+                        JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound, null))
                     );
                 }
             }
@@ -3625,7 +3638,7 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    refillMMoney( msisdn: string,transID:string, amount, description, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
+    refillMMoney(msisdn: string, transID: string, amount, description, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
 
         // const transID = machineId + (new Date().getTime());
         return new Promise<any>((resolve, reject) => {
@@ -3668,7 +3681,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     processRefillMmoney(msisdn: string, transID: string, value: number, remark: string, accessToken) {
         return new Promise<any>((resolve, reject) => {
-            this.requestMmoneyCashin(msisdn, transID, value,accessToken, remark).then(r => {
+            this.requestMmoneyCashin(msisdn, transID, value, accessToken, remark).then(r => {
                 console.log('DATA requestMmoneyCashin', r);
                 // {
                 //     "22162": "73494",
@@ -3963,7 +3976,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // console.log("WS HEART BEAT", data);
 
                     if (data === '{"command":"ping"}') {
-                        
+
 
                     }
                 },
@@ -4021,7 +4034,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.wsClient.push(ws);
                                 return ws.send(
                                     JSON.stringify(
-                                        PrintSucceeded(d.command, res, EMessage.succeeded,null)
+                                        PrintSucceeded(d.command, res, EMessage.succeeded, null)
                                     )
                                 );
                             } else throw new Error(EMessage.MachineIdNotFound);
@@ -4049,7 +4062,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 this.wsClient.push(ws);
                                                 ws.send(
                                                     JSON.stringify(
-                                                        PrintSucceeded(d.command, res, EMessage.succeeded,null)
+                                                        PrintSucceeded(d.command, res, EMessage.succeeded, null)
                                                     ));
                                             }
                                             else ws.close(0);
@@ -4079,7 +4092,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                             this.wsClient.push(ws);
                                                             ws.send(
                                                                 JSON.stringify(
-                                                                    PrintSucceeded(d.command, res, EMessage.succeeded,null)
+                                                                    PrintSucceeded(d.command, res, EMessage.succeeded, null)
                                                                 ));
                                                         }
                                                         else ws.close(0);
@@ -4128,7 +4141,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     let setting = {} as any;
                                     try {
                                         let y = [];
-                                        if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true,setting.imei='' }
+                                        if (!x) { setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true, setting.imei = '' }
                                         else {
                                             y = JSON.parse(x) as Array<any>;
                                             setting = y.find(v => v.settingName == 'setting');
@@ -4156,7 +4169,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         // console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
                                     } catch (error) {
                                         console.log('parsing error setting', error);
-                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000;setting.imei='';
+                                        setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
                                     }
                                     console.log('ready to pong');
                                     const limiter = setting.limiter; // TODO: Get limiter 
@@ -4167,7 +4180,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 "ping",
                                                 { command: "ping", production: this.production, balance: r, limiter, merchant, mymmachinebalance, mymlimiterbalance, setting, mstatus, mymstatus, mymsetting, mymlimiter },
                                                 EMessage.succeeded
-                                                ,null
+                                                , null
                                             )
                                         )
                                     );
@@ -4184,7 +4197,7 @@ export class InventoryZDM8 implements IBaseClass {
                         ws.close();
                     } catch (error: any) {
                         console.log(" WS error", error);
-                        ws.send(JSON.stringify(PrintError(d.command, [], error.message,null)));
+                        ws.send(JSON.stringify(PrintError(d.command, [], error.message, null)));
                     }
                 };
             });
@@ -4288,11 +4301,11 @@ export class InventoryZDM8 implements IBaseClass {
             v.destroy();
         });
     }
-    
+
     // SaveMachineSaleReport(params: ISaveMachineSaleReport): Promise<any> {
     //     return new Promise<any> (async (resolve, reject) => {
     //         try {
-                
+
     //             const timenow = new Date();
     //             const arr = params.data;
     //             if (arr != undefined && Object.entries(arr).length == 0) return resolve(IENMessage.invalidReportParameters);
@@ -4307,7 +4320,7 @@ export class InventoryZDM8 implements IBaseClass {
     //             )
 
     //             console.log(`show duplicate`, duplicate, `show unique`, unique);
-                
+
     //             // merge same order
     //             let array: Array<any> = [];
 
@@ -4329,11 +4342,11 @@ export class InventoryZDM8 implements IBaseClass {
     //                         }
 
     //                     }
-                        
+
     //                     setarray.total += setarray.qtty * setarray.price;
     //                     array.push(setarray);
     //                 }
-                    
+
     //             }
     //             else 
     //             {
@@ -4386,7 +4399,7 @@ export class InventoryZDM8 implements IBaseClass {
     // }
 
     loadVendingMachineSaleBillReport(params: ILoadVendingMachineSaleBillReport): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 const func = new loadVendingMachineSaleBillReport();
@@ -4396,7 +4409,7 @@ export class InventoryZDM8 implements IBaseClass {
                 resolve(run);
 
             } catch (error) {
-                resolve(error.message);    
+                resolve(error.message);
             }
         });
     }
@@ -4416,10 +4429,10 @@ class loadVendingMachineSaleBillReport {
     private condition: any = {} as any;
     private vendingMachineBillEntity: VendingMachineBillStatic;
     private response: any = {} as any;
-    constructor() {} 
+    constructor() { }
 
     public Init(params: ILoadVendingMachineSaleBillReport): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 this.InitParams(params);
@@ -4431,7 +4444,7 @@ class loadVendingMachineSaleBillReport {
                 if (ValidateBeginDate != IENMessage.success) throw new Error(ValidateBeginDate);
 
                 this.SetCondition();
-                
+
                 this.Connection();
 
                 const Report = await this.Report();
@@ -4483,20 +4496,19 @@ class loadVendingMachineSaleBillReport {
             this.condition = {
                 where: {
                     paymentstatus: 'paid',
-                    createdAt:{[Op.between]:[this.fromDate, this.toDate]}
+                    createdAt: { [Op.between]: [this.fromDate, this.toDate] }
                 },
-                order: [[ 'id', 'DESC' ]]
+                order: [['id', 'DESC']]
             }
         }
-        else 
-        {
+        else {
             this.condition = {
                 where: {
                     paymentstatus: 'paid',
                     machineId: this.machineId,
-                    createdAt:{[Op.between]:[this.fromDate, this.toDate]}
+                    createdAt: { [Op.between]: [this.fromDate, this.toDate] }
                 },
-                order: [[ 'id', 'DESC' ]]
+                order: [['id', 'DESC']]
             }
         }
 
@@ -4507,9 +4519,9 @@ class loadVendingMachineSaleBillReport {
     }
 
     private Report(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 const run = await this.vendingMachineBillEntity.findAndCountAll(this.condition);
                 this.response = {
                     rows: run.rows,
@@ -4524,7 +4536,7 @@ class loadVendingMachineSaleBillReport {
             }
         });
     }
-    
+
 }
 
 
