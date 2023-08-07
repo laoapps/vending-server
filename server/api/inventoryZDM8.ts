@@ -2446,7 +2446,7 @@ export class InventoryZDM8 implements IBaseClass {
                 res.locals["superadmin"] = uuid;
                 if (phoneNumber) {
                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
-                        res.locals["ownerUuid"] = r;
+                        res.locals["ownerUuid"] = r.phoneNumber;
                         next();
                     });
                 } else {
@@ -2485,7 +2485,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.locals["subadmin"] = uuid;
                     if (phoneNumber) {
                         findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
-                            const ownerUuid = r;
+                            const ownerUuid = r.phoneNumber;
                             if (ownerUuid) {
                                 subadminEntity.findOne({ where: { data: { uuid }, ownerUuid } }).then(subadmin => {
                                     if (subadmin != null) {
@@ -4068,7 +4068,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             else ws.close(0);
                                         })
                                         .catch((e) => {
-                                            console.log("Error list machine", e);
+                                            console.log("Error list machine adminlogin", e);
                                             ws.close(0);
                                         });
                                 }
@@ -4098,7 +4098,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                         else ws.close(0);
                                                     })
                                                     .catch((e) => {
-                                                        console.log("Error list machine", e);
+                                                        console.log("Error list machine adminlogin2", e);
                                                         ws.close(0);
                                                     });
                                             } catch (error) {
