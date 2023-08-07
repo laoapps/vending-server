@@ -65,6 +65,10 @@ const routes: Routes = [
   {
     path: 'ads',
     loadChildren: () => import('./ads/ads.module').then( m => m.AdsPageModule)
+  },
+  {
+    path: 'scratching',
+    loadChildren: () => import('./scratching/scratching.module').then( m => m.ScratchingPageModule)
   }
 ];
 @NgModule({

@@ -4,6 +4,7 @@ import { SettingPage } from '../setting/setting.page';
 import * as uuid from 'uuid';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { Platform } from '@ionic/angular';
+import { ScratchingPage } from '../scratching/scratching.page';
 
 @Component({
   selector: 'app-tabs',
@@ -24,6 +25,11 @@ export class TabsPage {
       }
     })
    
+  }
+  openScratch(){
+    this.api.showModal(ScratchingPage).then(r=>{
+      r.present();
+    })
   }
   count = 6;
   machineuuid = this.api.machineuuid;

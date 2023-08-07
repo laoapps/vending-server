@@ -523,6 +523,8 @@ export class Tab1Page {
     )
       return;
     const m = await this.apiService.showModal(StocksalePage);
+    this.checkActiveModal(m);
+
     m.onDidDismiss().then((r) => {
       r.data;
       console.log('manageStock', r.data);
@@ -660,6 +662,8 @@ export class Tab1Page {
                   })
                   .then((r) => {
                     r.present();
+                    this.checkActiveModal(r);
+
                   });
               });
 
@@ -720,6 +724,8 @@ export class Tab1Page {
                 })
                 .then((r) => {
                   r.present();
+                  this.checkActiveModal(r);
+
                 });
             });
           // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
@@ -1086,6 +1092,8 @@ export class Tab1Page {
           .create({ component: LaabGoPage, componentProps: props })
           .then((r) => {
             r.present();
+            this.checkActiveModal(r);
+
           });
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -1105,6 +1113,8 @@ export class Tab1Page {
           .create({ component: EpinCashOutPage, componentProps: {} })
           .then((r) => {
             r.present();
+            this.checkActiveModal(r);
+
           });
       } catch (error) {
         resolve(error.message);
@@ -1158,6 +1168,8 @@ export class Tab1Page {
             .then((r) => {
               r.present();
               resolve(IENMessage.success);
+              this.checkActiveModal(r);
+
             });
         });
       } catch (error) {
@@ -1165,6 +1177,15 @@ export class Tab1Page {
         resolve(error.message);
       }
     });
+  }
+  checkActiveModal(rx:HTMLIonModalElement){
+    const t = setInterval(() => {
+      this.autopilot.auto=0;
+    }, 1000);
+    rx.onDidDismiss().then(rx=>{
+      clearInterval(t);
+    })
+
   }
   laabCashout(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
@@ -1178,6 +1199,7 @@ export class Tab1Page {
           .then((r) => {
             r.present();
             resolve(IENMessage.success);
+            this.checkActiveModal(r);
           });
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -1193,12 +1215,15 @@ export class Tab1Page {
       if (r.status) {
         // this.apiService.dismissModal();
         this.apiService.pb = r.data as Array<IBillProcess>;
-        if (this.apiService.pb.length)
+        if (this.apiService.pb.length){
           this.apiService
             .showModal(RemainingbillsPage, { r: this.apiService.pb })
             .then((r) => {
               r.present();
+              this.checkActiveModal(r);
             });
+        }
+          
       } else {
         this.apiService.toast
           .create({ message: r.message, duration: 5000 })
@@ -1241,6 +1266,8 @@ export class Tab1Page {
           .create({ component: StackCashoutPage })
           .then((r) => {
             r.present();
+            this.checkActiveModal(r);
+
           });
 
         resolve(IENMessage.success);
@@ -1261,6 +1288,7 @@ export class Tab1Page {
     const props = {
       links: [android_link, ios_link],
     };
+
     this.apiService.modal
       .create({
         component: MmoneyIosAndroidDownloadPage,
@@ -1268,6 +1296,8 @@ export class Tab1Page {
       })
       .then((r) => {
         r.present();
+        this.checkActiveModal(r);
+
       });
   }
 
@@ -1331,7 +1361,8 @@ export class Tab1Page {
             cssClass: 'dialog-fullscreen',
           })
           .then((r) => {
-            r.present();
+            this.checkActiveModal(r);
+
           });
 
         resolve(IENMessage.success);
@@ -1354,6 +1385,8 @@ export class Tab1Page {
       .create({ component: VendingGoPage, componentProps: props })
       .then((r) => {
         r.present();
+        this.checkActiveModal(r);
+
       });
   }
   openHowToPage() {
@@ -1365,6 +1398,8 @@ export class Tab1Page {
       })
       .then((r) => {
         r.present();
+        this.checkActiveModal(r);
+
       });
   }
   openads() {
@@ -1376,6 +1411,8 @@ export class Tab1Page {
     })
     .then((r) => {
       r.present();
+      // this.checkActiveModal(r);
+
     });
   }
 }
