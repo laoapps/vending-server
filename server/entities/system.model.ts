@@ -1041,8 +1041,36 @@ export interface IBase {
 export interface IBC {
     hashP?: string;
     hashM?: string;
+}
+export interface IDoor extends IBase{
+    machineId:string;
+    door:IDoorItem
+    doorNumber:number;
+    cabinetNumber:number;
+    data:any;
+    isDone:boolean;
+    depositBy:string;
+    depositAt:Date;
+    sendBy:string;
+    sentAt:Date;
+    minValue:number;
+    maxValue:number;
 
 }
+export interface IDoorItem {
+    name:string;
+    description:string;
+    productUuid:string;
+    orderUuid:string;
+    createdAt:Date;
+    price:number;
+    expireAt:Date;
+    image:any;
+    data:any;
+}
+
+
+
 export interface ILogActivity extends IBase {
     ownerUuid: string;
     superadmin: string;
