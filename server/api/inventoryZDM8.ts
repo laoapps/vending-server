@@ -2411,6 +2411,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     authorizeSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
+            console.log('authorizeSuperAdmin');
             if(!res.locals["superadmin"])throw new Error('You are not superadmin');
             next();
 
@@ -2422,6 +2423,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     authorizeSubAdmin(req: Request, res: Response, next: NextFunction) {
         try {
+            console.log('authorizeSubAdmin');
             if(!res.locals["subadmin"])throw new Error('You are not Sub admin');
             next();
 
@@ -2433,6 +2435,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
+            console.log('checkSupAdmin');
                 const token = req.body.token;
                 const phoneNumber = req.body.shopPhonenumber+'';
                 if (!token) throw new Error(EMessage.tokenNotFound);
@@ -2456,6 +2459,8 @@ export class InventoryZDM8 implements IBaseClass {
         }
     }
     checkSubAdmin(req: Request, res: Response, next: NextFunction) {
+        console.log('checkSubAdmin');
+        
             try {
                 if (res.locals['ownerUuid']) {
                     next();
@@ -2505,6 +2510,7 @@ export class InventoryZDM8 implements IBaseClass {
         }
     checkAdmin(req: Request, res: Response, next: NextFunction) {
         try {
+            console.log('checkAdmin');
             if (res.locals['ownerUuid']) {
                 next();
             } 
