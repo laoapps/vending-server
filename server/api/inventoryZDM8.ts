@@ -2446,7 +2446,7 @@ export class InventoryZDM8 implements IBaseClass {
                 res.locals["superadmin"] = uuid;
                 if (phoneNumber) {
                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
-                        res.locals["ownerUuid"] = r.phoneNumber;
+                        res.locals["ownerUuid"] = r.uuid;
                         next();
                     });
                 } else {
@@ -2485,7 +2485,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.locals["subadmin"] = uuid;
                     if (phoneNumber) {
                         findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
-                            const ownerUuid = r.phoneNumber;
+                            const ownerUuid = r.uuid;
                             if (ownerUuid) {
                                 subadminEntity.findOne({ where: { data: { uuid }, ownerUuid } }).then(subadmin => {
                                     if (subadmin != null) {
