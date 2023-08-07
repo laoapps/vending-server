@@ -123,14 +123,22 @@ export class InventoryZDM8 implements IBaseClass {
     path = "/zdm8";
     production = true;
 
+    //// QR MMONEY HERE
     // public phonenumber = this.production ? '2052396969':'2054445447'// '2058623333' : '2054445447'; //LTC. 2058623333 //2052899515
     // public walletId = this.production ? '2599087166' : '2843759248';// LTC
     // public phonenumber = this.production ? "2052396969" : "2054445447";
-    public walletId = "2843759248";
+    // public walletId = "2843759248";
 
-    mmoneyusername = "dbk";
-    mmoneypassword = "dbk@2022";
+    // mmoneyusername = "dbk";
+    // mmoneypassword = "dbk@2022";
     // mmoneyusername= '2c7eb4906d4ab65f72fc3d3c8eebeb65';
+
+    qrmmoneywallet_id =2558105967
+    qrmmoneypassword  = 112233
+    // msisdn=2052743838  // machine 5010
+    qrmmoneyusername = '32f2d9a78d94a935e2e6052d229f301e'
+
+
     ports = 31223;
     // clientResponse = new Array<IBillProcess>();
     wsClient = new Array<WebSocket>();
@@ -151,10 +159,12 @@ export class InventoryZDM8 implements IBaseClass {
 
 
 
-    MMoneyRequesterId = 59
-    MMoneyName = 'LMM KIOS'
-    MMoneyUsername = 'lmmkios'
-    MMoneyPassword = 'Qh7~Lq9@'
+
+
+    CashInMMoneyRequesterId = 59
+    CashInMMoneMMoneyName = 'LMM KIOS'
+    CashInMMoneMMoneyUsername = 'lmmkios'
+    CashInMMoneMMoneyPassword = 'Qh7~Lq9@'
 
 
     pathMMoneyLogin = 'https://api.mmoney.la/ewallet-ltc-api/oauth/token.service';
@@ -3499,8 +3509,8 @@ export class InventoryZDM8 implements IBaseClass {
     loginQRMmoney() {
         // mmoneyusername='41f7c324712b46f08a939c4609a1d2e1';
         // mmoneypassword='112233'
-        const username = this.production ? this.mmoneyusername : "test";
-        const password = this.production ? this.mmoneypassword : "12345";
+        const username = this.production ? this.qrmmoneyusername : "test";
+        const password = this.production ? this.qrmmoneypassword : "12345";
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
@@ -3691,7 +3701,7 @@ export class InventoryZDM8 implements IBaseClass {
                 apiKey: "efca1d20e1bdfc07b249e502f007fe0c",
                 apiToken: accessToken, //this.loginTokenList.find(v => v.t == Number(transID + ''))?.m?.accessToken,
                 transID,
-                requestorID: this.production ? this.MMoneyRequesterId : 69,
+                requestorID: this.production ? this.CashInMMoneyRequesterId : 69,
                 transCashInID
             }
 
@@ -3727,8 +3737,8 @@ export class InventoryZDM8 implements IBaseClass {
             //     grant_type:'client_credentials'
             // }
             const params = new URLSearchParams();
-            params.append('username', this.production ? this.MMoneyUsername : 'Dokbuakham');
-            params.append('password', this.production ? this.MMoneyPassword : 'Ko8-En6;');
+            params.append('username', this.production ? this.CashInMMoneMMoneyUsername : 'Dokbuakham');
+            params.append('password', this.production ? this.CashInMMoneMMoneyPassword : 'Ko8-En6;');
             params.append('grant_type', 'client_credentials');
             console.log('PARAM LOGIN', url, params);
 
@@ -3766,14 +3776,14 @@ export class InventoryZDM8 implements IBaseClass {
 
         return hash;
     }
-    requestMmoneyCashin(msisdn: string, transID, value, accessToken: string, remark = this.production ? this.MMoneyName : 'Test Dorkbouakham Cash-In') {
+    requestMmoneyCashin(msisdn: string, transID, value, accessToken: string, remark = this.production ? this.CashInMMoneMMoneyName : 'Test Dorkbouakham Cash-In') {
         const url = this.production ? this.pathMMoneyRequest : 'http://115.84.121.101:31153/ewallet-ltc-api/cash-management/request-cash-in.service';
         return new Promise<IMMoneyRequestRes>((resolve, reject) => {
             let data = {
                 apiKey: "b7b7ef0830ff278262c72e57bc43d11f",
                 apiToken: accessToken,
                 transID,
-                requestorID: this.production ? this.MMoneyRequesterId : 69,
+                requestorID: this.production ? this.CashInMMoneyRequesterId : 69,
                 toAccountOption: "REF",
                 toAccountRef: msisdn,
                 transAmount: value,
