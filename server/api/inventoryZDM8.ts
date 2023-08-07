@@ -2439,12 +2439,14 @@ export class InventoryZDM8 implements IBaseClass {
                 const token = req.body.token;
                 const phoneNumber = req.body.shopPhonenumber+'';
                 if (!token) throw new Error(EMessage.tokenNotFound);
-                findRealDB(token).then(async (r) => {
+                findRealDB(token).then( (r) => {
                     const uuid = r;
                     if (!uuid) throw new Error(EMessage.notfound);
                     // req['gamerUuid'] = gamerUuid;
                     res.locals["superadmin"] = uuid;
-                    res.locals["ownerUuid"] = await findUuidByPhoneNumberOnUserManager(phoneNumber);  
+                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r=>{
+                        res.locals["ownerUuid"] =r;
+                     });  
                     next();
                 })
                 .catch((e) => {
@@ -2469,13 +2471,14 @@ export class InventoryZDM8 implements IBaseClass {
                     const token = req.body.token;
                     const phoneNumber = req.body.shopPhonenumber+'';
                     if (!token) throw new Error(EMessage.tokenNotFound);
-                    findRealDB(token).then(async (r) => {
+                    findRealDB(token).then( (r) => {
                         const uuid = r;
                         if (!uuid) throw new Error(EMessage.notfound);
                         // req['gamerUuid'] = gamerUuid;
                         res.locals["subadmin"] = uuid;
-                        const ownerUuid= await findUuidByPhoneNumberOnUserManager(phoneNumber);
-                        if(ownerUuid){
+                          findUuidByPhoneNumberOnUserManager(phoneNumber).then(r=>{
+                            const ownerUuid=r;
+                            if(ownerUuid){
                             subadminEntity.findOne({ where: { data: { uuid },ownerUuid } }).then(subadmin => {
                                 if(subadmin != null) {
                                     res.locals["ownerUuid"] = subadmin.ownerUuid;
@@ -2493,6 +2496,8 @@ export class InventoryZDM8 implements IBaseClass {
                             res.locals["subadmin"] = '';
                             next();
                         }
+                        });
+                        
                         
         
                     })
