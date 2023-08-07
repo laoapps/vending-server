@@ -18,9 +18,10 @@ export class AdsPage implements OnInit, OnDestroy {
 
   activeAdsList: any = {} as any;
   adsList: Array<any> = [
-    { name:'test',description:'test',type:'image',url:'../../assets/ads/2.png' },
-    { name:'test',description:'test',type:'image',url:'../../assets/ads/3.jpg' },
-    { name:'test',description:'test',type:'video',url:'../../assets/ads/1.webm' },
+    { id: 1, name:'test',description:'test',type:'video',url:'../../assets/ads/howtouseepin.webm' },
+    { id: 2, name:'test',description:'test',type:'video',url:'../../assets/ads/howto1.webm' },
+    { id: 3, name:'test',description:'test',type:'video',url:'../../assets/ads/howto2.webm' },
+    { id: 4, name:'test',description:'test',type:'video',url:'../../assets/ads/howto3.webm' },
   ];
 
   loop: any = {} as any;
@@ -47,7 +48,10 @@ export class AdsPage implements OnInit, OnDestroy {
         this.currentType = this.adsList[0].type;
         this.currentUrl = this.adsList[0].url;
         if (this.currentType == 'video') {
-          (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
+          let reload = setInterval(() => {
+            clearInterval(reload);
+            (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
+          });
         }
         let count: number = 0;
 
@@ -75,7 +79,7 @@ export class AdsPage implements OnInit, OnDestroy {
               });
             }
           }
-        }, 10000);
+        }, 30000);
       
         resolve(IENMessage.success);
 
