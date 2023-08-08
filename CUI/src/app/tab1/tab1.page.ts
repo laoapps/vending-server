@@ -181,17 +181,18 @@ export class Tab1Page {
         // this.loadSaleList();
         // this.initStock();
         if(this.isFirstLoad){
-          let adsOn =false
+          // let adsOn =false
           setInterval(()=>{
             if(this.autopilot.auto>=6){
               // load ads when no active
-              if(!adsOn)
+              // if(!adsOn)
               this.apiService.showModal(AdsPage).then(r=>{
                 r.present();
-                adsOn=true;
-                r.onDidDismiss().then(rx=>{
-                  adsOn=false;
-                })
+                this.checkActiveModal(r);
+                // adsOn=true;
+                // r.onDidDismiss().then(rx=>{
+                //   adsOn=false;
+                // })
               })
 
               this.apiService.soundGreeting();
