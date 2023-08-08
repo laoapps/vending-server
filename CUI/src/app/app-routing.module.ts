@@ -69,6 +69,10 @@ const routes: Routes = [
   {
     path: 'scratching',
     loadChildren: () => import('./scratching/scratching.module').then( m => m.ScratchingPageModule)
+  },
+  {
+    path: 'fortunewheel',
+    loadChildren: () => import('./fortunewheel/fortunewheel.module').then( m => m.FortunewheelPageModule)
   }
 ];
 @NgModule({

@@ -5,6 +5,7 @@ import * as uuid from 'uuid';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { Platform } from '@ionic/angular';
 import { ScratchingPage } from '../scratching/scratching.page';
+import { FortunewheelPage } from '../fortunewheel/fortunewheel.page';
 
 @Component({
   selector: 'app-tabs',
@@ -25,6 +26,11 @@ export class TabsPage {
       }
     })
    
+  }
+  openFortuneWheel(){
+    this.api.showModal(FortunewheelPage).then(r=>{
+      r.present();
+    })
   }
   openScratch(){
     this.api.showModal(ScratchingPage).then(r=>{

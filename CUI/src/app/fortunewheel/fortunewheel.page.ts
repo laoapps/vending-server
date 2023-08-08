@@ -75,18 +75,18 @@ export class FortunewheelPage implements OnInit {
     //
     // image
     const that = this;
-    const coinSize = {w:60,h:60}
-    console.log('check IMAGES');
-    if (sector.image) {
-      const img = new Image();
-      img.src = sector.image;
-      img.onload = function () {
+    // const coinSize = {w:60,h:60}
+    // console.log('check IMAGES');
+    // if (sector.image) {
+    //   const img = new Image();
+    //   img.src = sector.image;
+    //   img.onload = function () {
         
-        that.ctx.drawImage(img, that.rad , 0 , coinSize.w, coinSize.h); // Or at whatever offset you like
-        console.log('DRAW IMAGES');
-      };
+    //     that.ctx.drawImage(img, that.rad , 0 , coinSize.w, coinSize.h); // Or at whatever offset you like
+    //     console.log('DRAW IMAGES');
+    //   };
       
-    }
+    // }
     
     this.ctx.restore()
   }
