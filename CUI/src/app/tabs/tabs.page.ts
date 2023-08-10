@@ -6,6 +6,7 @@ import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { Platform } from '@ionic/angular';
 import { ScratchingPage } from '../scratching/scratching.page';
 import { FortunewheelPage } from '../fortunewheel/fortunewheel.page';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-tabs',
@@ -14,6 +15,7 @@ import { FortunewheelPage } from '../fortunewheel/fortunewheel.page';
 })
 export class TabsPage {
   version = '';
+  prod=environment.production;
   constructor(public api: ApiService, private appVersion: AppVersion,private platform:Platform) {
     this.platform.ready().then(r=>{
       if(this.platform.is('cordova')){
