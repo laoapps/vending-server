@@ -20,6 +20,7 @@ import { parse } from "url";
 import { CreateDatabase } from "./entities";
 import { LaabVendingAPI } from "./api/laab.vending";
 import { CashNV9LAAB } from "./api/cashNV9LAAB";
+import { InventoryLocker } from "./api/inventoryLocker";
 
 const f = fs.readFileSync(__dirname + "/.env", "utf8");
 const env = JSON.parse(f); //../
@@ -67,10 +68,11 @@ CreateDatabase("")
 
     const wss1 = new WebSocket.Server({ noServer: true });
     const wss2 = new WebSocket.Server({ noServer: true });
+    const wss3 = new WebSocket.Server({ noServer: true });
     //.... VENDING
     // const ssZDM8 = new SocketServerZDM8();
     const invZDM8 = new InventoryZDM8(app, wss1);
-
+    const invLocker = new InventoryLocker(app, wss3);
     //.... KIOSK
     const kioskport = process.env.KIOSKLAABPORT;
 
@@ -79,11 +81,13 @@ CreateDatabase("")
 
     // laab
     const laabVendingAPI = new LaabVendingAPI(app, invZDM8.ssocket, invZDM8);
+    const laabVendingAPI3 = new LaabVendingAPI(app, invLocker.ssocket, invLocker);
     const sss = Array<IBaseClass>();
     sss.push(
       // invM102,
       //  invVMC,
-      invZDM8
+      invZDM8,
+      invLocker
     );
   
 
