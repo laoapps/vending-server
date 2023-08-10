@@ -80,6 +80,7 @@ import {
     adsEntity,
     dbConnection,
     doorEntity,
+    doorPaymentEntity,
     laabHashService,
     machineCashoutMMoneyEntity,
     machineClientIDEntity,
@@ -875,7 +876,7 @@ export class InventoryLocker implements IBaseClass {
                             // await sEnt.sync();
                             const id = Number(req.query['id']);
                             const machineId = req.query['machineId'] + '';
-                            const d = await doorEntity.findOne({ where: { id, machineId } });
+                            const d = await doorEntity.findOne({ where: { id, machineId,ownerUuid } });
                             if (!d) PrintError("deleteDoor", [], EMessage.notexist, returnLog(req, res, true))
                             d.destroy()
                                 .then((r) => {
@@ -909,20 +910,26 @@ export class InventoryLocker implements IBaseClass {
                         const d = req.body as IReqModel;
                         const machineId = this.ssocket.findMachineIdToken(d.token);
                         const read = await readDoorDone(machineId.machineId+id);
+
+                       
                         if(read){
                             // keep unlocking
                             const o = JSON.parse(read) as IDoor
                             this.ssocket.processOrder(machineId.machineId,o.doorNumber,new Date().getTime())
                         }else{
+                            
                            doorEntity
                             .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("finishDoor", [], EMessage.error, returnLog(req, res, true))
+                                        PrintError("finishDoor not found", [], EMessage.error, returnLog(req, res, true))
                                     );
                                 console.log('finishDoor', r);
-
+                                /// check Payment has been made 
+                                const p =doorPaymentEntity.findOne({where:{machineId:machineId.machineId,isPaid:true}})
+                                /// check LAAB
+                                if(!p) return res.send(PrintError("finishDoor Payment not found", e, EMessage.error, returnLog(req, res, true)));
                                 r.isDone = true;
                                 console.log('finishDoor', r);
                                 r.changed("isDone", true);
@@ -958,6 +965,199 @@ export class InventoryLocker implements IBaseClass {
                     }
                 }
             );
+            router.post(
+                this.path + "/doorPayment",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const id = Number(req.query["id"]);
+                        const d = req.body as IReqModel;
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                       
+                           doorEntity
+                            .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("door found", [], EMessage.error, returnLog(req, res, true))
+                                    );
+                                console.log('doorPayment', r);
+                                /// check Payment has been made 
+                                const p =doorPaymentEntity.findOne({where:{machineId:machineId.machineId,isPaid:true}})
+                               
+                                if(p) return res.send(PrintError("doorPayment found", e, EMessage.error, returnLog(req, res, true)));
+                                
+                                 /// check LAAB
+                                 res.send(
+                                    PrintSucceeded(
+                                        "doorPayment",
+                                        await r.save(),
+                                        EMessage.succeeded
+                                        , returnLog(req, res)
+                                    )
+                                );
+
+                            })
+                            .catch((e) => {
+                                console.log("error doorPayment Door", e);
+
+                                res.send(PrintError("doorPayment", e, EMessage.error, returnLog(req, res, true)));
+                            }); 
+                        
+                        
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("doorPayment", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+            // unlock for deposit
+            router.post(
+                this.path + "/unlockForDeposit",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const id = Number(req.query["id"]);
+                        const d = req.body as IReqModel;
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const read = await readDoorDone(machineId.machineId+id);
+
+                       
+                        if(read){
+                            // keep unlocking
+                            const o = JSON.parse(read) as IDoor
+                            this.ssocket.processOrder(machineId.machineId,o.doorNumber,new Date().getTime())
+                        }else{
+                            
+                           doorEntity
+                            .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("finishDoor not found", [], EMessage.error, returnLog(req, res, true))
+                                    );
+                                console.log('finishDoor', r);
+                                /// check Payment has been made 
+                                const p =doorPaymentEntity.findOne({where:{machineId:machineId.machineId,isPaid:true}})
+                                /// check LAAB
+                                if(!p) return res.send(PrintError("finishDoor Payment not found", e, EMessage.error, returnLog(req, res, true)));
+                                r.isDone = true;
+                                console.log('finishDoor', r);
+                                r.changed("isDone", true);
+                                const dx = r.toJSON();
+                                dx.isDone = false;
+                                doorEntity.create(dx).then(async rx => {
+                                    console.log('clone new door exist');
+                                    writeDoorDone(machineId.machineId+id,JSON.stringify(dx));
+                                    // Unlock here                            
+                                    this.ssocket.processOrder(machineId.machineId,dx.doorNumber,new Date().getTime())
+
+                                    res.send(
+                                        PrintSucceeded(
+                                            "finishDoor",
+                                            await r.save(),
+                                            EMessage.succeeded
+                                            , returnLog(req, res)
+                                        )
+                                    );
+                                })
+
+                            })
+                            .catch((e) => {
+                                console.log("error finishDoor Door", e);
+
+                                res.send(PrintError("finishDoor", e, EMessage.error, returnLog(req, res, true)));
+                            }); 
+                        }
+                        
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("finishDoor", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            // unlock for sale
+            router.post(
+                this.path + "/unlockForSale",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const id = Number(req.query["id"]);
+                        const d = req.body as IReqModel;
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const read = await readDoorDone(machineId.machineId+id);
+
+                       
+                        if(read){
+                            // keep unlocking
+                            const o = JSON.parse(read) as IDoor
+                            this.ssocket.processOrder(machineId.machineId,o.doorNumber,new Date().getTime())
+                        }else{
+                            
+                           doorEntity
+                            .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("finishDoor not found", [], EMessage.error, returnLog(req, res, true))
+                                    );
+                                console.log('finishDoor', r);
+                                /// check Payment has been made 
+                                const p =doorPaymentEntity.findOne({where:{machineId:machineId.machineId,isPaid:true}})
+                                /// check LAAB
+                                if(!p) return res.send(PrintError("finishDoor Payment not found", e, EMessage.error, returnLog(req, res, true)));
+                                r.isDone = true;
+                                console.log('finishDoor', r);
+                                r.changed("isDone", true);
+                                const dx = r.toJSON();
+                                dx.isDone = false;
+                                doorEntity.create(dx).then(async rx => {
+                                    console.log('clone new door exist');
+                                    writeDoorDone(machineId.machineId+id,JSON.stringify(dx));
+                                    // Unlock here                            
+                                    this.ssocket.processOrder(machineId.machineId,dx.doorNumber,new Date().getTime())
+
+                                    res.send(
+                                        PrintSucceeded(
+                                            "finishDoor",
+                                            await r.save(),
+                                            EMessage.succeeded
+                                            , returnLog(req, res)
+                                        )
+                                    );
+                                })
+
+                            })
+                            .catch((e) => {
+                                console.log("error finishDoor Door", e);
+
+                                res.send(PrintError("finishDoor", e, EMessage.error, returnLog(req, res, true)));
+                            }); 
+                        }
+                        
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("finishDoor", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+        
+            
+            
+
             router.post(
                 this.path + "/loadDoors",
                 // this.checkSuperAdmin,
@@ -1083,49 +1283,6 @@ export class InventoryLocker implements IBaseClass {
            
 
 
-            /// ADS 
-            ///list
-            // load ads
-            router.post(
-                this.path + "/loadAds",
-                // this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        const existIds = d.data.existIds as Array<number>;
-                        console.log('loadAds', d.data);
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        if (!(machineId.machineId)) throw new Error(EMessage.notfoundmachine);
-
-                        adsEntity
-                            .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
-                            .then((r) => {
-                                const latest = r.filter(v => existIds.includes(v.id))?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-                                console.log(`latest`, latest);
-                                const deletingArray = new Array<number>();
-                                if (!latest) return res.send(PrintSucceeded("loadAds", { deletingArray: existIds, newArray: r }, EMessage.succeeded, returnLog(req, res)));
-                                console.log(`deletingArray`, deletingArray);
-                                existIds.forEach(v => {
-                                    if (!r.find(r => r.id == v)) deletingArray.push(v);
-                                })
-
-                                const newArray = r.filter(v => new Date(v.createdAt).getTime() > new Date(latest.createdAt).getTime());
-                                console.log(`newArray`, newArray);
-                                res.send(PrintSucceeded("loadAds", { deletingArray: deletingArray.map(item => item), newArray }, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                console.log("error loadAds", e);
-
-                                res.send(PrintError("loadAds", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("loadAds", error, EMessage.error, returnLog(req, res)));
-                    }
-                }
-            );
 
         } catch (error) {
             console.log(error);

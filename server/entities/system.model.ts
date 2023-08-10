@@ -1070,6 +1070,20 @@ export interface IDoorItem {
     image:any;
     data:any;
 }
+export interface IDoorPayment extends IBase {
+    ownerUuid:string;
+    machineId:string;
+    door:IDoorItem
+    doorNumber:number;
+    cabinetNumber:number;
+    productUuid:string;
+    orderUuid:string;
+    price:number;
+    isPaid:boolean;
+    LAABRef:any;
+    paymentRef:any;
+
+}
 
 
 
@@ -2246,6 +2260,10 @@ export const data = [{
 
 
 
+
+
+
+
 export enum EEntity {
     banknote = 'banknote',
     billcash = "billcash",
@@ -2266,7 +2284,8 @@ export enum EEntity {
     vendingmachinesalereport = 'vendingmachinesalereport',
     ads = "ads",
     logactivity = 'logactivity',
-    Door = "Door"
+    Door = "Door",
+    DoorPayment = "DoorPayment"
 }
 
 export interface ISaveMachineSaleReport {
