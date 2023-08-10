@@ -18,6 +18,7 @@ import { VendingCashoutMMoneyFactory, VendingCashoutMMoneyStatic } from "./vendi
 import { VendingMachineSaleReportFactory, VendingMachineSaleReportStatic } from "./vendingmachinesalereport.entity";
 import { AdsFactory, AdsStatic } from "./ads.entity";
 import { LogActivityFactory, LogActivityStatic } from "./logactivity.entity";
+import { DoorFactory, DoorStatic } from "./doors.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -34,7 +35,7 @@ export let machineIDHistoryEntity:MachineIDStatic;
 export let machineCashoutMMoneyEntity: VendingCashoutMMoneyStatic;
 export let vendingMachineSaleReportEntity: VendingMachineSaleReportStatic;
 export let adsEntity: AdsStatic;
-
+export let doorEntity: DoorStatic;
 
 // LAAB
 export let vendingWallet: VendingWalletStatic;
@@ -43,6 +44,10 @@ export let subadminEntity: SubadminStatic;
 
 export const initDB =()=>{
     laabHashService = new LAABHashService();
+    DoorFactory(EEntity.Door, dbConnection).sync().then(() => {
+        console.log(`Door sync`);
+        doorEntity = DoorFactory(EEntity.Door, dbConnection);
+    });
     LogActivityFactory(EEntity.logactivity, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);
         logEntity = LogActivityFactory(EEntity.logactivity, dbConnection);

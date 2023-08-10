@@ -13,7 +13,7 @@ import tls from 'tls';
 import fs from 'fs';
 import constants from 'constants';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
-export class SocketServerZDM8 {
+export class SocketServerLocker {
     //  options = {
     //     key: process.env.privateKeys,
     //     cert: process.env.publicKeys

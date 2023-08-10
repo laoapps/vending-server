@@ -31,6 +31,8 @@ import {
     writeMachineLimiterBalance,
     findUuidByPhoneNumberOnUserManager,
     returnLog,
+    writeDoorDone,
+    readDoorDone,
 } from "../services/service";
 import {
     EClientCommand,
@@ -63,6 +65,8 @@ import {
     ISaveMachineSaleReport,
     IAds,
     ILoadVendingMachineSaleBillReport,
+    IDoor,
+    IDoorItem,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -75,6 +79,7 @@ import {
 import {
     adsEntity,
     dbConnection,
+    doorEntity,
     laabHashService,
     machineCashoutMMoneyEntity,
     machineClientIDEntity,
@@ -106,11 +111,14 @@ import {
 import { CashinValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashinValidation.func";
 import { FranchiseStockFactory } from "../entities/franchisestock.entity";
 import { MmoneyTransferValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/mmoneyTransferValidation.func";
-export class InventoryZDM8 implements IBaseClass {
+import { SocketServerLocker } from "./socketLocker";
+import { loadVendingMachineSaleBillReport } from "./inventoryZDM8";
+import { DoorFactory } from "../entities/doors.entity";
+export class InventoryLocker implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
-    ssocket: SocketServerZDM8 = {} as SocketServerZDM8;
+    ssocket: SocketServerLocker = {} as SocketServerLocker;
     notes = new Array<IBankNote>();
     hashNotes = new Array<IHashBankNote>();
     // stock = new Array<IStock>();
@@ -120,7 +128,7 @@ export class InventoryZDM8 implements IBaseClass {
     // clients = new Array<IMachineID>();
 
     delayTime = 5000;
-    path = "/zdm8";
+    path = "/locker";
     production = true;
 
     //// QR MMONEY HERE
@@ -139,7 +147,7 @@ export class InventoryZDM8 implements IBaseClass {
     qrmmoneyusername = '32f2d9a78d94a935e2e6052d229f301e'
 
 
-    ports = 31223;
+    ports = 31226;
     // clientResponse = new Array<IBillProcess>();
     wsClient = new Array<WebSocket>();
     machineClientlist = MachineClientIDFactory(
@@ -290,7 +298,7 @@ export class InventoryZDM8 implements IBaseClass {
         this.badBillCashEnt.sync();
         this.initBankNotes();
 
-        this.ssocket = new SocketServerZDM8(this.ports);
+        this.ssocket = new SocketServerLocker(this.ports);
 
         this.wss = wss;
         try {
@@ -809,186 +817,9 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             });
 
-            /// demo
-            // router.get(this.path + "/submit_command", async (req, res) => {
-            //     try {
-            //         const machineId = req.query["machineId"] + "";
-            //         const position = Number(req.query["position"])
-            //             ? Number(req.query["position"])
-            //             : 0;
-            //         console.log(" WS submit command", machineId, position);
-            //         const transactionID = 22331;
-            //         const ws: any = this.wsClient.find(
-            //             (v) => v["machineId"] + "" == machineId
-            //         );
-            //         const clientId = ws.clientId;
-            //         const m = await machineClientIDEntity.findOne({
-            //             where: { machineId },
-            //         });
-            //         const ownerUuid = m?.ownerUuid || "";
-            //         this.getBillProcess((b) => {
-            //             b.push({
-            //                 ownerUuid,
-            //                 position,
-            //                 bill: { clientId, machineId } as IVendingMachineBill,
-            //                 transactionID,
-            //             });
-            //             this.setBillProces(b);
-            //             console.log("submit_command", transactionID, position);
-            //             res.send(
-            //                 PrintSucceeded(
-            //                     "submit command",
-            //                     this.ssocket.processOrder(machineId, position, transactionID),
-            //                     EMessage.succeeded
-            //                 )
-            //             );
-            //         });
-            //     } catch (error) {
-            //         console.log(error);
-            //         res.send(PrintError("init", error, EMessage.error));
-            //     }
-            // });
-
-            /// TODO : HERE
-            // router.post(
-            //     this.path + "/getSample",
-            //     this.checkMachineIdToken.bind(this),
-            //     //  this.checkMachineDisabled,
-            //     async (req, res) => {
-            //         try {
-            //             // return res.send(PrintError('getFreeProduct', [], EMessage.error));
-            //             const {
-            //                 token,
-            //                 data: { id, position, clientId },
-            //             } = req.body;
-            //             const machineId = res.locals["machineId"];
-            //             const mc = await machineClientIDEntity.findOne({
-            //                 where: { machineId: machineId?.machineId },
-            //             });
-            //             const ownerUuid = mc?.ownerUuid || "";
-            //             const sEnt = VendingMachineSaleFactory(
-            //                 EEntity.vendingmachinesale + "_" + ownerUuid,
-            //                 dbConnection
-            //             );
-            //             await sEnt.sync();
-            //             const sm = await sEnt.findAll({
-            //                 where: {
-            //                     stock: {
-            //                         id,
-            //                         price: 0,
-            //                         // qtty: { [Op.gt]: [0] }
-            //                     },
-            //                     position,
-            //                     isActive: true,
-            //                 },
-            //             });
-            //             console.log("sm", sm.length);
-            //             const m = sm.find((v) => v.stock.id == id)?.stock;
-            //             console.log("s", m);
-            //             console.log("token", token, "data,data");
-            //             if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
-            //             if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
-            //             if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
-            //             const transactionID = 1000;
-            //             // const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
-            //             // const clientId = ws.clientId;
-            //             this.getBillProcess((b) => {
-            //                 b.push({
-            //                     ownerUuid,
-            //                     position,
-            //                     bill: { clientId, machineId } as IVendingMachineBill,
-            //                     transactionID,
-            //                 });
-            //                 this.setBillProces(b);
-            //                 console.log("getFreeProduct", transactionID, position);
-
-            //                 const x = this.ssocket.processOrder(
-            //                     machineId?.machineId + "",
-            //                     position,
-            //                     transactionID
-            //                 );
-            //                 // writeSucceededRecordLog(m, position);
-            //                 console.log(" WS submit command", machineId, position, x);
-
-            //                 res.send(PrintSucceeded("submit command", x, EMessage.succeeded));
-            //             });
-            //         } catch (error) {
-            //             console.log(error);
-            //             res.send(PrintError("getFreeProduct", error, EMessage.error));
-            //         }
-            //     }
-            // );
-            // router.post(
-            //     this.path + "/getFreeProduct",
-            //     this.checkMachineIdToken.bind(this),
-            //     //  this.checkMachineDisabled,
-            //     async (req, res) => {
-            //         try {
-            //             // return res.send(PrintError('getFreeProduct', [], EMessage.error));
-            //             const {
-            //                 token,
-            //                 data: { id, position, clientId },
-            //             } = req.body;
-            //             const machineId = res.locals["machineId"];
-            //             const mc = await machineClientIDEntity.findOne({
-            //                 where: { machineId: machineId?.machineId },
-            //             });
-            //             const ownerUuid = mc?.ownerUuid || "";
-            //             const sEnt = VendingMachineSaleFactory(
-            //                 EEntity.vendingmachinesale + "_" + ownerUuid,
-            //                 dbConnection
-            //             );
-            //             await sEnt.sync();
-            //             const sm = await sEnt.findAll({
-            //                 where: {
-            //                     stock: {
-            //                         id,
-            //                         price: 0,
-            //                         // qtty: { [Op.gt]: [0] }
-            //                     },
-            //                     position,
-            //                     isActive: true,
-            //                 },
-            //             });
-            //             console.log("sm", sm.length);
-            //             const m = sm.find((v) => v.stock.id == id)?.stock;
-            //             console.log("s", m);
-            //             console.log("token", token, "data,data");
-            //             if (!m) throw new Error(EMessage.freeProductNotFoundInThisMachine);
-            //             if (m?.price !== 0) throw new Error(EMessage.getFreeProductFailed);
-            //             if (m?.qtty <= 0) throw new Error(EMessage.qttyistoolow);
-            //             const transactionID = 1000;
-            //             // const ws: any = (this.wsClient.find(v => v['machineId'] + '' == machineId));
-            //             // const clientId = ws.clientId;
-            //             this.getBillProcess((b) => {
-            //                 b.push({
-            //                     ownerUuid,
-            //                     position,
-            //                     bill: { clientId, machineId } as IVendingMachineBill,
-            //                     transactionID,
-            //                 });
-            //                 this.setBillProces(b);
-            //                 console.log("getFreeProduct", transactionID, position);
-
-            //                 const x = this.ssocket.processOrder(
-            //                     machineId?.machineId + "",
-            //                     position,
-            //                     transactionID
-            //                 );
-            //                 // writeSucceededRecordLog(m, position);
-            //                 console.log(" WS submit command", machineId, position, x);
-
-            //                 res.send(PrintSucceeded("submit command", x, EMessage.succeeded));
-            //             });
-            //         } catch (error) {
-            //             console.log(error);
-            //             res.send(PrintError("getFreeProduct", error, EMessage.error));
-            //         }
-            //     }
-            // );
 
             router.post(
-                this.path + "/addProduct",
+                this.path + "/addDoor",
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
@@ -999,95 +830,171 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         try {
                             const ownerUuid = res.locals["ownerUuid"] || "";
-                            const sEnt = StockFactory(
-                                EEntity.product + "_" + ownerUuid,
-                                dbConnection
-                            );
                             // await sEnt.sync();
-                            const o = req.body.data as IStock;
-                            if (!o.name || !o.price)
+                            const o = req.body.data as IDoor;
+
+                            if (Object(o.doorNumber) == 'undefined' || o.doorNumber == null || !ownerUuid)
                                 return res.send(
-                                    PrintError("addProduct", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
+                                    PrintError("addDoor", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
                                 );
-                            // let base64Image = o.image.split(';base64,').pop();
-                            // fs.writeFileSync(process.env._image_path+'/'+o.name+'_'+new Date().getTime(), base64Image+'', {encoding: 'base64'});
-                            //    o.image= base64ToFile(o.image);
-                            sEnt
+                            o.ownerUuid = ownerUuid;
+                            const d = await doorEntity.findOne({ where: { doorNumber: o.doorNumber, isDone: false } });
+                            if (d) PrintError("addDoor", [], EMessage.doorExist, returnLog(req, res, true))
+                            doorEntity
                                 .create(o)
                                 .then((r) => {
-                                    res.send(PrintSucceeded("addProduct", r, EMessage.succeeded, returnLog(req, res)));
+                                    res.send(PrintSucceeded("addDoor", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
-                                    console.log("error add product", e);
+                                    console.log("error add Door", e);
 
-                                    res.send(PrintError("addProduct", e, EMessage.error, returnLog(req, res, true)));
+                                    res.send(PrintError("addDoor", e, EMessage.error, returnLog(req, res, true)));
                                 });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                            res.send(PrintError("addDoor", error, EMessage.error, returnLog(req, res, true)));
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("addDoor", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
             router.post(
-                this.path + "/disableProduct",
+                this.path + "/deleteDoor",
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
+
                 // this.checkToken,
                 // this.checkMachineDisabled,
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = Number(req.query["id"]);
-                        const isActive =
-                            req.query["isActive"] + '' == 'no'
-                                ? false
-                                : true;
-                        console.log('req.query["isActive"]', !req.query["isActive"], req.query["isActive"], isActive,);
+                        try {
+                            const ownerUuid = res.locals["ownerUuid"] || "";
+                            // await sEnt.sync();
+                            const id = Number(req.query['id']);
+                            const machineId = req.query['machineId'] + '';
+                            const d = await doorEntity.findOne({ where: { id, machineId } });
+                            if (!d) PrintError("deleteDoor", [], EMessage.notexist, returnLog(req, res, true))
+                            d.destroy()
+                                .then((r) => {
+                                    res.send(PrintSucceeded("deleteDoor", r, EMessage.succeeded, returnLog(req, res)));
+                                })
+                                .catch((e) => {
+                                    console.log("error deleteDoor", e);
 
-                        const sEnt = StockFactory(
-                            EEntity.product + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findByPk(id)
+                                    res.send(PrintError("deleteDoor", e, EMessage.error, returnLog(req, res, true)));
+                                });
+                        } catch (error) {
+                            console.log(error);
+                            res.send(PrintError("deleteDoor", error, EMessage.error, returnLog(req, res, true)));
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("deleteDoor", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/finishDoor",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const id = Number(req.query["id"]);
+                        const d = req.body as IReqModel;
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const read = await readDoorDone(machineId.machineId+id);
+                        if(read){
+                            // keep unlocking
+                            const o = JSON.parse(read) as IDoor
+                            this.ssocket.processOrder(machineId.machineId,o.doorNumber,new Date().getTime())
+                        }else{
+                           doorEntity
+                            .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("disableProduct", [], EMessage.error, returnLog(req, res, true))
+                                        PrintError("finishDoor", [], EMessage.error, returnLog(req, res, true))
                                     );
-                                console.log('disableproduct', r);
+                                console.log('finishDoor', r);
 
-                                r.isActive = isActive;
-                                console.log('disableproduct', r);
-                                r.changed("isActive", true);
-                                res.send(
-                                    PrintSucceeded(
-                                        "disableProduct",
-                                        await r.save(),
-                                        EMessage.succeeded
-                                        , returnLog(req, res)
-                                    )
-                                );
+                                r.isDone = true;
+                                console.log('finishDoor', r);
+                                r.changed("isDone", true);
+                                const dx = r.toJSON();
+                                dx.isDone = false;
+                                doorEntity.create(dx).then(async rx => {
+                                    console.log('clone new door exist');
+                                    writeDoorDone(machineId.machineId+id,JSON.stringify(dx));
+                                    // Unlock here                            
+                                    this.ssocket.processOrder(machineId.machineId,dx.doorNumber,new Date().getTime())
+
+                                    res.send(
+                                        PrintSucceeded(
+                                            "finishDoor",
+                                            await r.save(),
+                                            EMessage.succeeded
+                                            , returnLog(req, res)
+                                        )
+                                    );
+                                })
+
                             })
                             .catch((e) => {
-                                console.log("error disable product", e);
+                                console.log("error finishDoor Door", e);
 
-                                res.send(PrintError("disableProduct", e, EMessage.error, returnLog(req, res, true)));
+                                res.send(PrintError("finishDoor", e, EMessage.error, returnLog(req, res, true)));
+                            }); 
+                        }
+                        
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("finishDoor", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/loadDoors",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        doorEntity
+                            .findAll({ where: { machineId: machineId?.machineId } })
+                            .then(async (r) => {
+
+                                res.send(
+                                    PrintSucceeded(
+                                        "finishDoor",
+                                        r,
+                                        EMessage.succeeded
+                                        , returnLog(req, res)
+                                    ));
+
+                            })
+                            .catch((e) => {
+                                console.log("error finishDoor Door", e);
+
+                                res.send(PrintError("finishDoor", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("disableProduct", error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("finishDoor", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
             router.post(
-                this.path + "/deleteProduct",
+                this.path + "/listDoor",
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
@@ -1096,24 +1003,19 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = Number(req.query["id"]);
 
-                        const sEnt = StockFactory(
-                            EEntity.product + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .destroy({ where: { id } })
+
+                        doorEntity
+                            .destroy({ where: { ownerUuid } })
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
-                                        PrintError("deleteProduct", [], EMessage.error, returnLog(req, res, true))
+                                        PrintError("listDoor", [], EMessage.error, returnLog(req, res, true))
                                     );
-                                console.log('deleteProduct', r);
+                                console.log('listDoor', r);
                                 res.send(
                                     PrintSucceeded(
-                                        "deleteProduct",
+                                        "listDoor",
                                         r,
                                         EMessage.succeeded
                                         , returnLog(req, res)
@@ -1121,577 +1023,68 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                             })
                             .catch((e) => {
-                                console.log("error deleteProduct", e);
+                                console.log("error listDoor", e);
 
-                                res.send(PrintError("deleteProduct", e, EMessage.error, returnLog(req, res, true)));
+                                res.send(PrintError("listDoor", e, EMessage.error, returnLog(req, res, true)));
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("deleteProduct", error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("listDoor", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
 
 
+            // 
             router.post(
-                this.path + "/listProduct",
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
+                this.path + "/addDoorItem",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
-                    try {
-                        const isActive = req.query['isActive'];
-                        let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const sEnt = StockFactory(
-                            EEntity.product + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives } } })
-                            .then((r) => {
-                                res.send(PrintSucceeded("listProduct", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                console.log("error list product", e);
+                    const d = req.body as IReqModel;
+                    const doorItem = d.data as IDoorItem;
+                    const machineId = this.ssocket.findMachineIdToken(d.token);
+                    const id = Number(req.query["id"]);
 
-                                res.send(PrintError("listProduct", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listProduct", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-
-            router.post(
-                this.path + "/cloneSale",
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                async (req, res) => {
-                    try {
-
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const o = req.body as IVendingCloneMachineSale;
-                        if (!(ownerUuid && o.machineId && o.cloneMachineId)) return res.send(PrintError("cloneSale", [], EMessage.parametersEmpty, returnLog(req, res, true)));
-                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid, dbConnection);
-                        await sEnt.sync();
-                        this.machineClientlist.findOne({ where: { machineId: o.machineId } }).then(r_findMachine => {
-                            if (r_findMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfound, returnLog(req, res, true)));
-                            this.machineClientlist.findOne({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachine => {
-                                if (r_findCloneMachine == null) return res.send(PrintError("cloneSale", [], EMessage.notfoundCloneMachine, returnLog(req, res, true)));
-                                sEnt.findAndCountAll({ where: { machineId: o.machineId } }).then(r_findMachineStock => {
-                                    sEnt.findAndCountAll({ where: { machineId: o.cloneMachineId } }).then(r_findCloneMachineStock => {
-                                        if (r_findCloneMachineStock.count == 0) return res.send(PrintError("cloneSale", [], EMessage.notFoundSaleForClone, returnLog(req, res, true)));
-
-                                        let list: Array<any> = r_findMachineStock.rows;
-                                        let cloneList: Array<any> = r_findCloneMachineStock.rows;
-                                        let models: Array<any> = [];
-
-                                        if (list != undefined && Object.entries(list).length > 0) {
-                                            list.find(ml => {
-                                                cloneList = cloneList.filter(mcl => mcl.stock.id !== ml.stock.id);
-                                            });
-
-                                        }
-
-                                        for (let i = 0; i < cloneList.length; i++) {
-                                            const data = {
-                                                machineId: o.machineId,
-                                                stock: cloneList[i].stock,
-                                                position: cloneList[i].position,
-                                                max: cloneList[i].max
-                                            }
-                                            models.push(data);
-                                        }
-
-                                        sEnt.bulkCreate(models).then(r_clonestock => {
-                                            if (!r_clonestock) return res.send(PrintError("cloneSale error", [], EMessage.cloneStockFail, returnLog(req, res, true)));
-                                            for (let i = 0; i < models.length; i++) {
-                                                models[i].id = r_clonestock[i].id;
-                                                models[i].uuid = r_clonestock[i].uuid;
-                                                models[i].isActive = r_clonestock[i].isActive;
-                                                models[i].createdAt = r_clonestock[i].createdAt;
-                                                models[i].updatedAt = r_clonestock[i].updatedAt;
-                                            }
-                                            const loggg = [r_clonestock, list, cloneList, models];
-
-                                            res.send(PrintSucceeded("cloneSale success", models, EMessage.succeeded, returnLog(req, res)));
-                                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
-                                    }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
-                                }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
-                            }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
-                        }).catch(error => res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true))));
-
-                    } catch (error) {
-                        res.send(PrintError("cloneSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            // normal version
-            router.post(
-                this.path + "/addSale",
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                // this.checkToken,
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    const ownerUuid = res.locals["ownerUuid"] || "";
-                    const o = req.body.data as IVendingMachineSale;
-                    const sEnt = VendingMachineSaleFactory(
-                        EEntity.vendingmachinesale + "_" + ownerUuid,
-                        dbConnection
-                    );
-                    await sEnt.sync();
-                    this.machineClientlist
-                        .findOne({ where: { machineId: o.machineId } })
-                        .then((r) => {
+                    doorEntity
+                        .findOne({where:{id,machineId:machineId.machineId}})
+                        .then(async (r) => {
                             if (!r)
-                                return res.send(PrintError("addSale", [], EMessage.notfound, returnLog(req, res, true)));
-                            if (!o.machineId || Number(o.position) == Number.NaN)
                                 return res.send(
-                                    PrintError("addSale", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
+                                    PrintError("addDoorItem", [], EMessage.error, returnLog(req, res, true))
                                 );
-                            const pEnt = StockFactory(
-                                EEntity.product + "_" + ownerUuid,
-                                dbConnection
+                            console.log('addDoorItem', r);
+
+                            r.door = doorItem;
+                            console.log('addDoorItem', r);
+                            r.changed("door", true);
+                            res.send(
+                                PrintSucceeded(
+                                    "addDoorItem",
+                                    await r.save(),
+                                    EMessage.succeeded
+                                    , returnLog(req, res)
+                                )
                             );
-                            pEnt.findByPk(o.stock.id).then((p) => {
-                                if (!p)
-                                    return res.send(
-                                        PrintError("addSale", [], EMessage.productNotFound, returnLog(req, res, true))
-                                    );
-                                p.qtty = 0;
-                                o.stock = p;
-                                console.log('addSale', o);
 
-                                sEnt
-                                    .findOne({ where: { position: o.position, machineId: o.machineId } })
-                                    .then((rx) => {
-                                        if (rx)
-                                            return res.send(
-                                                PrintError("addSale", [], EMessage.duplicatedPosition, returnLog(req, res, true))
-                                            );
-                                        sEnt
-                                            .create(o)
-                                            .then((r) => {
-                                                res.send(
-                                                    PrintSucceeded("addSale", r, EMessage.succeeded, returnLog(req, res))
-                                                );
-                                            })
-                                            .catch((e) => {
-                                                console.log("error add sale", e);
-                                                res.send(PrintError("addSale", e, EMessage.error, returnLog(req, res, true)));
-                                            });
-                                    })
-                                    .catch((e) => {
-                                        console.log(e);
+                        })
+                        .catch((e) => {
+                            console.log("error addDoorItem Door", e);
 
-                                        res.send(PrintError("addSale", e, EMessage.error, returnLog(req, res, true)));
-                                    });
-                            });
+                            res.send(PrintError("addDoorItem", e, EMessage.error, returnLog(req, res, true)));
                         });
+
                 }
             );
-            router.post(
-                this.path + "/deleteSale",
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                // this.checkToken,
-                // this.checkMachineDisabled,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = Number(req.query["id"]);
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .destroy({ where: { id } })
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(PrintError("deleteSale", [], EMessage.error, returnLog(req, res, true)));
+  
+           
 
-                                res.send(PrintSucceeded("deleteSale", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                console.log("error deleteSale", e);
-
-                                res.send(PrintError("deleteSale", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("deleteSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/disableSale",
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                // this.checkToken,
-                // this.checkMachineDisabled,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = Number(req.query["id"]);
-                        const isActive = req.query["isActive"] + '' == 'no'
-                            ? false
-                            : true;
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findByPk(id)
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(
-                                        PrintError("disableSale", [], EMessage.error, returnLog(req, res, true))
-                                    );
-                                r.isActive = isActive;
-                                r.changed("isActive", true);
-                                res.send(
-                                    PrintSucceeded(
-                                        "disableSale",
-                                        await r.save(),
-                                        EMessage.succeeded
-                                        , returnLog(req, res)
-                                    )
-                                );
-                            })
-                            .catch((e) => {
-                                console.log("error disable product", e);
-
-                                res.send(PrintError("disableSale", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("disableSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/updateSale",
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const o = req.body.data as IVendingMachineSale;
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-
-                        sEnt
-                            .findByPk(o.id)
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(
-                                        PrintError("updateSale", [], EMessage.notfound, returnLog(req, res, true))
-                                    );
-                                const pEnt = StockFactory(
-                                    EEntity.product + "_" + ownerUuid,
-                                    dbConnection
-                                );
-                                pEnt
-                                    .findByPk(o.stock.id)
-                                    .then(async (p) => {
-                                        if (!p)
-                                            return res.send(
-                                                PrintError("updateSale", [], EMessage.productNotFound, returnLog(req, res, true))
-                                            );
-
-                                        Object.keys(o).forEach((k) => {
-                                            console.log("changing", r[k]);
-                                            if (["stock", "max"].includes(k)) {
-                                                r[k] = o[k];
-                                                r.changed("stock", true);
-                                                console.log("changed", r[k]);
-                                            }
-                                        });
-                                        // r.changed('stock', true);
-                                        console.log("update Sale", r);
-
-                                        res.send(
-                                            PrintSucceeded(
-                                                "updateSale",
-                                                await r.save(),
-                                                EMessage.succeeded
-                                                , returnLog(req, res)
-                                            )
-                                        );
-                                    })
-                                    .catch((e) => {
-                                        console.log("error updatesale", e);
-                                        res.send(PrintError("updateSale", e, EMessage.error, returnLog(req, res, true)));
-                                    });
-                            })
-                            .catch((e) => {
-                                console.log("error updatesale", e);
-
-                                res.send(PrintError("updateSale", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log("error update sale", error);
-                        res.send(PrintError("updateSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/listSale",
-
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const isActive = req.query['isActive'];
-                        let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives } } })
-                            .then((r) => {
-                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                console.log("error list sale", e);
-
-                                res.send(PrintError("listSale", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
 
             /// ADS 
             ///list
-            router.post(
-                this.path + "/listAds",
-                this.checkSuperAdmin,
-                this.authorizeSuperAdmin,
-                // this.checkToken,
-                // this.checkToken,
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        // const isActive = req.query['isActive'];
-                        // let actives = [];
-                        // if (isActive == 'all') actives.push(...[true, false]);
-                        // else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        // const ownerUuid = res.locals["ownerUuid"] || "";
-                        // const sEnt = StockFactory(
-                        //     EEntity.product + "_" + ownerUuid,
-                        //     dbConnection
-                        // );
-                        // await sEnt.sync();
-                        // sEnt
-                        //     .findAll({ where: { isActive: { [Op.or]: actives } } })
-                        //     .then((r) => {
-                        //         res.send(PrintSucceeded("listProduct", r, EMessage.succeeded));
-                        //     })
-                        //     .catch((e) => {
-                        //         console.log("error list product", e);
-
-                        //         res.send(PrintError("listProduct", e, EMessage.error));
-                        //     });
-                        const r = [
-                            {
-                                name: 'Vending Machine How to 1',
-                                description: 'How to purchase',
-                                type: 'vdo',
-                                url: 'https://www.youtube.com/shorts/Gq7WZ2hNG-Y'
-                            },
-                            {
-                                name: 'Vending Machine How to 2',
-                                description: 'How to cash-in',
-                                type: 'vdo',
-                                url: 'https://www.youtube.com/shorts/Gq7WZ2hNG-Y'
-                            },
-                            {
-                                name: 'Vending Machine How to 3',
-                                description: 'How to cash-out',
-                                type: 'vdo',
-                                url: 'https://www.youtube.com/shorts/9J3M-vh2oGs'
-                            }
-                        ];
-                        res.send(PrintSucceeded("listAds", r, EMessage.succeeded, returnLog(req, res)));
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listProduct", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            // add ads
-            router.post(
-                this.path + "/addAds",
-                this.checkSuperAdmin,
-                this.authorizeSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        const ads = d.data as IAds;
-
-                        if (!(ads.name && ads.description)) {
-                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty + '1', returnLog(req, res, true)));
-                        }
-
-                        if (ads.machines != undefined && Object.entries(ads.machines).length == 0 || ads.adsMedia != undefined && Object.entries(ads.adsMedia).length == 0) {
-                            return res.send(PrintError("addAds", e, EMessage.parametersEmpty + '2', returnLog(req, res, true)));
-                        }
-
-                        ads.adsMedia.find(item => {
-                            if (!(item.name && item.description && item.url && item.type)) {
-                                return res.send(PrintError("addAds", e, EMessage.parametersEmpty + '3', returnLog(req, res, true)));
-                            }
-                        });
-
-                        machineClientIDEntity.findAll({ where: { machineId: { [Op.in]: ads.machines } } }).then(run_machine => {
-                            if (run_machine == undefined || Object.entries(run_machine).length != Object.entries(ads.machines).length) {
-                                return res.send(PrintError("addAds", e, EMessage.invalidMachine, returnLog(req, res, true)));
-                            }
-                            adsEntity.create(ads).then((r) => {
-                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                                .catch((e) => {
-                                    res.send(PrintError("addAds", e, EMessage.error, returnLog(req, res, true)));
-                                });
-                        }).catch(error => {
-                            res.send(PrintError("addAds", error, EMessage.error, returnLog(req, res, true)));
-                        });
-
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("addAds", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            // clone ads
-            router.post(
-                this.path + "/cloneAds",
-                this.checkSuperAdmin,
-                this.checkSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        const id = d.data.id as number;
-                        adsEntity.findByPk(id).then(a => {
-                            if (a)
-                                adsEntity
-                                    .create(a.toJSON())
-                                    .then((r) => {
-                                        res.send(PrintSucceeded("cloneAds", r, EMessage.succeeded, returnLog(req, res, true)));
-                                    })
-                                    .catch((e) => {
-                                        console.log("error cloneAds", e);
-
-                                        res.send(PrintError("cloneAds", e, EMessage.error, returnLog(req, res, true)));
-                                    });
-                            else
-                                res.send(PrintError("cloneAds failed not exist ", e, EMessage.error, returnLog(req, res, true)));
-                        }).catch(error => {
-                            console.log(error);
-                            res.send(PrintError("cloneAds", error, EMessage.error, returnLog(req, res, true)));
-                        })
-
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("cloneAds", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            // remove ads
-            router.post(
-                this.path + "/removeAds",
-                this.checkSuperAdmin,
-                this.checkSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        const ads = d.data.ads as IAds;
-                        const id = d.data.id as number
-                        adsEntity
-                            .create(ads)
-                            .then((r) => {
-                                r.destroy();
-                                res.send(PrintSucceeded("addAds", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                console.log("error addAds", e);
-
-                                res.send(PrintError("addAds", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("addAds", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            /// remove machines from ads
-            router.post(
-                this.path + "/removeMachineFromAds",
-                this.checkSuperAdmin,
-                this.authorizeSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        const machines = d.data.machines as Array<string>;
-                        const id = d.data.id as number;
-                        adsEntity
-                            .findByPk(id)
-                            .then((r) => {
-                                r.machines = r.machines.filter(v => !machines.includes(v));
-                                r.changed('machines', true);
-                                r.save();
-                                res.send(PrintSucceeded("removeMachineFromAds", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                console.log("error lremoveMachineFromAds", e);
-
-                                res.send(PrintError("removeMachineFromAds", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("removeMachineFromAds", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
             // load ads
             router.post(
                 this.path + "/loadAds",
@@ -1734,677 +1127,6 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
-            // Save Sale
-            // redis
-            // need to save to database as blockchain
-            router.post(
-                this.path + "/saveMachineSale",
-                // this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        console.log('saveMachineSalexx', d.data);
-
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        if (!machineId) throw new Error("machine is not exit");
-                        const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
-                        await sEnt.sync();
-
-                        // sign
-
-                        const run = await sEnt.findOne({ order: [['id', 'desc']] });
-                        console.log(`run der`, run);
-
-                        const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
-                        console.log(`calculate der`, calculate);
-                        const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
-                        console.log(`sign der`, sign);
-                        console.log(`d data der`, d.data);
-                        if (run == null) {
-
-                            sEnt.create({
-                                data: d.data,
-                                hashM: sign,
-                                hashP: 'null'
-                            }).then(r => {
-                                console.log(`save stock successxxxxxx`);
-                            }).catch(error => console.log(`save stock fail`));
-
-                        } else {
-
-                            sEnt.create({
-                                data: d.data,
-                                hashM: sign,
-                                hashP: run.hashM
-                            }).then(r => {
-                                console.log(`save stock successxxx`);
-                            }).catch(error => console.log(`save stock fail`));
-
-                        }
-
-                        console.log(`----> machine id der`, machineId.machineId);
-
-                        res.send(
-                            PrintSucceeded(
-                                "saveMachineSale",
-                                writeMachineSale(machineId.machineId, JSON.stringify(d.data)),
-                                EMessage.succeeded
-                                , returnLog(req, res)
-                            )
-                        );
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-
-            router.post(
-                this.path + "/readMachineSale",
-                // this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        if (!machineId) throw new Error("machine is not exit");
-
-                        let list: any = {} as any;
-                        const run = await readMachineSale(machineId.machineId);
-                        if (run != null) {
-                            list = run;
-                        } else {
-                            const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
-                            await sEnt.sync();
-
-                            list = await sEnt.findOne({ order: [['id', 'desc']] });
-                        }
-
-                        res.send(
-                            PrintSucceeded(
-                                "readMachineSale",
-                                JSON.parse(list),
-                                EMessage.succeeded
-                                , returnLog(req, res)
-                            )
-                        );
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/readMachineSaleForAdmin",
-                this.checkAdmin,
-                this.checkSubAdmin,
-                this.checkSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const machineId = req.body.machineId;
-                        console.log(`readMachineSaleForAdmin`, machineId);
-                        // const isActive = req.query['isActive'];
-                        if (!machineId) throw new Error("machine is not exit");
-                        res.send(
-                            PrintSucceeded(
-                                "readMachineSale",
-                                JSON.parse(await readMachineSale(machineId)),
-                                EMessage.succeeded
-                                , returnLog(req, res)
-                            )
-                        );
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-
-
-            router.post(
-                this.path + "/refillMachineSale",
-                // this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        if (!machineId) throw new Error("machine is not exit");
-                        // writeMachineSale(machineId.machineId,d.data);
-                        const sEnt = FranchiseStockFactory(
-                            EEntity.franchisestock + "_" + machineId.machineId,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-
-                        // sign
-
-                        const c = await sEnt.findOne({ order: [['id', 'desc']] });
-
-
-                        res.send(
-                            PrintSucceeded(
-                                "refillMachineSale",
-                                c.data,
-                                EMessage.succeeded
-                                , returnLog(req, res)
-                            )
-                        );
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-
-
-
-
-
-
-            router.post(
-                this.path + "/saveMachineSaleReport",
-                this.checkAdmin,
-                this.checkSubAdmin,
-                this.checkSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        if (!machineId) throw new Error("machine is not exit");
-                        res.send(
-                            PrintSucceeded(
-                                "readMachineSale",
-                                JSON.parse(await readMachineSale(machineId.machineId)),
-                                EMessage.succeeded
-                                , returnLog(req, res)
-                            )
-                        );
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-
-
-
-            // franchise
-            // list product from hangmi
-            // list products from hangmi with product id
-            // owner has to request to purchase 
-            // pay
-            // hangmi update sale with the purchasing request
-            // save to database
-            // cui request to update ( refresh, refill)
-
-
-
-
-
-
-            // REPORT
-            router.post(
-                this.path + "/loadVendingMachineSaleBillReport",
-                this.checkAdmin,
-                this.checkSubAdmin,
-                this.checkSuperAdmin,
-                (req, res) => {
-                    try {
-
-                        const data = req.body;
-                        const subadmin = res.locals['subadmin'];
-                        const parmas: ILoadVendingMachineSaleBillReport = {
-                            ownerUuid: subadmin == null ? res.locals["ownerUuid"] : subadmin,
-                            machineId: data.machineId,
-                            fromDate: data.fromDate,
-                            toDate: data.toDate
-                        }
-                        this.loadVendingMachineSaleBillReport(parmas).then(run => {
-                            if (run.message != IENMessage.success) {
-                                res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
-                                return;
-                            }
-                            res.send(PrintSucceeded("report", run, EMessage.succeeded, returnLog(req, res)));
-                        }).catch(error => {
-                            res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
-                        });
-
-                    } catch (error) {
-                        res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-
-
-
-            router.post(
-                this.path + "/machineSaleList",
-                // this.checkToken,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),s
-                async (req, res) => {
-                    try {
-                        const d = req.body as IReqModel;
-                        const isActive = req.query['isActive'];
-                        let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
-                        if (!machineId) throw new Error("machine is not exit");
-                        const m = await machineClientIDEntity.findOne({
-                            where: {
-                                machineId: machineId.machineId
-                            },
-                        });
-                        const ownerUuid = m?.ownerUuid || "";
-
-                        // const ownerUuid = res.locals["ownerUuid"] || "";
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives }, machineId: machineId.machineId } })
-                            .then((r) => {
-                                res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                console.log("error list sale", e);
-
-                                res.send(PrintError("listSale", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/listSaleByMachine",
-                this.checkAdmin,
-                this.checkSubAdmin,
-                this.checkSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const isActive = req.query['isActive'];
-                        const subadmin = res.locals['subadmin'];
-
-                        let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        let ownerUuid = res.locals["ownerUuid"] || "";
-                        const machineId = req.query["machineId"] + "";
-
-
-                        let array: Array<any> = [];
-                        if (subadmin != null) { ownerUuid = subadmin }
-
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-
-                        sEnt
-                            .findAll({ where: { machineId, isActive: { [Op.or]: actives } } })
-                            .then((r) => {
-                                array = r;
-                                if (subadmin != null) {
-                                    array = r.map(item => {
-                                        return {
-                                            readonly: true,
-                                            id: item.id,
-                                            max: item.max,
-                                            position: item.position,
-                                            updatedAt: item.updatedAt,
-                                            stock: {
-                                                name: item.stock.name,
-                                                price: item.stock.price,
-                                                image: item.stock.image,
-                                            }
-                                        }
-                                    });
-                                }
-                                res.send(
-                                    PrintSucceeded("listSaleByMachine", array, EMessage.succeeded, returnLog(req, res))
-                                );
-                            })
-                            .catch((e) => {
-                                console.log("error listSaleByMachine", e);
-                                res.send(PrintError("listSaleByMachine", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listSaleByMachine", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/reportStock",
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                this.checkAdmin,
-                this.checkSubAdmin,
-                this.checkSuperAdmin,
-                async (req, res) => {
-                    try {
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("reportStock", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            // router.post(
-            //     this.path + "/refreshMachine",
-            //     this.checkToken,
-            //     // this.checkToken.bind(this),
-            //     // this.checkDisabled.bind(this),
-            //     async (req, res) => {
-            //         try {
-            //             const {m} = req.body.data;
-            //             const ws =this.wsClient.filter(v=>v['machineId']==m);
-            //             const w = ws.find(v=>v['clientId']);
-            //             const resx = {} as IResModel;
-            //             resx.command = EMACHINE_COMMAND.refresh;
-            //             resx.message = EMessage.refreshsucceeded;
-            //             this.sendWS(w['clientId'],resx)
-            //             res.send(PrintSucceeded("refreshMachine", !!w, EMessage.succeeded));
-
-            //         } catch (error) {
-            //             console.log(error);
-            //             res.send(PrintError("addProduct", error, EMessage.error));
-            //         }
-            //     }
-            // );
-
-            router.post(
-                this.path + "/addMachine",
-                this.checkSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                this.authorizeSuperAdmin,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const o = req.body.data as IMachineClientID;
-                        o.ownerUuid = ownerUuid || "";
-                        if (!o.otp || !o.machineId)
-                            return res.send(
-                                PrintError("addMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
-                            );
-                        if (o.machineId.length != 8 || Number.isNaN(o.machineId) || Number.isNaN(o.otp))
-                            return res.send(
-                                PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP, returnLog(req, res, true))
-                            );
-
-                        const x = await this.machineClientlist.findOne({
-                            where: { machineId: o.machineId },
-                        });
-                        if (!x) {
-                            // o.photo = base64ToFile(o.photo);
-                            this.machineClientlist
-                                .create(o)
-                                .then((r) => {
-                                    this.refreshMachines();
-                                    res.send(PrintSucceeded("addMachine", r, EMessage.succeeded, returnLog(req, res)));
-                                })
-                                .catch((e) => {
-                                    console.log(e);
-                                    res.send(PrintError("addMachine", e, EMessage.error, returnLog(req, res, true)));
-                                });
-                        } else {
-                            res.send(
-                                PrintError("addMachine", "Machine ID exist", EMessage.error, returnLog(req, res, true))
-                            );
-                        }
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/updateMachine",
-                this.checkSuperAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                this.authorizeSuperAdmin,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = req.query["id"] + "";
-                        const o = req.body.data as IMachineClientID;
-                        this.machineClientlist
-                            .findOne({ where: { ownerUuid, id } })
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(
-                                        PrintError("updateMachine", [], EMessage.notfound, returnLog(req, res, true))
-                                    );
-                                r.otp = o.otp ? o.otp : r.otp;
-                                // r.machineId = o.machineId ? o.machineId : r.machineId;
-                                r.photo = o.photo ? base64ToFile(o.photo) : base64ToFile(r.photo);
-                                // r.changed('isActive',true);
-
-                                res.send(
-                                    PrintSucceeded(
-                                        "updateMachine",
-                                        await r.save(),
-                                        EMessage.succeeded
-                                        , returnLog(req, res)
-                                    )
-                                );
-                                this.refreshMachines();
-                            })
-                            .catch((e) => {
-                                console.log("Error updateMachine", e);
-                                res.send(PrintError("updateMachine", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("updateMachine", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/updateMachineSetting",
-
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                // this.checkToken.bind(this),
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const id = req.query["id"] + "";
-
-                        const o = req.body.data as IMachineClientID;
-                        console.log('OOOOOO', o);
-
-                        this.machineClientlist
-                            .findOne({ where: { ownerUuid, id } })
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(
-                                        PrintError("updateMachineSetting", [], EMessage.notfound, returnLog(req, res, true))
-                                    );
-                                if (!r.data) r.data = [];
-
-                                if (!Array.isArray(o.data)) o.data = [];
-                                o.data[0].allowVending = !o.data[0]?.allowVending ? false : true;
-                                o.data[0].allowCashIn = !o.data[0]?.allowCashIn ? false : true;
-                                o.data[0].light = !o.data[0]?.light ? false : true;
-                                if (!Array.isArray(r.data)) r.data = [r.data];
-                                let a = r.data.find(v => v.settingName == 'setting');
-
-                                const x = o.data[0]?.allowVending;
-                                const y = o.data[0]?.allowCashIn;
-                                const w = o.data[0]?.light;
-                                const z = o.data[0]?.highTemp || 10;
-                                const u = o.data[0]?.lowTemp || 5;
-                                const l = o.data[0]?.limiter || 100000;
-
-                                const imgh = o.data[0]?.imgHeader;
-                                const imgf = o.data[0]?.imgFooter;
-                                const imgl = o.data[0]?.imgLogo;
-                                let t = o.data[0]?.imei || '';
-                                if (t && t.length < 8) {
-                                    throw new Error('Length can not be less than 8 ')
-                                }
-                                if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl };
-                                    r.data.push(a);
-                                }
-                                else {
-                                    a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l, a.imei = t;
-                                    a.imgHeader = imgh;
-                                    a.imgFooter = imgf;
-                                    a.imgLogo = imgl;
-                                }
-
-                                // r.data = [a];
-                                r.changed('data', true);
-                                console.log('updating machine setting', r.data);
-
-                                writeMachineSetting(r.machineId, r.data);
-                                res.send(
-                                    PrintSucceeded(
-                                        "updateMachineSetting",
-                                        await r.save(),
-                                        EMessage.succeeded
-                                        , returnLog(req, res)
-                                    )
-                                );
-                                this.refreshMachines();
-
-                            })
-                            .catch((e) => {
-                                console.log("Error updateMachineSetting", e);
-                                res.send(PrintError("updateMachineSetting", e, EMessage.error, returnLog(req, res, true)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("updateMachineSetting", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-            router.post(
-                this.path + "/disableMachine",
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-                        const isActive = req.query["isActive"] + '' == 'no'
-                            ? false
-                            : true;
-                        const id = req.query["id"] + "";
-                        this.machineClientlist
-                            .findOne({ where: { ownerUuid, id } })
-                            .then(async (r) => {
-                                if (!r)
-                                    return res.send(
-                                        PrintError("disableMachine", [], EMessage.notfound, returnLog(req, res, true))
-                                    );
-                                r.isActive = isActive;
-                                // r.changed('isActive',true);
-                                this.refreshMachines();
-                                res.send(
-                                    PrintSucceeded(
-                                        "disableMachine",
-                                        await r?.save(),
-                                        EMessage.succeeded
-                                        , returnLog(req, res)
-                                    )
-                                );
-                            })
-                            .catch((e) => {
-                                console.log("Error disableMachine", e);
-                                res.send(PrintError("disableMachine", e, EMessage.error, returnLog(req, res)));
-                            });
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("disableMachine", error, EMessage.error, returnLog(req, res, true)));
-                    }
-                }
-            );
-
-            router.post(
-                this.path + "/listMachine",
-                //APIAdminAccess,
-                this.checkSuperAdmin,
-                this.checkSubAdmin,
-                this.checkAdmin,
-
-                // this.checkDisabled.bind(this),
-                async (req, res) => {
-                    try {
-                        const isActive = req.query['isActive'];
-
-                        let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const ownerUuid = res.locals["ownerUuid"] || "";
-
-                        this.machineClientlist.findAll({
-                            where: {
-                                ownerUuid,
-                                isActive: { [Op.or]: actives }
-                            }
-                        }).then((r) => {
-                            res.send(PrintSucceeded("listMachine", r, EMessage.succeeded, returnLog(req, res, true)));
-                        })
-                            .catch((e) => {
-                                console.log("Error list machine", e);
-                                res.send(PrintError("listMachine", e, EMessage.error, returnLog(req, res, true)));
-                            });
-
-                    } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("listMachine", error, EMessage.error, returnLog(req, res)));
-                    }
-                }
-            );
-            // router.post(
-            //     this.path + "/super_listMachine",
-            //     // this.checkToken.bind(this),
-            //     // this.isSuper.bind(this),
-            //     // this.checkDisabled.bind(this),
-            //     async (req, res) => {
-            //         try {
-            //             this.machineClientlist
-            //                 .findAll()
-            //                 .then((r) => {
-            //                     res.send(PrintSucceeded("listMachine", r, EMessage.succeeded));
-            //                 })
-            //                 .catch((e) => {
-            //                     console.log("Error list machine", e);
-            //                     res.send(PrintError("listMachine", e, EMessage.error));
-            //                 });
-            //         } catch (error) {
-            //             console.log(error);
-            //             res.send(PrintError("listMachine", error, EMessage.error));
-            //         }
-            //     }
-            // );
         } catch (error) {
             console.log(error);
         }
@@ -3150,177 +1872,6 @@ export class InventoryZDM8 implements IBaseClass {
             this.ssocket.onMachineCredit((d: IReqModel) => {
                 that.creditMachine(d);
             });
-            this.ssocket.onMachineResponse((re: IReqModel) => {
-                if (re.transactionID == -52) {
-                    const machineId = this.ssocket.findMachineIdToken(re.token);
-                    writeMachineStatus(machineId.machineId, re.data);
-                    const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                    const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
-                    // console.log('ws', 'wsAdmin', machineId);
-
-                    // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
-                    if (ws) {
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        // save to redis
-                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        // console.log('writeMachineStatus', machineId.machineId, re.data);
-
-
-                        // send to machine client
-                        this.sendWSToMachine(machineId.machineId, resx);
-
-                        // this.sendWS(ws['clientId'], resx);
-                    }
-                    if (wsAdmins) {
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        // save to redis
-                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        // console.log('writeMachineStatus', machineId.machineId, re.data);
-                        // send to machine client
-                        this.sendWSMyMachine(machineId.machineId, resx);
-                    }
-                    // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
-                    // fafb52
-                    // 21 //len
-                    // 54 // series
-                    // 00 // bill acceptor
-                    // 01 // coin acceptor
-                    // 00 // card reader status
-                    // 00 // tem controller status
-                    // 13 // temp
-                    // 00 // door 
-                    // 00000000 // bill change
-                    // 00000000 // coin change
-                    // 30303030303030303030
-                    // 13aaaaaaaaaaaaaa8d
-                    // // fafb header
-                    // // 52 command
-                    // // 01 length
-                    // // Communication number+ 
-                    // '00'//Bill acceptor status+ 
-                    // '00'//Coin acceptor status+ 
-                    // '00'// Card reader status+
-                    // '00'// Temperature controller status+ 
-                    // '00'// Temperature+ 
-                    // '00'// Door status+ 
-                    // '00 00 00 00'// Bill change(4 byte)+ 
-                    // '00 00 00 00'// Coin change(4 byte)+ 
-                    // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
-                    // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
-                    // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-
-                    console.log('FAFB52', re.data);
-
-                    return;
-                }
-                console.log("onMachineResponse", re);
-                console.log("onMachineResponse transactionID", re.transactionID);
-                this.getBillProcess((b) => {
-                    const cres = b.find((v) => v.transactionID == re.transactionID);
-                    try {
-                        // vmc response with transactionId and buffer data
-                        // zdm8 reponse with transactionId
-
-                        // check by transactionId and command data (command=status)
-
-                        // if need to confirm with drop detect
-                        // we should use drop detect to audit
-                        that.deductStock(re.transactionID, cres?.bill, cres?.position);
-
-                        // const resx = {} as IResModel;
-                        // resx.command = EMACHINE_COMMAND.confirm;
-                        // resx.message = EMessage.confirmsucceeded;
-                        // if (re.transactionID < 0) return console.log('onMachineResponse ignore', re);
-                        // if ([22331, 1000].includes(re.transactionID)) {
-
-                        //     resx.status = 1;
-                        //     console.log('onMachineResponse 22231', re);
-                        //     resx.transactionID = re.transactionID || -1;
-                        //     resx.data = { bill: cres?.bill, position: cres?.position };
-                        //     //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
-
-                        // } else {
-                        //     const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position) || -1;
-                        //     idx == -1 || !idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
-                        //     resx.status = 1;
-                        //     console.log('onMachineResponse xxx', re);
-                        //     resx.transactionID = re.transactionID || -1;
-                        //     resx.data = { bill: cres?.bill, position: cres?.position };
-                        // }
-                        // const clientId = cres?.bill.clientId + '';
-                        // console.log('send', clientId, cres?.bill?.clientId, resx);
-                        // console.log('onMachineResponse', re.transactionID);
-                        // console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
-
-                        // ///** always retry */
-                        // const retry = -1; // set config and get config at redis and deduct the retry times;
-                        // // if retry == -1 , it always retry
-                        // /// TODO
-                        // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
-                        // // writeSucceededRecordLog(cres?.bill, cres?.position);
-
-                        // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
-                        // /// DEDUCT STOCK AT THE SERVER HERE
-
-                        // // No need To update delivering status
-                        // // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
-                        // // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
-                        // //     try {
-                        // //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
-                        // //         if (bill) {
-                        // //             bill.paymentstatus = EPaymentStatus.delivered;
-                        // //             bill.changed('paymentstatus', true);
-                        // //             bill.save();
-                        // //         } else throw new Error(EMessage.transactionnotfound);
-
-                        // //         // }
-                        // //     } catch (error) {
-                        // //         console.log(error);
-                        // //     }
-                        // // }).catch(e => {
-                        // //     console.log('ERROR', e);
-
-                        // // })
-                    } catch (error) {
-                        console.log("error onMachineResponse", error);
-                        // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
-                    }
-                });
-            });
-
-            /// ****#### NEED TO UPDATE AND CHANGE LATER USING SOCKET UPDATE FROM LAAB 06072023
-            // setInterval(() => {
-            //     const onlineId = [];
-            //     this.ssocket.machineIds.forEach((v, i) => {
-            //         if (this.ssocket.findOnlneMachine(v.machineId)) {
-            //             setTimeout(() => {
-            //                 const func = new CashValidationFunc();
-            //                 const params = {
-            //                     machineId: v.machineId
-            //                 }
-            //                 func.Init(params).then(run => {
-            //                     const response: any = run;
-            //                     console.log(`response`, response);
-            //                     if (response.message != IENMessage.success) {
-            //                         console.log(`cash validate fail`, response?.message);
-            //                         // socket.end();
-            //                     }
-            //                     writeMachineLimiterBalance(v.machineId,response?.balance);
-            //                 }).catch(error => {
-            //                     console.log(`cash validation error`, error.message);
-            //                     // socket.end();
-            //                 });
-            //             }, 100 * i);
-            //         }
-            //     });
-
-            // }, 10000)
 
         });
     }
@@ -3538,12 +2089,12 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 // if (this.mMoneyLoginRes.expiresIn) {
-                    // if (
-                    //     new Date(this.mMoneyLoginRes.expiresIn).getTime() >
-                    //     new Date().getTime()
-                    // ) {
-                    //     return resolve(this.mMoneyLoginRes);
-                    // }
+                // if (
+                //     new Date(this.mMoneyLoginRes.expiresIn).getTime() >
+                //     new Date().getTime()
+                // ) {
+                //     return resolve(this.mMoneyLoginRes);
+                // }
                 // }
                 axios
                     .post("https://qr.mmoney.la/test/login", { username, password })
@@ -3913,50 +2464,6 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    // }
-    // setTask(bill: IVendingMachineBill, p: IVendingMachineSale, cbill: number, i: number) {
-    //     return new Promise<any>((resolve, reject) => {
-    //         setTimeout(() => {
-    //             // const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
-    //             writeSucceededRecordLog(bill, p.position);
-    //             const res = {} as IResModel;
-    //             res.command = EMACHINE_COMMAND.confirm;
-    //             res.message = EMessage.confirmsucceeded;
-    //             res.status = 1;
-    //             res.data = { bill,position: p.position } as unknown as IBillProcess;
-    //             let yy = new Array<WebSocketServer.WebSocket>();
-    //             this.wss.clients.forEach(v => {
-    //                 const x = v['clientId'] as string;
-    //                 if (x) {
-    //                     if (x == bill.clientId) {
-    //                         yy.push(v);
-    //                     }
-    //                 }
-    //             });
-    //             yy.forEach(y => {
-    //                 res.command = EMACHINE_COMMAND.waitingt;
-    //                 // bill.transactionID;
-    //                 // TODO: HAS TO CREATER  UnFINISHED TRANSACTION BILL
-    //                 redisClient.get(ERedisCommand.waiting_transactionID).then(r => {
-    //                     if (r) {
-    //                         const a = JSON.parse(r);
-    //                         a.push(res.data);
-    //                         redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify(a));
-    //                     } else {
-    //                         redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify([res.data]));
-    //                     }
-    //                 })
-
-    //                 y.send(JSON.stringify(res), e => {
-    //                     if (e) console.log('ERROR SEND WS', e);
-    //                 });
-    //             })
-
-    //         }, this.delayTime * i);
-    //         resolve(true);
-    //     })
-
-    // }
     checkMachineId(machineId: string): IMachineClientID | null {
         const x = this.ssocket.sclients.find((v) => {
             const x = v["machineId"] as IMachineClientID;
@@ -4217,18 +2724,6 @@ export class InventoryZDM8 implements IBaseClass {
             }
         });
 
-
-        // this.wss.clients.forEach(v=>{
-        //     const x = v['clientId'] as string;
-        //     if (x) {
-        //         if (x == clientId) {
-        //             // yy.push(v);
-        //             console.log('WS SENDING',x,v.readyState);
-
-        //             v.send(JSON.stringify(resx));
-        //         }
-        //     }
-        // });
     }
     sendWS(clientId: string, resx: IResModel) {
         this.wsClient.find((v) => {
@@ -4243,17 +2738,6 @@ export class InventoryZDM8 implements IBaseClass {
         });
 
 
-        // this.wss.clients.forEach(v=>{
-        //     const x = v['clientId'] as string;
-        //     if (x) {
-        //         if (x == clientId) {
-        //             // yy.push(v);
-        //             console.log('WS SENDING',x,v.readyState);
-
-        //             v.send(JSON.stringify(resx));
-        //         }
-        //     }
-        // });
     }
     confirmMMoneyOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
@@ -4416,127 +2900,6 @@ export class InventoryZDM8 implements IBaseClass {
 }
 
 
-class loadVendingMachineSaleBillReport {
 
-    private ownerUuid: string;
-    private fromDate: string;
-    private toDate: string;
-    private machineId: string;
-
-    private currentdate: number;
-    private parseFromDate: number;
-    private parseToDate: number;
-    private condition: any = {} as any;
-    private vendingMachineBillEntity: VendingMachineBillStatic;
-    private response: any = {} as any;
-    constructor() { }
-
-    public Init(params: ILoadVendingMachineSaleBillReport): Promise<any> {
-        return new Promise<any>(async (resolve, reject) => {
-            try {
-
-                this.InitParams(params);
-
-                const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
-
-                const ValidateBeginDate = this.ValidateBeginDate();
-                if (ValidateBeginDate != IENMessage.success) throw new Error(ValidateBeginDate);
-
-                this.SetCondition();
-
-                this.Connection();
-
-                const Report = await this.Report();
-                if (Report != IENMessage.success) throw new Error(Report);
-
-                resolve(this.response);
-
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
-
-    private InitParams(params: ILoadVendingMachineSaleBillReport): void {
-        this.ownerUuid = params.ownerUuid;
-        this.fromDate = params.fromDate;
-        this.toDate = params.toDate;
-        this.machineId = params.machineId;
-    }
-
-    private ValidateParams(): string {
-        if (!(this.ownerUuid && this.fromDate && this.toDate && this.machineId)) return IENMessage.parametersEmpty;
-
-        this.currentdate = new Date(new Date().getFullYear() + '/' + Number(new Date().getMonth() + 1) + '/' + new Date().getDate()).getTime();
-        return IENMessage.success;
-    }
-
-    private ValidateBeginDate(): string {
-        this.parseFromDate = new Date(this.fromDate).getTime();
-        this.parseToDate = new Date(this.toDate).getTime();
-
-        if (this.parseFromDate == this.parseToDate) {
-            if (this.parseFromDate > this.currentdate) return IENMessage.invalidFromDate;
-        } else {
-            if (this.parseFromDate > this.parseToDate) return IENMessage.invalidFromDate;
-            if (this.parseToDate > this.currentdate) return IENMessage.invalidateToDate;
-        }
-
-        return IENMessage.success;
-    }
-
-    private SetCondition(): void {
-        const date = new Date(this.toDate);
-        const addday = date.setDate(date.getDate() + 1);
-        this.toDate = String(new Date(addday));
-
-        if (this.machineId == 'all') {
-
-            this.condition = {
-                where: {
-                    paymentstatus: 'paid',
-                    createdAt: { [Op.between]: [this.fromDate, this.toDate] }
-                },
-                order: [['id', 'DESC']]
-            }
-        }
-        else {
-            this.condition = {
-                where: {
-                    paymentstatus: 'paid',
-                    machineId: this.machineId,
-                    createdAt: { [Op.between]: [this.fromDate, this.toDate] }
-                },
-                order: [['id', 'DESC']]
-            }
-        }
-
-    }
-
-    private Connection(): void {
-        this.vendingMachineBillEntity = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + this.ownerUuid, dbConnection);
-    }
-
-    private Report(): Promise<any> {
-        return new Promise<any>(async (resolve, reject) => {
-            try {
-
-                const run = await this.vendingMachineBillEntity.findAndCountAll(this.condition);
-                this.response = {
-                    rows: run.rows,
-                    count: run.count,
-                    message: IENMessage.success
-                }
-
-                resolve(IENMessage.success);
-            }
-            catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
-
-}
 
 

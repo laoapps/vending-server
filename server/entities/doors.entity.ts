@@ -40,6 +40,9 @@ export const DoorFactory = (name: string, sequelize: Sequelize): DoorStatic => {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
         },
+        ownerUuid: {
+            type: DataTypes.STRING,
+        },
         machineId: {
             type: DataTypes.STRING,
         },

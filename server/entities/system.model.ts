@@ -1028,7 +1028,8 @@ export enum EMessage {
     status = "status",
     adminloginok = "adminloginok",
     InvalidMachineIdOrOTP = "InvalidMachineIdOrOTP",
-    refreshsucceeded = "refreshsucceeded"
+    refreshsucceeded = "refreshsucceeded",
+    doorExist = "doorExist"
 }
 export interface IBase {
     id?: number;
@@ -1043,6 +1044,7 @@ export interface IBC {
     hashM?: string;
 }
 export interface IDoor extends IBase{
+    ownerUuid:string;
     machineId:string;
     door:IDoorItem
     doorNumber:number;
@@ -2242,6 +2244,8 @@ export const data = [{
 ]
 
 
+
+
 export enum EEntity {
     banknote = 'banknote',
     billcash = "billcash",
@@ -2261,7 +2265,8 @@ export enum EEntity {
     vendingcashoutmmoney = 'vendingcashoutmmoney',
     vendingmachinesalereport = 'vendingmachinesalereport',
     ads = "ads",
-    logactivity = 'logactivity'
+    logactivity = 'logactivity',
+    Door = "Door"
 }
 
 export interface ISaveMachineSaleReport {

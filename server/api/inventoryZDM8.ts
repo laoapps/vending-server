@@ -3913,50 +3913,7 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    // }
-    // setTask(bill: IVendingMachineBill, p: IVendingMachineSale, cbill: number, i: number) {
-    //     return new Promise<any>((resolve, reject) => {
-    //         setTimeout(() => {
-    //             // const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
-    //             writeSucceededRecordLog(bill, p.position);
-    //             const res = {} as IResModel;
-    //             res.command = EMACHINE_COMMAND.confirm;
-    //             res.message = EMessage.confirmsucceeded;
-    //             res.status = 1;
-    //             res.data = { bill,position: p.position } as unknown as IBillProcess;
-    //             let yy = new Array<WebSocketServer.WebSocket>();
-    //             this.wss.clients.forEach(v => {
-    //                 const x = v['clientId'] as string;
-    //                 if (x) {
-    //                     if (x == bill.clientId) {
-    //                         yy.push(v);
-    //                     }
-    //                 }
-    //             });
-    //             yy.forEach(y => {
-    //                 res.command = EMACHINE_COMMAND.waitingt;
-    //                 // bill.transactionID;
-    //                 // TODO: HAS TO CREATER  UnFINISHED TRANSACTION BILL
-    //                 redisClient.get(ERedisCommand.waiting_transactionID).then(r => {
-    //                     if (r) {
-    //                         const a = JSON.parse(r);
-    //                         a.push(res.data);
-    //                         redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify(a));
-    //                     } else {
-    //                         redisClient.set(ERedisCommand.waiting_transactionID, JSON.stringify([res.data]));
-    //                     }
-    //                 })
-
-    //                 y.send(JSON.stringify(res), e => {
-    //                     if (e) console.log('ERROR SEND WS', e);
-    //                 });
-    //             })
-
-    //         }, this.delayTime * i);
-    //         resolve(true);
-    //     })
-
-    // }
+   
     checkMachineId(machineId: string): IMachineClientID | null {
         const x = this.ssocket.sclients.find((v) => {
             const x = v["machineId"] as IMachineClientID;
@@ -4416,7 +4373,7 @@ export class InventoryZDM8 implements IBaseClass {
 }
 
 
-class loadVendingMachineSaleBillReport {
+export class loadVendingMachineSaleBillReport {
 
     private ownerUuid: string;
     private fromDate: string;

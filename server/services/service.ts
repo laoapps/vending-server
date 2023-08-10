@@ -288,6 +288,14 @@ export function findRealDB(token: string): Promise<string> {
         })
     })
 }
+export function writeDoorDone(key:string,v:string){
+    return redisClient.setEx(key,60*1, v);
+
+}
+export function readDoorDone(key:string){
+    return redisClient.get(key);
+
+}
 export function writeMachineSetting(machineId: string, setting: any) {
     try {
         // console.log('writeMachineSetting',machineId,setting);
