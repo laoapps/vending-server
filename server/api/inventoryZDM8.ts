@@ -1005,18 +1005,18 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log("getMmoneyUserInfo", rx);
                                 if (rx.status) {
                                     writeActiveMmoneyUser(msisdn+'',JSON.stringify(rx.data));
-                                    res.send(PrintSucceeded("getMmoneyUserInfo", rx, EMessage.succeeded, returnLog(req, res)));
+                                    res.send(PrintSucceeded("getMmoneyUserInfo", rx.data, EMessage.succeeded, returnLog(req, res)));
                                 } else {
                                     PrintError("getMmoneyUserInfo", [], EMessage.error, returnLog(req, res, true))
                                 }
                             })
                             .catch((e) => {
-                                PrintError("getMmoneyUserInfo", e, EMessage.error, returnLog(req, res, true))
+                                PrintError("getMmoneyUserInfo", e.message, EMessage.error, returnLog(req, res, true))
 
                             });
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("getAllBills", error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("getAllBills", error.message, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );

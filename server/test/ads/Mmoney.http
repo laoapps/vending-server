@@ -34,3 +34,13 @@ lmm-key:va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17
 {
     "msisdn":"2055516321"  
 }
+
+####
+
+post http://laoapps.com:9006/zdm8/getMmoneyUserInfo?phonenumber=2055516321
+Content-Type:  application/json
+lmm-key:va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17
+
+{
+    "token": "79f7928f3deb7436d6e110dfae37e8f80ea9c65f55ea84eb449895b63bc5909e"
+}
