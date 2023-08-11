@@ -906,10 +906,10 @@ export class InventoryLocker implements IBaseClass {
                 // this.checkMachineDisabled,
                 async (req, res) => {
                     try {
-                        const id = Number(req.query["id"]);
+                        // const id = Number(req.query["id"]);
                         const d = req.body as IReqModel;
                         const machineId = this.ssocket.findMachineIdToken(d.token);
-                        const read = await readDoorDone(machineId.machineId+id);
+                        const read = await readDoorDone(machineId.machineId+''+d?.data.cabinetNumber+''+d?.data.doorNumber);
 
                        
                         if(read){
@@ -919,7 +919,7 @@ export class InventoryLocker implements IBaseClass {
                         }else{
                             
                            doorEntity
-                            .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
+                            .findOne({where:{doorNumber:d.data.doorNumber,cabinetNumber:d.data.cabinetNumber,machineId:machineId.machineId,isDone:false}})
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
@@ -935,9 +935,14 @@ export class InventoryLocker implements IBaseClass {
                                 r.changed("isDone", true);
                                 const dx = r.toJSON();
                                 dx.isDone = false;
+                                dx.door=null;
+                                dx.sendBy = '';
+                                dx.sentAt=null;
+                                dx.depositAt=null;
+                                dx.depositBy ='';
                                 doorEntity.create(dx).then(async rx => {
                                     console.log('clone new door exist');
-                                    writeDoorDone(machineId.machineId+id,JSON.stringify(dx));
+                                    writeDoorDone(machineId.machineId+''+d?.data.cabinetNumber+''+d?.data.doorNumber,JSON.stringify(dx));
                                     // Unlock here                            
                                     this.ssocket.processOrder(machineId.machineId,dx.doorNumber,new Date().getTime())
 
@@ -1026,10 +1031,10 @@ export class InventoryLocker implements IBaseClass {
                 // this.checkMachineDisabled,
                 async (req, res) => {
                     try {
-                        const id = Number(req.query["id"]);
+                        // const id = Number(req.query["id"]);
                         const d = req.body as IReqModel;
                         const machineId = this.ssocket.findMachineIdToken(d.token);
-                        const read = await readDoorDone(machineId.machineId+id);
+                        const read = await readDoorDone(machineId.machineId+''+d?.data.cabinetNumber+''+d?.data.doorNumber);
 
                        
                         if(read){
@@ -1039,7 +1044,7 @@ export class InventoryLocker implements IBaseClass {
                         }else{
                             
                            doorEntity
-                            .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
+                            .findOne({where:{doorNumber:d.data.doorNumber,cabinetNumber:d.data.cabinetNumber,machineId:machineId.machineId,isDone:false}})
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
@@ -1055,9 +1060,10 @@ export class InventoryLocker implements IBaseClass {
                                 r.changed("isDone", true);
                                 const dx = r.toJSON();
                                 dx.isDone = false;
+                                /// TODO
                                 doorEntity.create(dx).then(async rx => {
                                     console.log('clone new door exist');
-                                    writeDoorDone(machineId.machineId+id,JSON.stringify(dx));
+                                    writeDoorDone(machineId.machineId+''+d?.data.cabinetNumber+''+d?.data.doorNumber,JSON.stringify(dx));
                                     // Unlock here                            
                                     this.ssocket.processOrder(machineId.machineId,dx.doorNumber,new Date().getTime())
 
@@ -1095,10 +1101,10 @@ export class InventoryLocker implements IBaseClass {
                 // this.checkMachineDisabled,
                 async (req, res) => {
                     try {
-                        const id = Number(req.query["id"]);
+                        // const id = Number(req.query["id"]);
                         const d = req.body as IReqModel;
                         const machineId = this.ssocket.findMachineIdToken(d.token);
-                        const read = await readDoorDone(machineId.machineId+id);
+                        const read = await readDoorDone(machineId.machineId+''+d?.data.cabinetNumber+''+d?.data.doorNumber);
 
                        
                         if(read){
@@ -1108,7 +1114,7 @@ export class InventoryLocker implements IBaseClass {
                         }else{
                             
                            doorEntity
-                            .findOne({where:{id,machineId:machineId.machineId,isDone:false}})
+                            .findOne({where:{doorNumber:d.data.doorNumber,cabinetNumber:d.data.cabinetNumber,machineId:machineId.machineId,isDone:false}})
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
@@ -1126,7 +1132,7 @@ export class InventoryLocker implements IBaseClass {
                                 dx.isDone = false;
                                 doorEntity.create(dx).then(async rx => {
                                     console.log('clone new door exist');
-                                    writeDoorDone(machineId.machineId+id,JSON.stringify(dx));
+                                    writeDoorDone(machineId.machineId+''+d?.data.cabinetNumber+''+d?.data.doorNumber,JSON.stringify(dx));
                                     // Unlock here                            
                                     this.ssocket.processOrder(machineId.machineId,dx.doorNumber,new Date().getTime())
 
@@ -1195,6 +1201,46 @@ export class InventoryLocker implements IBaseClass {
             );
             router.post(
                 this.path + "/listDoor",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                      const machineId = res.locals['machineId']?.machineId
+
+                        doorEntity
+                            .destroy({ where: { machineId } })
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("listDoor", [], EMessage.error, returnLog(req, res, true))
+                                    );
+                                console.log('listDoor', r);
+                                res.send(
+                                    PrintSucceeded(
+                                        "listDoor",
+                                        r,
+                                        EMessage.succeeded
+                                        , returnLog(req, res)
+                                    )
+                                );
+                            })
+                            .catch((e) => {
+                                console.log("error listDoor", e);
+
+                                res.send(PrintError("listDoor", e, EMessage.error, returnLog(req, res, true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listDoor", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/listDoorByMachine",
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
@@ -1203,10 +1249,10 @@ export class InventoryLocker implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"] || "";
-
+                        const machineId = req.query['machineId']+''||'';
 
                         doorEntity
-                            .destroy({ where: { ownerUuid } })
+                            .destroy({ where: { ownerUuid,machineId } })
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(
@@ -1243,14 +1289,15 @@ export class InventoryLocker implements IBaseClass {
                 // this.checkAdmin,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     const d = req.body as IReqModel;
                     const doorItem = d.data as IDoorItem;
-                    const machineId = this.ssocket.findMachineIdToken(d.token);
+                    const machineId = res.locals['machineId']?.machineId
                     const id = Number(req.query["id"]);
 
                     doorEntity
-                        .findOne({where:{id,machineId:machineId.machineId}})
+                        .findOne({where:{id,machineId:machineId}})
                         .then(async (r) => {
                             if (!r)
                                 return res.send(
