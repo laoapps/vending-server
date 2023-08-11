@@ -1863,7 +1863,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintSucceeded(
                                 "readMachineSale",
-                                JSON.parse(list),
+                                list,
                                 EMessage.succeeded
                                 , returnLog(req, res)
                             )
