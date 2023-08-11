@@ -2734,7 +2734,7 @@ export class InventoryZDM8 implements IBaseClass {
                 const that = this;
                 let { phonenumber, cashInValue } = d.data;
                 // DEMO 1000 only
-                cashInValue = 1100;
+                // cashInValue = 1100;
                 if (isNaN(cashInValue)) return reject(new Error('Invalid Cash In Value'));
                 // validate phonenumber for MMoney
                 if (phonenumber?.length < 10 || isNaN(phonenumber) || phonenumber == '') return reject('Invalid Phonenumber');
