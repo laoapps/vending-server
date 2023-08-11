@@ -57,6 +57,8 @@ export class AdsPage implements OnInit, OnDestroy {
 
         this.loop = setInterval(() => {
           if (count == this.adsList.length - 1) {
+            clearInterval(this.loop);
+            this.modal.dismiss();
             count = -1;
           } else {
 
@@ -79,7 +81,9 @@ export class AdsPage implements OnInit, OnDestroy {
               });
             }
           }
-        }, 30000);
+
+
+        }, 10000);
       
         resolve(IENMessage.success);
 
