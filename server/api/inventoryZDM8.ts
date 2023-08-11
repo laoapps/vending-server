@@ -989,7 +989,7 @@ export class InventoryZDM8 implements IBaseClass {
             //     }
             // );
             // Get Mmoney UserInof
-            router.get(
+            router.post(
                 this.path + "/getMmoneyUserInfo",
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {

@@ -1362,8 +1362,8 @@ export class Tab1Page {
             cssClass: 'dialog-fullscreen',
           })
           .then((r) => {
+            r.present();
             this.checkActiveModal(r);
-
           });
 
         resolve(IENMessage.success);

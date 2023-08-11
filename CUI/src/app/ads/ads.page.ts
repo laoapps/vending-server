@@ -83,7 +83,7 @@ export class AdsPage implements OnInit, OnDestroy {
           }
 
 
-        }, 10000);
+        }, 30000);
       
         resolve(IENMessage.success);
 

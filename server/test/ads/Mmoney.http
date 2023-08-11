@@ -23,3 +23,14 @@ lmm-key:va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17
 
 
 #####
+
+####
+
+
+post https://qr.mmoney.la/pro/UserInfo
+Content-Type:  application/json
+lmm-key:va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17
+
+{
+    "msisdn":"2055516321"  
+}

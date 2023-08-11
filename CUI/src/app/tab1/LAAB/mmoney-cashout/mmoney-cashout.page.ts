@@ -67,6 +67,27 @@ export class MmoneyCashoutPage implements OnInit {
       }
     }
   }
+
+  next(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
+
+        this.showPhonenumberPage = false;
+        this.showMMoneyProfile = true;
+
+      
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
+
   transfer(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {

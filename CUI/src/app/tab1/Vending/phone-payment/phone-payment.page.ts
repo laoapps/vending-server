@@ -92,7 +92,7 @@ export class PhonePaymentPage implements OnInit {
       else if (this.digit == '208' || this.digit == '308') {
         this.subtitle = 'You are using Best Telcome';
       }
-      else if (this.digit == '209' || this.digit == '203') {
+      else if (this.digit == '209' || this.digit == '309') {
         this.subtitle = 'You are using ETL';
       }
       else if (this.digit == this.placeholder || this.digit == 'ENT') {
@@ -111,7 +111,7 @@ export class PhonePaymentPage implements OnInit {
         
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
 
-        const validate = this.digitModel.find(item => item.digit==this.digit);
+        const validate = this.digitModel.find(item => item.digit==this.digit.substring(0, 3)[2]);
         if (validate == undefined) throw new Error(IENMessage.invalidPhonenumber);
         this.currentImage = validate.img;
         // this.phonenumber = `+85620${this.phonenumber}`;
