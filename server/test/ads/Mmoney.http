@@ -1,0 +1,25 @@
+post https://qr.mmoney.la/pro/GenerateQR
+Content-Type:  application/json
+lmm-key:va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17
+
+{
+    "merchantNumber":"2052743838", 
+    "transID":"202308091124092300006",      
+    "amount" : "1000"
+
+}
+
+
+####
+
+
+post https://qr.mmoney.la/pro/UserInfo
+Content-Type:  application/json
+lmm-key:va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17
+
+{
+    "msisdn":"2054656226"  
+}
+
+
+#####

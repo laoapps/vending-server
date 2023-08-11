@@ -289,11 +289,20 @@ export function findRealDB(token: string): Promise<string> {
     })
 }
 export function writeDoorDone(key:string,v:string){
-    return redisClient.setEx(key,60*1, v);
+    return redisClient.setEx(key+'_doordone_',60*1, v);
 
 }
 export function readDoorDone(key:string){
-    return redisClient.get(key);
+    return redisClient.get(key+'_doordone_');
+
+}
+
+export function writeActiveMmoneyUser(key:string,v:string){
+    return redisClient.setEx(key+'_mmoneyuser_',30, v);
+
+}
+export function readActiveMmoneyUser(key:string){
+    return redisClient.get(key+'_mmoneyuser_');
 
 }
 export function writeMachineSetting(machineId: string, setting: any) {

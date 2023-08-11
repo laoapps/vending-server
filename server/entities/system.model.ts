@@ -1277,6 +1277,11 @@ export interface IMMoneyGenerateQR {
     phonenumber: string,
     amount: string;
 }
+export interface IMMoneyGenerateQRPro {
+    transID: string,
+    merchantNumber: string,
+    amount: string;
+}
 export interface IMMoneyGenerateQRRes {
 
     name: string,

@@ -1,5 +1,5 @@
 import axios from "axios";
-import e, { NextFunction, Request, Response, Router } from "express";
+import e, { NextFunction, Request, Response, Router, query } from "express";
 import * as WebSocketServer from "ws";
 import { randomUUID } from "crypto";
 import crypto from 'crypto';
@@ -31,6 +31,7 @@ import {
     writeMachineLimiterBalance,
     findUuidByPhoneNumberOnUserManager,
     returnLog,
+    writeActiveMmoneyUser,
 } from "../services/service";
 import {
     EClientCommand,
@@ -63,6 +64,7 @@ import {
     ISaveMachineSaleReport,
     IAds,
     ILoadVendingMachineSaleBillReport,
+    IMMoneyGenerateQRPro,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -464,7 +466,7 @@ export class InventoryZDM8 implements IBaseClass {
                             //     "" +
                             //     new Date().getTime() 
                             // );
-                            const qr = await this.generateBillMMoney(
+                            const qr = await this.generateBillMMoneyPro(
                                 mId, // use this Imei for MMoney only, it is a phonenumber 2055555555
                                 value,
                                 transactionID + ''
@@ -986,7 +988,38 @@ export class InventoryZDM8 implements IBaseClass {
             //         }
             //     }
             // );
+            // Get Mmoney UserInof
+            router.get(
+                this.path + "/getMmoneyUserInfo",
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        const msisdn = req.query['phonenumber'];
+                         axios
+                            .post<IMMoneyGenerateQRRes>(
+                                " https://qr.mmoney.la/pro/UserInfo",
+                                {msisdn},
+                                { headers: { 'lmm-key':'va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17' } }
+                            )
+                            .then((rx) => {
+                                console.log("getMmoneyUserInfo", rx);
+                                if (rx.status) {
+                                    writeActiveMmoneyUser(msisdn+'',JSON.stringify(rx.data));
+                                    res.send(PrintSucceeded("getMmoneyUserInfo", rx, EMessage.succeeded, returnLog(req, res)));
+                                } else {
+                                    PrintError("getMmoneyUserInfo", [], EMessage.error, returnLog(req, res, true))
+                                }
+                            })
+                            .catch((e) => {
+                                PrintError("getMmoneyUserInfo", e, EMessage.error, returnLog(req, res, true))
 
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("getAllBills", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
             router.post(
                 this.path + "/addProduct",
                 this.checkSuperAdmin,
@@ -1698,12 +1731,13 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
                         const existIds = d.data.existIds as Array<number>;
                         console.log('loadAds', d.data);
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const machineId = res.locals["machineId"]?.machineId;
                         if (!(machineId.machineId)) throw new Error(EMessage.notfoundmachine);
 
                         adsEntity
@@ -1742,12 +1776,13 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
                         console.log('saveMachineSalexx', d.data);
 
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const machineId = res.locals["machineId"]?.machineId;
                         if (!machineId) throw new Error("machine is not exit");
                         const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
                         await sEnt.sync();
@@ -1806,11 +1841,12 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const machineId = res.locals["machineId"]?.machineId;
                         if (!machineId) throw new Error("machine is not exit");
 
                         let list: any = {} as any;
@@ -1872,11 +1908,12 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const machineId =res.locals["machineId"]?.machineId;
                         if (!machineId) throw new Error("machine is not exit");
                         // writeMachineSale(machineId.machineId,d.data);
                         const sEnt = FranchiseStockFactory(
@@ -1912,16 +1949,17 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(
                 this.path + "/saveMachineSaleReport",
-                this.checkAdmin,
-                this.checkSubAdmin,
-                this.checkSuperAdmin,
+                // this.checkAdmin,
+                // this.checkSubAdmin,
+                // this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const machineId =res.locals["machineId"]?.machineId;
                         if (!machineId) throw new Error("machine is not exit");
                         res.send(
                             PrintSucceeded(
@@ -1994,6 +2032,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),s
+                this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
                         const d = req.body as IReqModel;
@@ -2001,7 +2040,7 @@ export class InventoryZDM8 implements IBaseClass {
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const machineId = this.ssocket.findMachineIdToken(d.token);
+                        const machineId = res.locals["machineId"]?.machineId;
                         if (!machineId) throw new Error("machine is not exit");
                         const m = await machineClientIDEntity.findOne({
                             where: {
@@ -3489,7 +3528,38 @@ export class InventoryZDM8 implements IBaseClass {
     }
 
 
-    generateBillMMoney(phonenumber: string, value: number, transactionID: string) {
+    generateBillMMoneyPro(merchantNumber: string, value: number, transID: string) {
+        return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
+            // generate QR from MMoney
+
+                        const qr = {
+                            amount: value + "",
+                            merchantNumber, // '2055220199',
+                            transID,
+                        } as IMMoneyGenerateQRPro;
+                        console.log("QR", qr);
+
+                        axios
+                            .post<IMMoneyGenerateQRRes>(
+                                "https://qr.mmoney.la/pro/GenerateQR",
+                                qr,
+                                { headers: { 'lmm-key':'va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17' } }
+                            )
+                            .then((rx) => {
+                                console.log("generateBillMMoneyPro", rx);
+                                if (rx.status) {
+                                    resolve(rx.data as IMMoneyGenerateQRRes);
+                                } else {
+                                    reject(new Error(rx.statusText));
+                                }
+                            })
+                            .catch((e) => {
+                                reject(e);
+                            });
+
+        });
+    }
+    generateBillMMoneyDemo(phonenumber: string, value: number, transactionID: string) {
         return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
             // generate QR from MMoney
             this.loginQRMmoney()

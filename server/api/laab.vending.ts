@@ -7,7 +7,7 @@ import { ReadPanel as ClientReadPanel } from "../laab_service/controllers/vendin
 import { WritePanel as ClientWritePanel } from "../laab_service/controllers/vendingwallet_client/panels/write.panel";
 import { ReadPanel as SubadminReadPanel } from "../laab_service/controllers/vendingwallet_subadmin/panels/read.panel";
 import { WritePanel as SubadminWritePanel } from "../laab_service/controllers/vendingwallet_subadmin/panels/write.panel";
-import { redisHost, redisPort } from '../services/service';
+import { readActiveMmoneyUser, redisHost, redisPort } from '../services/service';
 import { SocketServerZDM8 } from './socketServerZDM8';
 import { APIAdminAccess, IENMessage, IStatus, message } from '../services/laab.service';
 import { InventoryZDM8 } from './inventoryZDM8';
@@ -157,7 +157,9 @@ export class LaabVendingAPI {
 
         router.post('/mmoney/client/cashout_validation', this.APIMachineAccess, (req: Request, res: Response) => {
             const d = req.body;
-            this.inventoryZDM8.creditMachineMMoney(d).then(run => {
+            try {
+                if(!readActiveMmoneyUser(d.phonenumber)) throw new Error('Mmoney user was not verified')
+                this.inventoryZDM8.creditMachineMMoney(d).then(run => {
                 if (run.message != IENMessage.success) {
                     message([], run, IStatus.unsuccess, res);
                 } else {
@@ -166,6 +168,10 @@ export class LaabVendingAPI {
                 }
             }).catch(error => message([], error.message, IStatus.unsuccess, res))
             // message([], IENMessage.notImplemented, IStatus.unsuccess, res);
+            } catch (error) {
+                message([], error.message, IStatus.unsuccess, res)
+            }
+            
         });
 
 
