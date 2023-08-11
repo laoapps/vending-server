@@ -5,6 +5,7 @@ import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { TransferValidationProcess } from '../../LAAB_processes/transferValidation.process';
 import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
 import Swal from 'sweetalert2';
+import { GetMMoneyUserInfoProccess } from '../../LAAB_processes/getMMoneyUserInfo.process';
 
 @Component({
   selector: 'app-mmoney-cashout',
@@ -20,6 +21,7 @@ export class MmoneyCashoutPage implements OnInit {
 
   private transferValidationProcess: TransferValidationProcess;
   private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
+  private getMMoneyUserInfoProcess: GetMMoneyUserInfoProccess;
 
   numberList: Array<string> = [];
   placeholder: string = 'ENTER PHONE NUMBER';
@@ -31,6 +33,7 @@ export class MmoneyCashoutPage implements OnInit {
   ) { 
     this.transferValidationProcess = new TransferValidationProcess(this.apiService, this.vendingAPIService);
     this.mmoneyCashoutValidationProcess = new MMoneyCashOutValidationProcess(this.apiService, this.vendingAPIService);
+    this.getMMoneyUserInfoProcess = new GetMMoneyUserInfoProccess(this.apiService);
 
   }
 
@@ -73,6 +76,12 @@ export class MmoneyCashoutPage implements OnInit {
       try {
         
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
+
+        const params = {
+          phonenumber: this.phonenumber
+        }
+        const run = await this.getMMoneyUserInfoProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
 
         this.showPhonenumberPage = false;
         this.showMMoneyProfile = true;

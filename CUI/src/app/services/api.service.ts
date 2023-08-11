@@ -495,6 +495,17 @@ export class ApiService {
       { headers: this.headerBase() }
     );
   }
+  getMMoneyUserInfo(phonenumber: string) {
+    return this.http.post<IResModel>(
+      this.url + `/getMmoneyUserInfo?phonenumber=${phonenumber}`,
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase() }
+    );
+  }
   saveSale(data: any) {
     return this.http.post<IResModel>(
       this.url + '/saveMachineSale',
@@ -578,6 +589,7 @@ export class ApiService {
       headers: this.headerBase(),
     });
   }
+  
 
   getFreeProduct(position: number, id: number) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;

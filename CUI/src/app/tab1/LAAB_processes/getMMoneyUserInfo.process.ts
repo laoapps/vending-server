@@ -3,23 +3,22 @@ import { ApiService } from "src/app/services/api.service";
 import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
-export class PaidValidationProcess {
+export class GetMMoneyUserInfoProccess {
 
     private workload: any = {} as any;
 
     private apiService: ApiService;
-    private vendingAPIService: VendingAPIService;
     
-    private cash: number;
-    private description: string;
-    private paidLAAB: any = {} as any;
+    private phonenumber: string;
+
+    // props
+    private name: string;
+    private surname: string;
 
     constructor(
         apiService: ApiService,
-        vendingAPIService: VendingAPIService
     ) {
         this.apiService = apiService;
-        this.vendingAPIService = vendingAPIService;
     }
 
     public Init(params: any): Promise<any> {
@@ -44,8 +43,8 @@ export class PaidValidationProcess {
 
                 console.log(`paid validation`, 4);
                 
-                const PaidValidation = await this.PaidValidation();
-                if (PaidValidation != IENMessage.success) throw new Error(PaidValidation);
+                const GetMMoneyUserInfo = await this.GetMMoneyUserInfo();
+                if (GetMMoneyUserInfo != IENMessage.success) throw new Error(GetMMoneyUserInfo);
 
                 console.log(`paid validation`, 5);
 
@@ -64,28 +63,19 @@ export class PaidValidationProcess {
 
 
     private InitParams(params: any): void {
-        this.cash = params.cash;
-        this.description = params.description;
-        this.paidLAAB = params.paidLAAB;
+        this.phonenumber = params.phonenumber;
     }
 
     private ValidateParams(): string {
-        if (!(this.cash && this.description && this.paidLAAB)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
-    private PaidValidation(): Promise<any> {
+    private GetMMoneyUserInfo(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                const params = {
-                    cash: this.cash,
-                    description: this.description,
-                    paidLAAB: this.paidLAAB,
-                    token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
-                }
-
-                this.vendingAPIService.paidValidation(params).subscribe(r => {
+                this.apiService.getMMoneyUserInfo(this.phonenumber).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
                     if (response.status != 1) return resolve(response.message);
@@ -101,6 +91,8 @@ export class PaidValidationProcess {
     private Commit(): any {
         const response = {
             data: [{
+                name: this.name,
+                surname: this.surname
             }],
             message: IENMessage.success
         }
