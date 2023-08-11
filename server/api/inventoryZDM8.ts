@@ -1861,6 +1861,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             list = await sEnt.findOne({ order: [['id', 'desc']] });
                             console.log(`load from databasee ----->`, list);
+                            list=list.data;
                         }
 
                         res.send(
