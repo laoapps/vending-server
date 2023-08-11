@@ -1737,8 +1737,8 @@ export class InventoryZDM8 implements IBaseClass {
                         const d = req.body as IReqModel;
                         const existIds = d.data.existIds as Array<number>;
                         console.log('loadAds', d.data);
-                        const machineId = res.locals["machineId"]?.machineId;
-                        if (!(machineId.machineId)) throw new Error(EMessage.notfoundmachine);
+                        const machineId = res.locals["machineId"];
+                        if (!(machineId?.machineId)) throw new Error(EMessage.notfoundmachine);
 
                         adsEntity
                             .findAll({ where: { machines: { [Op.contains]: [machineId.machineId] } } })
@@ -1782,7 +1782,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const d = req.body as IReqModel;
                         console.log('saveMachineSalexx', d.data);
 
-                        const machineId = res.locals["machineId"]?.machineId;
+                        const machineId = res.locals["machineId"];
                         if (!machineId) throw new Error("machine is not exit");
                         const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
                         await sEnt.sync();
@@ -1846,7 +1846,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
-                        const machineId = res.locals["machineId"]?.machineId;
+                        const machineId = res.locals["machineId"];
                         if (!machineId) throw new Error("machine is not exit");
 
                         let list: any = {} as any;
@@ -1914,7 +1914,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
-                        const machineId =res.locals["machineId"]?.machineId;
+                        const machineId =res.locals["machineId"];
                         if (!machineId) throw new Error("machine is not exit");
                         // writeMachineSale(machineId.machineId,d.data);
                         const sEnt = FranchiseStockFactory(
@@ -1960,7 +1960,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
-                        const machineId =res.locals["machineId"]?.machineId;
+                        const machineId =res.locals["machineId"];
                         if (!machineId) throw new Error("machine is not exit");
                         res.send(
                             PrintSucceeded(
@@ -2042,11 +2042,11 @@ export class InventoryZDM8 implements IBaseClass {
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
-                        const machineId = res.locals["machineId"]?.machineId;
+                        const machineId = res.locals["machineId"];
                         if (!machineId) throw new Error("machine is not exit");
                         const m = await machineClientIDEntity.findOne({
                             where: {
-                                machineId: machineId
+                                machineId: machineId.machineId
                             },
                         });
                         const ownerUuid = m?.ownerUuid || "";
@@ -2058,7 +2058,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives }, machineId: machineId } })
+                            .findAll({ where: { isActive: { [Op.or]: actives }, machineId:  machineId.machineId } })
                             .then((r) => {
                                 res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
                             })
