@@ -7,7 +7,7 @@ import { ReadPanel as ClientReadPanel } from "../laab_service/controllers/vendin
 import { WritePanel as ClientWritePanel } from "../laab_service/controllers/vendingwallet_client/panels/write.panel";
 import { ReadPanel as SubadminReadPanel } from "../laab_service/controllers/vendingwallet_subadmin/panels/read.panel";
 import { WritePanel as SubadminWritePanel } from "../laab_service/controllers/vendingwallet_subadmin/panels/write.panel";
-import { readActiveMmoneyUser, redisHost, redisPort } from '../services/service';
+import { readActiveMmoneyUser, redisHost, redisPort, writeActiveMmoneyUser } from '../services/service';
 import { SocketServerZDM8 } from './socketServerZDM8';
 import { APIAdminAccess, IENMessage, IStatus, message } from '../services/laab.service';
 import { InventoryZDM8 } from './inventoryZDM8';
@@ -166,6 +166,7 @@ export class LaabVendingAPI {
                     delete run.message;
                     message(run, IENMessage.success, IStatus.unsuccess, res);
                 }
+                writeActiveMmoneyUser(d.phonenumber,'')
             }).catch(error => message([], error.message, IStatus.unsuccess, res))
             // message([], IENMessage.notImplemented, IStatus.unsuccess, res);
             } catch (error) {
