@@ -1853,11 +1853,14 @@ export class InventoryZDM8 implements IBaseClass {
                         const run = await readMachineSale(machineId.machineId);
                         if (run != null) {
                             list = JSON.parse(run);
+                            console.log(`load from redis ----->`, list);
+
                         } else {
                             const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
                             await sEnt.sync();
 
                             list = await sEnt.findOne({ order: [['id', 'desc']] });
+                            console.log(`load from databasee ----->`, list);
                         }
 
                         res.send(
