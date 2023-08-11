@@ -1992,12 +1992,13 @@ export class InventoryZDM8 implements IBaseClass {
         this.checkMachineIdToken,
         async (req, res) => {
           try {
+            console.log(`machine id der`,  res.locals["machineId"]);
+
             const isActive = req.query["isActive"];
             let actives = [];
             if (isActive == "all") actives.push(...[true, false]);
             else actives.push(...(isActive == "yes" ? [true] : [false]));
             const machineId = res.locals["machineId"]?.machineId;
-            console.log(`machine id der`, machineId);
             if (!machineId) throw new Error("machine is not exit");
             const m = await machineClientIDEntity.findOne({
               where: {
@@ -2005,14 +2006,10 @@ export class InventoryZDM8 implements IBaseClass {
               },
             });
             const ownerUuid = m?.ownerUuid || "";
-            const sEnt = VendingMachineSaleFactory(
-              EEntity.vendingmachinesale + "_" + ownerUuid,
-              dbConnection
-            );
+            const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,dbConnection);
             await sEnt.sync();
-            sEnt
-              .findAll({ where: { isActive: { [Op.or]: actives } } })
-              .then((r) => {
+
+            sEnt.findAll({ where: { isActive: { [Op.or]: actives } } }).then((r) => {
                 res.send(
                   PrintSucceeded(
                     "listSale",
