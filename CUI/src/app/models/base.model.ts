@@ -1,4 +1,5 @@
 export enum IENMessage {
+    notFoundYourMMoneyAccount = 'Not found your MMoney account',
     saveSaleFail = 'save sale fail',
     endShouldMoreThenStart = 'end should more then start',
     startShouldLesterThenEnd = 'start should lester then end',

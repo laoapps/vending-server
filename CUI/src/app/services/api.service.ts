@@ -35,6 +35,7 @@ import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
 import axios from 'axios';
+import Swal from "sweetalert2";
 
 @Injectable({
   providedIn: 'root',
@@ -378,6 +379,38 @@ export class ApiService {
       r ? this.modal.dismiss({ data }) : null;
     });
   }
+
+  public alertSuccess(text: string) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Successfully',
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#28B463',
+      heightAuto: false
+    });
+
+    setTimeout(() => {
+      Swal.close();
+    }, 5000);
+  }
+  public alertError(text: string) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Fail',
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#CB4335',
+      heightAuto: false
+    });
+    setTimeout(() => {
+      Swal.close();
+    }, 5000);
+  }
+
+  
   public updateOnlineStatus() {
     this.wsAlive.isAlive = this.checkOnlineStatus();
     // console.log(this.wsAlive.time);

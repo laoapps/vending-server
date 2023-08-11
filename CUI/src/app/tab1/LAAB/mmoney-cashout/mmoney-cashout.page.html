@@ -59,7 +59,7 @@
           <div class="form-group">
             <div class="item">
               <div class="text">Account</div>
-              <div class="value"><i class="fa-solid fa-wallet"></i> {{ apiService.cash.amount | number }}</div>
+              <div class="value"><i class="fa-solid fa-wallet"></i> {{ fullname }}</div>
             </div>
             <div class="item">
               <div class="text">Phone Number</div>
@@ -88,19 +88,19 @@
       <div class="btn-options">
         <div class=""></div>
         <div class=""></div>
-        <a (click)="openCustomAmountPage()" href="javascript:void(0)" class="item-left">
+        <a (click)="customePhonenumber()" href="javascript:void(0)" class="item-left">
           <div class="left">
             <i class="fa-solid fa-keyboard" style="color: #fff;"></i>
           </div>
           <div class="right">
-            <div class="text">Custome</div>
-            <div class="sub-text">custome payment amount </div>
+            <div class="text">Back</div>
+            <div class="sub-text">custome phone number </div>
           </div>
         </a>
-        <a (click)="confirm()" href="javascript:void(0)" class="item-right">
+        <a (click)="transfer()" href="javascript:void(0)" class="item-right">
           <div class="left">
             <div class="text">Confirm</div>
-            <div class="sub-text">confirm phone payment</div>
+            <div class="sub-text">confirm cashout</div>
           </div>
           <div class="right">
             <i class="fa-solid fa-circle-check" style="color: #fff;"></i>

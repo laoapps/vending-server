@@ -2782,7 +2782,7 @@ export class InventoryZDM8 implements IBaseClass {
                     if (!machineId) throw new Error("Invalid token");
                     let a = machineId?.data?.find(v => v.settingName == 'setting');
                     let mId = a?.imei + ''; // for MMoney need 10 digits\
-                    if (!mId) throw new Error('MMoney need IMEI');
+                    if (!mId) mId=machineId.machineId;
                     const x = new Date().getTime();
                     const transactionID = String(mId.substring(mId.length - 10)) + (x + '').substring(2);
 

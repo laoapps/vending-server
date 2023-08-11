@@ -78,7 +78,9 @@ export class GetMMoneyUserInfoProccess {
                 this.apiService.getMMoneyUserInfo(this.phonenumber).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
-                    if (response.status != 1) return resolve(response.message);
+                    if (response.status == 1 && response.data.responseCode != '0000' || response.status != 1) return resolve(IENMessage.notFoundYourMMoneyAccount);
+                    this.name = response.data.name;
+                    this.surname = response.data.surname;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
                 

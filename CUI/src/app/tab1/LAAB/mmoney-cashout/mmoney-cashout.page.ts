@@ -26,6 +26,7 @@ export class MmoneyCashoutPage implements OnInit {
   numberList: Array<string> = [];
   placeholder: string = 'ENTER PHONE NUMBER';
   phonenumber: string;
+  fullname: string;
 
   constructor(
     public apiService: ApiService,
@@ -71,6 +72,11 @@ export class MmoneyCashoutPage implements OnInit {
     }
   }
 
+  customePhonenumber() {
+    this.showPhonenumberPage = true;
+    this.showMMoneyProfile = false;
+    this.fullname = '';
+  }
   next(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
@@ -85,12 +91,13 @@ export class MmoneyCashoutPage implements OnInit {
 
         this.showPhonenumberPage = false;
         this.showMMoneyProfile = true;
+        this.fullname = run.data[0].name + ' ' + run.data[0].surname;
 
       
         resolve(IENMessage.success);
 
       } catch (error) {
-        this.apiService.simpleMessage(error.message);
+        this.apiService.alertError(error.message);
         resolve(error.message);
       }
     });
