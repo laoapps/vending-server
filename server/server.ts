@@ -81,7 +81,7 @@ CreateDatabase("")
 
     // laab
     const laabVendingAPI = new LaabVendingAPI(app, invZDM8.ssocket, invZDM8);
-    const laabVendingAPI3 = new LaabVendingAPI(app, invLocker.ssocket, invZDM8);
+    // const laabVendingAPI3 = new LaabVendingAPI(app, invLocker.ssocket, invZDM8);
     const sss = Array<IBaseClass>();
     sss.push(
       // invM102,
