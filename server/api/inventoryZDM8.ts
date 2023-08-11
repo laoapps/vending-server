@@ -1852,8 +1852,7 @@ export class InventoryZDM8 implements IBaseClass {
                         let list: any = {} as any;
                         const run = await readMachineSale(machineId.machineId);
                         if (run != null) {
-                            list = run;
-                            list = JSON.parse(list);
+                            list = JSON.parse(run);
                         } else {
                             const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
                             await sEnt.sync();
