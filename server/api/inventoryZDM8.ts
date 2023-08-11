@@ -2094,8 +2094,7 @@ export class InventoryZDM8 implements IBaseClass {
                         let ownerUuid = res.locals["ownerUuid"] || "";
                         const machineId = req.query["machineId"] + "";
 
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                        const sEnt = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,
                             dbConnection
                         );
                         await sEnt.sync();
@@ -2104,7 +2103,7 @@ export class InventoryZDM8 implements IBaseClass {
                             .findAll({ where: { machineId, isActive: { [Op.or]: actives } } })
                             .then((r) => {
                                 res.send(
-                                    PrintSucceeded("listSaleByMachine", r, EMessage.succeeded, returnLog(req, res))
+                                    PrintSucceeded("listSaleByMachine" + 'owneruuidder' + ownerUuid, r, EMessage.succeeded, returnLog(req, res))
                                 );
                             })
                             .catch((e) => {
