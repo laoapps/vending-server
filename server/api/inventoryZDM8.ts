@@ -1633,7 +1633,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/cloneAds",
                 this.checkSuperAdmin,
-                this.checkSuperAdmin,
+                this.authorizeSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1669,7 +1669,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/removeAds",
                 this.checkSuperAdmin,
-                this.checkSuperAdmin,
+                this.authorizeSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1880,9 +1880,11 @@ export class InventoryZDM8 implements IBaseClass {
             );
             router.post(
                 this.path + "/readMachineSaleForAdmin",
-                this.checkAdmin,
-                this.checkSubAdmin,
                 this.checkSuperAdmin,
+                this.checkSubAdmin,
+             
+                this.checkAdmin,
+               
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -1999,9 +2001,10 @@ export class InventoryZDM8 implements IBaseClass {
             // REPORT
             router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
-                this.checkAdmin,
-                this.checkSubAdmin,
                 this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                
                 (req, res) => {
                     try {
 
@@ -2078,9 +2081,9 @@ export class InventoryZDM8 implements IBaseClass {
             );
             router.post(
                 this.path + "/listSaleByMachine",
+                this.checkSuperAdmin,
                 this.checkAdmin,
                 this.checkSubAdmin,
-                this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -2120,9 +2123,9 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/reportStock",
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
-                this.checkAdmin,
-                this.checkSubAdmin,
                 this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
                 async (req, res) => {
                     try {
                     } catch (error) {
