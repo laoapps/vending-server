@@ -1985,9 +1985,11 @@ export class InventoryZDM8 implements IBaseClass {
           }
         }
       );
+
+    //   listsale machine
       router.post(
         this.path + "/listSale",
-        this.checkMachineIdToken.bind(this),
+        this.checkMachineIdToken,
         async (req, res) => {
           try {
             const isActive = req.query["isActive"];
@@ -1995,10 +1997,11 @@ export class InventoryZDM8 implements IBaseClass {
             if (isActive == "all") actives.push(...[true, false]);
             else actives.push(...(isActive == "yes" ? [true] : [false]));
             const machineId = res.locals["machineId"]?.machineId;
+            console.log(`machine id der`, machineId);
             if (!machineId) throw new Error("machine is not exit");
             const m = await machineClientIDEntity.findOne({
               where: {
-                machineId,
+                machineId
               },
             });
             const ownerUuid = m?.ownerUuid || "";
