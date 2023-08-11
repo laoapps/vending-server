@@ -314,7 +314,7 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log("CB COMFIRM", d);
                         const c = d.data as IMMoneyConfirm;
                         // c.wallet_ids
-                        this.callBackConfirmMmoney(c.tranid_client, Number(c.amount))
+                        this.callBackConfirmMmoney(c.wallet_ids,c.tranid_client, Number(c.amount))
                             .then((r) => {
                                 res.send(
                                     PrintSucceeded(
@@ -507,6 +507,10 @@ export class InventoryZDM8 implements IBaseClass {
                             ent.create(bill).then((r) => {
                                 console.log("SET transactionID by owner", ownerUuid);
 
+                                // TODO DELETE LATER
+                                redisClient.setEx(this.qrmmoneywallet_id + "--_", 60 * 15, ownerUuid);
+                                redisClient.setEx(ownerUuid + "--_", 60 * 15, transactionID);
+                                //
                                 redisClient.setEx(transactionID + "--_", 60 * 15, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
@@ -3630,12 +3634,14 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    callBackConfirmMmoney(transactionID: string, amount: number) {
+    callBackConfirmMmoney(wallet_ids:string,transactionID: string, amount: number) {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
                 console.log("transactionID", transactionID, "value", amount);
 
-                const ownerUuid = (await redisClient.get(transactionID + "--_")) || "";
+                // const ownerUuid = (await redisClient.get(transactionID + "--_")) || ""; TODO LATER
+                const ownerUuid = (await redisClient.get(wallet_ids + "--_")) || "";
+                transactionID = (await redisClient.get(ownerUuid + "--_")) || "";
                 console.log("GET transactionID by owner", ownerUuid);
                 if (!ownerUuid && this.production)
                     throw new Error(EMessage.TransactionTimeOut);
@@ -3648,7 +3654,8 @@ export class InventoryZDM8 implements IBaseClass {
                 });
 
                 if (!bill) throw new Error(EMessage.billnotfound);
-                await redisClient.del(transactionID + "--_");
+                await redisClient.del(wallet_ids + "--_");
+                await redisClient.del(ownerUuid + "--_");
 
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
@@ -4271,7 +4278,7 @@ export class InventoryZDM8 implements IBaseClass {
     confirmMMoneyOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
-            this.callBackConfirmMmoney(c.tranid_client, Number(c.amount))
+            this.callBackConfirmMmoney(c.wallet_ids,c.tranid_client, Number(c.amount))
                 .then((r) => {
                     resolve({ bill: r, transactionID: c.tranid_client });
                 })

@@ -23,6 +23,7 @@ export class MmoneyCashoutPage implements OnInit {
   private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
   private getMMoneyUserInfoProcess: GetMMoneyUserInfoProccess;
 
+  subtitle: string = 'Enter your mmoney account';
   numberList: Array<string> = [];
   placeholder: string = 'ENTER PHONE NUMBER';
   phonenumber: string;

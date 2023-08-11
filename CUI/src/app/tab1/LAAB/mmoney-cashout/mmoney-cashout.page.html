@@ -39,13 +39,13 @@
     <div class="laab-card-options">
       <div class="left"></div>
       <div class="right">
-        <a (click)="back()" href="javascript:void(0)" class="btn-close-modal">
+        <a (click)="customePhonenumber()" href="javascript:void(0)" class="btn-close-modal">
           <i class="fa-solid fa-arrow-left"></i> Back
         </a>
       </div>
     </div>
     <div class="laab-card-header">
-      <div class="title">Phone Payment</div>
+      <div class="title">MMoney Cash Out</div>
       <div class="sub-title">{{ subtitle }}</div>
 
 
@@ -77,10 +77,6 @@
 
     </div>
     <div class="laab-card-body">
-
-      <div class="money-list">
-        <a *ngFor="let list of moneyList; let i = index" (click)="selectAmount(list)" href="javascript:void(0)" class="item">{{ list }}</a>
-      </div>
 
     </div>
 
