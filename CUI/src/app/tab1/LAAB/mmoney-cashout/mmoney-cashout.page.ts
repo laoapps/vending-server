@@ -15,6 +15,9 @@ export class MmoneyCashoutPage implements OnInit {
 
   @Input() stackCashoutPage: any;
 
+  showPhonenumberPage: boolean = true;
+  showMMoneyProfile: boolean = false;
+
   private transferValidationProcess: TransferValidationProcess;
   private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
 
