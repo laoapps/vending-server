@@ -52,9 +52,12 @@
           
           <div class="item-card-header">
             <div class="left">
-              <a  *ngIf="readonly == false" (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i> Create new machine</a>
-              <a  *ngIf="readonly == false" (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-file"></i> All sale report</a>
+              <!-- <a  *ngIf="readonly == false" (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i> Create new machine</a>
+              <a  *ngIf="readonly == false" (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-file"></i> All sale report</a> -->
               <!-- <a (click)="epinManagement()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-qrcode"></i> EPIN Management</a> -->
+
+               <a  (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i> Create new machine</a>
+              <a  (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-file"></i> All sale report</a>
             </div>
             <div class="right">
               <a (click)="loadMachine()" href="javascript:void(0)" class="btn-item-reload"><i class="fa-solid fa-arrows-rotate"></i> Reload</a>

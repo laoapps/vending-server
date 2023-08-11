@@ -19,6 +19,7 @@ export class SettingPage implements OnInit, OnDestroy {
   contact = localStorage.getItem('contact') || '55516321';
   isRobotMuted=localStorage.getItem('isRobotMuted')?true:false;
   isMusicMuted=localStorage.getItem('isMusicMuted')?true:false;
+  isAds=localStorage.getItem('isAds')?true:false;
   musicVolume=localStorage.getItem('musicVolume')?Number(localStorage.getItem('musicVolume')):6;
   startM: number = 1;
   endM = 60;
@@ -52,6 +53,7 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('contact', this.contact)
     localStorage.setItem('isRobotMuted',this.isRobotMuted?'yes':'');
     localStorage.setItem('isMusicMuted',this.isMusicMuted?'yes':'');
+    localStorage.setItem('isAds',this.isAds?'yes':'');
     localStorage.setItem('musicVolume',this.musicVolume+'');
     this.storage.set('saleStock',[], 'stock').then(r=>{
       console.log('reset',r);

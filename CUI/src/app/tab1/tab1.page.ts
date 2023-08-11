@@ -186,14 +186,18 @@ export class Tab1Page {
             if(this.autopilot.auto>=6){
               // load ads when no active
               // if(!adsOn)
-              this.apiService.showModal(AdsPage).then(r=>{
-                r.present();
-                this.checkActiveModal(r);
-                // adsOn=true;
-                // r.onDidDismiss().then(rx=>{
-                //   adsOn=false;
-                // })
-              })
+              const adsSlide = localStorage.getItem('isAds');
+              if (adsSlide != undefined && adsSlide == 'yes' ) {
+                this.apiService.showModal(AdsPage).then(r=>{
+                  r.present();
+                  this.checkActiveModal(r);
+                  // adsOn=true;
+                  // r.onDidDismiss().then(rx=>{
+                  //   adsOn=false;
+                  // })
+                })
+              }
+
 
               this.apiService.soundGreeting();
               setTimeout(() => {

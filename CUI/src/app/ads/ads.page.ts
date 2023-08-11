@@ -32,6 +32,7 @@ export class AdsPage implements OnInit, OnDestroy {
   // TODO: HERE
   ngOnInit() {
 
+
     this.videoPlayer = document.createElement('video');
     this.loadAds();
   }

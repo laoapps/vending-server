@@ -2086,17 +2086,13 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const isActive = req.query['isActive'];
-                        const subadmin = res.locals['subadmin'];
+                        console.log(`owneruuid der`, res.locals["ownerUuid"]);
 
                         let actives = [];
                         if (isActive == 'all') actives.push(...[true, false]);
                         else actives.push(...isActive == 'yes' ? [true] : [false]);
                         let ownerUuid = res.locals["ownerUuid"] || "";
                         const machineId = req.query["machineId"] + "";
-
-
-                        let array: Array<any> = [];
-                        if (subadmin != null) { ownerUuid = subadmin }
 
                         const sEnt = VendingMachineSaleFactory(
                             EEntity.vendingmachinesale + "_" + ownerUuid,
@@ -2107,25 +2103,8 @@ export class InventoryZDM8 implements IBaseClass {
                         sEnt
                             .findAll({ where: { machineId, isActive: { [Op.or]: actives } } })
                             .then((r) => {
-                                array = r;
-                                if (subadmin != null) {
-                                    array = r.map(item => {
-                                        return {
-                                            readonly: true,
-                                            id: item.id,
-                                            max: item.max,
-                                            position: item.position,
-                                            updatedAt: item.updatedAt,
-                                            stock: {
-                                                name: item.stock.name,
-                                                price: item.stock.price,
-                                                image: item.stock.image,
-                                            }
-                                        }
-                                    });
-                                }
                                 res.send(
-                                    PrintSucceeded("listSaleByMachine", array, EMessage.succeeded, returnLog(req, res))
+                                    PrintSucceeded("listSaleByMachine", r, EMessage.succeeded, returnLog(req, res))
                                 );
                             })
                             .catch((e) => {
