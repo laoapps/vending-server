@@ -47,14 +47,14 @@ export const DoorPaymentFactory = (name: string, sequelize: Sequelize): DoorPaym
         machineId: {
             type: DataTypes.STRING,
         },
-    door: {
+        door: {
             type: DataTypes.JSONB,
         },
         doorNumber: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.FLOAT,
         },
         cabinetNumber: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.FLOAT,
         },
         productUuid: {
             type: DataTypes.STRING,
@@ -63,7 +63,7 @@ export const DoorPaymentFactory = (name: string, sequelize: Sequelize): DoorPaym
             type: DataTypes.STRING,
         },
         price: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.FLOAT,
         },
         isPaid: {
             type: DataTypes.BOOLEAN,

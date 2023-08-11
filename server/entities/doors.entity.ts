@@ -50,10 +50,10 @@ export const DoorFactory = (name: string, sequelize: Sequelize): DoorStatic => {
             type: DataTypes.JSONB,
         },
         doorNumber: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.FLOAT,
         },
         cabinetNumber: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.FLOAT,
         },
         data: {
             type: DataTypes.JSONB,
@@ -74,10 +74,10 @@ export const DoorFactory = (name: string, sequelize: Sequelize): DoorStatic => {
             type: DataTypes.DATE,
         },
         minValue: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.FLOAT,
         },
         maxValue: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.FLOAT,
         }
 
     } as ModelAttributes<DoorModel>;
