@@ -85,7 +85,7 @@
                     <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
                     <td>{{p.machineId}}</td>
                     <td>{{p.otp}}</td>
-                    <td>{{p.updatedAt|date:'yy-MM-dd HH:mm:ss':'offsettz||420'}}</td>
+                    <td>{{p.updatedAt|date:dateformat:'offsettz||420'}}</td>
                     <td><ion-toggle  [(ngModel)]="p.isActive" (ngModelChange)="disable(p.id)" ></ion-toggle></td>
                     <td>
                       <button (click)="machineWallet(p.id)" class="btn btn-light border border-1 "><i class="fa-solid fa-wallet"></i> Machine Wallet</button>
@@ -120,7 +120,7 @@
                     <td colspan="7" >
                       <div>Status </div>
                       <p>temp:{{findMachine(p?.machineId)?.temp}}</p>
-                      <p>last Update:{{findMachine(p?.machineId)?.lastUpdate|date:'offsettz||420'}}</p>
+                      <p>last Update:{{findMachine(p?.machineId)?.lastUpdate|date:dateformat:'offsettz||420'}}</p>
                     </td>
                   </tr>
                 </tbody>
