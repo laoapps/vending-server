@@ -178,7 +178,7 @@ export class VendingVMC {
                 else if (b.startsWith('fafb21')) {// receive banknotes
                     console.log('receive banknotes 21', b);
                     //FAFB2106C608000186A0CF.  // if it is 08 then ignore
-                    if(b.substring(10,12)=='08'){
+                    if(b.substring(10,12)=='08'){//fafb21068308000186a08a
                         // ignore because it is a report that it was swallowed
 
                     }else if(b.substring(10,12)=='01'){
