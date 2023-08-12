@@ -8,7 +8,7 @@ import helmet from 'helmet';
 import express, { Router } from 'express';
 import axios from 'axios';
 import tls from 'tls';
-import { KiosESSP2 } from './kios.essp2';
+import { KiosESSP } from './kios.essp';
 export class SocketKiosClient {
     //---------------------client----------------------
 
@@ -20,10 +20,10 @@ export class SocketKiosClient {
     otp = '111111';
     token = '';
     t: any;
-    m: KiosESSP2;
+    m: KiosESSP;
     constructor(serverPort=51224,port='/dev/ttyS1') {
         this.port = serverPort;
-        this.m = new KiosESSP2(this,port);
+        this.m = new KiosESSP(this,port);
         this.init();
         this.token = cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex)
     }

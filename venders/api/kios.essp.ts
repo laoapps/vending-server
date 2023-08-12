@@ -114,7 +114,7 @@ export class KiosESSP {
                         this.transactionID=-1;
                         this.eSSP.command('DISABLE').then(result => {
                             console.log('DISABLE', this.transactionID);
-                            this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
+                            this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },this.transactionID, EMACHINE_COMMAND.status);
                         })
                     }
                 } catch (error) {
@@ -145,13 +145,13 @@ export class KiosESSP {
                 if (this.transactionID != -1) {
                     this.eSSP.command('ENABLE').then(result => {
                         console.log('ENABLED', transactionID);
-                        this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' }, EMACHINE_COMMAND.status);
+                        this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'ENABLE' },transactionID, EMACHINE_COMMAND.status);
                     })
 
                 } else {
                     this.eSSP.command('DISABLE').then(result => {
                         console.log('DISABLE', transactionID);
-                         this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
+                         this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' },transactionID, EMACHINE_COMMAND.status);
                     })
                 }
             })
@@ -546,7 +546,7 @@ export class KiosESSP {
                         .then(result => {
                             try {
                                 console.log(result)
-                                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'NOTE_REJECTED' }, EMACHINE_COMMAND.status);
+                                this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'NOTE_REJECTED' },this.transactionID, EMACHINE_COMMAND.status);
 
                             } catch (error) {
                                 console.log(error);
@@ -570,7 +570,7 @@ export class KiosESSP {
                         this.eSSP.command('REJECT_BANKNOTE').then(r => {
                             // this.eSSP.disable()
                             this.writeLog(result, 'REJECT_BANKNOTE');
-                            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'REJECT_BANKNOTE' }, EMACHINE_COMMAND.status);
+                            this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'REJECT_BANKNOTE' },this.transactionID, EMACHINE_COMMAND.status);
                             // this.isReading=false;
                             result.transactionID = this.transactionID;
                             this.writeLog(result, 'REJECT_BANKNOTE')
@@ -579,7 +579,7 @@ export class KiosESSP {
                         return;
                     }
                     else if (!countRead && this.counter > 5) {
-                        this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
+                        this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' },this.transactionID, EMACHINE_COMMAND.status);
                         countRead = 1;
                         return;
                     }
@@ -588,7 +588,7 @@ export class KiosESSP {
 
                     else if (countRead && result.channel > 0 && this.transactionID !== -1) {
                         countRead = 0;
-                        this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' }, EMACHINE_COMMAND.status);
+                        this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'READ_NOTE' },this.transactionID, EMACHINE_COMMAND.status);
                         // this.isReading=false;
                         result.transactionID = this.transactionID;
                         this.writeLog(result, 'READ_NOTE')
@@ -605,7 +605,7 @@ export class KiosESSP {
             this.eSSP.on('CREDIT_NOTE', result => {
                 try {
                     console.log('CREDIT_NOTE', result)
-                    this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' }, EMACHINE_COMMAND.status);
+                    this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'CREDIT_NOTE' },this.transactionID, EMACHINE_COMMAND.status);
                     result.transactionID = this.transactionID;
                     this.writeLog(result, 'CREDIT_NOTE');
                     // this.isReading=false;
@@ -627,7 +627,7 @@ export class KiosESSP {
             this.eSSP.on('JAMMED', result => {
                 try {
                     console.log('JAMMED', result)
-                    this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'JAMMED' }, EMACHINE_COMMAND.status);
+                    this.sock?.send({ channel: result.channel, transactionID: this.transactionID, command: 'JAMMED' },this.transactionID, EMACHINE_COMMAND.status);
                     // this.eSSP.command('DISABLE').then(result => {
                     // this.sock?.send({ channel: result, transactionID: this.transactionID, command: 'DISABLE' }, EMACHINE_COMMAND.status);
                     // })
