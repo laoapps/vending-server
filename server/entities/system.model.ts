@@ -1291,15 +1291,35 @@ export interface IMMoneyGenerateQRRes {
 
 }
 export interface IMMoneyConfirm {
-    amount: string,
+    // amount: string,
+    // wallet_ids: string,
+    // password: string,
+    // channel: string,//POS
+    // resultCode: string,//200
+    // resultDescription: string,//'Operation'
+    // trandID: string, // 
+    // tranid_client: string,
+    // PhoneNumber: string
+
+
+
+    // new
     wallet_ids: string,
-    password: string,
+       
     channel: string,//POS
     resultCode: string,//200
     resultDescription: string,//'Operation'
-    trandID: string, // 
+   
+    PhoneNumber: string,
+
     tranid_client: string,
-    PhoneNumber: string
+    trandID: string, // 
+    amount: string,
+    msisdn_merchan:string,
+    msisdn_consumer:string,
+    qrcode:string
+
+
 }
 export interface IBillProcess {
     ownerUuid: string;
