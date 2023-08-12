@@ -426,6 +426,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
                                 y.stock.qtty = 1;
                                 y.stock.image = "";
+                                y.machineId=machineId.machineId
                                 checkIds.push(y);
                             });
                             // console.log(' checkids', sale);
