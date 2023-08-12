@@ -3526,7 +3526,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         axios
                             .post<IMMoneyGenerateQRRes>(
-                                "https://qr.mmoney.la/pro/GenerateQR_V2",
+                                "https://qr.mmoney.la/pro/GenerateQR_v2",
                                 qr,
                                 { headers: { 'lmm-key':'va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17' } }
                             )
