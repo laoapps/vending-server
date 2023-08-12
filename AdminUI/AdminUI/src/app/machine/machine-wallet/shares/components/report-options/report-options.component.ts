@@ -16,6 +16,7 @@ const momenttimezone = require('moment-timezone');
 })
 export class ReportOptionsComponent implements OnInit {
   offsettz = 420;
+  dateformat='yyyy:MM:dd HH:mm:ss'
   defendClick: boolean = false;
 
   private loadVendingWalletReportProcess: LoadVendingWalletReportsProcess;
@@ -33,6 +34,7 @@ export class ReportOptionsComponent implements OnInit {
     private vendingAPIService: VendingAPIService
   ) {
     this.offsettz=this.apiService.offsettz;
+    this.dateformat=this.apiService.dateformat;
     this.loadVendingWalletReportProcess = new LoadVendingWalletReportsProcess(this.apiService, this.vendingAPIService);
   }
 

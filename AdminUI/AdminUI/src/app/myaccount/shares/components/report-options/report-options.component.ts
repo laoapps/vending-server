@@ -17,6 +17,7 @@ export class ReportOptionsComponent implements OnInit {
 
   defendClick: boolean = false;
   offsettz = 420;
+  dateformat='yyyy:MM:dd HH:mm:ss'
   private loadMerchantReportProcess: LoadMerchantReportsProcess;
   private loadVendingReportProcess: LoadVendingLimiterReportsProcess;
 
@@ -33,6 +34,7 @@ export class ReportOptionsComponent implements OnInit {
     private vendingAPIService: VendingAPIService
   ) { 
     this.offsettz=this.apiService.offsettz;
+    this.dateformat=this.apiService.dateformat;
     this.loadMerchantReportProcess = new LoadMerchantReportsProcess(this.apiService, this.vendingAPIService);
     this.loadVendingReportProcess = new LoadVendingLimiterReportsProcess(this.apiService, this.vendingAPIService);
   }

@@ -25,7 +25,7 @@
             <tr>
               <td>{{ statement }}</td>
               <td>{{ list.lastUpdatedValue | number }} coin</td>
-              <td>{{ list.updatedAt | date:'dd-MM-YYYY HH:mm:ss':'offsettz||420' }}</td>
+              <td>{{ list.updatedAt | date:dateformat:'offsettz||420' }}</td>
               <td>
                 <button (click)="gotoDetail(list.lastUpdatedHashing,list.balanceType, 'text', list.description)" class="btn-verify">Verify</button>
               </td>
