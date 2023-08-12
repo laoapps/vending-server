@@ -1,36 +1,36 @@
 
 
 
-import { KiosESSP } from './api/kios.essp';
-import { SocketKiosClient } from './api/socketClient.kiosk';
-import { SocketKiosClientVending } from './api/socketClient.kiosk.vending';
-import fs from 'fs';
+// import { KiosESSP } from './api/kios.essp';
+// import { SocketKiosClient } from './api/socketClient.kiosk';
 
-var clients=new Array<any>();
-try {
-  clients = [
+// import fs from 'fs';
 
-    new SocketKiosClientVending()];
+// var clients=new Array<any>();
+// try {
+//   clients = [
 
-  process.on('exit', (code: number) => {
-    console.log('exit code', code);
+//     new SocketKiosClientVending()];
 
-    clients.forEach(v => {
-      v.close();
-    })
-  });
-} catch (error) {
-  console.log((error));
-  const e = error as any;
-  fs.appendFile(__dirname + '/config.json', JSON.stringify(e), (err) => {
-    console.log(err);
-  });
-  clients.length=0;
-  setTimeout(() => {
-    clients = [
+//   process.on('exit', (code: number) => {
+//     console.log('exit code', code);
 
-      new SocketKiosClientVending()];
-  }, 5000);
+//     clients.forEach(v => {
+//       v.close();
+//     })
+//   });
+// } catch (error) {
+//   console.log((error));
+//   const e = error as any;
+//   fs.appendFile(__dirname + '/config.json', JSON.stringify(e), (err) => {
+//     console.log(err);
+//   });
+//   clients.length=0;
+//   setTimeout(() => {
+//     clients = [
+
+//       new SocketKiosClientVending()];
+//   }, 5000);
   
 
-}
+// }

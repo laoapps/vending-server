@@ -1,5 +1,5 @@
 
-import { KiosESSP2 } from './api/kios.essp2';
+// import { KiosESSP2 } from './api/kios.essp2';
 import { SocketKiosClient } from './api/socketClient.kiosk';
 import { SocketClientM102 } from './api/socketClient.m102';
 import { SocketClientVMC } from './api/socketClient.vmc';

@@ -1,5 +1,5 @@
 import * as net from 'net';
-import { EM102_COMMAND, EMACHINE_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
+import { EM102_COMMAND, EMACHINE_COMMAND, EZDM8_COMMAND, IReqModel, IResModel } from '../entities/syste.model';
 import cryptojs from 'crypto-js'
 import { VendingZDM8 } from './vendingZDM8';
 
@@ -47,30 +47,77 @@ export class SocketClientZDM8 {
 
         app.post('/', (req, res) => {
             const d = req.body as IResModel;
+            try {
+                console.log('HTTP REQUEST BODY', d);
 
-            // { slot: position };
-            const param = d.data;
-            this.processorder(d.transactionID).then(r => {
-                if(r.data.transactionID==d.transactionID){
-                    this.m.command(d.command as any, param, d.transactionID).then(r => {
-                        console.log('DATA command completed');
-    
-                        this.send(r, d.transactionID, d.command as any);
+                // { slot: position };
+                const command = d.command;
+                const param = d.data;
+                if (command == 'test') {
+
+                    this.m.command(EZDM8_COMMAND.shippingcontrol, param, -1000).then(r => {
+                        res.send({ status: 1, data: r, message: 'test OK' });
                     }).catch(e => {
-                        if (e) {
-                            console.log('DATA command error', e);
-    
-                            this.send(e, d.transactionID, d.command as any);
-                        }
-    
-                    })
-                    console.log('DATA response', d.command, d);
-                    res.send({status:1,message:'transactionID OK'});
-                }else{
-                    res.send({status:0,message:'transactionID not found'});
+                        res.send({ status: 0, message: 'test error', data: e });
+                    });
                 }
-                
-            })
+                else if (command == 'process') {
+
+                    this.processorder(d.transactionID).then(r => {
+                        if (r.data.transactionID == d.transactionID) {
+                            this.m.command(d.command as any, param, d.transactionID).then(r => {
+                                if(r.status){
+                                    console.log('DATA command completed');
+                                    this.send(r, d.transactionID, d.command as any);
+                                    res.send({ status: 1, data: r, message: 'process OK' });
+
+                                }else{
+                                    res.send({ status: 0, data: r, message: 'process  error' });
+
+                                }
+                            }).catch(e => {
+                                if (e) {
+                                    console.log('DATA command error', e);
+
+                                    this.send(e, d.transactionID, d.command as any);
+                                }
+                                res.send({ status: 0, data: r, message: 'process  error' });
+                            })
+                            console.log('DATA response', d.command, d);
+                            res.send({ status: 1, message: 'transactionID OK' });
+                        } else {
+                            res.send({ status: 0, message: 'transactionID not found' });
+                        }
+
+                    })
+
+                }
+                else if (command == 'enable') {
+                    this.m.setting.allowVending = Boolean(req.query['enable']) || true;
+                    res.send({ status: 0, message: 'machine status', data: this.m.setting });
+                }
+                else if (command == 'temp') {
+                    this.m.setting.highTemp = Number(req.query['highTemp'] + '') || 15;
+                    this.m.setting.lowTemp = Number(req.query['lowTemp'] + '') || 7;
+                    res.send({ status: 0, message: 'machine status', data: this.m.setting });
+                }
+                else if (command == 'machinestatus') {
+                    res.send({ status: 0, message: 'machine status', data: this.m.machinestatus });
+                }
+                //19006
+                else if (command == 'setting') {
+                    res.send({ status: 0, message: 'machine status', data: this.m.setting });
+                }
+
+                else {
+                    res.send({ status: 0, message: 'command not found' });
+                }
+            } catch (error) {
+                console.log('web service error', error);
+
+            }
+
+
 
 
         })
