@@ -314,7 +314,7 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log("CB COMFIRM", d);
                         const c = d.data as IMMoneyConfirm;
                         // c.wallet_ids
-                        this.callBackConfirmMmoney(c.wallet_ids,c.tranid_client, Number(c.amount))
+                        this.callBackConfirmMmoney(c?.qrcode)
                             .then((r) => {
                                 res.send(
                                     PrintSucceeded(
@@ -505,13 +505,8 @@ export class InventoryZDM8 implements IBaseClass {
                             await ent.sync();
 
                             ent.create(bill).then((r) => {
-                                console.log("SET transactionID by owner", ownerUuid);
-
-                                // TODO DELETE LATER
-                                redisClient.setEx(this.qrmmoneywallet_id + "--_", 60 * 15, ownerUuid);
-                                redisClient.setEx(ownerUuid + "--_", 60 * 15, transactionID);
-                                //
-                                redisClient.setEx(transactionID + "--_", 60 * 15, ownerUuid);
+                                console.log("SET transactionID by owner", ownerUuid);                               
+                                redisClient.setEx(qr.qrCode + EMessage.BillCreatedTemp, 60 * 3, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else {
@@ -3634,14 +3629,13 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    callBackConfirmMmoney(wallet_ids:string,transactionID: string, amount: number) {
+    callBackConfirmMmoney(qr:string) {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
-                console.log("transactionID", transactionID, "value", amount);
+                console.log('QR code',qr);
 
-                // const ownerUuid = (await redisClient.get(transactionID + "--_")) || ""; TODO LATER
-                const ownerUuid = (await redisClient.get(wallet_ids + "--_")) || "";
-                transactionID = (await redisClient.get(ownerUuid + "--_")) || "";
+                // const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || ""; TODO LATER
+                const ownerUuid = (await redisClient.get(qr + EMessage.BillCreatedTemp)) || "";
                 console.log("GET transactionID by owner", ownerUuid);
                 if (!ownerUuid && this.production)
                     throw new Error(EMessage.TransactionTimeOut);
@@ -3650,16 +3644,15 @@ export class InventoryZDM8 implements IBaseClass {
                     dbConnection
                 );
                 const bill = await ent.findOne({
-                    where: { transactionID, totalvalue: amount },
+                    where: { qr },
                 });
 
                 if (!bill) throw new Error(EMessage.billnotfound);
-                await redisClient.del(wallet_ids + "--_");
-                await redisClient.del(ownerUuid + "--_");
+                await redisClient.del(qr + EMessage.BillCreatedTemp);
 
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
-                bill.paymentref = transactionID;
+                bill.paymentref = bill.transactionID+'';
                 bill.changed("paymentref", true);
                 bill.paymenttime = new Date();
                 bill.changed("paymenttime", true);
@@ -3909,12 +3902,12 @@ export class InventoryZDM8 implements IBaseClass {
 
     }
 
-    callBackConfirmLAAB(transactionID: string, amount: number) {
+    callBackConfirmLAAB(qr: string) {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
-                console.log("transactionID", transactionID, "value", amount);
+                console.log('QR Code confirm',qr);
 
-                const ownerUuid = (await redisClient.get(transactionID + "--_")) || "";
+                const ownerUuid = (await redisClient.get(qr + EMessage.BillCreatedTemp)) || "";
                 console.log("GET transactionID by owner", ownerUuid);
                 if (!ownerUuid) throw new Error(EMessage.TransactionTimeOut);
                 const ent = VendingMachineBillFactory(
@@ -3922,15 +3915,15 @@ export class InventoryZDM8 implements IBaseClass {
                     dbConnection
                 );
                 const bill = await ent.findOne({
-                    where: { transactionID, totalvalue: amount },
+                    where: { qr:qr },
                 });
 
                 if (!bill) throw new Error(EMessage.billnotfound);
-                await redisClient.del(transactionID + "--_");
+                await redisClient.del(qr + EMessage.BillCreatedTemp);
 
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
-                bill.paymentref = transactionID;
+                bill.paymentref = bill.transactionID+'';
                 bill.changed("paymentref", true);
                 bill.paymenttime = new Date();
                 bill.changed("paymenttime", true);
@@ -4278,7 +4271,7 @@ export class InventoryZDM8 implements IBaseClass {
     confirmMMoneyOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
-            this.callBackConfirmMmoney(c.wallet_ids,c.tranid_client, Number(c.amount))
+            this.callBackConfirmMmoney(c?.qrcode)
                 .then((r) => {
                     resolve({ bill: r, transactionID: c.tranid_client });
                 })
@@ -4291,9 +4284,9 @@ export class InventoryZDM8 implements IBaseClass {
     confirmLAABOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
-            this.callBackConfirmLAAB(c.tranid_client, Number(c.amount))
+            this.callBackConfirmLAAB(c.qrcode)
                 .then((r) => {
-                    resolve({ bill: r, transactionID: c.tranid_client });
+                    resolve({ bill: r });
                 })
                 .catch((e) => {
                     console.log("error confirmLAABOder");

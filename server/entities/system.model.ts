@@ -1029,7 +1029,8 @@ export enum EMessage {
     adminloginok = "adminloginok",
     InvalidMachineIdOrOTP = "InvalidMachineIdOrOTP",
     refreshsucceeded = "refreshsucceeded",
-    doorExist = "doorExist"
+    doorExist = "doorExist",
+    BillCreatedTemp = "--_"
 }
 export interface IBase {
     id?: number;
