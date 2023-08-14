@@ -2011,7 +2011,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const data = req.body;
                         const subadmin = res.locals['subadmin'];
                         const parmas: ILoadVendingMachineSaleBillReport = {
-                            ownerUuid: subadmin == null ? res.locals["ownerUuid"] : subadmin,
+                            ownerUuid: res.locals["ownerUuid"],
                             machineId: data.machineId,
                             fromDate: data.fromDate,
                             toDate: data.toDate
