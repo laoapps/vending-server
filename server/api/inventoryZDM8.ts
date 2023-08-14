@@ -4473,6 +4473,7 @@ export class loadVendingMachineSaleBillReport {
     }
 
     private InitParams(params: ILoadVendingMachineSaleBillReport): void {
+        console.log(`params der`, params);
         this.ownerUuid = params.ownerUuid;
         this.fromDate = params.fromDate;
         this.toDate = params.toDate;

@@ -13,13 +13,14 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./stocksale.page.scss'],
 })
 export class StocksalePage implements OnInit,OnDestroy {
-
+  prod = environment.production
   saleStock=new Array <IVendingMachineSale>();
   stock = new Array<IStock>();
   compensation=0;
   url = this.apiService.url;
   isDisabled='';
   search='';
+  jsonText=';'
   constructor(public apiService: ApiService,
     public alertController:AlertController,
     public storage: IonicStorageService) {
@@ -281,5 +282,20 @@ export class StocksalePage implements OnInit,OnDestroy {
       this.saleStock = ApiService.vendingOnSale;
       this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
     }
+  }
+  saveJsonText(){
+    try {
+      alert('ARE YOU SURE?')
+      console.log('jsonText',JSON.parse(this.jsonText));
+      
+      this.apiService.saveSale(JSON.parse(this.jsonText)).subscribe(r=>{
+        console.log('R',r);
+        
+      });
+    } catch (error) {
+      console.log(error);
+      
+    }
+
   }
 }
