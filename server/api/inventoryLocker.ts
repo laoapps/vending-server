@@ -1206,10 +1206,11 @@ export class InventoryLocker implements IBaseClass {
                 // this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
-                this.checkMachineIdToken.bind(this),
+                // this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
-                      const machineId = res.locals['machineId']?.machineId
+                    //   const machineId = res.locals['machineId']?.machineId
+                      const machineId = req.body.machineId
 
                         doorEntity
                             .destroy({ where: { machineId } })
