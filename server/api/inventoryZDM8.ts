@@ -78,6 +78,7 @@ import {
     adsEntity,
     dbConnection,
     laabHashService,
+    logEntity,
     machineCashoutMMoneyEntity,
     machineClientIDEntity,
     machineIDEntity,
@@ -2668,6 +2669,8 @@ export class InventoryZDM8 implements IBaseClass {
         // writeSucceededRecordLog(cres?.bill, cres?.position);
 
         that.sendWSToMachine(bill?.machineId + "", resx);
+        logEntity.create({body:resx})
+
         /// DEDUCT STOCK AT THE SERVER HERE
 
         // No need To update delivering status
@@ -3189,6 +3192,7 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.command = EMACHINE_COMMAND.status;
                         resx.message = EMessage.status;
                         resx.data = re.data;
+                        resx.transactionID=re.transactionID ;
                         // save to redis
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
                         // console.log('writeMachineStatus', machineId.machineId, re.data);
@@ -3196,6 +3200,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         // send to machine client
                         this.sendWSToMachine(machineId.machineId, resx);
+                        logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid']})
 
                         // this.sendWS(ws['clientId'], resx);
                     }
@@ -3204,11 +3209,13 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.command = EMACHINE_COMMAND.status;
                         resx.message = EMessage.status;
                         resx.data = re.data;
+                        resx.transactionID=re.transactionID ;
                         // save to redis
                         // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
                         // console.log('writeMachineStatus', machineId.machineId, re.data);
                         // send to machine client
                         this.sendWSMyMachine(machineId.machineId, resx);
+                        logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid']})
                     }
                     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
                     // fafb52
@@ -3249,6 +3256,20 @@ export class InventoryZDM8 implements IBaseClass {
                 this.getBillProcess((b) => {
                     const cres = b.find((v) => v.transactionID == re.transactionID);
                     try {
+                        const machineId = this.ssocket.findMachineIdToken(re.token);
+                        // writeMachineStatus(machineId.machineId, re.data);
+                        const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
+                        const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
+                        const resx = {} as IResModel;
+                        resx.command = EMACHINE_COMMAND.status;
+                        resx.message = EMessage.status;
+                        resx.data = re.data;
+                        resx.transactionID=re.transactionID ;
+                        if(wsAdmins)
+                        logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid']})
+                        if(ws)
+                        logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid']})
+
                         // vmc response with transactionId and buffer data
                         // zdm8 reponse with transactionId
 
@@ -3314,6 +3335,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // // })
                     } catch (error) {
                         console.log("error onMachineResponse", error);
+                        logEntity.create({body:error});
                         // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
                     }
                 });
