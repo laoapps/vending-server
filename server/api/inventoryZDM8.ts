@@ -2641,10 +2641,10 @@ export class InventoryZDM8 implements IBaseClass {
         resx.command = EMACHINE_COMMAND.confirm;
         resx.message = EMessage.confirmsucceeded;
         if (transactionID < 0)
-            return console.log("onMachineResponse ignore", transactionID);
+            return console.log("deductStock ignore", transactionID);
         if ([22331, 1000].includes(transactionID)) {
             resx.status = 1;
-            console.log("onMachineResponse 22231", transactionID);
+            console.log("deductStock 22231", transactionID);
             resx.transactionID = transactionID || -1;
             resx.data = { bill, position };
             //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
@@ -2653,13 +2653,13 @@ export class InventoryZDM8 implements IBaseClass {
                 bill?.vendingsales?.findIndex((v) => v.position == position) || -1;
             idx == -1 || !idx ? "" : bill?.vendingsales?.splice(idx, 1);
             resx.status = 1;
-            console.log("onMachineResponse xxx", transactionID);
+            console.log("deductStock xxx", transactionID);
             resx.transactionID = transactionID || -1;
             resx.data = { bill, position };
         }
         const clientId = bill?.clientId + "";
         console.log("send", clientId, bill?.clientId, resx);
-        console.log("onMachineResponse", transactionID);
+        console.log("deductStock", transactionID);
 
         ///** always retry */
         const retry = -1; // set config and get config at redis and deduct the retry times;
@@ -2669,7 +2669,7 @@ export class InventoryZDM8 implements IBaseClass {
         // writeSucceededRecordLog(cres?.bill, cres?.position);
 
         that.sendWSToMachine(bill?.machineId + "", resx);
-        logEntity.create({body:resx})
+        logEntity.create({body:resx,url:'deductStock'})
 
         /// DEDUCT STOCK AT THE SERVER HERE
 
@@ -3200,7 +3200,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         // send to machine client
                         this.sendWSToMachine(machineId.machineId, resx);
-                        logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid']})
+                        logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid'],url:'onMachineResponse'})
 
                         // this.sendWS(ws['clientId'], resx);
                     }
@@ -3215,7 +3215,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // console.log('writeMachineStatus', machineId.machineId, re.data);
                         // send to machine client
                         this.sendWSMyMachine(machineId.machineId, resx);
-                        logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid']})
+                        logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid'],url:'onMachineResponse'})
                     }
                     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
                     // fafb52
@@ -3266,9 +3266,9 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.data = re.data;
                         resx.transactionID=re.transactionID ;
                         if(wsAdmins)
-                        logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid']})
+                        logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid'],url:'onMachineResponse'})
                         if(ws)
-                        logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid']})
+                        logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid'],url:'onMachineResponse'})
 
                         // vmc response with transactionId and buffer data
                         // zdm8 reponse with transactionId
@@ -3335,7 +3335,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // // })
                     } catch (error) {
                         console.log("error onMachineResponse", error);
-                        logEntity.create({body:error});
+                        logEntity.create({body:error,url:'onMachineResponse'});
                         // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
                     }
                 });
