@@ -718,13 +718,14 @@ export class InventoryZDM8 implements IBaseClass {
                                         )
                                     );
                                 } else {
+                                    writeErrorLogs('error pos.code',pos);
                                     res.send(
                                         PrintError("retryProcessBill", pos, EMessage.error, returnLog(req, res, true))
                                     );
                                 }
                             } catch (error) {
                                 console.log("error retryProcessBill", error, returnLog(req, res, true));
-
+                                writeErrorLogs(error.message,error);
                                 res.send(
                                     PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true))
                                 );
@@ -733,6 +734,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // }, 1000);
                     } catch (error) {
                         console.log(error);
+                        writeErrorLogs(error.message,error);
                         res.send(PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
