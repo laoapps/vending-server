@@ -74,10 +74,11 @@
           </div>
           <div class="detail">
             <div class="price">Position #{{ s.position }}</div>
-            <a href="javascript:void(0)" class="btn-epin">{{findPrice(getStock(s?.position)?.id)| number }}</a>
+            <a *ngIf="counter == 0" href="javascript:void(0)" class="btn-epin">{{findPrice(getStock(s?.position)?.id)| number }}</a>
+            <a *ngIf="counter > 0" href="javascript:void(0)" class="btn-epin">Please wait... {{ counter }}</a>
           </div>
         </div>
-      </div>    
+      </div>
     </div>
   </div>
 

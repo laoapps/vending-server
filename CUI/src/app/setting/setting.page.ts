@@ -21,6 +21,8 @@ export class SettingPage implements OnInit, OnDestroy {
   isMusicMuted=localStorage.getItem('isMusicMuted')?true:false;
   isAds=localStorage.getItem('isAds')?true:false;
   musicVolume=localStorage.getItem('musicVolume')?Number(localStorage.getItem('musicVolume')):6;
+  productFallLimit = localStorage.getItem('product_fall_limit')?Number(localStorage.getItem('product_fall_limit')):10;
+
   startM: number = 1;
   endM = 60;
   testIn:any;
@@ -55,6 +57,16 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('isMusicMuted',this.isMusicMuted?'yes':'');
     localStorage.setItem('isAds',this.isAds?'yes':'');
     localStorage.setItem('musicVolume',this.musicVolume+'');
+
+    // product fall limit
+    if (this.productFallLimit > 30) this.productFallLimit = 30;
+    else if (this.productFallLimit < 10) this.productFallLimit = 10;
+    else {
+      this.productFallLimit = 10;
+    }
+    localStorage.setItem('product_fall_limit', this.productFallLimit+'');
+
+
     this.storage.set('saleStock',[], 'stock').then(r=>{
       console.log('reset',r);
       window.location.reload();
