@@ -4306,10 +4306,10 @@ export class InventoryZDM8 implements IBaseClass {
                 });
         });
     }
-    confirmLAABOder(c: any) {
+    confirmLAABOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
-            this.callBackConfirmLAAB(c)
+            this.callBackConfirmLAAB(c.qrcode)
                 .then((r) => {
                     resolve({ bill: r });
                 })
