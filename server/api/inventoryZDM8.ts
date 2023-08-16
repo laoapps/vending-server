@@ -4306,7 +4306,7 @@ export class InventoryZDM8 implements IBaseClass {
                 });
         });
     }
-    confirmLAABOder(c: IMMoneyConfirm) {
+    confirmLAABOder(c: any) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
             this.callBackConfirmLAAB(c.qrcode)
