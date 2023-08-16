@@ -133,7 +133,7 @@ export class VendingGoPage implements OnInit {
 
         const props = {
           machineId: localStorage.getItem('machineId'),
-          cash: this.apiService.cash,
+          cash: this.apiService.cash.amount,
           quantity: this.quantity,
           total: this.total,
           balance: sum_refund,

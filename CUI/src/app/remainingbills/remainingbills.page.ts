@@ -13,6 +13,7 @@ import { IENMessage } from '../models/base.model';
 export class RemainingbillsPage implements OnInit {
 
   canclick: boolean = false;
+  canclickTime: any = {} as any;
 
   @Input()r=new Array<IBillProcess>();
   url = this.apiService.url;
@@ -154,6 +155,7 @@ export class RemainingbillsPage implements OnInit {
   }
 
   close() {
+    if (this.canclickTime) clearTimeout(this.canclickTime);
     this.apiService.modal.dismiss();
   }
   

@@ -4314,7 +4314,7 @@ export class InventoryZDM8 implements IBaseClass {
                     resolve({ bill: r });
                 })
                 .catch((e) => {
-                    console.log("error confirmLAABOder");
+                    console.log("error confirmLAABOder", e.message);
                     reject(e);
                 });
         });
