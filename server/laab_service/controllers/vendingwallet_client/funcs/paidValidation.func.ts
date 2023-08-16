@@ -237,8 +237,7 @@ export class PaidValidationFunc {
                 const params = {
                     command: EClientCommand.confirmLAAB,
                     data:{
-                        tranid_client: this.transactionID,
-                        amount: this.amount
+                        qrcode: JSON.stringify({tranid_client: this.transactionID,amount: this.amount})
                     }
                 }
                 console.log(`params`, params);
@@ -376,11 +375,11 @@ class CreateBill {
 
     private SetBill(): void {
         this.transactionID = Number(Number(this.machineId.substring(this.machineId.length-5))+''+(new Date().getTime()));
-
+        const qr = JSON.stringify({tranid_client: this.transactionID,amount: this.value});
         this.bill = {
             uuid: uuid4(),
             clientId: this.clientId,
-            qr: '',
+            qr: qr,
             transactionID: this.transactionID,
             machineId: this.machineId,
             hashM: '',
@@ -419,7 +418,15 @@ class CreateBill {
                 const run = await this.vendingMachineBillEntity.create(this.bill);
                 if (!run) return resolve(IENMessage.commitFail);
 
-                redisClient.setEx(this.transactionID + '--_', 60 * 15, this.ownerUuid);
+                // redisClient.setEx(this.transactionID + '--_', 60 * 15, this.ownerUuid);
+
+                
+                // key -> expire -> data
+                const qr = JSON.stringify({tranid_client: this.transactionID,amount: this.value});
+                const key: string = qr + EMessage.BillCreatedTemp;
+                const expire: number = 60 * 15;
+                const data: string = this.ownerUuid;
+                redisClient.setEx(key, expire, data);
 
                 
 
