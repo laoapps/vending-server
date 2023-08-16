@@ -4,7 +4,7 @@ import { IENMessage, LAAB_CoinTransfer, LAAB_FindMyCoinWallet, LAAB_FindMyWallet
 import { IVendingWalletType } from "../../../models/base.model";
 import { dbConnection, vendingMachineSaleReportEntity, vendingWallet } from "../../../../entities";
 import { v4 as uuid4 } from 'uuid';
-import { EClientCommand, EEntity, EPaymentStatus, IVendingMachineSale } from "../../../../entities/system.model";
+import { EClientCommand, EEntity, EMessage, EPaymentStatus, IVendingMachineSale } from "../../../../entities/system.model";
 import { VendingMachineBillFactory, VendingMachineBillStatic } from "../../../../entities/vendingmachinebill.entity";
 import { readMachineBalance, redisClient, writeErrorLogs, writeLogs, writeMachineBalance, writeSucceededRecordLog } from "../../../../services/service";
 import { CashVendingLimiterValidationFunc } from "./cashLimiterValidation.func";
@@ -420,6 +420,8 @@ class CreateBill {
                 if (!run) return resolve(IENMessage.commitFail);
 
                 redisClient.setEx(this.transactionID + '--_', 60 * 15, this.ownerUuid);
+
+                
 
                 this.response = {
                     transactionID: this.transactionID,
