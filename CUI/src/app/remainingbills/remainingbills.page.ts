@@ -29,16 +29,53 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     console.log(`here`);
     await this.apiService.soundPleaseSelect();
     
-    if (this.counter > 0) {
-      if (this.counter > this.counterLimit) this.counter = this.counterLimit;
+
+    this.loadAutoFall();
+  }
+  loadAutoFall() {
+    console.log(`counter`, this.counter, `counterLimit`, this.counterLimit);
+    if (this.r != undefined && Object.entries(this.r).length > 0) {
+      if (this.counter > this.counterLimit || this.counter < this.counterLimit) {
+        this.counter = this.counterLimit;
+        this.canclick = true;
+      }
+      console.log(`init can click`, this.canclick);
+      localStorage.setItem('product_fall', this.counter.toString());
+
       this.timer = setInterval(() => {
         this.counter--;
-        if (this.counter <= 0) {
-          clearInterval(this.timer);
-          this.canclick = true;
+        localStorage.setItem('product_fall', this.counter.toString());
+        if (this.counter == 0)
+        {
+          if (this.r != undefined && Object.entries(this.r).length == 1) {
+            this.canclick = true;
+            this.autoRetryProcessBill();
+            clearInterval(this.timer);
+          }
+          else {
+            this.canclick = true;
+            this.autoRetryProcessBill();
+          }
         }
+        else if (this.counter > 3 && this.counter < this.counterLimit) {
+          this.canclick = true;
+          console.log(`can click der`, this.canclick);
+        }
+        else 
+        {
+          this.canclick = false;
+          console.log(`can not click der`, this.canclick);
+        }
+        console.log(this.counter);
       }, 1000);
+
     }
+  }
+  autoRetryProcessBill() {
+    const transactionID: string = String(this.r[this.r.length-1].transactionID);
+    const position = this.r[this.r.length-1].position;
+    console.log(`transactionID`, transactionID, `position`, position);
+    this.retryProcessBill(transactionID, position);
   }
 
   ngOnDestroy(): void {
@@ -51,8 +88,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
   }
   // local
-  retryProcessBill(transactionID:string,position:number){
+  retryProcessBill(transactionID:string,position:number, human?: boolean){
     console.log(`rrrrr`, this.r);
+    console.log(`-->`, this.canclick);
 
     if (this.canclick == true) {
       this.apiService.showLoading('',30000);
@@ -92,93 +130,154 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       })
       else
 
-        if (this.counter == 0) {
+      this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
+        // this.apiService.dismissLoading();
+        console.log(`vending on sale`, ApiService.vendingOnSale);
+        console.log('retryProcessBill',r);
+        if(r.status){
+          this.apiService.soundThankYou()
+          this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
+            r.present();
+          });
 
-          localStorage.setItem('product_fall', this.counterLimit.toString());
-          this.counter = this.counterLimit;
-          this.canclick = false;
-          console.log(`transactionID`, transactionID, `position`, position, );
+          this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
+            if (reload_ticket.status != 1) {
+              this.cancelTimer();
+              await this.apiService.soundSystemError();
+              return;
+            }
 
-
-
-          this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
-            // this.apiService.dismissLoading();
-            console.log(`vending on sale`, ApiService.vendingOnSale);
-            console.log('retryProcessBill',r);
-            if(r.status){
-              this.apiService.soundThankYou()
-              this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
-                r.present();
-              });
-
-              this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
-                if (reload_ticket.status != 1) {
-                  this.cancelTimer();
-                  await this.apiService.soundSystemError();
-                  return;
-                }
-
-                this.r = reload_ticket.data;
-                console.log(`here der`, this.r);
-
-                // let count: number = 0;
-                // console.log(`lleng`, this.r);
-                // if (this.r != undefined && Object.entries(this.r).length > 1) {
-                //   count = this.r.length - 1;
-                // } else {
-                //   count = 0;
-                // }
-                // const i=this.r.findIndex(v=>v.position==position);
-                // this.r.splice(i,1);
-              
-                if (this.r != undefined && Object.entries(this.r).length == 0) {
-                  localStorage.setItem('product_fall', '0');
-                  this.clearTimer();
-                  this.apiService,this.modal.dismiss();
-                }
-  
-                // this.apiService.modal.dismiss();
-                // this.apiService.myTab1.reshowBills(count);
-  
-                if (this.counter == this.counterLimit) {
-                  this.timer = setInterval(() => {
-                    this.counter--;
-                    localStorage.setItem('product_fall', this.counter.toString());
-                    if (this.counter <= 0) {
-                      this.canclick = true;
-                      localStorage.setItem('product_fall', '0');
-                      clearInterval(this.timer);
-                    }
-                  }, 1000);
-                }
-              }, async error => {
-                this.cancelTimer();
-                await this.apiService.soundSystemError();
-              });
-              
-            } else{
-              this.counter = 0;
-              this.canclick = true;
+            this.r = reload_ticket.data;
+            console.log(`here der`, this.r);
+          
+            if (this.r != undefined && Object.entries(this.r).length == 0) {
               localStorage.setItem('product_fall', '0');
               this.clearTimer();
-              await this.apiService.soundSystemError();
+              this.apiService,this.modal.dismiss();
+              return;
+            }
+            else 
+            {
+              if (human == true) {
+                this.clearTimer();
+                this.autoRetryProcessBill();
+              }
             }
 
 
-            this.apiService.simpleMessage(r.message);
-
-            setTimeout(()=>{
-              this.apiService.dismissLoading();
-            },3000)
-
           }, async error => {
-            setTimeout(()=>{
-              this.apiService.dismissLoading();
-            },3000)
-            this.clearTimer();
+            this.cancelTimer();
             await this.apiService.soundSystemError();
-          }); 
+          });
+          
+        } else{
+          this.counter = 0;
+          this.canclick = true;
+          localStorage.setItem('product_fall', '0');
+          this.clearTimer();
+          await this.apiService.soundSystemError();
         }
+
+
+        this.apiService.simpleMessage(r.message);
+
+        setTimeout(()=>{
+          this.apiService.dismissLoading();
+        },3000)
+
+      }, async error => {
+        setTimeout(()=>{
+          this.apiService.dismissLoading();
+        },3000)
+        this.clearTimer();
+        await this.apiService.soundSystemError();
+      }); 
+
+        // if (this.counter == this.counterLimit) {
+        //   this.timer = setInterval(() => {
+        //     this.counter--;
+        //     localStorage.setItem('product_fall', this.counter.toString());
+        //     if (this.counter <= 0) {
+        //       clearInterval(this.timer);
+        //       this.canclick = true;
+        //       localStorage.setItem('product_fall', '0');
+        //     }
+        //   }, 1000);
+        // }
+
+
+
+        // if (this.counter == 0) {
+
+        //   localStorage.setItem('product_fall', this.counterLimit.toString());
+        //   this.counter = this.counterLimit;
+
+
+        //   this.canclick = false;
+
+
+        //   if (this.counter >= 4) {
+        //     this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
+        //       // this.apiService.dismissLoading();
+        //       console.log(`vending on sale`, ApiService.vendingOnSale);
+        //       console.log('retryProcessBill',r);
+        //       if(r.status){
+        //         this.apiService.soundThankYou()
+        //         this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
+        //           r.present();
+        //         });
+
+        //         this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
+        //           if (reload_ticket.status != 1) {
+        //             this.cancelTimer();
+        //             await this.apiService.soundSystemError();
+        //             return;
+        //           }
+
+        //           this.r = reload_ticket.data;
+        //           console.log(`here der`, this.r);
+                
+        //           if (this.r != undefined && Object.entries(this.r).length == 0) {
+        //             localStorage.setItem('product_fall', '0');
+        //             this.clearTimer();
+        //             this.apiService,this.modal.dismiss();
+        //             return;
+        //           }
+  
+        //         }, async error => {
+        //           this.cancelTimer();
+        //           await this.apiService.soundSystemError();
+        //         });
+                
+        //       } else{
+        //         this.counter = 0;
+        //         this.canclick = true;
+        //         localStorage.setItem('product_fall', '0');
+        //         this.clearTimer();
+        //         await this.apiService.soundSystemError();
+        //       }
+
+
+        //       this.apiService.simpleMessage(r.message);
+
+        //       setTimeout(()=>{
+        //         this.apiService.dismissLoading();
+        //       },3000)
+
+        //     }, async error => {
+        //       setTimeout(()=>{
+        //         this.apiService.dismissLoading();
+        //       },3000)
+        //       this.clearTimer();
+        //       await this.apiService.soundSystemError();
+        //     }); 
+        //   }
+        //   else 
+        //   {
+        //     this.canclick = false;
+        //   }
+          
+        // }
     }
   }
   // remote
