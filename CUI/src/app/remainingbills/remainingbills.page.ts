@@ -55,6 +55,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           else {
             this.canclick = true;
             this.autoRetryProcessBill();
+            this.counter = this.counterLimit;
           }
         }
         else if (this.counter > 3 && this.counter < this.counterLimit) {
@@ -130,6 +131,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       })
       else
 
+      if (human == true) {
+        this.clearTimer();
+      }
       this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
         // this.apiService.dismissLoading();
         console.log(`vending on sale`, ApiService.vendingOnSale);
@@ -156,14 +160,10 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
               this.apiService,this.modal.dismiss();
               return;
             }
-            else 
-            {
-              if (human == true) {
-                this.clearTimer();
-                this.autoRetryProcessBill();
-              }
-            }
 
+            if (human == true) {
+              this.loadAutoFall();
+            }
 
           }, async error => {
             this.cancelTimer();
@@ -328,7 +328,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     (document.querySelector('.tooltip-background') as HTMLDivElement).classList.remove('active');
     (document.querySelector('.hand-click') as HTMLDivElement).classList.remove('active');
 
-    if (this.counter == 0) {
+    if (this.counter > 3 && this.counter < this.counterLimit) {
       this.canclick = true;
     }
   }
