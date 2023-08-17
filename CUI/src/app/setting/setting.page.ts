@@ -60,7 +60,7 @@ export class SettingPage implements OnInit, OnDestroy {
 
     // product fall limit
     if (this.productFallLimit > 30) this.productFallLimit = 30;
-    else if (this.productFallLimit < 10) this.productFallLimit = 10;
+    else if (this.productFallLimit < 0) this.productFallLimit = 10;
     else {
       this.productFallLimit = 10;
     }
