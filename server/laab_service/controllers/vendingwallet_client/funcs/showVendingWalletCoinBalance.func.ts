@@ -125,13 +125,12 @@ export class ShowVendingWalletCoinBalanceFunc {
             try {
 
                 const params = {
-                    sender: this.name,
+                    uuid: this.name,
                     
                     forwardname: IForwordKeys.name,
                     forwardkey: IForwordKeys.value
                 }
 
-                // const run = await axios.post(LAAB_ShowMyCoinWalletBalance, params);
                 const run = await axios.post(LAAB_FORWARD_ShowWalletLAABCoinBalance, params);
                 if (run.data.status != 1) return resolve(IENMessage.notFoundYourMerchantCoin);
 

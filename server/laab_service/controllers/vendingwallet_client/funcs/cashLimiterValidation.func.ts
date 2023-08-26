@@ -186,8 +186,6 @@ export class CashVendingLimiterValidationFunc {
 
                 const params = {
                     uuid: this.name,
-
-                    // access by passkey
                     forwardname: IForwordKeys.name,
                     forwardkey: IForwordKeys.value
                 }
