@@ -1,6 +1,6 @@
 import { Transaction, json } from "sequelize";
 import axios from "axios";
-import { IENMessage, LAAB_CoinTransfer, LAAB_FORWARD_ShowWalletLAABCoinBalance, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
+import { IENMessage, IForwordKeys, LAAB_CoinTransfer, LAAB_FORWARD_ShowWalletLAABCoinBalance, LAAB_FindMyCoinWallet, LAAB_FindMyWallet, LAAB_Register2, LAAB_ShowMyCoinWalletBalance, translateUToSU } from "../../../../services/laab.service";
 import { IVendingWalletType } from "../../../models/base.model";
 import { vendingWallet } from "../../../../entities";
 import { stringify } from "uuid";
@@ -173,12 +173,20 @@ export class CashVendingWalletValidationFunc {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
+                // const params = {
+                //     sender: this.name,
+
+                //     // access by passkey
+                //     phonenumber: this.suuid,
+                //     passkeys: this.passkeys
+                // }
+
                 const params = {
                     sender: this.name,
 
                     // access by passkey
-                    phonenumber: this.suuid,
-                    passkeys: this.passkeys
+                    forwardname: IForwordKeys.name,
+                    forwardkey: IForwordKeys.value
                 }
 
                 const run = await axios.post(LAAB_FORWARD_ShowWalletLAABCoinBalance, params);
