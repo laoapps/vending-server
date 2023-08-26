@@ -82,7 +82,6 @@ export class VendingGoPage implements OnInit {
                 .then((r) => {
                   r.present();
 
-
             this.apiService.soundMmoneyPaymentMethod();
                 });
             });
@@ -100,7 +99,7 @@ export class VendingGoPage implements OnInit {
         this.apiService.dismissLoading();
         this.getTotalSale.q = 0;
         this.getTotalSale.t = 0;
-        // this.orders = [];
+        this.orders = [];
         this.summarizeOrder = [];
       });
   }

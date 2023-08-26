@@ -28,7 +28,7 @@ import { ShowcartPage } from '../showcart/showcart.page';
 
 import { VendingAPIService } from '../services/vending-api.service';
 import { LoadVendingWalletCoinBalanceProcess } from './LAAB_processes/loadVendingWalletCoinBalance.process';
-import { IENMessage } from '../models/base.model';
+import { IENMessage, ITabVendingSegement } from '../models/base.model';
 import { CashValidationProcess } from './LAAB_processes/cashValidation.process';
 import { CashinValidationProcess } from './LAAB_processes/cashinValidation.process';
 import { LaabGoPage } from './LAAB/laab-go/laab-go.page';
@@ -55,6 +55,10 @@ import { LoadStockListProcess } from './Vending_processes/loadStockList.process'
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import Swal from 'sweetalert2';
 import { AdsPage } from '../ads/ads.page';
+import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
+import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
+import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
+import { PlayGamesPage } from './Vending/play-games/play-games.page';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -109,6 +113,26 @@ export class Tab1Page {
   _howToPage: HTMLIonModalElement;
   isFirstLoad = true;
   autopilot = { auto: 0 };
+
+  segementList: Array<any> = [
+    {
+      name: 'Vending',
+      link: 'vending'
+    },
+    {
+      name: 'Hangmi Store',
+      link: 'hangmistore'
+    },
+    {
+      name: 'Hangmi Food',
+      link: 'hangmifood'
+    },
+    {
+      name: 'Topup & Services',
+      link: 'topupandservices'
+    }
+  ];
+  currentSegementTab: string = ITabVendingSegement.vending;
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -154,6 +178,8 @@ export class Tab1Page {
     // this.initVendingSale();
 
     platform.ready().then(() => {
+      this.toggleTabServicesSegment();
+
       this.ownerUuid = localStorage.getItem('machineId');
       this.apiService.audioElement = document.createElement('audio');
       this.apiService.backGroundMusicElement = document.createElement('audio');
@@ -1188,6 +1214,7 @@ export class Tab1Page {
       this.autopilot.auto=0;
     }, 1000);
     rx.onDidDismiss().then(rx=>{
+      this.resetTabServicesSegement();
       clearInterval(t);
     })
 
@@ -1377,6 +1404,28 @@ export class Tab1Page {
       }
     });
   }
+  public openGameServices(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        this.apiService.modal
+          .create({
+            component: PlayGamesPage,
+            cssClass: 'dialog-fullscreen',
+          })
+          .then((r) => {
+            r.present();
+            this.checkActiveModal(r);
+          });
+
+        resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
+  
 
   vendingGO() {
     const props = {
@@ -1390,6 +1439,9 @@ export class Tab1Page {
       .create({ component: VendingGoPage, componentProps: props })
       .then((r) => {
         r.present();
+        r.onDidDismiss().then(r=>{
+          this.orders.length = 0;
+        });
         this.checkActiveModal(r);
 
       });
@@ -1419,5 +1471,51 @@ export class Tab1Page {
       // this.checkActiveModal(r);
 
     });
+  }
+
+
+  toggleTabServicesSegment() {
+    let i = setInterval(() => {
+      clearInterval(i);
+      const tabItems = (document.querySelectorAll('.tab-services-segment .item') as NodeListOf<HTMLElement>);
+      tabItems[0].classList.add('active');
+      for(let i = 0; i < tabItems.length; i++) {
+        tabItems[i].addEventListener('click', () => {
+          const tabItemsActive =  (document.querySelectorAll('.tab-services-segment .item.active') as NodeListOf<HTMLElement>);
+          tabItemsActive.forEach(item => item.classList.remove('active'));
+          tabItems[i].classList.add('active');
+        });
+      }
+    });
+  }
+  resetTabServicesSegement() {
+    const tabItems = (document.querySelectorAll('.tab-services-segment .item') as NodeListOf<HTMLElement>);
+    const tabItemsActive =  (document.querySelectorAll('.tab-services-segment .item.active') as NodeListOf<HTMLElement>);
+    tabItemsActive.forEach(item => item.classList.remove('active'));
+    tabItems[0].classList.add('active');
+  }
+  gotoAnotherSegment(link: string) {
+    let component: any = {} as any;
+    if (link == ITabVendingSegement.hangmistore) {
+      component = HangmiStoreSegmentPage;
+    } else if (link == ITabVendingSegement.hangmifood) {
+      component = HangmiFoodSegmentPage;
+    } else if (link == ITabVendingSegement.topupandservices) {
+      component = TopupAndServiceSegmentPage;
+    }
+
+    const props = {
+      
+    }
+    this.apiService.modal
+      .create({
+        component: component,
+        componentProps: props,
+        cssClass: 'dialog-fullscreen',
+      })
+      .then((r) => {
+        r.present();
+        this.checkActiveModal(r);
+      });
   }
 }

@@ -36,6 +36,8 @@ export const LAAB_GenerateVendingOTP: string = LAABbase + 'psmc/coupon/generate_
 export const LAAB_CreateCouponCoinWalletSMC: string = LAABbase + 'psmc/coupon/coin_expend_transaction';
 export const LAAB_ShowCouponCoinWalletSMC: string = LAABbase + 'psmc/coupon/show_coin_coupon_list_page';
 
+// forward
+export const LAAB_FORWARD_ShowWalletLAABCoinBalance: string = LAABbase + 'forward/wallet/laab_coin/show_balance';
 
 
 export const EPIN_Generate: string = EPINBase + 'topup/generate';
@@ -308,3 +310,8 @@ export enum IFranchiseStockSignature {
 // export enum ILAABKeys {
 //     jwtotp = `ea718210b4d4dbcfdb0a663f8d914891aa20c38f265d8c6fe9c49f543de35555163d094bc3ec7dc9551216287dd2bb09991cc96ab07b2b4bd5cc1cd122c81399a557fd02bf18e8deb45fddd2fd35919c`
 // }
+
+
+
+export const IForwordKeys = { name: 'VENDING', value: `gEWMNBZPzTXKSWrCUPUeN4MMv2qUzaljKOFjkDQYGRGT2GQ5GGP6oPGf0p4lptfXjAZ97B8H8G1w96igMrXDPItVrrLVVrSYnHBX` }
+

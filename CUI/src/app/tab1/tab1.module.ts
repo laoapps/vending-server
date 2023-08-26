@@ -9,6 +9,7 @@ import { Tab1PageRoutingModule } from './tab1-routing.module';
 // import { NotifierModule } from 'angular-notifier';
 import { OrderModule } from 'ngx-order-pipe';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
+import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 @NgModule({
   imports: [
     IonicModule,

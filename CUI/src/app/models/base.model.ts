@@ -1,4 +1,5 @@
 export enum IENMessage {
+    invalidSelectionGameMenu = 'invalid selection game menu',
     notFoundYourMMoneyAccount = 'Not found your MMoney account',
     saveSaleFail = 'save sale fail',
     endShouldMoreThenStart = 'end should more then start',
@@ -24,4 +25,11 @@ export enum IENMessage {
     notEnoughtCashBalance = 'not enought balance',
     success = 'success',
     parametersEmpty = 'parameters empty'
+}
+
+export enum ITabVendingSegement {
+    vending = 'vending',
+    hangmistore = 'hangmistore',
+    hangmifood = 'hangmifood',
+    topupandservices = 'topupandservices'
 }

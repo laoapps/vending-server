@@ -9,6 +9,53 @@ ion-header {
     z-index: 10000;
 }
 
+.tab-services-segment.hidden {
+    height: 0px;
+}
+.tab-services-segment {
+    
+    background: #fff;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
+    height: 60px;
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    overflow-y: hidden;
+    overflow-x: scroll;
+    z-index: 999990;
+    transition: .2s;
+
+    .item {
+        text-decoration: none;
+        color: #333;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: .2s;
+    }
+    .item:hover {
+        background: #EE3124;
+        color: #fff;
+    }
+    .item:hover > .item.active {
+        background: #EE3124;
+        color: #fff;
+    }
+    .item.active {
+        background: #EE3124;
+        color: #fff;
+        border-bottom: 2px solid #ffff;
+    }
+}
+
+.vending-segment {
+    display:inline-block; 
+    z-index:999999;
+    margin-top: 70px;
+}
+
+
+
 .btn-abs {
     display: flex;
     flex-direction: column;

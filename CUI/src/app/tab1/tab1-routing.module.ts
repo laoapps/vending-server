@@ -62,6 +62,22 @@ const routes: Routes = [
   {
     path: 'mmoney-cashout',
     loadChildren: () => import('./LAAB/mmoney-cashout/mmoney-cashout.module').then( m => m.MmoneyCashoutPageModule)
+  },
+  {
+    path: 'hangmi-store-segment',
+    loadChildren: () => import('./VendingSegment/hangmi-store-segment/hangmi-store-segment.module').then( m => m.HangmiStoreSegmentPageModule)
+  },
+  {
+    path: 'hangmi-food-segment',
+    loadChildren: () => import('./VendingSegment/hangmi-food-segment/hangmi-food-segment.module').then( m => m.HangmiFoodSegmentPageModule)
+  },
+  {
+    path: 'topup-and-service-segment',
+    loadChildren: () => import('./VendingSegment/topup-and-service-segment/topup-and-service-segment.module').then( m => m.TopupAndServiceSegmentPageModule)
+  },
+  {
+    path: 'play-games',
+    loadChildren: () => import('./Vending/play-games/play-games.module').then( m => m.PlayGamesPageModule)
   }
 ];
 

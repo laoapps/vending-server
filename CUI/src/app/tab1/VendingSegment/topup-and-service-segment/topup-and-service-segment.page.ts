@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/app/services/api.service';
-import { topupServiceMenuJSON } from './menu';
-import { ITopupServiceMenu } from 'src/app/models/vending.model';
 import { IENMessage } from 'src/app/models/base.model';
-import { PhonePaymentPage } from '../phone-payment/phone-payment.page';
+import { ITopupServiceMenu } from 'src/app/models/vending.model';
+import { ApiService } from 'src/app/services/api.service';
+import { PhonePaymentPage } from '../../Vending/phone-payment/phone-payment.page';
+import { topupServiceMenuJSON } from '../../Vending/topup-and-service/menu';
 
 @Component({
-  selector: 'app-topup-and-service',
-  templateUrl: './topup-and-service.page.html',
-  styleUrls: ['./topup-and-service.page.scss'],
+  selector: 'app-topup-and-service-segment',
+  templateUrl: './topup-and-service-segment.page.html',
+  styleUrls: ['./topup-and-service-segment.page.scss'],
 })
-export class TopupAndServicePage implements OnInit {
+export class TopupAndServiceSegmentPage implements OnInit {
 
   lists: Array<any> = [];
     
@@ -76,6 +76,6 @@ export class TopupAndServicePage implements OnInit {
     this.apiService.modal.create({ component: PhonePaymentPage, componentProps: props }).then(r => {
       r.present();
     });
+
   }
-     
 }

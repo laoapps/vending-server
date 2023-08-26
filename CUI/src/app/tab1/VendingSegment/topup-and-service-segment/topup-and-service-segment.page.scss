@@ -1,0 +1,141 @@
+ion-content {
+    --ion-background-color: #F5F5F5;
+    // --ion-background-color: #EE3124;
+}
+
+.laab-card {
+    margin: 10px;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    // background: #EE3124;
+    background: rgb(255,255,255);
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(238,49,36,0.7161239495798319) 0%, rgba(214,43,31,1) 100%, rgba(255,255,255,1) 100%);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+
+    .laab-card-options {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+
+       .right {
+            .btn-close-modal {
+                color: #fff;
+                text-decoration: none;
+            }
+       }
+    }
+
+    .laab-card-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        color: #fff;
+
+        .title {
+            font-size: 35px;
+            font-weight: bold;
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        .cash-balance {
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 30px;
+            letter-spacing: 4px;
+            font-weight: 300;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+
+            span {
+                font-size: 14px;
+                display: flex;
+                position: relative;
+                padding-left: 10px;
+                top: 3px;
+            }
+        }
+
+
+
+    }
+    .laab-card-body {
+        margin-top: 35px;
+        display: grid;
+        grid-template-columns: repeat(5,1fr);
+        grid-gap: 10px;
+
+        .item {
+            position: relative;
+            text-decoration: none;
+            color: #333;
+    
+            background: rgb(255,255,255);
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(242,241,241,1) 100%);
+
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            height: 130px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, .3);
+            transition: .2s;
+            overflow: hidden;
+    
+            .icon {
+                position: relative;
+                text-align: center;
+                font-size: 35px;
+                color: #EE3124;
+            }
+    
+            .text {
+                position: relative;
+                z-index: 999999;
+                font-size: 16px;
+                font-weight: 300;
+                text-align: center;
+            }
+    
+            .svg-top {
+                position: absolute;
+                left: 0; right: 0; top: 0;
+               }
+            .svg-bottom {
+                position: absolute;
+                left: 0; right: 0; bottom: 0;
+            }
+
+            .not-yet {
+                position: absolute;
+                background: #F7DC6F;
+                top: 0; 
+                right: 0;
+                color: #333;
+                border-top-right-radius: 5px;
+                font-size: 10px;
+                font-weight: 300;
+                padding: 0px 5px;
+                z-index: 999999;
+            }
+        }
+        .item:hover {
+            // background: #f5f6f7;
+
+            // 1 f7f7f7
+            // 2 ededed
+            background: rgb(247,247,247);
+            background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgba(237,237,237,1) 100%);
+        }
+    }
+}

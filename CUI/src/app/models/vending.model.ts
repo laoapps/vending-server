@@ -66,3 +66,9 @@ export enum ITopupServiceMenu {
     find_a_job='find_a_job',
     renting_service='renting_service'
 }
+
+export enum IVendingGameMenu {
+    scratching_game= 'scratching_game',
+    spinner_game='spinner_game',
+    fortune_wheel_game='fortune_wheel_game'
+}
