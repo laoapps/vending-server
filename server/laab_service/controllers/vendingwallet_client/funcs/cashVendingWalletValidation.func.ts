@@ -182,7 +182,7 @@ export class CashVendingWalletValidationFunc {
                 // }
 
                 const params = {
-                    sender: this.name,
+                    uuid: this.name,
 
                     // access by passkey
                     forwardname: IForwordKeys.name,

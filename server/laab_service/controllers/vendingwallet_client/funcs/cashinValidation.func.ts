@@ -170,7 +170,7 @@ export class CashinValidationFunc {
                 //     passkeys: this.passkeys
                 // }
                 const params = {
-                    sender: this.name,
+                    uuid: this.name,
 
                     // access by passkey
                     forwardname: IForwordKeys.name,
