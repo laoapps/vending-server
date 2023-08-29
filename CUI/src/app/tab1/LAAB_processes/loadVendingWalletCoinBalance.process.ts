@@ -76,6 +76,7 @@ export class LoadVendingWalletCoinBalanceProcess {
                 const params = {
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
                 }
+                console.log(`tttokn`, params.token)
 
                 this.vendingAPIService.showVendingWalletCoinBalance(params).subscribe(r => {
                     const response: any = r;

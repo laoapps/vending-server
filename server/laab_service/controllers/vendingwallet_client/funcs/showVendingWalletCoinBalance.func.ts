@@ -132,6 +132,7 @@ export class ShowVendingWalletCoinBalanceFunc {
                 }
 
                 const run = await axios.post(LAAB_FORWARD_ShowWalletLAABCoinBalance, params);
+                console.log(`response ShowMyCoinWalletBalance`, run.data);
                 if (run.data.status != 1) return resolve(IENMessage.notFoundYourMerchantCoin);
 
                 writeMachineBalance(this.machineId, run.data.info.balance);

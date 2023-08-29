@@ -1,0 +1,7 @@
+POST http://laoapps.com:9006/laab/client/show_vending_wallet_coin_balance HTTP/1.1
+Content-Type: application/json
+
+{
+    "machineId":"11115010",
+    "token": "df15d6c4a2e0d67e565ae30e2f91bc959f5a207118003a1788ef94dbaa544092"
+}
