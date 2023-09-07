@@ -31,7 +31,7 @@
 
   </div>
 
-  <div [ngClass]="apiService.toggleWebviewTab == false ? 'webview-tab' : 'webview-tab hidden'">
+  <div *ngIf="isFranciseMode == true" [ngClass]="apiService.toggleWebviewTab == false ? 'webview-tab' : 'webview-tab hidden'">
     <a *ngFor="let list of webviewList; let i = index" (click)="openWebViewMenu(list.link)" href="javascript:void(0)" class="item">
       <div class="item-left">
         <img src="{{ list.icon }}" alt="">
@@ -42,7 +42,7 @@
       </div>
     </a>
   </div>
-  <div [ngClass]="apiService.toggleWebviewTab == false ? 'webview-small-tab' : 'webview-small-tab active'">
+  <div *ngIf="isFranciseMode == true" [ngClass]="apiService.toggleWebviewTab == false ? 'webview-small-tab' : 'webview-small-tab active'">
     <a *ngFor="let list of webviewList; let i = index" (click)="openWebViewMenu(list.link)" href="javascript:void(0)" class="item">
       <div class="item-left">
         <img src="{{ list.icon }}" alt="">

@@ -158,6 +158,8 @@ export class Tab1Page implements OnDestroy {
 
   autoShowMyOrderTimer: any = {} as any;
   autoShowMyOrdersCounter: number = 15;
+
+  isFranciseMode: boolean = localStorage.getItem('francisemode') ? true : false;
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -915,7 +917,7 @@ export class Tab1Page implements OnDestroy {
       if (ord.length)
         if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
 
-        
+
       console.log('ID', x);
       console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 

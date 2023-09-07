@@ -20,6 +20,7 @@ export class SettingPage implements OnInit, OnDestroy {
   isRobotMuted=localStorage.getItem('isRobotMuted')?true:false;
   isMusicMuted=localStorage.getItem('isMusicMuted')?true:false;
   isAds=localStorage.getItem('isAds')?true:false;
+  francisemode=localStorage.getItem('francisemode')?true:false;
   musicVolume=localStorage.getItem('musicVolume')?Number(localStorage.getItem('musicVolume')):6;
   productFallLimit = localStorage.getItem('product_fall_limit')?Number(localStorage.getItem('product_fall_limit')):10;
 
@@ -56,6 +57,7 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('isRobotMuted',this.isRobotMuted?'yes':'');
     localStorage.setItem('isMusicMuted',this.isMusicMuted?'yes':'');
     localStorage.setItem('isAds',this.isAds?'yes':'');
+    localStorage.setItem('francisemode',this.francisemode?'yes':'');
     localStorage.setItem('musicVolume',this.musicVolume+'');
 
     // product fall limit
