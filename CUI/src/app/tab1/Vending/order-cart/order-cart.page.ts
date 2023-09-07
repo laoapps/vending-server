@@ -21,7 +21,6 @@ export class OrderCartPage implements OnInit, OnDestroy {
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
 
-  private generateMMoneyQRCodeProcess: GenerateMMoneyQRCodeProcess;
   private paidValidationProcess: PaidValidationProcess;
 
   sweetalert: any = Swal;
@@ -39,7 +38,6 @@ export class OrderCartPage implements OnInit, OnDestroy {
     public modal: ModalController,
     public vendingAPIService: VendingAPIService
   ) { 
-    this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
     this.paidValidationProcess = new PaidValidationProcess(this.apiService, this.vendingAPIService);
 
   }
@@ -98,12 +96,10 @@ export class OrderCartPage implements OnInit, OnDestroy {
         clearInterval(this.autoPaymentTimer);
         this.showOrderPaidModal();
       }
-      
     }, 1000);
   }
   reloadAutoPayment() {
     this.autoPaymentCounter = 15;
-
     clearInterval(this.alertTime);
     this.alertCounter = 5;
   }
@@ -159,16 +155,11 @@ export class OrderCartPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }
 
-        const run = await this.mmoneyPaid();
-        if (run != IENMessage.success) throw new Error(run);
-
-        this.apiService.countErrorPay = 0;
         const component = OrderPaidPage;
         const props = {
           orders: this.orders,
           getTotalSale: this.getTotalSale,
           orderCartPage: this.modal,
-          qrcode: this.qrcode.qr 
         }
 
         const modal = this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' });
@@ -183,37 +174,8 @@ export class OrderCartPage implements OnInit, OnDestroy {
         resolve(IENMessage.success);
 
       } catch (error) {
-        this.apiService.countErrorPay++;
-
-        if (this.apiService.countErrorPay == 5) {
-          this.apiService.countErrorPay = 0;
-          this.orders = [];
-          this.getTotalSale.q = 0;
-          this.getTotalSale.t = 0;
-
-          clearInterval(this.autoPaymentTimer);
-          this.autoPaymentCounter = 15;
-
-          this.apiService.myTab1.clearCart();  
-          this.apiService.modal.dismiss();
-          this.apiService.alertError(IENMessage.retryPayYourOrderFail5TimesYourOrderWasReset);
-        }
-        else 
-        {
-          const alert: any = this.apiService.alertErrorNoDimiss(error.message);
-
-          this.alertTime = setInterval(() => {
-            this.alertCounter--;
-            if (this.alertCounter == 0) {
-              this.alertCounter=5;
-              alert.close();
-              clearInterval(this.alertTime);
-            }
-            console.log(this.alertCounter);
-          }, 1000);
-          
-          this.loadAutoPayment();
-        }
+        console.log(`error`, error);
+        this.apiService.alertError(error.message);
         resolve(error.message);
       }
     });
@@ -301,30 +263,6 @@ export class OrderCartPage implements OnInit, OnDestroy {
       } catch (error) {
         // await this.apiService.soundPleaseTopUpValue();
         this.apiService.simpleMessage(error.message);
-        resolve(error.message);
-      }
-    });
-  }
-
-  mmoneyPaid(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
-      try {
-        const setSummarizeOrder = this.setSummarizeOrder();
-
-        const params = {
-          orders: setSummarizeOrder.summarizeOrder,
-          amount: setSummarizeOrder.total,
-          machineId: this.apiService.machineId.machineId
-        }
-
-        const run = await this.generateMMoneyQRCodeProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
-
-        this.qrcode = run.data[0].mmoneyQRCode;
-
-        resolve(IENMessage.success);
-
-      } catch (error) {
         resolve(error.message);
       }
     });

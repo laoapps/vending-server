@@ -1,10 +1,11 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import qrlogo from 'qrcode-with-logos';
-import { IENMessage } from 'src/app/models/base.model';
+import { IENMessage, IGenerateQR } from 'src/app/models/base.model';
 import { ModalController } from '@ionic/angular';
 import { IBillProcess } from 'src/app/services/syste.model';
 import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
+import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 
 @Component({
   selector: 'app-order-paid',
@@ -16,12 +17,12 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
   @Input() orderCartPage: any;
-  @Input() qrcode: string;
+
+  private generateMMoneyQRCodeProcess: GenerateMMoneyQRCodeProcess;
 
   shapesObject: Array<any> = [];
-  billdate: any = new Date();
+  billdate: any = {} as any;
 
-  cashesTitle: string = 'Cashes';
   cashesList: Array<any> = [
     // {
     //   image: `../../../../assets/logo/LAAB-logo.png`,
@@ -32,7 +33,6 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     // },
   ]
 
-  ewalletTitle: string = 'Wallets';
   ewalletList: Array<any> = [
     {
       image: `../../../../assets/logo/mmoney-logo.png`,
@@ -51,7 +51,6 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   ]
 
 
-  bankTitle: string = 'Banks';
   bankList: Array<any> = [
     // {
     //   image: `../../../../assets/logo/bcelone-logo.png`,
@@ -69,36 +68,44 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   currentDetail: string;
   currentLogo: string;
   currentName: string;
+  currentValue: string;
 
   destroyTimer: any = {} as any;
-  destroyCounter: number = 60;
+  destroyCounter: number = 1000;
+
+  qrcode: string;
+  elementLeft: HTMLDivElement = {} as any;
+  elementRight: HTMLDivElement = {} as any;
 
   // MMoney
   _T:any
+
   constructor(
     public apiService: ApiService,
     public modal: ModalController
-  ) { }
+  ) { 
+    this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
+  }
 
   async ngOnInit() {
-    this.currentTitle = this.ewalletList[0].title;
-    this.currentDetail = this.ewalletList[0].detail;
-    this.currentLogo = this.ewalletList[0].image;
-    this.currentName = this.ewalletList[0].name;
+
     this.methodList.push(...this.cashesList, ...this.ewalletList, ...this.bankList);
     this.loadBilling();
     this.loadPaymentMethods();
+
+    // auto mmoney
+    await this.mmoneyQRCode();
     await this.generateQRCode();
     this.loadDestroy();
 
 
-    // mmoney
-    if (this.currentName == 'MMoney') {
+    // ***** mmoney *****
+    if (this.currentValue == IGenerateQR.mmoney) {
       const that = this;
       if(this._T)clearTimeout(this._T)
       this._T = setTimeout(() => {
         this.modal.dismiss();
-      },1000*60*15);
+      },1000*1000*15);
      this.apiService.onStockDeduct((data)=>{
       console.log('onStockDeduct',data);
       that.modal.dismiss();
@@ -118,7 +125,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
       this.destroyCounter--;
       if (this.destroyCounter == 0) {
         clearInterval(this.destroyTimer);
-        this.destroyCounter = 60;
+        this.destroyCounter = 1000;
 
         (document.querySelector('.qr-img') as HTMLImageElement).src = '';
         this.orders = [];
@@ -126,7 +133,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         this.getTotalSale.t = 0;
 
         clearInterval(this.destroyTimer);
-        this.destroyCounter = 60;
+        this.destroyCounter = 1000;
 
         this.apiService.myTab1.clearCart();  
         this.orderCartPage.dismiss();
@@ -136,10 +143,18 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     }, 1000);
   }
   resetDestroy() {
-    this.destroyCounter = 60;
+    this.destroyCounter = 1000;
   }
 
   loadBilling() {
+    this.billdate = new Date();
+    const current = this.methodList.filter(item => item.value == IGenerateQR.mmoney);
+    this.currentTitle = current[0].title;
+    this.currentDetail = current[0].detail;
+    this.currentLogo = current[0].image;
+    this.currentName = current[0].name;
+    this.currentValue = current[0].value;
+
     for(let i = 0; i < 50; i++) {
       const elm = document.createElement('div');
       elm.className = 'shape';
@@ -148,6 +163,10 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   }
 
   loadPaymentMethods() {
+
+    this.elementLeft = (document.querySelector('.form-order-paid .form-order-paid-left') as HTMLDivElement);
+    this.elementRight = (document.querySelector('.form-order-paid .form-order-paid-right') as HTMLDivElement);
+
     this.reloadElement = setInterval(() => {
       clearInterval(this.reloadElement);
       const inputs = (document.querySelectorAll('.input-choice') as NodeListOf<HTMLInputElement>);
@@ -158,30 +177,38 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         labels[i].setAttribute('for', `method-choice-${i}`);
         inputs[i].addEventListener('click', async () => await this.selectPaymentMethods(i, inputs));
         imgs[i].addEventListener('click', async () => await this.selectPaymentMethods(i, inputs));
+        console.log(`cc`, `.input-choice-${this.currentValue}`);
+        (document.querySelector(`.input-choice-${this.currentValue}`) as HTMLInputElement).checked = true;
       }
-      // mmoney default
-      inputs[0].checked = true;
     });
   }
   selectPaymentMethods(i: number, inputs: NodeListOf<HTMLInputElement>): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        if (this.currentTitle == this.methodList[i].title) return resolve(IENMessage.success);
+        this.elementLeft.classList.remove('active');
+        this.elementRight.classList.remove('active');
 
         inputs[i].checked = true;
-
         this.currentTitle = this.methodList[i].title;
         this.currentDetail = this.methodList[i].detail;
         this.currentLogo = this.methodList[i].image;
         this.currentName = this.methodList[i].name;
-        
+        this.currentValue = this.methodList[i].value;
+
+        let run: any = {} as any;
+        if (this.currentValue == IGenerateQR.mmoney) {
+          run = await this.mmoneyQRCode();
+          if (run != IENMessage.success) throw new Error(run);
+        }
+
         this.billdate = new Date();
         await this.generateQRCode();
 
         resolve(IENMessage.success);
 
       } catch (error) {
+        this.apiService.alertError(error.message); 
         resolve(error.message);
       }
     });
@@ -194,11 +221,11 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         const qr = await new qrlogo({ logo: this.currentLogo, content: this.qrcode}).getCanvas();
         const qrcodeIMG = (document.querySelector('.qr-img') as HTMLImageElement);
         qrcodeIMG.src = qr.toDataURL();
-
+        this.elementLeft.classList.add('active');
+        this.elementRight.classList.add('active');
         resolve(IENMessage.success);
 
       } catch (error) {
-        this.apiService.alertError(error.message);
         resolve(error.message);
       }
     });
@@ -237,8 +264,54 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
   buymore() {
     clearInterval(this.destroyTimer);
-    this.destroyCounter = 60;
+    this.destroyCounter = 1000;
     this.orderCartPage.dismiss({ buymore: true });
     this.modal.dismiss();
+  }
+
+  setSummarizeOrder() {
+    const summarizeOrder = JSON.parse(JSON.stringify(this.orders));
+    summarizeOrder.forEach((item) => (item.stock.image = ''));
+    let quantity: number = 0;
+    let total: number = 0;
+    for (let i = 0; i < summarizeOrder.length; i++) {
+      quantity += summarizeOrder[i].stock.qtty;
+      total +=
+        summarizeOrder[i].stock.qtty *
+        summarizeOrder[i].stock.price;
+    }
+    const sum_refund = this.apiService.cash.amount - total;
+
+    return {
+      message: IENMessage.success,
+      summarizeOrder: summarizeOrder,
+      quantity: quantity,
+      total: total,
+      sum_refund: sum_refund
+    }
+  }
+
+  mmoneyQRCode(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        const setSummarizeOrder = this.setSummarizeOrder();
+
+        const params = {
+          orders: setSummarizeOrder.summarizeOrder,
+          amount: setSummarizeOrder.total,
+          machineId: this.apiService.machineId.machineId
+        }
+
+        const run = await this.generateMMoneyQRCodeProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        this.qrcode = run.data[0].mmoneyQRCode.qr;
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
   }
 }

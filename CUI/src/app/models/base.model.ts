@@ -43,3 +43,7 @@ export enum IWebviewTabs  {
     hangmifood = 'hangmifood',
     topupandservices = 'topupandservices'
 }
+
+export enum IGenerateQR {
+    mmoney = 'mmoney',
+}

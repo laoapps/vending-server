@@ -233,10 +233,10 @@ ion-content {
                 }
             }
         }
-        .item:first-child {
-            // z-index: 999998;
-            // position: relative;
-        }
+        // .item:first-child {
+        //     // z-index: 999998;
+        //     // position: relative;
+        // }
         
     }
     .laab-card-body::-webkit-scrollbar {
@@ -246,10 +246,10 @@ ion-content {
 
 }
 
-.scroll {
-    // position: absolute;
-    // z-index: -1;
-}
+// .scroll {
+//     // position: absolute;
+//     // z-index: -1;
+// }
 
 ion-infinite-scroll-content {
     min-height: 1px;

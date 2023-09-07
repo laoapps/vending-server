@@ -858,11 +858,64 @@ export class Tab1Page implements OnDestroy {
         }, 2000);
         return;
       }
+
       this.setActive();
       if (!x) return alert('not found');
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
         if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
+      console.log('ID', x);
+      console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
+
+      // this.apiService.showLoading('', 500);
+
+      const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+      y.stock.qtty = 1;
+      console.log('y', y);
+      this.orders.unshift(y);
+      console.log(`orders`, this.orders);
+      
+      //  console.log('sum',this.getSummarizeOrder());
+      this.getSummarizeOrder();
+      // setTimeout(() => {
+      // this.apiService.dismissLoading();
+      this.showMyOrdersModal();
+    } catch (error) {
+      console.log('error', error);
+      alert(JSON.stringify(error));
+    }
+  }
+  addOrderTest(x: IVendingMachineSale) {
+    try {
+      this.autopilot.auto = 0;
+      console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
+
+      if (this.WSAPIService?.setting_allowVending == false) {
+        // this.apiService.simpleMessage('Vending is closed');
+        this.apiService.soundSystemError();
+        const alert = Swal.fire({
+          icon: 'error',
+          title: 'Vender is out of service',
+          text: `Please, try again later`,
+          showConfirmButton: true,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#EE3124',
+          heightAuto: false,
+        });
+        setTimeout(() => {
+          Swal.close();
+        }, 2000);
+        return;
+      }
+      
+      this.setActive();
+      if (!x) return alert('not found');
+
+      const ord = this.orders.filter((v) => v.position == x.position);
+      if (ord.length)
+        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
+
+        
       console.log('ID', x);
       console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 

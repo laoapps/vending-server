@@ -16,41 +16,12 @@
 
       <div class="form-order-paid">
 
-        <div class="left">
+        <div class="form-order-paid-left">
           <div class="title">PAYMENT METHODS</div>
-
-          <div *ngIf="cashesList != undefined && cashesList?.length > 0" class="text-section"><i class="fa-solid fa-money-bill-wave"></i> {{ cashesTitle }}</div>
-          <div *ngIf="cashesList != undefined && cashesList?.length > 0" class="item-list">
-            <a *ngFor="let list of cashesList; let i = index" href="javascript:void(0)" class="item">
+          <div class="item-list">
+            <a *ngFor="let list of methodList; let i = index" href="javascript:void(0)" class="item">
               <div class="check-choice">
-                <input type="radio" name="choice" id="input-choice" class="input-choice">
-                <label for="choice" class="label-choice">{{ list.name }}</label>
-              </div>
-              <div class="icon">
-                <img class="img-choice" src="{{ list.image }}" alt="">
-              </div>
-            </a>
-          </div>
-
-          <div *ngIf="ewalletList != undefined && ewalletList?.length > 0 && cashesList != undefined && cashesList?.length > 0" class="text-section mt-5"><i class="fa-solid fa-wallet"></i> {{ ewalletTitle }}</div>
-          <div *ngIf="ewalletList != undefined && ewalletList?.length > 0 && cashesList != undefined && cashesList?.length == 0" class="text-section"><i class="fa-solid fa-wallet"></i> {{ ewalletTitle }}</div>
-          <div *ngIf="ewalletList != undefined && ewalletList?.length > 0" class="item-list">
-            <a *ngFor="let list of ewalletList; let i = index" href="javascript:void(0)" class="item">
-              <div class="check-choice">
-                <input type="radio" name="choice" id="input-choice" class="input-choice">
-                <label for="choice" class="label-choice">{{ list.name }}</label>
-              </div>
-              <div class="icon">
-                <img class="img-choice" src="{{ list.image }}" alt="">
-              </div>
-            </a>
-          </div>
-
-          <div *ngIf="bankList != undefined && bankList?.length > 0" class="text-section mt-5"><i class="fa-solid fa-building-columns"></i> {{ bankTitle }}</div>
-          <div *ngIf="bankList != undefined && bankList?.length > 0" class="item-list">
-            <a *ngFor="let list of bankList; let i = index" href="javascript:void(0)" class="item">
-              <div class="check-choice">
-                <input type="radio" name="choice" id="input-choice" class="input-choice">
+                <input type="radio" name="choice" id="input-choice" class="input-choice input-choice-{{list.value}}">
                 <label for="choice" class="label-choice">{{ list.name }}</label>
               </div>
               <div class="icon">
@@ -61,7 +32,7 @@
 
         </div>
 
-        <div class="right">
+        <div class="form-order-paid-right">
 
           <div class="billing-container">
             <div class="shape-header-list">
@@ -111,13 +82,13 @@
           </div>
           <div class="right">
             <div class="text">Clear</div>
-            <div class="sub-text">all all orders</div>
+            <div class="sub-text">Clear all orders</div>
           </div>
         </a>
         <a (click)="buymore()" href="javascript:void(0)" class="item-right">
           <div class="left">
             <div class="text">Buy More</div>
-            <div class="sub-text">choose another product</div>
+            <div class="sub-text">Choose another product</div>
           </div>
           <div class="right">
             <i class="fa-solid fa-cart-shopping" style="color: #fff;"></i>
