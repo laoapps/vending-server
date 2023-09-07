@@ -78,6 +78,14 @@ const routes: Routes = [
   {
     path: 'play-games',
     loadChildren: () => import('./Vending/play-games/play-games.module').then( m => m.PlayGamesPageModule)
+  },
+  {
+    path: 'order-cart',
+    loadChildren: () => import('./Vending/order-cart/order-cart.module').then( m => m.OrderCartPageModule)
+  },
+  {
+    path: 'order-paid',
+    loadChildren: () => import('./Vending/order-paid/order-paid.module').then( m => m.OrderPaidPageModule)
   }
 ];
 

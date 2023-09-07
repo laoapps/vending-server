@@ -6,7 +6,127 @@
 
 ion-header {
     --ion-background-color: #fff;
-    z-index: 10000;
+    z-index: 999999;
+}
+
+.webview-small-tab {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    height: 0px;
+    background: #fff;
+    transition: .2s;
+    position: relative;
+    top: -1000px;
+    z-index: -1;
+
+    .item {
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        background: #fff;
+        color: #333;
+        border-radius: 5px;
+        transition: .2s;
+        // border: 1px solid #3333;
+        box-shadow: 0px 2px 10px rgba(0,0,0,.1);
+        overflow: hidden;
+        width: 250px;
+
+        .item-left {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+
+            img {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        .item-right {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+
+            .name {
+                font-weight: 300;
+                font-size: 16px;
+            }
+            .description {
+                font-size: 14px;
+                font-weight: 300;
+                color: #666;
+            }
+        }
+
+    }
+}
+.webview-small-tab.active {
+    height: 70px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    top: 0px;
+}
+.webview-tab {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-gap: 10px;
+    height: 100px;
+    padding-bottom: 10px;
+    background: #fff;
+    margin: 0px 10px;
+    transition: .2s;
+    position: relative;
+    top: 0px;
+    z-index: -1;
+
+    .item {
+        text-decoration: none;
+        display: flex;
+        background: #fff;
+        border-radius: 5px;
+        transition: .2s;
+        border: 1px solid #3333;
+        overflow: hidden;
+
+        .item-left {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+
+            img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        .item-right {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+
+            .name {
+                font-weight: bold;
+                font-size: 20px;
+                color: #333;
+            }
+            .description {
+                font-size: 14px;
+                font-weight: 300;
+                color: #666;
+            }
+        }
+
+    }
+}
+.webview-tab.hidden {
+    top: -1000px;
+    height: 0px;
+    padding-bottom: 0px;
 }
 
 .tab-services-segment.hidden {
@@ -51,7 +171,7 @@ ion-header {
 .vending-segment {
     display:inline-block; 
     z-index:999999;
-    margin-top: 70px;
+    margin-top: 10px;
 }
 
 
@@ -100,6 +220,7 @@ ion-header {
     }
 }
 
+
 .btn-abs-list {
     display: flex;
     flex-direction: column;
@@ -109,13 +230,21 @@ ion-header {
     gap: 5px;
     z-index: 999989;
 
+    .menu-shopping-cart {
+        display: flex;
+    }
+
     .item,
     .item-blue, 
     .item-sea, 
     .item-deep-red, 
     .item-red,
-    .item-green {
-
+    .item-green,
+    .item-orange,
+    .item-purple,
+    .item-white,
+    .item-dark {
+        
         background: #EE3124;
         justify-content: space-between;
         align-items: center;
@@ -128,8 +257,8 @@ ion-header {
         .icon {
             font-size: 25px;
             color: #fff;
-            min-width: 60px;
-            height: 60px;
+            min-width: 50px;
+            height: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -162,6 +291,28 @@ ion-header {
     .item-green {
         background: #00C82A;
     }
+    .item-orange {
+        background: #F39C12;
+    }
+    .item-purple {
+        background: #8E44AD;
+    }
+    .item-white {
+        background: #fff;
+        display: flex;
+
+        .icon, .text {
+            color: #333;
+        }
+    }
+    .item-dark {
+        background: #2C3E50;
+        display: flex;
+
+        .icon, .text {
+            color: #fff;
+        }
+    }
     
     .item-blue:hover {
         background: #3e549c;
@@ -177,6 +328,18 @@ ion-header {
     }
     .item-green:hover {
         background: #00ae26;
+    }
+    .item-orange:hover {
+        background: #D68910;
+    }
+    .item-purple:hover {
+        background: #6C3483;
+    }
+    .item-white:hover {
+        background: #f5f6f7;
+    }
+    .item-dark:hover {
+        background: #273746;
     }
 }
 
@@ -194,6 +357,7 @@ ion-header {
     background-size: contain;
     height: 300px;
     width: 100%;
+    z-index: 999999;
 }
 
 .spacious-container {
@@ -416,6 +580,7 @@ div.scrollmenu {
     background: #fff;
     padding: 10px;
     gap: 10px;
+    z-index: 999999;
 
     .cash-balance {
         display: flex;
@@ -493,6 +658,11 @@ div.scrollmenu {
             text-align: center;
             font-size: 35px;
             color: #EE3124;
+
+            
+        }
+        .icon-shopping-cart {
+            padding-top: 12px;
         }
 
         .text {

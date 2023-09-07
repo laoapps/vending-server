@@ -41,6 +41,10 @@ import Swal from "sweetalert2";
   providedIn: 'root',
 })
 export class ApiService {
+  
+  toggleWebviewTab: boolean = false;
+
+
   vendingGoPageSound() {
     this.soundPaymentMethod();
     setTimeout(() => {
@@ -159,10 +163,10 @@ export class ApiService {
   _machineStatus = { status: {} as IMachineStatus } as any;
   _cuiSetting = {} as any;
   musicVolume=6;
+
+  countErrorPay: number = 0;
   constructor(
     public controlMenuService: ControlMenuService,
-
-
 
     public http: HttpClient,
     public wsapi: WsapiService,
@@ -408,6 +412,33 @@ export class ApiService {
     setTimeout(() => {
       Swal.close();
     }, 5000);
+  }
+  public alertErrorNoDimiss(text: string) {
+    const alert = Swal.fire({
+      icon: 'error',
+      title: 'Fail',
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#CB4335',
+      heightAuto: false
+    });
+    return alert;
+  }
+  public alertConfirm(text: string) {
+    const alert = Swal.fire({ 
+      icon: 'question',
+      title: 'Are you sure!?',
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'Confirm',
+      confirmButtonColor: '#CB4335',
+      showCancelButton: true,
+      cancelButtonText: 'Cancel',
+      cancelButtonColor: '#5D6D7E',
+      heightAuto: false
+    });
+    return alert;
   }
 
   

@@ -73,7 +73,6 @@ export class HangmiStoreSegmentPage implements OnInit {
   }
 
   close() {
-    this.apiService.myTab1.resetTabServicesSegement();
     this.apiService.modal.dismiss();
   }
 }

@@ -1,0 +1,93 @@
+<ion-content (click)="reloadAutoPayment()">
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">YOUR ORDERS</div>
+      <div class="sub-title">If you don't have any activity that will automatic buy your orders</div>
+
+    </div>
+    <div class="laab-card-body">
+
+      <span class="arrow-scroll-down">
+        <i class="fa-solid fa-angles-down fa-bounce"></i>
+      </span>
+      <span class="arrow-scroll-up">
+        <i class="fa-solid fa-angles-up fa-bounce"></i>
+      </span>
+
+      <div (scroll)="toggleArrowScrollSuggest($event)" class="order-list">
+        <div *ngFor="let order of orders; let i = index" href="javascript:void(0)" class="item">
+          <div class="content">
+            <div class="icon">
+              <img [src]="apiService?.imageList[order.stock.image]" alt="">
+            </div>
+            <div class="detail">
+              <div class="position">Position #{{ order?.position }}</div>
+              <div class="name">{{ order?.stock?.name }}</div>
+              <div class="price">{{ order?.stock?.price | number }}</div>
+            </div>
+            <a (click)="removeOrder(i)" href="javascript:void(0)" class="btn-epin">
+              <i class="fa-solid fa-trash-can"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>  
+    <div class="laab-card-footer">
+      <div class="sum-list">
+        <div class="group">
+          <div class="text">QTTY</div>
+          <div class="value">{{ getTotalSale?.q | number }}</div>
+        </div>
+        <div class="group">
+          <div class="text">Total</div>
+          <div class="value">{{ getTotalSale?.t | number }}</div>
+        </div>
+      </div>
+
+      <div class="btn-options">
+        <div class=""></div>
+        <a (click)="showOrderPaidModal()" href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Pay</div>
+            <div class="sub-text">pay your orders</div>
+          </div>
+          <div class="right">
+            <i style="color: #fff;" *ngIf="orders != undefined && orders?.length > 0 && autoPaymentCounter <= 15">{{ autoPaymentCounter }}</i>
+            <i style="color: #fff;" *ngIf="orders != undefined && orders?.length > 0 && autoPaymentCounter > 15">15</i>
+          </div>
+        </a>
+
+        <a (click)="clearOrders()" href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-trash-can" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">Clear</div>
+            <div class="sub-text">Clear all orders</div>
+          </div>
+        </a>
+        <a (click)="close()" href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Buy More</div>
+            <div class="sub-text">choose another product</div>
+          </div>
+          <div class="right">
+            <i class="fa-solid fa-cart-shopping" style="color: #fff;"></i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+</ion-content>

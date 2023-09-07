@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   NgZone,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { ApiService } from '../services/api.service';
@@ -28,7 +29,7 @@ import { ShowcartPage } from '../showcart/showcart.page';
 
 import { VendingAPIService } from '../services/vending-api.service';
 import { LoadVendingWalletCoinBalanceProcess } from './LAAB_processes/loadVendingWalletCoinBalance.process';
-import { IENMessage, ITabVendingSegement } from '../models/base.model';
+import { IENMessage, ITabVendingSegement, IWebviewTabs } from '../models/base.model';
 import { CashValidationProcess } from './LAAB_processes/cashValidation.process';
 import { CashinValidationProcess } from './LAAB_processes/cashinValidation.process';
 import { LaabGoPage } from './LAAB/laab-go/laab-go.page';
@@ -59,6 +60,7 @@ import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/ha
 import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
 import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { PlayGamesPage } from './Vending/play-games/play-games.page';
+import { OrderCartPage } from './Vending/order-cart/order-cart.page';
 
 var host = window.location.protocol + '//' + window.location.host;
 @Component({
@@ -66,7 +68,7 @@ var host = window.location.protocol + '//' + window.location.host;
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
 })
-export class Tab1Page {
+export class Tab1Page implements OnDestroy {
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
   private cashValidationProcess: CashValidationProcess;
   private cashinValidationProcess: CashinValidationProcess;
@@ -132,7 +134,30 @@ export class Tab1Page {
       link: 'topupandservices'
     }
   ];
+  webviewList: Array<any> = [
+    {
+      icon: "../../assets/webview/hangmistore.jpeg",
+      name: 'Hangmi Store',
+      description: 'Shopping online ecomerc by Hangmi Store application services',
+      link: 'hangmistore'
+    },
+    {
+      icon: "../../assets/webview/hangmifood.png",
+      name: 'Hangmi Food',
+      description: 'Order and delivery your food by Hangmi Food application services',
+      link: 'hangmifood'
+    },
+    {
+      icon: "../../assets/webview/topupandservices.jpeg",
+      name: 'Topup & Services',
+      description: 'Online payment and options',
+      link: 'topupandservices'
+    }
+  ] 
   currentSegementTab: string = ITabVendingSegement.vending;
+
+  autoShowMyOrderTimer: any = {} as any;
+  autoShowMyOrdersCounter: number = 15;
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -178,7 +203,7 @@ export class Tab1Page {
     // this.initVendingSale();
 
     platform.ready().then(() => {
-      this.toggleTabServicesSegment();
+      // this.toggleTabServicesSegment();
 
       this.ownerUuid = localStorage.getItem('machineId');
       this.apiService.audioElement = document.createElement('audio');
@@ -365,6 +390,39 @@ export class Tab1Page {
     setTimeout(() => {
       // this.checkHowTo();
     }, 5000);
+  }
+
+  ngOnDestroy(): void {
+      if (this.autoShowMyOrderTimer) {
+        clearInterval(this.autoShowMyOrderTimer);
+      }
+  }
+
+  loadAutoShowMyOrders() {
+    if (this.orders != undefined && Object.entries(this.orders).length > 0) {
+      this.autoShowMyOrderTimer = setInterval(() => {
+        this.autoShowMyOrdersCounter--;
+        if (this.autoShowMyOrdersCounter <= 0) {
+          clearInterval(this.autoShowMyOrderTimer);
+          this.showMyOrdersModal();
+        } 
+      }, 1000);
+    }
+  }
+  reloadAutoPayment() {
+    if (this.orders != undefined && Object.entries(this.orders).length > 0) {
+      this.autoShowMyOrdersCounter = 15;
+    }
+  }
+
+
+  toggleWebviewTab(e: any){
+    // console.log(e.detail);
+    if (e.detail.scrollTop > 126) {
+      this.apiService.toggleWebviewTab = true;
+    } else {
+      this.apiService.toggleWebviewTab = false;
+    }
   }
   setActive() {
     console.log('active');
@@ -808,45 +866,43 @@ export class Tab1Page {
       console.log('ID', x);
       console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 
-      this.apiService.showLoading('', 500);
-
-      // if (this.orders.find(v => v.position == x.position)) {
-      //   const mx = x.max;
-      //   // const summ = this.getSummarizeOrder();
-      //   // const summ  = this.summarizeOrder;
-      //   const re = this.orders.find(v => {
-      //     const o = this.orders.filter(vx=>vx.stock.id==v.stock.id);
-      //     console.log('o',o,'reduce',o.reduce((a,b)=>a+b.stock.qtty,0),'mx',mx,'pos',x.position,v.position);
-
-      //     return (o.reduce((a,b)=>a+b.stock.qtty,0))+1 > mx && v.position == x.position
-      //   });
-      //    console.log('0x0r',this.orders, mx, re);
-      //   if (re){
-      //      setTimeout(() => {
-      //     this.apiService.dismissLoading();
-      //   }, 1000);
-      //     return alert('Out of Stock');
-      //   }
-
-      // }
-
-      // if (x.stock.qtty <= 0) alert('Out Of order');
+      // this.apiService.showLoading('', 500);
 
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
       y.stock.qtty = 1;
       console.log('y', y);
-      this.orders.push(y);
+      this.orders.unshift(y);
+      console.log(`orders`, this.orders);
+      
       //  console.log('sum',this.getSummarizeOrder());
       this.getSummarizeOrder();
       // setTimeout(() => {
-      this.apiService.dismissLoading();
-      // }, 1000);
-
-      // });
+      // this.apiService.dismissLoading();
+      this.showMyOrdersModal();
     } catch (error) {
       console.log('error', error);
       alert(JSON.stringify(error));
     }
+  }
+
+  showMyOrdersModal() {
+    if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
+    clearInterval(this.autoShowMyOrderTimer);
+    this.autoShowMyOrdersCounter = 15;
+
+    const component = OrderCartPage;
+    const props = {
+      orders: this.orders,
+      getTotalSale: this.getTotalSale
+    }
+    this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
+      r.present();
+      r.onDidDismiss().then(cb => {
+        if (this.orders != undefined && Object.entries(this.orders).length > 0) {
+          this.loadAutoShowMyOrders();
+        }
+      });
+    });
   }
   checkCartCount(position: number) {
     return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;
@@ -923,6 +979,11 @@ export class Tab1Page {
     return x;
   }
 
+  clearCart() {
+    this.orders = [];
+    this.getTotalSale.q = 0;
+    this.getTotalSale.t = 0;
+  }
   removeCart(i: number) {
     const x = this.orders.splice(i, 1);
     this.getSummarizeOrder();
@@ -1214,7 +1275,6 @@ export class Tab1Page {
       this.autopilot.auto=0;
     }, 1000);
     rx.onDidDismiss().then(rx=>{
-      this.resetTabServicesSegement();
       clearInterval(t);
     })
 
@@ -1473,34 +1533,13 @@ export class Tab1Page {
     });
   }
 
-
-  toggleTabServicesSegment() {
-    let i = setInterval(() => {
-      clearInterval(i);
-      const tabItems = (document.querySelectorAll('.tab-services-segment .item') as NodeListOf<HTMLElement>);
-      tabItems[0].classList.add('active');
-      for(let i = 0; i < tabItems.length; i++) {
-        tabItems[i].addEventListener('click', () => {
-          const tabItemsActive =  (document.querySelectorAll('.tab-services-segment .item.active') as NodeListOf<HTMLElement>);
-          tabItemsActive.forEach(item => item.classList.remove('active'));
-          tabItems[i].classList.add('active');
-        });
-      }
-    });
-  }
-  resetTabServicesSegement() {
-    const tabItems = (document.querySelectorAll('.tab-services-segment .item') as NodeListOf<HTMLElement>);
-    const tabItemsActive =  (document.querySelectorAll('.tab-services-segment .item.active') as NodeListOf<HTMLElement>);
-    tabItemsActive.forEach(item => item.classList.remove('active'));
-    tabItems[0].classList.add('active');
-  }
-  gotoAnotherSegment(link: string) {
+  openWebViewMenu(link: string) {
     let component: any = {} as any;
-    if (link == ITabVendingSegement.hangmistore) {
+    if (link == IWebviewTabs.hangmistore) {
       component = HangmiStoreSegmentPage;
-    } else if (link == ITabVendingSegement.hangmifood) {
+    } else if (link == IWebviewTabs.hangmifood) {
       component = HangmiFoodSegmentPage;
-    } else if (link == ITabVendingSegement.topupandservices) {
+    } else if (link == IWebviewTabs.topupandservices) {
       component = TopupAndServiceSegmentPage;
     }
 

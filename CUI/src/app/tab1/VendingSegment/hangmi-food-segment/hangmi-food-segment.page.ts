@@ -83,7 +83,6 @@ export class HangmiFoodSegmentPage implements OnInit {
   }
 
   close() {
-    this.apiService.myTab1.resetTabServicesSegement();
     this.apiService.modal.dismiss();
   }
 }

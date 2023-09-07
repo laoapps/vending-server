@@ -1,4 +1,8 @@
 export enum IENMessage {
+    invalidSellDetail = 'invalid sell detail',
+    retryPayYourOrderFail5TimesYourOrderWasReset = 'retry pay your order fail 5 times your order was reset',
+    generateMMoneyQRCodeFail = 'generate MMoney QRCode fail',
+    invalidAmount = 'invalid amount',
     invalidSelectionGameMenu = 'invalid selection game menu',
     notFoundYourMMoneyAccount = 'Not found your MMoney account',
     saveSaleFail = 'save sale fail',
@@ -28,6 +32,12 @@ export enum IENMessage {
 }
 
 export enum ITabVendingSegement {
+    vending = 'vending',
+    hangmistore = 'hangmistore',
+    hangmifood = 'hangmifood',
+    topupandservices = 'topupandservices'
+}
+export enum IWebviewTabs  {
     vending = 'vending',
     hangmistore = 'hangmistore',
     hangmifood = 'hangmifood',

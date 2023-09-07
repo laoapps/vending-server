@@ -1,0 +1,344 @@
+ion-content {
+    --ion-background-color: #F5F5F5;
+    // --ion-background-color: #EE3124;
+}
+
+.laab-card {
+    margin: 10px;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    // background: #EE3124;
+    background: rgb(255,255,255);
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(238,49,36,0.7161239495798319) 0%, rgba(214,43,31,1) 100%, rgba(255,255,255,1) 100%);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+
+    .laab-card-options {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+
+       .right {
+            .btn-close-modal {
+                color: #fff;
+                text-decoration: none;
+            }
+       }
+    }
+
+    .laab-card-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        color: #fff;
+
+        .title {
+            font-size: 35px;
+            font-weight: bold;
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        .cash-balance {
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 30px;
+            letter-spacing: 4px;
+            font-weight: 300;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+
+            span {
+                font-size: 14px;
+                display: flex;
+                position: relative;
+                padding-left: 10px;
+                top: 3px;
+            }
+        }
+
+
+
+    }
+
+
+
+
+
+    .laab-card-body {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+
+        .arrow-scroll-up, .arrow-scroll-down {
+            position: absolute;
+            bottom: 0; right: 10px;
+            font-size: 30px;
+            color: #fff;
+            display: none;
+        }
+        .arrow-scroll-up.active, .arrow-scroll-down.active {
+            display: block;
+        }
+
+        .order-list {
+            margin-top: 35px;
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            grid-column-gap: 20px;
+            grid-row-gap: 10px;
+            overflow-y: scroll;
+            max-height: 500px;
+            min-height: 500px;
+            
+            padding-bottom: 50px;
+            margin-left: 10px;
+            margin-right: 10px;
+
+            .item {
+                // background: rgb(255,255,255);
+                // background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,146,141,1) 0%, rgba(221,57,50,1) 100%, rgba(221,57,50,1) 100%);
+    
+                // background: transparent;
+                background: rgb(255,255,255);
+                background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 0%, rgba(203,203,203,1) 100%, rgba(0,0,0,1) 100%);
+    
+                border: 1px solid #fff;
+                color: #333;
+                text-decoration: none;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 5px;
+                padding-top: 20px;
+                overflow: hidden;
+                height: 300px;
+                width: 100%;
+                position: relative;
+                padding-bottom: 10px;
+    
+                .content {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+    
+                    .icon {
+                        // background: #ffff;
+                        color: #fff;
+                        text-align: center;
+                        font-size: 16px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin: 0 auto;
+                        border-radius: 5px;
+                        font-weight: 300;
+    
+                        img {
+                            width: 120px;
+                            height: 120px;
+                        }
+                    }
+    
+                    .detail {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        text-align: center;
+                        margin-top: 20px;
+    
+                        .text {
+                            margin-top: 10px;
+                            font-size: 16px;
+                            font-weight: bold;
+                            color: #fff;
+                        }
+    
+                        .price {
+                            color: #333;
+                        }
+                    }
+    
+                    .btn-epin {
+                        margin-top: 20px;
+                        text-decoration: none;
+                        color: #333;
+    
+                        // background: rgb(255,255,255);
+                        // background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgba(255,205,141,1) 0%, rgba(255,129,124,1) 100%, rgba(255,255,255,1) 100%);
+    
+                        background: rgb(255,255,255);
+                        background: linear-gradient(280deg, rgba(255,255,255,1) 0%, rgba(237,237,237,1) 0%, rgba(208,208,208,1) 100%, rgba(0,0,0,1) 100%);
+    
+                        box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+                        border-radius: 5px;
+                        height: 40px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-size: 14px;
+                        font-weight: 300;
+                    }
+                }
+            }
+        }
+        .order-list::-webkit-scrollbar {
+            height: 0;
+            width: 0;
+        }
+        
+    }
+    .laab-card-body::-webkit-scrollbar {
+        height: 0;
+        width: 0;
+    }
+
+
+
+
+
+    .laab-card-footer {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        margin: 0px 10px 10px 10px;
+
+        .sum-list {
+            display: flex;
+            flex-direction: column;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 20px;
+
+            .group:first-child {
+                margin-top: 0px;
+            }
+            .group {
+                display: flex;
+                justify-content: space-between;
+                color: #fff;
+                font-size: 20px;
+                margin: 10px 0px;
+            }
+        }
+        
+
+        .btn-submit {
+            height: 50px;
+            border: 1px solid #3333;
+            background: #EE3124;
+            color: #fff;
+            border-radius: 5px;
+            transition: .2s;
+            width: 100%;
+        }
+        .btn-submit:hover {
+            background: #d62b1f;
+        }
+
+        .btn-options {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            grid-gap: 10px;
+            
+
+            .item-left {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-decoration: none;
+                width: 100%;
+                padding: 10px;
+                transition: .2s;
+
+                background: rgb(255,255,255);
+                background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(238,49,36,1) 0%, rgba(255,161,161,1) 100%, rgba(255,255,255,1) 100%);
+
+                .left {
+                    width: 50px;
+                    text-align: center;
+                    font-size: 30px;
+                    
+                }
+
+                .right {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: end;
+                    align-items: flex-end;
+                    color: #fff;
+
+                    .text {
+                        font-size: 16px;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                    }
+
+                    .sub-text {
+                        font-size: 14px;
+                        font-weight: 300;
+                    }
+                }
+            }
+            .item-left:hover {
+                background: rgb(255,255,255);
+                background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(226,15,0,1) 0%, rgba(255,102,102,1) 100%, rgba(255,255,255,1) 100%);
+            }
+
+            .item-right {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-decoration: none;
+                width: 100%;
+                padding: 10px;
+                transition: .2s;
+                
+                background: rgb(255,255,255);
+                background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,161,161,1) 0%, rgba(238,49,36,1) 100%, rgba(255,255,255,1) 100%);
+                
+                .left {
+
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: start;
+                    align-items: flex-start;
+                    color: #fff;
+
+                    .text {
+                        font-size: 16px;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                    }
+
+                    .sub-text {
+                        font-size: 14px;
+                        font-weight: 300;
+                    }  
+                }
+
+                .right {
+                    width: 50px;
+                    text-align: center;
+                    font-size: 30px;
+
+                    img {
+                        border: 2px solid #ffff;
+                        width: 100px;
+                        height: 100px;
+                    }
+                }
+            }
+            .item-right:hover {
+                background: rgb(255,255,255);
+                background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,102,102,1) 0%, rgba(226,15,0,1) 100%, rgba(255,255,255,1) 100%);
+            }
+        }
+    }
+}

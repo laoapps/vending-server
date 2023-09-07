@@ -53,7 +53,6 @@ export class VendingGoPage implements OnInit {
       (a, b) => a + b.stock.price * b.stock.qtty,
       0
     );
-    // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
     this.apiService.showLoading();
     console.log(this.orders, amount);
     this.apiService
