@@ -71,7 +71,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   currentValue: string;
 
   destroyTimer: any = {} as any;
-  destroyCounter: number = 1000;
+  destroyCounter: number = 60;
 
   qrcode: string;
   elementLeft: HTMLDivElement = {} as any;
@@ -125,7 +125,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
       this.destroyCounter--;
       if (this.destroyCounter == 0) {
         clearInterval(this.destroyTimer);
-        this.destroyCounter = 1000;
+        this.destroyCounter = 60;
 
         (document.querySelector('.qr-img') as HTMLImageElement).src = '';
         this.orders = [];
@@ -133,7 +133,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         this.getTotalSale.t = 0;
 
         clearInterval(this.destroyTimer);
-        this.destroyCounter = 1000;
+        this.destroyCounter = 60;
 
         this.apiService.myTab1.clearCart();  
         this.orderCartPage.dismiss();
@@ -143,7 +143,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     }, 1000);
   }
   resetDestroy() {
-    this.destroyCounter = 1000;
+    this.destroyCounter = 60;
   }
 
   loadBilling() {
@@ -264,7 +264,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
   buymore() {
     clearInterval(this.destroyTimer);
-    this.destroyCounter = 1000;
+    this.destroyCounter = 60;
     this.orderCartPage.dismiss({ buymore: true });
     this.modal.dismiss();
   }
