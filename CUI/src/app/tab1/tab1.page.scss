@@ -247,7 +247,8 @@ ion-header {
     .item-orange,
     .item-purple,
     .item-white,
-    .item-dark {
+    .item-dark,
+    .item-deep-blue {
         
         background: #EE3124;
         justify-content: space-between;
@@ -317,6 +318,17 @@ ion-header {
             color: #fff;
         }
     }
+    .item-deep-blue {
+        background: #1687A7;
+        display: flex;
+
+        .icon, .text {
+            color: #fff;
+        }
+    }
+
+
+    
     
     .item-blue:hover {
         background: #3e549c;
@@ -344,6 +356,9 @@ ion-header {
     }
     .item-dark:hover {
         background: #273746;
+    }
+    .item-deep-blue:hover {
+        background: #126c85;
     }
 }
 

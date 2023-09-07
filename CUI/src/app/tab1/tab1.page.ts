@@ -1314,8 +1314,11 @@ export class Tab1Page implements OnDestroy {
             })
             .then((r) => {
               r.present();
-              resolve(IENMessage.success);
+
+              clearInterval(this.autoShowMyOrderTimer);
+
               this.checkActiveModal(r);
+              resolve(IENMessage.success);
 
             });
         });
@@ -1331,8 +1334,9 @@ export class Tab1Page implements OnDestroy {
     }, 1000);
     rx.onDidDismiss().then(rx=>{
       clearInterval(t);
-    })
-
+      this.reloadAutoPayment();
+      this.loadAutoShowMyOrders();
+    });
   }
   laabCashout(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
@@ -1345,7 +1349,9 @@ export class Tab1Page implements OnDestroy {
           .create({ component: LaabCashoutPage, componentProps: props })
           .then((r) => {
             r.present();
+            clearInterval(this.autoShowMyOrderTimer);
             resolve(IENMessage.success);
+            
             this.checkActiveModal(r);
           });
       } catch (error) {
@@ -1367,6 +1373,7 @@ export class Tab1Page implements OnDestroy {
             .showModal(RemainingbillsPage, { r: this.apiService.pb })
             .then((r) => {
               r.present();
+              clearInterval(this.autoShowMyOrderTimer);
               this.checkActiveModal(r);
             });
         }
@@ -1413,6 +1420,7 @@ export class Tab1Page implements OnDestroy {
           .create({ component: StackCashoutPage })
           .then((r) => {
             r.present();
+            clearInterval(this.autoShowMyOrderTimer);
             this.checkActiveModal(r);
 
           });
@@ -1509,6 +1517,7 @@ export class Tab1Page implements OnDestroy {
           })
           .then((r) => {
             r.present();
+            clearInterval(this.autoShowMyOrderTimer);
             this.checkActiveModal(r);
           });
 
@@ -1529,6 +1538,7 @@ export class Tab1Page implements OnDestroy {
           })
           .then((r) => {
             r.present();
+            clearInterval(this.autoShowMyOrderTimer);
             this.checkActiveModal(r);
           });
 
@@ -1557,6 +1567,7 @@ export class Tab1Page implements OnDestroy {
         r.onDidDismiss().then(r=>{
           this.orders.length = 0;
         });
+        clearInterval(this.autoShowMyOrderTimer);
         this.checkActiveModal(r);
 
       });
@@ -1570,6 +1581,7 @@ export class Tab1Page implements OnDestroy {
       })
       .then((r) => {
         r.present();
+        clearInterval(this.autoShowMyOrderTimer);
         this.checkActiveModal(r);
 
       });
@@ -1609,6 +1621,7 @@ export class Tab1Page implements OnDestroy {
       })
       .then((r) => {
         r.present();
+        clearInterval(this.autoShowMyOrderTimer);
         this.checkActiveModal(r);
       });
   }
