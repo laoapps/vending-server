@@ -1,4 +1,6 @@
 export enum IENMessage {
+    qrcodeExpired = 'QR Code expired',
+    timeout = 'Time out !',
     invalidSellDetail = 'invalid sell detail',
     retryPayYourOrderFail5TimesYourOrderWasReset = 'retry pay your order fail 5 times your order was reset',
     generateMMoneyQRCodeFail = 'generate MMoney QRCode fail',

@@ -138,6 +138,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         this.apiService.myTab1.clearCart();  
         this.orderCartPage.dismiss();
         this.apiService.modal.dismiss();
+        this.apiService.alertWarnning(IENMessage.timeout, IENMessage.qrcodeExpired);
       }
       console.log(`destroy in`, this.destroyCounter);
     }, 1000);

@@ -413,6 +413,20 @@ export class ApiService {
       Swal.close();
     }, 5000);
   }
+  public alertWarnning(title: string,text: string) {
+    Swal.fire({
+      icon: 'warning',
+      title: title,
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#CB4335',
+      heightAuto: false
+    });
+    setTimeout(() => {
+      Swal.close();
+    }, 5000);
+  }
   public alertErrorNoDimiss(text: string) {
     const alert = Swal.fire({
       icon: 'error',
