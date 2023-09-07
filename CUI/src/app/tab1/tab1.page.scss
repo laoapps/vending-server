@@ -220,7 +220,11 @@ ion-header {
     }
 }
 
-
+.btn-shopping-cart-static {
+    position: fixed;
+    top: 200px;
+    right: 1%;
+}
 .btn-abs-list {
     display: flex;
     flex-direction: column;

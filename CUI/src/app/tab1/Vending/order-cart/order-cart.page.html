@@ -24,6 +24,12 @@
       </span>
 
       <div (scroll)="toggleArrowScrollSuggest($event)" class="order-list">
+        <div class="item-buymore">
+          <div class="icon">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+        </div>
+
         <div *ngFor="let order of orders; let i = index" href="javascript:void(0)" class="item">
           <div class="content">
             <div class="icon">
@@ -56,16 +62,7 @@
 
       <div class="btn-options">
         <div class=""></div>
-        <a (click)="showOrderPaidModal()" href="javascript:void(0)" class="item-right">
-          <div class="left">
-            <div class="text">Pay</div>
-            <div class="sub-text">pay your orders</div>
-          </div>
-          <div class="right">
-            <i style="color: #fff;" *ngIf="orders != undefined && orders?.length > 0 && autoPaymentCounter <= 15">{{ autoPaymentCounter }}</i>
-            <i style="color: #fff;" *ngIf="orders != undefined && orders?.length > 0 && autoPaymentCounter > 15">15</i>
-          </div>
-        </a>
+        <div class=""></div>
 
         <a (click)="clearOrders()" href="javascript:void(0)" class="item-left">
           <div class="left">
@@ -76,7 +73,18 @@
             <div class="sub-text">Clear all orders</div>
           </div>
         </a>
-        <a (click)="close()" href="javascript:void(0)" class="item-right">
+        <a (click)="showOrderPaidModal()" href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Pay</div>
+            <div class="sub-text">pay your orders</div>
+          </div>
+          <div class="right">
+            <i style="color: #fff;" *ngIf="orders != undefined && orders?.length > 0 && autoPaymentCounter <= 15">{{ autoPaymentCounter }}</i>
+            <i style="color: #fff;" *ngIf="orders != undefined && orders?.length > 0 && autoPaymentCounter > 15">15</i>
+          </div> 
+        </a>
+
+        <!-- <a (click)="close()" href="javascript:void(0)" class="item-right">
           <div class="left">
             <div class="text">Buy More</div>
             <div class="sub-text">Choose another product</div>
@@ -84,7 +92,8 @@
           <div class="right">
             <i class="fa-solid fa-cart-shopping" style="color: #fff;"></i>
           </div>
-        </a>
+        </a> -->
+        
 
       </div>
     </div>

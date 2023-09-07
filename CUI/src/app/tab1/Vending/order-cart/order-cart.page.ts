@@ -146,7 +146,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
         clearInterval(this.autoPaymentTimer);
         this.autoPaymentCounter = 15;
 
-        if (this.apiService.cash.amount > 0)
+        if (this.apiService.cash.amount > 0 && this.apiService.cash.amount >= this.getTotalSale.t)
         {
           const run = await this.laabPaid();
           if (run != IENMessage.success) throw new Error(run);
