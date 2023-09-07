@@ -24,7 +24,7 @@
       </span>
 
       <div (scroll)="toggleArrowScrollSuggest($event)" class="order-list">
-        <div class="item-buymore">
+        <div (click)="close()" class="item-buymore">
           <div class="icon">
             <i class="fa-solid fa-plus"></i>
           </div>

@@ -56,13 +56,13 @@ export class OrderCartPage implements OnInit, OnDestroy {
   }
 
   loadArrowScrollSuggest() {
-    if (this.orders != undefined && Object.entries(this.orders).length > 4) {
+    if (this.orders != undefined && Object.entries(this.orders).length > 3) {
       const arrowscrollDOWN = (document.querySelector('.arrow-scroll-down') as HTMLSpanElement);
       arrowscrollDOWN.classList.add('active');
     }
   }
   toggleArrowScrollSuggest(e: any) {
-    if (this.orders != undefined && Object.entries(this.orders).length > 4) {
+    if (this.orders != undefined && Object.entries(this.orders).length > 3) {
       const element = (document.querySelector('.order-list') as HTMLDivElement);
       const arrowscrollUP = (document.querySelector('.arrow-scroll-up') as HTMLSpanElement);
       const arrowscrollDOWN = (document.querySelector('.arrow-scroll-down') as HTMLSpanElement);
