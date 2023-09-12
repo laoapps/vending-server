@@ -33,6 +33,7 @@ services:
     # image: touyara/orderbillingapi:v1
     # command: npm start
     environment:
+      
       - DATABASE_HOST=vending-db
       - REDIS_HOST=redis://vending-redis-service:6379
       - REDIS_SERVER_HOST=vending-redis-service
@@ -42,8 +43,6 @@ services:
       - REDIS_LOCAL_HOST=host.docker.internal
       - REDIS_LOCAL_PORT=6379
       
-
-
       # - LAAB_URL=http://host.docker.internal:30000
       # - EPIN_URL=http://host.docker.internal:30001
       # - TEST_CALLBACK:http://host.docker.internal:9006

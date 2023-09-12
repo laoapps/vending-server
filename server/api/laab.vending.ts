@@ -23,6 +23,8 @@ export let QCreateVendingLimiter = new Queue('QCreateVendingLimiter', { defaultJ
 export let QCreateVendingLimiterCoin = new Queue('QCreateVendingLimiterCoin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateVendingWallet = new Queue('QCreateVendingWallet', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateVendingWalletCoin = new Queue('QCreateVendingWalletCoin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QCreateLockerWallet = new Queue('QCreateLockerWallet', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
+export let QCreateLockerWalletCoin = new Queue('QCreateLockerWalletCoin', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QPaidValidation = new Queue('QPaidValidation', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateSMC = new Queue('QCreateSMC', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
 export let QCreateEPIN = new Queue('QCreateEPIN', { defaultJobOptions: { removeOnComplete: true, removeOnFail: true }, redis: { host: redisHost, port: redisPort } });
@@ -48,6 +50,8 @@ export class LaabVendingAPI {
         QCreateVendingLimiterCoin: QCreateVendingLimiterCoin,
         QCreateVendingWallet: QCreateVendingWallet,
         QCreateVendingWalletCoin: QCreateVendingWalletCoin,
+        QCreateLockerWallet: QCreateLockerWallet,
+        QCreateLockerWalletCoin: QCreateLockerWalletCoin,
         QCounterCashout_CashValidation: QCounterCashout_CashValidation,
         QReCreateEPIN: QReCreateEPIN,
 
@@ -121,7 +125,7 @@ export class LaabVendingAPI {
 
 
 
-        // vending limiter
+        // vending wallet
         router.post('/laab/admin/create_vending_wallet', APIAdminAccess, this.adminWritePanel.CreateVendingWallet.bind(this.adminWritePanel));
         router.post('/laab/admin/create_vending_wallet_coin', APIAdminAccess, this.adminWritePanel.CreateVendingWalletCoin.bind(this.adminWritePanel));
         router.post('/laab/admin/find_vending_wallet', APIAdminAccess, this.adminReadPanel.FindVendingWallet.bind(this.adminReadPanel));
@@ -134,6 +138,21 @@ export class LaabVendingAPI {
         router.post('/laab/admin/show_epinshortcode',   APIAdminAccess, this.adminReadPanel.ShowEPINShortCode.bind(this.adminReadPanel));
         router.post('/laab/admin/counter_cashout_cash_validation', APIAdminAccess, this.adminWritePanel.CounterCashout_CashValidation.bind(this.adminWritePanel));
         router.post('/laab/admin/recreate_epin', APIAdminAccess, this.adminWritePanel.ReCreateEPIN.bind(this.adminWritePanel));
+
+
+
+
+
+        // locker wallet
+        router.post('/laab/admin/create_locker_wallet', APIAdminAccess, this.adminWritePanel.CreateVendingWallet.bind(this.adminWritePanel));
+        router.post('/laab/admin/create_locker_wallet_coin', APIAdminAccess, this.adminWritePanel.CreateVendingWalletCoin.bind(this.adminWritePanel));
+        router.post('/laab/admin/find_locker_wallet', APIAdminAccess, this.adminReadPanel.FindVendingWallet.bind(this.adminReadPanel));
+        router.post('/laab/admin/find_locker_wallet_coin', APIAdminAccess, this.adminReadPanel.FindVendingWalletCoin.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_locker_wallet_coin_balance', APIAdminAccess, this.adminReadPanel.ShowVendingWalletCoinBalance.bind(this.adminReadPanel));
+        router.post('/laab/admin/locker_wallet_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
+        router.post('/laab/admin/show_locker_wallet_report', APIAdminAccess, this.adminReadPanel.ShowVendingWalletReport.bind(this.adminReadPanel));
+        router.post('/laab/admin/locker_wallet_coin_transfer', APIAdminAccess, this.adminReadPanel.VendingWalletCoinTransfer.bind(this.adminReadPanel));
+
 
 
 
@@ -232,6 +251,20 @@ export class LaabVendingAPI {
             const d = job.data;
             const data = d.data;
             this.adminWritePanel._CreateVendingWalletCoin(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QCreateLockerWallet.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.adminWritePanel._CreateLockerWallet(data).then(r => {
+                done(null, r);
+            }).catch(error => done(error, null));
+        });
+        QCreateLockerWalletCoin.process((job, done) => {
+            const d = job.data;
+            const data = d.data;
+            this.adminWritePanel._CreateLockerWalletCoin(data).then(r => {
                 done(null, r);
             }).catch(error => done(error, null));
         });

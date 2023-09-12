@@ -50,7 +50,8 @@ export class LoginPage implements OnInit {
         localStorage.setItem('lva_ownerUuid', run.data[0].owneruuid);
         localStorage.setItem('lva_name', run.data[0].name);
         localStorage.setItem('lva_token', run.data[0].token);
-        this.apiService.router.navigate(['/tabs']);
+        // this.apiService.router.navigate(['/template']);
+        this.apiService.router.navigate(['/tabs/tab1']);
         resolve(IENMessage.success);
 
       } catch (error) {

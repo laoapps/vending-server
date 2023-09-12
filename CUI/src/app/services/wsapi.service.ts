@@ -91,11 +91,16 @@ export class WsapiService {
         console.log('COMMING DATA', res);
         switch (res.command) {
           case 'ping':
+
+            // control version
+            
+
+
             console.log('Ping');
             // { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
             this.setting_allowCashIn = res.data.setting.allowCashIn;
             this.setting_allowVending = res.data.setting.allowVending;
-            this.aliveSubscription.next({test:data?.test,data,balance:Number(data.balance)} as IAlive)
+            this.aliveSubscription.next({test:data?.test,data,balance:Number(data.balance)} as IAlive);
             break;
           case 'confirm':
             console.log('confirm', data);

@@ -188,6 +188,14 @@ const routes: Routes = [
     path: 'find-my-epin',
     loadChildren: () => import('./find-my-epin/find-my-epin.module').then( m => m.FindMyEpinPageModule)
   },
+  {
+    path: 'template',
+    loadChildren: () => import('./template/template.module').then( m => m.TemplatePageModule)
+  },
+  {
+    path: 'version-control',
+    loadChildren: () => import('./version-control/version-control.module').then( m => m.VersionControlPageModule)
+  },
 ];
 @NgModule({
   imports: [

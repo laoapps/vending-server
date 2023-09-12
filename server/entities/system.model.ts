@@ -2311,7 +2311,8 @@ export enum EEntity {
     ads = "ads",
     logactivity = 'logactivity',
     Door = "Door",
-    DoorPayment = "DoorPayment"
+    DoorPayment = "DoorPayment",
+    vendingVersion = 'vendingversion'
 }
 
 export interface ISaveMachineSaleReport {
@@ -2348,4 +2349,16 @@ export interface ILoadVendingMachineSaleBillReport {
     fromDate: string,
     toDate: string,
     machineId: string
+}
+
+export interface IVendingVersion extends IBase {
+    url: string,
+    version: string,
+    description: string
+}
+export interface IVendingUpdateVersion {
+    machines: Array<{
+        id: string
+        version: string,
+    }>,
 }

@@ -21,6 +21,7 @@ import { CreateDatabase } from "./entities";
 import { LaabVendingAPI } from "./api/laab.vending";
 import { CashNV9LAAB } from "./api/cashNV9LAAB";
 import { InventoryLocker } from "./api/inventoryLocker";
+import { InventoryZDM8Version } from "./api/inventoryZDM8Version";
 
 const f = fs.readFileSync(__dirname + "/.env", "utf8");
 const env = JSON.parse(f); //../
@@ -73,6 +74,7 @@ CreateDatabase("")
     // const ssZDM8 = new SocketServerZDM8();
     const invZDM8 = new InventoryZDM8(app, wss1);
     const invLocker = new InventoryLocker(app, wss3);
+    const invZDMVersion = new InventoryZDM8Version(app);
     //.... KIOSK
     const kioskport = process.env.KIOSKLAABPORT;
 

@@ -20,6 +20,11 @@ import { ShowVendingWalletReportFunc } from "../funcs/showVendingWalletReport.fu
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
 import { FindEPINShortCodeFunc } from "../funcs/findEPINShortcode.func";
 import { ShowEPINShortCodeFunc } from "../funcs/showEPINShortcode.func";
+import { FindLockerWalletFunc } from "../funcs/findLockerWallet.func";
+import { FindLockerWalletCoinFunc } from "../funcs/findLockerWalletCoin.func";
+import { LockerWalletCoinTransferFunc } from "../funcs/lockerWalletCoinTransfer.func";
+import { ShowLockerWalletCoinBalanceFunc } from "../funcs/showLockerWalletCoinBalance.func";
+import { ShowLockerWalletReportFunc } from "../funcs/showLockerWalletReport.func";
 
 export class ReadPanel {
 
@@ -85,6 +90,25 @@ export class ReadPanel {
         }
     }
 
+    public FindLockerWallet(req: Request, res: Response) {
+        try {
+            const func = new FindLockerWalletFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
 
     public FindMerchantCoin(req: Request, res: Response) {
         try {
@@ -127,6 +151,25 @@ export class ReadPanel {
     public FindVendingWalletCoin(req: Request, res: Response) {
         try {
             const func = new FindVendingWalletCoinFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public FindLockerWalletCoin(req: Request, res: Response) {
+        try {
+            const func = new FindLockerWalletCoinFunc();
             const data = req.body;
             func.Init(data).then(run => {
                 if (run.message != IENMessage.success) {
@@ -266,6 +309,25 @@ export class ReadPanel {
         }
     }
 
+    public LockerWalletCoinTransfer(req: Request, res: Response) {
+        try {
+            const func = new LockerWalletCoinTransferFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
 
 
 
@@ -310,6 +372,25 @@ export class ReadPanel {
     public ShowVendingWalletCoinBalance(req: Request, res: Response) {
         try {
             const func = new ShowVendingWalletCoinBalanceFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public ShowLockerWalletCoinBalance(req: Request, res: Response) {
+        try {
+            const func = new ShowLockerWalletCoinBalanceFunc();
             const data = req.body;
             func.Init(data).then(run => {
                 if (run.message != IENMessage.success) {
@@ -387,6 +468,26 @@ export class ReadPanel {
             message([], error.message, IStatus.unsuccess, res);
         }
     }
+
+    public ShowLockerWalletReport(req: Request, res: Response) {
+        try {
+            const func = new ShowLockerWalletReportFunc();
+            const data = req.body;
+            func.Init(data).then(run => {
+                if (run.message != IENMessage.success) {
+                    message([], run, IStatus.unsuccess, res);
+                } else {
+                    delete run.message;
+                    message(run, IENMessage.success, IStatus.success, res);
+                }
+
+            }).catch(error => message([], error.message, IStatus.unsuccess, res));
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
 
     public FindEPINShortCode(req: Request, res: Response) {
         try {

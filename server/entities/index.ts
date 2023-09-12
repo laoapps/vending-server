@@ -20,6 +20,7 @@ import { AdsFactory, AdsStatic } from "./ads.entity";
 import { LogActivityFactory, LogActivityStatic } from "./logactivity.entity";
 import { DoorFactory, DoorStatic } from "./doors.entity";
 import { DoorPaymentFactory, DoorPaymentStatic } from "./doorpayment.entity";
+import { VendingVersionFactory, VendingVersionStatic } from "./vendingversion.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -38,11 +39,13 @@ export let vendingMachineSaleReportEntity: VendingMachineSaleReportStatic;
 export let adsEntity: AdsStatic;
 export let doorEntity: DoorStatic;
 export let doorPaymentEntity: DoorPaymentStatic;
+export let vendingVersionEntity: VendingVersionStatic;
 
 // LAAB
 export let vendingWallet: VendingWalletStatic;
 export let epinshortcodeEntity: EPINShortCodeStatic;
 export let subadminEntity: SubadminStatic;
+
 
 export const initDB =()=>{
     laabHashService = new LAABHashService();
@@ -57,6 +60,10 @@ export const initDB =()=>{
     LogActivityFactory(EEntity.logactivity, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);
         logEntity = LogActivityFactory(EEntity.logactivity, dbConnection);
+    });
+    VendingVersionFactory(EEntity.vendingVersion, dbConnection).sync().then(() => {
+        console.log(`vending version sync`);
+        vendingVersionEntity = VendingVersionFactory(EEntity.vendingVersion, dbConnection);
     });
     adsEntity = AdsFactory(EEntity.ads, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);
@@ -108,9 +115,6 @@ export const initDB =()=>{
     });
 
     machineIDHistoryEntity = MachineIDFactory(EEntity.machineIDHistory+'_',dbConnection); // private for machine
-
-
-
 
 
 }

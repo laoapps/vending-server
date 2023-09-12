@@ -65,6 +65,8 @@ import {
     IAds,
     ILoadVendingMachineSaleBillReport,
     IMMoneyGenerateQRPro,
+    IVendingVersion,
+    IVendingUpdateVersion
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -85,6 +87,7 @@ import {
     stockEntity,
     subadminEntity,
     vendingMachineSaleReportEntity,
+    vendingVersionEntity,
 } from "../entities";
 import {
     MachineClientID,
@@ -100,7 +103,7 @@ import {
 import { Op } from "sequelize";
 import fs from "fs";
 import { getNanoSecTime } from "../services/service";
-import { APIAdminAccess, IENMessage, IFranchiseStockSignature, LAAB_CoinTransfer } from "../services/laab.service";
+import { APIAdminAccess, IENMessage, IFranchiseStockSignature, IStatus, LAAB_CoinTransfer, message } from "../services/laab.service";
 import { CashVendingLimiterValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashLimiterValidation.func";
 import {
     BillCashInFactory,
@@ -649,7 +652,6 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
-                        console.log('start retryProcessBill');
                         const position = Number(req.query["position"]);
                         const transactionID = Number(req.query["T"] + "");
                         const m = await machineClientIDEntity.findOne({
@@ -659,7 +661,6 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = m?.machineId || "";
                         const that = this;
                         const mx = allMachines.find(v => v.m == machineId);
-                        console.log('check retryProcessBill',mx,position,transactionID);
                         if (mx) {
                             if (moment().diff(moment(mx.t), 'milliseconds') < 3000) return res.send(
                                 PrintError("retryProcessBill", [], EMessage.error + ' too fast', returnLog(req, res, true))
@@ -670,10 +671,8 @@ export class InventoryZDM8 implements IBaseClass {
                         }
 
                         // setTimeout(() => {
-                        console.log('start retryProcessBill',position,transactionID);
                         this.getBillProcess((b) => {
                             try {
-                                console.log('start retryProcessBill','finding',b,position,transactionID);
                                 let x = b.find(
                                     (v) =>
                                         v.position == position &&
@@ -695,8 +694,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 if (!x)
                                     throw new Error("transaction not found or wrong position");
                                 //*** 1 time retry only for MMONEY ONly*/
-                                console.log('retryProcessBill','1 time Mmoney');
-                                
+
                                 const pos = this.ssocket.processOrder(
                                     machineId,
                                     position,
@@ -710,7 +708,6 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 //   const retry = 1; // set config and get config at redis and deduct the retry times;
                                 // 3% risk to be double drop
-                                console.log('retryProcessBill','pos code',pos);
                                 if (pos.code) {
                                     that.setBillProces(
                                         b.filter((v) => v.transactionID != transactionID)
@@ -818,6 +815,170 @@ export class InventoryZDM8 implements IBaseClass {
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
+                }
+            });
+
+            router.post(`/showvendingversion`, APIAdminAccess, async (req: Request, res: Response) => {
+                try {
+
+                    const params = req.body;
+                    const page: number = params.page;
+                    const limit: number = params.limit;
+                    const isActive: boolean = params.isActive;
+                    if (!(page && limit)) throw new Error(IENMessage.parametersEmpty);
+                    const offset = Number(page - 1) * Number(limit);
+
+                    const run = await vendingVersionEntity.findAndCountAll({
+                        where: {
+                            isActive: isActive,
+                        },
+                        limit: limit,
+                        offset: offset,
+                        order: [[ 'id', 'DESC' ]]
+                    });
+                    const response = {
+                        rows: run.rows,
+                        count: run.count,
+                        page: page,
+                        limit: limit
+                    }
+
+                    message(response, IENMessage.success, IStatus.success, res);
+    
+                } catch (error) {
+                    console.log(error.message);
+                    message([], error.message, IStatus.unsuccess, res);
+                }
+            });
+
+            router.post(`/findvendingversion`, APIAdminAccess, async (req: Request, res: Response) => {
+                try {
+
+                    const params = req.body;
+                    const page: number = params.page;
+                    const limit: number = params.limit;
+                    const isActive: boolean = params.isActive;
+                    const search: string = params.search;
+                    if (!(page && limit && search)) throw new Error(IENMessage.parametersEmpty);
+                    const offset = Number(page - 1) * Number(limit);
+
+                    const run = await vendingVersionEntity.findAndCountAll({
+                        where: {
+                            isActive: isActive,
+                            version: search
+                        },
+                        limit: limit,
+                        offset: offset,
+                        order: [[ 'id', 'DESC' ]]
+                    });
+                    const response = {
+                        rows: run.rows,
+                        count: run.count,
+                        page: page,
+                        limit: limit
+                    }
+
+                    message(response, IENMessage.success, IStatus.success, res);
+    
+                } catch (error) {
+                    console.log(error.message);
+                    message([], error.message, IStatus.unsuccess, res);
+                }
+            });
+
+            router.post(`/createvendingversion`, APIAdminAccess, async (req: Request, res: Response) => {
+                try {
+
+                    const params: IVendingVersion = req.body;
+
+                    const url: string = params.url;
+                    const version: string = params.version;
+                    const description: any = params.description;
+
+                    if (!(url && version)) throw new Error(IENMessage.parametersEmpty);
+
+                    const checkversion = await vendingVersionEntity.findOne({ where: { version: version } });
+                    if (checkversion != null) throw new Error(IENMessage.thisVersionHasAlreadyExisted);
+
+                    const data = {
+                        url: url,
+                        version: version,
+                        description: description
+                    }
+                    const run = await vendingVersionEntity.create(data);
+                    if (!run) throw new Error(IENMessage.saveVendingNewVersionFail);
+
+                    message({ id: run.id }, IENMessage.success, IStatus.success, res);
+    
+                } catch (error) {
+                    console.log(error.message);
+                    message([], error.message, IStatus.unsuccess, res);
+                }
+            });
+
+            router.post(`/updatevendingversiondetail`, APIAdminAccess, async (req: Request, res: Response) => {
+                try {
+
+                    const params = req.body;
+
+                    const id = params.id;
+                    const description: any = params.description;
+
+                    if (!(id && description)) throw new Error(IENMessage.parametersEmpty);
+
+                    let run: any = await vendingVersionEntity.findOne({ where: { id: id } });
+                    if (run == null) throw new Error(IENMessage.notFoundVendingVersion);
+
+                    run.description = run.description;
+                    run = await run.save();
+                    if (!run) throw new Error(IENMessage.updateVendingVersionDetailFail);
+
+                    message([], IENMessage.success, IStatus.success, res);
+    
+                } catch (error) {
+                    console.log(error.message);
+                    message([], error.message, IStatus.unsuccess, res);
+                }
+            });
+
+            router.post(`/add-vending-machines-version`, APIAdminAccess, async (req: Request, res: Response) => {
+                try {
+
+                    const params: IVendingUpdateVersion = req.body;
+                    const machines: Array<any> = params.machines;
+
+                    // check parameters
+                    if (machines != undefined && Object.entries(machines).length == 0) throw new Error(IENMessage.pleaseEnterAnyMachine);
+                    machines.find(item => {
+                        if (!(item.id && item.version)) throw new Error(IENMessage.parametersEmpty);
+                    });
+
+                    // merge all machines and versions
+                    const ids = Array.from(new Set(machines.map(item => item.id)));
+                    const versions = Array.from(new Set(machines.map(item => item.version)));
+
+                    // check all version from database
+                    const checkversion = vendingVersionEntity.findAll({ where: { version: {[Op.in]: versions} } });
+                    if (checkversion == null || Object.entries(checkversion).length != Object.entries(versions).length) throw new Error(IENMessage.invalidAnyVersion);
+
+                    // check all machine from database
+                    const checkmachine = machineClientIDEntity.findAll({ where: { machineId: {[Op.in]: ids} } });
+                    if (checkmachine == null || Object.entries(checkmachine).length != Object.entries(ids).length) throw new Error(IENMessage.invalidAnyMachineId);
+                   
+                    // when everything done these version will save machine with version
+                    machines.find(machine => {
+                        versions.find(async version => {
+                            if (machine.version == version) {
+                                await redisClient.set(`${machine.id}_version`, version);
+                            }
+                        });
+                    });
+
+                    message([], IENMessage.success, IStatus.success, res);
+    
+                } catch (error) {
+                    console.log(error.message);
+                    message([], error.message, IStatus.unsuccess, res);
                 }
             });
 
@@ -2599,7 +2760,7 @@ export class InventoryZDM8 implements IBaseClass {
             redisClient
                 .get(k)
                 .then((r) => {
-                    console.log("clientResponse", "getBillProcess",'not exist',!r);
+                    console.log("clientResponse", "getBillProcess");
                     if (r) {
                         cb
                             ? cb(JSON.parse(r) as Array<IBillProcess>)
@@ -3285,8 +3446,8 @@ export class InventoryZDM8 implements IBaseClass {
                         // check by transactionId and command data (command=status)
 
                         // if need to confirm with drop detect
-                        //************ */ we should use drop detect to audit
-                        // that.deductStock(re.transactionID, cres?.bill, cres?.position);
+                        // we should use drop detect to audit
+                        that.deductStock(re.transactionID, cres?.bill, cres?.position);
 
                         // const resx = {} as IResModel;
                         // resx.command = EMACHINE_COMMAND.confirm;
@@ -4221,13 +4382,39 @@ export class InventoryZDM8 implements IBaseClass {
                                     console.log('ready to pong');
                                     const limiter = setting.limiter; // TODO: Get limiter 
                                     const merchant = 0; // TODO:Get merchant balance
+
+
+                                    // control version
+                                    let app_version = {} as any;
+                                    const machine: string = ws['machineId'];
+                                    let versionInfo: any = await redisClient.get(`${machine}_version`);
+                                    if (versionInfo != null) {
+                                        versionInfo = JSON.parse(versionInfo);
+                                        app_version = {
+                                            url: versionInfo.url,
+                                            version: versionInfo.version,
+                                            description: versionInfo.description
+                                        }
+                                    }
+
+
                                     ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
                                                 "ping",
-                                                { command: "ping", production: this.production, balance: r, limiter, merchant, mymmachinebalance, mymlimiterbalance, setting, mstatus, mymstatus, mymsetting, mymlimiter },
+                                                { 
+                                                    command: "ping", 
+                                                    production: this.production, 
+                                                    balance: r, limiter, merchant, 
+                                                    mymmachinebalance, mymlimiterbalance, 
+                                                    setting, mstatus, mymstatus, 
+                                                    mymsetting, 
+                                                    mymlimiter,
+                                                    app_version
+                                                },
                                                 EMessage.succeeded
-                                                , null
+                                                , 
+                                                null
                                             )
                                         )
                                     );
@@ -4585,6 +4772,7 @@ export class loadVendingMachineSaleBillReport {
         });
     }
 
+    
 }
 
 

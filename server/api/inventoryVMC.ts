@@ -169,7 +169,6 @@ export class InventoryVMC implements IBaseClass {
 
 
             /// 0. init for demo 
-
             router.get(this.path+'/init', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];

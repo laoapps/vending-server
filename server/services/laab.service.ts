@@ -59,6 +59,14 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    updateVendingVersionDetailFail = 'update vending version detail fail',
+    notFoundVendingVersion = 'not found vending version',
+    saveVendingNewVersionFail = 'save vending new version fail',
+    thisVersionHasAlreadyExisted = 'this version has already existed',
+    invalidAnyVersion = 'invalid any version',
+    invalidAnyMachineId = 'invalid any machine id',
+    pleaseEnterAnyMachine = 'please enter any machine',
+    invalidLockerWallet = 'invalid locker wallet',
     loadBalanceFail = 'load balance fail',
     youCanNotAddYourOwnToBeSubadminRole = 'you can not add your own to be sub admin role',
     invalidateToDate = 'invalid to date',

@@ -8,6 +8,8 @@ import { CreateVendingWalletCoinFunc } from "../funcs/createVendingWalletCoin.fu
 import { IENMessage, message, IStatus } from "../../../../services/laab.service";
 import { CounterCashout_CashValidationFunc } from "../funcs/countercashout_cashValidation.func";
 import { ReCreateEPINFunc } from "../funcs/recreateEPIN.func";
+import { CreateLockerWalletFunc } from "../funcs/createLockerWallet.func";
+import { CreateLockerWalletCoinFunc } from "../funcs/createLockerWalletCoin.func";
 
 export class WritePanel {
     
@@ -173,6 +175,43 @@ export class WritePanel {
         }
     }
 
+    public CreateLockerWallet(req: Request, res: Response) {
+        try {
+            const data = req.body;
+            this.queues.QCreateLockerWallet.add({ data }).then(job => {
+                job.finished().then(run => {
+                    if (run.message != IENMessage.success) {
+                        message([], run, IStatus.unsuccess, res);
+                    } else {
+                        delete run.message;
+                        message(run, IENMessage.success, IStatus.success, res);
+                    }
+                });
+            });
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
+
+    public CreateLockerWalletCoin(req: Request, res: Response) {
+        try {
+            const data = req.body;
+            this.queues.QCreateLockerWalletCoin.add({ data }).then(job => {
+                job.finished().then(run => {
+                    if (run.message != IENMessage.success) {
+                        message([], run, IStatus.unsuccess, res);
+                    } else {
+                        delete run.message;
+                        message(run, IENMessage.success, IStatus.success, res);
+                    }
+                });
+            });
+
+        } catch (error) {
+            message([], error.message, IStatus.unsuccess, res);
+        }
+    }
 
 
 
@@ -285,6 +324,34 @@ export class WritePanel {
             try {
                 
                 const func = new ReCreateEPINFunc();
+                const run = await func.Init(params);
+                resolve(run);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    public _CreateLockerWallet(params: any): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const func = new CreateLockerWalletFunc();
+                const run = await func.Init(params);
+                resolve(run);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    public _CreateLockerWalletCoin(params: any): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const func = new CreateLockerWalletCoinFunc();
                 const run = await func.Init(params);
                 resolve(run);
 

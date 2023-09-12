@@ -7,5 +7,6 @@ export interface IBase {
 export enum IVendingWalletType {
     merchant = 'merchant',
     vendingLimiter = 'vending limiter',
-    vendingWallet = 'vending wallet'
+    vendingWallet = 'vending wallet',
+    lockerWallet = 'locker wallet'
 }

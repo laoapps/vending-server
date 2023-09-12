@@ -26,7 +26,14 @@ const config: CapacitorConfig = {
       WKWebViewOnly: 'true',
       AndroidXEnabled: 'false'
     }
-  }
+  },
+  "plugins": {
+		"CapacitorUpdater": {
+			"autoUpdate": true,
+			"resetWhenUpdate": false,
+      "version": "1.0.0"
+		}
+	}
 };
 
 export default config;

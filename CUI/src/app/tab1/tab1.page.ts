@@ -63,6 +63,8 @@ import { PlayGamesPage } from './Vending/play-games/play-games.page';
 import { OrderCartPage } from './Vending/order-cart/order-cart.page';
 
 var host = window.location.protocol + '//' + window.location.host;
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
+
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -171,6 +173,7 @@ export class Tab1Page implements OnDestroy {
     private WSAPIService: WsapiService,
     private cashingService: AppcachingserviceService
   ) {
+
     this.autopilot = this.apiService.autopilot;
     const that = this;
     this.dynamicControlMenu();
@@ -205,6 +208,8 @@ export class Tab1Page implements OnDestroy {
     // this.initVendingSale();
 
     platform.ready().then(() => {
+
+
       // this.toggleTabServicesSegment();
 
       this.ownerUuid = localStorage.getItem('machineId');
@@ -399,7 +404,10 @@ export class Tab1Page implements OnDestroy {
         clearInterval(this.autoShowMyOrderTimer);
       }
   }
-
+  async runtoast(txt: string) {
+        const t = this.apiService.toast.create({ message: `--> ${txt}` });
+    (await t).present();
+  }
   loadAutoShowMyOrders() {
     if (this.orders != undefined && Object.entries(this.orders).length > 0) {
       this.autoShowMyOrderTimer = setInterval(() => {
@@ -1625,4 +1633,20 @@ export class Tab1Page implements OnDestroy {
         this.checkActiveModal(r);
       });
   }
+
+  updateNewVersion() {
+    CapacitorUpdater.download({
+      url: 'http://192.168.88.4:8989/test/public/dist.zip',
+      version: '1.0.0'
+      }).then(run_download => {
+        CapacitorUpdater.set(run_download).then(async run_update => {
+          await this.runtoast(`update: success`);
+        }).catch(async error => {
+          await this.runtoast(`update: `+ error.message);
+        });
+      }).catch(async error => {
+        await this.runtoast(`download: ` + error.message);
+      });
+  }
+
 }
