@@ -3320,7 +3320,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
                         // // writeSucceededRecordLog(cres?.bill, cres?.position);
 
-                        // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
+                        that.sendWSToMachine(cres?.bill?.machineId + '', resx);
                         // /// DEDUCT STOCK AT THE SERVER HERE
 
                         // // No need To update delivering status
