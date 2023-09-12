@@ -652,6 +652,8 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
+                        console.log('start retryProcessBill');
+                        
                         const position = Number(req.query["position"]);
                         const transactionID = Number(req.query["T"] + "");
                         const m = await machineClientIDEntity.findOne({
@@ -661,6 +663,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = m?.machineId || "";
                         const that = this;
                         const mx = allMachines.find(v => v.m == machineId);
+                        console.log(' retryProcessBill',mx);
                         if (mx) {
                             if (moment().diff(moment(mx.t), 'milliseconds') < 3000) return res.send(
                                 PrintError("retryProcessBill", [], EMessage.error + ' too fast', returnLog(req, res, true))
@@ -671,6 +674,8 @@ export class InventoryZDM8 implements IBaseClass {
                         }
 
                         // setTimeout(() => {
+                            console.log(' retryProcessBill','getBillProcess',mx);
+
                         this.getBillProcess((b) => {
                             try {
                                 let x = b.find(
@@ -708,10 +713,13 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 //   const retry = 1; // set config and get config at redis and deduct the retry times;
                                 // 3% risk to be double drop
+                                console.log(' retryProcessBill','pos',pos);
+
                                 if (pos.code) {
                                     that.setBillProces(
                                         b.filter((v) => v.transactionID != transactionID)
                                     );
+                                    console.log(' retryProcessBill','deduct',pos);
                                     that.deductStock(transactionID, x.bill, position);
                                     writeSucceededRecordLog(x?.bill, position);
                                     res.send(
@@ -723,6 +731,8 @@ export class InventoryZDM8 implements IBaseClass {
                                     );
                                 } else {
                                     writeErrorLogs('error pos.code',pos);
+                                    console.log(' retryProcessBill','error pos',pos);
+
                                     res.send(
                                         PrintError("retryProcessBill", pos, EMessage.error, returnLog(req, res, true))
                                     );
@@ -3435,10 +3445,15 @@ export class InventoryZDM8 implements IBaseClass {
                         resx.message = EMessage.status;
                         resx.data = re.data;
                         resx.transactionID=re.transactionID ;
-                        if(wsAdmins)
-                        logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid'],url:'onMachineResponse'})
-                        if(ws)
-                        logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid'],url:'onMachineResponse'})
+                        if(wsAdmins){
+                            this.sendWSMyMachine(machineId.machineId, resx);
+                            logEntity.create({body:resx,superadmin:wsAdmins['ownerUuid'],subadmin:wsAdmins['ownerUuid'],ownerUuid:wsAdmins['ownerUuid'],url:'onMachineResponse'})
+                        }
+                        if(ws){
+                            logEntity.create({body:resx,superadmin:ws['ownerUuid'],subadmin:ws['ownerUuid'],ownerUuid:ws['ownerUuid'],url:'onMachineResponse'})
+                            this.sendWSToMachine(machineId.machineId, resx);
+                        }
+                       
 
                         // vmc response with transactionId and buffer data
                         // zdm8 reponse with transactionId
@@ -3447,7 +3462,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         // if need to confirm with drop detect
                         // we should use drop detect to audit
-                        that.deductStock(re.transactionID, cres?.bill, cres?.position);
+                        // that.deductStock(re.transactionID, cres?.bill, cres?.position);
 
                         // const resx = {} as IResModel;
                         // resx.command = EMACHINE_COMMAND.confirm;
@@ -3480,10 +3495,10 @@ export class InventoryZDM8 implements IBaseClass {
                         // /// TODO
                         // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
                         // // writeSucceededRecordLog(cres?.bill, cres?.position);
-                        if(ws)
-                        that.sendWSToMachine(cres?.bill?.machineId + '', resx);
-                        if(wsAdmins)
-                        that.sendWSMyMachine(machineId.machineId, resx);
+                        // if(ws)
+                        // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
+                        // if(wsAdmins)
+                        // that.sendWSMyMachine(machineId.machineId, resx);
                         // /// DEDUCT STOCK AT THE SERVER HERE
 
                         // // No need To update delivering status
