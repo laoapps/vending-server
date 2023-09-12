@@ -3285,8 +3285,8 @@ export class InventoryZDM8 implements IBaseClass {
                         // check by transactionId and command data (command=status)
 
                         // if need to confirm with drop detect
-                        // we should use drop detect to audit
-                        that.deductStock(re.transactionID, cres?.bill, cres?.position);
+                        //************ */ we should use drop detect to audit
+                        // that.deductStock(re.transactionID, cres?.bill, cres?.position);
 
                         // const resx = {} as IResModel;
                         // resx.command = EMACHINE_COMMAND.confirm;
