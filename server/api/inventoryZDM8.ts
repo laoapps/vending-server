@@ -658,6 +658,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = m?.machineId || "";
                         const that = this;
                         const mx = allMachines.find(v => v.m == machineId);
+                        console.log('check retryProcessBill',mx,position,transactionID);
                         if (mx) {
                             if (moment().diff(moment(mx.t), 'milliseconds') < 3000) return res.send(
                                 PrintError("retryProcessBill", [], EMessage.error + ' too fast', returnLog(req, res, true))
@@ -668,8 +669,10 @@ export class InventoryZDM8 implements IBaseClass {
                         }
 
                         // setTimeout(() => {
+                        console.log('start retryProcessBill',position,transactionID);
                         this.getBillProcess((b) => {
                             try {
+                                console.log('start retryProcessBill','finding',b,position,transactionID);
                                 let x = b.find(
                                     (v) =>
                                         v.position == position &&
@@ -691,7 +694,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 if (!x)
                                     throw new Error("transaction not found or wrong position");
                                 //*** 1 time retry only for MMONEY ONly*/
-
+                                console.log('retryProcessBill','1 time Mmoney');
+                                
                                 const pos = this.ssocket.processOrder(
                                     machineId,
                                     position,
@@ -705,6 +709,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 //   const retry = 1; // set config and get config at redis and deduct the retry times;
                                 // 3% risk to be double drop
+                                console.log('retryProcessBill','pos code',pos);
                                 if (pos.code) {
                                     that.setBillProces(
                                         b.filter((v) => v.transactionID != transactionID)
@@ -2593,7 +2598,7 @@ export class InventoryZDM8 implements IBaseClass {
             redisClient
                 .get(k)
                 .then((r) => {
-                    console.log("clientResponse", "getBillProcess");
+                    console.log("clientResponse", "getBillProcess",'not exist',!r);
                     if (r) {
                         cb
                             ? cb(JSON.parse(r) as Array<IBillProcess>)
