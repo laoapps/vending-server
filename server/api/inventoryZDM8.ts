@@ -649,6 +649,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
+                        console.log('start retryProcessBill');
                         const position = Number(req.query["position"]);
                         const transactionID = Number(req.query["T"] + "");
                         const m = await machineClientIDEntity.findOne({
