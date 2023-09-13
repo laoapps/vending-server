@@ -8,13 +8,7 @@ import { ApiService } from '../services/api.service';
 })
 export class VersionControlPage implements OnInit {
 
-  lists: Array<any> = [];
-  page: number = 1;
-  limit: number = 2;
-  count: number;
-  btnList: Array<any> = [];
-  isActive: boolean = true;
-  search: string = '';
+  lastupdate: any = new Date();
 
   constructor(
     public apiService: ApiService

@@ -2,97 +2,137 @@ ion-content {
     --ion-background-color: #f5f6f7;
 }
 
-.section-navbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 50px;
+.page-header {
+    height: 100px;
     display: flex;
     justify-content: space-between;
+    background: #fff;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 0px 20px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
     z-index: 999999;
-    background: #A41D4F;
-    color: #fff;
-    padding: 0px 10px;
-    box-shadow: 0px 2px 5px rgba(0,0,0, .2);
 
-    .left {
+    .page-header-left {
         display: flex;
         align-items: center;
 
-        .btn-back {
-            text-decoration: none;
-            color: #fff;
+        .logo-text {
             font-size: 20px;
-            margin-right: 25px;
-        }
-
-        .item-text {
-            color: #fff;
-            font-size: 18px;
             font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: #333;
         }
     }
 
-    .right {
+    .page-header-center {
         display: flex;
         align-items: center;
 
-        .item, .item-underline {
-            text-decoration: none;
-            color: #fff;
-            display: flex;
+        .box-search {
 
-            .text {
-                padding-left: 8px;
+            .form-control {
+                width: 500px;
+                height: 60px;
+                border: none;
+                background: #f5f6f7;
             }
-        }
+            .form-control:focus {
+                box-shadow: none;
+            }
 
-        .item-underline:hover {
-            text-decoration: underline;
+            .icon-search-start {
+                width: 50px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #f5f6f7;
+                border: none;
+            }
+            .icon-search-end {
+                width: 80px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #333;
+                color: #fff;
+                border: 3px solid #f5f6f7;
+                border-radius: 5px;
+            }
+
+        }
+    }
+
+    .page-header-right {
+        display: flex;
+        align-items: center;
+
+        .item {
+            text-decoration: none;
+            border: 1px solid #3333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            color: #333;
+            width: 100px;
+            height: 60px;
+            transition: .2s;
+        }
+        .item:hover {
+            background: #f5f6f7;
         }
     }
 }
 
 .space {
-    margin-top: 55px;
+    margin-top: 110px;
 }
 
-.epin-admin-menu {
+.page-body {
     margin: 10px;
+    display: flex;
+    flex-direction: column;
 
-    display: grid;
-    grid-template-columns: repeat(6,1fr);
-    grid-gap: 10px;
+    .title {
+        font-size: 18px;
+        font-weight: bold;
+    }
 
-    .item {
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        background: #ffff;
-        box-shadow: 0px 2px 5px rgba(0,0,0, .2);
-        border-radius: 5px;
-        padding: 10px;
-        color: #333;
-        transition: .2s;
+    .sub-title {
+        font-size: 14px;
+        font-weight: 300;
+    }
 
-        .icon {
-            margin-top: 15px;
-            text-align: center;
-            color: #A41D4F;
-            font-size: 20px;
+    .tab-container {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        border-bottom: 1.5px solid #A41D4F;
+        margin-top: 15px;
+
+        .item {
+            height: 50px;
+            display: flex;
+            background: #f5f6f7;
+            color: #333;
+            text-decoration: none;
+            justify-content: center;
+            align-items: center;
+            transition: .2s;
+
+            i { padding-right: 8px; }
         }
-
-        .text {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 300;
+        .item:hover {
+            background: #fffafc;
+        }
+        .item:hover > .item.active {
+            color: #650f2f;
+            background: #ffe9f2;
+        }
+        .item.active {
+            color: #650f2f;
+            background: #ffe9f2;
         }
     }
-    .item:hover {
-        background: #f5f6f7;
-    }
-}
-
-.version-control-container {
-    margin: 10px;
 }

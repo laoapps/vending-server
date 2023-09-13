@@ -1,29 +1,33 @@
 <ion-content>
 
-  <div class="section-navbar">
-    <div class="left">
-      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-      <div class="item-text">Version Control</div>
+  <div class="page-header">
+    <div class="page-header-left">
+      <a href="javascript:void(0)" class="logo-text">Control Version</a>
     </div>
-    <div class="right">
-
+    <div class="page-header-center">
+      <div class="input-group box-search">
+        <span class="input-group-text icon-search-start"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" class="form-control" placeholder="Search Version">
+        <span class="input-group-text icon-search-end">Search</span>
+      </div>
+    </div>
+    <div class="page-header-right">
+      <a href="javascript:void(0)" class="item">Upload</a>
     </div>
   </div>
 
   <div class="space"></div>
 
-  <div class="version-control-container">
+  <div class="page-body">
+    <div class="title">Vending GUI</div>
+    <div class="sub-title">
+      <div class="text">* 1.0.0</div>
+      <div class="text">* Last Update {{ lastupdate | date:'yyyy-MM-dd hh:mm:ss':'+7' }}</div>
+    </div>
 
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <td>Version</td>
-            <td>Url</td>
-            <td>Action</td>
-          </tr>
-        </thead>
-      </table>
+    <div class="tab-container">
+      <a href="javascript:void(0)" class="item active"><i class="fa-solid fa-file-lines"></i> Readme</a>
+      <a href="javascript:void(0)" class="item"><i class="fa-solid fa-tags"></i> Versions</a>
     </div>
 
   </div>

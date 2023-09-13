@@ -196,6 +196,14 @@ const routes: Routes = [
     path: 'version-control',
     loadChildren: () => import('./version-control/version-control.module').then( m => m.VersionControlPageModule)
   },
+  {
+    path: 'readme',
+    loadChildren: () => import('./version-control/_tabs/readme/readme.module').then( m => m.ReadmePageModule)
+  },
+  {
+    path: 'versions',
+    loadChildren: () => import('./version-control/_tabs/versions/versions.module').then( m => m.VersionsPageModule)
+  },
 ];
 @NgModule({
   imports: [
