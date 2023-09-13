@@ -343,12 +343,12 @@ export class InventoryZDM8 implements IBaseClass {
                             const machineId =
                                 this.ssocket.findMachineIdToken(token)?.machineId;
                             if (!machineId) throw new Error("machine is not exit");
-                            this.getBillProcess((b) => {
+                            this.getBillProcess(machineId,(b) => {
                                 const position = b.find(
                                     (v) => v.transactionID == transactionID
                                 )?.position;
                                 if (position) {
-                                    this.setBillProces(
+                                    this.setBillProces(machineId,
                                         b.filter((v) => v.transactionID != transactionID)
                                     );
                                     console.log("submit_command", transactionID, position);
@@ -566,7 +566,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // const machineId = m?.machineId;
                         console.log("getDeliveryingBills", m, ownerUuid);
 
-                        this.getBillProcess((b) => {
+                        this.getBillProcess(m.machineId,(b) => {
                             console.log(
                                 "getDeliveryingBills",
                                 b,
@@ -676,7 +676,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // setTimeout(() => {
                             console.log(' retryProcessBill','getBillProcess',mx);
 
-                        this.getBillProcess((b) => {
+                        this.getBillProcess(machineId,(b) => {
                             try {
                                 let x = b.find(
                                     (v) =>
@@ -716,7 +716,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log(' retryProcessBill','pos',pos);
 
                                 if (pos.code) {
-                                    that.setBillProces(
+                                    that.setBillProces(machineId,
                                         b.filter((v) => v.transactionID != transactionID)
                                     );
                                     console.log(' retryProcessBill','deduct',pos);
@@ -2764,8 +2764,8 @@ export class InventoryZDM8 implements IBaseClass {
 
 
 
-    getBillProcess(cb: (b: IBillProcess[]) => void) {
-        const k = "clientResponse";
+    getBillProcess(machineId:string,cb: (b: IBillProcess[]) => void) {
+        const k = "clientResponse"+machineId;
         try {
             redisClient
                 .get(k)
@@ -2789,8 +2789,8 @@ export class InventoryZDM8 implements IBaseClass {
             writeErrorLogs("error", error);
         }
     }
-    setBillProces(b: IBillProcess[]) {
-        const k = "clientResponse";
+    setBillProces(machineId:string,b: IBillProcess[]) {
+        const k = "clientResponse"+machineId;
         b.forEach((v) =>
             v.bill?.vendingsales?.forEach((v) =>
                 v.stock ? (v.stock.image = "") : ""
@@ -3359,8 +3359,9 @@ export class InventoryZDM8 implements IBaseClass {
                 that.creditMachine(d);
             });
             this.ssocket.onMachineResponse((re: IReqModel) => {
+                const machineId = this.ssocket.findMachineIdToken(re.token);
                 if (re.transactionID == -52) {
-                    const machineId = this.ssocket.findMachineIdToken(re.token);
+                    
                     writeMachineStatus(machineId.machineId, re.data);
                     const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
                     const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
@@ -3433,7 +3434,7 @@ export class InventoryZDM8 implements IBaseClass {
                 }
                 console.log("onMachineResponse", re);
                 console.log("onMachineResponse transactionID", re.transactionID);
-                this.getBillProcess((b) => {
+                this.getBillProcess(machineId.machineId,(b) => {
                     const cres = b.find((v) => v.transactionID == re.transactionID);
                     try {
                         const machineId = this.ssocket.findMachineIdToken(re.token);
@@ -3877,7 +3878,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // save report here
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
-                this.getBillProcess(async (b) => {
+                this.getBillProcess(bill.machineId,async (b) => {
                     bill.vendingsales.forEach((v, i) => {
                         v.stock.image = "";
                         b.push({
@@ -3891,7 +3892,7 @@ export class InventoryZDM8 implements IBaseClass {
                     await bill.save();
                     console.log("callBackConfirmMmoney", b);
 
-                    this.setBillProces(b);
+                    this.setBillProces(bill.machineId,b);
                     res.data = b.filter((v) => v.ownerUuid == ownerUuid);
                     this.sendWSToMachine(bill?.machineId + "", res);
 
@@ -4144,7 +4145,7 @@ export class InventoryZDM8 implements IBaseClass {
                 res.status = 1;
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
-                this.getBillProcess(async (b) => {
+                this.getBillProcess(bill?.machineId,async (b) => {
                     bill.vendingsales.forEach((v, i) => {
                         v.stock.image = "";
                         b.push({
@@ -4166,7 +4167,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     console.log(`s`);
 
-                    this.setBillProces(b);
+                    this.setBillProces(bill?.machineId,b);
                     res.data = b.filter((v) => v.ownerUuid == ownerUuid);
                     this.sendWSToMachine(bill?.machineId + "", res);
 
