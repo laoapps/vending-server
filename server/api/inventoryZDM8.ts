@@ -2032,7 +2032,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         let list: any = {} as any;
                         const run = await readMachineSale(machineId.machineId);
-                        if (run != null) {
+                        if (run != undefined && Object.entries(run).length > 0 || run != null) {
                             list = JSON.parse(run);
                             console.log(`load from redis ----->`, list);
 
@@ -4533,7 +4533,7 @@ export class InventoryZDM8 implements IBaseClass {
     sendWSToMachine(machineId: string, resx: IResModel) {
         console.log("wsclient", this.wsClient.length);
 
-        this.wsClient.find((v) => {
+        this.wsClient.forEach((v) => {
             const x = v["machineId"] as string;
             console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
             if (x && x == machineId) {
