@@ -59,6 +59,9 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    updateUniqueVersionFail = 'update unique version fail',
+    createVersionFail = 'create version fail',
+    invalidFile = 'invalid file',
     updateVendingVersionDetailFail = 'update vending version detail fail',
     notFoundVendingVersion = 'not found vending version',
     saveVendingNewVersionFail = 'save vending new version fail',

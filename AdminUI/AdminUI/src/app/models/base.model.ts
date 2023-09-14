@@ -1,4 +1,5 @@
 export enum IENMessage {
+    nodata = 'NO DATA',
     invalidateToDate = 'invalid to date',
     invalidFromDate = 'invalid from date',
     thisMachineHasAlreadyAdded = 'this machine has already added',

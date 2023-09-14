@@ -1,0 +1,124 @@
+import { Transaction } from "sequelize";
+import { dbConnection, vendingVersionEntity } from "../../../../entities";
+import { IENMessage } from "../../../../services/laab.service";
+import { ICreateVendingVersion } from "../../../models/base.model";
+
+export class CreateVersionFunc {
+
+    private transaction: Transaction;
+
+    private file: { 
+        url: string, 
+        filename: string, 
+        filesize: string 
+    } = {} as any;
+    private readme: {
+        version_commit: string,
+        title: string,
+        subtitle: string,
+        section: Array<string>,
+        description: Array<string>,
+        hightlight: Array<string>
+    } = {} as any;
+
+    private id: number;
+    private response: any = {} as any;
+
+    constructor() {}
+
+    public Init(params: ICreateVendingVersion): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            this.transaction = await dbConnection.transaction();
+            try {
+                
+                this.InitParams(params);
+
+                const ValidateParams = this.ValidateParams();
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+
+                const CreateVersion = await this.CreateVersion();
+                if (CreateVersion != IENMessage.success) throw new Error(CreateVersion);
+
+                const AutoUpdateVersion = await this.AutoUpdateVersion();
+                if (AutoUpdateVersion != IENMessage.success) throw new Error(AutoUpdateVersion);
+
+                await this.transaction.commit();
+                resolve(this.response);
+
+            } catch (error) {
+                await this.transaction.rollback();
+                resolve(error.message);
+            }
+        });
+    }
+
+    private InitParams(params: ICreateVendingVersion): void {
+        this.file = params.file;
+        this.readme = params.readme;
+    }
+
+    private ValidateParams(): string {
+        if (!(this.file.url && this.file.filename && this.file.filesize)) return IENMessage.invalidFile;
+        if (!(this.readme.version_commit && this.readme.title && this.readme.subtitle)) return IENMessage.parametersEmpty;
+        return IENMessage.success;
+    }
+
+    private CreateVersion(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                const params = {
+                    file: this.file,
+                    readme: this.readme
+                }
+
+                const run = await vendingVersionEntity.create(params, { transaction: this.transaction });
+                if (!run) return resolve(IENMessage.createVersionFail);
+                this.id = run.id;
+
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private AutoUpdateVersion(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+                
+                let version: string = '';
+                for(let i = 0; i < 1; i++) {
+                    for(let j = 0; j < 4 - this.id+''.length; j++) {
+                        version += '0';
+                    }
+                    version = version + this.id+'';
+                }
+
+                const model = {
+                    version: version
+                }
+                const condition = {
+                    where: {
+                        id: this.id
+                    },
+                    transaction: this.transaction
+                }
+                const run = await vendingVersionEntity.update(model, condition);
+                if (!run) return resolve(IENMessage.updateUniqueVersionFail);
+
+                this.response = {
+                    id: this.id,
+                    version: version,
+                    message: IENMessage.success
+                }
+
+                resolve(IENMessage.success);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+}

@@ -108,7 +108,6 @@ ion-content {
     .tab-container {
         display: grid;
         grid-template-columns: repeat(2,1fr);
-        border-bottom: 1.5px solid #A41D4F;
         margin-top: 15px;
 
         .item {
@@ -120,11 +119,12 @@ ion-content {
             justify-content: center;
             align-items: center;
             transition: .2s;
+            border-bottom: 1.5px solid #333;
 
             i { padding-right: 8px; }
         }
         .item:hover {
-            background: #fffafc;
+            background: #e7e7e7;
         }
         .item:hover > .item.active {
             color: #650f2f;
@@ -133,6 +133,7 @@ ion-content {
         .item.active {
             color: #650f2f;
             background: #ffe9f2;
+            border-bottom: 1.5px solid #A41D4F;
         }
     }
 }

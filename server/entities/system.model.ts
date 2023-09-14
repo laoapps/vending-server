@@ -2351,14 +2351,3 @@ export interface ILoadVendingMachineSaleBillReport {
     machineId: string
 }
 
-export interface IVendingVersion extends IBase {
-    url: string,
-    version: string,
-    description: string
-}
-export interface IVendingUpdateVersion {
-    machines: Array<{
-        id: string
-        version: string,
-    }>,
-}

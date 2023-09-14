@@ -12,12 +12,20 @@ export class CreateVendingVersionProcess {
     private controlVendingVersionAPIService: ControlVendingVersionAPIService;
     private filemanagerAPIService: FilemanagerApiService;
 
-    private file: File;
-    private version: string;
-    private description: string;
+    private dataPack: any = {} as any;
 
-    private url: string;
+    private file: File;
+    private version_commit: string;
+    private title: string;
+    private subtitle: string;
+    private readme: {
+        section: Array<string>,
+        description: Array<string>,
+        hightlight: Array<string>
+    } = {} as any;
+
     private formData: FormData;
+    private url: string;
     private token: string;
     private id: number;
 
@@ -64,14 +72,16 @@ export class CreateVendingVersionProcess {
         this.formData?.delete('docs');
         this.formData?.delete('uuid');
 
-        this.file = params.file;
-        this.version = params.version;
-        this.description = params.description;
+        this.file = params.dataPack.file;
+        this.version_commit = params.dataPack.version_commit;
+        this.title = params.dataPack.title;
+        this.subtitle = params.dataPack.subtitle;
+        this.readme = params.readme;
         this.token = localStorage.getItem('lva_token');
     }
 
     private ValidateParams(): string {
-        if (!(this.file && this.version && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.file && this.version_commit && this.title && this.subtitle && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -105,16 +115,26 @@ export class CreateVendingVersionProcess {
             try {
                 
                 const params = {
-                    url: this.url,
-                    version: this.version,
-                    description: this.description,
+                    file: {
+                        url: this.url,
+                        filename: this.file.name,
+                        filesize: this.file.size
+                    },
+                    readme: {
+                        version_commit: this.version_commit,
+                        title: this.title,
+                        subtitle: this.subtitle,
+                        section: this.readme.section,
+                        description: this.readme.description,
+                        hightlight: this.readme.hightlight,
+                    },
                     token: this.token
                 }
 
                 this.controlVendingVersionAPIService.createVendingVersion(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
-                    if (response.status != 1 && response.message != IENMessage.notFoundAnyDataList) return resolve(response.message);
+                    if (response.status != 1) return resolve(response.message);
                     this.id = response.info.id;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));

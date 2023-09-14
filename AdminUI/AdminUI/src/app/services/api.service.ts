@@ -11,6 +11,7 @@ import * as uuid from 'uuid';
 import { IonicStorageService } from './ionic-storage.service';
 import { EventEmitter } from 'events';
 import { Router } from '@angular/router';
+import Swal from "sweetalert2";
 
 @Injectable({
   providedIn: 'root'
@@ -126,6 +127,18 @@ export class ApiService {
   public   validateDB(){
       
   }
+  public alertError(text: string) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Fail',
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#CB4335',
+      heightAuto: false
+    });
+  }
+
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);
   }

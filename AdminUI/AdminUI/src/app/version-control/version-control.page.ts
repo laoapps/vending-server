@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
+import { FormUploadPage } from './_modals/form-upload/form-upload.page';
 
 @Component({
   selector: 'app-version-control',
@@ -21,6 +22,8 @@ export class VersionControlPage implements OnInit {
     this.apiService.modal.dismiss();
   }
 
-  
+  openFormUpload() {
+    this.apiService.showModal(FormUploadPage,{}).then(r=>{r?.present()});
+  }
 
 }

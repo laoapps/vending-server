@@ -1,5 +1,5 @@
 import { BuildOptions, DataTypes, Model, ModelAttributes, Sequelize } from "sequelize";
-import { IVendingVersion } from "./system.model";
+import { IVendingVersion } from "../versioncontrol/models/base.model";
 
 
 export interface VendingVersionAttributes extends IVendingVersion { }
@@ -28,16 +28,18 @@ export let VendingVersionFactory = (name: string, con: Sequelize): any => {
             allowNull: false,
             defaultValue: true
         },
-        url: {
-            type: DataTypes.STRING(50),
+        file: {
+            type: DataTypes.JSONB,
             allowNull: false
         },
         version: {
-            type: DataTypes.STRING(10),
-            allowNull: false
+            type: DataTypes.STRING(11),
+            allowNull: false,
+            defaultValue: ''
         },
-        description: {
-            type: DataTypes.TEXT
+        readme: {
+            type: DataTypes.JSONB,
+            allowNull: false
         }
     } as ModelAttributes<VendingVersionModel>;
     let x = con.define(name, attributes, { tableName: name, freezeTableName: true, timestamps: true });

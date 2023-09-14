@@ -204,6 +204,14 @@ const routes: Routes = [
     path: 'versions',
     loadChildren: () => import('./version-control/_tabs/versions/versions.module').then( m => m.VersionsPageModule)
   },
+  {
+    path: 'form-upload',
+    loadChildren: () => import('./version-control/_modals/form-upload/form-upload.module').then( m => m.FormUploadPageModule)
+  },
+  {
+    path: 'form-preview',
+    loadChildren: () => import('./version-control/_modals/form-preview/form-preview.module').then( m => m.FormPreviewPageModule)
+  },
 ];
 @NgModule({
   imports: [

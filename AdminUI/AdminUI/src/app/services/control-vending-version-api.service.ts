@@ -22,7 +22,7 @@ export class ControlVendingVersionAPIService {
     return this.http.post(this.url + '/findvendingversion', params);
   }
   createVendingVersion(params: any): Observable<any> {
-    return this.http.post(this.url + '/createvendingversion', params);
+    return this.http.post(this.url + '/vending-version/create', params);
   }
   updateVendingVersionDescription(params: any): Observable<any> {
     return this.http.post(this.url + '/updatevendingversiondescription', params);
