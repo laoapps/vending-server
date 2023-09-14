@@ -100,6 +100,7 @@ export class CreateVendingVersionProcess {
                     console.log(`response upload file`, r_writeFile);
                     if (r_writeFile.status != 1) {
                       this.filemanagerAPIService.cancelWriteFile({ uuid: this.url }).subscribe(r_cancelWriteFile => {
+                        console.log(`response cancel upload file`, r_cancelWriteFile);
                         if (r_cancelWriteFile.status != 1) return resolve(resolve(IENMessage.cancelAndWriteFileFail));
                         return resolve(IENMessage.writeFileFailAndCancelwriteFileSuccess);
                       }, error => resolve(IENMessage.writeFileError));
@@ -139,6 +140,7 @@ export class CreateVendingVersionProcess {
                     console.log(`response`, response);
                     if (response.status != 1) {
                         this.filemanagerAPIService.cancelWriteFile({ uuid: this.url }).subscribe(r_cancelWriteFile => {
+                            console.log(`response cancel upload file create vending fail`, r_cancelWriteFile);
                             if (r_cancelWriteFile.status != 1) return resolve(resolve(IENMessage.cancelAndWriteFileFail));
                             return resolve(IENMessage.writeFileFailAndCancelwriteFileSuccess);
                         }, error => resolve(IENMessage.writeFileError));
