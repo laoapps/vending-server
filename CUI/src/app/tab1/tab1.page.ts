@@ -1636,7 +1636,8 @@ export class Tab1Page implements OnDestroy {
 
   updateNewVersion() {
     CapacitorUpdater.download({
-      url: 'http://192.168.88.4:8989/test/public/dist.zip',
+      // url: 'http://192.168.88.4:8989/test/public/dist.zip',
+      url: `${environment.filemanagerurl}/download/`,
       version: '1.0.0'
       }).then(run_download => {
         CapacitorUpdater.set(run_download).then(async run_update => {
@@ -1648,5 +1649,8 @@ export class Tab1Page implements OnDestroy {
         await this.runtoast(`download: ` + error.message);
       });
   }
-
+  
+  hello() {
+    alert('hello world')
+  }
 }

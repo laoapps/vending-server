@@ -19,7 +19,7 @@ export class ControlVersionAPI {
     constructor(router: Router) {
         this.writePanel = new WritePanel(this.vendingVersionQueues);
         
-        router.post('/vending-version/create', APIAdminAccess, this.writePanel.CreateVersion.bind(this.writePanel));
+        router.post('/zdm8/vending-version/create', APIAdminAccess, this.writePanel.CreateVersion.bind(this.writePanel));
 
         QCreateVersion.process((job, done) => {
             const d = job.data;

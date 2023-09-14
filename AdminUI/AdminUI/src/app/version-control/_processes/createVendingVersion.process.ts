@@ -15,7 +15,7 @@ export class CreateVendingVersionProcess {
     private dataPack: any = {} as any;
 
     private file: File;
-    private version_commit: string;
+    private commit_version: string;
     private title: string;
     private subtitle: string;
     private readme: {
@@ -43,6 +43,8 @@ export class CreateVendingVersionProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
+
+
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
@@ -51,8 +53,8 @@ export class CreateVendingVersionProcess {
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
                 
-                const UpdateFile = await this.UpdateFile();
-                if (UpdateFile != IENMessage.success) throw new Error(UpdateFile);
+                const UploadFile = await this.UploadFile();
+                if (UploadFile != IENMessage.success) throw new Error(UploadFile);
 
                 const CreateVendingVersion = await this.CreateVendingVersion();
                 if (CreateVendingVersion != IENMessage.success) throw new Error(CreateVendingVersion);
@@ -73,7 +75,7 @@ export class CreateVendingVersionProcess {
         this.formData?.delete('uuid');
 
         this.file = params.dataPack.file;
-        this.version_commit = params.dataPack.version_commit;
+        this.commit_version = params.dataPack.commit_version;
         this.title = params.dataPack.title;
         this.subtitle = params.dataPack.subtitle;
         this.readme = params.readme;
@@ -81,12 +83,12 @@ export class CreateVendingVersionProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.file && this.version_commit && this.title && this.subtitle && this.token)) return IENMessage.parametersEmpty;
+        if (!(this.file && this.commit_version && this.title && this.subtitle && this.token)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
 
-    private UpdateFile(): Promise<any> {
+    private UploadFile(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
@@ -95,6 +97,7 @@ export class CreateVendingVersionProcess {
                 this.formData.set('uuid', this.url);
                 
                 this.filemanagerAPIService.writeFile(this.formData).subscribe(r_writeFile => {
+                    console.log(`response upload file`, r_writeFile);
                     if (r_writeFile.status != 1) {
                       this.filemanagerAPIService.cancelWriteFile({ uuid: this.url }).subscribe(r_cancelWriteFile => {
                         if (r_cancelWriteFile.status != 1) return resolve(resolve(IENMessage.cancelAndWriteFileFail));
@@ -121,7 +124,7 @@ export class CreateVendingVersionProcess {
                         filesize: this.file.size
                     },
                     readme: {
-                        version_commit: this.version_commit,
+                        commit_version: this.commit_version,
                         title: this.title,
                         subtitle: this.subtitle,
                         section: this.readme.section,
@@ -134,7 +137,12 @@ export class CreateVendingVersionProcess {
                 this.controlVendingVersionAPIService.createVendingVersion(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
-                    if (response.status != 1) return resolve(response.message);
+                    if (response.status != 1) {
+                        this.filemanagerAPIService.cancelWriteFile({ uuid: this.url }).subscribe(r_cancelWriteFile => {
+                            if (r_cancelWriteFile.status != 1) return resolve(resolve(IENMessage.cancelAndWriteFileFail));
+                            return resolve(IENMessage.writeFileFailAndCancelwriteFileSuccess);
+                        }, error => resolve(IENMessage.writeFileError));
+                    }
                     this.id = response.info.id;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
