@@ -18,11 +18,11 @@ export class CreateVendingVersionProcess {
     private commit_version: string;
     private title: string;
     private subtitle: string;
-    private readme: {
+    private readme: Array<{
         section: Array<string>,
         description: Array<string>,
         hightlight: Array<string>
-    } = {} as any;
+    }> = [];
 
     private formData: FormData;
     private url: string;
@@ -128,9 +128,9 @@ export class CreateVendingVersionProcess {
                         commit_version: this.commit_version,
                         title: this.title,
                         subtitle: this.subtitle,
-                        section: this.readme.section,
-                        description: this.readme.description,
-                        hightlight: this.readme.hightlight,
+                        section: this.readme.map(item => item.section),
+                        description: this.readme.map(item => item.description),
+                        hightlight: this.readme.map(item => item.hightlight)
                     },
                     token: this.token
                 }

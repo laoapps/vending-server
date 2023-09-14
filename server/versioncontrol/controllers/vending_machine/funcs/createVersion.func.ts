@@ -13,7 +13,7 @@ export class CreateVersionFunc {
         filesize: string 
     } = {} as any;
     private readme: {
-        version_commit: string,
+        commit_version: string,
         title: string,
         subtitle: string,
         section: Array<string>,
@@ -59,7 +59,7 @@ export class CreateVersionFunc {
 
     private ValidateParams(): string {
         if (!(this.file.url && this.file.filename && this.file.filesize)) return IENMessage.invalidFile;
-        if (!(this.readme.version_commit && this.readme.title && this.readme.subtitle)) return IENMessage.parametersEmpty;
+        if (!(this.readme.commit_version && this.readme.title && this.readme.subtitle)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 

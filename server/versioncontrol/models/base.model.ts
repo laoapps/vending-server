@@ -12,7 +12,7 @@ export interface IVendingVersion extends IBase {
     },
     version: string,
     readme: {
-        version_commit: string,
+        commit_version: string,
         title: string,
         subtitle: string,
         section: Array<string>,
@@ -27,7 +27,7 @@ export interface ICreateVendingVersion {
         filesize: string
     },
     readme: {
-        version_commit: string,
+        commit_version: string,
         title: string,
         subtitle: string,
         section: Array<string>,
