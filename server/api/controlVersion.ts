@@ -28,6 +28,7 @@ export class ControlVersionAPI {
         router.post('/zdm8/vending-version/create', APIAdminAccess, this.writePanel.CreateVersion.bind(this.writePanel));
 
         router.post('/zdm8/vending-version/load-all-version', APIAdminAccess, this.readPanel.LoadAllVersion.bind(this.readPanel));
+        router.post('/zdm8/vending-version/set-update-version', APIAdminAccess, this.readPanel.SetUpdateVersion.bind(this.readPanel));
 
         QCreateVendingVersion.process((job, done) => {
             const d = job.data;

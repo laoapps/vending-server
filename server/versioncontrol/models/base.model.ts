@@ -21,3 +21,7 @@ export interface IVendingVersion extends IBase {
     }
 }
 export interface ICreateVendingVersion extends IVendingVersion {}
+export interface ISetUpdateVendingVersion {
+    uuid: string,
+    machines: Array<string>
+}

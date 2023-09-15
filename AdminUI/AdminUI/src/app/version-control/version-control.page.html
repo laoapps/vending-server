@@ -43,18 +43,18 @@
         <div *ngIf="readme?.title != ''" class="title">{{ readme?.title }}</div>
         <div *ngIf="readme?.subtitle != ''" class="subtitle">{{ readme?.subtitle }}</div>
   
-        <div class="cotent-container">
-          
-          <div *ngIf="readme?.section != undefined && readme?.section.length > 0" class="section-container">
-            <div class="section">{{ readme?.section }}</div>
+        <div *ngFor="let content of readme; let content_index;" class="cotent-container">
+        
+          <div *ngIf="content.section != undefined && content.section.length > 0" class="section-container">
+            <div class="section">{{ content.section }}</div>
           </div>
   
-          <div *ngIf="readme?.description != ''" class="description-container">
-            <div *ngFor="let description of readme?.description; let description_index;" class="description">{{ description }}</div>
+          <div *ngIf="content.description != ''" class="description-container">
+            <div *ngFor="let description of content.description; let description_index;" class="description">{{ description }}</div>
           </div>
   
-          <div *ngIf="readme?.hightlight != ''" class="hight-light-container">
-            <div *ngFor="let hightlight of readme?.hightlight; let hightlight_index;" class="hightlight">{{ hightlight }}</div>
+          <div *ngIf="content.hightlight != ''" class="hight-light-container">
+            <div *ngFor="let hightlight of content.hightlight; let hightlight_index;" class="hightlight">{{ hightlight }}</div>
           </div>
   
         </div>
