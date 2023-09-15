@@ -33,7 +33,7 @@ ion-content {
         .box-search {
 
             .form-control {
-                width: 500px;
+                width: 400px;
                 height: 60px;
                 border: none;
                 background: #f5f6f7;
@@ -67,10 +67,13 @@ ion-content {
     .page-header-right {
         display: flex;
         align-items: center;
+        gap: 10px;
 
+        .item:first-child {
+            border: 1px solid #3333;
+        }
         .item {
             text-decoration: none;
-            border: 1px solid #3333;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -80,7 +83,7 @@ ion-content {
             height: 60px;
             transition: .2s;
         }
-        .item:hover {
+        .item:first-child:hover {
             background: #f5f6f7;
         }
     }
@@ -94,7 +97,10 @@ ion-content {
     margin: 10px;
     display: flex;
     flex-direction: column;
-
+    background: #fff;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+    
     .title {
         font-size: 18px;
         font-weight: bold;
@@ -105,35 +111,142 @@ ion-content {
         font-weight: 300;
     }
 
-    .tab-container {
-        display: grid;
-        grid-template-columns: repeat(2,1fr);
-        margin-top: 15px;
+    .suggest {
+        margin-top: 25px;
+        display: flex;
+        flex-direction: column;
+        margin: 100px auto 0 auto;
 
-        .item {
-            height: 50px;
-            display: flex;
-            background: #f5f6f7;
-            color: #333;
-            text-decoration: none;
-            justify-content: center;
-            align-items: center;
-            transition: .2s;
-            border-bottom: 1.5px solid #333;
+        .icon {
+            font-size: 60px;
+            font-weight: bold;
+            color: #A41D4F;
+            text-align: center;
+        }
 
-            i { padding-right: 8px; }
-        }
-        .item:hover {
-            background: #e7e7e7;
-        }
-        .item:hover > .item.active {
-            color: #650f2f;
-            background: #ffe9f2;
-        }
-        .item.active {
-            color: #650f2f;
-            background: #ffe9f2;
-            border-bottom: 1.5px solid #A41D4F;
+        .text {
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
     }
+}
+
+
+
+
+
+
+
+.page-body {
+
+    .content-container {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        grid-gap: 15px;
+    }
+    
+    
+    
+    .content-container .content-left {
+        grid-column: 1 / span 2;
+
+        .title {
+            font-size: 25px;
+            font-weight: bold;
+            margin-top: 25px;
+        }
+    
+        .subtitle {
+            font-size: 14px;
+            font-weight: 300;
+        }
+    
+        .section {
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #3333;
+            margin-top: 15px;
+        }
+    
+        .description-container {
+            display: flex;
+            flex-direction: column;
+            margin: 10px 0px;
+            
+            .description {
+                font-size: 14px;
+                font-weight: 300;
+            }
+        }
+    
+        .hight-light-container {
+            margin-top: 10px;
+            background: #f5f6f7;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-radius: 5px;
+    
+            .hightlight {
+                font-size: 14px;
+                font-weight: 300;
+                padding: 5px 0px;
+            }
+        }
+    }
+    
+    
+    
+    
+    .content-container .content-right {
+        
+
+        .version-title {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 38px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .version-list {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+
+            .group {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                height: 38px;
+
+
+                .value {
+                    color: #333;
+                    font-size: 14px;
+                    font-weight: 300;
+                }
+
+                .line {
+                    border-bottom: 1px dashed #3333;
+                    width: 45%;
+                }
+
+                .datetime {
+                    font-size: 14px;
+                    font-weight: 300;
+                    color: #333;
+
+                }
+            }
+        }
+    
+    
+    }
+
+    
 }

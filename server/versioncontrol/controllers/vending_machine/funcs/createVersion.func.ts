@@ -7,15 +7,15 @@ export class CreateVersionFunc {
 
     private transaction: Transaction;
 
+    private commit_version: string;
+    private title: string;
+    private subtitle: string; 
     private file: { 
         url: string, 
         filename: string, 
         filesize: string 
     } = {} as any;
     private readme: {
-        commit_version: string,
-        title: string,
-        subtitle: string,
         section: Array<string>,
         description: Array<string>,
         hightlight: Array<string>
@@ -53,13 +53,16 @@ export class CreateVersionFunc {
     }
 
     private InitParams(params: ICreateVendingVersion): void {
+        this.commit_version = params.commit_version;
+        this.title = params.title;
+        this.subtitle = params.subtitle;
         this.file = params.file;
         this.readme = params.readme;
     }
 
     private ValidateParams(): string {
         if (!(this.file.url && this.file.filename && this.file.filesize)) return IENMessage.invalidFile;
-        if (!(this.readme.commit_version && this.readme.title && this.readme.subtitle)) return IENMessage.parametersEmpty;
+        if (!(this.commit_version && this.title && this.subtitle)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -68,6 +71,9 @@ export class CreateVersionFunc {
             try {
                 
                 const params = {
+                    commit_version: this.commit_version,
+                    title: this.title,
+                    subtitle: this.subtitle,
                     file: this.file,
                     readme: this.readme
                 }

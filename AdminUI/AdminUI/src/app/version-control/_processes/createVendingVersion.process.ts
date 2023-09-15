@@ -112,21 +112,17 @@ export class CreateVendingVersionProcess {
     private CreateVendingVersion(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                
+
                 const params = {
+                    commit_version: this.commit_version,
+                    title: this.title,
+                    subtitle: this.subtitle,
                     file: {
                         url: this.fileUrl,
                         filename: this.file.name,
                         filesize: this.file.size
                     },
-                    readme: {
-                        commit_version: this.commit_version,
-                        title: this.title,
-                        subtitle: this.subtitle,
-                        section: this.readme.map(item => item.section),
-                        description: this.readme.map(item => item.description),
-                        hightlight: this.readme.map(item => item.hightlight)
-                    },
+                    readme: this.readme,
                     token: this.token
                 }
 

@@ -15,17 +15,11 @@ export class ControlVendingVersionAPIService {
     private http: HttpClient
   ) { }
 
-  showVendingVersion(params: any): Observable<any> {
-    return this.http.post(this.url + '/showvendingversion', params);
-  } 
-  findVendingVersion(params: any): Observable<any> {
-    return this.http.post(this.url + '/findvendingversion', params);
-  }
   createVendingVersion(params: any): Observable<any> {
     return this.http.post(this.url + '/vending-version/create', params);
   }
-  updateVendingVersionDescription(params: any): Observable<any> {
-    return this.http.post(this.url + '/updatevendingversiondescription', params);
+  loadAllVersion(params: any): Observable<any> {
+    return this.http.post(this.url + '/vending-version/load-all-version', params);
   }
 
 }

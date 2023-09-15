@@ -204,6 +204,10 @@ const routes: Routes = [
     path: 'form-preview',
     loadChildren: () => import('./version-control/_modals/form-preview/form-preview.module').then( m => m.FormPreviewPageModule)
   },
+  {
+    path: 'form-machine',
+    loadChildren: () => import('./version-control/_modals/form-machine/form-machine.module').then( m => m.FormMachinePageModule)
+  },
 ];
 @NgModule({
   imports: [

@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { FormUploadPage } from './_modals/form-upload/form-upload.page';
+import { IENMessage } from '../models/base.model';
+import { LoadAllVersionProcess } from './_processes/loadAllVersion.process';
+import { ControlVendingVersionAPIService } from '../services/control-vending-version-api.service';
 
 @Component({
   selector: 'app-version-control',
@@ -9,16 +12,28 @@ import { FormUploadPage } from './_modals/form-upload/form-upload.page';
 })
 export class VersionControlPage implements OnInit {
 
-  readmePage: boolean = true;
-  versionPage: boolean = false;
+  private loadAllVersionProcess: LoadAllVersionProcess;
 
-  lastupdate: any = new Date();
+
+  lists: Array<any> = [];
+  count: number = 0;
+
+
+  version: number;
+  versionText: string;
+  filesize: number = 0;
+  lastUpdatedAt: any = {} as any;
+  readme: any = {} as any;
 
   constructor(
-    public apiService: ApiService
-  ) { }
+    public apiService: ApiService,
+    public controlVendingVersionAPIService: ControlVendingVersionAPIService
+  ) { 
+    this.loadAllVersionProcess = new LoadAllVersionProcess(this.apiService, this.controlVendingVersionAPIService);
+  }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.loadAllVersion();
   }
 
   close() {
@@ -29,4 +44,92 @@ export class VersionControlPage implements OnInit {
     this.apiService.showModal(FormUploadPage,{}).then(r=>{r?.present()});
   }
 
+  loadAllVersion(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        const params = {}
+        const run = await this.loadAllVersionProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        this.lists = run.data[0].rows;
+        this.count = run.data[0].count;
+        if (this.count == 0) return resolve(IENMessage.success);
+
+        for(let i = 0; i < this.lists.length; i++) {
+          this.lists[i].version = this.convertVersion(this.lists[i].version);
+          // this.lists[i].readme.description = this.convertDescription(this.lists[i].readme.description);
+          // this.lists[i].readme.hightlight = this.convertHightLight(this.lists[i].readme.hightlight);
+        }
+        this.versionText = this.lists[0].version;
+        this.lastUpdatedAt = this.lists[0].updatedAt;
+        this.readme = this.lists[0].readme;
+
+        resolve(IENMessage.success);
+        
+      } catch (error) {
+        this.apiService.alertError(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+  convertVersion(version: string) {
+    let text = version;
+    let versionText: string = '';
+    const parses = parseInt(text);
+
+    if (parses > 0 && parses < 10) {
+      return `0.0.${parses}`;
+    } 
+    if (parses >= 10 && parses < 100) {
+      text = text.substring(text.length - parses.toString().length-1, text.length);
+    } else {
+      text = text.substring(text.length - parses.toString().length, text.length);
+    }
+    
+    let s: string = '';
+    for(let i = 0; i < text.length; i++) {
+      s += `${text[i]}.`;
+    }
+    versionText = `${s}0`;
+    versionText = versionText.substring(0, versionText.length -2);
+    return versionText;
+
+  } 
+  convertDescription(array: Array<any>) {
+    let newArray: Array<any> = [];
+    for(let i = 0 ; i < array.length; i++) {
+      newArray.push(...array[i]);
+    }
+    return newArray;
+  }
+  convertHightLight(array: Array<any>) {
+    let newArray: Array<any> = [];
+    for(let i = 0 ; i < array.length; i++) {
+      newArray.push(...array[i]);
+    }
+    return newArray;
+  }
+  switchVersion(index: number): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      let workload: any = {} as any;
+      try {
+        
+        workload = this.apiService.load.create({ message: 'loading...' });
+        (await workload).present();
+
+        this.versionText = this.lists[index].version;
+        this.lastUpdatedAt = this.lists[index].updatedAt;
+        this.readme = this.lists[index].readme;
+
+        (await workload).dismiss();
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        (await workload).dismiss();
+        this.apiService.alertError(error.message);
+        resolve(error.message);
+      }
+    });
+  }
 }

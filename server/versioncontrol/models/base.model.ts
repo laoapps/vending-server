@@ -5,6 +5,9 @@ export interface IBase {
     isActive?: boolean
 }
 export interface IVendingVersion extends IBase {
+    commit_version: string,
+    title: string,
+    subtitle: string,
     file: {
         url: string,
         filename: string,
@@ -12,26 +15,9 @@ export interface IVendingVersion extends IBase {
     },
     version: string,
     readme: {
-        commit_version: string,
-        title: string,
-        subtitle: string,
         section: Array<string>,
         description: Array<string>,
         hightlight: Array<string>,
     }
 }
-export interface ICreateVendingVersion {
-    file: {
-        url: string,
-        filename: string,
-        filesize: string
-    },
-    readme: {
-        commit_version: string,
-        title: string,
-        subtitle: string,
-        section: Array<string>,
-        description: Array<string>,
-        hightlight: Array<string>,
-    }
-}
+export interface ICreateVendingVersion extends IVendingVersion {}
