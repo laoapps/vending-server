@@ -3,13 +3,13 @@ import { dbConnection, vendingVersionEntity } from "../../../../entities";
 import { IENMessage } from "../../../../services/laab.service";
 import { ICreateVendingVersion } from "../../../models/base.model";
 
-export class LoadLastestVersionFunc {
+export class LoadAllVersionFunc {
 
     private response: any = {} as any;
 
     constructor() {}
 
-    public Init(params: ICreateVendingVersion): Promise<any> {
+    public Init(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
             
@@ -36,9 +36,10 @@ export class LoadLastestVersionFunc {
                     order: [[ 'id', 'DESC' ]]
                 }
 
-                const run = await vendingVersionEntity.findOne(condition);
+                const run = await vendingVersionEntity.findAndCountAll(condition);
                 this.response = {
-                    data: run,
+                    rows: run.rows,
+                    count: run.count,
                     message: IENMessage.success
                 }
 

@@ -197,14 +197,6 @@ const routes: Routes = [
     loadChildren: () => import('./version-control/version-control.module').then( m => m.VersionControlPageModule)
   },
   {
-    path: 'readme',
-    loadChildren: () => import('./version-control/_tabs/readme/readme.module').then( m => m.ReadmePageModule)
-  },
-  {
-    path: 'versions',
-    loadChildren: () => import('./version-control/_tabs/versions/versions.module').then( m => m.VersionsPageModule)
-  },
-  {
     path: 'form-upload',
     loadChildren: () => import('./version-control/_modals/form-upload/form-upload.module').then( m => m.FormUploadPageModule)
   },

@@ -9,6 +9,9 @@ import { FormUploadPage } from './_modals/form-upload/form-upload.page';
 })
 export class VersionControlPage implements OnInit {
 
+  readmePage: boolean = true;
+  versionPage: boolean = false;
+
   lastupdate: any = new Date();
 
   constructor(
