@@ -26,6 +26,7 @@ export class CreateVendingVersionProcess {
 
     private formData: FormData;
     private url: string;
+    private fileUrl: string;
     private token: string;
     private id: number;
 
@@ -43,7 +44,6 @@ export class CreateVendingVersionProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
@@ -98,13 +98,8 @@ export class CreateVendingVersionProcess {
                 
                 this.filemanagerAPIService.writeFile(this.formData).subscribe(r_writeFile => {
                     console.log(`response upload file`, r_writeFile);
-                    if (r_writeFile.status != 1) {
-                      this.filemanagerAPIService.cancelWriteFile({ uuid: this.url }).subscribe(r_cancelWriteFile => {
-                        console.log(`response cancel upload file`, r_cancelWriteFile);
-                        if (r_cancelWriteFile.status != 1) return resolve(resolve(IENMessage.cancelAndWriteFileFail));
-                        return resolve(IENMessage.writeFileFailAndCancelwriteFileSuccess);
-                      }, error => resolve(IENMessage.writeFileError));
-                    }
+                    if (r_writeFile.status != 1) return resolve(IENMessage.writeFileFail);
+                    this.fileUrl = r_writeFile.data[0].info.fileUrl;
                     resolve(IENMessage.success);
                   }, error => resolve(IENMessage.writeFileError));
 
@@ -120,7 +115,7 @@ export class CreateVendingVersionProcess {
                 
                 const params = {
                     file: {
-                        url: this.url,
+                        url: this.fileUrl,
                         filename: this.file.name,
                         filesize: this.file.size
                     },
@@ -139,7 +134,7 @@ export class CreateVendingVersionProcess {
                     const response: any = r;
                     console.log(`response`, response);
                     if (response.status != 1) {
-                        this.filemanagerAPIService.cancelWriteFile({ uuid: this.url }).subscribe(r_cancelWriteFile => {
+                        this.filemanagerAPIService.cancelWriteFile({ uuid: this.fileUrl }).subscribe(r_cancelWriteFile => {
                             console.log(`response cancel upload file create vending fail`, r_cancelWriteFile);
                             if (r_cancelWriteFile.status != 1) return resolve(resolve(IENMessage.cancelAndWriteFileFail));
                             return resolve(IENMessage.writeFileFailAndCancelwriteFileSuccess);

@@ -90,7 +90,7 @@ export class CreateVersionFunc {
                 
                 let version: string = '';
                 for(let i = 0; i < 1; i++) {
-                    for(let j = 0; j < 4 - this.id+''.length; j++) {
+                    for(let j = 0; j < 11 - this.id+''.length; j++) {
                         version += '0';
                     }
                     version = version + this.id+'';

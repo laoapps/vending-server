@@ -21,6 +21,6 @@ export class FilemanagerApiService {
     return this.http.post(environment.filemanagerurl + 'new', data, { headers: this.setHeader });
   }
   cancelWriteFile(data: any): Observable<any>{
-    return this.http.post(environment.filemanagerurl + 'delete', data, { headers: this.setHeader });
+    return this.http.post(environment.filemanagerurl + `del`, data, { headers: this.setHeader });
   }
 }
