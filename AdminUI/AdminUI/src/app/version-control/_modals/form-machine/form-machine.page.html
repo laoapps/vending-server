@@ -1,9 +1,39 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>form-machine</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">Machines</div>
+    </div>
+    <div class="right">
+      <a *ngIf="machines != undefined && machines?.length > 0" (click)="setupdateVersion()" href="javascript:void(0)" class="item-underline"><i class="fa-solid fa-arrows-rotate"></i> {{ machines?.length }} machine will update version {{ versionText }}</a>
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="machine-container">
+
+    <a *ngFor="let list of lists;let i = index" href="javascript:void(0)" (click)="chooseMachine(list, i)" [ngClass]="findMachine(list?.machineId)?.lastUpdate ? 'item item-option' : 'item-disable item-option'">
+
+      <div class="icon">
+        <img src="{{ list?.photo }}" alt="">
+      </div>
+
+      <div class="text">
+        <div class="machineid">{{ list?.machineId }}</div>
+        <div *ngIf="list?.data[0]?.imei" class="imei"><i class="fa-solid fa-fingerprint"></i> {{ list?.data[0]?.imei }}</div>
+        <div *ngIf="!list?.data[0]?.imei" class="imei"><i class="fa-solid fa-fingerprint"></i> Null</div>
+        <div *ngIf="list?.data[0]?.higxxhTemp" class="temp"><i class="fa-solid fa-temperature-low"></i> {{ list?.data[0]?.higxxhTemp }}</div>
+        <div *ngIf="!list?.data[0]?.higxxhTemp" class="temp"><i class="fa-solid fa-temperature-low"></i> Null</div>
+        <div class="status">
+          <span *ngIf="findMachine(list?.machineId)?.lastUpdate" class="text-success">Online</span>
+          <span *ngIf="!findMachine(list?.machineId)?.lastUpdate" class="text-danger">Offline</span>
+        </div>
+      </div>
+
+    </a>
+
+  </div>
 
 </ion-content>

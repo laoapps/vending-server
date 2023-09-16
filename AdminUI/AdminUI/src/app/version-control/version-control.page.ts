@@ -4,6 +4,7 @@ import { FormUploadPage } from './_modals/form-upload/form-upload.page';
 import { IENMessage } from '../models/base.model';
 import { LoadAllVersionProcess } from './_processes/loadAllVersion.process';
 import { ControlVendingVersionAPIService } from '../services/control-vending-version-api.service';
+import { FormMachinePage } from './_modals/form-machine/form-machine.page';
 
 @Component({
   selector: 'app-version-control',
@@ -19,6 +20,7 @@ export class VersionControlPage implements OnInit {
   count: number = 0;
 
 
+  uuid: string;
   version: number;
   versionText: string;
   filesize: number = 0;
@@ -56,18 +58,20 @@ export class VersionControlPage implements OnInit {
         this.count = run.data[0].count;
         if (this.count == 0) return resolve(IENMessage.success);
 
+        this.uuid = this.lists[0].uuid;
+        this.version = this.lists[0].version;
         for(let i = 0; i < this.lists.length; i++) {
-          this.lists[i].version = this.convertVersion(this.lists[i].version);
-          // this.lists[i].readme.description = this.convertDescription(this.lists[i].readme.description);
-          // this.lists[i].readme.hightlight = this.convertHightLight(this.lists[i].readme.hightlight);
+          this.lists[i].versionText = '';
+          this.lists[i].versionText = this.convertVersion(this.lists[i].version);
         }
-        this.versionText = this.lists[0].version;
+        this.versionText = this.lists[0].versionText;
         this.lastUpdatedAt = this.lists[0].updatedAt;
         this.readme = this.lists[0].readme;
 
         resolve(IENMessage.success);
         
       } catch (error) {
+        this.apiService.modal.dismiss();
         this.apiService.alertError(error.message);
         resolve(error.message);
       }
@@ -94,22 +98,7 @@ export class VersionControlPage implements OnInit {
     versionText = `${s}0`;
     versionText = versionText.substring(0, versionText.length -2);
     return versionText;
-
   } 
-  convertDescription(array: Array<any>) {
-    let newArray: Array<any> = [];
-    for(let i = 0 ; i < array.length; i++) {
-      newArray.push(...array[i]);
-    }
-    return newArray;
-  }
-  convertHightLight(array: Array<any>) {
-    let newArray: Array<any> = [];
-    for(let i = 0 ; i < array.length; i++) {
-      newArray.push(...array[i]);
-    }
-    return newArray;
-  }
   switchVersion(index: number): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       let workload: any = {} as any;
@@ -131,5 +120,13 @@ export class VersionControlPage implements OnInit {
         resolve(error.message);
       }
     });
+  }
+  openFormMachine() {
+    const props = {
+      uuid: this.uuid,
+      version: this.version,
+      versionText: this.versionText
+    }
+    this.apiService.showModal(FormMachinePage,props).then(r=>{r?.present()});
   }
 }

@@ -12,6 +12,7 @@ import { IonicStorageService } from './ionic-storage.service';
 import { EventEmitter } from 'events';
 import { Router } from '@angular/router';
 import Swal from "sweetalert2";
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'

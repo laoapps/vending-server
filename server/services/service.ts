@@ -500,3 +500,26 @@ export function base64ToFile(data:string,filename=moment.now(),ext='.png'){
     fs.writeFileSync(process.env._image_path+'/'+filename+ext, buff);
     return filename+'';
 }
+
+export function convertVersion(version: string) {
+    let text = version;
+    let versionText: string = '';
+    const parses = parseInt(text);
+
+    if (parses > 0 && parses < 10) {
+      return `0.0.${parses}`;
+    } 
+    if (parses >= 10 && parses < 100) {
+      text = text.substring(text.length - parses.toString().length-1, text.length);
+    } else {
+      text = text.substring(text.length - parses.toString().length, text.length);
+    }
+    
+    let s: string = '';
+    for(let i = 0; i < text.length; i++) {
+      s += `${text[i]}.`;
+    }
+    versionText = `${s}0`;
+    versionText = versionText.substring(0, versionText.length -2);
+    return versionText;
+} 

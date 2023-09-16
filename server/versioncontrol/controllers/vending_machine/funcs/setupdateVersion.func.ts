@@ -2,7 +2,7 @@ import { Transaction } from "sequelize";
 import { dbConnection, vendingVersionEntity } from "../../../../entities";
 import { IENMessage } from "../../../../services/laab.service";
 import { ISetUpdateVendingVersion } from "../../../models/base.model";
-import { redisClient } from "../../../../services/service";
+import { convertVersion, redisClient } from "../../../../services/service";
 
 export class SetUpdateVersionFunc {
 
@@ -63,6 +63,7 @@ export class SetUpdateVersionFunc {
                 this.version = {
                     uuid: run.uuid,
                     version: run.version,
+                    versionText: convertVersion(run.version),
                     url: run.file.url
                 }
 

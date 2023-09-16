@@ -4244,6 +4244,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         app_version = {
                                             url: versionInfo.url,
                                             version: versionInfo.version,
+                                            versionText: versionInfo.versionText,
                                             uuid: versionInfo.uuid
                                         }
                                     }
