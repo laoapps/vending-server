@@ -139,6 +139,31 @@ export class ApiService {
       heightAuto: false
     });
   }
+  public alertSuccess(text: string) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#A5DC86',
+      heightAuto: false
+    });
+  }
+  public alertConfirm(text: string) {
+    const alert = Swal.fire({
+      icon: 'question',
+      title: 'Are you sure!?',
+      text: text,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#87ADBD',
+      showCancelButton: true,
+      cancelButtonText: 'Cancel',
+      heightAuto: false  
+    });
+    return alert;
+  }
 
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);

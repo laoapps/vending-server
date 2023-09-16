@@ -136,17 +136,8 @@ export class FormMachinePage implements OnInit, OnDestroy {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        const alert = Swal.fire({
-          icon: 'question',
-          title: 'Are you sure!?',
-          text: 'Do you want to update machines version!?',
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#87ADBD',
-          showCancelButton: true,
-          cancelButtonText: 'Cancel',
-          heightAuto: false  
-        });
+        const text = 'Do you want to update machines version!?';
+        const alert = this.apiService.alertConfirm(text);
 
         if ((await alert).isConfirmed) {
           const params = {
@@ -158,8 +149,7 @@ export class FormMachinePage implements OnInit, OnDestroy {
           if (run.message != IENMessage.success) throw new Error(run);
         }
 
-
-        
+        this.apiService.alertSuccess(IENMessage.success);
         resolve(IENMessage.success);
 
       } catch (error) {

@@ -84,6 +84,7 @@ export class SetUpdateVersionFunc {
                 }
                 
                 this.response = {
+                    result: JSON.stringify(this.version),
                     message: IENMessage.success
                 }
 
