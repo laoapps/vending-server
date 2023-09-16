@@ -4248,7 +4248,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             uuid: versionInfo.uuid
                                         }
                                     } else {
-                                        versionInfo = {
+                                        app_version = {
                                             a: machine,
                                             b: `${machine}_version`
                                         }

@@ -150,6 +150,7 @@ export class FormMachinePage implements OnInit, OnDestroy {
         }
 
         this.apiService.alertSuccess(IENMessage.success);
+        this.apiService.modal.dismiss();
         resolve(IENMessage.success);
 
       } catch (error) {
