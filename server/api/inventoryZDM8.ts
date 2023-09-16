@@ -4249,6 +4249,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         }
                                     } else {
                                         app_version = {
+                                            versionInfo: versionInfo,
                                             a: machine,
                                             b: `${machine}_version`
                                         }
