@@ -82,6 +82,10 @@ export class SetUpdateVersionFunc {
                 for(let i = 0; i < this.machines.length; i++) {
                     await redisClient.set(`${this.machines[i]}_version`, JSON.stringify(this.version));
                 }
+                
+                this.response = {
+                    message: IENMessage.success
+                }
 
                 resolve(IENMessage.success);
 

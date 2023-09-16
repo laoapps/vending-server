@@ -76,7 +76,7 @@ export class SetUpdateVendingVersionProcess {
                 this.controlVendingVersionAPIService.setUpdateVersion(params).subscribe(run => {
                     const response: any = run;
                     console.log(`response`, response);
-                    if (response.status != 1) return resolve(IENMessage.writeFileFail);
+                    if (response.status != 1) return resolve(response.message);
                     resolve(IENMessage.success);
                   }, error => resolve(error.message));
 
