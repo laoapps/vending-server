@@ -80,6 +80,7 @@ export class SetUpdateVersionFunc {
             try {
                 
                 for(let i = 0; i < this.machines.length; i++) {
+                    console.log(`SET VERSION`, `${this.machines[i]}_version`, JSON.stringify(this.version));
                     await redisClient.set(`${this.machines[i]}_version`, JSON.stringify(this.version));
                 }
                 
