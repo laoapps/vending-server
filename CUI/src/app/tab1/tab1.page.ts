@@ -162,16 +162,22 @@ export class Tab1Page implements OnDestroy {
   autoShowMyOrdersCounter: number = 15;
 
   isFranciseMode: boolean = localStorage.getItem('francisemode') ? true : false;
+
+  checkAppUpdate: boolean = false;
+  autoDismissCheckAppUpdate: any = {} as any;
+  loadingCheck: any = {} as any;
+  loadingPercent: number = 0;
+
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
-    platform: Platform,
+    public platform: Platform,
     // private scanner: @ionic-native/serial,
     public storage: IonicStorageService,
     public appCaching: CachingService,
     private vendingAPIService: VendingAPIService,
     private WSAPIService: WsapiService,
-    private cashingService: AppcachingserviceService
+    private cashingService: AppcachingserviceService,
   ) {
 
     this.autopilot = this.apiService.autopilot;
@@ -208,7 +214,8 @@ export class Tab1Page implements OnDestroy {
     // this.initVendingSale();
 
     platform.ready().then(() => {
-
+      // this.autoCheckAppVersion();
+      this.APPVERSION();
 
       // this.toggleTabServicesSegment();
 
@@ -400,16 +407,17 @@ export class Tab1Page implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-      if (this.autoShowMyOrderTimer) {
-        clearInterval(this.autoShowMyOrderTimer);
-      }
+    clearInterval(this.autoShowMyOrderTimer);
+    clearInterval(this.autoDismissCheckAppUpdate);
+    clearInterval(this.loadingCheck);
+    clearInterval(this.loopPercent);
   }
   async runtoast(txt: string) {
-        const t = this.apiService.toast.create({ message: `--> ${txt}` });
+        const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: 1000 });
     (await t).present();
   }
   loadAutoShowMyOrders() {
-    if (this.orders != undefined && Object.entries(this.orders).length > 0) {
+    if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
       this.autoShowMyOrderTimer = setInterval(() => {
         this.autoShowMyOrdersCounter--;
         if (this.autoShowMyOrdersCounter <= 0) {
@@ -420,7 +428,7 @@ export class Tab1Page implements OnDestroy {
     }
   }
   reloadAutoPayment() {
-    if (this.orders != undefined && Object.entries(this.orders).length > 0) {
+    if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
       this.autoShowMyOrdersCounter = 15;
     }
   }
@@ -960,8 +968,9 @@ export class Tab1Page implements OnDestroy {
     }
     this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
       r.present();
+      // this.apiService.allModals.push(this.apiService.modal);
       r.onDidDismiss().then(cb => {
-        if (this.orders != undefined && Object.entries(this.orders).length > 0) {
+        if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
           this.loadAutoShowMyOrders();
         }
       });
@@ -1649,8 +1658,177 @@ export class Tab1Page implements OnDestroy {
         await this.runtoast(`download: ` + error.message);
       });
   }
+
+  // autoCheckAppVersion() {
+  //   this.apiService.checkAppVersion.subscribe(run => {
+  //     if (!run) return;
+
+  //     const response: any = run;
+      
+  //     console.log(`checkAppUpdate`, this.checkAppUpdate);
+  //     if (this.checkAppUpdate == true) return;
+
+  //     this.apiService.closeAllModal();
+  //     this.checkAppUpdate = true;
+
+  //     let counter: number = 0
+  //     this.autoDismissCheckAppUpdate = setInterval(() => {
+  //       counter++;
+  //       console.log(`counter`, counter);
+  //       if (counter == 100000) {
+  //         clearInterval(this.autoDismissCheckAppUpdate);
+  //         counter=0;
+  //         this.checkAppUpdate = false;
+  //       }
+  //     }, 1000);
+
+  //     CapacitorUpdater.download({
+  //       // url: 'http://192.168.88.4:8989/test/public/dist.zip',
+  //       url: `${environment.filemanagerurl}download/${response.url}`,
+  //       version: response.versionText
+  //     }).then(async run_download => {
+  //       await this.runtoast(`check sum: ` + run_download.checksum);
+  //       CapacitorUpdater.set(run_download).then(async run_update => {
+  //         console.log(`run_update`, run_update);
+  //         if (run_update == undefined) throw new Error(IENMessage.repairFail + run_update +'');
+ 
+  //         this.loadingPercent = 0;
+  //         this.loadingCheck = setInterval(() => {
+  //           this.loadingPercent++;
+  //           if (this.loadingPercent == 100) {
+
+  //             // repaire clear
+  //             clearInterval(this.loadingCheck);
+  //             this.apiService.alertSuccess(IENMessage.repairSystemComplete);
+  //             localStorage.setItem('app_version', JSON.stringify(response));
+  //             clearInterval(this.autoDismissCheckAppUpdate);
+  //             this.checkAppUpdate = false;
+  //             counter = 0;
+  //             this.loadingPercent = 0;
+
+  //             this.loadAutoShowMyOrders();
+  //           }
+  //         }, 100);
+
+  //       }).catch(async error => {
+  //         await this.runtoast(`update: ` + error.message);
+
+  //         clearInterval(this.autoDismissCheckAppUpdate);
+  //         this.checkAppUpdate = false;
+  //         counter = 0;
+  //         console.log(`update: `+ error.message);
+
+  //         this.loadAutoShowMyOrders();
+
+  //       });
+  //     }).catch(async error => {
+  //       await this.runtoast(`download: ` + error.message);
+
+  //       clearInterval(this.autoDismissCheckAppUpdate);
+  //       this.checkAppUpdate = false;
+  //       counter = 0;
+  //       console.log(`download: `+ error.message);
+
+  //       this.loadAutoShowMyOrders();
+
+  //     });
+
+  //     console.log(`CHECK APP VERSION`, run);
+  //   });
+  // }
+
+  repairText: string = IENMessage.systemIsRepairingPleaseWaitMoment;
+  displayRepaireAppVersion: boolean = false;
+  checkAppVersion: boolean = false;
   
-  hello() {
-    alert('hello world')
+  loopPercent: any = {} as any;
+  percentCount: number = 0;
+  percentCountText: string = '0';
+  percentLimit: number = 100;
+  
+  APPVERSION(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        if (!this.platform.is('capacitor')) return resolve(IENMessage.success);
+
+        this.apiService.checkAppVersion.subscribe(async run => {
+          if (!run) return resolve(IENMessage.success);
+          if (this.checkAppVersion == true) return resolve(IENMessage.success);
+
+          const response: any = run;
+          this.apiService.alertSuccess('run ' + response.versionText);
+          this.displayRepaireAppVersion = true;
+          this.checkAppVersion = true;
+          this.apiService.closeAllModal();
+
+          const downloadModel = {
+            url: `${environment.filemanagerurl}download/${response.url}`,
+            version: response.versionText
+          }
+          
+          // downloading
+          this.loopPercent = setInterval(async () => {
+            this.percentCount++;
+
+            if (this.percentCount >= this.percentLimit) {
+              this.percentCountText = '100';
+              this.repairText = IENMessage.extractingFile;
+            }
+            if (this.percentCount >= 120) {
+              this.repairText = IENMessage.extractingFilePack2;
+            }
+            if (this.percentCount >= 240) {
+              this.repairText = IENMessage.extractingFilePack3;
+            }
+
+            // if download more than 5 minute system is download fail
+            if (this.percentCount >= 300) {
+              this.loopPercent = 300;
+              clearInterval(this.loopPercent);
+              this.displayRepaireAppVersion = false;
+            } else {
+              this.percentCountText = this.percentCount+'';
+            }
+          }, 1000);
+
+
+          const download = await CapacitorUpdater.download(downloadModel);
+          if (download.status == IENMessage.pending)
+          {
+            
+            // download complete
+            this.percentCount = 100;
+            this.percentCountText = '100';
+            this.repairText = IENMessage.installingNewVersion;
+            clearInterval(this.loopPercent);
+
+            const install = await CapacitorUpdater.set(download);
+            if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
+            
+            this.displayRepaireAppVersion = false;
+            resolve(IENMessage.success);
+          }
+
+
+        }, error => {
+          this.displayRepaireAppVersion = false;
+          this.apiService.alertError(error.message);
+          clearInterval(this.loopPercent);
+          resolve(error.message);
+        });
+
+      } catch (error) {
+        this.displayRepaireAppVersion = false;
+        this.apiService.alertError(error.message);
+        clearInterval(this.loopPercent);
+        resolve(error.message);
+      }
+    });
   }
+
+  test2() {
+    alert('old version');
+  }
+
 }

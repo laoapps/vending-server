@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { howToVideoJSON } from './video';
 import { ApiService } from 'src/app/services/api.service';
-import { Platform } from '@ionic/angular';
+import { ModalController, Platform } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
 // import { VideoPlayer } from '@ionic-native/video-player/ngx';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
@@ -20,9 +20,13 @@ export class HowToPage implements OnInit {
 
   constructor(
     // private videoPlayer: VideoPlayer,
-    private apiService: ApiService,
+    public apiService: ApiService,
     private platform: Platform,
-  ) { }
+    public modal: ModalController
+  ) { 
+    this.apiService.___HowToPage = this.modal;
+
+  }
 
   ngOnInit() {
     this.apiService.autopilot.auto=0;

@@ -8,6 +8,7 @@ import { SmcListPage } from '../smc-list/smc-list.page';
 import * as QRCode from 'qrcode';
 import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
 import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-epin-cash-out',
@@ -29,8 +30,11 @@ export class EpinCashOutPage implements OnInit {
 
   constructor(
     public apiService: ApiService,
-    public vendingAPIService: VendingAPIService
+    public vendingAPIService: VendingAPIService,
+    public modal: ModalController
   ) { 
+    this.apiService.___EpinCashOutPage = this.modal;
+
     this.createSMCProcess = new CreateSMCProcess(this.apiService, this.vendingAPIService);
     this.createEPINProcess = new CreateEPINProcess(this.apiService, this.vendingAPIService);
   }

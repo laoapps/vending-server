@@ -17,7 +17,6 @@ import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/ha
     FormsModule,
     ExploreContainerComponentModule,
     Tab1PageRoutingModule,
-    // NotifierModule,
      OrderModule,
      SweetAlert2Module,
      

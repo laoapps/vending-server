@@ -7,6 +7,7 @@ import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
 import * as QRCode from 'qrcode';
 import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
 import moment from 'moment';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-smc-list',
@@ -31,8 +32,11 @@ export class SmcListPage implements OnInit {
 
   constructor(
     public apiService: ApiService,
-    public vendingAPIService: VendingAPIService
+    public vendingAPIService: VendingAPIService,
+    public modal: ModalController
   ) { 
+    this.apiService.___SmcListPage = this.modal;
+
     this.loadSMCListProcess = new LoadSMCProcess(this.apiService, this.vendingAPIService);
     this.createEPINProcess = new CreateEPINProcess(this.apiService, this.vendingAPIService);
 

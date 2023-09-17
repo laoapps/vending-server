@@ -22,9 +22,11 @@ export class StackCashoutPage implements OnInit {
 
   constructor(
     private modal: ModalController,
-    private apiService: ApiService,
+    public apiService: ApiService,
     private vendingAPIService: VendingAPIService
   ) { 
+    this.apiService.___StackCashoutPage = this.modal;
+
   }
 
   ngOnInit() {

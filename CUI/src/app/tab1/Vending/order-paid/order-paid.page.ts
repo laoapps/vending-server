@@ -14,6 +14,7 @@ import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMon
 })
 export class OrderPaidPage implements OnInit, OnDestroy {
 
+
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
   @Input() orderCartPage: any;
@@ -84,10 +85,12 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     public apiService: ApiService,
     public modal: ModalController
   ) { 
+
     this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
   }
 
   async ngOnInit() {
+    this.apiService.___OrderPaidPage = this.modal;
 
     this.methodList.push(...this.cashesList, ...this.ewalletList, ...this.bankList);
     this.loadBilling();
@@ -115,12 +118,14 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     clearInterval(this.reloadElement);
+    clearInterval(this.destroyTimer);
 
     if(this._T)clearTimeout(this._T)
     this._T=null;
   }
 
   loadDestroy() {
+    
     this.destroyTimer = setInterval(() => {
       this.destroyCounter--;
       if (this.destroyCounter == 0) {
@@ -305,6 +310,8 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
         const run = await this.generateMMoneyQRCodeProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
+        this.loadDestroy();
+
 
         this.qrcode = run.data[0].mmoneyQRCode.qr;
 

@@ -240,8 +240,6 @@ export class MachinePage implements OnInit {
   }
 
   findMachine(m:string){
-    // console.log('Machine '+m,this.myMachineStatus);
-    
     return this.myMachineStatus.find(v=>v['machineId']==m)?.mstatus;
   }
   updateSetting(m:string){

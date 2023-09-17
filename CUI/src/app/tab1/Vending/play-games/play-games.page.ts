@@ -6,6 +6,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { FortunewheelPage } from 'src/app/fortunewheel/fortunewheel.page';
 import { ScratchingPage } from 'src/app/scratching/scratching.page';
 import { environment } from 'src/environments/environment';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-play-games',
@@ -17,8 +18,13 @@ export class PlayGamesPage implements OnInit {
   lists: Array<any> = [];
   prod=environment.production;
   constructor(
-    private apiService: ApiService
-  ) { }
+    public apiService: ApiService,
+    public modal: ModalController
+
+  ) { 
+    this.apiService.___PlayGamesPage = this.modal;
+
+  }
 
   ngOnInit() {
     this.lists = gameServiceMenuJSON;

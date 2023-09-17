@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
@@ -76,8 +77,13 @@ export class HangmiFoodSegmentPage implements OnInit {
   ]
 
   constructor(
-    public apiService: ApiService
-  ) { }
+    public apiService: ApiService,
+    public modal: ModalController
+
+  ) { 
+    this.apiService.___HangmiFoodSegmentPage = this.modal;
+
+  }
 
   ngOnInit() {
   }

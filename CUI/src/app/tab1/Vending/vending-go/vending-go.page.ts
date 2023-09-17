@@ -26,8 +26,11 @@ export class VendingGoPage implements OnInit {
 
   constructor(
     private modal: ModalController,
-    public apiService: ApiService
-  ) { }
+    public apiService: ApiService,
+  ) { 
+    this.apiService.___VendingGoPage = this.modal;
+
+  }
 
   ngOnInit() {
     this.apiService.autopilot.auto=0;

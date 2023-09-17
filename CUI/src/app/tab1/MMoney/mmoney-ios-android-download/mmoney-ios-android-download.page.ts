@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import * as QRCode from 'qrcode';
 import { ApiService } from 'src/app/services/api.service';
 
@@ -14,8 +15,12 @@ export class MmoneyIosAndroidDownloadPage implements OnInit {
   linksource: Array<string> = [];
   
   constructor(
-    private apiService: ApiService
-  ) { }
+    public apiService: ApiService,
+    public modal: ModalController
+  ) { 
+    this.apiService.___MmoneyIosAndroidDownloadPage = this.modal;
+
+  }
 
   ngOnInit() {
     this.loadQR();

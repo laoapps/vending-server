@@ -6,6 +6,7 @@ import { TransferValidationProcess } from '../../LAAB_processes/transferValidati
 import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
 import Swal from 'sweetalert2';
 import { GetMMoneyUserInfoProccess } from '../../LAAB_processes/getMMoneyUserInfo.process';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-mmoney-cashout',
@@ -31,8 +32,11 @@ export class MmoneyCashoutPage implements OnInit {
 
   constructor(
     public apiService: ApiService,
-    public vendingAPIService: VendingAPIService
+    public vendingAPIService: VendingAPIService,
+    public modal: ModalController
   ) { 
+    this.apiService.___MmoneyCashoutPage = this.modal;
+
     this.transferValidationProcess = new TransferValidationProcess(this.apiService, this.vendingAPIService);
     this.mmoneyCashoutValidationProcess = new MMoneyCashOutValidationProcess(this.apiService, this.vendingAPIService);
     this.getMMoneyUserInfoProcess = new GetMMoneyUserInfoProccess(this.apiService);

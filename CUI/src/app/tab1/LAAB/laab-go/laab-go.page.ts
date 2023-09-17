@@ -3,6 +3,7 @@ import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.proce
 import { ApiService } from 'src/app/services/api.service';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { IENMessage } from 'src/app/models/base.model';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-laab-go',
@@ -10,6 +11,8 @@ import { IENMessage } from 'src/app/models/base.model';
   styleUrls: ['./laab-go.page.scss'],
 })
 export class LaabGoPage implements OnInit {
+
+  public static static_apiService: ApiService;
 
   @Input() machineId: string;
   @Input() cash: number;
@@ -23,8 +26,10 @@ export class LaabGoPage implements OnInit {
 
   constructor(
     public apiService: ApiService,
-    public vendingAPIService: VendingAPIService
+    public vendingAPIService: VendingAPIService,
+    public modal: ModalController
   ) { 
+    this.apiService.___LaabGoPage = this.modal;
     this.paidValidationProcess = new PaidValidationProcess(this.apiService, this.vendingAPIService);
   }
 

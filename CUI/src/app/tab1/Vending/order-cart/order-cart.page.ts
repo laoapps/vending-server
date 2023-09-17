@@ -38,11 +38,14 @@ export class OrderCartPage implements OnInit, OnDestroy {
     public modal: ModalController,
     public vendingAPIService: VendingAPIService
   ) { 
+
     this.paidValidationProcess = new PaidValidationProcess(this.apiService, this.vendingAPIService);
 
   }
 
   ngOnInit() {
+    this.apiService.___OrderCartPage = this.modal;
+
     console.log(this.orders);
     console.log(this.getTotalSale);
     this.loadAutoPayment();

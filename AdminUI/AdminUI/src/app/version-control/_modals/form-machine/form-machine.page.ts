@@ -117,16 +117,16 @@ export class FormMachinePage implements OnInit, OnDestroy {
       const docs = (document.querySelectorAll('.machine-container .item-option') as NodeListOf<HTMLHRElement>);
       docs[index].classList.toggle('active');
       if (this.machines != undefined && Object.entries(this.machines).length == 0) {
-        this.machines.unshift(list.machineid);
+        this.machines.unshift(list.machineId);
         console.log(`machines`, this.machines);
       } else {
-        const duplicate = this.machines.filter(item => item == list.machineid);
+        const duplicate = this.machines.filter(item => item == list.machineId);
         if (duplicate != undefined && Object.entries(duplicate).length > 0) {
-          this.machines = this.machines.filter(item => item != list.machineid);
+          this.machines = this.machines.filter(item => item != list.machineId);
           console.log(`machines`, this.machines);
           return;
         }
-        this.machines.unshift(list.machineid);
+        this.machines.unshift(list.machineId);
       }
       console.log(`machines`, this.machines);
     });

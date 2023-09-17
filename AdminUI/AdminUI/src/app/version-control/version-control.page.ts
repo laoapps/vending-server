@@ -107,6 +107,8 @@ export class VersionControlPage implements OnInit {
         workload = this.apiService.load.create({ message: 'loading...' });
         (await workload).present();
 
+        this.uuid = this.lists[index].uuid;
+        this.version = this.lists[index].version;
         this.versionText = this.lists[index].version;
         this.lastUpdatedAt = this.lists[index].updatedAt;
         this.readme = this.lists[index].readme;
@@ -127,6 +129,7 @@ export class VersionControlPage implements OnInit {
       version: this.version,
       versionText: this.versionText
     }
+    console.log(`props`, props);
     this.apiService.showModal(FormMachinePage,props).then(r=>{r?.present()});
   }
 }

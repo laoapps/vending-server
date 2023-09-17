@@ -36,12 +36,54 @@ import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
 import axios from 'axios';
 import Swal from "sweetalert2";
+import { BehaviorSubject } from 'rxjs';
+import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
+import { EpinShowCodePageModule } from '../tab1/LAAB/epin-show-code/epin-show-code.module';
+import { LaabCashinShowCodePageModule } from '../tab1/LAAB/laab-cashin-show-code/laab-cashin-show-code.module';
+import { LaabCashoutPageModule } from '../tab1/LAAB/laab-cashout/laab-cashout.module';
+import { LaabGoPageModule } from '../tab1/LAAB/laab-go/laab-go.module';
+import { MmoneyCashoutPageModule } from '../tab1/LAAB/mmoney-cashout/mmoney-cashout.module';
+import { SmcListPageModule } from '../tab1/LAAB/smc-list/smc-list.module';
+import { StackCashoutPageModule } from '../tab1/LAAB/stack-cashout/stack-cashout.module';
+import { TopupServicePageModule } from '../tab1/LAAB/topup-service/topup-service.module';
+import { MmoneyIosAndroidDownloadPageModule } from '../tab1/MMoney/mmoney-ios-android-download/mmoney-ios-android-download.module';
+import { HowToPageModule } from '../tab1/Vending/how-to/how-to.module';
+import { OrderCartPageModule } from '../tab1/Vending/order-cart/order-cart.module';
+import { OrderPaidPageModule } from '../tab1/Vending/order-paid/order-paid.module';
+import { PhonePaymentPageModule } from '../tab1/Vending/phone-payment/phone-payment.module';
+import { PlayGamesPageModule } from '../tab1/Vending/play-games/play-games.module';
+import { TopupAndServicePageModule } from '../tab1/Vending/topup-and-service/topup-and-service.module';
+import { VendingGoPageModule } from '../tab1/Vending/vending-go/vending-go.module';
+import { HangmiFoodSegmentPageModule } from '../tab1/VendingSegment/hangmi-food-segment/hangmi-food-segment.module';
+import { HangmiStoreSegmentPageModule } from '../tab1/VendingSegment/hangmi-store-segment/hangmi-store-segment.module';
+import { TopupAndServiceSegmentPageModule } from '../tab1/VendingSegment/topup-and-service-segment/topup-and-service-segment.module';
+import { EpinCashOutPage } from '../tab1/LAAB/epin-cash-out/epin-cash-out.page';
+import { EpinShowCodePage } from '../tab1/LAAB/epin-show-code/epin-show-code.page';
+import { LaabCashinShowCodePage } from '../tab1/LAAB/laab-cashin-show-code/laab-cashin-show-code.page';
+import { LaabCashoutPage } from '../tab1/LAAB/laab-cashout/laab-cashout.page';
+import { LaabGoPage } from '../tab1/LAAB/laab-go/laab-go.page';
+import { MmoneyCashoutPage } from '../tab1/LAAB/mmoney-cashout/mmoney-cashout.page';
+import { SmcListPage } from '../tab1/LAAB/smc-list/smc-list.page';
+import { StackCashoutPage } from '../tab1/LAAB/stack-cashout/stack-cashout.page';
+import { TopupServicePage } from '../tab1/LAAB/topup-service/topup-service.page';
+import { MmoneyIosAndroidDownloadPage } from '../tab1/MMoney/mmoney-ios-android-download/mmoney-ios-android-download.page';
+import { HowToPage } from '../tab1/Vending/how-to/how-to.page';
+import { OrderCartPage } from '../tab1/Vending/order-cart/order-cart.page';
+import { OrderPaidPage } from '../tab1/Vending/order-paid/order-paid.page';
+import { PhonePaymentPage } from '../tab1/Vending/phone-payment/phone-payment.page';
+import { PlayGamesPage } from '../tab1/Vending/play-games/play-games.page';
+import { TopupAndServicePage } from '../tab1/Vending/topup-and-service/topup-and-service.page';
+import { VendingGoPage } from '../tab1/Vending/vending-go/vending-go.page';
+import { HangmiFoodSegmentPage } from '../tab1/VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
+import { HangmiStoreSegmentPage } from '../tab1/VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
+import { TopupAndServiceSegmentPage } from '../tab1/VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
   
+
   toggleWebviewTab: boolean = false;
 
 
@@ -91,6 +133,51 @@ export class ApiService {
     //     this.soundThankYou();
     // }, 2000);
   }
+
+  // ___LaabGoPage:LaabGoPage
+  // ___EpinCashOutPage:EpinCashOutPage
+  // ___EpinShowCodePage:EpinShowCodePage
+  // ___SmcListPage:SmcListPage
+  // ___LaabCashinShowCodePage:LaabCashinShowCodePage
+  // ___LaabCashoutPage:LaabCashoutPage
+  // ___StackCashoutPage:StackCashoutPage
+  // ___MmoneyIosAndroidDownloadPage:MmoneyIosAndroidDownloadPage
+  // ___TopupServicePage:TopupServicePage
+  // ___TopupAndServicePage:TopupAndServicePage
+  // ___PhonePaymentPage:PhonePaymentPage
+  // ___VendingGoPage:VendingGoPage
+  // ___HowToPage:HowToPage
+  // ___MmoneyCashoutPage:MmoneyCashoutPage
+  // ___HangmiStoreSegmentPage:HangmiStoreSegmentPage
+  // ___HangmiFoodSegmentPage:HangmiFoodSegmentPage
+  // ___TopupAndServiceSegmentPage:TopupAndServiceSegmentPage
+  // ___PlayGamesPage:PlayGamesPage
+  // ___OrderCartPage:OrderCartPage
+  // ___OrderPaidPage:OrderPaidPage
+
+  public static __percent: any;
+
+  ___LaabGoPage:any
+  ___EpinCashOutPage:any
+  ___EpinShowCodePage:any
+  ___SmcListPage:any
+  ___LaabCashinShowCodePage:any
+  ___LaabCashoutPage:any
+  ___StackCashoutPage:any
+  ___MmoneyIosAndroidDownloadPage:any
+  ___TopupServicePage:any
+  ___TopupAndServicePage:any
+  ___PhonePaymentPage:any
+  ___VendingGoPage:any
+  ___HowToPage:any
+  ___MmoneyCashoutPage:any
+  ___HangmiStoreSegmentPage:any
+  ___HangmiFoodSegmentPage:any
+  ___TopupAndServiceSegmentPage:any
+  ___PlayGamesPage:any
+  ___OrderCartPage:any
+  ___OrderPaidPage:any
+
   backGroundMusicElement: HTMLAudioElement = {} as any;
   muteSound = false;
   backgrounSound = true;
@@ -165,6 +252,8 @@ export class ApiService {
   musicVolume=6;
 
   countErrorPay: number = 0;
+
+  checkAppVersion: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(
     public controlMenuService: ControlMenuService,
 
@@ -200,6 +289,7 @@ export class ApiService {
 
     this.wsapi.aliveSubscription.subscribe(r => {
       console.log('ALIVE', r);
+      const response: any = r;
 
       try {
         if (!r) return console.log('empty');
@@ -233,6 +323,26 @@ export class ApiService {
         
         // if(!this._cuiSetting.imgFooter)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
         // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
+
+        // control version
+        const app_version = response.data.app_version;
+        const local_version = localStorage.getItem('app_version');
+
+        if (app_version != undefined && Object.entries(app_version).length > 0)
+        { 
+
+          // * update
+          if (local_version == null) {
+            this.checkAppVersion.next(app_version);
+          } else {
+            const parseLocalVersion = JSON.parse(local_version);
+            const appVersion = parseInt(app_version.version);
+            const localVersion = parseInt(parseLocalVersion.version);
+
+            // update
+            if (appVersion != localVersion) this.checkAppVersion.next(app_version);
+          }
+        }
 
 
       } catch (error) {
@@ -360,6 +470,7 @@ export class ApiService {
   // public getVSales() {
   //   return ApiService.vendingOnSale;
   // }
+
   public validateDB() { }
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);
@@ -1156,5 +1267,51 @@ export class ApiService {
 
   formatMoney(s: number) {
     return s.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  }
+
+  closeAllModal() {
+    // OrderCartPage.static_apiService.dismiss();
+    // OrderPaidPage.static_apiService.dismiss();
+    // LaabGoPage
+    // EpinCashOutPage
+    // EpinShowCodePage
+    // SmcListPage
+    // LaabCashinShowCodePage
+    // LaabCashoutPage
+    // StackCashoutPage
+    // MmoneyIosAndroidDownloadPage
+    // TopupServicePage
+    // TopupAndServicePage
+    // PhonePaymentPage
+    // VendingGoPage
+    // HowToPage
+    // MmoneyCashoutPage
+    // HangmiStoreSegmentPage
+    // HangmiFoodSegmentPage
+    // TopupAndServiceSegmentPage
+    // PlayGamesPage
+    // OrderCartPage
+    // OrderPaidPage
+    
+    this.___LaabGoPage?.dismiss();
+    this.___EpinCashOutPage?.dismiss();
+    this.___EpinShowCodePage?.dismiss();
+    this.___SmcListPage?.dismiss();
+    this.___LaabCashinShowCodePage?.dismiss();
+    this.___LaabCashoutPage?.dismiss();
+    this.___StackCashoutPage?.dismiss();
+    this.___MmoneyIosAndroidDownloadPage?.dismiss();
+    this.___TopupServicePage?.dismiss();
+    this.___TopupAndServicePage?.dismiss();
+    this.___PhonePaymentPage?.dismiss();
+    this.___VendingGoPage?.dismiss();
+    this.___HowToPage?.dismiss();
+    this.___MmoneyCashoutPage?.dismiss();
+    this.___HangmiStoreSegmentPage?.dismiss();
+    this.___HangmiFoodSegmentPage?.dismiss();
+    this.___TopupAndServiceSegmentPage?.dismiss();
+    this.___PlayGamesPage?.dismiss();
+    this.___OrderCartPage?.dismiss();
+    this.___OrderPaidPage?.dismiss();
   }
 }

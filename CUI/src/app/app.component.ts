@@ -17,6 +17,7 @@ export class AppComponent {
   version = '';
   constructor(public apiService: ApiService, private appVersion: AppVersion, private platform: Platform) {
     this.platform.ready().then(r => {
+      this.autoCheckAppVersion();
       if (this.platform.is('cordova')) {
         this.appVersion.getAppName();
         this.appVersion.getPackageName();
@@ -88,6 +89,13 @@ export class AppComponent {
       !Number.isNaN(Number.parseInt(v)) ? x += v : '';
     })
     return x;
+  }
+  autoCheckAppVersion() {
+    this.apiService.checkAppVersion.subscribe(run => {
+      if (!run) return;
+      // (document.querySelector('.statusbar') as HTMLDivElement).style.zIndex = '-1';
+      console.log(`CHECK APP VERSION`, run);
+    });
   }
 }
 

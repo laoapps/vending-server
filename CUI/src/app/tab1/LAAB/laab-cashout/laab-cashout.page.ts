@@ -5,6 +5,7 @@ import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { TransferValidationProcess } from '../../LAAB_processes/transferValidation.process';
 import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
 import Swal from 'sweetalert2';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-laab-cashout',
@@ -24,8 +25,11 @@ export class LaabCashoutPage implements OnInit {
 
   constructor(
     public apiService: ApiService,
-    public vendingAPIService: VendingAPIService
+    public vendingAPIService: VendingAPIService,
+    public modal: ModalController
   ) { 
+    this.apiService.___LaabCashoutPage = this.modal;
+
     this.transferValidationProcess = new TransferValidationProcess(this.apiService, this.vendingAPIService);
     this.mmoneyCashoutValidationProcess = new MMoneyCashOutValidationProcess(this.apiService, this.vendingAPIService);
 

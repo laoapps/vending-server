@@ -3,6 +3,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
+import { ModalController } from '@ionic/angular';
 @Component({
   selector: 'app-laab-cashin-show-code',
   templateUrl: './laab-cashin-show-code.page.html',
@@ -23,8 +24,11 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
 
   constructor(
     public apiService: ApiService,
-    public vendingAPIService: VendingAPIService
+    public vendingAPIService: VendingAPIService,
+    public modal: ModalController
   ) { 
+    this.apiService.___LaabCashinShowCodePage = this.modal;
+
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
   }
 

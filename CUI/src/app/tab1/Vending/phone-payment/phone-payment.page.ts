@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 
@@ -36,8 +37,12 @@ export class PhonePaymentPage implements OnInit {
   subtitle: string = 'LTC, Best, Unitel, ETL, T-Plus';
 
   constructor(
-    public apiService: ApiService
-  ) { }
+    public apiService: ApiService,
+    public modal: ModalController
+  ) { 
+    this.apiService.___PhonePaymentPage = this.modal;
+
+  }
 
   ngOnInit() {
     this.loadNumberList();

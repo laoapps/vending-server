@@ -4,6 +4,7 @@ import { topupServiceMenuJSON } from './menu';
 import { ITopupServiceMenu } from 'src/app/models/vending.model';
 import { IENMessage } from 'src/app/models/base.model';
 import { PhonePaymentPage } from '../phone-payment/phone-payment.page';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-topup-and-service',
@@ -15,8 +16,12 @@ export class TopupAndServicePage implements OnInit {
   lists: Array<any> = [];
     
   constructor(
-    private apiService: ApiService
-  ) { }
+    public apiService: ApiService,
+    public modal: ModalController
+  ) { 
+    this.apiService.___TopupAndServicePage = this.modal;
+
+  }
 
   ngOnInit() {
     this.lists = topupServiceMenuJSON;

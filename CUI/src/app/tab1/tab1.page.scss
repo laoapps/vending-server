@@ -2,7 +2,111 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&family=Shippori+Mincho+B1:wght@800&display=swap');
 
+.repair-container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #333333;
+    z-index: 99999997;
+}
+.repair-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #333;
+    z-index: 99999998;
+    background: #DD3932;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
 
+    .repair-box-header {
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #fff;
+        padding-bottom: 5px;
+        height: 80px;
+
+        .repair-box-header-left {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    }
+    .repair-box-body {
+        margin-top: 10px;
+        padding: 0px 10px 10px 10px;
+
+        .title {
+            margin-top: 30px;
+            font-size: 20px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .text {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 300;
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 300;
+        }
+
+        .loading-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: #fff;
+            font-weight: 300;
+
+            meter {
+                width: 100%;
+            }
+            meter::-webkit-meter-optimum-value {
+                background: #00ae26;
+
+            }
+        }
+    }
+
+    .repair-box-footer {
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 60px;
+        padding: 0px 10px;
+        margin-top: 20px;
+
+        .repair-box-footer-right {
+
+            .item {
+                text-decoration: none;
+                color: #fff;
+                background: #DD3932;
+                border-radius: 5px;
+                border: 1px solid #3333;
+                height: 38px;
+                width: 120px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: .2s;
+            }
+            .item:hover {
+                background: #b32d28;
+            }
+        }
+    }
+}
 
 ion-header {
     --ion-background-color: #fff;
