@@ -1757,7 +1757,6 @@ export class Tab1Page implements OnDestroy {
           if (this.checkAppVersion == true) return resolve(IENMessage.success);
 
           const response: any = run;
-          this.apiService.alertSuccess('run ' + response.versionText);
           this.displayRepaireAppVersion = true;
           this.checkAppVersion = true;
           this.apiService.closeAllModal();
@@ -1769,8 +1768,9 @@ export class Tab1Page implements OnDestroy {
           
           // downloading
           this.loopPercent = setInterval(async () => {
-            this.percentCount++;
-
+            if (this.percentCount < this.percentLimit) {
+              this.percentCount++;
+            }
             if (this.percentCount >= this.percentLimit) {
               this.percentCountText = '100';
               this.repairText = IENMessage.extractingFile;
@@ -1805,7 +1805,7 @@ export class Tab1Page implements OnDestroy {
 
             const install = await CapacitorUpdater.set(download);
             if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
-            
+            localStorage.setItem('app_version', JSON.stringify(response));
             this.displayRepaireAppVersion = false;
             resolve(IENMessage.success);
           }
@@ -1825,10 +1825,6 @@ export class Tab1Page implements OnDestroy {
         resolve(error.message);
       }
     });
-  }
-
-  test2() {
-    alert('old version');
   }
 
 }
