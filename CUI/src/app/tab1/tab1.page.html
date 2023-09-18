@@ -8,7 +8,7 @@
     <div class="loading-text">{{ repairText }}</div>
 
     <div class="loading-container">
-      <meter id="loading-box" value="{{ percentCount }}" min="0" max="{{ percentLimit }}"></meter>{{ percentCount }}%
+      <meter id="loading-box" value="{{ percentCount }}" min="0" max="{{ percentLimit }}"></meter>{{ percentCountText }}%
     </div>
 
     <div class="title">Supports</div>
@@ -21,6 +21,7 @@
   <div class="box" [ngStyle] = "apiService._cuiSetting.imgHeader">
     <div>
       <img [src]="apiService._cuiSetting.imgLogo||mmLogo" (press)="holdCount()" (touchend)="endCount()" (click)="manageStock()" />
+      <h1 (click)="test()">Hello</h1>
     </div>
     <div>
     </div>

@@ -495,6 +495,7 @@ export class ApiService {
     });
   }
 
+  
   public alertSuccess(text: string) {
     Swal.fire({
       icon: 'success',

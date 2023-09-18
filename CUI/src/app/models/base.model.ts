@@ -1,4 +1,5 @@
 export enum IENMessage {
+    AppConfig = 'App Config',
     installingNewVersionFail = 'installing new version fail',
     installingNewVersionSuccess = 'installing new version success',
     extractingFilePack3 = 'extracting file pack_3',

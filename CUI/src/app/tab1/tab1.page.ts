@@ -411,6 +411,7 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.autoDismissCheckAppUpdate);
     clearInterval(this.loadingCheck);
     clearInterval(this.loopPercent);
+    clearInterval(this.installingPecent);
   }
   async runtoast(txt: string) {
         const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: 1000 });
@@ -1745,6 +1746,9 @@ export class Tab1Page implements OnDestroy {
   percentCount: number = 0;
   percentCountText: string = '0';
   percentLimit: number = 100;
+
+  installingPecent: any = {} as any;
+  installingCount: number = 15;
   
   APPVERSION(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
@@ -1757,9 +1761,12 @@ export class Tab1Page implements OnDestroy {
           if (this.checkAppVersion == true) return resolve(IENMessage.success);
 
           const response: any = run;
+          this.apiService.alertWarnning(IENMessage.AppConfig, `version ==> ${response.versionText}`);
           this.displayRepaireAppVersion = true;
           this.checkAppVersion = true;
           this.apiService.closeAllModal();
+
+          await CapacitorUpdater.notifyAppReady();
 
           const downloadModel = {
             url: `${environment.filemanagerurl}download/${response.url}`,
@@ -1768,11 +1775,15 @@ export class Tab1Page implements OnDestroy {
           
           // downloading
           this.loopPercent = setInterval(async () => {
+            this.percentCount++;
+
             if (this.percentCount < this.percentLimit) {
-              this.percentCount++;
-            }
-            if (this.percentCount >= this.percentLimit) {
+              this.percentCountText = this.percentCount+'';
+            } else {
               this.percentCountText = '100';
+            }
+
+            if (this.percentCount >= this.percentLimit) {
               this.repairText = IENMessage.extractingFile;
             }
             if (this.percentCount >= 120) {
@@ -1782,14 +1793,13 @@ export class Tab1Page implements OnDestroy {
               this.repairText = IENMessage.extractingFilePack3;
             }
 
-            // if download more than 5 minute system is download fail
-            if (this.percentCount >= 300) {
-              this.loopPercent = 300;
+            // if download more than 10 minute system is download fail
+            if (this.percentCount >= 600) {
+              this.loopPercent = 600;
               clearInterval(this.loopPercent);
               this.displayRepaireAppVersion = false;
-            } else {
-              this.percentCountText = this.percentCount+'';
             }
+            
           }, 1000);
 
 
@@ -1798,16 +1808,28 @@ export class Tab1Page implements OnDestroy {
           {
             
             // download complete
+            
             this.percentCount = 100;
             this.percentCountText = '100';
-            this.repairText = IENMessage.installingNewVersion;
             clearInterval(this.loopPercent);
 
-            const install = await CapacitorUpdater.set(download);
-            if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
-            localStorage.setItem('app_version', JSON.stringify(response));
-            this.displayRepaireAppVersion = false;
-            resolve(IENMessage.success);
+            this.installingPecent = setInterval(async () => {
+              this.installingCount--;
+              this.repairText = IENMessage.installingNewVersion + ' ' + this.installingCount; 
+
+              if (this.installingCount == 0) {
+                clearInterval(this.installingPecent);
+                localStorage.setItem('app_version', JSON.stringify(response));
+                this.displayRepaireAppVersion = false;
+
+                const install = await CapacitorUpdater.set(download);
+                this.apiService.alertSuccess(IENMessage.installingNewVersion + ' ' + install);
+                if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
+                CapacitorUpdater.removeAllListeners();
+                resolve(IENMessage.success);
+              }
+
+            }, 1000);
           }
 
 
@@ -1825,6 +1847,9 @@ export class Tab1Page implements OnDestroy {
         resolve(error.message);
       }
     });
+  }
+  test() {
+    alert('hello');
   }
 
 }

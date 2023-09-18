@@ -6,10 +6,7 @@ import { environment } from './environments/environment';
 import { CapacitorUpdater, DownloadEvent } from '@capgo/capacitor-updater'
 import { ApiService } from './app/services/api.service';
 
-CapacitorUpdater.notifyAppReady()
-CapacitorUpdater.addListener('download', async  (info: DownloadEvent) => {
-  ApiService.__percent = info.percent;
-});
+
 if (environment.production) {
   enableProdMode();
 }
