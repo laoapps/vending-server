@@ -61,6 +61,7 @@ import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hang
 import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { PlayGamesPage } from './Vending/play-games/play-games.page';
 import { OrderCartPage } from './Vending/order-cart/order-cart.page';
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 var host = window.location.protocol + '//' + window.location.host;
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
@@ -292,6 +293,8 @@ export class Tab1Page implements OnDestroy {
             }else{
               this.autopilot.auto++;
             }
+            const hour = new Date().getHours();// >19 , >0&&<8
+             ScreenBrightness.setBrightness({ brightness:0.05 });
           }, 10000);
 
           this.loadStock();

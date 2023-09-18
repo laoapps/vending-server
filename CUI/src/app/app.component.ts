@@ -5,6 +5,7 @@ import * as moment from 'moment';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { Platform } from '@ionic/angular';
 import { SettingPage } from './setting/setting.page';
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -96,6 +97,10 @@ export class AppComponent {
       // (document.querySelector('.statusbar') as HTMLDivElement).style.zIndex = '-1';
       console.log(`CHECK APP VERSION`, run);
     });
+  }
+  startActive(){
+    const hour = new Date().getHours();// >19 , >0&&<8
+    ScreenBrightness.setBrightness({ brightness:1 });
   }
 }
 
