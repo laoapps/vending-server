@@ -12,6 +12,8 @@ export const environment = {
   vending: 'http://localhost:9006',
   vending_server: 'http://laoapps.com:9006',
   filemanagerurl: 'http://filemanager-api.laoapps.com/api/v1/file/'
+  // filemanagerurl: 'http://192.168.0.127:24556/api/v1/file/'
+
 };
 
 /*

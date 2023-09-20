@@ -216,7 +216,6 @@ export class Tab1Page implements OnDestroy {
 
     platform.ready().then(() => {
       // this.autoCheckAppVersion();
-      this.APPVERSION();
 
       // this.toggleTabServicesSegment();
 
@@ -416,8 +415,8 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.loopPercent);
     clearInterval(this.installingPecent);
   }
-  async runtoast(txt: string) {
-        const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: 1000 });
+  async runtoast(txt: string, duration: number = 1000) {
+        const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: duration });
     (await t).present();
   }
   loadAutoShowMyOrders() {
@@ -543,6 +542,8 @@ export class Tab1Page implements OnDestroy {
         console.log(`params`, params);
         const run = await this.loadStockListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
+        this.APPVERSION();
+
 
         this.apiService.newProductItems(run.data[0].lists);
         this.apiService.imageList = run.data[0].imageObject;
@@ -591,6 +592,7 @@ export class Tab1Page implements OnDestroy {
               }, 1000);
 
               this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
+
               resolve(IENMessage.success);
             }
             this.apiService.toast
@@ -1752,7 +1754,7 @@ export class Tab1Page implements OnDestroy {
 
   installingPecent: any = {} as any;
   installingCount: number = 15;
-  
+  urlder: string;
   APPVERSION(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
@@ -1769,13 +1771,13 @@ export class Tab1Page implements OnDestroy {
           this.checkAppVersion = true;
           this.apiService.closeAllModal();
 
-          await CapacitorUpdater.notifyAppReady();
-
           const downloadModel = {
             url: `${environment.filemanagerurl}download/${response.url}`,
             version: response.versionText
           }
-          
+          this.urlder = `${environment.filemanagerurl}download/${response.url}`;
+          // await this.runtoast(downloadModel.url, 60 * 10);
+
           // downloading
           this.loopPercent = setInterval(async () => {
             this.percentCount++;
@@ -1826,9 +1828,9 @@ export class Tab1Page implements OnDestroy {
                 this.displayRepaireAppVersion = false;
 
                 const install = await CapacitorUpdater.set(download);
-                this.apiService.alertSuccess(IENMessage.installingNewVersion + ' ' + install);
                 if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
                 CapacitorUpdater.removeAllListeners();
+                window.location.reload();
                 resolve(IENMessage.success);
               }
 
@@ -1851,8 +1853,11 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
-  test() {
-    alert('hello');
+  v1() {
+    alert('v1');
   }
-
+  v2() {
+    alert('v2');
+  }
+  
 }

@@ -43,7 +43,10 @@ export class VersionControlPage implements OnInit {
   }
 
   openFormUpload() {
-    this.apiService.showModal(FormUploadPage,{}).then(r=>{r?.present()});
+    const props = {
+      versionControlPage: this
+    }
+    this.apiService.showModal(FormUploadPage,props).then(r=>{r?.present()});
   }
 
   loadAllVersion(): Promise<any> {
@@ -131,5 +134,20 @@ export class VersionControlPage implements OnInit {
     }
     console.log(`props`, props);
     this.apiService.showModal(FormMachinePage,props).then(r=>{r?.present()});
+  }
+  autoUpdateAfterUpload(list: any): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        console.log(`auto`, list);
+        this.lists.unshift(list);
+        await this.loadAllVersion();
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
   }
 }

@@ -147,9 +147,22 @@ export class CreateVendingVersionProcess {
     }
 
     private Commit(): any {
+        const list: any = {
+            id: this.id,
+            commit_version: this.commit_version,
+            title: this.title,
+            subtitle: this.subtitle,
+            file: {
+                url: this.fileUrl,
+                filename: this.file.name,
+                filesize: this.file.size
+            },
+            readme: this.readme,
+        }
         const response = {
             data: [{
-                id: this.id
+                id: this.id,
+                list: list
             }],
             message: IENMessage.success
         }

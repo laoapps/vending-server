@@ -4,6 +4,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CreateVendingVersionProcess } from '../../_processes/createVendingVersion.process';
 import { ControlVendingVersionAPIService } from 'src/app/services/control-vending-version-api.service';
 import { FilemanagerApiService } from 'src/app/services/filemanager-api.service';
+import { VersionControlPage } from '../../version-control.page';
 
 @Component({
   selector: 'app-form-preview',
@@ -12,6 +13,7 @@ import { FilemanagerApiService } from 'src/app/services/filemanager-api.service'
 })
 export class FormPreviewPage implements OnInit {
 
+  @Input() versionControlPage: VersionControlPage;
   @Input() formUpload: any;
   @Input() dataPack: any;
   @Input() readme: Array<any>;
@@ -45,6 +47,7 @@ export class FormPreviewPage implements OnInit {
         const run = await this.createVendingVersionProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
+        await this.versionControlPage.autoUpdateAfterUpload(run.list);
         this.formUpload.dismiss();
         this.apiService.modal.dismiss();
         resolve(IENMessage.success);

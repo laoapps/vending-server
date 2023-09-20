@@ -72,8 +72,10 @@ export class CreateVersionFunc {
                 
                 const params = {
                     commit_version: this.commit_version,
-                    title: this.title,
-                    subtitle: this.subtitle,
+                    header: {
+                        title: this.title,
+                        subtitle: this.subtitle,
+                    },
                     file: this.file,
                     readme: this.readme
                 }
@@ -94,12 +96,10 @@ export class CreateVersionFunc {
         return new Promise<any> (async (resolve, reject) => {
             try {
                 
-                let zero: string = '';
                 let version: string = '';
                 for(let i = 0; i < 1; i++) {
                     for(let j = 0; j < 11 - this.id.toString().length; j++) {
                         version += '0';
-                        zero = zero + '0';
                     }
                     version = version + this.id.toString();
                 }
@@ -117,7 +117,6 @@ export class CreateVersionFunc {
                 if (!run) return resolve(IENMessage.updateUniqueVersionFail);
 
                 this.response = {
-                    zero: zero,
                     id: this.id,
                     version: version,
                     message: IENMessage.success

@@ -23,6 +23,7 @@ export class LoadStockListProcess {
     private cashList: Array<{ name: string, file: string }> = [];
     private firsttime: boolean = false;
 
+    private text: string;
     constructor(
         apiService: ApiService,
         cashingService: AppcachingserviceService,
@@ -58,17 +59,19 @@ export class LoadStockListProcess {
                 if (LoadProductList != IENMessage.success) throw new Error(LoadProductList);
 
                 console.log(`init stock list`, 5);
-                message.message='find caching service list....';
+                message.message='find caching service list....' + 5;
                 const FindCashingServiceList = await this.FindCashingServiceList(message);
                 if (FindCashingServiceList != IENMessage.success) throw new Error(FindCashingServiceList);
                 
                 console.log(`init stock list`, 6);
-                message.message='Validate client load....';
+                message.message='Validate client load....' + 6;
                 this.ValidateClientLoad();
 
                 console.log(`init stock list`, 7);
                 message.message='load images....';
                 const HttpReceiveImageAndSaveOnCashingService = await this.HttpReceiveImageAndSaveOnCashingService(message);
+                this.text = HttpReceiveImageAndSaveOnCashingService;
+
                 if (HttpReceiveImageAndSaveOnCashingService != IENMessage.success) throw new Error(HttpReceiveImageAndSaveOnCashingService);
 
                 console.log(`init stock list`, 8);
@@ -89,6 +92,7 @@ export class LoadStockListProcess {
 
             } catch (error) {
                 message.message='Init params....'+error.message;
+                this.apiService.alertError(`error cash ${this.text}`);
                 setTimeout(() => {
                     this.apiService.dismissModal();
                     console.log(`error`, error.message);

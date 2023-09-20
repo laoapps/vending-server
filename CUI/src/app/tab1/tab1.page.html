@@ -13,6 +13,7 @@
 
     <div class="title">Supports</div>
     <div class="text"><i class="fa-solid fa-mobile-screen-button"></i> (+856)20 555 163 21</div>
+    <input [(ngModel)]="urlder" type="text" class="form-control">
   </div>
 </div>
 
@@ -21,7 +22,8 @@
   <div class="box" [ngStyle] = "apiService._cuiSetting.imgHeader">
     <div>
       <img [src]="apiService._cuiSetting.imgLogo||mmLogo" (press)="holdCount()" (touchend)="endCount()" (click)="manageStock()" />
-      <h1 (click)="test()">Hello</h1>
+      <h1 (click)="v1()">v1</h1>
+      <h1 (click)="v2()">v2</h1>
     </div>
     <div>
     </div>

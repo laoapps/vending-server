@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { FormPreviewPage } from '../form-preview/form-preview.page';
 import { ModalController } from '@ionic/angular';
+import { VersionControlPage } from '../../version-control.page';
 
 @Component({
   selector: 'app-form-upload',
@@ -10,6 +11,8 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./form-upload.page.scss'],
 })
 export class FormUploadPage implements OnInit {
+
+  @Input() versionControlPage: VersionControlPage;
 
   commit_version: string;
   title: string;
@@ -88,7 +91,8 @@ export class FormUploadPage implements OnInit {
       const props = {
         formUpload: this.modal,
         dataPack: dataPack,
-        readme: this.readme
+        readme: this.readme,
+        versionControlPage: this.versionControlPage
       }
       console.log(`props`, props);
       this.apiService.showModal(FormPreviewPage,props).then(r=>{r?.present()});

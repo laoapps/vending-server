@@ -8,4 +8,6 @@ export const environment = {
   vending: 'https://vendingservicevmc.laoapps.com',
   vending_server: 'https://vendingservicevmc.laoapps.com',
   filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
+  // filemanagerurl: 'http://192.168.0.127:24556/api/v1/file/'
+
 };

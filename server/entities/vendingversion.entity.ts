@@ -28,6 +28,10 @@ export let VendingVersionFactory = (name: string, con: Sequelize): any => {
             allowNull: false,
             defaultValue: true
         },
+        header: {
+            type: DataTypes.JSONB,
+            allowNull: false
+        },
         file: {
             type: DataTypes.JSONB,
             allowNull: false
