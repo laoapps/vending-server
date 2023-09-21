@@ -7,7 +7,7 @@
     <div class="page-header-center">
       <div class="input-group box-search">
         <span class="input-group-text icon-search-start"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <input type="text" class="form-control" placeholder="Search Version">
+        <input (keyup.enter)="searchVersion($event)" type="text" class="form-control" placeholder="Search Version">
         <span class="input-group-text icon-search-end">Search</span>
       </div>
     </div>
@@ -31,7 +31,12 @@
   </div>
 
   <div *ngIf="count > 0" class="page-body">
-    <div *ngIf="header?.title != ''" (click)="editContent()" class="title"><i class="fa-solid fa-pen-to-square"></i> {{ header?.title }}</div>
+    <div *ngIf="header?.title != ''" class="title">
+      <div class="title-left"><i class="fa-solid fa-pen-to-square"></i>  {{ header?.title }}</div>
+      <div class="title-right">
+        <a (click)="openFormUploadWithCopyContent()" href="javascript:void(0)" class="item"><i class="fa-solid fa-upload"></i> Upload with this content</a>
+      </div>
+    </div>
     <div class="sub-title">
       <div class="text">* {{ versionText }}</div>
       <div class="text">* Last Update {{ lastUpdatedAt | date:'yyyy-MM-dd hh:mm:ss':'+7' }}</div>

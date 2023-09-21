@@ -129,8 +129,22 @@ ion-content {
     padding: 10px;
     
     .title {
-        font-size: 18px;
-        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+
+        .title-left {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .title-right {
+            
+            .item {
+                text-decoration: none;
+                color: #333;
+                font-size: 14px;
+                font-weight: 300;
+            }
+        }
     }
 
     .sub-title {

@@ -22,6 +22,7 @@ export class CreateVersionFunc {
     } = {} as any;
 
     private id: number;
+    private uuid: string;
     private response: any = {} as any;
 
     constructor() {}
@@ -83,6 +84,7 @@ export class CreateVersionFunc {
                 const run = await vendingVersionEntity.create(params, { transaction: this.transaction });
                 if (!run) return resolve(IENMessage.createVersionFail);
                 this.id = run.id;
+                this.uuid = run.uuid;
 
                 resolve(IENMessage.success);
 
@@ -118,6 +120,7 @@ export class CreateVersionFunc {
 
                 this.response = {
                     id: this.id,
+                    uuid: this.uuid,
                     version: version,
                     message: IENMessage.success
                 }

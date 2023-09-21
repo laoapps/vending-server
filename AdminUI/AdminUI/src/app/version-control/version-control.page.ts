@@ -47,12 +47,18 @@ export class VersionControlPage implements OnInit {
   }
 
   openFormUpload() {
-    this.copycontent = {
-      header: this.header,
-      readme: this.readme
-    }
     const props = {
-      copycontent: this.copycontent,
+      versionControlPage: this
+    }
+    this.apiService.showModal(FormUploadPage,props).then(r=>{r?.present()});
+  }
+
+  openFormUploadWithCopyContent() {
+    const props = {
+      copycontent: {
+        header: this.header,
+        readme: this.readme
+      },
       versionControlPage: this
     }
     this.apiService.showModal(FormUploadPage,props).then(r=>{r?.present()});
@@ -126,7 +132,7 @@ export class VersionControlPage implements OnInit {
 
         this.uuid = this.lists[index].uuid;
         this.version = this.lists[index].version;
-        this.versionText = this.lists[index].version;
+        this.versionText = this.lists[index].versionText;
         this.lastUpdatedAt = this.lists[index].updatedAt;
         this.readme = this.lists[index].readme;
 
@@ -196,11 +202,15 @@ export class VersionControlPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        this.lists.filter(item => {
+        
+        this.lists.filter((item, index) => {
           if (item.id == list.id) {
             item.header.title = list.dataPack.title;
             item.header.subtitle = list.dataPack.subtitle;
             item.readme = list.readme;
+            
+            this.header = item.header;
+            this.readme = item.readme;
           }
         });
 
@@ -210,5 +220,27 @@ export class VersionControlPage implements OnInit {
         resolve(error.message);
       }
     });
+  }
+  searchVersion(e: Event) {
+    const text: string = (e.target as HTMLInputElement).value;
+    if (!text) return;
+
+    const data = this.lists.filter(item => item.versionText == text);
+    if (data != undefined && Object.entries(data).length == 0) {
+      this.apiService.alertError(IENMessage.notFound);
+      return;
+    }
+
+    this.uuid = data[0].uuid;
+    this.version = data[0].version;
+    this.versionText = data[0].versionText;
+
+    const props = {
+      uuid: data[0].uuid,
+      version: data[0].version,
+      versionText: data[0].versionText,
+    }
+    this.apiService.showModal(FormMachinePage,props).then(r=>{r?.present()});
+
   }
 }

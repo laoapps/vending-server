@@ -37,7 +37,7 @@ export class FormUploadPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-      clearInterval(this.reloadElement);
+    clearInterval(this.reloadElement);
   }
 
   close() {

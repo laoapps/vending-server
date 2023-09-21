@@ -1,4 +1,5 @@
 export enum IENMessage {
+    notFound = 'not found',
     nodata = 'NO DATA',
     invalidateToDate = 'invalid to date',
     invalidFromDate = 'invalid from date',
