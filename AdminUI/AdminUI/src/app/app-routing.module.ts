@@ -208,6 +208,10 @@ const routes: Routes = [
     path: 'form-machine',
     loadChildren: () => import('./version-control/_modals/form-machine/form-machine.module').then( m => m.FormMachinePageModule)
   },
+  {
+    path: 'form-edit',
+    loadChildren: () => import('./version-control/_modals/form-edit/form-edit.module').then( m => m.FormEditPageModule)
+  },
 ];
 @NgModule({
   imports: [

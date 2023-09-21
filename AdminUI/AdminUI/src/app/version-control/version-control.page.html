@@ -19,7 +19,7 @@
 
   <div class="space"></div>
 
-  <div *ngIf="count == 0" class="page-body">
+  <div *ngIf="count == 0" class="page-body-empty">
 
     <div class="suggest">
       <div class="icon">
@@ -31,7 +31,7 @@
   </div>
 
   <div *ngIf="count > 0" class="page-body">
-    <div class="title"><i class="fa-solid fa-pen-to-square"></i> Vending GUI</div>
+    <div *ngIf="header?.title != ''" (click)="editContent()" class="title"><i class="fa-solid fa-pen-to-square"></i> {{ header?.title }}</div>
     <div class="sub-title">
       <div class="text">* {{ versionText }}</div>
       <div class="text">* Last Update {{ lastUpdatedAt | date:'yyyy-MM-dd hh:mm:ss':'+7' }}</div>
@@ -40,8 +40,7 @@
     <div class="content-container">
       <div class="content-left">
 
-        <div *ngIf="readme?.title != ''" class="title">{{ readme?.title }}</div>
-        <div *ngIf="readme?.subtitle != ''" class="subtitle">{{ readme?.subtitle }}</div>
+        <div *ngIf="header?.subtitle != ''" class="subtitle">{{ header?.subtitle }}</div>
   
         <div *ngFor="let content of readme; let content_index;" class="cotent-container">
         

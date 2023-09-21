@@ -93,23 +93,12 @@ ion-content {
     margin-top: 110px;
 }
 
-.page-body {
+.page-body-empty {
     margin: 10px;
     display: flex;
     flex-direction: column;
-    background: #fff;
-    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
     padding: 10px;
-    
-    .title {
-        font-size: 18px;
-        font-weight: bold;
-    }
 
-    .sub-title {
-        font-size: 14px;
-        font-weight: 300;
-    }
 
     .suggest {
         margin-top: 25px;
@@ -129,6 +118,24 @@ ion-content {
             font-weight: bold;
             text-transform: uppercase;
         }
+    }
+}
+.page-body {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+    
+    .title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .sub-title {
+        font-size: 14px;
+        font-weight: 300;
     }
 }
 

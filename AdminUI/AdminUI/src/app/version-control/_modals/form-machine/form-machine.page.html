@@ -24,7 +24,7 @@
         <div class="machineid">{{ list?.machineId }}</div>
         <div *ngIf="list?.data[0]?.imei" class="imei"><i class="fa-solid fa-fingerprint"></i> {{ list?.data[0]?.imei }}</div>
         <div *ngIf="!list?.data[0]?.imei" class="imei"><i class="fa-solid fa-fingerprint"></i> Null</div>
-        <div *ngIf="list?.data[0]?.higxxhTemp" class="temp"><i class="fa-solid fa-temperature-low"></i> {{ list?.data[0]?.higxxhTemp }}</div>
+        <div *ngIf="list?.data[0]?.higxxhTemp" class="temp"><i class="fa-solid fa-temperature-low"></i> {{ list?.data[0]?.highTemp }}</div>
         <div *ngIf="!list?.data[0]?.higxxhTemp" class="temp"><i class="fa-solid fa-temperature-low"></i> Null</div>
         <div class="status">
           <span *ngIf="findMachine(list?.machineId)?.lastUpdate" class="text-success">Online</span>

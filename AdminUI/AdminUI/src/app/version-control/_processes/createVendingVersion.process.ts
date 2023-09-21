@@ -29,6 +29,7 @@ export class CreateVendingVersionProcess {
     private fileUrl: string;
     private token: string;
     private id: number;
+    private version: string;
 
     constructor(
         apiService: ApiService,
@@ -137,6 +138,7 @@ export class CreateVendingVersionProcess {
                         }, error => resolve(IENMessage.writeFileError));
                     }
                     this.id = response.info.id;
+                    this.version = response.info.version;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
 
@@ -150,14 +152,18 @@ export class CreateVendingVersionProcess {
         const list: any = {
             id: this.id,
             commit_version: this.commit_version,
-            title: this.title,
-            subtitle: this.subtitle,
+            header: {
+                title: this.title,
+                subtitle: this.subtitle
+            },
             file: {
                 url: this.fileUrl,
                 filename: this.file.name,
                 filesize: this.file.size
             },
             readme: this.readme,
+            version: this.version,
+            updatedAt: new Date()
         }
         const response = {
             data: [{

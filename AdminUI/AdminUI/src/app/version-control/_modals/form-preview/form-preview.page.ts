@@ -15,8 +15,10 @@ export class FormPreviewPage implements OnInit {
 
   @Input() versionControlPage: VersionControlPage;
   @Input() formUpload: any;
+  @Input() id: number;
   @Input() dataPack: any;
   @Input() readme: Array<any>;
+  @Input() isEdit: boolean = false;
 
   private createVendingVersionProcess: CreateVendingVersionProcess;
 
@@ -29,6 +31,7 @@ export class FormPreviewPage implements OnInit {
   }
 
   ngOnInit() {
+    console.log(`data pack`, this.dataPack);
   }
 
   close() {
@@ -47,7 +50,32 @@ export class FormPreviewPage implements OnInit {
         const run = await this.createVendingVersionProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
-        await this.versionControlPage.autoUpdateAfterUpload(run.list);
+        await this.versionControlPage.autoUpdateAfterUpload(run.data[0].list);
+        this.formUpload.dismiss();
+        this.apiService.modal.dismiss();
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        this.apiService.alertError(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
+  editContent(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const params = {
+          id: this.id,
+          dataPack: this.dataPack,
+          readme: this.readme
+        }
+
+        const run = await this.createVendingVersionProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        await this.versionControlPage.autoUpdateAfterUpload(run.data[0].list);
         this.formUpload.dismiss();
         this.apiService.modal.dismiss();
         resolve(IENMessage.success);

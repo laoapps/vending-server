@@ -1856,8 +1856,5 @@ export class Tab1Page implements OnDestroy {
   v1() {
     alert('v1');
   }
-  v2() {
-    alert('v2');
-  }
   
 }

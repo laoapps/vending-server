@@ -5,6 +5,7 @@ import { IENMessage } from '../models/base.model';
 import { LoadAllVersionProcess } from './_processes/loadAllVersion.process';
 import { ControlVendingVersionAPIService } from '../services/control-vending-version-api.service';
 import { FormMachinePage } from './_modals/form-machine/form-machine.page';
+import { FormEditPage } from './_modals/form-edit/form-edit.page';
 
 @Component({
   selector: 'app-version-control',
@@ -19,13 +20,16 @@ export class VersionControlPage implements OnInit {
   lists: Array<any> = [];
   count: number = 0;
 
-
+  id: number;
+  header: any = {} as any;
+  file: any = {} as any;
   uuid: string;
   version: number;
   versionText: string;
   filesize: number = 0;
   lastUpdatedAt: any = {} as any;
   readme: any = {} as any;
+  copycontent: any = {} as any;
 
   constructor(
     public apiService: ApiService,
@@ -43,7 +47,12 @@ export class VersionControlPage implements OnInit {
   }
 
   openFormUpload() {
+    this.copycontent = {
+      header: this.header,
+      readme: this.readme
+    }
     const props = {
+      copycontent: this.copycontent,
       versionControlPage: this
     }
     this.apiService.showModal(FormUploadPage,props).then(r=>{r?.present()});
@@ -61,16 +70,7 @@ export class VersionControlPage implements OnInit {
         this.count = run.data[0].count;
         if (this.count == 0) return resolve(IENMessage.success);
 
-        this.uuid = this.lists[0].uuid;
-        this.version = this.lists[0].version;
-        for(let i = 0; i < this.lists.length; i++) {
-          this.lists[i].versionText = '';
-          this.lists[i].versionText = this.convertVersion(this.lists[i].version);
-        }
-        this.versionText = this.lists[0].versionText;
-        this.lastUpdatedAt = this.lists[0].updatedAt;
-        this.readme = this.lists[0].readme;
-
+        this.loadCurrentVersion();
         resolve(IENMessage.success);
         
       } catch (error) {
@@ -79,6 +79,20 @@ export class VersionControlPage implements OnInit {
         resolve(error.message);
       }
     });
+  }
+  loadCurrentVersion() {
+    this.id = this.lists[0].id;
+    this.file = this.lists[0].file;
+    this.header = this.lists[0].header;
+    this.uuid = this.lists[0].uuid;
+    this.version = this.lists[0].version;
+    for(let i = 0; i < this.lists.length; i++) {
+      this.lists[i].versionText = '';
+      this.lists[i].versionText = this.convertVersion(this.lists[i].version);
+    }
+    this.versionText = this.lists[0].versionText;
+    this.lastUpdatedAt = this.lists[0].updatedAt;
+    this.readme = this.lists[0].readme;
   }
   convertVersion(version: string) {
     let text = version;
@@ -130,7 +144,7 @@ export class VersionControlPage implements OnInit {
     const props = {
       uuid: this.uuid,
       version: this.version,
-      versionText: this.versionText
+      versionText: this.versionText,
     }
     console.log(`props`, props);
     this.apiService.showModal(FormMachinePage,props).then(r=>{r?.present()});
@@ -139,9 +153,13 @@ export class VersionControlPage implements OnInit {
     return new Promise<any> (async (resolve, reject) => {
       try {
         
-        console.log(`auto`, list);
+
         this.lists.unshift(list);
-        await this.loadAllVersion();
+        this.lists[this.lists.length-1].versionText = '';
+        this.lists[this.lists.length-1].versionText = this.convertVersion(this.lists[this.lists.length-1].version);
+        
+        console.log(`lists`, this.lists);
+        this.loadCurrentVersion();
 
         resolve(IENMessage.success);
 
@@ -149,5 +167,29 @@ export class VersionControlPage implements OnInit {
         resolve(error.message);
       }
     });
+  }
+  copyContent() {
+    this.copycontent = {
+      header: this.header,
+      readme: this.readme
+    }
+  }
+
+  editContent() {
+    const props = {
+      list: {
+        id: this.id,
+        file: this.file,
+        header: this.header,
+        uuid: this.uuid,
+        version: this.version,
+        versionText: this.versionText,
+        lastUpdatedAt: this.lastUpdatedAt,
+        readme: this.readme
+      },
+      isEdit: true,
+      versionControlPage: this
+    }
+    this.apiService.showModal(FormEditPage,props).then(r=>{r?.present()});
   }
 }

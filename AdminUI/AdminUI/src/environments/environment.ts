@@ -8,8 +8,8 @@ export const environment = {
   baseurl:'http://laoapps.com:9006',
   url:'http://laoapps.com:9006/zdm8',
   wsurl:'ws://laoapps.com:9006/zdm8',
-  filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
-  // filemanagerurl: 'http://192.168.0.127:24556/api/v1/file/'
+  // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
+  filemanagerurl: 'http://192.168.2.107:24556/api/v1/file/'
 
   // filemanagerurl: 'http://localhost:24558/api/v1/file/'
   // filemanagerurl: 'http://localhost:24556/api/v1/file/'
