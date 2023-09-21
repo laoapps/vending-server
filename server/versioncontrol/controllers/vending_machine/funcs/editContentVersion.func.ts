@@ -94,6 +94,9 @@ export class EditContentVersionFunc {
                 const run = await this.connection.save({ transaction: this.transaction });
                 if (!run) return resolve(IENMessage.updateContentVersionFail);
 
+                this.response = {
+                    message: IENMessage.success
+                }
                 resolve(IENMessage.success);
 
             } catch (error) {
