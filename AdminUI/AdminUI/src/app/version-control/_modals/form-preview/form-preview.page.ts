@@ -5,6 +5,7 @@ import { CreateVendingVersionProcess } from '../../_processes/createVendingVersi
 import { ControlVendingVersionAPIService } from 'src/app/services/control-vending-version-api.service';
 import { FilemanagerApiService } from 'src/app/services/filemanager-api.service';
 import { VersionControlPage } from '../../version-control.page';
+import { EditVendingContentVersionProcess } from '../../_processes/editVendingContentVersion.process';
 
 @Component({
   selector: 'app-form-preview',
@@ -21,6 +22,7 @@ export class FormPreviewPage implements OnInit {
   @Input() isEdit: boolean = false;
 
   private createVendingVersionProcess: CreateVendingVersionProcess;
+  private editVendingContentVersionProcess: EditVendingContentVersionProcess;
 
   constructor(
     public apiService: ApiService,
@@ -28,6 +30,7 @@ export class FormPreviewPage implements OnInit {
     public filemanagerAPIService: FilemanagerApiService
   ) { 
     this.createVendingVersionProcess = new CreateVendingVersionProcess(this.apiService, this.controlVendingVersionAPIService, this.filemanagerAPIService);
+    this.editVendingContentVersionProcess = new EditVendingContentVersionProcess(this.apiService, this.controlVendingVersionAPIService);
   }
 
   ngOnInit() {
@@ -72,10 +75,10 @@ export class FormPreviewPage implements OnInit {
           readme: this.readme
         }
 
-        const run = await this.createVendingVersionProcess.Init(params);
+        const run = await this.editVendingContentVersionProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
-        await this.versionControlPage.autoUpdateAfterUpload(run.data[0].list);
+        await this.versionControlPage.autoUpdateAfterEditContent(params);
         this.formUpload.dismiss();
         this.apiService.modal.dismiss();
         resolve(IENMessage.success);

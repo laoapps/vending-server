@@ -17,6 +17,7 @@ export class ControlVersionAPI {
 
     private vendingVersionQueues: any = {
         QCreateVendingVersion:QCreateVendingVersion,
+        QEditVendingContentVersion: QEditVendingContentVersion
     }
     private writePanel: WritePanel;
     private readPanel: ReadPanel;

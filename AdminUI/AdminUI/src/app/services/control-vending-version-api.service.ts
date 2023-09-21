@@ -24,5 +24,8 @@ export class ControlVendingVersionAPIService {
   setUpdateVersion(params: any): Observable<any> {
     return this.http.post(this.url + '/vending-version/set-update-version', params);
   }
+  editVendingContentVersion(params: any): Observable<any> {
+    return this.http.post(this.url + '/vending-version/edit-content', params);
+  }
 
 }

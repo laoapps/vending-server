@@ -192,4 +192,23 @@ export class VersionControlPage implements OnInit {
     }
     this.apiService.showModal(FormEditPage,props).then(r=>{r?.present()});
   }
+  autoUpdateAfterEditContent(list: any): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        this.lists.filter(item => {
+          if (item.id == list.id) {
+            item.header.title = list.dataPack.title;
+            item.header.subtitle = list.dataPack.subtitle;
+            item.readme = list.readme;
+          }
+        });
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
 }

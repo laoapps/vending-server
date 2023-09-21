@@ -51,7 +51,7 @@
 
       <div class="btn-control">
         <a *ngIf="isEdit == false" (click)="upload()" href="javascript:void(0)" class="btn-upload"><i class="fa-solid fa-terminal"></i> Upload version</a>
-        <a *ngIf="isEdit == true" (click)="upload()" href="javascript:void(0)" class="btn-upload"><i class="fa-solid fa-terminal"></i> Edit content</a>
+        <a *ngIf="isEdit == true" (click)="editContent()" href="javascript:void(0)" class="btn-upload"><i class="fa-solid fa-terminal"></i> Edit content</a>
         <a (click)="close()" href="javascript:void(0)" class="btn-cancel"><i class="fa-regular fa-circle-xmark"></i> Cancel</a>
       </div>
 
