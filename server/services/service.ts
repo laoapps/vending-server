@@ -479,6 +479,13 @@ export function  machineStatus(x:string):IMachineStatus{
     return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp} as IMachineStatus
   }
 
+export async function readMachinePendingStock(machineId:string){
+    return  await redisClient.get('_machinependingstock_'+machineId);
+}
+export function writeMachinePendingStock(machineId: string, b: any) {
+    redisClient.set('_machinependingstock_' + machineId, JSON.stringify({b,t:new Date()}));
+}
+
 export async function readMachineStatus(machineId:string){
     const x = await redisClient.get('_machinestatus_'+machineId);
     return machineStatus( x);
