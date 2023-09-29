@@ -44,7 +44,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
   }
 
   loadQR() {
-      (document.querySelector('#qr-img') as HTMLImageElement).src = this.qrImage;
+    (document.querySelector('#qr-img') as HTMLImageElement).src = this.qrImage;
   }
 
   close() {

@@ -112,7 +112,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
      this.apiService.onStockDeduct((data)=>{
       console.log('onStockDeduct',data);
       that.modal.dismiss();
-     })
+     });
     }
   }
 

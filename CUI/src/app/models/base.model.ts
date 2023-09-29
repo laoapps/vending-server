@@ -1,4 +1,8 @@
 export enum IENMessage {
+    orderCanceled = 'order canceled',
+    invalidSumerizeOrder = 'invalid sumerize order',
+    installVendingVersion = 'install vending version',
+    downloadingVendingVersion = 'download vending version',
     AppConfig = 'App Config',
     installingNewVersionFail = 'installing new version fail',
     installingNewVersionSuccess = 'installing new version success',

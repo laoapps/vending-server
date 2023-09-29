@@ -86,6 +86,10 @@ const routes: Routes = [
   {
     path: 'order-paid',
     loadChildren: () => import('./Vending/order-paid/order-paid.module').then( m => m.OrderPaidPageModule)
+  },
+  {
+    path: 'auto-payment',
+    loadChildren: () => import('./Vending/auto-payment/auto-payment.module').then( m => m.AutoPaymentPageModule)
   }
 ];
 

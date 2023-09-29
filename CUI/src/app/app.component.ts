@@ -100,7 +100,7 @@ export class AppComponent {
   }
   startActive(){
     const hour = new Date().getHours();// >19 , >0&&<8
-    ScreenBrightness.setBrightness({ brightness:1 });
+    // ScreenBrightness.setBrightness({ brightness:1 });
   }
 }
 

@@ -65,6 +65,7 @@ import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 var host = window.location.protocol + '//' + window.location.host;
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
+import { AutoPaymentPage } from './Vending/auto-payment/auto-payment.page';
 
 @Component({
   selector: 'app-tab1',
@@ -215,6 +216,7 @@ export class Tab1Page implements OnDestroy {
     // this.initVendingSale();
 
     platform.ready().then(() => {
+      // this.loadBrightness();
       // this.autoCheckAppVersion();
 
       // this.toggleTabServicesSegment();
@@ -293,7 +295,7 @@ export class Tab1Page implements OnDestroy {
               this.autopilot.auto++;
             }
             const hour = new Date().getHours();// >19 , >0&&<8
-             ScreenBrightness.setBrightness({ brightness:0.05 });
+
           }, 10000);
 
           this.loadStock();
@@ -526,9 +528,30 @@ export class Tab1Page implements OnDestroy {
     });
   }
 
+  loadBrightness(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        const run = await ScreenBrightness.setBrightness({ brightness:0.0 });
+        this.apiService.alertSuccess(`--> run ${run}`)
+
+        // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
+        const brightness = await ScreenBrightness.getBrightness();
+        this.apiService.alertSuccess(`--> bright ${brightness}`)
+
+        resolve(IENMessage.success);
+        
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+
   loadStock(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
+
+
         // 100 x 240
 
         // await this.cashingService.remove(this.ownerUuid);
@@ -543,7 +566,6 @@ export class Tab1Page implements OnDestroy {
         const run = await this.loadStockListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         this.APPVERSION();
-
 
         this.apiService.newProductItems(run.data[0].lists);
         this.apiService.imageList = run.data[0].imageObject;
@@ -865,23 +887,23 @@ export class Tab1Page implements OnDestroy {
       this.autopilot.auto = 0;
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
 
-      if (this.WSAPIService?.setting_allowVending == false) {
-        // this.apiService.simpleMessage('Vending is closed');
-        this.apiService.soundSystemError();
-        const alert = Swal.fire({
-          icon: 'error',
-          title: 'Vender is out of service',
-          text: `Please, try again later`,
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#EE3124',
-          heightAuto: false,
-        });
-        setTimeout(() => {
-          Swal.close();
-        }, 2000);
-        return;
-      }
+      // if (this.WSAPIService?.setting_allowVending == false) {
+      //   // this.apiService.simpleMessage('Vending is closed');
+      //   this.apiService.soundSystemError();
+      //   const alert = Swal.fire({
+      //     icon: 'error',
+      //     title: 'Vender is out of service',
+      //     text: `Please, try again later`,
+      //     showConfirmButton: true,
+      //     confirmButtonText: 'OK',
+      //     confirmButtonColor: '#EE3124',
+      //     heightAuto: false,
+      //   });
+      //   setTimeout(() => {
+      //     Swal.close();
+      //   }, 2000);
+      //   return;
+      // }
 
       this.setActive();
       if (!x) return alert('not found');
@@ -967,7 +989,8 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.autoShowMyOrderTimer);
     this.autoShowMyOrdersCounter = 15;
 
-    const component = OrderCartPage;
+    // const component = OrderCartPage;
+    const component = AutoPaymentPage;
     const props = {
       orders: this.orders,
       getTotalSale: this.getTotalSale
@@ -976,6 +999,8 @@ export class Tab1Page implements OnDestroy {
       r.present();
       // this.apiService.allModals.push(this.apiService.modal);
       r.onDidDismiss().then(cb => {
+        AutoPaymentPage.message?.close();
+        AutoPaymentPage.message = undefined;
         if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
           this.loadAutoShowMyOrders();
         }
@@ -1743,7 +1768,7 @@ export class Tab1Page implements OnDestroy {
   //   });
   // }
 
-  repairText: string = IENMessage.systemIsRepairingPleaseWaitMoment;
+  repairText: string;
   displayRepaireAppVersion: boolean = false;
   checkAppVersion: boolean = false;
   
@@ -1754,11 +1779,11 @@ export class Tab1Page implements OnDestroy {
 
   installingPecent: any = {} as any;
   installingCount: number = 15;
-  urlder: string;
   APPVERSION(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
+        // return resolve(IENMessage.success);
         if (!this.platform.is('capacitor')) return resolve(IENMessage.success);
 
         this.apiService.checkAppVersion.subscribe(async run => {
@@ -1766,16 +1791,16 @@ export class Tab1Page implements OnDestroy {
           if (this.checkAppVersion == true) return resolve(IENMessage.success);
 
           const response: any = run;
-          this.apiService.alertWarnning(IENMessage.AppConfig, `version ==> ${response.versionText}`);
           this.displayRepaireAppVersion = true;
           this.checkAppVersion = true;
           this.apiService.closeAllModal();
 
+          this.repairText = IENMessage.downloadingVendingVersion + ' ' + response.versionText;
+          
           const downloadModel = {
             url: `${environment.filemanagerurl}download/${response.url}`,
             version: response.versionText
           }
-          this.urlder = `${environment.filemanagerurl}download/${response.url}`;
           // await this.runtoast(downloadModel.url, 60 * 10);
 
           // downloading
@@ -1820,7 +1845,7 @@ export class Tab1Page implements OnDestroy {
 
             this.installingPecent = setInterval(async () => {
               this.installingCount--;
-              this.repairText = IENMessage.installingNewVersion + ' ' + this.installingCount; 
+              this.repairText = IENMessage.installVendingVersion + ' ' + response.versionText + ' in' + this.installingCount; 
 
               if (this.installingCount == 0) {
                 clearInterval(this.installingPecent);
@@ -1852,9 +1877,6 @@ export class Tab1Page implements OnDestroy {
         resolve(error.message);
       }
     });
-  }
-  v1() {
-    alert('v1');
   }
   
 }

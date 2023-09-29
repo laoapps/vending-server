@@ -70,7 +70,7 @@ export class GenerateMMoneyQRCodeProcess {
 
                 this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
                     const response: any = r;
-                    console.log(`response`, response);
+                    console.log(`response generate MMoney`, response);
                     if (response.status != 1) return resolve(IENMessage.generateMMoneyQRCodeFail);
                     this.mmoneyQRCode = response.data as IVendingMachineBill;
                     resolve(IENMessage.success);

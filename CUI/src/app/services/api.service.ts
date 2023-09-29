@@ -504,12 +504,13 @@ export class ApiService {
       showConfirmButton: true,
       confirmButtonText: 'OK',
       confirmButtonColor: '#28B463',
-      heightAuto: false
+      heightAuto: false,
+      timer: 5000
     });
 
-    setTimeout(() => {
-      Swal.close();
-    }, 5000);
+    // setTimeout(() => {
+    //   Swal.close();
+    // }, 5000);
   }
   public alertError(text: string) {
     Swal.fire({
@@ -519,11 +520,13 @@ export class ApiService {
       showConfirmButton: true,
       confirmButtonText: 'OK',
       confirmButtonColor: '#CB4335',
-      heightAuto: false
+      heightAuto: false,
+      timer: 5000
+
     });
-    setTimeout(() => {
-      Swal.close();
-    }, 5000);
+    // setTimeout(() => {
+    //   Swal.close();
+    // }, 5000);
   }
   public alertWarnning(title: string,text: string) {
     Swal.fire({
@@ -533,11 +536,13 @@ export class ApiService {
       showConfirmButton: true,
       confirmButtonText: 'OK',
       confirmButtonColor: '#CB4335',
-      heightAuto: false
+      heightAuto: false,
+      timer: 5000
+
     });
-    setTimeout(() => {
-      Swal.close();
-    }, 5000);
+    // setTimeout(() => {
+    //   Swal.close();
+    // }, 5000);
   }
   public alertErrorNoDimiss(text: string) {
     const alert = Swal.fire({
