@@ -149,6 +149,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService
   ) { 
+    this.apiService.___AutoPaymentPage = this.modal;
+
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
   }
 

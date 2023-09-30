@@ -1954,8 +1954,10 @@ export class InventoryZDM8 implements IBaseClass {
                             if (!x || !Array.isArray(x)) x = [ ];
                             const y = x.find(v=>v?.bill?.transactionID==transactionID&&position==v?.position);
                             if(y)
-                            writeMachinePendingStock(machineId + "", x.filter(v=>v?.bill?.transactionID!=transactionID&&position!=v?.position))
-                            xy.push(y);
+                            {
+                                writeMachinePendingStock(machineId + "", x.filter(v=>v?.bill?.transactionID!=transactionID&&position!=v?.position))
+                                xy.push(y);
+                            }
                         })
                         res.send(
                                 PrintSucceeded(

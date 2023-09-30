@@ -177,6 +177,7 @@ export class ApiService {
   ___PlayGamesPage:any
   ___OrderCartPage:any
   ___OrderPaidPage:any
+  ___AutoPaymentPage:any
 
   backGroundMusicElement: HTMLAudioElement = {} as any;
   muteSound = false;
@@ -372,64 +373,83 @@ export class ApiService {
           ?.name;
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-      const vsales = ApiService.vendingOnSale;
+      
+      const params = {
+        trans: [
+          { 
+            // transactionID: r.bill?.transactionID, position: r?.position 
+            transactionID: 0, position: r?.position 
 
+          }
+        ]
+      }
+      // this.confirmDeductStock(params).subscribe(res_confirm => {
+      //   console.log(`confirm deduct stock`, res_confirm);
+      //   if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
-      const x = vsales.find((v) => {
-        if (v.position == r.position) {
-          v.stock.qtty--;
-          return true;
+        
+      // }, error => {
+      //   console.log(error.message);
+      //   this.alertError(error.message);
+      // });
+      const vsales = ApiService.vendingOnSale; 
+        const x = vsales.find((v) => {
+          if (v.position == r.position) {
+            v.stock.qtty--;
+            return true;
+          }
+        });
+        this.eventEmitter.emit('stockdeduct', x);
+        this.saveSale(vsales).subscribe((r) => {
+          console.log(r);
+          if (r.status) {
+            console.log(`save sale success`);
+          } else {
+            this.simpleMessage(IENMessage.saveSaleFail);
+          }
+        });
+        console.log('X', x, r.position, x && r.position);
+  
+        if (x && r.position) {
+          // # save to machine
+          console.log('saveSale', vsales);
+  
+          // this.clearWaitingT();
+  
+          // PLAY SOUNDS
+          this.soundCompleted();
+          setTimeout(() => {
+            this.soundThankYou();
+          }, 2000);
+          that.toast.create({ message, duration: 2000 }).then(r => {
+            r.present();
+          });
+  
+          r.bill.updatedAt = new Date();
+        } else if (!r.position) {
+          // PLAY SOUNDS
+          this.soundSystemError();
+          this.alert
+            .create({
+              header: 'Alert',
+              message,
+              buttons: [
+                {
+                  text: 'OK',
+                  role: 'confirm',
+                  handler: () => { },
+                },
+              ],
+            })
+            .then((v) => v.present());
         }
-      });
-      this.eventEmitter.emit('stockdeduct', x);
-      this.saveSale(vsales).subscribe((r) => {
-        console.log(r);
-        if (r.status) {
-          console.log(`save sale success`);
-        } else {
-          this.simpleMessage(IENMessage.saveSaleFail);
-        }
-      });
-      console.log('X', x, r.position, x && r.position);
-
-      if (x && r.position) {
-        // # save to machine
-        console.log('saveSale', vsales);
-
-        // this.clearWaitingT();
-
-        // PLAY SOUNDS
-        this.soundCompleted();
-        setTimeout(() => {
-          this.soundThankYou();
-        }, 2000);
-        that.toast.create({ message, duration: 2000 }).then(r => {
-          r.present();
+  
+        console.log(`vendingOnSale-->`, vsales);
+        this.storage.set('saleStock', vsales, 'stock').then((r) => {
+          // that.deductOrderUpdate(x.position);
         });
 
-        r.bill.updatedAt = new Date();
-      } else if (!r.position) {
-        // PLAY SOUNDS
-        this.soundSystemError();
-        this.alert
-          .create({
-            header: 'Alert',
-            message,
-            buttons: [
-              {
-                text: 'OK',
-                role: 'confirm',
-                handler: () => { },
-              },
-            ],
-          })
-          .then((v) => v.present());
-      }
 
-      console.log(`vendingOnSale-->`, vsales);
-      this.storage.set('saleStock', vsales, 'stock').then((r) => {
-        // that.deductOrderUpdate(x.position);
-      });
 
       // });
     });
@@ -720,6 +740,18 @@ export class ApiService {
     return this.http.post<IResModel>(
       this.url + '/readMachineSale',
       {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase() }
+    );
+  }
+  confirmDeductStock(data: any) {
+    return this.http.post<IResModel>(
+      this.url + '/confirmMachineDeductStock',
+      {
+        data,
         token: cryptojs
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
@@ -1322,5 +1354,7 @@ export class ApiService {
     this.___PlayGamesPage?.dismiss();
     this.___OrderCartPage?.dismiss();
     this.___OrderPaidPage?.dismiss();
+    this.___OrderPaidPage?.dismiss();
+    this.___AutoPaymentPage?.dismiss();
   }
 }

@@ -1842,6 +1842,7 @@ export class Tab1Page implements OnDestroy {
         this.apiService.checkAppVersion.subscribe(async run => {
           if (!run) return resolve(IENMessage.success);
           if (this.checkAppVersion == true) return resolve(IENMessage.success);
+          this.otherModalAreOpening = true;
 
           const response: any = run;
           this.displayRepaireAppVersion = true;
@@ -1880,6 +1881,7 @@ export class Tab1Page implements OnDestroy {
             if (this.percentCount >= 600) {
               this.loopPercent = 600;
               clearInterval(this.loopPercent);
+              this.otherModalAreOpening = false;
               this.displayRepaireAppVersion = false;
             }
             
@@ -1903,6 +1905,7 @@ export class Tab1Page implements OnDestroy {
               if (this.installingCount == 0) {
                 clearInterval(this.installingPecent);
                 localStorage.setItem('app_version', JSON.stringify(response));
+                this.otherModalAreOpening = false;
                 this.displayRepaireAppVersion = false;
 
                 const install = await CapacitorUpdater.set(download);
@@ -1917,6 +1920,7 @@ export class Tab1Page implements OnDestroy {
 
 
         }, error => {
+          this.otherModalAreOpening = false;
           this.displayRepaireAppVersion = false;
           this.apiService.alertError(error.message);
           clearInterval(this.loopPercent);
@@ -1924,6 +1928,7 @@ export class Tab1Page implements OnDestroy {
         });
 
       } catch (error) {
+        this.otherModalAreOpening = false;
         this.displayRepaireAppVersion = false;
         this.apiService.alertError(error.message);
         clearInterval(this.loopPercent);
