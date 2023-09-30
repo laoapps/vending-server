@@ -1911,10 +1911,13 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!machineId) throw new Error("machine is not exit");
 
                         readMachinePendingStock(machineId + '').then(r => {
+                            let ax = JSON.parse(r) as Array<any>;
+                            if (!ax || !Array.isArray(ax)) ax = [ ];
+                        const pendingStock = ax.map(v=>{return {transactionID:v?.bill?.transactionID,position:v?.position}})
                             res.send(
                                 PrintSucceeded(
                                     "readMachineDeductStock",
-                                    r,
+                                    pendingStock,
                                     EMessage.succeeded
                                     , returnLog(req, res)
                                 )
@@ -1939,28 +1942,32 @@ export class InventoryZDM8 implements IBaseClass {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
                         const machineId = res.locals["machineId"];
-                        const transactionID = d.data.transactionID;
-                        const position = d.data.position;
+                        const trans = d.data.trans as Array<any>;
+                      
                         if (!machineId) throw new Error("machine is not exit");
-
-                        readMachinePendingStock(machineId + '').then(r => {
+                        const xy =[];
+                        trans.forEach(v=>{
+                            const transactionID = v.transactionID;
+                            const position = v.position;
+                            readMachinePendingStock(machineId + '').then(r => {
                             let x = JSON.parse(r) as Array<any>;
                             if (!x || !Array.isArray(x)) x = [ ];
                             const y = x.find(v=>v?.bill?.transactionID==transactionID&&position==v?.position);
                             if(y)
                             writeMachinePendingStock(machineId + "", x.filter(v=>v?.bill?.transactionID!=transactionID&&position!=v?.position))
-                            
-                            res.send(
+                            xy.push(y);
+                        })
+                        res.send(
                                 PrintSucceeded(
                                     "confirmMachineDeductStock",
-                                    y,
+                                    xy,
                                     EMessage.succeeded
                                     , returnLog(req, res)
                                 )
                             );
-                
-                
+
                         })
+                       
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("confirmMachineDeductStock", error, EMessage.error, returnLog(req, res, true)));
@@ -2759,7 +2766,7 @@ export class InventoryZDM8 implements IBaseClass {
         // writeSucceededRecordLog(cres?.bill, cres?.position);
 
         // TO MAKE SURE DEDUCT STOCK IS WORKING AND NEED CONFIRM
-        that.sendWSToMachine(bill?.machineId + "", resx);
+     
         readMachinePendingStock(bill?.machineId + '').then(r => {
             let x = JSON.parse(r) as Array<any>;
             if (!x || !Array.isArray(x)) x = [{ bill, position }];
@@ -2767,8 +2774,8 @@ export class InventoryZDM8 implements IBaseClass {
                 x.push({ bill, position });
             }
             writeMachinePendingStock(bill?.machineId + "", x)
-                logEntity.create({ body: resx, url: 'deductStock' })
-
+            logEntity.create({ body: resx, url: 'deductStock' })
+            that.sendWSToMachine(bill?.machineId + "", resx);
         })
 
 
@@ -4335,7 +4342,10 @@ export class InventoryZDM8 implements IBaseClass {
                                         }
                                     }
 
-
+                                    const a = await readMachinePendingStock(ws['machineId'] + '');
+                                    let ax = JSON.parse(a) as Array<any>;
+                                        if (!ax || !Array.isArray(ax)) ax = [ ];
+                                    const pendingStock = ax.map(v=>{return {transactionID:v?.bill?.transactionID,position:v?.position}})
                                     ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
@@ -4348,7 +4358,8 @@ export class InventoryZDM8 implements IBaseClass {
                                                     setting, mstatus, mymstatus,
                                                     mymsetting,
                                                     mymlimiter,
-                                                    app_version
+                                                    app_version,
+                                                    pendingStock
                                                 },
                                                 EMessage.succeeded
                                                 ,
