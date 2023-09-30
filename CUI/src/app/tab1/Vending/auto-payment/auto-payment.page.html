@@ -80,6 +80,16 @@
 
               <div class="total">{{ parseGetTotalSale.t | number }}</div>
             </div>
+            <div *ngIf="isPayment == false" class="bill-body">
+
+              <div class="line"></div>
+
+              <div class="group">
+                <div class="text">SubQTTY</div>
+                <div class="value">{{ parseGetTotalSale.q | number }}</div>
+              </div>
+
+            </div>
             <div *ngIf="isPayment == true" class="bill-body">
 
               <div class="line"></div>
@@ -100,7 +110,7 @@
 
             </div>
             <div class="bill-footer">
-              <div class="text">Find any problem call 555 163 21</div>
+              <div class="text">Found any problem call 555 163 21</div>
               <!-- <a href="javascript:void(0)" class="btn-item">View Orders</a>
               <a href="javascript:void(0)" class="btn-item">Close</a> -->
             </div>

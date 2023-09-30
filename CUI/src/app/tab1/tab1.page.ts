@@ -170,6 +170,8 @@ export class Tab1Page implements OnDestroy {
   loadingCheck: any = {} as any;
   loadingPercent: number = 0;
 
+  otherModalAreOpening: boolean = false;
+
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -257,7 +259,10 @@ export class Tab1Page implements OnDestroy {
               if (adsSlide != undefined && adsSlide == 'yes' ) {
                 this.apiService.showModal(AdsPage).then(r=>{
                   r.present();
+                  this.otherModalAreOpening = true;
                   this.checkActiveModal(r);
+                  this.openAnotherModal(r);
+
                   // adsOn=true;
                   // r.onDidDismiss().then(rx=>{
                   //   adsOn=false;
@@ -692,6 +697,9 @@ export class Tab1Page implements OnDestroy {
       // window.location.reload();
     });
     m.present();
+    this.otherModalAreOpening = true;
+    this.openAnotherModal(m);
+
   }
   // loadPaidBills() {
   //   this.apiService.loadPaidBills().subscribe(r => {
@@ -742,6 +750,9 @@ export class Tab1Page implements OnDestroy {
             .create({ message: r.message, duration: 2000 })
             .then((r) => {
               r.present();
+              this.otherModalAreOpening = true;
+              this.openAnotherModal(r);
+
               const y = ApiService.vendingOnSale.find(
                 (v) => v.position == x.position
               );
@@ -797,8 +808,10 @@ export class Tab1Page implements OnDestroy {
                   })
                   .then((r) => {
                     r.present();
+                    this.otherModalAreOpening = true;
                     this.checkActiveModal(r);
-
+                    this.openAnotherModal(r);
+                    
                   });
               });
 
@@ -859,7 +872,9 @@ export class Tab1Page implements OnDestroy {
                 })
                 .then((r) => {
                   r.present();
+                  this.otherModalAreOpening = true;
                   this.checkActiveModal(r);
+                  this.openAnotherModal(r);
 
                 });
             });
@@ -985,6 +1000,7 @@ export class Tab1Page implements OnDestroy {
   }
 
   showMyOrdersModal() {
+    if (this.otherModalAreOpening == true) return;
     if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
     clearInterval(this.autoShowMyOrderTimer);
     this.autoShowMyOrdersCounter = 15;
@@ -997,8 +1013,10 @@ export class Tab1Page implements OnDestroy {
     }
     this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
       r.present();
+      this.otherModalAreOpening = true;
       // this.apiService.allModals.push(this.apiService.modal);
       r.onDidDismiss().then(cb => {
+        this.otherModalAreOpening = false;
         AutoPaymentPage.message?.close();
         AutoPaymentPage.message = undefined;
         if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
@@ -1287,7 +1305,9 @@ export class Tab1Page implements OnDestroy {
           .create({ component: LaabGoPage, componentProps: props })
           .then((r) => {
             r.present();
+            this.otherModalAreOpening = true;
             this.checkActiveModal(r);
+            this.openAnotherModal(r);
 
           });
       } catch (error) {
@@ -1308,7 +1328,9 @@ export class Tab1Page implements OnDestroy {
           .create({ component: EpinCashOutPage, componentProps: {} })
           .then((r) => {
             r.present();
+            this.otherModalAreOpening = true;
             this.checkActiveModal(r);
+            this.openAnotherModal(r);
 
           });
       } catch (error) {
@@ -1362,6 +1384,8 @@ export class Tab1Page implements OnDestroy {
             })
             .then((r) => {
               r.present();
+              this.otherModalAreOpening = true;
+              this.openAnotherModal(r);
 
               clearInterval(this.autoShowMyOrderTimer);
 
@@ -1397,6 +1421,8 @@ export class Tab1Page implements OnDestroy {
           .create({ component: LaabCashoutPage, componentProps: props })
           .then((r) => {
             r.present();
+            this.otherModalAreOpening = true;
+            this.openAnotherModal(r);
             clearInterval(this.autoShowMyOrderTimer);
             resolve(IENMessage.success);
             
@@ -1418,9 +1444,11 @@ export class Tab1Page implements OnDestroy {
         this.apiService.pb = r.data as Array<IBillProcess>;
         if (this.apiService.pb.length){
           this.apiService
-            .showModal(RemainingbillsPage, { r: this.apiService.pb })
+            .showModal(RemainingbillsPage, { r: this.apiService.pb }, false)
             .then((r) => {
               r.present();
+              this.otherModalAreOpening = true;
+              this.openAnotherModal(r);
               clearInterval(this.autoShowMyOrderTimer);
               this.checkActiveModal(r);
             });
@@ -1468,6 +1496,9 @@ export class Tab1Page implements OnDestroy {
           .create({ component: StackCashoutPage })
           .then((r) => {
             r.present();
+            this.otherModalAreOpening = true;
+            this.openAnotherModal(r);
+
             clearInterval(this.autoShowMyOrderTimer);
             this.checkActiveModal(r);
 
@@ -1499,6 +1530,8 @@ export class Tab1Page implements OnDestroy {
       })
       .then((r) => {
         r.present();
+        this.otherModalAreOpening = true;
+        this.openAnotherModal(r);
         this.checkActiveModal(r);
 
       });
@@ -1565,6 +1598,8 @@ export class Tab1Page implements OnDestroy {
           })
           .then((r) => {
             r.present();
+            this.otherModalAreOpening = true;
+            this.openAnotherModal(r);
             clearInterval(this.autoShowMyOrderTimer);
             this.checkActiveModal(r);
           });
@@ -1586,6 +1621,8 @@ export class Tab1Page implements OnDestroy {
           })
           .then((r) => {
             r.present();
+            this.otherModalAreOpening = true;
+            this.openAnotherModal(r);
             clearInterval(this.autoShowMyOrderTimer);
             this.checkActiveModal(r);
           });
@@ -1612,7 +1649,9 @@ export class Tab1Page implements OnDestroy {
       .create({ component: VendingGoPage, componentProps: props })
       .then((r) => {
         r.present();
+        this.otherModalAreOpening = true;
         r.onDidDismiss().then(r=>{
+          this.otherModalAreOpening = false;
           this.orders.length = 0;
         });
         clearInterval(this.autoShowMyOrderTimer);
@@ -1629,6 +1668,8 @@ export class Tab1Page implements OnDestroy {
       })
       .then((r) => {
         r.present();
+        this.otherModalAreOpening = true;
+        this.openAnotherModal(r);
         clearInterval(this.autoShowMyOrderTimer);
         this.checkActiveModal(r);
 
@@ -1643,6 +1684,9 @@ export class Tab1Page implements OnDestroy {
     })
     .then((r) => {
       r.present();
+      this.otherModalAreOpening = true;
+      this.openAnotherModal(r);
+
       // this.checkActiveModal(r);
 
     });
@@ -1669,9 +1713,18 @@ export class Tab1Page implements OnDestroy {
       })
       .then((r) => {
         r.present();
+        this.otherModalAreOpening = true;
         clearInterval(this.autoShowMyOrderTimer);
         this.checkActiveModal(r);
+
+        this.openAnotherModal(r);
       });
+  }
+
+  openAnotherModal(r) {
+    r.onDidDismiss().then(() => {
+      this.otherModalAreOpening = false;
+    });
   }
 
   updateNewVersion() {
@@ -1783,7 +1836,7 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        // return resolve(IENMessage.success);
+        return resolve(IENMessage.success);
         if (!this.platform.is('capacitor')) return resolve(IENMessage.success);
 
         this.apiService.checkAppVersion.subscribe(async run => {
@@ -1877,6 +1930,9 @@ export class Tab1Page implements OnDestroy {
         resolve(error.message);
       }
     });
+  }
+  refreshBalanceFromAnotherModal(balance: number) {
+    this.apiService.cash.amount = balance;
   }
   
 }

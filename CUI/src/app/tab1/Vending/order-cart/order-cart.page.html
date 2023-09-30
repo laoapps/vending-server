@@ -40,7 +40,7 @@
               <div class="name">{{ order?.stock?.name }}</div>
               <div class="price">{{ order?.stock?.price | number }}</div>
             </div>
-            <a (click)="removeOrder(i)" href="javascript:void(0)" class="btn-epin">
+            <a (click)="removeOrder(order, i)" href="javascript:void(0)" class="btn-epin">
               <i class="fa-solid fa-trash-can"></i>
             </a>
           </div>

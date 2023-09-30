@@ -10,6 +10,7 @@ import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMon
 import * as cryptojs from 'crypto-js';
 import qrlogo from 'qrcode-with-logos';
 import { WsapiService } from 'src/app/services/wsapi.service';
+import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
 
 @Component({
   selector: 'app-auto-payment',
@@ -17,7 +18,7 @@ import { WsapiService } from 'src/app/services/wsapi.service';
   styleUrls: ['./auto-payment.page.scss'],
 })
 export class AutoPaymentPage implements OnInit, OnDestroy {
-
+  private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
 
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
@@ -58,6 +59,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   countdownDestroyTimer: any = {} as any;
   countdownCheckLAAB: number = 60;
   countdownCheckLAABTimer: any = {} as any;
+  countdownLAABDestroy: number = 10;
+  countdownLAABDestroyTimer: any = {} as any;
 
 
   // message
@@ -146,7 +149,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService
   ) { 
-
+    this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
   }
 
   async ngOnInit() {
@@ -160,13 +163,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     // websocket check when process callback
     this.apiService.onStockDeduct((data)=>{
       console.log('onStockDeduct',data);
+      this.orders = [];
+      this.getTotalSale.q = 0;
+      this.getTotalSale.t = 0;
       this.close();
-    });
-
-    this.WSAPIService.balanceUpdateSubscription.subscribe(async (r) => {
-      if (r) {
-        await this.apiService.myTab1.initVendingWalletCoinBalance();
-      }
     });
   }
 
@@ -179,6 +179,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.reloadMessageElement);
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownCheckLAABTimer);
+    clearInterval(this.countdownDestroyTimer);
   }
 
   loadDOMs() {
@@ -225,6 +226,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.reloadMessageElement);
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownCheckLAABTimer);
+    clearInterval(this.countdownDestroyTimer);
     this.apiService.modal.dismiss();
   }
 
@@ -236,12 +238,14 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           this.countdownBill--;
           if (this.countdownBill == 0) {
             clearInterval(this.countdownBillTimer);
+            this.countdownBill = 1;
 
             let qrModel = {
               type: 'CQR',
               mode: 'COIN',
               destination: this.apiService.laabuuid,
               amount: Number(this.getTotalSale.t) - Number(this.apiService.cash.amount),
+              // amount: 100,
               expire: '',
               options: {
                 coinname: this.apiService.coinName,
@@ -249,43 +253,25 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               },
             };
             const qrcode = await new qrlogo({ logo: this.laabIcon, content: JSON.stringify(qrModel)}).getCanvas();
-            AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();
+            if (AutoPaymentPage.laabqrimgElement) AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();
 
             const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method'}).getCanvas();
-            AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
+            if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
 
             this.checkOrders(AutoPaymentPage.orderlistElement);
             AutoPaymentPage.orderlistElement.className = 'order-list fit';
             AutoPaymentPage.laabCardFooter.classList.add('active');
             this.loadBillWave();
 
-            if (this.countdownBill == 0 && this.apiService.cash.amount >= this.getTotalSale.t)
-            {
-              this.paymentmethod = IPaymentMethod.laab;
+            if (!list) return resolve(await this._processLoopPayment());
 
-              const params: IPaymentStation = {
-                orders: this.parseorders,
-                getTotalSale: this.parseGetTotalSale,
-                paymentmethod: this.paymentmethod
-              }
-              const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
-              if (run.message != IENMessage.success) throw new Error(run);
+            this.paymentmethod = list.value;
+            this.paymentText = list.name;
+            this.paymentLogo = list.image;
+            resolve(await this._processLoopDestroy());
 
-              this.apiService.myTab1.clearStockAfterLAABGo();
-              this.apiService.modal.dismiss();
-              resolve(IENMessage.success);
+            
 
-            }
-            else
-            {
-              if (!list) return resolve(await this._processLoopPayment());
-
-              this.paymentmethod = list.value;
-              this.paymentText = list.name;
-              this.paymentLogo = list.image;
-              resolve(await this._processLoopDestroy());
-            }
-            this.countdownBill = 1;
           }
 
         }, 1000);
@@ -307,11 +293,31 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             clearInterval(this.countdownPaymentTimer);
             this.countdownPayment = 10;
 
-            this.paymentmethod = IPaymentMethod.mmoney;
-            this.paymentText = this.paymentList[0].name;
-            this.paymentLogo = this.paymentList[0].image;
+            if (this.apiService.cash.amount >= this.getTotalSale.t) {
+              this.paymentmethod = IPaymentMethod.laab;
 
-            this._processLoopDestroy();
+              const params: IPaymentStation = {
+                orders: this.orders,
+                getTotalSale: this.getTotalSale,
+                paymentmethod: this.paymentmethod
+              }
+              const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
+              if (run.message != IENMessage.success) throw new Error(run);
+
+              this.apiService.myTab1.refreshBalanceFromAnotherModal(Number(this.apiService.cash.amount) - Number(this.getTotalSale.t));
+              this.apiService.myTab1.clearStockAfterLAABGo();
+              this.apiService.modal.dismiss();
+              resolve(IENMessage.success);
+            }
+            else 
+            {
+              this.paymentmethod = IPaymentMethod.mmoney;
+              this.paymentText = this.paymentList[0].name;
+              this.paymentLogo = this.paymentList[0].image;
+              this._processLoopDestroy();
+            }
+
+
           }
         }, 1000);
         
@@ -341,9 +347,6 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
         this.isPayment = true;
         this.billDate = new Date();
-        this.orders = [];
-        this.getTotalSale.q = 0;
-        this.getTotalSale.t = 0;
 
         AutoPaymentPage.message = Swal.fire({
           position: 'top-end',
@@ -360,12 +363,25 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         this.countdownDestroyTimer = setInterval(async () => {
           this.countdownDestroy--;
 
+          console.log(`ERROR SHOULD NOT HERE`);
           // when choose payment method success and client has not scaned pay yet this process will loop check laab balance
-          if (checkLAAB > 0 && this.countdownDestroy == checkLAAB) {
+          if (checkLAAB > -1 && this.countdownDestroy == checkLAAB) {
             checkLAAB-=5;
 
+            const checkbalance = {
+              machineId: localStorage.getItem('machineId')
+            }
+            const run = await this.loadVendingWalletCoinBalanceProcess.Init(checkbalance);
+            if (run.message != IENMessage.success) throw new Error(run);
+            this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
+
             if (previousAmount != this.apiService.cash.amount) {
+              // everytime when balance change stop check laab
+              // but continue loop destroy
+              checkLAAB -1;
+
               console.log(`LAAB CASHIN balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
+              this.apiService.soundLaabIncreased();
 
               await this.laabAutoCashin();
               
@@ -397,12 +413,14 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         // when choose payment method and it does not work this process will auto loop check laab balance
         this._processLoopCheckLAAB();
+        // this._processLoopPayment();
 
         resolve(error.message);
       }
     });
   }
   
+  // loop check balance and loop destroy
   private _processLoopCheckLAAB(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
@@ -412,11 +430,24 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         
         this.countdownCheckLAABTimer = setInterval(async () => {
           this.countdownCheckLAAB--;
-          if (checkLAAB > 0 && this.countdownCheckLAAB == checkLAAB) {
+          if (checkLAAB > -1 && this.countdownCheckLAAB == checkLAAB) {
             checkLAAB -= 5;
+            
+            const params = {
+              machineId: localStorage.getItem('machineId')
+            }
+
+            const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
+            if (run.message != IENMessage.success) throw new Error(run);
+            this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
 
             if (previousAmount != this.apiService.cash.amount) {
+              // everytime when balance change stop loop and stop find laab
+              clearInterval(this.countdownCheckLAABTimer);
+              checkLAAB -1;
               console.log(`LAAB CASHIN balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
+              this.apiService.soundLaabIncreased();
+
               await this.laabAutoCashin();
 
             } else {
@@ -438,6 +469,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       }
     });
   }
+  // not loop check destroy only
   private laabAutoCashin(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
@@ -445,18 +477,28 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         this.isPayment = false;
         this.paymentmethod = undefined;
 
-        const params: IPaymentStation = {
-          orders: this.parseorders,
-          getTotalSale: this.parseGetTotalSale,
-          paymentmethod: IPaymentMethod.laab
-        }
-        const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        this.countdownLAABDestroyTimer = setInterval(async () => {
+          this.countdownLAABDestroy--;
+          if (this.countdownLAABDestroy == 0) {
+            clearInterval(this.countdownLAABDestroyTimer);
+            console.log(`LAAB LOOP`, this.countdownLAABDestroy);
+            this.countdownLAABDestroy = 10;
 
-        this.apiService.myTab1.clearCart();  
-        this.apiService.modal.dismiss();
-
-        resolve(IENMessage.success);
+            const params: IPaymentStation = {
+              orders: this.orders,
+              getTotalSale: this.getTotalSale,
+              paymentmethod: IPaymentMethod.laab
+            }
+            const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
+            if (run.message != IENMessage.success) throw new Error(run);
+    
+            this.apiService.myTab1.refreshBalanceFromAnotherModal(Number(this.apiService.cash.amount) - Number(this.getTotalSale.t));
+            this.apiService.myTab1.clearCart();  
+            this.apiService.modal.dismiss();
+    
+            resolve(IENMessage.success);
+          }
+        }, 1000);
         
       } catch (error) {
         resolve(error.message);
@@ -466,8 +508,12 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   removeOrder(index: number) {
     this.parseorders.splice(index, 1);
+    // this.getSummarizeOrder();
+
     this.apiService.myTab1.removeCart(index);
-    this.getSummarizeOrder();
+
+    this.parseGetTotalSale.q = this.parseorders.reduce((a,b) => a + b.stock.qtty, 0);
+    this.parseGetTotalSale.t = this.parseorders.reduce((a,b) => a + b.stock.qtty * b.stock.price, 0);
 
     if (this.parseorders != undefined && Object.entries(this.parseorders).length == 0) {
       this.resetMessage();
@@ -475,8 +521,12 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     } 
     else
     {
+
+
       this.resetMessage();
   
+      AutoPaymentPage.orderlistElement.className = 'order-list';
+      this.checkOrders(AutoPaymentPage.orderlistElement);
       AutoPaymentPage.laabCardFooter.classList.remove('active');
       AutoPaymentPage.qrimgElement.src = '';
       this.isPayment = false;
@@ -488,7 +538,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       this.resetCountDownPaymentTimer();
       this.resetCountDownDestroyTimer();
       this.resetCountDownCheckLAABTimer();
+      this.resetCountDownLAABDestroyTimer();
 
+      this.countdownBill = 1;
       this.loadCountDownBill();
     }
 
@@ -507,7 +559,6 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         this.resetCountDownPaymentTimer();
         this.resetCountDownDestroyTimer();
         this.resetCountDownCheckLAABTimer();
-        this.getSummarizeOrder();
 
         this.paymentmethod = list.value;
         this.paymentLogo = list.image;
@@ -599,8 +650,13 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownCheckLAABTimer);
     this.countdownCheckLAAB = 60;
   }
+  private resetCountDownLAABDestroyTimer() {
+    clearInterval(this.countdownLAABDestroyTimer);
+    this.countdownCheckLAAB = 10;
+  }
 
   private loadBillWave() {
+    this.drawCircle = [];
     for(let i = 0; i < 50; i++) {
       const elm = document.createElement('div');
       elm.className = 'shape';

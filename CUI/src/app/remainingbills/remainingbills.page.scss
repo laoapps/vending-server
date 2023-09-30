@@ -136,6 +136,27 @@ ion-content {
             font-weight: 300;
         }
     }
+
+    .laab-card-body.order-7 {
+        min-height: 650px;
+        max-height: 650px;
+    }
+    .laab-card-body.order-11 {
+        min-height: 950px;
+        max-height: 950px;
+    }
+    .laab-card-body.order-15 {
+        min-height: 1250px;
+        max-height: 1250px;
+    }
+    .laab-card-body.order-19 {
+        min-height: 1400px;
+        min-height: 1400px;
+    }
+    .laab-card-body.order-19-full {
+        min-height: 1400px;
+        max-height: 1400px;
+    }
     .laab-card-body {
         margin-top: 35px;
         display: grid;

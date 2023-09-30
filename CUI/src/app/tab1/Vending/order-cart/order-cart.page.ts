@@ -222,7 +222,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
     this.alertCounter = 5;
   }
 
-  removeOrder(index: number) {
+  removeOrder(order: any, index: number) {
     clearInterval(this.autoPaymentTimer);
     clearInterval(this.autoSelectPaymentMethodTimer);
     clearInterval(this.destroyTimer);

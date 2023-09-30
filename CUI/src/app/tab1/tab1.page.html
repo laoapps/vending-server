@@ -141,6 +141,7 @@
   
     <div *ngFor="let sl of saleList; index as i">
       <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
+      <!-- <div *ngIf="sl.stock.qtty>0" style="float:left"> -->
         <ion-item-divider class="item-header">
           <ion-label>
             <ion-badge style="font-size: 20px;">
@@ -154,14 +155,11 @@
           </ion-item>
           <ion-item >
   
-            <div *ngIf="sl.stock.price==0;else elsebuystock">
+             <div *ngIf="sl.stock.price==0;else elsebuystock">
               <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="buyMMoney(sl)">
             </div>
             <ng-template #elsebuystock>
               <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="addOrder(sl)">
-              <!-- <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="addOrderTest(sl)"> -->
-
-              
             </ng-template>
   
             

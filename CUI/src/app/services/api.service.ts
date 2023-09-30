@@ -373,6 +373,8 @@ export class ApiService {
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
       const vsales = ApiService.vendingOnSale;
+
+
       const x = vsales.find((v) => {
         if (v.position == r.position) {
           v.stock.qtty--;
@@ -444,7 +446,7 @@ export class ApiService {
             this.dismissModal();
             const pb = r.data as Array<IBillProcess>;
             if (pb.length)
-              this.showModal(RemainingbillsPage, { r: pb }).then((r) => {
+              this.showModal(RemainingbillsPage, { r: pb }, false).then((r) => {
                 r.present();
               });
           } else {
@@ -619,7 +621,7 @@ export class ApiService {
     this.storage.set('productItems', this.stock, 'item');
   }
 
-  async showModal(component: any, d: any = {}) {
+  async showModal(component: any, d: any = {}, closebyblackdrop: boolean = true) {
     try {
       // let x = '{';
       // const l = Object.keys(d).length;
@@ -635,6 +637,7 @@ export class ApiService {
         component,
         componentProps: d,
         cssClass: 'dialog-fullscreen',
+        backdropDismiss: closebyblackdrop
       });
     } catch (error) {
       console.log('ERROR', error);

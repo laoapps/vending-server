@@ -39,7 +39,7 @@ export class QrpayPage implements OnInit,OnDestroy {
         this.apiService.dismissModal();
         const pb = r.data as Array<IBillProcess>;
         if(pb.length)
-        this.apiService.showModal(RemainingbillsPage, { r:pb });
+        this.apiService.showModal(RemainingbillsPage, { r:pb }, false);
         this.modal.dismiss();
       }
       else {

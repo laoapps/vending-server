@@ -4,7 +4,6 @@ import qrlogo from 'qrcode-with-logos';
 import { IENMessage, IGenerateQR } from 'src/app/models/base.model';
 import { ModalController } from '@ionic/angular';
 import { IBillProcess } from 'src/app/services/syste.model';
-import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
 import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 
 @Component({

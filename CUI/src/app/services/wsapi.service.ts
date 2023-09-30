@@ -88,7 +88,7 @@ export class WsapiService {
       if (res) {
 
         const data = res.data;
-        console.log('COMMING DATA', res);
+        // console.log('COMMING DATA', res);
         switch (res.command) {
           case 'ping':
 
@@ -121,6 +121,7 @@ export class WsapiService {
             break;
 
           case 'CREDIT_NOTE':
+            console.log(`credit note la der`);
             this.balanceUpdateSubscription.next(data);
 
             break;
