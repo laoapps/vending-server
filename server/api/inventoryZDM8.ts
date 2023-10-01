@@ -2007,6 +2007,14 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log(`load from databasee ----->`, list);
                             list = list.data;
                         }
+                        res.send(
+                            PrintSucceeded(
+                                "readMachineSaleForAdmin",
+                                list,
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
