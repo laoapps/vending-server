@@ -1994,13 +1994,13 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log(`readMachineSaleForAdmin`, machineId);
                         // const isActive = req.query['isActive'];
                         if (!machineId) throw new Error("machine is not exit");
-                         const run = await readMachineSale(machineId.machineId);
+                         const run = await readMachineSale(machineId);
                         if (run != undefined && Object.entries(run).length > 0 || run != null) {
                             list = JSON.parse(run);
                             console.log(`load from redis ----->`, list);
 
                         } else {
-                            const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
+                            const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId, dbConnection);
                             await sEnt.sync();
 
                             list = await sEnt.findOne({ order: [['id', 'desc']] });
