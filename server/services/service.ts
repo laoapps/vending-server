@@ -478,6 +478,12 @@ export function  machineStatus(x:string):IMachineStatus{
     // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
     return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp} as IMachineStatus
   }
+  export async function readMachineLockDrop(machineId:string){
+    return  await redisClient.get('_machinelockdrop_'+machineId);
+}
+export function writeMachineLockDrop(machineId: string,lock='false') {
+    redisClient.set('_machinelockdrop_' + machineId, lock?lock:'false');
+}
 
 export async function readMachinePendingStock(machineId:string){
     return  await redisClient.get('_machinependingstock_'+machineId);

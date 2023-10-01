@@ -34,6 +34,8 @@ import {
     writeActiveMmoneyUser,
     writeMachinePendingStock,
     readMachinePendingStock,
+    writeMachineLockDrop,
+    readMachineLockDrop,
 } from "../services/service";
 import {
     EClientCommand,
@@ -653,7 +655,7 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         console.log('start retryProcessBill');
-
+                        writeMachineLockDrop( res.locals["machineId"]?.machineId,'true');
                         const position = Number(req.query["position"]);
                         const transactionID = Number(req.query["T"] + "");
                         const m = await machineClientIDEntity.findOne({
@@ -729,6 +731,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             EMessage.succeeded, returnLog(req, res)
                                         )
                                     );
+                                    writeMachineLockDrop( res.locals["machineId"]?.machineId);
                                 } else {
                                     writeErrorLogs('error pos.code', pos);
                                     console.log(' retryProcessBill', 'error pos', pos);
@@ -736,6 +739,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     res.send(
                                         PrintError("retryProcessBill", pos, EMessage.error, returnLog(req, res, true))
                                     );
+                                    writeMachineLockDrop( res.locals["machineId"]?.machineId);
                                 }
                             } catch (error) {
                                 console.log("error retryProcessBill", error, returnLog(req, res, true));
@@ -743,6 +747,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 res.send(
                                     PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true))
                                 );
+                                writeMachineLockDrop( res.locals["machineId"]?.machineId);
                             }
                         });
                         // }, 1000);
@@ -750,6 +755,7 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log(error);
                         writeErrorLogs(error.message, error);
                         res.send(PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true)));
+                        writeMachineLockDrop( res.locals["machineId"]?.machineId);
                     }
                 }
             );
@@ -4361,7 +4367,11 @@ export class InventoryZDM8 implements IBaseClass {
                                     const a = await readMachinePendingStock(ws['machineId'] + '');
                                     let ax = JSON.parse(a) as Array<any>;
                                         if (!ax || !Array.isArray(ax)) ax = [ ];
-                                    const pendingStock = ax.map(v=>{return {transactionID:v?.bill?.transactionID,position:v?.position}})
+                                    const pendingStock = ax.map(v=>{return {transactionID:v?.bill?.transactionID,position:v?.position}});
+
+                                    let pendingStockLock = await readMachineLockDrop(ws['machineId'] + '');
+                                    pendingStockLock = pendingStockLock==''||!pendingStockLock?'false':pendingStockLock;
+                                    pendingStockLock=='true'?pendingStock.length=0:'';
                                     ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
