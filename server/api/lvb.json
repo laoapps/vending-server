@@ -1,0 +1,182 @@
+{
+	"info": {
+		"_postman_id": "733fbd07-d962-40ec-974f-b3553c3dac29",
+		"name": "LVB_OPEN_API_DOK_BUA_KHAM",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29078546"
+	},
+	"item": [
+		{
+			"name": "Init",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Service_Id\": \"055013\",\r\n    \"Merchant_Id\": \"055013_1\",\r\n    \"Merchant_Name\": \"DORK BUA KHAM TRADING IMPORT-EXPORT.CO.,LTD\",\r\n    \"Trandate\": \"230926\",\r\n    \"Trans_Id\": \"EPAY124112974\",\r\n    \"Trans_Desc\": \"Test Description\",\r\n    \"Amount\": \"10000\",\r\n    \"Curr\": \"LAK\",\r\n    \"Payer_Id\": \"112233445566\",\r\n    \"Payer_Name\": \"Test Name\",\r\n    \"Payer_Addr\": \"Test Address\",\r\n    \"Type\": \"809\",\r\n    \"Custmer_Id\": \"PA12343243243\",\r\n    \"Customer_Name\": \"PASSPORT NAME\",\r\n    \"IssueDate\": \"230926\",\r\n    \"Callback_URL\": \"http://localhost:8080/Merchant\",\r\n    \"Secure_Code\": \"898c875b9bde3b2a3c18e3c2bb867101\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/v1/api/init/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"v1",
+						"api",
+						"init",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"055013_1\",\r\n    \"password\": \"ZIvsHAQyRJ2RfvcE\",\r\n    \"create_date\": \"20230926082300\",\r\n    \"secure_code\": \"12bde6d45f9427d8cd1f0fda4cc4fea3\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/v1/api/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"v1",
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transaction",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"from_date\":\"20230926\",\r\n    \"to_date\":\"20230926\",\r\n    \"state\":\"PENDING\",\r\n    \"secure_code\":\"3775cf8e395e97844ac5381c1f3db301\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/v1/api/provider/transaction",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"v1",
+						"api",
+						"provider",
+						"transaction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transaction by ID",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"secure_code\":\"6cd471f50963f47d53c5c9ea376aff27\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/v1/api/provider/transaction/EPAY124112974",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"v1",
+						"api",
+						"provider",
+						"transaction",
+						"EPAY124112974"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://laovietbank.com.la:5678"
+		},
+		{
+			"key": "test_url",
+			"value": "http://10.1.34.11:5678",
+			"type": "default"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTU3Nzc3MDcsInN1YiI6IkxvZ2luIiwiaXNzIjoiTFZCIiwianRpIjoiSUQ6RU1TLVNFUlZFUi4zMkM2MkNGOTFFRTE5MTU6MjM3OSIsIlBsYXlsb2FkIjoie1xuICBcInNlcnZpY2VfaWRcIjpcIjA1NTAxM1wiLFxuICBcInNlcnZpY2VfcHJvZmlsZVwiOlwiMDU1MDEzXzFcIixcbiAgXCJzZXJ2aWNlX25hbWVcIjpcIkRPUksgQlVBIEtIQU0gVFJBRElORyBJTVBPUlQtRVhQT1JULkNPLixMVERcIlxufSIsImlhdCI6MTY5NTY5MTMwN30.uQQWTITYTEahLV4Ar5uMc4bBpuSIQsEzjEIZui1gqRk",
+			"type": "default"
+		}
+	]
+}

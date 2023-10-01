@@ -483,7 +483,7 @@ export async function readMachinePendingStock(machineId:string){
     return  await redisClient.get('_machinependingstock_'+machineId);
 }
 export function writeMachinePendingStock(machineId: string, b: any) {
-    redisClient.set('_machinependingstock_' + machineId, JSON.stringify({b,t:new Date()}));
+    redisClient.set('_machinependingstock_' + machineId, JSON.stringify(b));
 }
 
 export async function readMachineStatus(machineId:string){
