@@ -1953,20 +1953,20 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!machineId) throw new Error("machine is not exit");
                         const xy = [];
                         const checkx = [];
-                        trans.forEach(async v => {
+                        trans.forEach(v => {
 
                             const transactionID = v.transactionID;
                             const position = v.position;
-                            checkx.push({ der: await readMachinePendingStock(machineId + '') });
+                            checkx.push({ der: readMachinePendingStock(machineId?.machineId + '') });
                             
-                            readMachinePendingStock(machineId + '').then(r => {
+                            readMachinePendingStock(machineId?.machineId + '').then(r => {
 
                                 let x = JSON.parse(r) as Array<any>;
                                 if (!x || !Array.isArray(x)) x = [ ];
                                 const y = x.find(v=>v?.transactionID==transactionID&&position==v?.position);
                                 if(y)
                                 {
-                                    writeMachinePendingStock(machineId + "", x.filter(v=>v?.transactionID!=transactionID&&position!=v?.position))
+                                    writeMachinePendingStock(machineId?.machineId + "", x.filter(v=>v?.transactionID!=transactionID&&position!=v?.position))
                                     xy.push(y);
                                 }
                             })
