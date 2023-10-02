@@ -1957,8 +1957,9 @@ export class InventoryZDM8 implements IBaseClass {
 
                             const transactionID = v.transactionID;
                             const position = v.position;
+                            checkx.push({ der: machineId });
+                            
                             readMachinePendingStock(machineId + '').then(r => {
-                                checkx.push({ der: true, r: r ? r : 'br mi' });
 
                                 let x = JSON.parse(r) as Array<any>;
                                 if (!x || !Array.isArray(x)) x = [ ];
