@@ -148,6 +148,11 @@ CreateDatabase("")
             wss1.emit("connection", ws, request);
           });
         }
+        else if (pathname === "/locker") {
+          wss3.handleUpgrade(request, socket, head, function done(ws) {
+            wss3.emit("connection", ws, request);
+          });
+        }
         else {
           socket.destroy();
         }
