@@ -10,15 +10,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import express, { Router } from 'express';
 import axios from 'axios';
+import tls from 'tls';
 export class SocketClientZDM8 {
     //---------------------client----------------------
 
     // creating a custom socket client and connecting it....
-    client = new net.Socket();
+    client :  tls.TLSSocket | undefined = undefined;
     // port = 51223;// new server
-    port = 31223
+    port = 51222
     host = 'laoapps.com';
-    machineid = '12345678';
+    machineid = process.env.machineId || '11111111';
     otp = '111111';
     token = '';
     t: any;
@@ -28,12 +29,11 @@ export class SocketClientZDM8 {
     constructor() {
         this.m = new VendingZDM8(this);
         this.init();
+        this.initWebServer();
         this.token = cryptojs.SHA256(this.machineid + this.otp).toString(cryptojs.enc.Hex)
     }
     processorder(transactionID: number) {
-        // return axios.post('http://laoapps.com:9006/zdm8', { transactionID,command:'processorder' }); // new server
-        return axios.post('http://laoapps.com:9009/zdm8', { transactionID,command:'processorder' });
-
+        return axios.post('https://endingservicezdm8.laoapps.com/zdm8', { data: { transactionID, token: cryptojs.SHA256(this.machineid + this.otp).toString(cryptojs.enc.Hex) }, command: 'processorder' });
     }
     initWebServer() {
         const app = express();
@@ -128,7 +128,7 @@ export class SocketClientZDM8 {
     }
     init() {
         const that = this;
-        this.client.connect({
+        this.client = tls.connect({
             port: this.port,
             host: this.host
         });
@@ -136,7 +136,7 @@ export class SocketClientZDM8 {
             clearInterval(this.t);
             this.t = null;
         }
-        this.client.on('connect', function () {
+        this.client.on('secureConnect', function () {
             // console.log('Client: connection established with server');
 
             // console.log('---------client details -----------------');
@@ -151,8 +151,13 @@ export class SocketClientZDM8 {
 
 
             // writing data to server
-            that.client.write(JSON.stringify({ command: EMACHINE_COMMAND.login, token: that.token }) + '\n');
-
+            if (that.client?.authorized) {
+                console.log("Connection authorized by a Certificate Authority.");
+                // writing data to server
+                that.send({}, -11, EMACHINE_COMMAND.login);
+            } else {
+                console.log("Connection not authorized: " + that.client?.authorizationError)
+            }
         });
 
         this.client.setEncoding('utf8');
@@ -205,8 +210,8 @@ export class SocketClientZDM8 {
         this.client.on('close', function (data) {
             console.log('CLOSE on close:' + data);
             setTimeout(() => {
-                that.client.destroy();
-                that.client = new net.Socket();
+                that.client?.destroy();
+                // that.client = new net.Socket();
                 that.init();
             }, 3000);
         });
@@ -218,7 +223,7 @@ export class SocketClientZDM8 {
             req.token = that.token;
             req.time = new Date().getTime() + '';
             req.command = EMACHINE_COMMAND.ping;
-            that.client.write(JSON.stringify(req) + '\n');
+            that.send({}, -13, EMACHINE_COMMAND.ping)
         }, 5000);
     }
     send(data: any, transactionID: number, command = EMACHINE_COMMAND.status) {
@@ -229,7 +234,7 @@ export class SocketClientZDM8 {
         req.token = this.token;
         req.data = data;
         req.transactionID = transactionID
-        this.client.write(JSON.stringify(req) + '\n', e => {
+        this.client?.write(JSON.stringify(req) + '\n', e => {
             if (e)
                 console.log('SEND error on send', e);
         });
@@ -240,7 +245,7 @@ export class SocketClientZDM8 {
       
     }
     close() {
-        this.client.end();
+        this.client?.end();
         this.m.close();
     }
 
