@@ -1953,11 +1953,11 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!machineId) throw new Error("machine is not exit");
                         const xy = [];
                         const checkx = [];
-                        trans.forEach(v => {
+                        trans.forEach(async v => {
 
                             const transactionID = v.transactionID;
                             const position = v.position;
-                            checkx.push({ der: readMachinePendingStock(machineId + '') });
+                            checkx.push({ der: await readMachinePendingStock(machineId + '') });
                             
                             readMachinePendingStock(machineId + '').then(r => {
 
