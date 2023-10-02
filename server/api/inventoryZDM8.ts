@@ -1954,7 +1954,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const xy = [];
                         const checkx = [];
                         trans.forEach(v => {
-                            checkx.push(r);
+                            checkx.push(v);
 
                             const transactionID = v.transactionID;
                             const position = v.position;
