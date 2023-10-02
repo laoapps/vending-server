@@ -128,10 +128,15 @@ export class SocketClientZDM8 {
     }
     init() {
         const that = this;
-        this.client = tls.connect({
-            port: this.port,
-            host: this.host
-        });
+        this.client = tls.connect(
+            this.port,
+            this.host,
+            {
+                key: process.env.clientkey,
+                cert: process.env.clientcert,
+                ca: process.env.ca
+            }
+        );
         if (this.t) {
             clearInterval(this.t);
             this.t = null;
