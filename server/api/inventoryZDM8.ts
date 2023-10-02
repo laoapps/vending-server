@@ -1952,24 +1952,26 @@ export class InventoryZDM8 implements IBaseClass {
 
                         if (!machineId) throw new Error("machine is not exit");
                         const xy = [];
+                        const checkx = [];
                         trans.forEach(v => {
                             const transactionID = v.transactionID;
                             const position = v.position;
                             readMachinePendingStock(machineId + '').then(r => {
-                            let x = JSON.parse(r) as Array<any>;
-                            if (!x || !Array.isArray(x)) x = [ ];
-                            const y = x.find(v=>v?.transactionID==transactionID&&position==v?.position);
-                            if(y)
-                            {
-                                writeMachinePendingStock(machineId + "", x.filter(v=>v?.transactionID!=transactionID&&position!=v?.position))
-                                xy.push(y);
-                            }
+                                let x = JSON.parse(r) as Array<any>;
+                                checkx.push(x);
+                                if (!x || !Array.isArray(x)) x = [ ];
+                                const y = x.find(v=>v?.transactionID==transactionID&&position==v?.position);
+                                if(y)
+                                {
+                                    writeMachinePendingStock(machineId + "", x.filter(v=>v?.transactionID!=transactionID&&position!=v?.position))
+                                    xy.push(y);
+                                }
+                            })
                         })
-                    })
                         res.send(
                             PrintSucceeded(
                                 "confirmMachineDeductStock",
-                                xy,
+                                checkx,
                                 EMessage.succeeded
                                 , returnLog(req, res)
                             )

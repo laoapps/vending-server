@@ -500,9 +500,12 @@ export class ApiService {
   // }
 
   reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
+    const trans: Array<any> = pendingStock.filter(item => item.transactionID && item.position);
+    console.log(`ping pending stock`, trans);
     const params = {
-      trans: pendingStock
+      trans: trans
     }
+    
     this.confirmDeductStock(params).subscribe(res_confirm => {
       console.log(`return confirm deduct stock`, res_confirm);
       if (res_confirm.status != 1) throw new Error(res_confirm.message);
@@ -511,7 +514,9 @@ export class ApiService {
       const x = vsales.find((v) => {
         pendingStock.filter(item => {
           if (v.position == item.position) {
-            v.stock.qtty--;
+            if (v.stock.qtty > 0) {
+              v.stock.qtty--;
+            }
             return true;
           }
         });
