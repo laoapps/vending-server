@@ -161,7 +161,7 @@ export class LoadSaleListProcess {
                 for(let i = 0; i < this.lists.length; i++) {
                     const name = this.lists[i].stock.image;
     
-                    if (name != '' && name.subscribe(0,4) != 'data') {
+                    if (name != '' && name.substring(0,4) != 'data') {
                     
                         const url = `${this.filemanagerURL}${name}`;
                         const run = await axios({

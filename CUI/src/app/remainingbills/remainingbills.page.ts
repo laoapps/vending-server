@@ -20,6 +20,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   @Input()r=new Array<IBillProcess>();
   url = this.apiService.url;
+  lists: Array<any> = [];
   constructor(public apiService:ApiService, private modal: ModalController) { 
 
   }
@@ -346,6 +347,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.canclick = true;
     localStorage.setItem('product_fall', '0');
     this.clearTimer();
+  }
+  reload() {
+    window.location.reload();
   }
   
 }

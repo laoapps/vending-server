@@ -300,6 +300,14 @@ export class ApiService {
         that.wsAlive.time = new Date();
         that.wsAlive.isAlive = that.checkOnlineStatus();
         that.test.test = r?.test;
+
+
+        // reconfirm when deductstock fail
+        if (response.data.pendingStock != undefined && Object.entries(response.data.pendingStock).length > 0) {
+          this.reconfirmStock(response.data.pendingStock);
+        }
+
+
         // if (!this.vendingOnSale.length) {
         //   setTimeout(() => {
         //     window.location.reload();
@@ -377,22 +385,16 @@ export class ApiService {
       const params = {
         trans: [
           { 
-            // transactionID: r.bill?.transactionID, position: r?.position 
-            transactionID: 0, position: r?.position 
+            transactionID: r.bill?.transactionID, position: r?.position
 
           }
         ]
       }
-      // this.confirmDeductStock(params).subscribe(res_confirm => {
-      //   console.log(`confirm deduct stock`, res_confirm);
-      //   if (res_confirm.status != 1) throw new Error(res_confirm.message);
+      this.confirmDeductStock(params).subscribe(res_confirm => {
+        console.log(`confirm deduct stock`, res_confirm);
+        if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
-        
-      // }, error => {
-      //   console.log(error.message);
-      //   this.alertError(error.message);
-      // });
-      const vsales = ApiService.vendingOnSale; 
+        const vsales = ApiService.vendingOnSale; 
         const x = vsales.find((v) => {
           if (v.position == r.position) {
             v.stock.qtty--;
@@ -448,6 +450,10 @@ export class ApiService {
         this.storage.set('saleStock', vsales, 'stock').then((r) => {
           // that.deductOrderUpdate(x.position);
         });
+      }, error => {
+        console.log(error.message);
+        this.alertError(error.message);
+      });
 
 
 
@@ -493,6 +499,42 @@ export class ApiService {
   //   return ApiService.vendingOnSale;
   // }
 
+  reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
+    const params = {
+      trans: pendingStock
+    }
+    this.confirmDeductStock(params).subscribe(res_confirm => {
+      console.log(`return confirm deduct stock`, res_confirm);
+      if (res_confirm.status != 1) throw new Error(res_confirm.message);
+
+      const vsales = ApiService.vendingOnSale; 
+      const x = vsales.find((v) => {
+        pendingStock.filter(item => {
+          if (v.position == item.position) {
+            v.stock.qtty--;
+            return true;
+          }
+        });
+      });
+      this.eventEmitter.emit('stockdeduct', x);
+      this.saveSale(vsales).subscribe((r) => {
+        console.log(r);
+        if (r.status) {
+          console.log(`save sale success`);
+        } else {
+          this.simpleMessage(IENMessage.saveSaleFail);
+        }
+      });
+
+      console.log(`pending stock mode vendingOnSale-->`, vsales);
+      this.storage.set('saleStock', vsales, 'stock').then((r) => {
+        // that.deductOrderUpdate(x.position);
+      });
+    }, error => {
+      console.log(error.message);
+      this.alertError(error.message);
+    });
+  }
   public validateDB() { }
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);

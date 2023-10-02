@@ -1918,8 +1918,8 @@ export class InventoryZDM8 implements IBaseClass {
 
                         readMachinePendingStock(machineId + '').then(r => {
                             let ax = JSON.parse(r) as Array<any>;
-                            if (!ax || !Array.isArray(ax)) ax = [];
-                            const pendingStock = ax.map(v => { return { transactionID: v?.bill?.transactionID, position: v?.position } })
+                            if (!ax || !Array.isArray(ax)) ax = [ ];
+                        const pendingStock = ax.map(v=>{return {transactionID:v?.transactionID,position:v?.position}})
                             res.send(
                                 PrintSucceeded(
                                     "readMachineDeductStock",
@@ -1956,15 +1956,16 @@ export class InventoryZDM8 implements IBaseClass {
                             const transactionID = v.transactionID;
                             const position = v.position;
                             readMachinePendingStock(machineId + '').then(r => {
-                                let x = JSON.parse(r) as Array<any>;
-                                if (!x || !Array.isArray(x)) x = [];
-                                const y = x.find(v => v?.bill?.transactionID == transactionID && position == v?.position);
-                                if (y) {
-                                    writeMachinePendingStock(machineId + "", x.filter(v => v?.bill?.transactionID != transactionID && position != v?.position))
-                                    xy.push(y);
-                                }
-                            })
+                            let x = JSON.parse(r) as Array<any>;
+                            if (!x || !Array.isArray(x)) x = [ ];
+                            const y = x.find(v=>v?.transactionID==transactionID&&position==v?.position);
+                            if(y)
+                            {
+                                writeMachinePendingStock(machineId + "", x.filter(v=>v?.transactionID!=transactionID&&position!=v?.position))
+                                xy.push(y);
+                            }
                         })
+                    })
                         res.send(
                             PrintSucceeded(
                                 "confirmMachineDeductStock",
@@ -2789,9 +2790,9 @@ export class InventoryZDM8 implements IBaseClass {
 
         readMachinePendingStock(bill?.machineId + '').then(r => {
             let x = JSON.parse(r) as Array<any>;
-            if (!x || !Array.isArray(x)) x = [{ bill, position }];
+            if (!x || !Array.isArray(x)) x = [{ transactionID, position }];
             else {
-                x.push({ bill, position });
+                x.push({ transactionID, position });
             }
             writeMachinePendingStock(bill?.machineId + "", x)
             logEntity.create({ body: resx, url: 'deductStock' })
@@ -4362,14 +4363,11 @@ export class InventoryZDM8 implements IBaseClass {
                                         }
                                     }
 
+                                    // fixedhere
                                     const a = await readMachinePendingStock(ws['machineId'] + '');
                                     let ax = JSON.parse(a) as Array<any>;
-                                    if (!ax || !Array.isArray(ax)) ax = [];
-                                    const pendingStock = ax.map(v => { return { transactionID: v?.bill?.transactionID, position: v?.position } });
-
-                                    let pendingStockLock = await readMachineLockDrop(ws['machineId'] + '');
-                                    pendingStockLock = pendingStockLock == '' || !pendingStockLock ? 'false' : pendingStockLock;
-                                    pendingStockLock == 'true' ? pendingStock.length = 0 : '';
+                                        if (!ax || !Array.isArray(ax)) ax = [ ];
+                                    const pendingStock = ax.map(v=>{return {transactionID:v?.transactionID,position:v?.position}})
                                     ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(

@@ -55,6 +55,9 @@
     <div class="laab-card-options">
       <div class="left"></div>
       <div class="right">
+        <a (click)="reload()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-arrows-rotate"></i> Reload
+        </a>
         <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
           <i class="fa-solid fa-xmark"></i> Close
         </a>
@@ -65,10 +68,10 @@
       <div class="sub-title">Choose any ticket for receive your order</div>
     </div>
     <div class="laab-card-body">
+
       <div *ngFor="let s of r; let i = index" (click)="retryProcessBill(s.transactionID+'',s.position, true)" href="javascript:void(0)" class="item">
         <div class="content">
           <div class="icon">
-            <!-- <img src="{{findImage(getStock(s?.position)?.id)}}" alt=""> -->
             <img [src]="apiService?.imageList[findImage(getStock(s?.position)?.id)]" alt="">
 
           </div>
@@ -79,6 +82,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
