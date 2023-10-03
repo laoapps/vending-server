@@ -13,6 +13,7 @@ import { IENMessage } from '../models/base.model';
 export class RemainingbillsPage implements OnInit, OnDestroy {
 
   canclick: boolean = false;
+  errorClick: number = 0;
 
   timer: any = {} as any;
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
@@ -22,7 +23,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   url = this.apiService.url;
   lists: Array<any> = [];
   constructor(public apiService:ApiService, private modal: ModalController) { 
-
+    
   }
 
   async ngOnInit() {
@@ -144,7 +145,6 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
             r.present();
           });
-
           this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
             if (reload_ticket.status != 1) {
               this.cancelTimer();
@@ -168,6 +168,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
           }, async error => {
             this.cancelTimer();
+
             await this.apiService.soundSystemError();
           });
           
@@ -176,6 +177,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           this.canclick = true;
           localStorage.setItem('product_fall', '0');
           this.clearTimer();
+          this.r = [];
+          this.reloadDelivery(true);
           await this.apiService.soundSystemError();
         }
 
@@ -191,6 +194,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           this.apiService.dismissLoading();
         },3000)
         this.clearTimer();
+        this.r = [];
+        this.reloadDelivery(true);
         await this.apiService.soundSystemError();
       }); 
 
@@ -319,6 +324,35 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   //     }); 
   //   }
   // }
+
+  reloadDelivery(human: boolean) {
+    this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
+      if (reload_ticket.status != 1) {
+        this.cancelTimer();
+        await this.apiService.soundSystemError();
+        return;
+      }
+
+      this.r = reload_ticket.data;
+      console.log(`here der`, this.r);
+    
+      if (this.r != undefined && Object.entries(this.r).length == 0) {
+        localStorage.setItem('product_fall', '0');
+        this.clearTimer();
+        this.apiService,this.modal.dismiss();
+        return;
+      }
+
+      if (human == true) {
+        this.loadAutoFall();
+      }
+
+    }, async error => {
+      this.cancelTimer();
+
+      await this.apiService.soundSystemError();
+    });
+  }
   getPrice() {
     return this.r.find(item => item)
   }

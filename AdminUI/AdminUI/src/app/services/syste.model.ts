@@ -895,6 +895,7 @@ export interface IMachineClientID extends IBase {
     ownerUuid: string;
     photo: string;
     data: Array<any>;
+    shopPhonenumber: string;
 
 
     // formData?: FormData;

@@ -459,6 +459,8 @@ export class ApiService {
 
       // });
     });
+
+    // fix der
     this.wsapi.waitingDelivery.subscribe((r) => {
       console.log('WAITING FOR DELIVERY');
       // available bills
@@ -482,12 +484,18 @@ export class ApiService {
                 r.present();
               });
           }
+          this.eventEmmiter.emit('delivery');
         });
         // this.showModal(RemainingbillsPage, { r });
       }
     });
 
     // this.initLocalHowToVideoPlayList();
+  }
+  public onDelivery(cb: (data) => void) {
+    if (cb) {
+      this.eventEmmiter.on('delivery', cb);
+    }
   }
   public onStockDeduct(cb: (data) => void) {
     if (cb) {

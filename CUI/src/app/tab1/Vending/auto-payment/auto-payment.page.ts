@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
-import { EClientCommand, IVendingMachineSale } from 'src/app/services/syste.model';
+import { EClientCommand, IBillProcess, IVendingMachineSale } from 'src/app/services/syste.model';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import Swal from 'sweetalert2';
 import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
@@ -11,6 +11,7 @@ import * as cryptojs from 'crypto-js';
 import qrlogo from 'qrcode-with-logos';
 import { WsapiService } from 'src/app/services/wsapi.service';
 import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
+import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
 
 @Component({
   selector: 'app-auto-payment',
@@ -160,16 +161,18 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     this.loadDOMs();
     this.loadFakeOrder();
 
+    // websocket check when process callback
+    this.apiService.onDelivery(res_delivery => {
+        this.orders = [];
+        this.getTotalSale.q = 0;
+        this.getTotalSale.t = 0;
+        this.apiService.myTab1.clearCart();
+        this.close();
+    });
+
     await this.loadCountDownBill();
 
-    // websocket check when process callback
-    this.apiService.onStockDeduct((data)=>{
-      console.log('onStockDeduct',data);
-      this.orders = [];
-      this.getTotalSale.q = 0;
-      this.getTotalSale.t = 0;
-      this.close();
-    });
+
   }
 
   ngOnDestroy(): void {
@@ -182,6 +185,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownCheckLAABTimer);
     clearInterval(this.countdownDestroyTimer);
+    // if (this.WSAPIService.waitingDelivery) this.WSAPIService.waitingDelivery.unsubscribe();
+
   }
 
   loadDOMs() {

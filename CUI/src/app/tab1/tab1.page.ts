@@ -1836,7 +1836,7 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        return resolve(IENMessage.success);
+        // return resolve(IENMessage.success);
         if (!this.platform.is('capacitor')) return resolve(IENMessage.success);
 
         this.apiService.checkAppVersion.subscribe(async run => {
