@@ -2297,7 +2297,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         if (!(o.ownerUuid && o.otp && o.machineId))
                             return res.send(
-                                PrintError("addMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
+                                PrintError("addMachine", o, EMessage.bodyIsEmpty, returnLog(req, res, true))
                             );
                         if (o.machineId.length != 8 || Number.isNaN(o.machineId) || Number.isNaN(o.otp))
                             return res.send(
@@ -2592,7 +2592,7 @@ export class InventoryZDM8 implements IBaseClass {
         try {
             console.log('checkSupAdmin');
             const token = req.body.token;
-            const phoneNumber = req.body.shopPhonenumber + '';
+            let phoneNumber = req.body.shopPhonenumber + '';
             if (!token) throw new Error(EMessage.tokenNotFound);
 
             findRealDB(token).then((r) => {
@@ -2601,6 +2601,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
                 if (phoneNumber) {
+                    phoneNumber = `+85620${phoneNumber}`;
                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
                         res.locals["ownerUuid"] = r.uuid;
                         next();
