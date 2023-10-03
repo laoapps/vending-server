@@ -2297,7 +2297,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         if (!(o.ownerUuid && o.otp && o.machineId))
                             return res.send(
-                                PrintError("addMachine", req.body, EMessage.bodyIsEmpty, returnLog(req, res, true))
+                                PrintError("addMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
                             );
                         if (o.machineId.length != 8 || Number.isNaN(o.machineId) || Number.isNaN(o.otp))
                             return res.send(
@@ -2602,8 +2602,8 @@ export class InventoryZDM8 implements IBaseClass {
                 res.locals["superadmin"] = uuid;
                 if (phoneNumber) {
                     phoneNumber = `+85620${phoneNumber}`;
-                    findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
-                        res.locals["ownerUuid"] = r.uuid;
+                    findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
+                        res.locals["ownerUuid"] = r_owneruuid.uuid;
                         next();
                     });
                 } else {
