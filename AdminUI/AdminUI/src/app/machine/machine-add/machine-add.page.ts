@@ -29,6 +29,7 @@ export class MachineAddPage implements OnInit {
   }
   save() {
     this.s.photo= this.imageSrc;
+    this.s.shopPhonenumber = `+85620${this.s.shopPhonenumber}`;
     this.s.token = localStorage.getItem('lva_token');
 
     if (!(this.s.photo && this.s.token && this.s.file && this.s.filename && this.s.fileuuid)) {

@@ -2290,7 +2290,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const o = req.body.data as IMachineClientID;
                         o.ownerUuid = ownerUuid || "";
-                        if (!o.otp || !o.machineId)
+                        if (!(o.ownerUuid && o.otp && o.machineId))
                             return res.send(
                                 PrintError("addMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
                             );
@@ -2586,6 +2586,7 @@ export class InventoryZDM8 implements IBaseClass {
             const token = req.body.token;
             const phoneNumber = req.body.shopPhonenumber + '';
             if (!token) throw new Error(EMessage.tokenNotFound);
+
             findRealDB(token).then((r) => {
                 const uuid = r;
                 if (!uuid) throw new Error(EMessage.notfound);

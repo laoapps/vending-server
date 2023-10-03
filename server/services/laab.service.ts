@@ -59,6 +59,7 @@ export const message = (data: any, message: string, status: number, res: Respons
 }
 
 export enum IENMessage {
+    notFoundShop = 'not found shop',
     updateContentVersionFail = 'update content version fail',
     notFoundUpdateVersion = 'not found update version',
     updateUniqueVersionFail = 'update unique version fail',
