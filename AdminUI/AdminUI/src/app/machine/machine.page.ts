@@ -300,6 +300,7 @@ export class MachinePage implements OnInit {
             r.data.s.photo = r_writeFile.data[0].info.fileUrl;
             this.apiService.addMachine(r.data.s)?.subscribe(async rx => {
               console.log(`add machine response`, rx);
+              console.log(`status`, rx.status);
               if (rx.status != 1) {
                 this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid}).subscribe(r_cancelWriteFile => {
                   if (r_cancelWriteFile.status != 1) {
@@ -310,10 +311,10 @@ export class MachinePage implements OnInit {
                   this.apiService.simpleMessage(IENMessage.addMachineFail);
                   return;
                 }, error => this.apiService.simpleMessage(IENMessage.writeFileError))
+              } else {
+                rx.data.photo = base64;
+                this._l.unshift(rx.data);
               }
-
-              rx.data.photo = base64;
-              this._l.unshift(rx.data);
             }, error => this.apiService.simpleMessage(IENMessage.addMachineError));
           }, error => this.apiService.simpleMessage(IENMessage.writeFileError));
 
