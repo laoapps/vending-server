@@ -1952,12 +1952,10 @@ export class InventoryZDM8 implements IBaseClass {
 
                         if (!machineId) throw new Error("machine is not exit");
                         const xy = [];
-                        const checkx = [];
                         trans.forEach(v => {
 
                             const transactionID = v.transactionID;
                             const position = v.position;
-                            checkx.push({ der: readMachinePendingStock(machineId?.machineId + '') });
                             
                             readMachinePendingStock(machineId?.machineId + '').then(r => {
 
@@ -1974,7 +1972,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintSucceeded(
                                 "confirmMachineDeductStock",
-                                checkx,
+                                xy,
                                 EMessage.succeeded
                                 , returnLog(req, res)
                             )
