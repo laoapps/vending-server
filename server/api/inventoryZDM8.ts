@@ -90,6 +90,7 @@ import {
     subadminEntity,
     vendingMachineSaleReportEntity,
     vendingVersionEntity,
+    vendingWallet,
 } from "../entities";
 import {
     MachineClientID,
@@ -114,6 +115,7 @@ import {
 import { CashinValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashinValidation.func";
 import { FranchiseStockFactory } from "../entities/franchisestock.entity";
 import { MmoneyTransferValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/mmoneyTransferValidation.func";
+import { IVendingWalletType } from "../laab_service/models/base.model";
 export class InventoryZDM8 implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
@@ -2299,6 +2301,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP, returnLog(req, res, true))
                             );
 
+                        const findMerchant = await vendingWallet.findOne({ where: { ownerUuid: o.ownerUuid, walletType: IVendingWalletType.merchant } });
+                        if (findMerchant == null) throw  new Error(IENMessage.notFoundShop);
+                        
                         const x = await this.machineClientlist.findOne({
                             where: { machineId: o.machineId },
                         });
