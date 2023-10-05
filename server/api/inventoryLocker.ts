@@ -849,15 +849,15 @@ export class InventoryLocker implements IBaseClass {
                                 .catch((e) => {
                                     console.log("error add Door", e);
 
-                                    res.send(PrintError("addDoor 1", JSON.stringify(e), EMessage.error, returnLog(req, res, true)));
+                                    res.send(PrintError("addDoor 1" + JSON.stringify(e), e, EMessage.error, returnLog(req, res, true)));
                                 });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("addDoor 2", JSON.stringify(error), EMessage.error, returnLog(req, res, true)));
+                            res.send(PrintError("addDoor 2" + JSON.stringify(error), error, EMessage.error, returnLog(req, res, true)));
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addDoor 3", JSON.stringify(error), EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("addDoor 3" + JSON.stringify(error), error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
