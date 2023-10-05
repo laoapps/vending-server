@@ -840,7 +840,7 @@ export class InventoryLocker implements IBaseClass {
                                 );
                             o.ownerUuid = ownerUuid;
                             const d = await doorEntity.findOne({ where: { doorNumber: o.doorNumber, isDone: false } });
-                            if (d) return PrintError("addDoor", [], EMessage.doorExist, returnLog(req, res, true));
+                            if (d != null) return PrintError("addDoor", [], EMessage.doorExist, returnLog(req, res, true));
 
                             doorEntity
                                 .create(o)
