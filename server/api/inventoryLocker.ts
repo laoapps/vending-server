@@ -67,6 +67,7 @@ import {
     ILoadVendingMachineSaleBillReport,
     IDoor,
     IDoorItem,
+    IDoorPayment,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -839,12 +840,22 @@ export class InventoryLocker implements IBaseClass {
                                     PrintError("addDoor", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
                                 );
                             o.ownerUuid = ownerUuid;
-                            const d = await doorEntity.findOne({ where: { doorNumber: o.doorNumber, isDone: false } });
+                            // check machine id   o.machineId
+                            const m = this.checkMachineId(o.machineId);
+                            if (!m) return res.send(PrintError("addDoor", [], EMessage.MachineIdNotFound, returnLog(req, res, true)));
+
+                            const d = await doorEntity.findOne({ where: { doorNumber: o.doorNumber, isDone: false, machineId: o.machineId } });
                             if (d != null) return res.send(PrintError("addDoor", [], EMessage.doorExist, returnLog(req, res, true)));
 
                             doorEntity
                                 .create(o)
                                 .then((r) => {
+                                    const d = r.toJSON();
+                                    if (!d.data)
+                                        d.data = { added: true };
+                                    else d.data.added = true
+                                    this.doorRec(o.machineId, d)
+
                                     res.send(PrintSucceeded("addDoor", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
@@ -877,10 +888,20 @@ export class InventoryLocker implements IBaseClass {
                             // await sEnt.sync();
                             const id = Number(req.query['id']);
                             const machineId = req.query['machineId'] + '';
+                            // check machine id   o.machineId
+                            const m = this.checkMachineId(machineId);
+                            if (!m) return res.send(PrintError("deleteDoor", [], EMessage.MachineIdNotFound, returnLog(req, res, true)));
+
                             const d = await doorEntity.findOne({ where: { id, machineId, ownerUuid } });
                             if (!d) PrintError("deleteDoor", [], EMessage.notexist, returnLog(req, res, true))
+
                             d.destroy()
                                 .then((r) => {
+                                    const dx = d.toJSON();
+                                    if (!dx.data)
+                                        dx.data = { deleted: true };
+                                    else d.data.deleted = true
+                                    this.doorRec(machineId, dx)
                                     res.send(PrintSucceeded("deleteDoor", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
@@ -926,6 +947,13 @@ export class InventoryLocker implements IBaseClass {
                                         return res.send(
                                             PrintError("finishDoor not found", [], EMessage.error, returnLog(req, res, true))
                                         );
+                                    const m_doorEntity = DoorFactory(EEntity.Door + '_' + machineId, dbConnection);
+                                    const d = r.toJSON();
+                                    if (!d.data)
+                                        d.data = { finished: true };
+                                    else d.data.finished = true
+                                    this.doorRec(r.machineId, d)
+                                    m_doorEntity.create(d);
                                     console.log('finishDoor', r);
                                     /// check Payment has been made 
                                     const p = doorPaymentEntity.findOne({ where: { machineId: machineId.machineId, isPaid: true } })
@@ -934,18 +962,18 @@ export class InventoryLocker implements IBaseClass {
                                     r.isDone = true;
                                     console.log('finishDoor', r);
                                     r.changed("isDone", true);
-                                    const dx = r.toJSON();
-                                    dx.isDone = false;
-                                    dx.door = null;
-                                    dx.sendBy = '';
-                                    dx.sentAt = null;
-                                    dx.depositAt = null;
-                                    dx.depositBy = '';
-                                    doorEntity.create(dx).then(async rx => {
+                                    // const dx = r.toJSON();
+                                    r.isDone = false;
+                                    r.door = null;
+                                    r.sendBy = '';
+                                    r.sentAt = null;
+                                    r.depositAt = null;
+                                    r.depositBy = '';
+                                    r.save().then(async rx => {
                                         console.log('clone new door exist');
-                                        writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(dx));
+                                        writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(r));
                                         // Unlock here                            
-                                        this.ssocket.processOrder(machineId.machineId, dx.doorNumber, new Date().getTime())
+                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime())
 
                                         res.send(
                                             PrintSucceeded(
@@ -972,7 +1000,59 @@ export class InventoryLocker implements IBaseClass {
                 }
             );
             router.post(
-                this.path + "/doorPayment",
+                this.path + "/createDoorPayment",
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const id = Number(req.query["id"]);
+                        const d = req.body as IReqModel;
+                        const dp = d.data as IDoorPayment;
+                        const machineId = this.ssocket.findMachineIdToken(d.token);
+
+                        doorEntity
+                            .findOne({ where: { id, machineId: machineId.machineId, isDone: false } })
+                            .then(async (r) => {
+                                if (!r)
+                                    return res.send(
+                                        PrintError("door found", [], EMessage.error, returnLog(req, res, true))
+                                    );
+                                console.log('createDoorPayment', r);
+                                /// check Payment has been made 
+                                dp.LAABRef /// nothing to check;
+
+                                /// check LAAB
+                                res.send(
+                                    PrintSucceeded(
+                                        "createDoorPayment",
+                                        await doorPaymentEntity.create(dp),
+                                        EMessage.succeeded
+                                        , returnLog(req, res)
+                                    )
+                                );
+
+                            })
+                            .catch((e) => {
+                                console.log("error doorPayment Door", e);
+
+                                res.send(PrintError("doorPayment", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("doorPayment", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            // LAAB ref direct
+            // CALLBACK QR 
+            // CALLBACK URL...
+            router.post(
+                this.path + "/finishDoorPayment",
                 // this.checkSuperAdmin,
                 // this.checkSubAdmin,
                 // this.checkAdmin,
@@ -991,17 +1071,21 @@ export class InventoryLocker implements IBaseClass {
                                     return res.send(
                                         PrintError("door found", [], EMessage.error, returnLog(req, res, true))
                                     );
-                                console.log('doorPayment', r);
+                                console.log('finishDoorPayment', r);
                                 /// check Payment has been made 
-                                const p = doorPaymentEntity.findOne({ where: { machineId: machineId.machineId, isPaid: true } })
+                                const p = await doorPaymentEntity.findOne({ where: { machineId: machineId.machineId, orderUuid: d.data.orderUuid } })
 
-                                if (p) return res.send(PrintError("doorPayment found", e, EMessage.error, returnLog(req, res, true)));
+                                if (!p) return res.send(PrintError("finishDoorPayment not found", e, EMessage.error, returnLog(req, res, true)));
+                                if (p.isPaid) return res.send(PrintError("finishDoorPayment  has been paid", e, EMessage.error, returnLog(req, res, true)));
+                                p.isPaid = true;
+                                p.LAABRef = d.data.LAABRef;
+                                p.paymentRef = d.data.paymentRef;
 
                                 /// check LAAB
                                 res.send(
                                     PrintSucceeded(
-                                        "doorPayment",
-                                        await r.save(),
+                                        "finishDoorPayment",
+                                        await p.save(),
                                         EMessage.succeeded
                                         , returnLog(req, res)
                                     )
@@ -1009,7 +1093,7 @@ export class InventoryLocker implements IBaseClass {
 
                             })
                             .catch((e) => {
-                                console.log("error doorPayment Door", e);
+                                console.log("error finishDoorPayment Door", e);
 
                                 res.send(PrintError("doorPayment", e, EMessage.error, returnLog(req, res, true)));
                             });
@@ -1052,6 +1136,11 @@ export class InventoryLocker implements IBaseClass {
                                             PrintError("finishDoor not found", [], EMessage.error, returnLog(req, res, true))
                                         );
                                     console.log('finishDoor', r);
+                                    const d = r.toJSON();
+                                    if (!d.data)
+                                        d.data = { unlock: false };
+                                    else d.data.unlock = false
+                                    this.doorRec(machineId.machineId, d)
                                     /// check Payment has been made 
                                     const p = doorPaymentEntity.findOne({ where: { machineId: machineId.machineId, isPaid: true } })
                                     /// check LAAB
@@ -1059,14 +1148,17 @@ export class InventoryLocker implements IBaseClass {
                                     r.isDone = true;
                                     console.log('finishDoor', r);
                                     r.changed("isDone", true);
-                                    const dx = r.toJSON();
-                                    dx.isDone = false;
                                     /// TODO
-                                    doorEntity.create(dx).then(async rx => {
+                                    r.save().then(async rx => {
                                         console.log('clone new door exist');
-                                        writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(dx));
+                                        const d = r.toJSON();
+                                        if (!d.data)
+                                            d.data = { unlock: true };
+                                        else d.data.unlock = true
+                                        this.doorRec(machineId.machineId, d)
+                                        writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(r));
                                         // Unlock here                            
-                                        this.ssocket.processOrder(machineId.machineId, dx.doorNumber, new Date().getTime())
+                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime())
 
                                         res.send(
                                             PrintSucceeded(
@@ -1122,6 +1214,11 @@ export class InventoryLocker implements IBaseClass {
                                             PrintError("finishDoor not found", [], EMessage.error, returnLog(req, res, true))
                                         );
                                     console.log('finishDoor', r);
+                                    const d = r.toJSON();
+                                    if (!d.data)
+                                        d.data = { unlock: false };
+                                    else d.data.unlock = false
+                                    this.doorRec(machineId.machineId, d)
                                     /// check Payment has been made 
                                     const p = doorPaymentEntity.findOne({ where: { machineId: machineId.machineId, isPaid: true } })
                                     /// check LAAB
@@ -1129,13 +1226,16 @@ export class InventoryLocker implements IBaseClass {
                                     r.isDone = true;
                                     console.log('finishDoor', r);
                                     r.changed("isDone", true);
-                                    const dx = r.toJSON();
-                                    dx.isDone = false;
-                                    doorEntity.create(dx).then(async rx => {
+                                    r.save().then(async rx => {
                                         console.log('clone new door exist');
-                                        writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(dx));
+                                        const d = r.toJSON();
+                                        if (!d.data)
+                                            d.data = { unlock: true };
+                                        else d.data.unlock = true
+                                        this.doorRec(machineId.machineId, d)
+                                        writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(r));
                                         // Unlock here                            
-                                        this.ssocket.processOrder(machineId.machineId, dx.doorNumber, new Date().getTime())
+                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime())
 
                                         res.send(
                                             PrintSucceeded(
@@ -1310,6 +1410,11 @@ export class InventoryLocker implements IBaseClass {
                             r.door = doorItem;
                             console.log('addDoorItem', r);
                             r.changed("door", true);
+                            const d = r.toJSON();
+                            if (!d.data)
+                                d.data = { addDoorItem: true };
+                            else d.data.addDoorItem = true
+                            this.doorRec(machineId, d)
                             res.send(
                                 PrintSucceeded(
                                     "addDoorItem",
@@ -1336,6 +1441,10 @@ export class InventoryLocker implements IBaseClass {
         } catch (error) {
             console.log(error);
         }
+    }
+    doorRec(machineId: string, d: any) {
+        const m_doorEntity = DoorFactory(EEntity.Door + '_' + machineId, dbConnection);
+        m_doorEntity.create(d);
     }
     authorizeSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
