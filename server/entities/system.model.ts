@@ -464,17 +464,17 @@ export const EESSP_COMMANDS = {
         description: 'Resets the fixed encryption key to the device default. The device may have extra security requirements before it will accept this command (e.g. The Hopper must be empty) if these requirements are not met, the device will reply with Command Cannot be Processed. If successful, the device will reply OK, then reset. When it starts up the fixed key will be the default.'
     }
 }
-export interface IFranchiseStock extends IBase,IBC{
-    data:any
+export interface IFranchiseStock extends IBase, IBC {
+    data: any
 }
-export interface IVendingWallet{
-    ownerUuid:string;
-    walletUuid:string;
-    walletType:string;// limitter, Merchant, machine
-    machineClientId:string; // 
-    passkeys:string;
-    username:string;
-    platform:string;
+export interface IVendingWallet {
+    ownerUuid: string;
+    walletUuid: string;
+    walletType: string;// limitter, Merchant, machine
+    machineClientId: string; // 
+    passkeys: string;
+    username: string;
+    platform: string;
 }
 export enum EPaymentProvider {
     mmoney = 'mmoney',
@@ -841,10 +841,10 @@ export enum EZDM8_COMMAND {
     deleteReports = "deleteReports",
     logs = "logs"
 }
-export enum EPaymentStatus{
-    paid='paid',
-    pending='pending',
-    delivered='delivered'
+export enum EPaymentStatus {
+    paid = 'paid',
+    pending = 'pending',
+    delivered = 'delivered'
 }
 export enum EMessage {
     notfoundmachine = 'notfoundmachine',
@@ -1044,45 +1044,45 @@ export interface IBC {
     hashP?: string;
     hashM?: string;
 }
-export interface IDoor extends IBase{
-    ownerUuid:string;
-    machineId:string;
-    door:IDoorItem
-    doorNumber:number;
-    cabinetNumber:number;
-    data:any;
-    isDone:boolean;
-    depositBy:string;
-    depositAt:Date;
-    sendBy:string;
-    sentAt:Date;
-    minValue:number;
-    maxValue:number;
+export interface IDoor extends IBase {
+    ownerUuid: string;
+    machineId: string;
+    door: IDoorItem
+    doorNumber: number;
+    cabinetNumber: number;
+    data: any;
+    isDone: boolean;
+    depositBy: string;
+    depositAt: Date;
+    sendBy: string;
+    sentAt: Date;
+    minValue: number;
+    maxValue: number;
 
 }
 export interface IDoorItem {
-    name:string;
-    description:string;
-    productUuid:string;
-    orderUuid:string;
-    createdAt:Date;
-    price:number;
-    expireAt:Date;
-    image:any;
-    data:any;
+    name: string;
+    description: string;
+    productUuid: string;
+    orderUuid: string;
+    createdAt: Date;
+    price: number;
+    expireAt: Date;
+    image: any;
+    data: any;
 }
 export interface IDoorPayment extends IBase {
-    ownerUuid:string;
-    machineId:string;
-    door:IDoorItem
-    doorNumber:number;
-    cabinetNumber:number;
-    productUuid:string;
-    orderUuid:string;
-    price:number;
-    isPaid:boolean;
-    LAABRef:any;
-    paymentRef:any;
+    ownerUuid: string;
+    machineId: string;
+    door: IDoorItem
+    doorNumber: number;
+    cabinetNumber: number;
+    productUuid: string;
+    orderUuid: string;
+    price: number;
+    isPaid: boolean;
+    LAABRef: any;
+    paymentRef: any;
 
 }
 
@@ -1093,8 +1093,8 @@ export interface ILogActivity extends IBase {
     superadmin: string;
     subadmin: string;
     url: string;
-    body:any;
-    error:boolean
+    body: any;
+    error: boolean
 }
 export interface IStock extends IBase, IBC {
     name: string;
@@ -1306,19 +1306,19 @@ export interface IMMoneyConfirm {
 
     // new
     wallet_ids: string,
-       
+
     channel: string,//POS
     resultCode: string,//200
     resultDescription: string,//'Operation'
-   
+
     PhoneNumber: string,
 
     tranid_client: string,
     trandID: string, // 
     amount: string,
-    msisdn_merchan:string,
-    msisdn_consumer:string,
-    qrcode:string
+    msisdn_merchan: string,
+    msisdn_consumer: string,
+    qrcode: string
 
 
 }
@@ -1337,7 +1337,7 @@ export interface IBankNote extends IBase {
     image: string;
 }
 export interface IHashBankNote extends IBankNote {
-    hash:string;
+    hash: string;
 }
 export interface IBillCashIn extends IBase {
     bankNotes: Array<IBankNote>;
@@ -1373,913 +1373,913 @@ export interface IMMoneyRequestRes {
 }
 
 export const data = [{
-        id: 0,
-        name: 'Pepsi can 330ml',
-        image: 'pepsican.jpeg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
+    id: 0,
+    name: 'Pepsi can 330ml',
+    image: 'pepsican.jpeg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
 
-    }, {
-        id: 1,
-        name: 'Pepsi Zero',
-        image: 'pepsizero.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
+}, {
+    id: 1,
+    name: 'Pepsi Zero',
+    image: 'pepsizero.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
 
-    }, {
-        id: 2,
-        name: 'Oishi black tea 450ml',
-        image: 'oishiteabottle.png',
-        price: 10000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }
+}, {
+    id: 2,
+    name: 'Oishi black tea 450ml',
+    image: 'oishiteabottle.png',
+    price: 10000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
     , {
-        id: 3,
-        name: 'Water tiger head 380ml',
-        image: 'tigerheadbottle.png',
-        price: 4000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 4,
-        name: 'Water tiger head 235ml',
-        image: 'tigerheadbottlesmall.png',
-        price: 2000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 5,
-        name: 'LTC water (MMoney)',
-        image: 'ltc_water_m.png',
-        price: 0,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 6,
-        name: 'Beerlao 330ml',
-        image: 'beerlao.png',
-        price: 11000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 7,
-        name: 'Carlsberg red 330ml',
-        image: 'carlsbergred.png',
-        price: 13000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 8,
-        name: 'Mirinda green 330ml',
-        image: 'mirindagreen.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 9,
-        name: 'Mirinda orange 330ml',
-        image: 'mirindaorange.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 10,
-        name: 'Mirinda strawberry 330ml',
-        image: 'mirindastrawberry.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 11,
-        name: 'Johnson',
-        image: 'johnson.jpg',
-        price: 22000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 12,
-        name: 'Scott',
-        image: 'scott.jpg',
-        price: 4000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 13,
-        name: 'Sponsor ',
-        image: 'sponsor.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 14,
-        name: 'Nescafe ',
-        image: 'nescafe.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 15,
-        name: 'Birdy ',
-        image: 'birdy.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 16,
-        name: 'Kokozo coconut ',
-        image: 'kokozococonut.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 17,
-        name: 'Carlsberg green ',
-        image: 'carlsberggreen.jpg',
-        price: 13000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 18,
-        name: 'Green tigerhead water',
-        image: 'greentigerheadwater.jpg',
-        price: 4000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 19,
-        name: 'Green tigerhead water',
-        image: 'greentigerheadwater.jpg',
-        price: 4000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 20,
-        name: 'Greenmate orange',
-        image: 'greenmateorange.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }
+    id: 3,
+    name: 'Water tiger head 380ml',
+    image: 'tigerheadbottle.png',
+    price: 4000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 4,
+    name: 'Water tiger head 235ml',
+    image: 'tigerheadbottlesmall.png',
+    price: 2000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 5,
+    name: 'LTC water (MMoney)',
+    image: 'ltc_water_m.png',
+    price: 0,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 6,
+    name: 'Beerlao 330ml',
+    image: 'beerlao.png',
+    price: 11000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 7,
+    name: 'Carlsberg red 330ml',
+    image: 'carlsbergred.png',
+    price: 13000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 8,
+    name: 'Mirinda green 330ml',
+    image: 'mirindagreen.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 9,
+    name: 'Mirinda orange 330ml',
+    image: 'mirindaorange.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 10,
+    name: 'Mirinda strawberry 330ml',
+    image: 'mirindastrawberry.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 11,
+    name: 'Johnson',
+    image: 'johnson.jpg',
+    price: 22000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 12,
+    name: 'Scott',
+    image: 'scott.jpg',
+    price: 4000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 13,
+    name: 'Sponsor ',
+    image: 'sponsor.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 14,
+    name: 'Nescafe ',
+    image: 'nescafe.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 15,
+    name: 'Birdy ',
+    image: 'birdy.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 16,
+    name: 'Kokozo coconut ',
+    image: 'kokozococonut.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 17,
+    name: 'Carlsberg green ',
+    image: 'carlsberggreen.jpg',
+    price: 13000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 18,
+    name: 'Green tigerhead water',
+    image: 'greentigerheadwater.jpg',
+    price: 4000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 19,
+    name: 'Green tigerhead water',
+    image: 'greentigerheadwater.jpg',
+    price: 4000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 20,
+    name: 'Greenmate orange',
+    image: 'greenmateorange.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
     ,
-    {
-        id: 21,
-        name: 'Kokozo Lychee',
-        image: 'kokozolychee.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },//
-    {
-        id: 22,
-        name: 'Zappe Green drink Detox',
-        image: 'zappegreendrink.jpg',
-        price: 12000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },//
-    {
-        id: 23,
-        name: 'Greenmate Orange bottle',
-        image: 'greenmateorangebottle.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 24,
-        name: 'Sappe blue drink',
-        image: 'sappebautidrinkblue.jpg',
-        price: 12000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 25,
-        name: 'Haki drink lemon',
-        image: 'hakidrinklemon.jpeg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 26,
-        name: 'Yen Yen Kekhuai',
-        image: 'yenyenkekhuai.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 27,
-        name: 'Minimate Orange',
-        image: 'minimateorange.jpg',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 28,
-        name: 'Oishi Green tea Genmai',
-        image: 'oishi-green-tea-genmai.png',
-        price: 10000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 29,
-        name: 'Oishi Green tea lemon',
-        image: 'oishi-green-tea-lemon.png',
-        price: 10000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 30,
-        name: 'Dutchmill strawberry',
-        image: 'dutchmillstrawberry.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 31,
-        name: 'Dutchmill Berry mixed',
-        image: 'duchmilkberrymix.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 32,
-        name: 'Dutchmill Blueberry',
-        image: 'dutchmillblueberry.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 33,
-        name: 'Dna corn',
-        image: 'dnacorn.jpeg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 34,
-        name: 'Dna Green',
-        image: 'dnagreen.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 35,
-        name: 'Dna sesame',
-        image: 'dnasesame.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 36,
-        name: 'Dna strawberry',
-        image: 'dnastrawberry.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 37,
-        name: 'Ovaltine Red',
-        image: 'ovaltinered.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 38,
-        name: 'Dmalt',
-        image: 'dmaltuht.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }
+{
+    id: 21,
+    name: 'Kokozo Lychee',
+    image: 'kokozolychee.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},//
+{
+    id: 22,
+    name: 'Zappe Green drink Detox',
+    image: 'zappegreendrink.jpg',
+    price: 12000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},//
+{
+    id: 23,
+    name: 'Greenmate Orange bottle',
+    image: 'greenmateorangebottle.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 24,
+    name: 'Sappe blue drink',
+    image: 'sappebautidrinkblue.jpg',
+    price: 12000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 25,
+    name: 'Haki drink lemon',
+    image: 'hakidrinklemon.jpeg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 26,
+    name: 'Yen Yen Kekhuai',
+    image: 'yenyenkekhuai.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 27,
+    name: 'Minimate Orange',
+    image: 'minimateorange.jpg',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 28,
+    name: 'Oishi Green tea Genmai',
+    image: 'oishi-green-tea-genmai.png',
+    price: 10000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 29,
+    name: 'Oishi Green tea lemon',
+    image: 'oishi-green-tea-lemon.png',
+    price: 10000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 30,
+    name: 'Dutchmill strawberry',
+    image: 'dutchmillstrawberry.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 31,
+    name: 'Dutchmill Berry mixed',
+    image: 'duchmilkberrymix.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 32,
+    name: 'Dutchmill Blueberry',
+    image: 'dutchmillblueberry.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 33,
+    name: 'Dna corn',
+    image: 'dnacorn.jpeg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 34,
+    name: 'Dna Green',
+    image: 'dnagreen.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 35,
+    name: 'Dna sesame',
+    image: 'dnasesame.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 36,
+    name: 'Dna strawberry',
+    image: 'dnastrawberry.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 37,
+    name: 'Ovaltine Red',
+    image: 'ovaltinered.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 38,
+    name: 'Dmalt',
+    image: 'dmaltuht.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
     ,
-    {
-        id: 39,
-        name: 'Lactasoy',
-        image: 'lactasoy.jpg',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 39,
-        name: 'Heineken',
-        image: 'heineken.jpg',
-        price: 0,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 40,
-        name: 'Heineken',
-        image: 'heineken.jpg',
-        price: 0,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 62,
-        name: '7Up',
-        image: '7up.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 63,
-        name: 'Birdy latte',
-        image: 'birdy-latte.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 64,
-        name: 'Freeze coconut',
-        image: 'freeze-coconut.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 65,
-        name: 'Dutchmilk Green',
-        image: 'dutchmilk-green.png',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 66,
-        name: 'Magicfarm coconut',
-        image: 'magicfarm-coconut.png',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 67,
-        name: 'Kato lychee',
-        image: 'kato-lychee.png',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 68,
-        name: 'Nescafe green',
-        image: 'nescafe-green.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 69,
-        name:  'Kato orange',
-        image: 'kato-orange.png',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 70,
-        name: 'Kato red',
-        image: 'kato-red.png',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 71,
-        name: 'bachus purple',
-        image: 'bachus-purple.png',
-        price: 10000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 72,
-        name: 'bachus blue',
-        image: 'bachus-blue.png',
-        price: 10000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 73,
-        name: 'Birdy latte',
-        image: 'birdy-latte.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }
+{
+    id: 39,
+    name: 'Lactasoy',
+    image: 'lactasoy.jpg',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 39,
+    name: 'Heineken',
+    image: 'heineken.jpg',
+    price: 0,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 40,
+    name: 'Heineken',
+    image: 'heineken.jpg',
+    price: 0,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 62,
+    name: '7Up',
+    image: '7up.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 63,
+    name: 'Birdy latte',
+    image: 'birdy-latte.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 64,
+    name: 'Freeze coconut',
+    image: 'freeze-coconut.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 65,
+    name: 'Dutchmilk Green',
+    image: 'dutchmilk-green.png',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 66,
+    name: 'Magicfarm coconut',
+    image: 'magicfarm-coconut.png',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 67,
+    name: 'Kato lychee',
+    image: 'kato-lychee.png',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 68,
+    name: 'Nescafe green',
+    image: 'nescafe-green.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 69,
+    name: 'Kato orange',
+    image: 'kato-orange.png',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 70,
+    name: 'Kato red',
+    image: 'kato-red.png',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 71,
+    name: 'bachus purple',
+    image: 'bachus-purple.png',
+    price: 10000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 72,
+    name: 'bachus blue',
+    image: 'bachus-blue.png',
+    price: 10000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 73,
+    name: 'Birdy latte',
+    image: 'birdy-latte.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
     ,
-    {
-        id: 74,
-        name: 'Schweppes Manao Soda',
-        image: 'schweppes-manaosoda.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 75,
-        name: 'Kokozo purple',
-        image: 'kokozo-purple.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 76,
-        name: 'Kokozo green',
-        image: 'kokozo-green.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },
-    {
-        id: 77,
-        name: 'Kokozo red',
-        image: 'kokozo-red.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 78,
-        name: 'Kokozo lychee',
-        image: 'kokozo-lychee.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 79,
-        name: 'haki purple',
-        image: 'haki-purple.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 80,
-        name: 'Birdy green',
-        image: 'birdy-green.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 81,
-        name: 'Beerlao Gold',
-        image: 'beerlao-gold.png',
-        price: 12000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 82,
-        name: 'Somersby Apple sparkling',
-        image: 'somersby-apple-sparkling.png',
-        price: 13000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }
-    ,{
-        id: 83,
-        name: 'Kokozo orange',
-        image: 'kokozo-orange.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }
-    ,{
-        id: 84,
-        name: 'Malee grape',
-        image: 'malee-grape.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } ,{
-        id: 85,
-        name: 'Malee Apple',
-        image: 'malee-apple.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 86,
-        name: 'Malee Green Orange',
-        image: 'malee-green-orange.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 87,
-        name: 'Malee Guava',
-        image: 'malee-guava.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 88,
-        name: 'Malee Orange',
-        image: 'malee-orange.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 89,
-        name: 'Malee Pineapple',
-        image: 'malee-pineapple.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 90,
-        name: 'Morning green',
-        image: 'morning-birdnet-green.png',
-        price: 39000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 91,
-        name: 'Morning pink',
-        image: 'morning-birdnet-pink.png',
-        price: 39000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 92,
-        name: 'Morning Red D',
-        image: 'morning-birdnet-red-d.png',
-        price: 39000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    },{
-        id: 93,
-        name: 'Morning Red',
-        image: 'morning-birdnet-red.png',
-        price: 39000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }   
-    ,{
-        id: 94,
-        name: '7Up',
-        image: '7up-bottle.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }  
-    ,{
-        id: 95,
-        name: 'Betagen Blue',
-        image: 'btagen-blue.png',
-        price: 16000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }  
-    ,{
-        id: 96,
-        name: 'Betagen Orange',
-        image: 'btagen-orange.png',
-        price: 16000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }   ,{
-        id: 97,
-        name: 'Revive blue',
-        image: 'revive-blue.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }  
-    ,{
-        id: 98,
-        name: 'Sting Yellow',
-        image: 'sting-yellow.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 99,
-        name: 'Sting Red',
-        image: 'sting-red.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    }
-    ,{
-        id: 100,
-        name: 'Pepsi Bottle',
-        image: 'pepsi-bottle.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 101,
-        name: 'Mirinda orange Bottle',
-        image: 'mirinda-orange-bottle.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 102,
-        name: 'Mirinda green Bottle',
-        image: 'mirinda-green-bottle.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 103,
-        name: 'Mirinda strawberry Bottle',
-        image: 'mirinda-strawberry-bottle.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 104,
-        name: 'Greenmate grassjelly',
-        image: 'mirinda-strawberry-bottle.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 105,
-        name: 'Greenmate grassjelly',
-        image: 'greenmate-grassjelly.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 106,
-        name: 'Greenmate lychee',
-        image: 'greenmate-lychee.png',
-        price: 9000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 107,
-        name: 'Sappe Bauty Drink Pink',
-        image: 'sappebautydrink-pink.png',
-        price: 12000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 108,
-        name: 'Warrior Energy Drink',
-        image: 'warrior-energydrink.png',
-        price: 10000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 109,
-        name: 'Soda Lao',
-        image: 'soda-lao.png',
-        price: 7000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 110,
-        name: 'Greenmate Tamarind',
-        image: 'greenmate-tamarind.png',
-        price: 8000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
-    ,{
-        id: 111,
-        name: 'Kato Grape',
-        image: 'kato-grape.png',
-        price: 6000,
-        qtty: 1,
-        hashP: '',
-        hashM: '',
-        isActive: true
-    } 
+{
+    id: 74,
+    name: 'Schweppes Manao Soda',
+    image: 'schweppes-manaosoda.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 75,
+    name: 'Kokozo purple',
+    image: 'kokozo-purple.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 76,
+    name: 'Kokozo green',
+    image: 'kokozo-green.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+},
+{
+    id: 77,
+    name: 'Kokozo red',
+    image: 'kokozo-red.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 78,
+    name: 'Kokozo lychee',
+    image: 'kokozo-lychee.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 79,
+    name: 'haki purple',
+    image: 'haki-purple.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 80,
+    name: 'Birdy green',
+    image: 'birdy-green.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 81,
+    name: 'Beerlao Gold',
+    image: 'beerlao-gold.png',
+    price: 12000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 82,
+    name: 'Somersby Apple sparkling',
+    image: 'somersby-apple-sparkling.png',
+    price: 13000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 83,
+    name: 'Kokozo orange',
+    image: 'kokozo-orange.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 84,
+    name: 'Malee grape',
+    image: 'malee-grape.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 85,
+    name: 'Malee Apple',
+    image: 'malee-apple.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 86,
+    name: 'Malee Green Orange',
+    image: 'malee-green-orange.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 87,
+    name: 'Malee Guava',
+    image: 'malee-guava.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 88,
+    name: 'Malee Orange',
+    image: 'malee-orange.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 89,
+    name: 'Malee Pineapple',
+    image: 'malee-pineapple.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 90,
+    name: 'Morning green',
+    image: 'morning-birdnet-green.png',
+    price: 39000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 91,
+    name: 'Morning pink',
+    image: 'morning-birdnet-pink.png',
+    price: 39000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 92,
+    name: 'Morning Red D',
+    image: 'morning-birdnet-red-d.png',
+    price: 39000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 93,
+    name: 'Morning Red',
+    image: 'morning-birdnet-red.png',
+    price: 39000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 94,
+    name: '7Up',
+    image: '7up-bottle.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 95,
+    name: 'Betagen Blue',
+    image: 'btagen-blue.png',
+    price: 16000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 96,
+    name: 'Betagen Orange',
+    image: 'btagen-orange.png',
+    price: 16000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}, {
+    id: 97,
+    name: 'Revive blue',
+    image: 'revive-blue.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 98,
+    name: 'Sting Yellow',
+    image: 'sting-yellow.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 99,
+    name: 'Sting Red',
+    image: 'sting-red.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 100,
+    name: 'Pepsi Bottle',
+    image: 'pepsi-bottle.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 101,
+    name: 'Mirinda orange Bottle',
+    image: 'mirinda-orange-bottle.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 102,
+    name: 'Mirinda green Bottle',
+    image: 'mirinda-green-bottle.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 103,
+    name: 'Mirinda strawberry Bottle',
+    image: 'mirinda-strawberry-bottle.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 104,
+    name: 'Greenmate grassjelly',
+    image: 'mirinda-strawberry-bottle.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 105,
+    name: 'Greenmate grassjelly',
+    image: 'greenmate-grassjelly.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 106,
+    name: 'Greenmate lychee',
+    image: 'greenmate-lychee.png',
+    price: 9000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 107,
+    name: 'Sappe Bauty Drink Pink',
+    image: 'sappebautydrink-pink.png',
+    price: 12000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 108,
+    name: 'Warrior Energy Drink',
+    image: 'warrior-energydrink.png',
+    price: 10000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 109,
+    name: 'Soda Lao',
+    image: 'soda-lao.png',
+    price: 7000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 110,
+    name: 'Greenmate Tamarind',
+    image: 'greenmate-tamarind.png',
+    price: 8000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
+    , {
+    id: 111,
+    name: 'Kato Grape',
+    image: 'kato-grape.png',
+    price: 6000,
+    qtty: 1,
+    hashP: '',
+    hashM: '',
+    isActive: true
+}
 
 ]
 
@@ -2321,16 +2321,16 @@ export interface ISaveMachineSaleReport {
 }
 
 export interface IAdsMedia {
-    name:string;
-    description:string;
-    url:string;
-    type:string//webm,png
+    name: string;
+    description: string;
+    url: string;
+    type: string//webm,png
 }
-export interface IAds extends IBase{
-    name:string;
-    description:string;
-    machines:Array<string>;
-    adsMedia:Array<IAdsMedia>
+export interface IAds extends IBase {
+    name: string;
+    description: string;
+    machines: Array<string>;
+    adsMedia: Array<IAdsMedia>
 }
 export interface ISubadmin {
     id?: number,

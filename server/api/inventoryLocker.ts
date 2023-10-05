@@ -840,25 +840,25 @@ export class InventoryLocker implements IBaseClass {
                                 );
                             o.ownerUuid = ownerUuid;
                             const d = await doorEntity.findOne({ where: { doorNumber: o.doorNumber, isDone: false } });
-                            if (d) PrintError("addDoor", [], EMessage.doorExist, returnLog(req, res, true))
+                            if (d) return PrintError("addDoor", [], EMessage.doorExist, returnLog(req, res, true));
+
                             doorEntity
                                 .create(o)
                                 .then((r) => {
-
                                     res.send(PrintSucceeded("addDoor", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
                                     console.log("error add Door", e);
 
-                                    res.send(PrintError("addDoor 1" + e, e, EMessage.error, returnLog(req, res, true)));
+                                    res.send(PrintError("addDoor1" + e, e, EMessage.error, returnLog(req, res, true)));
                                 });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("addDoor 2" + error, error, EMessage.error, returnLog(req, res, true)));
+                            res.send(PrintError("addDoor2" + error, error, EMessage.error, returnLog(req, res, true)));
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addDoor 3" + error, error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("addDoor3" + error, error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
