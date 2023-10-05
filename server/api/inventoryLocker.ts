@@ -844,20 +844,21 @@ export class InventoryLocker implements IBaseClass {
                             doorEntity
                                 .create(o)
                                 .then((r) => {
+
                                     res.send(PrintSucceeded("addDoor", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
                                     console.log("error add Door", e);
 
-                                    res.send(PrintError("addDoor 1" + JSON.stringify(e), e, EMessage.error, returnLog(req, res, true)));
+                                    res.send(PrintError("addDoor 1" + e, e, EMessage.error, returnLog(req, res, true)));
                                 });
                         } catch (error) {
                             console.log(error);
-                            res.send(PrintError("addDoor 2" + JSON.stringify(error), error, EMessage.error, returnLog(req, res, true)));
+                            res.send(PrintError("addDoor 2" + error, error, EMessage.error, returnLog(req, res, true)));
                         }
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addDoor 3" + JSON.stringify(error), error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("addDoor 3" + error, error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
