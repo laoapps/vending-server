@@ -15,7 +15,7 @@ export class SocketClientMe {
     // creating a custom socket client and connecting it....
     client: tls.TLSSocket | undefined = undefined;
     // port = 51223;// new server
-    port = 51223
+    port = 51226
     host = 'laoapps.com';
     machineid = process.env.machineId || '11111111';
     otp = '111111';
