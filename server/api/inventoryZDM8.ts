@@ -2141,7 +2141,7 @@ export class InventoryZDM8 implements IBaseClass {
                             fromDate: data.fromDate,
                             toDate: data.toDate
                         }
-                        this.loadVendingMachineSaleBillReport(parmas).then(run => {
+                        this._loadVendingMachineSaleBillReport(parmas).then(run => {
                             if (run.message != IENMessage.success) {
                                 res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
                                 return;
@@ -2172,7 +2172,7 @@ export class InventoryZDM8 implements IBaseClass {
                             fromDate: data.fromDate,
                             toDate: data.toDate
                         }
-                        this.loadVendingMachineStockReport(parmas).then(run => {
+                        this._loadVendingMachineStockReport(parmas).then(run => {
                             if (run.message != IENMessage.success) {
                                 res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
                                 return;
@@ -4646,7 +4646,7 @@ export class InventoryZDM8 implements IBaseClass {
     //     });
     // }
 
-    loadVendingMachineSaleBillReport(params: ILoadVendingMachineSaleBillReport): Promise<any> {
+    _loadVendingMachineSaleBillReport(params: ILoadVendingMachineSaleBillReport): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             try {
 
@@ -4661,7 +4661,7 @@ export class InventoryZDM8 implements IBaseClass {
             }
         });
     }
-    loadVendingMachineStockReport(params: ILoadVendingMachineStockReport): Promise<any> {
+    _loadVendingMachineStockReport(params: ILoadVendingMachineStockReport): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             try {
 
