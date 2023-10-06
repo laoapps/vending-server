@@ -114,7 +114,7 @@ import { CashinValidationFunc } from "../laab_service/controllers/vendingwallet_
 import { FranchiseStockFactory } from "../entities/franchisestock.entity";
 import { MmoneyTransferValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/mmoneyTransferValidation.func";
 import { SocketServerLocker } from "./socketLocker";
-import { loadVendingMachineSaleBillReport } from "./inventoryZDM8";
+// import { loadVendingMachineSaleBillReport } from "./inventoryZDM8";
 import { DoorFactory } from "../entities/doors.entity";
 export class InventoryLocker implements IBaseClass {
     // websocket server for vending controller only
@@ -3199,21 +3199,21 @@ export class InventoryLocker implements IBaseClass {
     //     });
     // }
 
-    loadVendingMachineSaleBillReport(params: ILoadVendingMachineSaleBillReport): Promise<any> {
-        return new Promise<any>(async (resolve, reject) => {
-            try {
+    // loadVendingMachineSaleBillReport(params: ILoadVendingMachineSaleBillReport): Promise<any> {
+    //     return new Promise<any>(async (resolve, reject) => {
+    //         try {
 
-                const func = new loadVendingMachineSaleBillReport();
-                const run = await func.Init(params);
-                if (run.message != IENMessage.success) throw new Error(run);
+    //             // const func = new loadVendingMachineSaleBillReport();
+    //             const run = await func.Init(params);
+    //             if (run.message != IENMessage.success) throw new Error(run);
 
-                resolve(run);
+    //             resolve(run);
 
-            } catch (error) {
-                resolve(error.message);
-            }
-        });
-    }
+    //         } catch (error) {
+    //             resolve(error.message);
+    //         }
+    //     });
+    // }
 }
 
 
