@@ -842,8 +842,10 @@ export class InventoryLocker implements IBaseClass {
                             o.ownerUuid = ownerUuid;
                             // check machine id   o.machineId
                             const m = this.checkMachineId(o.machineId);
-                            console.log(o.machineId);
-                            console.log(m);
+                            console.log("machineId", o.machineId);
+                            console.log("checkMachine", m);
+
+
                             if (!m) return res.send(PrintError("addDoor" + m, [], EMessage.MachineIdNotFound, returnLog(req, res, true)));
 
                             const d = await doorEntity.findOne({ where: { doorNumber: o.doorNumber, isDone: false, machineId: o.machineId } });
