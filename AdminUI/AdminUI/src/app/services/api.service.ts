@@ -296,7 +296,9 @@ export class ApiService {
   }
   addMachine(o:IMachineClientID) {
     const token = localStorage.getItem('lva_token');
-    return this.http.post<IResModel>(this.url + '/addMachine',{data:o,token}, { headers: this.headerBase() });
+    const shopPhonenumber = o.shopPhonenumber;
+    delete o.shopPhonenumber;
+    return this.http.post<IResModel>(this.url + '/addMachine',{data:o,token, shopPhonenumber}, { headers: this.headerBase() });
   }
   reportStock() {
     const token = localStorage.getItem('lva_token');

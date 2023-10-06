@@ -158,16 +158,18 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   async ngOnInit() {
     this.parseorders = JSON.parse(JSON.stringify(this.orders));
     this.parseGetTotalSale = JSON.parse(JSON.stringify(this.getTotalSale));
+
+    console.log(`order der`, this.parseorders);
     this.loadDOMs();
     this.loadFakeOrder();
 
     // websocket check when process callback
     this.apiService.onDelivery(res_delivery => {
-        this.orders = [];
-        this.getTotalSale.q = 0;
-        this.getTotalSale.t = 0;
-        this.apiService.myTab1.clearCart();
-        this.close();
+      this.orders = [];
+      this.getTotalSale.q = 0;
+      this.getTotalSale.t = 0;
+      this.apiService.myTab1.clearCart();
+      this.close();
     });
 
     await this.loadCountDownBill();
@@ -184,7 +186,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.reloadMessageElement);
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownCheckLAABTimer);
-    clearInterval(this.countdownDestroyTimer);
+    clearInterval(this.countdownLAABDestroyTimer);
     // if (this.WSAPIService.waitingDelivery) this.WSAPIService.waitingDelivery.unsubscribe();
 
   }
@@ -313,7 +315,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
               this.apiService.myTab1.refreshBalanceFromAnotherModal(Number(this.apiService.cash.amount) - Number(this.getTotalSale.t));
               this.apiService.myTab1.clearStockAfterLAABGo();
-              this.apiService.modal.dismiss();
+              this.close();
               resolve(IENMessage.success);
             }
             else 
@@ -406,7 +408,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             AutoPaymentPage.message = undefined;
 
             this.apiService.myTab1.clearStockAfterLAABGo(); 
-            this.apiService.modal.dismiss();
+            this.close();
             this.apiService.alertError(IENMessage.timeout);
             resolve(IENMessage.success);
           }
@@ -466,7 +468,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             this.countdownCheckLAAB = 60;
 
             this.apiService.myTab1.clearCart();  
-            this.apiService.modal.dismiss();
+            this.close();
             this.apiService.alertError(IENMessage.orderCanceled);
           }
         }, 1000);
@@ -501,7 +503,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     
             this.apiService.myTab1.refreshBalanceFromAnotherModal(Number(this.apiService.cash.amount) - Number(this.getTotalSale.t));
             this.apiService.myTab1.clearCart();  
-            this.apiService.modal.dismiss();
+            this.close();
     
             resolve(IENMessage.success);
           }
@@ -524,7 +526,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     if (this.parseorders != undefined && Object.entries(this.parseorders).length == 0) {
       this.resetMessage();
-      this.apiService.modal.dismiss();
+      this.close();
     } 
     else
     {
@@ -821,6 +823,7 @@ class PaymentStation {
           orders: this.orders,
           getTotalSale: this.getTotalSale
         }
+        console.log(`MMONEY MODEL`, params);
         const run = await new MMoneyPayment(this.apiService, this.vendingAPIService).Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 

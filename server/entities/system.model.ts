@@ -2351,3 +2351,4 @@ export interface ILoadVendingMachineSaleBillReport {
     machineId: string
 }
 
+export interface ILoadVendingMachineStockReport extends ILoadVendingMachineSaleBillReport {}

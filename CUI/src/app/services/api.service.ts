@@ -287,7 +287,8 @@ export class ApiService {
       this.machineId.otp
     );
 
-
+    let pendingstock = [];
+    let pendingstockcount = 0;
     this.wsapi.aliveSubscription.subscribe(r => {
       console.log('ALIVE', r);
       const response: any = r;
@@ -303,8 +304,16 @@ export class ApiService {
 
 
         // reconfirm when deductstock fail
-        if (response.data.pendingStock != undefined && Object.entries(response.data.pendingStock).length > 0) {
+        if(JSON.stringify(pendingstock) === JSON.stringify(response.data.pendingStock) &&pendingstock.length ){
+          pendingstockcount++;
+        }else {
+          pendingstockcount=0;
+          pendingstock= response.data.pendingStock;
+        }
+        if (response.data.pendingStock != undefined && Object.entries(response.data.pendingStock).length > 0&&pendingstockcount===3) {
           this.reconfirmStock(response.data.pendingStock);
+          pendingstockcount=0;
+          pendingstock=[];
         }
 
 
@@ -402,14 +411,19 @@ export class ApiService {
           }
         });
         this.eventEmitter.emit('stockdeduct', x);
-        this.saveSale(vsales).subscribe((r) => {
-          console.log(r);
-          if (r.status) {
-            console.log(`save sale success`);
-          } else {
-            this.simpleMessage(IENMessage.saveSaleFail);
-          }
-        });
+
+        // fix here
+        if (!localStorage.getItem('debug')) {
+          this.saveSale(vsales).subscribe((r) => {
+            console.log(r);
+            if (r.status) {
+              console.log(`save sale success`);
+            } else {
+              this.simpleMessage(IENMessage.saveSaleFail);
+            }
+          });
+        }
+        
         console.log('X', x, r.position, x && r.position);
   
         if (x && r.position) {
@@ -530,19 +544,23 @@ export class ApiService {
         });
       });
       this.eventEmitter.emit('stockdeduct', x);
-      this.saveSale(vsales).subscribe((r) => {
-        console.log(r);
-        if (r.status) {
-          console.log(`save sale success`);
-        } else {
-          this.simpleMessage(IENMessage.saveSaleFail);
-        }
-      });
+      if (!localStorage.getItem('debug')) {
 
-      console.log(`pending stock mode vendingOnSale-->`, vsales);
-      this.storage.set('saleStock', vsales, 'stock').then((r) => {
-        // that.deductOrderUpdate(x.position);
-      });
+        this.saveSale(vsales).subscribe((r) => {
+          console.log(r);
+          if (r.status) {
+            console.log(`save sale success`);
+          } else {
+            this.simpleMessage(IENMessage.saveSaleFail);
+          }
+        });
+  
+        console.log(`pending stock mode vendingOnSale-->`, vsales);
+        this.storage.set('saleStock', vsales, 'stock').then((r) => {
+          // that.deductOrderUpdate(x.position);
+        });
+      }
+      
     }, error => {
       console.log(error.message);
       this.alertError(error.message);

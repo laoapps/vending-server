@@ -69,6 +69,7 @@ import {
     IAds,
     ILoadVendingMachineSaleBillReport,
     IMMoneyGenerateQRPro,
+    ILoadVendingMachineStockReport,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -113,7 +114,7 @@ import {
     BillCashInStatic,
 } from "../entities/billcash.entity";
 import { CashinValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/cashinValidation.func";
-import { FranchiseStockFactory } from "../entities/franchisestock.entity";
+import { FranchiseStockFactory, FranchiseStockStatic } from "../entities/franchisestock.entity";
 import { MmoneyTransferValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/mmoneyTransferValidation.func";
 import { IVendingWalletType } from "../laab_service/models/base.model";
 export class InventoryZDM8 implements IBaseClass {
@@ -2141,6 +2142,37 @@ export class InventoryZDM8 implements IBaseClass {
                             toDate: data.toDate
                         }
                         this.loadVendingMachineSaleBillReport(parmas).then(run => {
+                            if (run.message != IENMessage.success) {
+                                res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
+                                return;
+                            }
+                            res.send(PrintSucceeded("report", run, EMessage.succeeded, returnLog(req, res)));
+                        }).catch(error => {
+                            res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
+                        });
+
+                    } catch (error) {
+                        res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/loadVendingMachineStockReport",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+
+                (req, res) => {
+                    try {
+
+                        const data = req.body;
+                        const parmas: ILoadVendingMachineStockReport = {
+                            ownerUuid: res.locals["ownerUuid"],
+                            machineId: data.machineId,
+                            fromDate: data.fromDate,
+                            toDate: data.toDate
+                        }
+                        this.loadVendingMachineStockReport(parmas).then(run => {
                             if (run.message != IENMessage.success) {
                                 res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
                                 return;
@@ -4618,7 +4650,22 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<any>(async (resolve, reject) => {
             try {
 
-                const func = new loadVendingMachineSaleBillReport();
+                const func = new LoadVendingMachineSaleBillReport();
+                const run = await func.Init(params);
+                if (run.message != IENMessage.success) throw new Error(run);
+
+                resolve(run);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+    loadVendingMachineStockReport(params: ILoadVendingMachineStockReport): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            try {
+
+                const func = new LoadVendingMachineStockReport();
                 const run = await func.Init(params);
                 if (run.message != IENMessage.success) throw new Error(run);
 
@@ -4632,7 +4679,7 @@ export class InventoryZDM8 implements IBaseClass {
 }
 
 
-export class loadVendingMachineSaleBillReport {
+export class LoadVendingMachineSaleBillReport {
 
     private ownerUuid: string;
     private fromDate: string;
@@ -4757,4 +4804,113 @@ export class loadVendingMachineSaleBillReport {
 
 }
 
+export class LoadVendingMachineStockReport {
 
+    private ownerUuid: string;
+    private fromDate: string;
+    private toDate: string;
+    private machineId: string;
+
+    private currentdate: number;
+    private parseFromDate: number;
+    private parseToDate: number;
+    private condition: any = {} as any;
+    private franciseStockEntity: FranchiseStockStatic;
+    private response: any = {} as any;
+    constructor() { }
+
+    public Init(params: ILoadVendingMachineStockReport): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            try {
+
+                this.InitParams(params);
+
+                const ValidateParams = this.ValidateParams();
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+
+                const ValidateBeginDate = this.ValidateBeginDate();
+                if (ValidateBeginDate != IENMessage.success) throw new Error(ValidateBeginDate);
+
+                this.SetCondition();
+
+                this.Connection();
+
+                const Report = await this.Report();
+                if (Report != IENMessage.success) throw new Error(Report);
+
+                resolve(this.response);
+
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+    private InitParams(params: ILoadVendingMachineSaleBillReport): void {
+        console.log(`params der`, params);
+        this.ownerUuid = params.ownerUuid;
+        this.fromDate = params.fromDate;
+        this.toDate = params.toDate;
+        this.machineId = params.machineId;
+    }
+
+    private ValidateParams(): string {
+        if (!(this.ownerUuid && this.fromDate && this.toDate && this.machineId)) return IENMessage.parametersEmpty;
+
+        this.currentdate = new Date(new Date().getFullYear() + '/' + Number(new Date().getMonth() + 1) + '/' + new Date().getDate()).getTime();
+        return IENMessage.success;
+    }
+
+    private ValidateBeginDate(): string {
+        this.parseFromDate = new Date(this.fromDate).getTime();
+        this.parseToDate = new Date(this.toDate).getTime();
+
+        if (this.parseFromDate == this.parseToDate) {
+            if (this.parseFromDate > this.currentdate) return IENMessage.invalidFromDate;
+        } else {
+            if (this.parseFromDate > this.parseToDate) return IENMessage.invalidFromDate;
+            if (this.parseToDate > this.currentdate) return IENMessage.invalidateToDate;
+        }
+
+        return IENMessage.success;
+    }
+
+    private SetCondition(): void {
+        const date = new Date(this.toDate);
+        const addday = date.setDate(date.getDate() + 1);
+        this.toDate = String(new Date(addday));
+
+        this.condition = {
+            where: {
+                createdAt: { [Op.between]: [this.fromDate, this.toDate] }
+            },
+            order: [['id', 'DESC']]
+        }
+
+    }
+
+    private Connection(): void {
+        this.franciseStockEntity = FranchiseStockFactory(EEntity.franchisestock + '_' + this.machineId, dbConnection);
+    }
+
+    private Report(): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            try {
+
+                const run = await this.franciseStockEntity.findAndCountAll(this.condition);
+                this.response = {
+                    rows: run.rows,
+                    count: run.count,
+                    message: IENMessage.success
+                }
+
+                resolve(IENMessage.success);
+            }
+            catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
+
+
+}
