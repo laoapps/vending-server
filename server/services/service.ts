@@ -435,7 +435,7 @@ export function  machineStatus(x:string):IMachineStatus{
      b = y.b;
     } catch (error) {
     //   console.log('error',error);
-      return {} as IMachineStatus;
+      return {lastUpdate:new Date(y.t)} as IMachineStatus;
     }
     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
     // fafb52
