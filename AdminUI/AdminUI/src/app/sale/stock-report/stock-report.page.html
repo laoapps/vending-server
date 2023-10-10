@@ -53,13 +53,13 @@
           <tr *ngFor="let position of positionList; let i = index">
             <td class="td-slot">
               <div class="name">{{ position.name }}</div>
-              <div class="position">Position {{ position.position }}</div>
+              <div class="position">Slot {{ position.position }}</div>
             </td>
             <td class="td-detail">
               <div *ngFor="let stack of stackList[i].detail; let si = index" class="group">
                 <div *ngIf="stack.refill == true" class="time green">{{ stack.time | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</div>
                 <div *ngIf="stack.refill == false" class="time">{{ stack.time | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</div>
-                <div class="qtty">QTTY: {{ stack.qtty | number }}</div>
+                <div class="qtty">Position: {{ stack.position }} | Name: {{ stack.name }} | QTTY: {{ stack.qtty | number }}</div>
               </div>
             </td>
           </tr>
