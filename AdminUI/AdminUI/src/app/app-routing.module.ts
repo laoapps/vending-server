@@ -212,6 +212,10 @@ const routes: Routes = [
     path: 'form-edit',
     loadChildren: () => import('./version-control/_modals/form-edit/form-edit.module').then( m => m.FormEditPageModule)
   },
+  {
+    path: 'stock-report',
+    loadChildren: () => import('./sale/stock-report/stock-report.module').then( m => m.StockReportPageModule)
+  },
 ];
 @NgModule({
   imports: [
