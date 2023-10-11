@@ -902,23 +902,23 @@ export class Tab1Page implements OnDestroy {
       this.autopilot.auto = 0;
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
 
-      if (this.WSAPIService?.setting_allowVending == false) {
-        // this.apiService.simpleMessage('Vending is closed');
-        this.apiService.soundSystemError();
-        const alert = Swal.fire({
-          icon: 'error',
-          title: 'Vender is out of service',
-          text: `Please, try again later`,
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#EE3124',
-          heightAuto: false,
-        });
-        setTimeout(() => {
-          Swal.close();
-        }, 2000);
-        return;
-      }
+      // if (this.WSAPIService?.setting_allowVending == false) {
+      //   // this.apiService.simpleMessage('Vending is closed');
+      //   this.apiService.soundSystemError();
+      //   const alert = Swal.fire({
+      //     icon: 'error',
+      //     title: 'Vender is out of service',
+      //     text: `Please, try again later`,
+      //     showConfirmButton: true,
+      //     confirmButtonText: 'OK',
+      //     confirmButtonColor: '#EE3124',
+      //     heightAuto: false,
+      //   });
+      //   setTimeout(() => {
+      //     Swal.close();
+      //   }, 2000);
+      //   return;
+      // }
 
       this.setActive();
       if (!x) return alert('not found');

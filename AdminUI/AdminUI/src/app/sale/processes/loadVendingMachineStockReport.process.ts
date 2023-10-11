@@ -137,7 +137,8 @@ export class LoadVendingMachineStockReportProcess {
 
     private FetchOrder(): void {
         let times: Array<any> = this.lists.map(item => item.createdAt);
-        const data: Array<any> = this.lists.map(item => item.data);
+        let data: Array<any> = this.lists.map(item => item.data);
+
 
         let reports: Array<any> = [];
         for(let i = 0; i < data.length; i++) {
@@ -149,101 +150,149 @@ export class LoadVendingMachineStockReportProcess {
             }
             
         }
+
+        reports = reports.sort((a,b) => a.position-b.position);
+        this.lists = reports;
         console.log(`report`, reports);
-        reports = reports.sort((a,b) => b.time-a.time);
-        const unique = reports.filter((item, index) => {
-        return reports.findIndex(obj => obj.position == item.position) == index;
-        });
-        const duplicate = reports.filter((item, index) => {
-        return reports.findIndex(obj => obj.position == item.position) != index;
-        });
+
+        // console.log(`report2`, reports);
+        // const unique = reports.filter((item, index) => {
+        //     return reports.findIndex(obj => obj.position == item.position) == index;
+        // });
+        // const duplicate = reports.filter((item, index) => {
+        //     return reports.findIndex(obj => obj.position == item.position) != index;
+        // });
 
         
-        unique.filter((u_item, u_index) => {
-            duplicate.filter((dup_item, dup_index) => {
-                if (u_item.position == dup_item.position) {
-                    const find = this.stacks.filter(find_item => find_item.position == dup_item.position);
-                    if (find != undefined && Object.entries(find).length == 0) {
-                        const model = {
-                            name: u_item.name,
-                            position: u_item.position,
-                            detail: [u_item, dup_item]
-                        }
-                        this.stacks.push(model);
-                    } else {
-                        this.stacks.find((stack_item, stack_index) => {
-                            if (stack_item.position == dup_item.position) {
+        // unique.filter((u_item, u_index) => {
+        //     duplicate.filter((dup_item, dup_index) => {
+        //         if (u_item.position == dup_item.position) {
+        //             const find = this.stacks.filter(find_item => find_item.position == dup_item.position);
+        //             if (find != undefined && Object.entries(find).length == 0) {
+        //                 const model = {
+        //                     name: u_item.name,
+        //                     position: u_item.position,
+        //                     detail: [u_item, dup_item]
+        //                 }
+        //                 this.stacks.push(model);
+        //             } else {
+        //                 this.stacks.find((stack_item, stack_index) => {
+        //                     if (stack_item.position == dup_item.position) {
                                 
-                                stack_item.detail.push(dup_item);
-                                if (dup_item.qtty > stack_item.detail.qtty) stack_item.push(dup_index);
-                            }
-                        });
-                    }
-                }
-            });
-        });
+        //                         stack_item.detail.push(dup_item);
+        //                         if (dup_item.qtty > stack_item.detail.qtty) stack_item.push(dup_index);
+        //                     }
+        //                 });
+        //             }
+        //         }
+        //     });
+        // });
         // for(let i = 0; i < this.stacks.length; i++) {
         //     this.stacks[i].detail.sort((a,b) => {
         //         return new Date(a.time).getTime()-new Date(b.time).getTime()
         //     });
         // }
-        console.log(`-->`, this.stacks);
     }
 
     private CheckRefill() {
-        for(let i = 0; i < this.stacks.length; i++) {
-            for(let j = 0; j < this.stacks[i].detail.length; j++) {
-              if (this.stacks[i].detail[j-1] == undefined && this.stacks[i].detail[j].qtty > this.stacks[i].detail[j+1].qtty) {
-                console.log(`here 1`, this.stacks[i].detail[j]);
+        for(let i = 0; i < this.lists.length; i++) {
+            if (this.lists[i-1] == undefined && this.lists[i].qtty > this.lists[i+1].qtty) {
 
-                this.stacks[i].detail[j].refill = true;
-              }
-      
-              else if 
-              (
+                this.lists[i].refill = true;
+            }
+  
+            if 
+            (
                 
-                this.stacks[i].detail[j-1] != undefined && 
-                this.stacks[i].detail[j+1] != undefined && 
-      
-                this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
-                this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty &&
-                this.stacks[i].detail[j].qtty <= this.stacks[i].detail[j+1].qtty
+                this.lists[i-1] != undefined && 
+                this.lists[i+1] != undefined && 
+    
+                this.lists[i-1].qtty != this.lists[i].qtty &&
+                this.lists[i-1].qtty < this.lists[i].qtty &&
+                this.lists[i].qtty <= this.lists[i+1].qtty
                 ||
-                this.stacks[i].detail[j-1] != undefined && 
-                this.stacks[i].detail[j+1] != undefined && 
-      
-                this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
-                this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty &&
-                this.stacks[i].detail[j].qtty >= this.stacks[i].detail[j+1].qtty
-              ) 
-              {
-                console.log(`here 2`, this.stacks[i].detail[j]);
+                this.lists[i-1] != undefined && 
+                this.lists[i+1] != undefined && 
+    
+                this.lists[i-1].qtty != this.lists[i].qtty &&
+                this.lists[i-1].qtty < this.lists[i].qtty &&
+                this.lists[i].qtty >= this.lists[i+1].qtty
+            ) 
+            {
 
-                this.stacks[i].detail[j].refill = true;
-              }
-      
-              else if 
-              (
-                this.stacks[i].detail[j-1] != undefined && 
-                this.stacks[i].detail[j+1] == undefined && 
-      
-                this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
-                this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty
+                this.lists[i].refill = true;
+            }
+  
+            if 
+            (
+                this.lists[i-1] != undefined && 
+                this.lists[i+1] == undefined && 
+    
+                this.lists[i-1].qtty != this.lists[i].qtty &&
+                this.lists[i-1].qtty < this.lists[i].qtty
                 ||
-                this.stacks[i].detail[j-1] != undefined && 
-                this.stacks[i].detail[j+1] == undefined && 
-      
-                this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
-                this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty
-              ) 
-              {
-                console.log(`here 3`, this.stacks[i].detail[j]);
+                this.lists[i-1] != undefined && 
+                this.lists[i+1] == undefined && 
+    
+                this.lists[i-1].qtty != this.lists[i].qtty &&
+                this.lists[i-1].qtty < this.lists[i].qtty
+            ) 
+            {
 
-                this.stacks[i].detail[j].refill = true;
-              }
-      
+                this.lists[i].refill = true;
             }
           }
+
+        // for(let i = 0; i < this.stacks.length; i++) {
+        //     for(let j = 0; j < this.stacks[i].detail.length; j++) {
+        //         if (this.stacks[i].detail[j-1] == undefined && this.stacks[i].detail[j].qtty > this.stacks[i].detail[j+1].qtty) {
+
+        //             this.stacks[i].detail[j].refill = true;
+        //         }
+      
+        //         if 
+        //         (
+                    
+        //             this.stacks[i].detail[j-1] != undefined && 
+        //             this.stacks[i].detail[j+1] != undefined && 
+        
+        //             this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
+        //             this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty &&
+        //             this.stacks[i].detail[j].qtty <= this.stacks[i].detail[j+1].qtty
+        //             ||
+        //             this.stacks[i].detail[j-1] != undefined && 
+        //             this.stacks[i].detail[j+1] != undefined && 
+        
+        //             this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
+        //             this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty &&
+        //             this.stacks[i].detail[j].qtty >= this.stacks[i].detail[j+1].qtty
+        //         ) 
+        //         {
+
+        //             this.stacks[i].detail[j].refill = true;
+        //         }
+      
+        //         if 
+        //         (
+        //             this.stacks[i].detail[j-1] != undefined && 
+        //             this.stacks[i].detail[j+1] == undefined && 
+        
+        //             this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
+        //             this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty
+        //             ||
+        //             this.stacks[i].detail[j-1] != undefined && 
+        //             this.stacks[i].detail[j+1] == undefined && 
+        
+        //             this.stacks[i].detail[j-1].qtty != this.stacks[i].detail[j].qtty &&
+        //             this.stacks[i].detail[j-1].qtty < this.stacks[i].detail[j].qtty
+        //         ) 
+        //         {
+
+        //             this.stacks[i].detail[j].refill = true;
+        //         }
+      
+        //     }
+        //   }
     }
 
     private Commit(): any {
