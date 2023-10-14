@@ -1246,7 +1246,10 @@ export enum EMACHINE_COMMAND {
     setcounter = "setcounter",
     NOTE_REJECTED = "NOTE_REJECTED",
     waitingt = "waitingt",
-    refresh = "refresh"
+    refresh = "refresh",
+    restart = "restart",
+    logs = "logs",
+    confirmOrder = "confirmOrder"
 }
 
 export interface IMachineClientID extends IBase {

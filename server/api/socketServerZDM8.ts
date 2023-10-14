@@ -241,7 +241,7 @@ export class SocketServerZDM8 {
                                 console.log('DATA  not exist machine id ');
                                 return;
                             }
-                        } else if (Object.keys(EZDM8_COMMAND).includes(d.command)) {
+                        } else if (Object.keys(EZDM8_COMMAND).includes(d.command)||Object.keys(EMACHINE_COMMAND).includes(d.command)) {
                             console.log('DATA response from the machine', d);
                             console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
                             //  writeLogs(d, d.command);
