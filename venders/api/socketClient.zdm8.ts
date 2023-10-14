@@ -231,7 +231,7 @@ export class SocketClientZDM8 {
             that.send({}, -13, EMACHINE_COMMAND.ping)
         }, 5000);
     }
-    send(data: any, transactionID: number, command = EMACHINE_COMMAND.status) {
+    send(data: any, transactionID: any, command = EMACHINE_COMMAND.status) {
         try {
               const req = {} as IReqModel;
         req.command = command;

@@ -26,7 +26,7 @@ export class VendingZDM8 {
     machinestatus = '';
     lastupdate = 0;
     pendingRetry = 10;// 10s
-
+    statusMessage = 5;
     processPendingRetry = 3;// 10s
     constructor(sock: SocketClientZDM8) {
 
@@ -73,6 +73,15 @@ export class VendingZDM8 {
                 }else{
                     that.processPendingRetry = 3;
                 }
+
+            
+                // query status of the machine
+                if(this.statusMessage<=0){
+                  that.machinestatus =' {}';
+                 that.sock?.send(b, -52);
+                 this.statusMessage=5;
+                }
+                this.statusMessage++;
                 
             } catch (error) {
                 console.log(error);
@@ -102,14 +111,16 @@ export class VendingZDM8 {
             // confirm any 
             // 01 86 04 43 a3
             ///01 10 20 01 00 02 1B C8 confirm motor control
+            let t ='-52';
             if('0110200100021bc8'.toLowerCase()==b.toLowerCase()){
-                that.processPending.shift();
+                const x = that.processPending.shift();
+                t = x?.transactionID+'';
             }
                
-            sock.send(b, that.transactionID);      
-            that.transactionID = -1;
+            sock.send(b, t);      
             b = '';
         });
+      
 
     }
 

@@ -16,7 +16,7 @@ export class SocketKiosClient {
     client:tls.TLSSocket|undefined=undefined;
     port = 51224;
     host = 'laoapps.com';
-    machineId = '111111111';
+    machineId = '88888888';
     otp = '111111';
     token = '';
     t: any;
@@ -28,7 +28,7 @@ export class SocketKiosClient {
         this.token = cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex)
     }
     processorder(transactionID: number) {
-        return axios.post('http://laoapps.com:9006/zdm8', { data: { transactionID, token: cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex) }, command: 'processorder' });
+        return axios.post('http://laoapps.com:9006/kiosk', { data: { transactionID, token: cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex) }, command: 'processorder' });
     }
     initWebServer() {
         const app = express();
