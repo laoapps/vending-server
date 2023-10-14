@@ -193,7 +193,7 @@ export class VendingZDM8 {
                     break;
 
                     case EZDM8_COMMAND.shippingcontrol:
-                        const slot = int2hex(params.slot);
+                        const slot = int2hex(params.slot-1);
                         const isspring = '01';
                         const dropdetect = '00';
                         const liftsystem = '00';
