@@ -117,7 +117,7 @@ export class VendingZDM8 {
                 t = x?.transactionID+'';
             }
                
-            sock.send(b, t);      
+            // sock.send(b, t);      
             b = '';
         });
       
