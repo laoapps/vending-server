@@ -49,9 +49,9 @@ export class ApiServiceService {
         this.modal.getTop().then(r=>{
           if(!r){
             // if( this.mMoneyRequestor?.transID==-1)
-            this.showModal(AdsPage).then(v=>{
-              v.present();
-            })
+            // this.showModal(AdsPage).then(v=>{
+            //   v.present();
+            // })
           }
         })
       }else{

@@ -1,4 +1,11 @@
 export enum IENMessage {
+    verifyOrderFail = 'verify order fail',
+    sumerizeUnmatch = 'sumerize unmatch',
+    sumerizeOrdersEmpty = 'sumerize orders empty',
+    vendingPendingSum = 'vending_pending_sum',
+    ordersUnmatch = 'orders unmatch',
+    orderEmpty = 'order empty',
+    vendingPendingOrders = 'vending_pending_order',
     orderCanceled = 'order canceled',
     invalidSumerizeOrder = 'invalid sumerize order',
     installVendingVersion = 'install vending version',

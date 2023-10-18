@@ -467,13 +467,14 @@ export const EESSP_COMMANDS = {
 
 
 export interface IResModel {
+    transactionID?: number;
     command: any;
     data: any;
     message: string;
     status: number;
 }
 export interface IReqModel {
-    transactionID:number;
+    transactionID?:number;
     command: any;
     data:any;
     time: string;

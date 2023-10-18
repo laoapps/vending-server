@@ -192,5 +192,21 @@ export class SettingPage implements OnInit, OnDestroy {
   //   }
   // }
 
+  testSlot() {
+    const params = {
+      command: 'test',
+      data: {
+        slot: 1
+      }
+    }
+    axios.post(`http://localhost:19006`, params)
+    .then(r => {
+      console.log(`response`);
+      this.apiService.simpleMessage(`SUCCESS: test motor ${1}`, 5000);
+    })
+    .catch(error => {
+      this.apiService.simpleMessage(`ERROR: test motor ${1}`, 5000);
+    });
+  }
 
 }

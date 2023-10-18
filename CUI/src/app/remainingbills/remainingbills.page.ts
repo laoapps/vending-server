@@ -91,7 +91,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
   }
   // local
-  retryProcessBill(transactionID:string,position:number, human?: boolean){
+  async retryProcessBill(transactionID:string,position:number, human?: boolean){
     console.log(`rrrrr`, this.r);
     console.log(`-->`, this.canclick);
 
@@ -99,105 +99,116 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       this.apiService.showLoading('',30000);
       const isRemote= localStorage.getItem('remoteProcess');
       if(!isRemote)
-      this.apiService.retryProcessBillLocal(transactionID,position).subscribe(async r=>{
-        console.log(`vending on sale`, ApiService.vendingOnSale);
-        console.log('retryProcessBill',r);
-        if(r.status){
-          this.apiService.soundThankYou()
-          this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
-            r.present();
-          });
-          let count: number = 0;
-          console.log(`lleng`, this.r);
-          if (this.r != undefined && Object.entries(this.r).length > 1) {
-            count = this.r.length - 1;
-          } else {
-            count = 0;
-          }
-
-          const i=this.r.findIndex(v=>v.position==position);
-          this.r.splice(i,1);
-         
-          if (count == 0) {
-            this.apiService,this.modal.dismiss();
-          }
-          // this.apiService.modal.dismiss();
-          // this.apiService.myTab1.reshowBills(count);
-        } else{
-          await this.apiService.soundSystemError();
-        }
-        this.apiService.simpleMessage(r.message);
-        setTimeout(()=>{
-          this.apiService.dismissLoading();
-        },3000)
-      })
-      else
-
-      if (human == true) {
-        this.clearTimer();
-      }
-      this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
-        // this.apiService.dismissLoading();
-        console.log(`vending on sale`, ApiService.vendingOnSale);
-        console.log('retryProcessBill',r);
-        if(r.status){
-          this.apiService.soundThankYou()
-          this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
-            r.present();
-          });
-          this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
-            if (reload_ticket.status != 1) {
-              this.cancelTimer();
-              await this.apiService.soundSystemError();
-              return;
+      {
+        this.apiService.retryProcessBillLocal(transactionID,position).subscribe(async r=>{
+          console.log(`vending on sale`, ApiService.vendingOnSale);
+          console.log('retryProcessBill',r);
+          if(r.status){
+            this.apiService.soundThankYou()
+            this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
+              r.present();
+            });
+            let count: number = 0;
+            console.log(`lleng`, this.r);
+            if (this.r != undefined && Object.entries(this.r).length > 1) {
+              count = this.r.length - 1;
+            } else {
+              count = 0;
             }
+  
+            const i=this.r.findIndex(v=>v.position==position);
+            this.r.splice(i,1);
+           
+            if (count == 0) {
+              this.apiService,this.modal.dismiss();
+            }
+            // this.apiService.modal.dismiss();
+            // this.apiService.myTab1.reshowBills(count);
+          } else{
+            await this.apiService.soundSystemError();
+          }
+          this.apiService.simpleMessage(r.message);
+          setTimeout(()=>{
+            this.apiService.dismissLoading();
+          },3000)
+        })
+      }
+      else {
+        if (human == true) {
+          this.clearTimer();
+        }
 
-            this.r = reload_ticket.data;
-            console.log(`here der`, this.r);
-          
-            if (this.r != undefined && Object.entries(this.r).length == 0) {
+        try {
+          this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
+            // this.apiService.dismissLoading();
+            console.log(`vending on sale`, ApiService.vendingOnSale);
+            console.log('retryProcessBill',r);
+            if(r.status){
+              this.apiService.soundThankYou()
+              this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
+                r.present();
+              });
+              try {
+                
+                this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
+                  
+                  if (reload_ticket.status != 1) {
+                    this.cancelTimer();
+                    await this.apiService.soundSystemError();
+                    return;
+                  }
+      
+                  this.r = reload_ticket.data;
+                  console.log(`here der`, this.r);
+                
+                  if (this.r != undefined && Object.entries(this.r).length == 0) {
+                    localStorage.setItem('product_fall', '0');
+                    this.clearTimer();
+                    this.apiService,this.modal.dismiss();
+                    return;
+                  }
+      
+                  if (human == true) {
+                    this.loadAutoFall();
+                  }
+      
+                });
+              } catch (error) {
+                console.log(`error eiei`, error.message);
+                this.cancelTimer();
+                await this.apiService.soundSystemError();
+              }
+              
+            } else{
+              this.counter = 0;
+              this.canclick = true;
               localStorage.setItem('product_fall', '0');
               this.clearTimer();
-              this.apiService,this.modal.dismiss();
-              return;
+              this.r = [];
+              this.reloadDelivery(true);
+              await this.apiService.soundSystemError();
             }
-
-            if (human == true) {
-              this.loadAutoFall();
-            }
-
-          }, async error => {
-            this.cancelTimer();
-
-            await this.apiService.soundSystemError();
-          });
-          
-        } else{
-          this.counter = 0;
-          this.canclick = true;
-          localStorage.setItem('product_fall', '0');
+    
+    
+            this.apiService.simpleMessage(r.message);
+    
+            setTimeout(()=>{
+              this.apiService.dismissLoading();
+            },3000)
+    
+          }); 
+        } catch (error) {
+          setTimeout(()=>{
+            this.apiService.dismissLoading();
+          },3000)
           this.clearTimer();
           this.r = [];
           this.reloadDelivery(true);
           await this.apiService.soundSystemError();
         }
+      }
 
 
-        this.apiService.simpleMessage(r.message);
-
-        setTimeout(()=>{
-          this.apiService.dismissLoading();
-        },3000)
-
-      }, async error => {
-        setTimeout(()=>{
-          this.apiService.dismissLoading();
-        },3000)
-        this.clearTimer();
-        this.r = [];
-        this.reloadDelivery(true);
-        await this.apiService.soundSystemError();
-      }); 
 
         // if (this.counter == this.counterLimit) {
         //   this.timer = setInterval(() => {

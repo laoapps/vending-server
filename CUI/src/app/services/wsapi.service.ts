@@ -103,6 +103,7 @@ export class WsapiService {
             this.aliveSubscription.next({test:data?.test,data,balance:Number(data.balance)} as IAlive);
             break;
           case 'confirm':
+            data.transactionID=res.transactionID;
             console.log('confirm', data);
             // this.billProcessSubscription.next(data);
             this.eventEmmiter.emit('billProcess',data);

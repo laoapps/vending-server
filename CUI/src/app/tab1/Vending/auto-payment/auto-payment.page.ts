@@ -54,14 +54,14 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   reloadElement: any = {} as any;
   countdownBill: number = 1;
   countdownBillTimer: any = {} as any;
-  countdownPayment: number = 10;
+  countdownPayment: number = 5;
   countdownPaymentTimer: any = {} as any;
   reloadMessageElement: any = {} as any;
   countdownDestroy: number = 60;
   countdownDestroyTimer: any = {} as any;
   countdownCheckLAAB: number = 60;
   countdownCheckLAABTimer: any = {} as any;
-  countdownLAABDestroy: number = 10;
+  countdownLAABDestroy: number = 5;
   countdownLAABDestroyTimer: any = {} as any;
 
 
@@ -157,10 +157,17 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.parseorders = JSON.parse(JSON.stringify(this.orders));
-    this.parseGetTotalSale = JSON.parse(JSON.stringify(this.getTotalSale));
+    this.refreshOrder();
+    
+    // this.parseorders = JSON.parse(JSON.stringify(this.orders));
+    // this.parseGetTotalSale = JSON.parse(JSON.stringify(this.getTotalSale));
+
+
+    // this.parseorders = JSON.parse(localStorage.getItem(IENMessage.vendingPendingOrders));
+    // this.parseGetTotalSale = JSON.parse(localStorage.getItem(IENMessage.vendingPendingSum));
 
     console.log(`order der`, this.parseorders);
+    console.log(`--->`, this.parseGetTotalSale);
     this.loadDOMs();
     // this.loadFakeOrder();
 
@@ -177,6 +184,15 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
 
   }
+
+  refreshOrder() {
+    const local = this.apiService.myTab1.localLoad();
+    this.parseorders = local.orders;
+    this.parseGetTotalSale = local.sum;
+    this.orders = local.orders;
+    this.getTotalSale = local.sum;
+  }
+
 
   ngOnDestroy(): void {
     
@@ -311,7 +327,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           this.countdownPayment--;
           if (this.countdownPayment == 0) {
             clearInterval(this.countdownPaymentTimer);
-            this.countdownPayment = 10;
+            this.countdownPayment = 5;
 
             if (this.apiService.cash.amount >= this.getTotalSale.t) {
               this.paymentmethod = IPaymentMethod.laab;
@@ -493,7 +509,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           if (this.countdownLAABDestroy == 0) {
             clearInterval(this.countdownLAABDestroyTimer);
             console.log(`LAAB LOOP`, this.countdownLAABDestroy);
-            this.countdownLAABDestroy = 10;
+            this.countdownLAABDestroy = 5;
 
             // fixed
             await this.laabGo();
@@ -537,9 +553,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     // this.getSummarizeOrder();
 
     this.apiService.myTab1.removeCart(index);
+    this.refreshOrder();
 
-    this.parseGetTotalSale.q = this.parseorders.reduce((a,b) => a + b.stock.qtty, 0);
-    this.parseGetTotalSale.t = this.parseorders.reduce((a,b) => a + b.stock.qtty * b.stock.price, 0);
+    // this.parseGetTotalSale.q = this.parseorders.reduce((a,b) => a + b.stock.qtty, 0);
+    // this.parseGetTotalSale.t = this.parseorders.reduce((a,b) => a + b.stock.qtty * b.stock.price, 0);
 
     if (this.parseorders != undefined && Object.entries(this.parseorders).length == 0) {
       this.resetMessage();
@@ -547,7 +564,6 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     } 
     else
     {
-
 
       this.resetMessage();
   
@@ -662,11 +678,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   private resetCountDownBillTimer() {
     clearInterval(this.countdownBillTimer);
-    this.countdownPayment = 10;
+    this.countdownBill = 1;
   }
   private resetCountDownPaymentTimer() {
     clearInterval(this.countdownPaymentTimer);
-    this.countdownPayment = 10;
+    this.countdownPayment = 5;
   }
   private resetCountDownDestroyTimer() {
     clearInterval(this.countdownDestroyTimer);
@@ -678,7 +694,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   }
   private resetCountDownLAABDestroyTimer() {
     clearInterval(this.countdownLAABDestroyTimer);
-    this.countdownCheckLAAB = 10;
+    this.countdownCheckLAAB = 5;
   }
 
   private loadBillWave() {

@@ -17,7 +17,7 @@ import {
   IVendingMachineBill,
   IVendingMachineSale,
 } from '../services/syste.model';
-import { ModalController, Platform } from '@ionic/angular';
+import { LoadingController, ModalController, Platform } from '@ionic/angular';
 // import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
 import { QrpayPage } from '../qrpay/qrpay.page';
 import qrlogo from 'qrcode-with-logos';
@@ -172,6 +172,11 @@ export class Tab1Page implements OnDestroy {
 
   otherModalAreOpening: boolean = false;
 
+
+  // interval
+  refreshAll: any = {} as any;
+  refreshAllCounter: number = 0;
+
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -182,7 +187,10 @@ export class Tab1Page implements OnDestroy {
     private vendingAPIService: VendingAPIService,
     private WSAPIService: WsapiService,
     private cashingService: AppcachingserviceService,
+    public loading: LoadingController
   ) {
+    
+    this.refreshAllEveryHour();
 
     this.autopilot = this.apiService.autopilot;
     const that = this;
@@ -240,73 +248,81 @@ export class Tab1Page implements OnDestroy {
       this.vendingBill = this.apiService.vendingBill;
       this.onlineMachines = this.apiService.onlineMachines;
 
-      this.apiService.wsapi.loginSubscription.subscribe((r) => {
-        if (!r) return console.log('empty');
-        console.log('ws login subscription', r);
-        this.apiService.myTab1 = this;
-        this.apiService.clientId.clientId = r.clientId;
-        this.apiService.wsAlive.time = new Date();
-        this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
-        // this.loadSaleList();
-        // this.initStock();
-        if(this.isFirstLoad){
-          // let adsOn =false
-          setInterval(()=>{
-            if(this.autopilot.auto>=6){
-              // load ads when no active
-              // if(!adsOn)
-              const adsSlide = localStorage.getItem('isAds');
-              if (adsSlide != undefined && adsSlide == 'yes' ) {
-                this.apiService.showModal(AdsPage).then(r=>{
-                  r.present();
-                  this.otherModalAreOpening = true;
-                  this.checkActiveModal(r);
-                  this.openAnotherModal(r);
-
-                  // adsOn=true;
-                  // r.onDidDismiss().then(rx=>{
-                  //   adsOn=false;
-                  // })
-                })
-              }
-
-
-              this.apiService.soundGreeting();
-              setTimeout(() => {
-                this.apiService.soundPleaseVisit();
-              }, 5000);
+      try {
+        this.apiService.wsapi.loginSubscription.subscribe((r) => {
+          if (!r) return console.log('empty');
+          console.log('ws login subscription', r);
+          this.apiService.myTab1 = this;
+          this.apiService.clientId.clientId = r.clientId;
+          this.apiService.wsAlive.time = new Date();
+          this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
+          // this.loadSaleList();
+          // this.initStock();
+          if(this.isFirstLoad){
+            // let adsOn =false
+            setInterval(()=>{
+              if(this.autopilot.auto>=6){
+                // load ads when no active
+                // if(!adsOn)
+                const adsSlide = localStorage.getItem('isAds');
+                if (adsSlide != undefined && adsSlide == 'yes' ) {
+                  this.apiService.showModal(AdsPage).then(r=>{
+                    r.present();
+                    this.otherModalAreOpening = true;
+                    this.checkActiveModal(r);
+                    this.openAnotherModal(r);
   
-              setTimeout(() => {
-                
-                if(new Date().getTime()%2){
-                  setTimeout(() => {
-                    this.apiService.soundPointToCashOut();
-                  }, 5000);
-                  setTimeout(() => {
-                    this.apiService.soundPleaseViewVideo();
-                  }, 10000);
-                  setTimeout(() => {
-                    this.apiService.soundCheckTicketsExist();
-                  }, 15000);
-                  setTimeout(() => {
-                    if(this.apiService.cash.amount>0)this.apiService.soundMachineHasSomeChanges();
-                  }, 20000);
+                    // adsOn=true;
+                    // r.onDidDismiss().then(rx=>{
+                    //   adsOn=false;
+                    // })
+                  })
                 }
+  
+  
+                this.apiService.soundGreeting();
+                setTimeout(() => {
+                  this.apiService.soundPleaseVisit();
+                }, 5000);
+    
+                setTimeout(() => {
+                  
+                  if(new Date().getTime()%2){
+                    setTimeout(() => {
+                      this.apiService.soundPointToCashOut();
+                    }, 5000);
+                    setTimeout(() => {
+                      this.apiService.soundPleaseViewVideo();
+                    }, 10000);
+                    setTimeout(() => {
+                      this.apiService.soundCheckTicketsExist();
+                    }, 15000);
+                    setTimeout(() => {
+                      if(this.apiService.cash.amount>0)this.apiService.soundMachineHasSomeChanges();
+                    }, 20000);
+                  }
+                  
+                }, 10000);
+                this.autopilot.auto=0;
                 
-              }, 10000);
-              this.autopilot.auto=0;
-              
-            }else{
-              this.autopilot.auto++;
-            }
-            const hour = new Date().getHours();// >19 , >0&&<8
+              }else{
+                this.autopilot.auto++;
+              }
+              const hour = new Date().getHours();// >19 , >0&&<8
+  
+            }, 10000);
+  
+            this.loadStock();
+            this.isFirstLoad = false;
+          }
+        });
+      } catch (error) {
+        
+      }
 
-          }, 10000);
 
-          this.loadStock();
-          this.isFirstLoad = false;
-        }
-      });
+
+
       this.apiService.onDeductOrderUpdate((position) => {
         try {
           // const x = JSON.parse(JSON.stringify(that.vendingOnSale));
@@ -421,6 +437,7 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.loadingCheck);
     clearInterval(this.loopPercent);
     clearInterval(this.installingPecent);
+    clearInterval(this.refreshAll);
   }
   async runtoast(txt: string, duration: number = 1000) {
         const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: duration });
@@ -444,6 +461,7 @@ export class Tab1Page implements OnDestroy {
   }
 
 
+
   toggleWebviewTab(e: any){
     // console.log(e.detail);
     if (e.detail.scrollTop > 126) {
@@ -465,6 +483,17 @@ export class Tab1Page implements OnDestroy {
     });
   }
 
+  refreshAllEveryHour() {
+    const hour = 60 * 60 * 1000;
+    this.refreshAll = setInterval(() => {
+      this.refreshAllCounter++;
+      if (this.refreshAllCounter == hour) {
+        clearInterval(this.refreshAll);
+        this.refreshAllCounter = 0;
+        window.location.reload();
+      }
+    }, 1000);
+  }
   refresh() {
     window.location.reload();
   }
@@ -570,6 +599,9 @@ export class Tab1Page implements OnDestroy {
         console.log(`params`, params);
         const run = await this.loadStockListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
+
+        // fix
+        // this.FakeWriteAPPVERSION();
         this.APPVERSION();
 
         this.apiService.newProductItems(run.data[0].lists);
@@ -897,6 +929,23 @@ export class Tab1Page implements OnDestroy {
       });
   }
 
+  localLoad() {
+    const orders = localStorage.getItem(IENMessage.vendingPendingOrders);
+    const sum = localStorage.getItem(IENMessage.vendingPendingSum);
+    return {
+      orders: orders == null ? [] : JSON.parse(orders),
+      sum: sum == null ? [] : JSON.parse(sum)
+    }
+  }
+  localSave() {
+    localStorage.setItem(IENMessage.vendingPendingOrders, JSON.stringify(this.orders));
+    localStorage.setItem(IENMessage.vendingPendingSum, JSON.stringify(this.getTotalSale));
+  }
+  localClear() {
+    localStorage.removeItem(IENMessage.vendingPendingOrders);
+    localStorage.removeItem(IENMessage.vendingPendingSum);
+  }
+
   addOrder(x: IVendingMachineSale) {
     try {
       this.autopilot.auto = 0;
@@ -1047,6 +1096,8 @@ export class Tab1Page implements OnDestroy {
       this.getTotalSale[k] = t[k];
     });
     console.log(`-->`, this.getTotalSale);
+    this.localSave();
+
     // return this.summarizeOrder;
   }
   getTotal() {
@@ -1104,6 +1155,7 @@ export class Tab1Page implements OnDestroy {
     this.orders = [];
     this.getTotalSale.q = 0;
     this.getTotalSale.t = 0;
+    this.localClear();
   }
   removeCart(i: number) {
     const x = this.orders.splice(i, 1);
@@ -1320,6 +1372,7 @@ export class Tab1Page implements OnDestroy {
     this.orders = [];
     this.getTotalSale.q = 0;
     this.getTotalSale.t = 0;
+    this.localClear();
   }
   epinCashOut(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
@@ -1832,6 +1885,13 @@ export class Tab1Page implements OnDestroy {
 
   installingPecent: any = {} as any;
   installingCount: number = 15;
+
+  // FakeWriteAPPVERSION() {
+  //   const params = {
+  //     url: '043824c2abdafa7a15da39fba515ea5f', version: '00000000013', versionText: '0.1.3', uuid: '8fbb8643-8ca8-4414-8d16-f2c2cefe8092'
+  //   }
+  //   localStorage.setItem('app_version', JSON.stringify(params));
+  // }
   APPVERSION(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {

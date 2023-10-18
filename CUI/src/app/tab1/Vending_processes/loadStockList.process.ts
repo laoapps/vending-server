@@ -128,13 +128,8 @@ export class LoadStockListProcess {
                     if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
                     this.lists = response.data;
-                    console.log(`lists`, this.lists);
                     this.images = this.lists.map(item => { return { name: item.stock.image, file: item.stock.image } });
                     this.lists.find(field => field.stock.imageurl = '');
-
-                    // let list = this.lists.map(item => { return { id: item.id, image: item.image } });
-                    // list = list.sort((a,b) => a.id-b.id);
-                    // console.log(`stock lists`, list);
                     message.message='found sale '+this.lists.length;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));

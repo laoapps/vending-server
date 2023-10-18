@@ -1955,12 +1955,14 @@ export class InventoryZDM8 implements IBaseClass {
 
                         if (!machineId) throw new Error("machine is not exit");
                         const xy = [];
-                        trans.forEach(v => {
+                        // trans.forEach(v => {
 
+                        for (let index = 0; index < trans.length; index++) {
+                            const v = trans[index];
                             const transactionID = v.transactionID;
                             const position = v.position;
                             
-                            readMachinePendingStock(machineId?.machineId + '').then(r => {
+                            const r =await  readMachinePendingStock(machineId?.machineId + '');
 
                                 let x = JSON.parse(r) as Array<any>;
                                 if (!x || !Array.isArray(x)) x = [ ];
@@ -1970,8 +1972,10 @@ export class InventoryZDM8 implements IBaseClass {
                                     writeMachinePendingStock(machineId?.machineId + "", x.filter(v=>v?.transactionID!=transactionID&&position!=v?.position))
                                     xy.push(y);
                                 }
-                            })
-                        })
+                            
+                        }
+                           
+                        // })
                         res.send(
                             PrintSucceeded(
                                 "confirmMachineDeductStock",

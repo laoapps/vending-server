@@ -169,7 +169,7 @@ export class StockReportPage implements OnInit, OnDestroy {
               // const date = moment(this.lists[i].time).utcOffset('UTC+7').format('YYYY-MM-DD hh:mm:ss')
               const date = momenttimezone(this.lists[i].time).tz("Asia/Vientiane").format('D/M/YYYY HH:mm:ss')
               // detail.textContent = `Position ${this.lists[i].position} Date ${this.lists[i].time} Name ${this.lists[i].name} QTTY ${this.lists[i].qtty}`;
-              detail.textContent = `Position ${this.lists[i].position} Date ${date} Name ${this.lists[i].name} QTTY ${this.lists[i].qtty}`;
+              detail.textContent = `Position ${this.lists[i].position} Date ${date} Name ${this.lists[i].name} Price ${this.lists[i].price} QTTY ${this.lists[i].qtty}`;
 
               if (this.lists[i].refill == true)  {
                 div.style.background = '#2ECC71';

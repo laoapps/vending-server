@@ -304,7 +304,7 @@ export class ApiService {
 
 
         // reconfirm when deductstock fail
-        if(JSON.stringify(pendingstock) === JSON.stringify(response.data.pendingStock) &&pendingstock.length ){
+        if(JSON.stringify(pendingstock) === JSON.stringify(response.data.pendingStock) && pendingstock.length ){
           pendingstockcount++;
         }else {
           pendingstockcount=0;
@@ -343,8 +343,13 @@ export class ApiService {
         // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
 
         // control version
-        const app_version = response.data.app_version;
-        const local_version = localStorage.getItem('app_version');
+        // const app_version = response.data.app_version;
+        // const local_version = localStorage.getItem('app_version');
+
+        // test
+        const app_version = undefined;
+        const local_version = undefined;
+
 
         if (app_version != undefined && Object.entries(app_version).length > 0)
         { 
@@ -395,12 +400,12 @@ export class ApiService {
         trans: [
           { 
             transactionID: r.bill?.transactionID, position: r?.position
-
           }
         ]
       }
       this.confirmDeductStock(params).subscribe(res_confirm => {
-        console.log(`confirm deduct stock`, res_confirm);
+        try {
+          console.log(`confirm deduct stock`, res_confirm);
         if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
         const vsales = ApiService.vendingOnSale; 
@@ -442,6 +447,10 @@ export class ApiService {
           });
   
           r.bill.updatedAt = new Date();
+          console.log(`vendingOnSale-->`, vsales);
+          this.storage.set('saleStock', vsales, 'stock').then((r) => {
+            // that.deductOrderUpdate(x.position);
+          });
         } else if (!r.position) {
           // PLAY SOUNDS
           this.soundSystemError();
@@ -459,14 +468,13 @@ export class ApiService {
             })
             .then((v) => v.present());
         }
+        } catch (error) {
+          console.log(error.message);
+          this.alertError(error.message);
+        }
+        
   
-        console.log(`vendingOnSale-->`, vsales);
-        this.storage.set('saleStock', vsales, 'stock').then((r) => {
-          // that.deductOrderUpdate(x.position);
-        });
-      }, error => {
-        console.log(error.message);
-        this.alertError(error.message);
+
       });
 
 
@@ -522,49 +530,51 @@ export class ApiService {
   // }
 
   reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
-    const trans: Array<any> = pendingStock.filter(item => item.transactionID && item.position);
+    const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
     console.log(`ping pending stock`, trans);
     const params = {
       trans: trans
     }
-    
-    this.confirmDeductStock(params).subscribe(res_confirm => {
-      console.log(`return confirm deduct stock`, res_confirm);
-      if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
-      const vsales = ApiService.vendingOnSale; 
-      const x = vsales.find((v) => {
-        pendingStock.filter(item => {
-          if (v.position == item.position) {
-            if (v.stock.qtty > 0) {
-              v.stock.qtty--;
-            }
-            return true;
-          }
-        });
-      });
-      this.eventEmitter.emit('stockdeduct', x);
-      if (!localStorage.getItem('debug')) {
-
-        this.saveSale(vsales).subscribe((r) => {
-          console.log(r);
-          if (r.status) {
-            console.log(`save sale success`);
-          } else {
-            this.simpleMessage(IENMessage.saveSaleFail);
-          }
-        });
+    try {
+      this.confirmDeductStock(params).subscribe(res_confirm => {
+        console.log(`return confirm deduct stock`, res_confirm);
+        if (res_confirm.status != 1) throw new Error(res_confirm.message);
   
-        console.log(`pending stock mode vendingOnSale-->`, vsales);
-        this.storage.set('saleStock', vsales, 'stock').then((r) => {
-          // that.deductOrderUpdate(x.position);
+        const vsales = ApiService.vendingOnSale; 
+        const x = vsales.find((v) => {
+          pendingStock.filter(item => {
+            if (v.position == item.position) {
+              if (v.stock.qtty > 0) {
+                v.stock.qtty--;
+              }
+              return true;
+            }
+          });
         });
-      }
-      
-    }, error => {
+        this.eventEmitter.emit('stockdeduct', x);
+        if (!localStorage.getItem('debug')) {
+  
+          this.saveSale(vsales).subscribe((r) => {
+            console.log(r);
+            if (r.status) {
+              console.log(`save sale success`);
+            } else {
+              this.simpleMessage(IENMessage.saveSaleFail);
+            }
+          });
+    
+          console.log(`pending stock mode vendingOnSale-->`, vsales);
+          this.storage.set('saleStock', vsales, 'stock').then((r) => {
+            // that.deductOrderUpdate(x.position);
+          });
+        }
+        
+      });
+    } catch (error) {
       console.log(error.message);
       this.alertError(error.message);
-    });
+    }
   }
   public validateDB() { }
   public onDeductOrderUpdate(cb: (position: number) => void) {
