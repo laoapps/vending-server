@@ -60,19 +60,19 @@ export class VendingZDM8 {
                     that.pendingRetry = 10;
                 }
                 console.log('processPendingRetry retry======= ', that.processPendingRetry,);
-                const pp = that.processPending[0];
-                if (pp) {
-                    if (that.processPendingRetry <= 0) {
+                // const pp = that.processPending[0];
+                // if (pp) {
+                //     if (that.processPendingRetry <= 0) {
 
-                        const t = pp?.transactionID;
-                        const b = pp?.params
-                        that.sock?.send(b, Number(t), EMACHINE_COMMAND.confirmOrder);
-                    } else {
-                        that.processPendingRetry -= 2;
-                    }
-                }else{
-                    that.processPendingRetry = 3;
-                }
+                //         const t = pp?.transactionID;
+                //         const b = pp?.params
+                //         that.sock?.send(b, Number(t), EMACHINE_COMMAND.confirmOrder);
+                //     } else {
+                //         that.processPendingRetry -= 2;
+                //     }
+                // }else{
+                //     that.processPendingRetry = 3;
+                // }
 
             
                 // query status of the machine
@@ -111,13 +111,13 @@ export class VendingZDM8 {
             // confirm any 
             // 01 86 04 43 a3
             ///01 10 20 01 00 02 1B C8 confirm motor control
-            let t ='-52';
+            let t ='-9';
             if('0110200100021bc8'.toLowerCase()==b.toLowerCase()){
                 const x = that.processPending.shift();
-                t = x?.transactionID+'';
+                t = x?.transactionID+''; 
+                sock.send(b, t, EMACHINE_COMMAND.confirmOrder);  
             }
-               
-            // sock.send(b, t);      
+                  
             b = '';
         });
       

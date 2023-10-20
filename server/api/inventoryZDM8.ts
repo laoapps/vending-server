@@ -2574,6 +2574,67 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+            router.post(
+                this.path + "/checkMyMmoney",
+                //APIAdminAccess,
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const qr = req.body['qr'];
+
+                        // const ownerUuid = res.locals["ownerUuid"] || "";
+
+                        this.getMyMmoney('',qr,new Date().getTime()+'').then((r) => {
+                            res.send(PrintSucceeded("checkMyMmoney", r, EMessage.succeeded, returnLog(req, res, true)));
+                        })
+                            .catch((e) => {
+                                console.log("Error checkMyMmoney", e);
+                                res.send(PrintError("checkMyMmoney", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("checkMyMmoney", error, EMessage.error, returnLog(req, res)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/loadLogs",
+                //APIAdminAccess,
+                // this.checkSuperAdmin,
+                // this.checkSubAdmin,
+                // this.checkAdmin,
+
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        let limit = Number(req.query['limit']);
+                        let skip = Number(req.query['skip']);
+                        limit = limit > 0 ? limit : 5;
+                        const offset = limit * skip;
+                        console.log(' REST loadLogs');
+            
+
+                        // const ownerUuid = res.locals["ownerUuid"] || "";
+
+                        logEntity.findAndCountAll({ order: ['updatedAt', 'DESC'], limit, offset }).then((r) => {
+                            res.send(PrintSucceeded("loadLogs", r, EMessage.succeeded, returnLog(req, res, true)));
+                        })
+                            .catch((e) => {
+                                console.log("Error loadLogs", e);
+                                res.send(PrintError("loadLogs", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("loadLogs", error, EMessage.error, returnLog(req, res)));
+                    }
+                }
+            );
             // router.post(
             //     this.path + "/super_listMachine",
             //     // this.checkToken.bind(this),
@@ -3718,7 +3779,38 @@ export class InventoryZDM8 implements IBaseClass {
             this.ssocket.initMachineId(rx);
         });
     }
+    getMyMmoney(PhoneUser: string, myqr: string, transID: string,type:string='PRO') {
+        return new Promise<any>((resolve, reject) => {
+            // generate QR from MMoney
 
+            const qr = {
+                qr:myqr,
+                PhoneUser, // '2055220199',
+                transID,
+                type
+            } as any;
+            console.log("MyQR", qr);
+
+            axios
+                .post<any>(
+                    "https://qr.mmoney.la/app/VerifyQR",
+                    qr,
+                    { headers: { 'lmmkey': 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJNLU1vbmV5IiwiVXNlcm5hbWUiOiJNLU1vbmV5IFgiLCJleHAiOjE2OTIyMzk3ODAsImlhdCI6MTY5MjIzOTc4MH0.VUqTof1EQ8LSYjfSn6svaY7Pmn2NDLqlq5DMqjLnsro' } }
+                )
+                .then((rx) => {
+                    console.log("getMyMmoney", rx);
+                    if (rx.status) {
+                        resolve(rx.data);
+                    } else {
+                        reject(new Error(rx.statusText));
+                    }
+                })
+                .catch((e) => {
+                    reject(e);
+                });
+
+        });
+    }
 
     generateBillMMoneyPro(merchantNumber: string, value: number, transID: string) {
         return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
