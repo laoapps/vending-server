@@ -3822,7 +3822,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             console.log("MyQR", qr);
 
-            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr,{ headers: { "Content-Type": "application/json", "lmmkey":"va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17" } })
+            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr,{ headers: { "Content-Type": "application/json", "lmm-key":"va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17" } })
                 .then((rx) => {
                     console.log("getMyMmoney", rx);
                     if (rx.status) {
