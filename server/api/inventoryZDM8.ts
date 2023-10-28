@@ -3783,8 +3783,14 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             // generate QR from MMoney
 
+            // const qr = {
+            //     qr:myqr,
+            //     PhoneUser, // '2055220199',
+            //     transID,
+            //     type
+            // } as any;
             const qr = {
-                qr:myqr,
+                qrstr:myqr,
                 PhoneUser, // '2055220199',
                 transID,
                 type

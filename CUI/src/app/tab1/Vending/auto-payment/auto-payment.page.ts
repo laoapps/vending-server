@@ -201,7 +201,6 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownBillTimer);
     clearInterval(this.countdownPaymentTimer);
     clearInterval(this.reloadMessageElement);
-    clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownCheckLAABTimer);
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownLAABDestroyTimer);
@@ -252,11 +251,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownBillTimer);
     clearInterval(this.countdownPaymentTimer);
     clearInterval(this.reloadMessageElement);
-    clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownCheckLAABTimer);
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownLAABDestroyTimer);
-    this.apiService.modal.dismiss();
+
+    this.modal.dismiss();
   }
 
   loadCountDownBill(list?: any): Promise<any> {
@@ -265,7 +264,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         this.countdownBillTimer = setInterval(async () => {
           this.countdownBill--;
-          if (this.countdownBill == 0) {
+          if (this.countdownBill <= 0) {
             clearInterval(this.countdownBillTimer);
             this.countdownBill = 1;
             
@@ -325,7 +324,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         // loop generate
         this.countdownPaymentTimer = setInterval(async () => {
           this.countdownPayment--;
-          if (this.countdownPayment == 0) {
+          if (this.countdownPayment <= 0) {
             clearInterval(this.countdownPaymentTimer);
             this.countdownPayment = 5;
 
@@ -418,7 +417,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             }
           }
 
-          if (this.countdownDestroy == 0) {
+          if (this.countdownDestroy <= 0) {
             clearInterval(this.countdownDestroyTimer);
             this.countdownDestroy = 60;
             if (AutoPaymentPage.message) AutoPaymentPage.message.close();
@@ -428,9 +427,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             this.close();
             this.apiService.alertError(IENMessage.timeout);
             resolve(IENMessage.success);
+          } else {
+            AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
+            if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
           }
-          AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
-          if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
           
         }, 1000);
 
@@ -481,7 +481,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               console.log(`LAAB CASH NOT ENOUGHT balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
             }
           }
-          if (this.countdownCheckLAAB == 0) {
+          if (this.countdownCheckLAAB <= 0) {
             clearInterval(this.countdownCheckLAABTimer);
             this.countdownCheckLAAB = 60;
 
@@ -506,7 +506,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         this.countdownLAABDestroyTimer = setInterval(async () => {
           this.countdownLAABDestroy--;
-          if (this.countdownLAABDestroy == 0) {
+          if (this.countdownLAABDestroy <= 0) {
             clearInterval(this.countdownLAABDestroyTimer);
             console.log(`LAAB LOOP`, this.countdownLAABDestroy);
             this.countdownLAABDestroy = 5;

@@ -343,12 +343,12 @@ export class ApiService {
         // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
 
         // control version
-        // const app_version = response.data.app_version;
-        // const local_version = localStorage.getItem('app_version');
+        const app_version = response.data.app_version;
+        const local_version = localStorage.getItem('app_version');
 
         // test
-        const app_version = undefined;
-        const local_version = undefined;
+        // const app_version = undefined;
+        // const local_version = undefined;
 
 
         if (app_version != undefined && Object.entries(app_version).length > 0)
@@ -399,7 +399,7 @@ export class ApiService {
       const params = {
         trans: [
           { 
-            transactionID: r.bill?.transactionID, position: r?.position
+            transactionID: r?.transactionID, position: r?.position
           }
         ]
       }

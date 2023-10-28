@@ -25,3 +25,11 @@ export interface ISetUpdateVendingVersion {
     uuid: string,
     machines: Array<string>
 }
+
+export interface IKioskBlock extends IBase {
+    ownerUuid: string,
+    transaction: {
+        hash: string,
+        info: string
+    },
+}

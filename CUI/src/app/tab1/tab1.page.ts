@@ -1886,12 +1886,6 @@ export class Tab1Page implements OnDestroy {
   installingPecent: any = {} as any;
   installingCount: number = 15;
 
-  // FakeWriteAPPVERSION() {
-  //   const params = {
-  //     url: '043824c2abdafa7a15da39fba515ea5f', version: '00000000013', versionText: '0.1.3', uuid: '8fbb8643-8ca8-4414-8d16-f2c2cefe8092'
-  //   }
-  //   localStorage.setItem('app_version', JSON.stringify(params));
-  // }
   APPVERSION(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {

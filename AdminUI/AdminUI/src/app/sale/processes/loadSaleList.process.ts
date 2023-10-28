@@ -19,7 +19,10 @@ export class LoadSaleListProcess {
     // properties
     private lists: Array<any> = [];
     private cashList: Array<{ name: string, file: string }> = [];
-    private firsttime: boolean = false;
+    private timerData: any = {} as any;
+    private timerNoData: any = {} as any;
+    private counter: number = 0;
+    private firsttime: boolean =false;
 
     constructor(
         apiService: ApiService,
@@ -158,6 +161,7 @@ export class LoadSaleListProcess {
                 if (this.firsttime == false) return resolve(IENMessage.success);
     
                 let lists: Array<{ name: string, file: string}> = [];
+
                 for(let i = 0; i < this.lists.length; i++) {
                     const name = this.lists[i].stock.image;
     
@@ -204,22 +208,66 @@ export class LoadSaleListProcess {
 
                 if (this.firsttime == true) return resolve(IENMessage.success);
 
-                this.lists.filter(list => {
-                    this.cashList.find((cash, cash_index) => {
-                        if (list.stock.image == cash.name) {
-                            list.stock.imageurl = cash.name;
-                            list.stock.image = cash.file;
-                        }
+
+                if (this.lists != undefined && Object.entries(this.lists).length == 0) return resolve(IENMessage.success);
+                if (this.cashList != undefined && Object.entries(this.cashList).length > 0) {
+                    this.lists.filter(list => {
+                        this.cashList.find((cash, cash_index) => {
+                            if (list.stock.image == cash.name) {
+                                list.stock.imageurl = cash.name;
+                                list.stock.image = cash.file;
+                            }
+                        });
                     });
-                });
+                }
 
                 const data = this.lists.filter(item => item.stock.image.substring(0,4) == 'data');
                 const nodata = this.lists.filter(item => item.stock.image.substring(0,4) != 'data');
 
+                // if (data != undefined && Object.entries(data).length > 0) {
+                //     let lists: Array<{ name: string, file: string}> = [];
+                //     for(let i = 0; i < this.lists.length; i++) {
+                //         const name = this.lists[i].stock.image;
+        
+                //         this.timerData = setTimeout(async () => {
+                //             if (name != '' && name.substring(0,4) != 'data') {
+                        
+                //                 const url = `${this.filemanagerURL}${name}`;
+                //                 const run = await axios({
+                //                     method: 'GET',
+                //                     url: url,
+                //                     responseType: 'blob'
+                //                 });
+                //                 let file = await this.apiService.convertBlobToBase64(run.data);
+                
+                //                 const obj = {
+                //                     name: name,
+                //                     file: file
+                //                 }
+                
+                //                 const same = lists.filter(item => item.name == name);
+                //                 if (same != undefined && Object.entries(same).length == 0) {
+                //                     lists.push(obj);
+                //                 }
+                //                 this.lists[i].stock.imageurl = this.lists[i].stock.image;
+                //                 this.lists[i].stock.image = file;
+            
+                //             }
+                //             if (i == this.lists.length-1) {
+                //                 console.log(`first time save`, this.ownerUuid, this.lists, lists);
+                //                 clearTimeout(this.timerData);
+                //                 await this.cashingService.set(this.ownerUuid, lists);
+                //             }
+                //         }, 500);
+                //     }
+                // }
+
                 if (nodata != undefined && nodata.length > 0)
                 {
                     for(let i = 0; i < nodata.length; i++) {
+
                         console.log(`receive image new`);
+                        this.counter = i;
 
                         const url = `${this.filemanagerURL}${nodata[i].stock.image}`;
                         const run = await axios({
@@ -237,10 +285,12 @@ export class LoadSaleListProcess {
                         nodata[i].stock.imageurl = this.lists[i].stock.image;
                         nodata[i].stock.image = file;
                         this.cashList.push(obj);
+
                     }
                     data.push(...nodata);
                 }
 
+                console.log(`dd`, data);
                 this.lists = data;
                 await this.cashingService.set(this.ownerUuid, this.cashList);
 

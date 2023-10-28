@@ -102,7 +102,7 @@ export class StockReportPage implements OnInit, OnDestroy {
     this.toDate = undefined;
   }
 
-    process(): Promise<any> {
+  process(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
         this.lists = [];
@@ -124,7 +124,6 @@ export class StockReportPage implements OnInit, OnDestroy {
             machineId: this.machineId
           }
           this.currentdate = `From ${this.fromDate} to ${this.toDate}`;
-
         }
 
         const run = await this.loadVendingMachineStockReportProcess.Init(params);

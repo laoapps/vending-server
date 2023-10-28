@@ -23,9 +23,6 @@ export class AdsPage implements OnInit {
   ]
   t: any;
   constructor(public api: ApiServiceService, private animationCtrl: AnimationController) {
-
-
-
   }
 
   ngOnInit() {

@@ -43,6 +43,7 @@ export class Tab1Page {
   }
   loadBankNotes() {
     this.apiService.loadBankNotes().subscribe(r => {
+
       try {
         console.log('loadBankNotes', r);
         if (r.status) {
