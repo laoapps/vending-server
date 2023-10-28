@@ -3817,19 +3817,20 @@ export class InventoryZDM8 implements IBaseClass {
             // generate QR from MMoney
 
             const qr = {
-                qrstr:myqr,
-                PhoneUser, // '2055220199',
-                transID,
-                type
+                qrstr:myqr
             } as any;
 
             console.log("MyQR", qr);
 
+            const header = { 
+                'Content-Type': 'application/json',
+                'lmmkey': 'va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17' 
+            }
             axios
                 .post<any>(
                     "https://qr.mmoney.la/pro/VerifyMyQR",
                     qr,
-                    { headers: { 'lmmkey': 'va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17' } }
+                    { headers: header }
                 )
                 .then((rx) => {
                     console.log("getMyMmoney", rx);
