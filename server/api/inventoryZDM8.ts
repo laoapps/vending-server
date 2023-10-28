@@ -3817,7 +3817,7 @@ export class InventoryZDM8 implements IBaseClass {
             // generate QR from MMoney
 
             const qr = {
-                qrstr:'00'+myqr
+                qrstr: myqr
             } as any;
 
             console.log("MyQR", qr);
