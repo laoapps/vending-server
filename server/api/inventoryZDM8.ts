@@ -2588,7 +2588,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         // const ownerUuid = res.locals["ownerUuid"] || "";
 
-                        this.getMyMmoney('',qr,new Date().getTime()+'').then((r) => {
+                        this.getMyMmoneyPro('',qr,new Date().getTime()+'').then((r) => {
                             res.send(PrintSucceeded("checkMyMmoney", r, EMessage.succeeded, returnLog(req, res, true)));
                         })
                             .catch((e) => {
@@ -3783,18 +3783,13 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             // generate QR from MMoney
 
-            // const qr = {
-            //     qr:myqr,
-            //     PhoneUser, // '2055220199',
-            //     transID,
-            //     type
-            // } as any;
             const qr = {
-                qrstr:myqr,
+                qr:myqr,
                 PhoneUser, // '2055220199',
                 transID,
                 type
             } as any;
+
             console.log("MyQR", qr);
 
             axios
@@ -3802,6 +3797,39 @@ export class InventoryZDM8 implements IBaseClass {
                     "https://qr.mmoney.la/app/VerifyQR",
                     qr,
                     { headers: { 'lmmkey': 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJNLU1vbmV5IiwiVXNlcm5hbWUiOiJNLU1vbmV5IFgiLCJleHAiOjE2OTIyMzk3ODAsImlhdCI6MTY5MjIzOTc4MH0.VUqTof1EQ8LSYjfSn6svaY7Pmn2NDLqlq5DMqjLnsro' } }
+                )
+                .then((rx) => {
+                    console.log("getMyMmoney", rx);
+                    if (rx.status) {
+                        resolve(rx.data);
+                    } else {
+                        reject(new Error(rx.statusText));
+                    }
+                })
+                .catch((e) => {
+                    reject(e);
+                });
+
+        });
+    }
+    getMyMmoneyPro(PhoneUser: string, myqr: string, transID: string,type:string='PRO') {
+        return new Promise<any>((resolve, reject) => {
+            // generate QR from MMoney
+
+            const qr = {
+                qrstr:myqr,
+                PhoneUser, // '2055220199',
+                transID,
+                type
+            } as any;
+
+            console.log("MyQR", qr);
+
+            axios
+                .post<any>(
+                    "https://qr.mmoney.la/pro/VerifyMyQR",
+                    qr,
+                    { headers: { 'lmmkey': 'va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17' } }
                 )
                 .then((rx) => {
                     console.log("getMyMmoney", rx);
