@@ -723,5 +723,14 @@ export class KiosESSP {
 
     }
 
+    disableMachine(){
+        this.eSSP.disable()
+    }
+    enableMachine(){
+        this.eSSP.enable()
+    }
+    getMachineStatus(){
+        this.eSSP
+    }
 
 }

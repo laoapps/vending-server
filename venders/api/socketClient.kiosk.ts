@@ -8,7 +8,7 @@ import helmet from 'helmet';
 import express, { Router } from 'express';
 import axios from 'axios';
 import tls from 'tls';
-import { KiosESSP } from './kios.essp';
+import { KiosESSP } from './kios.essp2';
 export class SocketKiosClient {
     //---------------------client----------------------
 
@@ -147,7 +147,15 @@ export class SocketKiosClient {
 
 
             const param = d.data;
-
+            if(d.command=='enable'){
+                that.m.enableMachine();
+                console.log('ENABLE Machine');
+            }else if(d.command == 'disable'){
+                that.m.disableMachine();
+                console.log('DISABLE Machine');
+            }
+           
+          
             // that.m.command(d.command as any, param, d.transactionID).then(r => {
             //     // console.log('DATA command completed');
             //     if (d.command == 'balance') {
