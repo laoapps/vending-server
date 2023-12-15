@@ -847,6 +847,7 @@ export enum EPaymentStatus {
     delivered = 'delivered'
 }
 export enum EMessage {
+    resetCashingSuccess = 'reset cashing success',
     notfoundmachine = 'notfoundmachine',
     invalidMachine = 'invalid machine',
     invalidDataAccess = 'invalid data access',
@@ -1249,7 +1250,9 @@ export enum EMACHINE_COMMAND {
     refresh = "refresh",
     restart = "restart",
     logs = "logs",
-    confirmOrder = "confirmOrder"
+    confirmOrder = "confirmOrder",
+    resetCashing = "resetCashing",
+
 }
 
 export interface IMachineClientID extends IBase {

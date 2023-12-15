@@ -4,6 +4,8 @@ import { EMACHINE_COMMAND, IAlive, IBillProcess, IClientId, IReqModel, IResModel
 import * as cryptojs from 'crypto-js';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EventEmitter } from 'events';
+import { AppcachingserviceService } from './appcachingservice.service';
+import { IENMessage } from '../models/base.model';
 @Injectable({
   providedIn: 'root'
 })
@@ -30,7 +32,10 @@ export class WsapiService {
 
   retry: any;
   // vsales=new Array<IVendingMachineSale>();
-  constructor() {
+  constructor(
+    private cashingService: AppcachingserviceService,
+    
+  ) {
   }
   onBillProcess(cb:(data)=>void){
     if(cb){
@@ -131,6 +136,11 @@ export class WsapiService {
             this.refreshSubscription.next(data);
             break;
 
+          case 'reset_cashing':
+            console.log(`en`);
+            this.resetCashing().then(() => console.log(IENMessage.resetCashingSuccess)).catch(error => console.log(IENMessage.resetCashingFail + '__' + error.message))
+            break;
+
           // query today bill
           // query all bills
           // query today refill
@@ -187,5 +197,22 @@ export class WsapiService {
           that.retries++;
         }
       }, 1000); // wait 5 milisecond for the connection...
+  }
+
+  resetCashing(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        const ownerUuid = localStorage.getItem('machineId');
+        if (ownerUuid) {
+          await this.cashingService.remove(ownerUuid);
+          window.location.reload();
+        }
+
+         resolve(IENMessage.success);
+      } catch (error) {
+ 
+        resolve(error.message);
+      }
+    }); 
   }
 }

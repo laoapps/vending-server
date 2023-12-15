@@ -2539,6 +2539,30 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
             router.post(
+                this.path + "/resetCashing",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+            async (req, res) => {
+                try {
+                    const m = req.body.machineId;
+                    const ws = this.wsClient.find(v => v['machineId'] == m);
+                    // const w = ws.find(v=>v['clientId']);
+                    console.log(`----------->`, m);
+                    const resx = {} as IResModel;
+                    resx.command = EMACHINE_COMMAND.resetCashing;
+                    resx.message = EMessage.resetCashingSuccess;
+                    resx.data = true;
+                    this.sendWSToMachine(ws['machineId'], resx)
+                    res.send(PrintSucceeded("resetCashing", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                } catch (error) {
+                    console.log(error);
+                    res.send(PrintError("resetCashing", error, EMessage.error, returnLog(req, res, true)));
+                }
+            });
+
+            router.post(
                 this.path + "/listMachine",
                 //APIAdminAccess,
                 this.checkSuperAdmin,

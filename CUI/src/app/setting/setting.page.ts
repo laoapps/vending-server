@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import { IENMessage } from '../models/base.model';
 import axios from 'axios';
 import { IonicStorageService } from '../ionic-storage.service';
+import { AppcachingserviceService } from '../services/appcachingservice.service';
 
 @Component({
   selector: 'app-setting',
@@ -35,7 +36,8 @@ export class SettingPage implements OnInit, OnDestroy {
 
   constructor(
     private apiService: ApiService,
-    public storage: IonicStorageService
+    public storage: IonicStorageService,
+    private cashingService: AppcachingserviceService,
   ) { }
 
   ngOnInit() {
@@ -207,6 +209,23 @@ export class SettingPage implements OnInit, OnDestroy {
     .catch(error => {
       this.apiService.simpleMessage(`ERROR: test motor ${1}`, 5000);
     });
+  }
+
+  resetCashing(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        const ownerUuid = localStorage.getItem('machineId');
+        if (ownerUuid) {
+          await this.cashingService.remove(ownerUuid);
+          window.location.reload();
+        }
+
+         resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.alertError(error.message);
+        resolve(error.message);
+      }
+    }); 
   }
 
 }

@@ -92,6 +92,7 @@
                       <button (click)="edit(p.id)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Edit</button>
                       <button (click)="sale(p.machineId, p.otp)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Sale</button>
                       <button (click)="refreshMachine(p.machineId)" class="btn btn-light border border-1"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                      <button (click)="refreshMachine(p.machineId)" class="btn btn-light border border-1"><i class="fa-solid fa-rotate"></i> Reset Cashing</button>
                     </td>
                   </tr>
                   <tr *ngIf="settings[p.machineId]">

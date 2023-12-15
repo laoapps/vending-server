@@ -1,4 +1,6 @@
 export enum IENMessage {
+    resetCashingSuccess = 'reset cashing success',
+    resetCashingFail = 'reset cashing fail',
     verifyOrderFail = 'verify order fail',
     sumerizeUnmatch = 'sumerize unmatch',
     sumerizeOrdersEmpty = 'sumerize orders empty',
