@@ -2987,27 +2987,43 @@ export class InventoryZDM8 implements IBaseClass {
     async creditMachineMMoney(d: IReqModel): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             try {
+
+                console.log(`TEST DER -->`, 1);
+
                 const that = this;
                 let { phonenumber, cashInValue } = d.data;
+
+                console.log(`TEST DER -->`, 2);
+
                 // DEMO 1000 only
                 // cashInValue = 1100;
                 if (isNaN(cashInValue)) return reject(new Error('Invalid Cash In Value'));
+
+                console.log(`TEST DER -->`, 3);
+
                 // validate phonenumber for MMoney
                 if (phonenumber?.length < 10 || isNaN(phonenumber) || phonenumber == '') return reject('Invalid Phonenumber');
                 // find in redis
 
+                console.log(`TEST DER -->`, 4);
+
                 // imei
                 d.transactionID = new Date().getTime();
+
+                console.log(`TEST DER -->`, 5);
 
                 let machineId = this.ssocket.findMachineIdToken(d.token);
                 if (!machineId) throw new Error("machine is not exit");
 
+                console.log(`TEST DER -->`, 6);
 
 
                 const ws = that.wsClient.find(
                     (v) => v["machineId"] == machineId.machineId + ""
                 );
                 const res = {} as IResModel;
+
+                console.log(`TEST DER -->`, 7);
 
                 res.command = d.command;
                 res.message = EMessage.machineCredit;
@@ -3017,25 +3033,49 @@ export class InventoryZDM8 implements IBaseClass {
                     that.ssocket.listOnlineMachines()
                 );
 
+                console.log(`TEST DER -->`, 8);
+
                 // create new bill for new credit
                 if (!machineId) throw new Error("machine is not exist");
+
+                console.log(`TEST DER -->`, 9);
+
+                
                 const sock = that.ssocket.findOnlneMachine(machineId.machineId);
                 if (!sock) throw new Error("machine is not online");
+
+                console.log(`TEST DER -->`, 10);
+
                 if (d?.token) {
+
+                    console.log(`TEST DER -->`, 11);
+
                     console.log("billCashIn", d?.data);
 
                     // *** cash in here
                     const bn = { amount: cashInValue, channel: -1 * cashInValue, value: cashInValue } as IBankNote;
 
+                    console.log(`TEST DER -->`, 12);
+
                     // start Cash In MMoney
                     // ##here
                     const machineId = this.ssocket.findMachineIdToken(d.token);
                     if (!machineId) throw new Error("Invalid token");
+
+                    console.log(`TEST DER -->`, 13);
+
                     let a = machineId?.data?.find(v => v.settingName == 'setting');
                     let mId = a?.imei + ''; // for MMoney need 10 digits\
+
+                    console.log(`TEST DER -->`, 14);
+
                     if (!mId) mId = machineId.machineId;
+
+                    console.log(`TEST DER -->`, 15);
                     const x = new Date().getTime();
                     const transactionID = String(mId.substring(mId.length - 10)) + (x + '').substring(2);
+
+                    console.log(`TEST DER -->`, 16);
 
                     const params = {
                         cash: cashInValue,
@@ -3044,7 +3084,7 @@ export class InventoryZDM8 implements IBaseClass {
                     };
                     const func = new MmoneyTransferValidationFunc();
 
-                    console.log(`creditMachineMMoney`, 1);
+                    console.log(`creditMachineMMoney`, );
 
                     func.Init(params).then(run => {
                         if (run.message != IENMessage.success) return resolve(run);
@@ -3209,6 +3249,9 @@ export class InventoryZDM8 implements IBaseClass {
 
                     // if (!requestor) throw new Error('Requestor is not exist');
                 } else {
+
+                    console.log(`TEST DER ERROR -->`, 1);
+
                     // throw new Error(EMessage.MachineIdNotFound)
                     ws.send(
                         JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound, null))
