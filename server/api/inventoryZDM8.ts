@@ -3267,6 +3267,8 @@ export class InventoryZDM8 implements IBaseClass {
 
     async creditMachine(d: IReqModel) {
         try {
+            console.log(`creditMachineDER`);
+
             const that = this;
             // find in redis
             let machineId = this.ssocket.findMachineIdToken(d.token);
