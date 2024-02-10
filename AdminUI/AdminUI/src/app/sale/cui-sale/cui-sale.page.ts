@@ -27,6 +27,7 @@ export class CuiSalePage implements OnInit {
   }
 
   ngOnInit() {
+    console.log(`_l der`, this._l);
     this.loadCUISaleList();
   }
 
@@ -49,16 +50,17 @@ export class CuiSalePage implements OnInit {
         
         if (this.lists != undefined && this.lists.length > 0) {
           const instock = this.lists.filter(item => item.stock.id != -1);
+          console.log(`instock`, instock);
           for(let i = 0; i < instock.length; i++) {
             for(let j = 0; j < this._l.length; j++) {
-              if (instock[i].stock != '' && instock[i].stock.image == this._l[j].stock.imageurl) {
+              if (instock[i].stock != '' && instock[i].stock.image == this._l[j].stock.imageUrl) {
                 instock[i].stock.image = this._l[j].stock.image;
               }
             }
           }
           this.lists = instock;
         }
-
+        console.log('test here', this.lists);
         resolve(IENMessage.success);
 
 

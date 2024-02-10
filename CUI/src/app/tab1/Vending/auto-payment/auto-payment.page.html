@@ -48,7 +48,7 @@
 
           <div class="title">Payment Options</div>
           <div class="item-list">
-            <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)" href="javascript:void(0)" class="item">
+            <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)" href="javascript:void(0)" class="item active">
               <div class="icon">
                 <img src="{{ list.image }}" alt="">
               </div>

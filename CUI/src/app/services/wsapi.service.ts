@@ -87,7 +87,7 @@ export class WsapiService {
 
       // }, 5000)
     }
-    this.webSocket.onmessage = (ev) => {
+    this.webSocket.onmessage = async (ev) => {
       try {
         const res = JSON.parse(ev.data) as IResModel;
       if (res) {
@@ -136,9 +136,8 @@ export class WsapiService {
             this.refreshSubscription.next(data);
             break;
 
-          case 'reset_cashing':
-            console.log(`en`);
-            this.resetCashing().then(() => console.log(IENMessage.resetCashingSuccess)).catch(error => console.log(IENMessage.resetCashingFail + '__' + error.message))
+          case 'resetCashing':
+            await this.resetCashing();
             break;
 
           // query today bill
@@ -204,6 +203,7 @@ export class WsapiService {
       try {
         const ownerUuid = localStorage.getItem('machineId');
         if (ownerUuid) {
+          console.log(`reset cashing...`);
           await this.cashingService.remove(ownerUuid);
           window.location.reload();
         }

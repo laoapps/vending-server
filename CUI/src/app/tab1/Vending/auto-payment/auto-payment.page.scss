@@ -127,6 +127,12 @@ ion-content {
                     text-align: center;
                 }
             }
+            .item.active {
+               
+                .icon img {
+                    background: #e7e7e7;
+                }
+            }
         }
     }
 

@@ -761,6 +761,7 @@ export interface IStock extends IBase, IBC {
     file?: File;
     filename?: string;
     fileuuid?: string;
+    imageurl?: string
 }
 export interface IMMoneyQRRes {
     uuid: string;

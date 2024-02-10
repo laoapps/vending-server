@@ -121,7 +121,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       name: 'MMoney',
       title: 'MMoney (optional)',
       detail: 'Pay your orders by using MMoney QRCode',
-      value: 'mmoney'
+      value: 'mmoney',
+      count: 5
     },
     // {
     //   image: `../../../../assets/logo/umoney-logo.png`,
@@ -182,6 +183,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     await this.loadCountDownBill();
 
+
+  }
+
+  enableClickMethod() {
 
   }
 
@@ -387,6 +392,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         this.countdownDestroyTimer = setInterval(async () => {
           this.countdownDestroy--;
 
+
           console.log(`ERROR SHOULD NOT HERE`);
           // when choose payment method success and client has not scaned pay yet this process will loop check laab balance
           if (checkLAAB > -1 && this.countdownDestroy == checkLAAB) {
@@ -399,7 +405,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             if (run.message != IENMessage.success) throw new Error(run);
             this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
 
-            if (previousAmount != this.apiService.cash.amount) {
+            if (previousAmount != this.apiService.cash.amount && this.apiService.cash.amount > this.parseGetTotalSale.t) {
               // everytime when balance change stop check laab
               // but continue loop destroy
               checkLAAB -1;
@@ -590,7 +596,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   choosePaymentMethod(list: any): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         this.paymentmethod = list.value;
         this.isPayment = false;
 
@@ -763,6 +769,8 @@ interface IPaymentStation {
 }
 class PaymentStation {
 
+  private workload: any = {} as any;
+
 
   // services
   private apiService: ApiService;
@@ -789,6 +797,9 @@ class PaymentStation {
   public Init(params: IPaymentStation): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
+
+        this.workload = this.apiService.load.create({ message: 'loading...', duration: 5000 });
+        (await this.workload).present();
         
         this.InitParams(params);
 
@@ -801,9 +812,11 @@ class PaymentStation {
         const MMoneyPayment = await this.MMoneyPayment();
         if (MMoneyPayment != IENMessage.success) throw new Error(MMoneyPayment);
 
+        (await this.workload).dismiss();
         resolve(this.Commit());
 
       } catch (error) {
+        (await this.workload).dismiss();
         resolve(error.message);
       }
     });

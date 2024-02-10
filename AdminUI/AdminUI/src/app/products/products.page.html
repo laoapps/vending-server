@@ -20,6 +20,7 @@
   <ion-row *ngFor="let p of _l">
     <!-- <ion-col><ion-img class="product_image"[src]="p.image"></ion-img></ion-col> -->
     <td><img class="display_product_image" src="{{ p.image }}" alt=""></td>
+    <ion-col><ion-label>{{p.imageurl}}</ion-label></ion-col>
     <ion-col><ion-label>{{p.name}}</ion-label></ion-col>
     <ion-col><ion-label>{{p.price|number}}</ion-label></ion-col>
     <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>

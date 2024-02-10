@@ -1,4 +1,5 @@
 import axios from "axios";
+import { IApp } from "src/app/models/app.model";
 import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
@@ -17,8 +18,7 @@ export class LoadMachineListProcess {
 
     // properties
     private lists: Array<any> = [];
-    private cashList: Array<{ name: string, file: string }> = [];
-    private firsttime: boolean = false;
+    private storage: Array<{ name: string, file: string }> = [];
 
     constructor(
         apiService: ApiService,
@@ -55,22 +55,11 @@ export class LoadMachineListProcess {
 
                 console.log(`init machine list`, 5);
 
-                const FindCashingServiceList = await this.FindCashingServiceList();
-                if (FindCashingServiceList != IENMessage.success) throw new Error(FindCashingServiceList);
-                
-                console.log(`init machine list`, 6);
+                const LoadStorage = await this.LoadStorage();
+                if (LoadStorage != IENMessage.success) throw new Error(LoadStorage);
 
-                this.ValidateClientLoad();
-
-                console.log(`init machine list`, 7);
-
-                const HttpReceiveImageAndSaveOnCashingService = await this.HttpReceiveImageAndSaveOnCashingService();
-                if (HttpReceiveImageAndSaveOnCashingService != IENMessage.success) throw new Error(HttpReceiveImageAndSaveOnCashingService);
-
-                console.log(`init machine list`, 8);
-
-                const ReceiveImageAndSaveNewChangeOnCashingService = await this.ReceiveImageAndSaveNewChangeOnCashingService();
-                if (ReceiveImageAndSaveNewChangeOnCashingService != IENMessage.success) throw new Error(ReceiveImageAndSaveNewChangeOnCashingService);
+                const LoadStorageImage = await this.LoadStorageImage();
+                if (LoadStorageImage != IENMessage.success) throw new Error(LoadStorageImage);
 
                 console.log(`init machine list`, 9);
                 
@@ -88,7 +77,7 @@ export class LoadMachineListProcess {
 
     private InitParams(params: any): void {
         this.lists = [];
-        this.firsttime = false;
+        console.log(`params`, params);
 
         this.ownerUuid = params.ownerUuid;
         this.filemanagerURL = params.filemanagerURL;
@@ -121,20 +110,18 @@ export class LoadMachineListProcess {
         });
     }
 
-    private FindCashingServiceList(): Promise<any> {
+    private LoadStorage(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                let run = await this.cashingService.get(this.ownerUuid);
+                let run = await this.cashingService.get(IApp.cashing);
                 if (run == undefined || run == null) {
-                    this.cashList = [];
-                    await this.cashingService.set(this.ownerUuid, []);
+                    this.storage = [];
+                    await this.cashingService.set(IApp.cashing, []);
                     return resolve(IENMessage.success);
                 }
                 const parse = JSON.parse(run);
-                this.cashList = parse.v;
-                console.log(`cash list`, this.cashList);
-
+                this.storage = parse.v;
                 resolve(IENMessage.success);
                 
             } catch (error) {
@@ -143,105 +130,52 @@ export class LoadMachineListProcess {
         });
     }
 
-    private ValidateClientLoad() {
-        if ( this.cashList != undefined && Object.entries(this.cashList).length == 0){
-            this.firsttime = true;
-        }
-    }
-
-    private HttpReceiveImageAndSaveOnCashingService(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
-            try {
-            
-                if (this.firsttime == false) return resolve(IENMessage.success);
-    
-                let lists: Array<{ name: string, file: string}> = [];
-                for(let i = 0; i < this.lists.length; i++) {
-                    const name = this.lists[i].photo;
-                    
-                    if (name != '' && name.substring(0,4) != 'data') {
-                    
-                        const url = `${this.filemanagerURL}${name}`;
-                        const run = await axios({
-                            method: 'GET',
-                            url: url,
-                            responseType: 'blob'
-                        });
-                        let file = await this.apiService.convertBlobToBase64(run.data);
-                        
-                        const obj = {
-                            name: name,
-                            file: file
-                        }
-        
-                        const same = lists.filter(item => item.name == name);
-                        if (same != undefined && Object.entries(same).length == 0) {
-                            lists.push(obj);
-                        }
-                        this.lists[i].photourl = this.lists[i].photo;
-                        this.lists[i].photo = file;
-    
-                    }
-                    if (i == this.lists.length-1) {
-                        console.log(`first time save`, this.ownerUuid, this.lists, lists);
-                        await this.cashingService.set(this.ownerUuid, lists);
-                    }
-                }
-    
-                resolve(IENMessage.success);
-    
-            } catch (error) {
-                resolve(error.message)
-            }
-        });
-    }
-
-    private ReceiveImageAndSaveNewChangeOnCashingService(): Promise<any> {
+    private LoadStorageImage(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                if (this.firsttime == true) return resolve(IENMessage.success);
-
-                console.log(`before`, this.lists);
                 this.lists.filter(list => {
-                    this.cashList.find((cash, cash_index) => {
+                    this.storage.find((cash, cash_index) => {
                         if (list.photo == cash.name) {
-                            list.photourl = cash.name;
+                            list.photoUrl = cash.name;
                             list.photo = cash.file;
                         }
                     });
                 });
 
-                const data = this.lists.filter(item => item.photo.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.photo.substring(0,4) != '' && item.photo.substring(0,4) != 'data');
-                console.log(`nodedata`, nodata.length);
-
+                const data = this.lists.filter(item => item.photo != undefined && item.photo != undefined && item.photo.substring(0,4) == 'data');
+                const nodata = this.lists.filter(item => item.photo != undefined && item.photo.substring(0,4) != 'data');
+                console.log(`node data`, nodata);
                 if (nodata != undefined && nodata.length > 0)
                 {
                     for(let i = 0; i < nodata.length; i++) {
-                        const url = `${this.filemanagerURL}${nodata[i].photo}`;
-                        console.log(`url`, url);
-                        const run = await axios({
-                            method: 'GET',
-                            url: url,
-                            responseType: 'blob'
-                        });
-                        let file = await this.apiService.convertBlobToBase64(run.data);
-    
-                        const obj = {
-                            name: nodata[i].photo,
-                            file: file
+                        console.log(`receive image new`);
+
+                        if (nodata[i].photo != "") {
+                            const url = `${this.filemanagerURL}${nodata[i].photo}`;
+                            const run = await axios({
+                                method: 'GET',
+                                url: url,
+                                responseType: 'blob'
+                            });
+                            let file = await this.apiService.convertBlobToBase64(run.data);
+        
+                            const obj = {
+                                name: nodata[i].photo,
+                                file: file
+                            }
+        
+                            nodata[i].photoUrl = this.lists[i].photo;
+                            nodata[i].photo = file;
+                            this.storage.push(obj);
                         }
-    
-                        nodata[i].photourl = nodata[i].photo;
-                        nodata[i].photo = file;
-                        this.cashList.push(obj);
+
                     }
                     data.push(...nodata);
                 }
 
                 this.lists = data;
-                await this.cashingService.set(this.ownerUuid, this.cashList);
+                await this.cashingService.set(IApp.cashing, this.storage);
 
                 resolve(IENMessage.success);
                 
@@ -250,7 +184,6 @@ export class LoadMachineListProcess {
             }
         });
     }
-
     private Commit(): any {
         const readonly = this.lists.filter(item => item.readonly == true)[0]?.readonly;
         const response = {

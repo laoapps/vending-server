@@ -16,6 +16,7 @@ import { IonicstorageService } from '../services/ionicstorage.service';
 import { LoadMachineListProcess } from './processes/loadMachineList.process';
 import { RefreshMachineProcess } from './processes/refreshMachine.process';
 import { SaleReportPage } from '../sale/sale-report/sale-report.page';
+import { ResetCashingProcess } from './processes/resetCashing.process';
 
 
 @Component({
@@ -28,6 +29,7 @@ export class MachinePage implements OnInit {
   dateformat='yy-MM-dd HH:mm:ss'
   private loadMachineListProcess: LoadMachineListProcess;
   private refreshMachineProcess: RefreshMachineProcess;
+  private resetCashingProcess: ResetCashingProcess;
 
   ionicStorage: IonicstorageService;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
@@ -58,6 +60,7 @@ export class MachinePage implements OnInit {
    this.dateformat=this.apiService.dateformat;
     this.loadMachineListProcess = new LoadMachineListProcess(this.apiService, this.cashingService);
     this.refreshMachineProcess = new RefreshMachineProcess(this.apiService);
+    this.resetCashingProcess = new ResetCashingProcess(this.apiService);
     
     this.showImage = this.apiService.showImage;
     this.myMachineStatus=apiService.myMachineStatus;
@@ -453,6 +456,41 @@ export class MachinePage implements OnInit {
     }
     this.apiService.showModal(SaleReportPage, props).then(r => {
       r.present();
+    });
+  }
+  resetCashing(machineId: string): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+
+        const confirm = this.apiService.alert.create({
+          header: 'Are you sure !?',
+          subHeader: `Do you want to reset cashing this ${machineId} machine`,
+          buttons: [
+            {
+              text: 'Confirm',
+              handler: async () => {
+                const params = {
+                  machineId: machineId
+                }
+                const run = await this.resetCashingProcess.Init(params);
+                if (run.message != IENMessage.success) {
+
+                  this.apiService.simpleMessage(run);
+                  return resolve(run);
+                }
+                this.apiService.simpleMessage(IENMessage.resetCashingSuccess);
+              }
+            },
+            'Cancel'
+          ]
+        });
+
+        (await confirm).present();
+        
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message); 
+      }
     });
   }
 

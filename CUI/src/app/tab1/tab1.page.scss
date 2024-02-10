@@ -12,7 +12,7 @@
 .repair-box {
     position: absolute;
     top: 50%;
-    left: 50%;      
+    left: 50%;          
     transform: translate(-50%, -50%);
     background: #333;
     z-index: 99999998;
@@ -482,6 +482,8 @@ ion-header {
     height: 300px;
     width: 100%;
     z-index: 999999;
+
+
 }
 
 .spacious-container {
@@ -817,3 +819,11 @@ div.scrollmenu {
 
 
 
+#my-product-img {
+    padding: 10px;
+
+    img {
+        width: 500px;
+        height: 500px;
+    }
+}

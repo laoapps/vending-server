@@ -11,6 +11,8 @@ import helmet from 'helmet';
 import express, { Router } from 'express';
 import axios from 'axios';
 import http from 'http';
+import { spawn }  from "child_process";
+
 export class KiosESSP {
 
     sock: SocketKiosClient | null = null;
@@ -731,6 +733,9 @@ export class KiosESSP {
     }
     getMachineStatus(){
         this.eSSP
+    }
+    machineReboot(){
+        const ls = spawn('/system/bin/reboot');
     }
 
 }

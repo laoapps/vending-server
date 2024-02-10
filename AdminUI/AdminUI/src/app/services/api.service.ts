@@ -271,6 +271,9 @@ export class ApiService {
   refreshMachine(data: any){
       return this.http.post<IResModel>(this.url + '/refreshMachine', data, { headers: this.headerBase() });
     }
+    resetCashing(data: any){
+      return this.http.post<IResModel>(this.url + '/resetCashing', data, { headers: this.headerBase() });
+    }
   
   listMachine(isActive='all') {
     const req = {

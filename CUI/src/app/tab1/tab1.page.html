@@ -22,12 +22,21 @@
 <ion-header (click)="reloadAutoPayment()">
 
   <div class="box" [ngStyle] = "apiService._cuiSetting.imgHeader">
+    <!-- <button (click)="resetCashing()">RRR</button> -->
+
+    <!-- <div class="warning-card">
+      <div class="creed"></div>
+      <div class="detail">
+        <div class="title">Vending Stuck</div>
+        <div class="text">Send your bill to <i class="fa-brands fa-whatsapp"></i> 20 55516321</div>
+        <div class="text">You can get product on counter when that verify your bill</div>
+      </div>
+    </div> -->
+    
+
     <div>
       <img [src]="apiService._cuiSetting.imgLogo||mmLogo" (press)="holdCount()" (touchend)="endCount()" (click)="manageStock()" />
-    </div>
-    <div>
-    </div>
-   
+    </div>   
   </div>
 
   <div class="menu-options">
@@ -155,10 +164,10 @@
           </ion-item>
           <ion-item >
   
-             <div *ngIf="sl.stock.price==0;else elsebuystock">
+             <div *ngIf="sl.stock.price==0;else elsebuystock" id="my-product-img">
               <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="buyMMoney(sl)">
             </div>
-            <ng-template #elsebuystock>
+            <ng-template id="my-product-img" style="padding: 20px;" #elsebuystock>
               <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="addOrder(sl)">
             </ng-template>
   

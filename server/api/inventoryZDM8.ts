@@ -658,7 +658,13 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         console.log('start retryProcessBill');
+
+                        
                         writeMachineLockDrop(res.locals["machineId"]?.machineId, 'true');
+
+
+
+                        
                         const position = Number(req.query["position"]);
                         const transactionID = Number(req.query["T"] + "");
                         const m = await machineClientIDEntity.findOne({
@@ -3121,7 +3127,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 });
                             }).catch(error => resolve(error.message));
                         }).catch(error => resolve(error.message));
-                    }).catch(error => resolve(error.message));
+                    }).catch(error => {
+                        console.log(`----> cash in from laab and transfer to mmoney fail`, error.message);
+                        resolve(error.message);
+                    });
 
 
                     // **** old function ****

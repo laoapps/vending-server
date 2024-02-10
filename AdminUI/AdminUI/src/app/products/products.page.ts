@@ -18,7 +18,7 @@ export class ProductsPage implements OnInit {
 
   private loadProductListProcess: LoadProductListProcess;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
-
+// https://filemanager-api.laoapps.com/api/v1/file/download/
   _l = new Array<IStock>();
   constructor(
     public apiService: ApiService, 

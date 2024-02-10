@@ -61,6 +61,8 @@ export class SaleAddPage implements OnInit {
     })
   }
   showPosition(){
+    console.log(`sssss`, this.sales);
+    console.log(`position`, this.sales.map(v=>v.position).length);
     const position =this.sales.map(v=>v.position).length?this.sales.map(v=>v.position):[]
     this.apiService.showModal(PositionlistPage,{position}).then(ro => {
       ro?.present();

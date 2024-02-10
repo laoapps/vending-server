@@ -181,7 +181,7 @@ export class LoadStockListProcess {
                     if (name != '' &&  name.substring(0,4) != 'data') {
                     
                         // const url = `${this.filemanagerURL}download/${name}`;
-                        const url = `${this.filemanagerURL}downloadphoto?url=${name}&w=100&h=248`;
+                        const url = `${this.filemanagerURL}downloadphoto?url=${name}&w=80&h=100`;
 
                         const run = await axios({
                             method: 'POST',

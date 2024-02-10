@@ -8,7 +8,8 @@ import { ApiService } from '../services/api.service';
 })
 export class PositionlistPage implements OnInit {
   @Input()position=new Array<number>();
-  pos=[...new Array<number>(100).keys()];
+  // pos=[...new Array<number>(100).keys()];
+  pos=[...new Array<number>(200).keys()];
   constructor(public apiService: ApiService) { }
 
   ngOnInit() {

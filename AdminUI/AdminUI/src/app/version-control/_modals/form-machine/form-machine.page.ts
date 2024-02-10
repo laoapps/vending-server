@@ -109,8 +109,8 @@ export class FormMachinePage implements OnInit, OnDestroy {
   }
 
   chooseMachine(list: any, index: number) {
-    const status = this.findMachine(list?.machineId)?.lastUpdate;
-    if (!status) return;
+    // const status = this.findMachine(list?.machineId)?.lastUpdate;
+    // if (!status) return;
     
     this.reloadElement = setInterval(() => {
       clearInterval(this.reloadElement);

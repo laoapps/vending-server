@@ -1,4 +1,5 @@
 export enum IENMessage {
+    resetCashingSuccess = 'reset cashing success',
     notFound = 'not found',
     nodata = 'NO DATA',
     invalidateToDate = 'invalid to date',

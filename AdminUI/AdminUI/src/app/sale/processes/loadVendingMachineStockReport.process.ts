@@ -155,43 +155,6 @@ export class LoadVendingMachineStockReportProcess {
         this.lists = reports;
         console.log(`report`, reports);
 
-        // console.log(`report2`, reports);
-        // const unique = reports.filter((item, index) => {
-        //     return reports.findIndex(obj => obj.position == item.position) == index;
-        // });
-        // const duplicate = reports.filter((item, index) => {
-        //     return reports.findIndex(obj => obj.position == item.position) != index;
-        // });
-
-        
-        // unique.filter((u_item, u_index) => {
-        //     duplicate.filter((dup_item, dup_index) => {
-        //         if (u_item.position == dup_item.position) {
-        //             const find = this.stacks.filter(find_item => find_item.position == dup_item.position);
-        //             if (find != undefined && Object.entries(find).length == 0) {
-        //                 const model = {
-        //                     name: u_item.name,
-        //                     position: u_item.position,
-        //                     detail: [u_item, dup_item]
-        //                 }
-        //                 this.stacks.push(model);
-        //             } else {
-        //                 this.stacks.find((stack_item, stack_index) => {
-        //                     if (stack_item.position == dup_item.position) {
-                                
-        //                         stack_item.detail.push(dup_item);
-        //                         if (dup_item.qtty > stack_item.detail.qtty) stack_item.push(dup_index);
-        //                     }
-        //                 });
-        //             }
-        //         }
-        //     });
-        // });
-        // for(let i = 0; i < this.stacks.length; i++) {
-        //     this.stacks[i].detail.sort((a,b) => {
-        //         return new Date(a.time).getTime()-new Date(b.time).getTime()
-        //     });
-        // }
     }
 
     private CheckRefill() {

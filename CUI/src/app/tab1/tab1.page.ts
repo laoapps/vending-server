@@ -1994,4 +1994,20 @@ export class Tab1Page implements OnDestroy {
     this.apiService.cash.amount = balance;
   }
   
+  resetCashing(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        const ownerUuid = localStorage.getItem('machineId');
+        if (ownerUuid) {
+          await this.cashingService.remove(ownerUuid);
+          window.location.reload();
+        }
+
+         resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.alertError(error.message);
+        resolve(error.message);
+      }
+    }); 
+  }
 }
