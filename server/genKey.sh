@@ -49,13 +49,13 @@ if [ ${#RSABITS} -eq 0 ]; then
     RSABITS=4096
 fi
 
-EXPIREDAYS=365
+EXPIREDAYS=3650
 
 echo -n "Expire days [$EXPIREDAYS]:"
 read EXPIREDAYS
 
 if [ ${#EXPIREDAYS} -eq 0 ]; then
-    EXPIREDAYS=365
+    EXPIREDAYS=3650
 fi
 
 while [ ${#PASSWORD} -lt 4 ]; do

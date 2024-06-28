@@ -1,5 +1,5 @@
 
-FROM node:18
+FROM node:20
 ENV NODE_ENV $NODE_ENV
 WORKDIR /app
 COPY package.json /app
