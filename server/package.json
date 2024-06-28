@@ -37,7 +37,7 @@
     "iso8601-duration": "^2.1.1",
     "jsonwebtoken": "^9.0.0",
     "jstoxml": "^3.2.3",
-    "modbus-serial": "^8.0.5",
+
     "moment": "^2.29.4",
     "node-crc16": "^2.0.7",
     "pg": "^8.7.3",
