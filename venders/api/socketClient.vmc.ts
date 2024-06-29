@@ -143,6 +143,12 @@ export class SocketClientVMC {
                 ca: process.env.ca
             }
         );
+        console.log('connect to server',  {
+            key: process.env.clientkey,
+            cert: process.env.clientcert,
+            ca: process.env.ca
+        });
+        
         if (this.t) {
             clearInterval(this.t);
             this.t = null;

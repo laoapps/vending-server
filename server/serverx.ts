@@ -24,6 +24,10 @@ const server = tls.createServer(options, (socket) => {
     // c.authorized will be true if the client cert presented validates with our CA
     console.log('secure connection; client authorized: ', socket.authorized);
   })
+  .on('tlsClientError',(e,s)=>{
+    console.log('client error',e);
+    
+  })
 
   .listen(port, () => {
     console.log('server listening on port ' + port + '\n');
