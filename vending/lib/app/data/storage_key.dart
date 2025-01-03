@@ -1,0 +1,34 @@
+class StorageKey {
+  static const String adsMode = 'adsMode';
+  static const String muteRobotSound = 'muteRobotSound';
+  static const String muteMusic = 'muteMusic';
+  static const String musicVolume = 'musicVolume';
+  static const String franciseMode = 'franciseMode';
+  static const String isTickets = 'isTickets';
+  static const String isHowTo = 'isHowTo';
+  static const String isCashOut = 'isCashOut';
+  static const String isCashOutLAABAccount = 'isCashOutLAABAccount';
+  static const String isCashOutLAABEPIN = 'isCashOutLAABEPIN';
+  static const String isCashOutMMoneyAccount = 'isCashOutMMoneyAccount';
+  static const String isCashIn = 'isCashIn';
+  static const String isTemperature = 'isTemperature';
+  static const String isWhatsapp = 'isWhatsapp';
+  static const String isIOSandAndroidQRLink = 'isIOSandAndroidQRLink';
+  static const String isCashOutVietcomBank = 'isCashOutVietcomBank';
+  static const String isCashOutBOCbank = 'isCashOutBOCbank';
+  static const String isCashOutBCAbank = 'isCashOutBCAbank';
+  static const String isCashOutMCBbank = 'isCashOutMCBbank';
+  static const String isCashOutVietinBank = 'isCashOutVietinBank';
+  static const String isCashOutKasikornBank = 'isCashOutKasikornBank';
+  static const String isCashOutDBSbank = 'isCashOutDBSbank';
+  static const String isCashOutICBCbank = 'isCashOutICBCbank';
+  static const String isCashOutBangkokBank = 'isCashOutBangkokBank';
+  static const String isCashOutAbank = 'isCashOutAbank';
+  static const String wsUrl = 'wsUrl';
+  static const String url = 'url';
+  static const String machineId = 'machineId';
+  static const String otp = 'otp';
+  static const String contact = 'contact';
+  static const String productFallLimit = 'productFallLimit';
+  static const String clientId = 'clientId';
+}
