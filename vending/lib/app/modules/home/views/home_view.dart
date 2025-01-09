@@ -96,110 +96,111 @@ class HomeView extends GetView<HomeController> {
                   )
                 ],
               ),
-              SizedBox(
-                height: deviceHeight * 0.09,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 5, right: 5),
-                  child: Row(
-                    children: [
-                      if (controller.isTickets.value)
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: Colors.grey,
-                          ),
-                          width: deviceHeight * 0.09,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.payment,
-                                color: Colors.red,
-                                size: deviceHeight * 0.035,
-                              ),
-                              Text(
-                                Lang.tickets.tr,
-                                style: TextStyle(
-                                    fontFamily: font,
-                                    fontSize: deviceHeight * 0.015),
-                              )
-                            ],
-                          ),
-                        ),
-                      if (controller.isTickets.value)
-                        SizedBox(
-                          width: 5,
-                        ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            if (controller.isCashIn.value) {
-                              dialogCashIn();
-                            }
-                          },
-                          child: Container(
+              if (controller.isShowMoneyTab.value)
+                SizedBox(
+                  height: deviceHeight * 0.09,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 5, right: 5),
+                    child: Row(
+                      children: [
+                        if (controller.isTickets.value)
+                          Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5),
-                              gradient: LinearGradient(colors: [
-                                Colors.black87,
-                                Colors.black54,
-                                Colors.black87
-                              ]),
-                              // color: Colors.black87,
-                              image: DecorationImage(
-                                image: ExactAssetImage(
-                                  'assets/images/LAAB-logo.png',
-                                ),
-                                fit: BoxFit.contain,
-                              ),
+                              color: Colors.grey,
                             ),
-                            child: Center(
-                              child: Text(
-                                Format.priceFormat(
-                                    controller.connectWebSocket.balance.value),
-                                style: TextStyle(
-                                  fontFamily: font,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  fontSize: deviceHeight * 0.05,
+                            width: deviceHeight * 0.09,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.payment,
+                                  color: Colors.red,
+                                  size: deviceHeight * 0.035,
                                 ),
-                              ),
+                                Text(
+                                  Lang.tickets.tr,
+                                  style: TextStyle(
+                                      fontFamily: font,
+                                      fontSize: deviceHeight * 0.015),
+                                )
+                              ],
                             ),
                           ),
-                        ),
-                      ),
-                      if (controller.isCashOut.value)
-                        SizedBox(
-                          width: 5,
-                        ),
-                      if (controller.isCashOut.value)
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: Colors.grey,
+                        if (controller.isTickets.value)
+                          SizedBox(
+                            width: 5,
                           ),
-                          width: deviceHeight * 0.09,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.attach_money,
-                                color: Colors.red,
-                                size: deviceHeight * 0.035,
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              if (controller.isCashIn.value) {
+                                dialogCashIn();
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                gradient: LinearGradient(colors: [
+                                  Colors.black87,
+                                  Colors.black54,
+                                  Colors.black87
+                                ]),
+                                // color: Colors.black87,
+                                image: DecorationImage(
+                                  image: ExactAssetImage(
+                                    'assets/images/LAAB-logo.png',
+                                  ),
+                                  fit: BoxFit.contain,
+                                ),
                               ),
-                              Text(
-                                Lang.cashout.tr,
-                                style: TextStyle(
+                              child: Center(
+                                child: Text(
+                                  Format.priceFormat(controller
+                                      .connectWebSocket.balance.value),
+                                  style: TextStyle(
                                     fontFamily: font,
-                                    fontSize: deviceHeight * 0.015),
-                              )
-                            ],
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: deviceHeight * 0.05,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                    ],
+                        if (controller.isCashOut.value)
+                          SizedBox(
+                            width: 5,
+                          ),
+                        if (controller.isCashOut.value)
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.grey,
+                            ),
+                            width: deviceHeight * 0.09,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.attach_money,
+                                  color: Colors.red,
+                                  size: deviceHeight * 0.035,
+                                ),
+                                Text(
+                                  Lang.cashout.tr,
+                                  style: TextStyle(
+                                      fontFamily: font,
+                                      fontSize: deviceHeight * 0.015),
+                                )
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
               SizedBox(
                 height: deviceHeight * 0.005,
               ),
@@ -393,6 +394,17 @@ class HomeView extends GetView<HomeController> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                FloatingButtonWidget(
+                  title: "TEST",
+                  boxColor: Colors.redAccent,
+                  icon: Icons.roundabout_left,
+                  onTap: () {
+                    Get.toNamed(Routes.TEST_MACHINE);
+                  },
+                ),
+                SizedBox(
+                  height: 5,
+                ),
                 if (controller.myOrder.length > 1)
                   FloatingButtonWidget(
                       title: "My Order",

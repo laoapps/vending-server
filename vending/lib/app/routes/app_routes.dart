@@ -7,6 +7,7 @@ abstract class Routes {
   static const MANAGE_STOCK = _Paths.MANAGE_STOCK;
   static const SETTING_MACHINE = _Paths.SETTING_MACHINE;
   static const SETTING_CONTROL_MENU = _Paths.SETTING_CONTROL_MENU;
+  static const TEST_MACHINE = _Paths.TEST_MACHINE;
 }
 
 abstract class _Paths {
@@ -15,4 +16,5 @@ abstract class _Paths {
   static const MANAGE_STOCK = '/manage-stock';
   static const SETTING_MACHINE = '/setting-machine';
   static const SETTING_CONTROL_MENU = '/setting-control-menu';
+  static const TEST_MACHINE = '/test-machine';
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../../app/color/main_color.dart';
 import '../../app/config/config.dart';
 import '../../app/data/languages_key.dart';
@@ -40,9 +39,9 @@ class LoadingWidget extends StatelessWidget {
             // CircularProgressIndicator(
             //   color: ColorData.mainColor,
             // ),
-            LoadingAnimationWidget.staggeredDotsWave(
-                color: ColorData.mainColor,
-                size: MediaQuery.of(context).size.width * 0.125),
+            CircularProgressIndicator(
+              color: ColorData.mainColor,
+            ),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.015,
             ),

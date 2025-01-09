@@ -86,6 +86,8 @@ class HomeController extends GetxController {
   var isCashOutAbank = true.obs;
   var storage = GetStorage();
 
+  var isShowMoneyTab = true.obs;
+
   var loading = false.obs;
   var listSale = <ListSaleModel>[].obs;
 

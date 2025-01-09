@@ -8,6 +8,8 @@ import '../modules/settingControlMenu/bindings/setting_control_menu_binding.dart
 import '../modules/settingControlMenu/views/setting_control_menu_view.dart';
 import '../modules/settingMachine/bindings/setting_machine_binding.dart';
 import '../modules/settingMachine/views/setting_machine_view.dart';
+import '../modules/testMachine/bindings/test_machine_binding.dart';
+import '../modules/testMachine/views/test_machine_view.dart';
 
 part 'app_routes.dart';
 
@@ -36,6 +38,11 @@ class AppPages {
       name: _Paths.SETTING_CONTROL_MENU,
       page: () => const SettingControlMenuView(),
       binding: SettingControlMenuBinding(),
+    ),
+    GetPage(
+      name: _Paths.TEST_MACHINE,
+      page: () => const TestMachineView(),
+      binding: TestMachineBinding(),
     ),
   ];
 }

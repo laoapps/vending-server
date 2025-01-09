@@ -31,4 +31,5 @@ class StorageKey {
   static const String contact = 'contact';
   static const String productFallLimit = 'productFallLimit';
   static const String clientId = 'clientId';
+  static const String isShowMoneyTab = 'isShowMoneyTab';
 }
