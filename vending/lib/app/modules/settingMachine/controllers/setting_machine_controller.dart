@@ -19,6 +19,11 @@ class SettingMachineController extends GetxController {
   HomeController homeCon = Get.find<HomeController>();
   var storage = GetStorage();
 
+  var adsMode = false.obs;
+  var franciseMode = true.obs;
+  var muteRobotSound = false.obs;
+  var muteMusic = true.obs;
+
   @override
   void onInit() {
     initValueLocal();
@@ -55,11 +60,10 @@ class SettingMachineController extends GetxController {
           storage.write(StorageKey.otp, otp.text);
           storage.write(StorageKey.contact, contact.text);
           storage.write(StorageKey.productFallLimit, fallLimit.text);
-          storage.write(StorageKey.adsMode, homeCon.adsMode.value);
-          storage.write(
-              StorageKey.muteRobotSound, homeCon.muteRobotSound.value);
-          storage.write(StorageKey.muteMusic, homeCon.muteMusic.value);
-          storage.write(StorageKey.franciseMode, homeCon.franciseMode.value);
+          storage.write(StorageKey.adsMode, adsMode.value);
+          storage.write(StorageKey.muteRobotSound, muteRobotSound.value);
+          storage.write(StorageKey.muteMusic, muteMusic.value);
+          storage.write(StorageKey.franciseMode, franciseMode.value);
           storage.write(StorageKey.musicVolume, homeCon.musicVolume.value);
           homeCon.loadMachineSale();
           ShowDialog.showDialogSuccess("ແກ້ໄຂຂໍ້ມູນສຳເຫຼັດ");
@@ -74,8 +78,8 @@ class SettingMachineController extends GetxController {
     try {
       ShowDialog.showDialogConfirm(Lang.clear.tr, () {
         storage.erase();
-        homeCon.initValueLocal();
-        initValueLocal();
+        // homeCon.initValueLocal();
+        // initValueLocal();
       });
     } catch (e, stackTrace) {
       ShowLogs().f('clearCash error ${e}', stackTrace);

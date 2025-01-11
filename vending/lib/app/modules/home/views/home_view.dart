@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:vending/app/config/config.dart';
 import 'package:vending/app/data/languages_key.dart';
+import 'package:vending/app/data/storage_key.dart';
 import 'package:vending/app/functions/format.dart';
 import 'package:vending/app/functions/showlogs.dart';
 import 'package:vending/app/routes/app_pages.dart';
 import 'package:vending/widget/dialog/dialog_cashin.dart';
-import 'package:vending/widget/dialog/dialog_howto.dart';
 import 'package:vending/widget/dialog/dialog_myorder.dart';
 import 'package:vending/widget/floatingbutton.dart';
 import 'package:vending/widget/imagecached.dart';
@@ -20,6 +21,7 @@ class HomeView extends GetView<HomeController> {
     double deviceHeight = MediaQuery.of(context).size.height;
     DateTime currentTime = DateTime.now();
     final formatter = DateFormat('yyyy/mm/dd - HH:mm:ss');
+
     return GestureDetector(
       onTap: () {
         controller.checkRestartApp();
@@ -96,14 +98,14 @@ class HomeView extends GetView<HomeController> {
                   )
                 ],
               ),
-              if (controller.isShowMoneyTab.value)
+              if (controller.isShowMoneyTab)
                 SizedBox(
                   height: deviceHeight * 0.09,
                   child: Padding(
                     padding: const EdgeInsets.only(left: 5, right: 5),
                     child: Row(
                       children: [
-                        if (controller.isTickets.value)
+                        if (GetStorage().read(StorageKey.isTickets) ?? true)
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5),
@@ -127,14 +129,15 @@ class HomeView extends GetView<HomeController> {
                               ],
                             ),
                           ),
-                        if (controller.isTickets.value)
+                        if (GetStorage().read(StorageKey.isTickets) ?? true)
                           SizedBox(
                             width: 5,
                           ),
                         Expanded(
                           child: InkWell(
                             onTap: () {
-                              if (controller.isCashIn.value) {
+                              if (GetStorage().read(StorageKey.isCashIn) ??
+                                  true) {
                                 dialogCashIn();
                               }
                             },
@@ -169,11 +172,11 @@ class HomeView extends GetView<HomeController> {
                             ),
                           ),
                         ),
-                        if (controller.isCashOut.value)
+                        if (GetStorage().read(StorageKey.isCashOut) ?? true)
                           SizedBox(
                             width: 5,
                           ),
-                        if (controller.isCashOut.value)
+                        if (GetStorage().read(StorageKey.isCashOut) ?? true)
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5),
@@ -204,7 +207,7 @@ class HomeView extends GetView<HomeController> {
               SizedBox(
                 height: deviceHeight * 0.005,
               ),
-              if (controller.franciseMode.value)
+              if (GetStorage().read(StorageKey.franciseMode) ?? true)
                 Container(
                   height: deviceHeight * 0.05,
                   padding: EdgeInsets.only(left: 5, right: 5),
@@ -414,31 +417,31 @@ class HomeView extends GetView<HomeController> {
                   SizedBox(
                     height: 5,
                   ),
-                if (controller.isWhatsapp.value)
+                if (GetStorage().read(StorageKey.isWhatsapp) ?? true)
                   FloatingButtonWidget(
                       title: "WA: 55516321",
                       boxColor: Colors.green,
                       icon: Icons.chat),
-                if (controller.isWhatsapp.value)
+                if (GetStorage().read(StorageKey.isWhatsapp) ?? true)
                   SizedBox(
                     height: 5,
                   ),
-                if (controller.isHowTo.value)
+                if (GetStorage().read(StorageKey.isHowTo) ?? true)
                   FloatingButtonWidget(
                     title: Lang.howToUse.tr,
                     boxColor: Colors.purple,
                     icon: Icons.video_collection_sharp,
                     onTap: () {
-                      controller.checkRestartApp();
-                      controller.isVideoPlay2(false);
-                      controller
-                          .initializeVideo("assets/video-how-to/howto1.webm");
-                      controller.isVideoPlay2(true);
-                      controller.videoPlayerCon?.play();
-                      dialogHowToUse();
+                      // controller.checkRestartApp();
+                      // controller.isVideoPlay2(false);
+                      // controller
+                      //     .initializeVideo("assets/video-how-to/howto1.webm");
+                      // controller.isVideoPlay2(true);
+                      // controller.videoPlayerCon?.play();
+                      // dialogHowToUse();
                     },
                   ),
-                if (controller.isHowTo.value)
+                if (GetStorage().read(StorageKey.isHowTo) ?? true)
                   SizedBox(
                     height: 5,
                   ),

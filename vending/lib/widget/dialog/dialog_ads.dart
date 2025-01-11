@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vending/app/color/main_color.dart';
 import 'package:vending/app/config/config.dart';
-import 'package:video_player/video_player.dart';
-import '../../app/modules/home/controllers/home_controller.dart';
 
 void dialogShowAds() async {
   double deviceHeight = Get.mediaQuery.size.height;
   double deviceWidth = Get.mediaQuery.size.width;
-  HomeController homeCon = Get.find<HomeController>();
+  // HomeController homeCon = Get.find<HomeController>();
   var result = await Get.generalDialog(
     barrierLabel: "dialogShowAds",
     barrierDismissible: true,
@@ -29,19 +27,19 @@ void dialogShowAds() async {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Obx(() {
-                    if (homeCon.isVideoPlay.value) {
-                      return AspectRatio(
-                        aspectRatio: homeCon.videoPlayerCon!.value.aspectRatio,
-                        child: VideoPlayer(
-                          homeCon.videoPlayerCon!,
-                        ),
-                      );
-                    } else {
-                      return Image.asset(
-                          'assets/video-how-to/howto1-cover.png');
-                    }
-                  }),
+                  // Obx(() {
+                  //   if (homeCon.isVideoPlay.value) {
+                  //     return AspectRatio(
+                  //       aspectRatio: homeCon.videoPlayerCon!.value.aspectRatio,
+                  //       child: VideoPlayer(
+                  //         homeCon.videoPlayerCon!,
+                  //       ),
+                  //     );
+                  //   } else {
+                  //     return Image.asset(
+                  //         'assets/video-how-to/howto1-cover.png');
+                  //   }
+                  // }),
                   SizedBox(
                     height: deviceHeight * 0.07,
                   ),
@@ -127,9 +125,9 @@ void dialogShowAds() async {
     },
   );
   if (result == null) {
-    print('CLOSE DIALOG');
-    homeCon.checkRestartApp();
-    homeCon.videoPlayerCon?.dispose();
-    homeCon.isVideoPlay(false);
+    // print('CLOSE DIALOG');
+    // homeCon.checkRestartApp();
+    // homeCon.videoPlayerCon?.dispose();
+    // homeCon.isVideoPlay(false);
   }
 }

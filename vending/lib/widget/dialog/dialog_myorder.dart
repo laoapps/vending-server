@@ -51,13 +51,13 @@ void dialogMyOrder() {
                     return index == 0
                         ? InkWell(
                             onTap: () {
-                              if (controller.timeOutGenerateQRMmoney != null &&
-                                  controller.timeOutGenerateQRMmoney != null &&
-                                  controller
-                                      .timeOutGenerateQRMmoney!.isActive &&
-                                  controller.timeOutCountdown!.isActive) {
-                                Get.back();
-                              }
+                              // if (controller.timeOutGenerateQRMmoney != null &&
+                              //     controller.timeOutGenerateQRMmoney != null &&
+                              //     controller
+                              //         .timeOutGenerateQRMmoney!.isActive &&
+                              //     controller.timeOutCountdown!.isActive) {
+                              //   Get.back();
+                              // }
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -120,17 +120,17 @@ void dialogMyOrder() {
                                 Divider(),
                                 InkWell(
                                   onTap: () async {
-                                    if (controller.timeOutGenerateQRMmoney != null &&
-                                        controller.timeOutGenerateQRMmoney !=
-                                            null &&
-                                        controller.timeOutGenerateQRMmoney!
-                                            .isActive &&
-                                        controller.timeOutCountdown!.isActive) {
-                                      controller.myOrder.removeAt(index);
-                                      controller.checkPriceAndGenerateQR();
-                                      controller.myOrder.refresh();
-                                      controller.initTimeGenerateQRMmoney();
-                                    }
+                                    // if (controller.timeOutGenerateQRMmoney != null &&
+                                    //     controller.timeOutGenerateQRMmoney !=
+                                    //         null &&
+                                    //     controller.timeOutGenerateQRMmoney!
+                                    //         .isActive &&
+                                    //     controller.timeOutCountdown!.isActive) {
+                                    //   controller.myOrder.removeAt(index);
+                                    //   controller.checkPriceAndGenerateQR();
+                                    //   controller.myOrder.refresh();
+                                    //   controller.initTimeGenerateQRMmoney();
+                                    // }
                                   },
                                   child: Icon(
                                     Icons.delete,

@@ -20,7 +20,6 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
         leading: IconButton(
           onPressed: () {
             Get.back();
-            controller.homeCon.checkRestartApp();
           },
           icon: Icon(
             Icons.arrow_back,
@@ -88,10 +87,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SwitchText(
-                                value: controller.homeCon.isTickets.value,
+                                value: controller.isTickets.value,
                                 text: "Tickets",
                                 onChanged: (p0) {
-                                  controller.homeCon.isTickets.value = p0;
+                                  controller.isTickets.value = p0;
                                   storage.write(StorageKey.isTickets, p0);
                                 },
                               ),
@@ -99,10 +98,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value: controller.homeCon.isHowTo.value,
+                                value: controller.isHowTo.value,
                                 text: "How to",
                                 onChanged: (p0) {
-                                  controller.homeCon.isHowTo.value = p0;
+                                  controller.isHowTo.value = p0;
                                   storage.write(StorageKey.isHowTo, p0);
                                 },
                               ),
@@ -113,10 +112,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller.homeCon.isCashOut.value,
+                                value: controller.isCashOut.value,
                                 text: "Cash Out",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOut.value = p0;
+                                  controller.isCashOut.value = p0;
                                   storage.write(StorageKey.isCashOut, p0);
                                 },
                               ),
@@ -124,10 +123,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value: controller.homeCon.isTemperature.value,
+                                value: controller.isTemperature.value,
                                 text: "Temperature",
                                 onChanged: (p0) {
-                                  controller.homeCon.isTemperature.value = p0;
+                                  controller.isTemperature.value = p0;
                                   storage.write(StorageKey.isTemperature, p0);
                                 },
                               )
@@ -138,10 +137,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller.homeCon.isWhatsapp.value,
+                                value: controller.isWhatsapp.value,
                                 text: "Whatsapp",
                                 onChanged: (p0) {
-                                  controller.homeCon.isWhatsapp.value = p0;
+                                  controller.isWhatsapp.value = p0;
                                   storage.write(StorageKey.isWhatsapp, p0);
                                 },
                               )
@@ -171,10 +170,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller.homeCon.isCashIn.value,
+                                value: controller.isCashIn.value,
                                 text: "Cash In",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashIn.value = p0;
+                                  controller.isCashIn.value = p0;
                                   storage.write(StorageKey.isCashIn, p0);
                                 },
                               ),
@@ -185,12 +184,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller
-                                    .homeCon.isCashOutLAABAccount.value,
+                                value: controller.isCashOutLAABAccount.value,
                                 text: "Cash Out - LAAB",
                                 onChanged: (p0) {
-                                  controller
-                                      .homeCon.isCashOutLAABAccount.value = p0;
+                                  controller.isCashOutLAABAccount.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutLAABAccount, p0);
                                 },
@@ -202,12 +199,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value:
-                                    controller.homeCon.isCashOutLAABEPIN.value,
+                                value: controller.isCashOutLAABEPIN.value,
                                 text: "Cash Out - LAAB EPIN",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutLAABEPIN.value =
-                                      p0;
+                                  controller.isCashOutLAABEPIN.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutLAABEPIN, p0);
                                 },
@@ -238,12 +233,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller
-                                    .homeCon.isCashOutMMoneyAccount.value,
+                                value: controller.isCashOutMMoneyAccount.value,
                                 text: "Cash Out MMoney",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutMMoneyAccount
-                                      .value = p0;
+                                  controller.isCashOutMMoneyAccount.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutMMoneyAccount, p0);
                                 },
@@ -255,12 +248,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller
-                                    .homeCon.isIOSandAndroidQRLink.value,
+                                value: controller.isIOSandAndroidQRLink.value,
                                 text: "IOS & Android QR Link",
                                 onChanged: (p0) {
-                                  controller
-                                      .homeCon.isIOSandAndroidQRLink.value = p0;
+                                  controller.isIOSandAndroidQRLink.value = p0;
                                   storage.write(
                                       StorageKey.isIOSandAndroidQRLink, p0);
                                 },
@@ -296,12 +287,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller
-                                    .homeCon.isCashOutVietcomBank.value,
+                                value: controller.isCashOutVietcomBank.value,
                                 text: "Cash Out - Vietcome",
                                 onChanged: (p0) {
-                                  controller
-                                      .homeCon.isCashOutVietcomBank.value = p0;
+                                  controller.isCashOutVietcomBank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutVietcomBank, p0);
                                 },
@@ -310,12 +299,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value:
-                                    controller.homeCon.isCashOutBOCbank.value,
+                                value: controller.isCashOutBOCbank.value,
                                 text: "Cash Out - BOC Bank",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutBOCbank.value =
-                                      p0;
+                                  controller.isCashOutBOCbank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutBOCbank, p0);
                                 },
@@ -324,12 +311,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value:
-                                    controller.homeCon.isCashOutBCAbank.value,
+                                value: controller.isCashOutBCAbank.value,
                                 text: "Cash Out - BCA Bank",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutBCAbank.value =
-                                      p0;
+                                  controller.isCashOutBCAbank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutBCAbank, p0);
                                 },
@@ -338,12 +323,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value:
-                                    controller.homeCon.isCashOutMCBbank.value,
+                                value: controller.isCashOutMCBbank.value,
                                 text: "Cash Out - MCB Bank",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutMCBbank.value =
-                                      p0;
+                                  controller.isCashOutMCBbank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutMCBbank, p0);
                                 },
@@ -355,12 +338,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value: controller
-                                    .homeCon.isCashOutVietinBank.value,
+                                value: controller.isCashOutVietinBank.value,
                                 text: "Cash Out - Vietin Bank",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutVietinBank.value =
-                                      p0;
+                                  controller.isCashOutVietinBank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutVietinBank, p0);
                                 },
@@ -369,12 +350,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value: controller
-                                    .homeCon.isCashOutKasikornBank.value,
+                                value: controller.isCashOutKasikornBank.value,
                                 text: "Cash Out - Kasikorn",
                                 onChanged: (p0) {
-                                  controller
-                                      .homeCon.isCashOutKasikornBank.value = p0;
+                                  controller.isCashOutKasikornBank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutKasikornBank, p0);
                                 },
@@ -383,12 +362,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value:
-                                    controller.homeCon.isCashOutDBSbank.value,
+                                value: controller.isCashOutDBSbank.value,
                                 text: "Cash Out - DBS Bank",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutDBSbank.value =
-                                      p0;
+                                  controller.isCashOutDBSbank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutDBSbank, p0);
                                 },
@@ -400,12 +377,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                           child: Column(
                             children: [
                               SwitchText(
-                                value:
-                                    controller.homeCon.isCashOutICBCbank.value,
+                                value: controller.isCashOutICBCbank.value,
                                 text: "Cash Out - ICBC Bank",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutICBCbank.value =
-                                      p0;
+                                  controller.isCashOutICBCbank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutICBCbank, p0);
                                 },
@@ -414,12 +389,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value: controller
-                                    .homeCon.isCashOutBangkokBank.value,
+                                value: controller.isCashOutBangkokBank.value,
                                 text: "Cash Out - Bangkok",
                                 onChanged: (p0) {
-                                  controller
-                                      .homeCon.isCashOutBangkokBank.value = p0;
+                                  controller.isCashOutBangkokBank.value = p0;
                                   storage.write(
                                       StorageKey.isCashOutBangkokBank, p0);
                                 },
@@ -428,10 +401,10 @@ class SettingControlMenuView extends GetView<SettingControlMenuController> {
                                 height: deviceHeight * 0.01,
                               ),
                               SwitchText(
-                                value: controller.homeCon.isCashOutAbank.value,
+                                value: controller.isCashOutAbank.value,
                                 text: "Cash Out - A Bank",
                                 onChanged: (p0) {
-                                  controller.homeCon.isCashOutAbank.value = p0;
+                                  controller.isCashOutAbank.value = p0;
                                   storage.write(StorageKey.isCashOutAbank, p0);
                                 },
                               )

@@ -147,8 +147,7 @@ class SettingMachineView extends GetView<SettingMachineController> {
                     elevation: 10,
                     child: ListTile(
                       onTap: () {
-                        controller.homeCon.adsMode.value =
-                            !controller.homeCon.adsMode.value;
+                        controller.adsMode.value = !controller.adsMode.value;
                       },
                       title: Text(
                         'Ads',
@@ -161,9 +160,9 @@ class SettingMachineView extends GetView<SettingMachineController> {
                         scale: 2.3,
                         child: Checkbox(
                           activeColor: Colors.purple,
-                          value: controller.homeCon.adsMode.value,
+                          value: controller.adsMode.value,
                           onChanged: (value) {
-                            controller.homeCon.adsMode.value = value!;
+                            controller.adsMode.value = value!;
                           },
                         ),
                       ),
@@ -178,8 +177,8 @@ class SettingMachineView extends GetView<SettingMachineController> {
                     elevation: 10,
                     child: ListTile(
                       onTap: () {
-                        controller.homeCon.muteRobotSound.value =
-                            !controller.homeCon.muteRobotSound.value;
+                        controller.muteRobotSound.value =
+                            !controller.muteRobotSound.value;
                       },
                       title: Text('Mute Robot Sound',
                           style: TextStyle(
@@ -190,9 +189,9 @@ class SettingMachineView extends GetView<SettingMachineController> {
                         scale: 2.3,
                         child: Checkbox(
                           activeColor: Colors.purple,
-                          value: controller.homeCon.muteRobotSound.value,
+                          value: controller.muteRobotSound.value,
                           onChanged: (value) {
-                            controller.homeCon.muteRobotSound.value = value!;
+                            controller.muteRobotSound.value = value!;
                           },
                         ),
                       ),
@@ -208,8 +207,8 @@ class SettingMachineView extends GetView<SettingMachineController> {
                       elevation: 10,
                       child: ListTile(
                         onTap: () {
-                          controller.homeCon.muteMusic.value =
-                              !controller.homeCon.muteMusic.value;
+                          controller.muteMusic.value =
+                              !controller.muteMusic.value;
                         },
                         title: Text('Mute Music',
                             style: TextStyle(
@@ -220,9 +219,9 @@ class SettingMachineView extends GetView<SettingMachineController> {
                           scale: 2.3,
                           child: Checkbox(
                             activeColor: Colors.purple,
-                            value: controller.homeCon.muteMusic.value,
+                            value: controller.muteMusic.value,
                             onChanged: (value) {
-                              controller.homeCon.muteMusic.value = value!;
+                              controller.muteMusic.value = value!;
                             },
                           ),
                         ),
@@ -234,7 +233,7 @@ class SettingMachineView extends GetView<SettingMachineController> {
                   height: deviceHeight * 0.01,
                 ),
                 Obx(() {
-                  return controller.homeCon.muteMusic.value
+                  return controller.muteMusic.value
                       ? SizedBox()
                       : Card(
                           child: Row(
@@ -288,8 +287,8 @@ class SettingMachineView extends GetView<SettingMachineController> {
                       elevation: 10,
                       child: ListTile(
                         onTap: () {
-                          controller.homeCon.franciseMode.value =
-                              !controller.homeCon.franciseMode.value;
+                          controller.franciseMode.value =
+                              !controller.franciseMode.value;
                         },
                         title: Text('Francise Mode',
                             style: TextStyle(
@@ -300,9 +299,9 @@ class SettingMachineView extends GetView<SettingMachineController> {
                           scale: 2.3,
                           child: Checkbox(
                             activeColor: Colors.purple,
-                            value: controller.homeCon.franciseMode.value,
+                            value: controller.franciseMode.value,
                             onChanged: (value) {
-                              controller.homeCon.franciseMode.value = value!;
+                              controller.franciseMode.value = value!;
                             },
                           ),
                         ),

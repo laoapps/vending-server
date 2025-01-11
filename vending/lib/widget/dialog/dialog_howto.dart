@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vending/app/config/config.dart';
-import 'package:vending/app/modules/home/controllers/home_controller.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../app/data/languages_key.dart';
 import '../screens/screen_widget.dart';
@@ -10,15 +8,15 @@ import '../screens/screen_widget.dart';
 void dialogHowToUse() {
   double deviceHeight = Get.mediaQuery.size.height;
   double deviceWidth = Get.mediaQuery.size.width;
-  HomeController homeCon = Get.find<HomeController>();
+  // HomeController homeCon = Get.find<HomeController>();
   Get.generalDialog(
     pageBuilder: (context, animation, secondaryAnimation) {
       return ScreenWidget(
         onClick: () {
-          Get.back();
-          homeCon.checkRestartApp();
-          homeCon.videoPlayerCon!.dispose();
-          homeCon.isVideoPlay2(false);
+          // Get.back();
+          // homeCon.checkRestartApp();
+          // homeCon.videoPlayerCon!.dispose();
+          // homeCon.isVideoPlay2(false);
         },
         width: deviceWidth * 0.9,
         height: deviceHeight * 0.8,
@@ -40,25 +38,25 @@ void dialogHowToUse() {
                   Expanded(
                     child: InkWell(
                       onTap: () {
-                        homeCon.videoPlayerCon!.value.isPlaying
-                            ? homeCon.videoPlayerCon!.pause()
-                            : homeCon.videoPlayerCon!.play();
-                        homeCon.checkRestartApp();
+                        // homeCon.videoPlayerCon!.value.isPlaying
+                        //     ? homeCon.videoPlayerCon!.pause()
+                        //     : homeCon.videoPlayerCon!.play();
+                        // homeCon.checkRestartApp();
                       },
                       child: Column(
                         children: [
-                          homeCon.isVideoPlay2.value
-                              ? AspectRatio(
-                                  aspectRatio:
-                                      homeCon.videoPlayerCon!.value.aspectRatio,
-                                  child: VideoPlayer(
-                                    homeCon.videoPlayerCon!,
-                                  ),
-                                )
-                              : Image.asset(
-                                  'assets/video-how-to/howto1-cover.png',
-                                  fit: BoxFit.cover,
-                                ),
+                          // homeCon.isVideoPlay2.value
+                          //     ? AspectRatio(
+                          //         aspectRatio:
+                          //             homeCon.videoPlayerCon!.value.aspectRatio,
+                          //         child: VideoPlayer(
+                          //           homeCon.videoPlayerCon!,
+                          //         ),
+                          //       )
+                          //     : Image.asset(
+                          //         'assets/video-how-to/howto1-cover.png',
+                          //         fit: BoxFit.cover,
+                          //       ),
                         ],
                       ),
                     ),
@@ -68,12 +66,12 @@ void dialogHowToUse() {
                       children: [
                         InkWell(
                           onTap: () async {
-                            homeCon.checkRestartApp();
-                            await homeCon.initializeVideo(
-                                'assets/video-how-to/howto1.webm');
-                            homeCon.isVideoPlay2(false);
-                            await homeCon.videoPlayerCon!.play();
-                            homeCon.isVideoPlay2(true);
+                            // homeCon.checkRestartApp();
+                            // await homeCon.initializeVideo(
+                            //     'assets/video-how-to/howto1.webm');
+                            // homeCon.isVideoPlay2(false);
+                            // await homeCon.videoPlayerCon!.play();
+                            // homeCon.isVideoPlay2(true);
                           },
                           child: Container(
                             color: Colors.white,
@@ -111,12 +109,12 @@ void dialogHowToUse() {
                         ),
                         InkWell(
                           onTap: () async {
-                            homeCon.checkRestartApp();
-                            await homeCon.initializeVideo(
-                                'assets/video-how-to/howto2.webm');
-                            homeCon.isVideoPlay2(false);
-                            await homeCon.videoPlayerCon!.play();
-                            homeCon.isVideoPlay2(true);
+                            // homeCon.checkRestartApp();
+                            // await homeCon.initializeVideo(
+                            //     'assets/video-how-to/howto2.webm');
+                            // homeCon.isVideoPlay2(false);
+                            // await homeCon.videoPlayerCon!.play();
+                            // homeCon.isVideoPlay2(true);
                           },
                           child: Container(
                             color: Colors.white,
@@ -154,12 +152,12 @@ void dialogHowToUse() {
                         ),
                         InkWell(
                           onTap: () async {
-                            homeCon.checkRestartApp();
-                            await homeCon.initializeVideo(
-                                'assets/video-how-to/howto3.webm');
-                            homeCon.isVideoPlay2(false);
-                            await homeCon.videoPlayerCon!.play();
-                            homeCon.isVideoPlay2(true);
+                            // homeCon.checkRestartApp();
+                            // await homeCon.initializeVideo(
+                            //     'assets/video-how-to/howto3.webm');
+                            // homeCon.isVideoPlay2(false);
+                            // await homeCon.videoPlayerCon!.play();
+                            // homeCon.isVideoPlay2(true);
                           },
                           child: Container(
                             color: Colors.white,
