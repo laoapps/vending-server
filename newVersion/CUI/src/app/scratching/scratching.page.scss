@@ -1,0 +1,37 @@
+
+
+.sc__container {
+    position: relative;
+    overflow: hidden;
+     width: 220px;
+    height: 220px;
+    margin: 1px;
+  }
+  
+  .sc__container > img {
+    z-index: -1000;
+    position: absolute;
+    // width: 250px;
+    // height: 250px;
+  }
+ 
+  
+  .sc__container .sc__canvas {
+    width: 250px;
+    height: 250px;
+    // background-color: black;
+  }
+
+  
+  .sc__infos {
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 24px;
+  }
+  
+  .sc__inner {
+    height: 300px;
+  }

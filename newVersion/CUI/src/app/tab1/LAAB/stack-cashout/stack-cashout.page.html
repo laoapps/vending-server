@@ -1,0 +1,217 @@
+<ion-content>
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">Cash Out</div>
+      <div class="sub-title">Choose your cash out options</div>
+
+      <!-- <div class="cash-balance">{{ apiService.cash.amount | number }}</div> -->
+    </div>
+    <div class="laab-card-body">
+      <!-- LAO -->
+      <a (click)="mmoneyCashout()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-mmoney-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/mmoney-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">M-Money</div>
+          <div class="sub-title">Cash out your money from vending to your M-Money account</div>
+        </div>
+      </a>
+      <a (click)="laabCashout()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-laab-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/LAAB-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">LAAB Wallet</div>
+          <div class="sub-title">Cash out your money from vending to your LAAB account</div>
+        </div>
+      </a>
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-laab-epin active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/epin-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">EPin</div>
+          <div class="sub-title">Generate QR EPIN for receive your cash</div>
+        </div>
+      </a>
+
+
+
+
+      <!-- **** vietnam ***** -->
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-vietcombank-account active">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/vietcombank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">Vietcom Bank</div>
+          <div class="sub-title">Cash out your money from vending to Vietcom Back account</div>
+        </div>
+      </a>
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-vietinbank-account active">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/Vietinbank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">Vietin Bank</div>
+          <div class="sub-title">Cash out your money from vending to your Vietin Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+        </div>
+      </a>
+
+
+
+
+      <!-- ***** china ***** -->
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-icbcbank-account active">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/icbcbank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">ICBC Bank (Industrial and Commercial Bank of China Limited)</div>
+          <div class="sub-title">Cash out your money from vending to your ICBC Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+        </div>
+      </a>
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-bocbank-account active">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/bocbank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">BOC Bank (BANK OF CHINA)</div>
+          <div class="sub-title">Cash out your money from vending to your BOC Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+
+        </div>
+      </a>
+
+
+
+
+      <!-- **** thai **** -->
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-kaskornbank-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/kasikornbank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">Kasikorn Bank</div>
+          <div class="sub-title">Cash out your money from vending to your Kasikorn Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+
+        </div>
+      </a>
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-bangkokbank-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/bangkokbank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">Bangkok Bank</div>
+          <div class="sub-title">Cash out your money from vending to your Bangkok Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+
+        </div>
+      </a>
+
+
+
+
+      <!-- ***** indonacia ***** -->
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-bcabank-account active">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/bcabank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">BCA Bank (Bank Central Asia)</div>
+          <div class="sub-title">Cash out your money from vending to your BCA Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+
+        </div>
+      </a>
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-dbsbank-account active">
+        <div class="left">
+          <div class="icon">
+            <img src="../../../../assets/logo/dbsbank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">DBS Bank (Development Bank of Singapore)</div>
+          <div class="sub-title">Cash out your money from vending to your DBS Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+
+        </div>
+      </a>
+
+
+
+
+
+      <!-- **** mynmar **** -->
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-abank-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/abank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">A Bank (Ayeyarwaddy Farmers Development Bank)</div>
+          <div class="sub-title">Cash out your money from vending to your A Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+
+        </div>
+      </a>
+      <a (click)="epinCashOut()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-mcbbank-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/mcbbank-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">MCB Bank (Myanmar Citizens Bank)</div>
+          <div class="sub-title">Cash out your money from vending to your MCB Bank account</div>
+          <div class="stack-cashout-comming-soon">comming soon</div>
+
+        </div>
+      </a>
+
+    </div>
+
+
+
+
+
+    
+
+
+  </div>
+
+</ion-content>

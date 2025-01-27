@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>
+    </ion-title>
+    <!-- <ion-icon name="refresh-circle-sharp" color="danger" (click)="reset()"></ion-icon> -->
+    <ion-button color="danger" (click)="reset()">RESET</ion-button>
+
+    <!-- <ion-button  color="danger" (click)="newSale()">New</ion-button> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button (click)="refillAll()">Refill</ion-button>
+      </ion-col>
+      <!-- <ion-col>
+        <ion-button (click)="reportBills()">Report bills</ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button (click)="reportSale()">Report sale</ion-button>
+      </ion-col> -->
+      <ion-col>
+        <ion-button (click)="saveSale()">save sale</ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button (click)="recoverSale()">recover sale</ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="!prod">
+      <ion-col>
+        <ion-button (click)="saveJsonText()"> sat JSON TEXT MANUALY</ion-button>
+        <ion-textarea [(ngModel)]="jsonText">
+
+        </ion-textarea>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-input [(ngModel)]="search" (ngModelChange)="doFilter()"></ion-input>
+  <div *ngFor="let s of saleStock" style="display:inline;float:left" (click)="selectItem(s.position+'')">
+    <ion-card>
+      <ion-label>{{s.position+compensation|number}}</ion-label>
+      <!-- <img style="width: 100px;height:240px" [src]="s.stock.image.includes(';base64,')?s.stock.image:this.url+'/public/'+s.stock.image"
+        (click)="changeStock(s.position)"> -->
+      <!-- <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)" > -->
+      <img style="width: 100px;height:240px" [src]="apiService?.imageList[s?.stock?.image]"
+        (click)="changeStock(s?.position)">
+
+
+
+      <!-- <img *ngIf="!s.stock.image" style="width: 100px;height:240px" src="../../assets/empty-box.png" (click)="changeStock(s.position)" class="position-img"> -->
+      <!-- <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)"> -->
+    </ion-card>
+    <ion-card>
+      <div>
+        <ion-label>Price:</ion-label>
+        <ion-label>{{s.stock.price|number}}</ion-label>
+      </div>
+      <div>
+        <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
+        <ion-button (click)="setMax(s.position)">SET MAX</ion-button>
+        <ion-range [disabled]="isDisabled!=s.position+''" [ticks]="true" [snaps]="true" [min]="0" [max]="s.max"
+          [(ngModel)]="s.stock.qtty" (ionChange)="save()"></ion-range>
+
+      </div>
+
+    </ion-card>
+    <button (click)="deleteItem(s)">DELETE</button>
+    <ion-item-divider></ion-item-divider>
+
+  </div>
+</ion-content>
