@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { EventEmitter } from 'events';
-declare const cordova: any;
+import { Plugins } from '@capacitor/core';
+
+const { SerialConnection } = Plugins;
 
 interface CommandQueue {
     command: string; // Command sent as a hex string
@@ -35,14 +37,14 @@ export class VendingMachineSerial_VMC extends EventEmitter {
 
     constructor() {
         super();
-
     }
 
     private async initializeConnection(baudRate: number = 57600): Promise<void> {
         try {
             this.baudRate = baudRate;
-            this.initializeConnection();
-            await cordova.plugins.USBSerial.open({
+
+            // Open the serial connection using the Capacitor plugin
+            await SerialConnection.openConnection({
                 baudRate: this.baudRate,
                 dataBits: 8,
                 stopBits: 1,
@@ -60,10 +62,15 @@ export class VendingMachineSerial_VMC extends EventEmitter {
     }
 
     private setupListeners(): void {
-        cordova.plugins.USBSerial.registerReadCallback((data: ArrayBuffer) => {
-            const buffer = new Uint8Array(data);
-            this.handleResponse(buffer);
-        });
+        // Set up read callback using the Capacitor plugin
+        SerialConnection.setReadCallback()
+            .then(() => {
+                SerialConnection.registerReadCallback((data: string) => {
+                    const buffer = Uint8Array.from(Buffer.from(data, 'hex'));
+                    this.handleResponse(buffer);
+                });
+            })
+            .catch(error => console.error('Error setting up listeners:', error));
     }
 
     private async sendCommand(command: string): Promise<void> {
@@ -72,8 +79,7 @@ export class VendingMachineSerial_VMC extends EventEmitter {
         }
 
         try {
-            const buffer = Buffer.from(command, 'hex');
-            await cordova.plugins.USBSerial.write(buffer.buffer);
+            await SerialConnection.write({ data: command });
             console.log('Command sent:', command);
         } catch (error) {
             console.error('Failed to send command:', error);
@@ -204,7 +210,7 @@ export class VendingMachineSerial_VMC extends EventEmitter {
         }
 
         if (this.isConnected) {
-            cordova.plugins.USBSerial.close()
+            SerialConnection.closeConnection()
                 .then(() => {
                     this.isConnected = false;
                     this.emit('disconnected');

@@ -14,7 +14,7 @@ import { QrCodeModule } from 'ng-qrcode';
 import { Storage } from '@ionic/storage-angular';
 import { OrderModule } from 'ngx-order-pipe';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
-import { NgParticlesModule } from "ng-particles";
+
 import {NgPipesModule} from 'ngx-pipes';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 
@@ -25,7 +25,7 @@ import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,
     // NotifierModule,
-     OrderModule,NgParticlesModule,
+     OrderModule,
      NgPipesModule,
      SweetAlert2Module.forRoot()
   ],

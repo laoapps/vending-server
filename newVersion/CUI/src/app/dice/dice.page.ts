@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import  JSConfetti from 'js-confetti'
 import { MoveDirection, ClickMode, HoverMode, OutMode, Container, Engine } from "tsparticles-engine";
 import { loadFull, } from "tsparticles";
-import {IParticlesParams} from 'ng-particles';
+
 
 @Component({
   selector: 'app-dice',

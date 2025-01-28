@@ -45,6 +45,7 @@ export class SettingPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.vmc
     this.vmc.setDropDetection(true);
     this.vmc.on('connected', () => {
       this.log += '\nconnected';

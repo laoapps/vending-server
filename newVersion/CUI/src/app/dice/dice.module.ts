@@ -7,14 +7,13 @@ import { IonicModule } from '@ionic/angular';
 import { DicePageRoutingModule } from './dice-routing.module';
 
 import { DicePage } from './dice.page';
-import { NgParticlesModule } from "ng-particles";
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    DicePageRoutingModule,
-    NgParticlesModule
+    DicePageRoutingModule
   ],
   declarations: [DicePage]
 })
