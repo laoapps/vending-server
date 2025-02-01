@@ -31,10 +31,6 @@ const routes: Routes = [
     loadChildren: () => import('./showcart/showcart.module').then( m => m.ShowcartPageModule)
   },
   {
-    path: 'dice',
-    loadChildren: () => import('./dice/dice.module').then( m => m.DicePageModule)
-  },
-  {
     path: 'prizelist',
     loadChildren: () => import('./prizelist/prizelist.module').then( m => m.PrizelistPageModule)
   },
@@ -65,10 +61,6 @@ const routes: Routes = [
   {
     path: 'ads',
     loadChildren: () => import('./ads/ads.module').then( m => m.AdsPageModule)
-  },
-  {
-    path: 'scratching',
-    loadChildren: () => import('./scratching/scratching.module').then( m => m.ScratchingPageModule)
   },
   {
     path: 'fortunewheel',
