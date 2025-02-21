@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Setting</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-label>WS-URL</ion-label>
+      <ion-input [(ngModel)]="wsurl"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>URL</ion-label>
+      <ion-input [(ngModel)]="url"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>MachineId</ion-label>
+      <ion-input [(ngModel)]="machineId"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>OTP</ion-label>
+      <ion-input [(ngModel)]="otp"></ion-input>
+    </ion-item>
+    <ion-item>
+     <ion-button (click)="save()">SAVE</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>productlist</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col><ion-label>image</ion-label></ion-col>
+      <ion-col><ion-label>name</ion-label></ion-col>
+      <ion-col><ion-label>Price</ion-label></ion-col>
+      <ion-col><ion-label>updated</ion-label></ion-col>
+      <ion-col></ion-col>
+    </ion-row>
+  
+    <ion-row *ngFor="let p of _l">
+      <ion-col><ion-img class="product_image"[src]="p.image"></ion-img></ion-col>
+      <ion-col><ion-label>{{p.name}}</ion-label></ion-col>
+      <ion-col><ion-label>{{p.price|number}}</ion-label></ion-col>
+      <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
+      <ion-col><ion-button (click)="selectProduct(p.id)">Select</ion-button></ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

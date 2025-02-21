@@ -1,0 +1,30 @@
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">EPIN Admin</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="epin-admin-menu">
+    <a (click)="openManageEPIN()" href="javascript:Void(0)" class="item">
+      <div class="icon">
+        <i class="fa-solid fa-qrcode"></i>
+      </div>
+      <div class="text">Manage EPIN</div>
+    </a>
+    <a (click)="openManageSubAdmin()" href="javascript:Void(0)" class="item">
+      <div class="icon">
+        <i class="fa-solid fa-user-tie"></i>
+      </div>
+      <div class="text">Manage sub-admin</div>
+    </a>
+  </div>
+
+</ion-content>

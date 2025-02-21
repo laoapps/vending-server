@@ -1,0 +1,77 @@
+<ion-content>
+
+  <div class="section-header">
+    <div class="title">Reports</div>
+    <div class="sub-title">There are your generated stock reports of vending machine on your own of the platform.</div>
+  </div>
+
+  <div class="section-filter">
+    <div *ngIf="datetimeCustom == true" class="single-group">
+        <div class="form-group">
+          <label for="">Date (Special)</label>
+          <input [(ngModel)]="fromDate" type="date" class="form-control full">
+        </div>
+    </div>
+
+    <div *ngIf="moredatetimeCustom == true" class="single-group">
+      <div class="form-group">
+        <label for="">Date (From)</label>
+        <input [(ngModel)]="fromDate" type="date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="">Date (To)</label>
+        <input [(ngModel)]="toDate" type="date" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <div class="section-buttons">
+    <a (click)="process()" href="javascript:void(0)" class="item-process"><i class="fa-solid fa-arrows-rotate"></i> Process</a>
+    <a (click)="displayDateTimeCustom()" href="javascript:void(0)" class="item active">Date/Time Custom</a>
+    <a (click)="displayMoreDateTimeCustom()" href="javascript:void(0)" class="item">More Date/Time Custom</a>
+  </div>
+
+  <div *ngIf="display == true" class="section-table">
+    
+    <div class="btn-list">
+      <a *ngFor="let export of exportOptions; let i = index" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="{{ export.icon }}"></i>
+        </div>
+        <div class="text">{{ export.text }}</div>
+      </a>
+    </div>
+
+    <!-- <ng-container 
+      *ngFor="let list of lists; let i = index"  
+      class="item-group"
+      style=
+      "
+        display: flex;
+      "
+    >
+      <br *ngIf="lists[i]?.position!==lists[i-1]?.position&&i>0"/>
+      <div 
+        *ngIf="lists[i]?.position!==lists[i-1]?.position&&i>0" class="line" 
+        style=
+        "
+          margin-top: 25px;
+        "
+      ></div>
+      <span
+        style=
+          "
+            margin-left: 10px;
+          "
+      >Date {{ list.time }} Position {{ list.position }}</span>
+   </ng-container> -->
+
+   <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <tbody class="tb-body"></tbody>
+    </table>
+   </div>
+
+  </div>
+
+</ion-content>

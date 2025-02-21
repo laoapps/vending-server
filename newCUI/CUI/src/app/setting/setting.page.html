@@ -1,0 +1,104 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Setting</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-label>WS-URL</ion-label>
+      <ion-input [(ngModel)]="wsurl"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>URL</ion-label>
+      <ion-input [(ngModel)]="url"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>MachineId</ion-label>
+      <ion-input [(ngModel)]="machineId"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>OTP</ion-label>
+      <ion-input [(ngModel)]="otp"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Contact</ion-label>
+      <ion-input [(ngModel)]="contact"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Product fall limit</ion-label>
+      <ion-input [(ngModel)]="productFallLimit"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Ads</ion-label>
+      <ion-checkbox [(ngModel)]="isAds"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>Mute Robot Sound</ion-label>
+      <ion-checkbox [(ngModel)]="isRobotMuted"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>Mute Music</ion-label>
+      <ion-checkbox [(ngModel)]="isMusicMuted"></ion-checkbox>
+    </ion-item>
+    <ion-item *ngIf="!isMusicMuted">
+      <ion-label>Music volume</ion-label>
+      <ion-range [(ngModel)]="musicVolume" min="0" max="100" aria-label="Range with pin" [pin]="true" [pinFormatter]="pinFormatter" ></ion-range>
+    </ion-item>
+    <ion-item>
+      <ion-label>Francise Mode</ion-label>
+      <ion-checkbox [(ngModel)]="francisemode"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+     <ion-button (click)="save()">SAVE</ion-button>
+     <ion-button (click)="resetCashing()">Reset Cashing</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <div class="more-setting">
+    <a (click)="openSettingControlMenu()" href="javascript:void(0)" class="item">
+      <div class="icon">
+        <i class="fa-solid fa-display"></i>
+      </div>
+      <div class="text">Control Menu</div>
+    </a>
+    <a (click)="testMotor()" href="javascript:void(0)" class="item">
+      <div class="icon">
+        <i class="fa-solid fa-gears"></i>
+      </div>
+      <div class="text">{{ testInTitle }}</div>
+    </a>
+  </div>
+
+  <div class="test-motor-form">
+    <div class="input-group">
+      <span class="input-group-text">Start</span>
+      <input [(ngModel)]="startM" type="number" class="form-control" placeholder="motor start from">
+    </div>
+    <div class="input-group  mt-2">
+      <span class="input-group-text">End</span>
+      <input [(ngModel)]="endM" type="number" class="form-control" placeholder="end of motor">
+    </div>
+    <div class="display-test-result">
+      <div class="left">
+        <div class="title">SUCCESS</div>
+        <div class="group">
+          <a *ngFor="let item of successList; let i = index;" class="text-success" href="javascript:void(0)">Motor: {{ item }}</a>
+        </div>
+        <div class="text">Result: {{ successList.length || 0 }}</div>
+      </div>
+      <div class="right">
+        <div class="title">ERROR</div>
+        <div class="group">
+          <a *ngFor="let item of errorList; let i = index;" class="text-danger" href="javascript:void(0)">Motor: {{ item }}</a>
+        </div>
+        <div class="text">Result: {{ errorList.length || 0 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <button (click)="testSlot()" class="btn btn-primary">Test Slot</button>
+
+
+</ion-content>

@@ -1,0 +1,126 @@
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">My Account</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div *ngIf="initState == true" class="register">
+    
+    <div class="left">
+
+      <a href="javascript:void(0)" class="coin-card">
+        <div class="title"><i class="fa-solid fa-coins color-red"></i> MERCHANT COIN</div>
+        <div class="id">{{ substringid() }}</div>
+
+        <div class="form-group">
+          <div class="text">Balance</div>
+          <div class="value">{{ this.apiService.merchanteCoinBalance | number }} <span>COIN</span></div>
+        </div>
+      </a>
+
+
+    </div>
+    <div class="right">
+
+
+      <div class="main-menu">
+        <a (click)="switchMenu('coin-transfer','merchant coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-right-left"></i>
+          </div>
+          <div class="text">Coin Transfer</div>
+        </a>
+        <a (click)="switchMenu('cmcqr','merchant coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <div class="text">CQR</div>
+        </a>
+        <a (click)="switchMenu('cqr-scan','merchant coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-expand"></i>
+          </div>
+          <div class="text">Scan</div>
+        </a>
+        <a (click)="switchMenu('report-options','merchant coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div class="text">Reports</div>
+        </a>
+
+      </div>
+    </div>
+    <div class="left">
+
+      <a href="javascript:void(0)" class="coin-card mt-2">
+        <div class="title"><i class="fa-solid fa-coins color-red"></i> VENDING LIMITER</div>
+        <div class="id">{{ substringid() }}</div>
+
+        <div class="form-group">
+          <div class="text">Balance</div>
+          <div class="value">{{ this.apiService.vendingLimiterCoinBalance | number }} <span>COIN</span></div>
+        </div>
+      </a>
+    </div>
+    <div class="right">
+      <div class="main-menu">
+        <a (click)="switchMenu('coin-transfer','vending limiter coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-right-left"></i>
+          </div>
+          <div class="text">Coin Transfer</div>
+        </a>
+        <a (click)="switchMenu('cmcqr','vending limiter coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <div class="text">CQR</div>
+        </a>
+        <a (click)="switchMenu('cqr-scan','vending limiter coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-expand"></i>
+          </div>
+          <div class="text">Scan</div>
+        </a>
+        <a (click)="switchMenu('report-options','vending limiter coin card')" href="javascript:void(0)" class="item">
+          <div class="icon">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div class="text">Reports</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="center">
+      <hr/>
+      <div *ngIf="currentcard == 'merchant coin card'">
+        <div class="current-mode"> MERCHANT COIN</div>
+        <div class="current-mode-text">You are using merchant coin card now</div>
+      </div>
+
+      <div *ngIf="currentcard == 'vending limiter coin card'">
+        <div class="current-mode"> VEMDING LIMITER COIN</div>
+        <div class="current-mode-text">You are using vending limiter coin card now</div>
+      </div>
+      <div *ngIf="child_coinTransferComponent == true">
+        <app-coin-transfer></app-coin-transfer>
+      </div>
+      <div *ngIf="child_CQRComponent == true">
+        <app-cqr></app-cqr>
+      </div>
+      <div *ngIf="child_reportOptionsComponent == true">
+        <app-report-options></app-report-options>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

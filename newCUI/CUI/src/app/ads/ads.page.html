@@ -1,0 +1,55 @@
+<!-- <ion-header [translucent]="true" (click)="exit()">
+  <ion-toolbar>
+    <ion-title>ads</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" (click)="exit()">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">ads</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+</ion-content> -->
+
+
+<!-- <marquee direction="">A scrolling text created with HTML Marquee element.</marquee>  -->
+
+
+
+<ion-content (click)="exit()">
+
+  <div class="ads-backdrop">
+
+    <div class="ads-container">
+      <img *ngIf="currentType == 'image'" src="{{ currentUrl }}" alt="" class="item">
+      <video *ngIf="currentType == 'video'" src="{{ currentUrl }}" class="item ads-video"></video>
+    </div>
+
+    <div class="view">
+      <div class="left">
+        <div class="icon">
+          <i class="fa-solid fa-phone"></i>
+        </div>
+        <div class="text">
+          <div class="main-text">More Contact</div>
+          <div class="sub-text">+85620 5551 6321</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="icon">
+          <i class="fa-brands fa-square-facebook icon-facebook"></i>
+        </div>
+        <div class="text">
+          <div class="main-text">Facebook Fan Page</div>
+          <div class="sub-text">Dokbouarkham trading</div>
+        </div>
+      </div>
+    </div>
+
+    <span class="ads-footer-object"></span>
+  </div>
+
+</ion-content>
+

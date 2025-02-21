@@ -1,0 +1,73 @@
+<ion-content>
+
+  <div class="section-header">
+    <div class="title">Reports</div>
+    <div class="sub-title">Machine {{ list.machineid }} view sale history {{ currentdate }}</div>
+
+    <div class="btn-list">
+      <a *ngFor="let export of exportOptions; let i = index" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="{{ export.icon }}"></i>
+        </div>
+        <div class="text">{{ export.text }}</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="section-table">
+    <div class="sum-data">
+      <div class="group">
+        <div class="text">Machine</div>
+        <div class="value">{{ list.machineId }}</div>
+      </div>
+      <div class="group">
+        <div class="text">Date</div>
+        <div class="value">{{ currentdate }}</div>
+      </div>
+      <div class="group">
+        <div class="text">Product</div>
+        <div class="value">{{ list.stock.name }}</div>
+      </div>
+      <div class="group">
+        <div class="text">SubQTY</div>
+        <div class="value">{{ list.stock.qtty | number }}</div>
+      </div>
+      <div class="group">
+        <div class="text">Subtotal</div>
+        <div class="value">{{ list.stock.total | number }}</div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="fw-bold">
+          <tr>
+            <td>#</td>
+            <td>Time Line</td>
+            <td>Product</td>
+            <td>Price</td>
+            <td>Quantity</td>
+            <td>Total</td>
+          </tr>
+        </thead>
+        <tbody *ngFor="let filter of filterListShow; let i = index">
+          <tr>
+            <td>{{ i+1 }}</td>
+            <!-- <td>{{ filter?.time | date:'yyyy-MM-dd HH:mm:ss': 420 }}</td> -->
+            <td>{{ filter?.time | date: 'yyyy-MM-dd HH:mm:ss':'+7'  }}</td>
+            <td>{{ filter?.stock?.name }}</td>
+            <td>{{ filter?.stock?.price | number }}</td>
+            <td>{{ filter?.stock?.qtty | number }}</td>
+            <td>{{ filter?.stock?.total | number }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ul class="pagination">
+      <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'" >
+          <button (click)="managePage(btn.page)" class="page-link" >{{btn.name}}</button>
+      </li>
+    </ul>
+  </div>
+
+</ion-content>

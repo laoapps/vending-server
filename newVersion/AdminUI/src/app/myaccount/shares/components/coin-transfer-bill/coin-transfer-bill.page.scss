@@ -1,0 +1,107 @@
+ion-content {
+    --ion-background-color: #fff;
+    overflow-y: auto;
+}
+
+.bill-header {
+    background: #A41D4F;
+    padding: 15px 0px;
+    text-align: center;
+    height: 140px;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+
+    .title {
+        margin-top: 24px;
+    }
+}
+
+.bill-object {
+    position: relative;
+    top: -50px;
+    display: flex;
+    justify-content: center;
+    
+    .icon-container {
+
+        overflow: hidden;
+        width: 100px;
+        height: 100px;
+        border-radius: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        border: 10px solid #A41D4F;
+
+        i {
+            color: #75B65E;
+            font-size: 100px;
+        }
+    }
+}
+
+.qr-container {
+    position: relative;
+    top: -20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .qr-img {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+.bill-detail {
+    position: relative;
+    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+
+    .title {
+        display: flex;
+        justify-content: space-between;
+        height: 30px;
+        line-height: 30px;
+        background: #f5f6f7;
+        padding: 0 10px;
+        font-weight: bold;
+        border-radius: 5px;
+    }
+
+    .item {
+        display: flex;
+        justify-content: space-between;
+        height: 30px;
+        line-height: 30px;
+        padding: 0 10px;
+    }
+
+    .item-text {
+        display: flex;
+        flex-direction: column;
+        padding: 0 10px;
+    }
+
+}
+
+.footer-bill {
+    margin-top: 10px;
+    position: relative;
+
+    .btn-close-bill {
+        padding: 10px;
+        background: #fff;
+        color: #333;
+        height: 38px;
+        border-radius: 10px;
+    }
+}
+
+.footer-bill.unfix {
+    margin-top: 10px;
+    position: relative;
+}

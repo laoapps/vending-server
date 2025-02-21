@@ -1,0 +1,22 @@
+<ion-app (touchstart)="startActive()">
+
+  <div class="statusbar">
+    {{machineuuid}} -- <ion-label (click)="showSetting()">version:{{version}}23232</ion-label>
+    <ng-template [ngIf]="checkOnlineStatus.isAlive" [ngIfElse]="isOffline">
+      <div>
+        <ion-label>{{now|date:'YYYY-MM-dd HH:mm:ss'}}</ion-label><ion-icon name="time-sharp" color="primary"></ion-icon> <ion-label>{{uT|date:'HH:mm:ss'}}</ion-label> <ion-icon name="cloud-done" color="success"></ion-icon>
+      </div>
+    
+    </ng-template>
+    <ng-template #isOffline>
+      <div>
+       <ion-label>{{now|date:'YYYY-MM-dd HH:mm:ss'}}</ion-label><ion-icon name="time-sharp" color="primary"></ion-icon> <ion-label>{{uT|date:'HH:mm:ss'}}</ion-label> <ion-icon name="cloud-offline-sharp"></ion-icon>
+      </div>
+      
+    </ng-template>
+  </div>
+ 
+ 
+  
+  <ion-router-outlet></ion-router-outlet>
+</ion-app>

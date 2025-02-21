@@ -1,0 +1,6 @@
+POST http://laoapps.com:9006/zdm8/laab/client/cash_validation HTTP/1.1
+Content-Type: application/json
+
+{
+    "token": "94ae2d61555dc7db821a7ba1c0bad2418e0b23466bb071a62ea35ffcd1aadd31"
+}
