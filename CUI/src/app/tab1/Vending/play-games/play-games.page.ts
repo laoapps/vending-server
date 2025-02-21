@@ -46,7 +46,7 @@ export class PlayGamesPage implements OnInit {
         switch (value)
         {
           case IVendingGameMenu.scratching_game:
-
+            this.openScratch();
             break;
           case IVendingGameMenu.fortune_wheel_game:
             this.openFortuneWheel();
@@ -65,5 +65,7 @@ export class PlayGamesPage implements OnInit {
       r.present();
     })
   }
-
+  openScratch(){
+   
+  }
 }

@@ -16,6 +16,7 @@ import { OrderModule } from 'ngx-order-pipe';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 
 import {NgPipesModule} from 'ngx-pipes';
+import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 
 // today
 // import { VideoPlayer } from '@ionic-native/video-player/ngx';
@@ -25,7 +26,8 @@ import {NgPipesModule} from 'ngx-pipes';
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,
     // NotifierModule,
      OrderModule,
-     NgPipesModule
+     NgPipesModule,
+     SweetAlert2Module.forRoot()
   ],
   providers: [ 
     // VideoPlayer,

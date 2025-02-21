@@ -61,7 +61,7 @@ import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hang
 import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { PlayGamesPage } from './Vending/play-games/play-games.page';
 import { OrderCartPage } from './Vending/order-cart/order-cart.page';
-import { ScreenBrightness } from '@capacitor-community/screen-brightness';
+
 
 var host = window.location.protocol + '//' + window.location.host;
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
@@ -564,20 +564,7 @@ export class Tab1Page implements OnDestroy {
 
   loadBrightness(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
-      try {
-
-        const run = await ScreenBrightness.setBrightness({ brightness:0.0 });
-        this.apiService.alertSuccess(`--> run ${run}`)
-
-        // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
-        const brightness = await ScreenBrightness.getBrightness();
-        this.apiService.alertSuccess(`--> bright ${brightness}`)
-
-        resolve(IENMessage.success);
-        
-      } catch (error) {
-        resolve(error.message);
-      }
+      
     });
   }
 
@@ -1964,7 +1951,7 @@ export class Tab1Page implements OnDestroy {
 
                 const install = await CapacitorUpdater.set(download);
                 if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
-                CapacitorUpdater.removeAllListeners();
+                // CapacitorUpdater.removeAllListeners();
                 window.location.reload();
                 resolve(IENMessage.success);
               }

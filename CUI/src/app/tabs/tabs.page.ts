@@ -34,7 +34,9 @@ export class TabsPage {
       r.present();
     })
   }
- 
+  openScratch(){
+    
+  }
   count = 6;
   machineuuid = this.api.machineuuid;
   t: any;

@@ -51,14 +51,15 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "optimization": false,
-              "outputHashing": "all",
-              "sourceMap": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
+             "optimization": true,
+            "sourceMap": false,
+            "namedChunks": false,
+            "extractLicenses": false,
+            "vendorChunk": true,
+            "buildOptimizer": true,
+            "outputHashing": "all",
+            "aot": true,
+              
               "budgets": [
                 {
                   "type": "initial",
@@ -80,9 +81,6 @@
           "configurations": {
             "production": {
               "browserTarget": "app:build:production"
-            },
-            "ci": {
-              "progress": false
             }
           }
         },

@@ -1,0 +1,12 @@
+{
+  "presets": [
+    ["@babel/preset-env", {
+      "targets": {
+        "browsers": ["defaults", "last 2 versions", "not dead", "not ie <= 11", "chrome >= 49", "android >= 4.4"]
+      },
+      "corejs": 3,
+      "useBuiltIns": "entry"
+    }]
+  ],
+  "compact": true
+}

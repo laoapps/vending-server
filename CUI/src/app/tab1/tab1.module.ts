@@ -8,7 +8,7 @@ import { ExploreContainerComponentModule } from '../explore-container/explore-co
 import { Tab1PageRoutingModule } from './tab1-routing.module';
 // import { NotifierModule } from 'angular-notifier';
 import { OrderModule } from 'ngx-order-pipe';
-
+import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 @NgModule({
   imports: [
@@ -17,7 +17,8 @@ import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/ha
     FormsModule,
     ExploreContainerComponentModule,
     Tab1PageRoutingModule,
-     OrderModule
+     OrderModule,
+     SweetAlert2Module,
      
   ],
   declarations: [Tab1Page]

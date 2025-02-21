@@ -2,9 +2,6 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
 
-include ':capacitor-community-screen-brightness'
-project(':capacitor-community-screen-brightness').projectDir = new File('../node_modules/@capacitor-community/screen-brightness/android')
-
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
 
@@ -28,6 +25,3 @@ project(':capgo-capacitor-updater').projectDir = new File('../node_modules/@capg
 
 include ':capacitor-video-player'
 project(':capacitor-video-player').projectDir = new File('../node_modules/capacitor-video-player/android')
-
-include ':serialconnectioncapacitor'
-project(':serialconnectioncapacitor').projectDir = new File('../node_modules/serialconnectioncapacitor/android')
