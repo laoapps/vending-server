@@ -1,6 +1,6 @@
-import { IENMessage } from "src/app/models/base.model";
-import { ApiService } from "src/app/services/api.service";
-import { VendingAPIService } from "src/app/services/vending-api.service";
+import { IENMessage } from 'src/app/models/base.model';
+import { ApiService } from 'src/app/services/api.service';
+import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as cryptojs from 'crypto-js';
 
 export class CreateEPINProcess {
@@ -9,7 +9,7 @@ export class CreateEPINProcess {
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
-    
+
     private phonenumber: string;
     private detail: any = {} as any;
 
@@ -25,7 +25,7 @@ export class CreateEPINProcess {
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                
+
 
 
                 console.log(`create epin`, 1);
@@ -40,12 +40,12 @@ export class CreateEPINProcess {
                 console.log(`create epin`, 3);
 
                 const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+                if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
 
                 console.log(`create epin`, 4);
-                
+
                 const CashValidation = await this.CashValidation();
-                if (CashValidation != IENMessage.success) throw new Error(CashValidation);
+                if (CashValidation != IENMessage.success) {throw new Error(CashValidation);}
 
                 console.log(`create epin`, 5);
 
@@ -57,7 +57,7 @@ export class CreateEPINProcess {
             } catch (error) {
 
                 (await this.workload).dismiss();
-                resolve(error.message);     
+                resolve(error.message);
             }
         });
     }
@@ -69,7 +69,7 @@ export class CreateEPINProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.phonenumber && this.detail)) return IENMessage.parametersEmpty;
+        if (!(this.phonenumber && this.detail)) {return IENMessage.parametersEmpty;}
         return IENMessage.success;
     }
 
@@ -81,15 +81,15 @@ export class CreateEPINProcess {
                     phonenumber: this.phonenumber,
                     detail: this.detail,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
-                }
-                
+                };
+
                 this.vendingAPIService.createEPIN(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response create epin`, response);
-                    if (response.status != 1) return resolve(response.message);
+                    if (response.status != 1) {return resolve(response.message);}
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -101,7 +101,7 @@ export class CreateEPINProcess {
             data: [{
             }],
             message: IENMessage.success
-        }
+        };
 
         return response;
     }

@@ -30,7 +30,7 @@ export class HangmiStoreSegmentPage implements OnInit {
       icon: `fa-solid fa-shoe-prints`,
       name: 'Shoes'
     },
-    
+
   ];
 
   productList: Array<any> = [
@@ -64,13 +64,13 @@ export class HangmiStoreSegmentPage implements OnInit {
       name: 'comming soon',
       price: 80000
     }
-  ]
+  ];
 
   constructor(
     public apiService: ApiService,
     public modal: ModalController
 
-  ) { 
+  ) {
     this.apiService.___HangmiStoreSegmentPage = this.modal;
 
   }

@@ -9,12 +9,12 @@ import { ApiService } from '../services/api.service';
 })
 export class PaymentmethodPage implements OnInit {
 
-  constructor(public modal:ModalController,public apiService:ApiService) { }
+  constructor(public modal: ModalController,public apiService: ApiService) { }
 
   ngOnInit() {
   }
-  selectP(i:number){
-    
+  selectP(i: number){
+
   }
 
 }

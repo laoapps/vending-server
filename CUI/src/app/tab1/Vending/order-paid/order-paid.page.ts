@@ -31,7 +31,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     //   detail: 'Pay your order by using LAAB',
     //   value: 'laab'
     // },
-  ]
+  ];
 
   ewalletList: Array<any> = [
     {
@@ -48,7 +48,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     //   detail: 'Pay your orders by using UMoney QRCode',
     //   value: 'umoney'
     // }
-  ]
+  ];
 
 
   bankList: Array<any> = [
@@ -59,7 +59,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     //   detail: 'Pay your orders by using BCEL One QRCode',
     //   value: 'bcelone'
     // }
-  ]
+  ];
 
   methodList: Array<any> = [];
 
@@ -71,19 +71,19 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   currentValue: string;
 
   destroyTimer: any = {} as any;
-  destroyCounter: number = 60;
+  destroyCounter = 60;
 
   qrcode: string;
   elementLeft: HTMLDivElement = {} as any;
   elementRight: HTMLDivElement = {} as any;
 
   // MMoney
-  _T:any
+  _T: any;
 
   constructor(
     public apiService: ApiService,
     public modal: ModalController
-  ) { 
+  ) {
 
     this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
   }
@@ -104,7 +104,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     // ***** mmoney *****
     if (this.currentValue == IGenerateQR.mmoney) {
       const that = this;
-      if(this._T)clearTimeout(this._T)
+      if(this._T){clearTimeout(this._T);}
       this._T = setTimeout(() => {
         this.modal.dismiss();
       },1000*1000*15);
@@ -119,12 +119,12 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     clearInterval(this.reloadElement);
     clearInterval(this.destroyTimer);
 
-    if(this._T)clearTimeout(this._T)
+    if(this._T){clearTimeout(this._T);}
     this._T=null;
   }
 
   loadDestroy() {
-    
+
     this.destroyTimer = setInterval(() => {
       this.destroyCounter--;
       if (this.destroyCounter == 0) {
@@ -139,7 +139,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         clearInterval(this.destroyTimer);
         this.destroyCounter = 60;
 
-        this.apiService.myTab1.clearCart();  
+        this.apiService.myTab1.clearCart();
         this.orderCartPage.dismiss();
         this.apiService.modal.dismiss();
         this.apiService.alertWarnning(IENMessage.timeout, IENMessage.qrcodeExpired);
@@ -204,7 +204,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         let run: any = {} as any;
         if (this.currentValue == IGenerateQR.mmoney) {
           run = await this.mmoneyQRCode();
-          if (run != IENMessage.success) throw new Error(run);
+          if (run != IENMessage.success) {throw new Error(run);}
         }
 
         this.billdate = new Date();
@@ -213,7 +213,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         resolve(IENMessage.success);
 
       } catch (error) {
-        this.apiService.alertError(error.message); 
+        this.apiService.alertError(error.message);
         resolve(error.message);
       }
     });
@@ -222,7 +222,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   generateQRCode(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         const qr = await new qrlogo({ logo: this.currentLogo, content: this.qrcode}).getCanvas();
         const qrcodeIMG = (document.querySelector('.qr-img') as HTMLImageElement);
         qrcodeIMG.src = qr.toDataURL();
@@ -244,7 +244,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   clearOrders(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         const alert = this.apiService.alertConfirm(`Cancel paying orders and clear all`);
         if ((await alert).isConfirmed){
           this.orders = [];
@@ -254,7 +254,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
           clearInterval(this.destroyTimer);
           this.destroyCounter = 15;
 
-          this.apiService.myTab1.clearCart();  
+          this.apiService.myTab1.clearCart();
           this.orderCartPage.dismiss();
           this.apiService.modal.dismiss();
         }
@@ -277,8 +277,8 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   setSummarizeOrder() {
     const summarizeOrder = JSON.parse(JSON.stringify(this.orders));
     summarizeOrder.forEach((item) => (item.stock.image = ''));
-    let quantity: number = 0;
-    let total: number = 0;
+    let quantity = 0;
+    let total = 0;
     for (let i = 0; i < summarizeOrder.length; i++) {
       quantity += summarizeOrder[i].stock.qtty;
       total +=
@@ -289,11 +289,11 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
     return {
       message: IENMessage.success,
-      summarizeOrder: summarizeOrder,
-      quantity: quantity,
-      total: total,
-      sum_refund: sum_refund
-    }
+      summarizeOrder,
+      quantity,
+      total,
+      sum_refund
+    };
   }
 
   mmoneyQRCode(): Promise<any> {
@@ -305,10 +305,10 @@ export class OrderPaidPage implements OnInit, OnDestroy {
           orders: setSummarizeOrder.summarizeOrder,
           amount: setSummarizeOrder.total,
           machineId: this.apiService.machineId.machineId
-        }
+        };
 
         const run = await this.generateMMoneyQRCodeProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
         this.loadDestroy();
 
 

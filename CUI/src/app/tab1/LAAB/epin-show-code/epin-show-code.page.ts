@@ -12,12 +12,12 @@ export class EpinShowCodePage implements OnInit {
 
   @Input() data: any = {} as any;
   @Input() qrImage: string;
-  @Input() code: string;  
+  @Input() code: string;
 
   constructor(
     public apiService: ApiService,
     public modal: ModalController
-  ) { 
+  ) {
     this.apiService.___EpinShowCodePage = this.modal;
 
   }
@@ -38,8 +38,8 @@ export class EpinShowCodePage implements OnInit {
   confirmHide(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
-        const msg = this.apiService.alert.create({ 
+
+        const msg = this.apiService.alert.create({
           header: 'Do you want to hide this EPIN',
           subHeader: 'It would be hidden within 24H, please note well',
           buttons: [
@@ -71,18 +71,18 @@ export class EpinShowCodePage implements OnInit {
         local='[]';
       }
       lists = JSON.parse(local);
-      if (lists != undefined && Object.entries(lists).length == 0) {
+      if (lists != undefined && lists.length == 0) {
         const params = {
           uuid: this.data.uuid,
           time: moment.now()
-        }
+        };
         lists.push(params);
         localStorage.setItem('epin_hide_list', JSON.stringify(lists));
       } else {
         const params = {
           uuid: this.data.uuid,
           time: moment.now()
-        }
+        };
         lists.push(params);
         localStorage.setItem('epin_hide_list', JSON.stringify(lists));
       }

@@ -463,7 +463,7 @@ export const EESSP_COMMANDS = {
         device: ['SMART Hopper', 'SMART Payout', 'NV11'],
         description: 'Resets the fixed encryption key to the device default. The device may have extra security requirements before it will accept this command (e.g. The Hopper must be empty) if these requirements are not met, the device will reply with Command Cannot be Processed. If successful, the device will reply OK, then reset. When it starts up the fixed key will be the default.'
     }
-}
+};
 
 
 export interface IResModel {
@@ -474,14 +474,14 @@ export interface IResModel {
     status: number;
 }
 export interface IReqModel {
-    transactionID?:number;
+    transactionID?: number;
     command: any;
-    data:any;
+    data: any;
     time: string;
     ip: string;
     token: string;
-    limit:number;
-    skip:number;
+    limit: number;
+    skip: number;
 }
 export enum EPaymentProvider{
     mmoney='mmoney',
@@ -490,21 +490,21 @@ export enum EPaymentProvider{
     laab = 'laab'
 }
 export interface IMMoneyQRRes{
-    uuid:string;
-    qr:string;
-    ids:Array<string>;
-    value:number;
+    uuid: string;
+    qr: string;
+    ids: Array<string>;
+    value: number;
 }
 export enum EM102_COMMAND {
     release = 'release',
     DO = 'DO',
     temperature = 'temperature',
-    getid = "getid",
-    readtemperature = "readtemperature",
-    getresult = "getresult",
-    modify = "modify",
-    DI = "DI",
-    scan = "scan"
+    getid = 'getid',
+    readtemperature = 'readtemperature',
+    getresult = 'getresult',
+    modify = 'modify',
+    DI = 'DI',
+    scan = 'scan'
 }
 export enum EMODBUS_SYS_STAT {
     STAT_IDLE = 0, //idle
@@ -524,25 +524,25 @@ export enum EMODBUS_ERROR_CODE{
 export enum EMODBUS_ERROR {
     ERR_NO_ERR = 0x00,//:No error
     ERR_SLOT_NUM_INVALID = 0x01,//:invalid lane number
-    ERR_MOTOR_DRIVER_BREAK = 0x02,//:Motor not rotating, no current through (plug not plugged in or disconnected) 
-    ERR_MOTOR_DRIVER_SHORT = 0x03,//:Motor short-circuited. (Excessive current or shorted wire head) 
-    ERR_MOTOR_RUN_TIMEOUT = 0x04,//:motor can rotate, no feedback signal (motor feedback is not connected) 
+    ERR_MOTOR_DRIVER_BREAK = 0x02,//:Motor not rotating, no current through (plug not plugged in or disconnected)
+    ERR_MOTOR_DRIVER_SHORT = 0x03,//:Motor short-circuited. (Excessive current or shorted wire head)
+    ERR_MOTOR_RUN_TIMEOUT = 0x04,//:motor can rotate, no feedback signal (motor feedback is not connected)
     ERR_DLV_STATE_BREAK = 0x05,//:Drop detection board status abnormal (device enabled drop detection, but drop detection board is not connected or faulty)
     ERR_DLV_NO_DIRECT = 0x06, //motor normal, no drop detection detected
     ERR_SLOT_TYPE_SET_ERROR = 0x07,//: wrong setting of cargo lane type (mismatch between setting and actual)
     ERR_SLAVE_COMM_ERROR = 0x08,//Slave device communication failure (not connected to the line or address setting error)
-    ERR_LIFT_COMUNICATION = 0x10,//:Lift system communication failure (check line) 
+    ERR_LIFT_COMUNICATION = 0x10,//:Lift system communication failure (check line)
     ERR_LIFT_PLATFORMS = 0x11,//:Lifting table failure
-    ERR_LIFT_HAVE_GOODS = 0x12,//:There are items on the lift table and cannot be shipped 
-    ERR_VER_LIMIT_DOWN = 0x13,//:Lift system lower limit switch failure 
-    ERR_HOR_LIMIT_RIGHT = 0x14,//:Lift system right limit switch failure 
+    ERR_LIFT_HAVE_GOODS = 0x12,//:There are items on the lift table and cannot be shipped
+    ERR_VER_LIMIT_DOWN = 0x13,//:Lift system lower limit switch failure
+    ERR_HOR_LIMIT_RIGHT = 0x14,//:Lift system right limit switch failure
     ERR_SECURITY_BAFFLE = 0x15,//:Anti-theft baffle failure
     ERR_PICK_GOODS_DOOR = 0x16,//:Fetch port failure
     ERR_VER_MOTOR_BREAK = 0x17,//:lift motor not energized (no current, detect line)
     ERR_VER_MOTOR_SHORT = 0x18,//:lift motor short circuit (overload, line short circuit or motor burned out)
     ERR_VER_ENCODE_BREAK = 0x19,//:lift motor encoder failure (check motor feedback line)
     ERR_HOR_MOTOR_BREAK = 0x1A,//:Horizontal motor not energized (no current, detect line)
-    ERR_HOR_MOTOR_SHORT = 0x1B,//:Horizontal motor short circuit (overload, line short circuit or motor burnout) 
+    ERR_HOR_MOTOR_SHORT = 0x1B,//:Horizontal motor short circuit (overload, line short circuit or motor burnout)
     ERR_HOR_ENCODE_BREAK = 0x1C,//:Horizontal motor encoder failure (check motor feedback line)
 
 }
@@ -577,7 +577,7 @@ export enum EMODBUS_COMMAND {
     xaxisliftmotorissue = 'xaxisliftmotorissue',
     arrayoutput = 'arrayoutput',
     liftoutput = 'liftoutput',
-    positionliftmotor = "positionliftmotor"
+    positionliftmotor = 'positionliftmotor'
 }
 export enum EMessage {
     loginfailed = 'login failed',
@@ -591,150 +591,150 @@ export enum EMessage {
     deletingerror = 'deleting error',
     notfound = 'not found',
     exist = 'exist',
-    bodyIsEmpty = "body is empty",
-    idIsEmpty = "id is empty",
-    unknownError = "unknown Error",
-    selectOneSucceeded = "select One Succeeded",
-    selectOneError = "select One Error",
-    selectManySucceeded = "select Many Succeeded",
-    selectManyError = "select Many Error",
-    generateSucceeded = "find Succeeded",
-    findError = "find Error",
-    resetdatasucceeded = "resetdatasucceeded",
-    joinsucceeded = "joinsucceeded",
-    joinfailed = "joinfailed",
-    submisionsucceeded = "submisionsucceeded",
-    submisionfailed = "submisionfailed",
-    coinconfirmsumissionsucceeded = "coinconfirmsumissionsucceeded",
-    coinconfirmsubmissionfailed = "coinconfirmsubmissionfailed",
-    transactionnotfound = "transactionnotfound",
-    gamestartedsucceeded = "gamestartedsucceeded",
-    gamestartedfailed = "gamestartedfailed",
-    submissionclosedsucceeded = "submissionclosedsucceeded",
-    submissionclosedfailed = "submissionclosedfailed",
-    gamehasnotbeenstarted = "gamehasnotbeenstarted",
-    all = "all",
-    getallgamersucceeded = "getallgamersucceeded",
-    getallgamerfailed = "getallgamerfailed",
-    gammernotfound = "gammernotfound",
-    valueisoverthebudget = "valueisoverthebudget",
-    listrewardsucceeded = "listrewardsucceeded",
-    listrewardfailed = "listrewardfailed",
-    rewardnotfound = "rewardnotfound",
-    commandnotfound = "commandnotfound",
-    methodnotfound = "methodnotfound",
-    gamestatusfailed = "gamestatusfailed",
-    gamestatusok = "gamestatusok",
-    closethegamesucceeded = "closethegamesucceeded",
-    closethegamefailed = "closethegamefailed",
-    connectionestablished = "connectionestablished",
-    gamerhasbeenjoined = "gamerhasbeenjoined",
-    createrewardsucceeded = "createrewardsucceeded",
-    createrewardfailed = "createrewardfailed",
-    deleterewardsucceeded = "deleterewardsucceeded",
-    deleterewardfailed = "deleterewardfailed",
-    winnernotfound = "winnernotfound",
-    randomcoinsucceeded = "randomcoinsucceeded",
-    randomcoinfailed = "randomcoinfailed",
-    couldnotfindphonenumber = "couldnotfindphonenumber",
-    loadexchangesucceeded = "loadexchangesucceeded",
-    loadexchangefailed = "loadexchangefailed",
-    loadtotalcoinsucceeded = "loadtotalcoinsucceeded",
-    loadtotalcoinfailed = "loadtotalcoinfailed",
-    loadcoinsucceeded = "loadcoinsucceeded",
-    loadcoinfailed = "loadcoinfailed",
-    showphonenumberfailed = "showphonenumberfailed",
-    showphonenumbersucceeded = "showphonenumbersucceeded",
-    showallresultssucceeded = "showallresultssucceeded",
-    showallresultsfailed = "showallresultsfailed",
-    createanewgamesucceeded = "createanewgamesucceeded",
-    createanewgamefailed = "createanewgamefailed",
-    rewardselected = "rewardselected",
-    cointypesdidntmatched = "cointypesdidntmatched",
-    updategamefailed = "updategamefailed",
-    updategamesucceeded = "updategamesucceeded",
-    endgamefailed = "endgamefailed",
-    endgamesucceeded = "endgamesucceeded",
-    cleargamesucceeded = "cleargamesucceeded",
-    cleargamefailed = "cleargamefailed",
-    showcurrentgamessucceeded = "showcurrentgamessucceeded",
-    showcurrentgamefailed = "showcurrentgamefailed",
-    selectedgamenotfound = "selectedgamenotfound",
-    gamenotfound = "gamenotfound",
-    pong = "pong",
-    findoldadssucceeded = "findoldadssucceeded",
-    findoldadsfailed = "findoldadsfailed",
-    findadssucceeded = "findadssucceeded",
-    findaddedfailed = "findaddedfailed",
-    findadsfailed = "findadsfailed",
-    createdadssucceeded = "createdadssucceeded",
-    createdadsfailed = "createdadsfailed",
-    imageistoolarge = "imageistoolarge",
-    findoldsponsorlist = "findoldsponsorlist",
-    findoldsponsorlistfailed = "findoldsponsorlistfailed",
-    findoldsponsorlistsucceeded = "findoldsponsorlistsucceeded",
-    findsponsorlistfailed = "findsponsorlistfailed",
-    findsponsorlistsucceeded = "findsponsorlistsucceeded",
-    createsponsorsucceeded = "createsponsorsucceeded",
-    createsponsorfailed = "createsponsorfailed",
-    updatesponsorfailed = "updatesponsorfailed",
-    updatesponsorsucceeded = "updatesponsorsucceeded",
-    somecointypenotfound = "somecointypenotfound",
-    reporttotalmembervaluesucceeded = "reporttotalmembervaluesucceeded",
-    reporttotalmembervaluefailed = "reporttotalmembervaluefailed",
-    reporttotalmemberjoinedgamesucceeded = "reporttotalmemberjoinedgamesucceeded",
-    reporttotalmemberjoinedgamefailed = "reporttotalmemberjoinedgamefailed",
-    updateadsfailed = "updateadsfailed",
-    updateadssucceeded = "updateadssucceeded",
-    assignedtothegamesucceeded = "assignedtothegamesucceeded",
-    assignedtothegamefailed = "assignedtothegamefailed",
-    closethecoinsubmission = "closethecoinsubmission",
-    gameclosed = "gameclosed",
-    listrewardselectedgame = "listrewardselectedgame",
-    checkcoinsubmission = "checkcoinsubmission",
-    checkcoinsubmissionfailed = "checkcoinsubmissionfailed",
-    turnonsumissionselectedgame = "turnonsumissionselectedgame",
-    notallowed = "notallowed",
-    phoneNumberNotExist = "phoneNumberNotExist",
-    gettotalclientconnectionfailed = "gettotalclientconnectionfailed",
-    gettotalclientconnectionsucceeded = "gettotalclientconnectionsucceeded",
-    addownertothegamefailed = "addownertothegamefailed",
-    addownertothegamesucceeded = "addownertothegamesucceeded",
-    removeonwerfromthegamefailed = "removeonwerfromthegamefailed",
-    removeonwerfromthegamesucceeded = "removeonwerfromthegamesucceeded",
-    notexist = "notexist",
-    showgameshardssucceeded = "showgameshardssucceeded",
-    showgameshardsfailed = "showgameshardsfailed",
-    checkphonenumbersucceeded = "checkphonenumbersucceeded",
-    checkphonenumberfailed = "checkphonenumberfailed",
-    IncorrectFormat = "IncorrectFormat",
-    cannotreomvethefinalowner = "cannotreomvethefinalowner",
-    couldnotremovesuperadmin = "couldnotremovesuperadmin",
-    turnonsumissionselectedgamefailed = "turnonsumissionselectedgamefailed",
-    checkjoinstatusok = "checkjoinstatusok",
-    quitgamefailed = "quitgamefailed",
-    quitgameok = "quitgameok",
-    loadjoinstatusfailed = "loadjoinstatusfailed",
-    ThereIsNoAnyCoins = "ThereIsNoAnyCoins",
-    foundPhonenumber = "foundPhonenumber",
-    tokenNotFound = "tokenNotFound",
-    showallonlineconnection = "showallonlineconnection",
-    SubmittedCoinIsZeroValue = "SubmittedCoinIsZeroValue",
-    commandsucceeded = "commandsucceeded",
-    MachineIdNotFound = "MachineIdNotFound",
-    processingorder = "processingorder",
-    loginok = "loginok",
-    notloggedinyet = "notloggedinyet",
-    notsupport = "notsupport",
-    billnotfound = "billnotfound",
-    confirmsucceeded = "confirmsucceeded"
+    bodyIsEmpty = 'body is empty',
+    idIsEmpty = 'id is empty',
+    unknownError = 'unknown Error',
+    selectOneSucceeded = 'select One Succeeded',
+    selectOneError = 'select One Error',
+    selectManySucceeded = 'select Many Succeeded',
+    selectManyError = 'select Many Error',
+    generateSucceeded = 'find Succeeded',
+    findError = 'find Error',
+    resetdatasucceeded = 'resetdatasucceeded',
+    joinsucceeded = 'joinsucceeded',
+    joinfailed = 'joinfailed',
+    submisionsucceeded = 'submisionsucceeded',
+    submisionfailed = 'submisionfailed',
+    coinconfirmsumissionsucceeded = 'coinconfirmsumissionsucceeded',
+    coinconfirmsubmissionfailed = 'coinconfirmsubmissionfailed',
+    transactionnotfound = 'transactionnotfound',
+    gamestartedsucceeded = 'gamestartedsucceeded',
+    gamestartedfailed = 'gamestartedfailed',
+    submissionclosedsucceeded = 'submissionclosedsucceeded',
+    submissionclosedfailed = 'submissionclosedfailed',
+    gamehasnotbeenstarted = 'gamehasnotbeenstarted',
+    all = 'all',
+    getallgamersucceeded = 'getallgamersucceeded',
+    getallgamerfailed = 'getallgamerfailed',
+    gammernotfound = 'gammernotfound',
+    valueisoverthebudget = 'valueisoverthebudget',
+    listrewardsucceeded = 'listrewardsucceeded',
+    listrewardfailed = 'listrewardfailed',
+    rewardnotfound = 'rewardnotfound',
+    commandnotfound = 'commandnotfound',
+    methodnotfound = 'methodnotfound',
+    gamestatusfailed = 'gamestatusfailed',
+    gamestatusok = 'gamestatusok',
+    closethegamesucceeded = 'closethegamesucceeded',
+    closethegamefailed = 'closethegamefailed',
+    connectionestablished = 'connectionestablished',
+    gamerhasbeenjoined = 'gamerhasbeenjoined',
+    createrewardsucceeded = 'createrewardsucceeded',
+    createrewardfailed = 'createrewardfailed',
+    deleterewardsucceeded = 'deleterewardsucceeded',
+    deleterewardfailed = 'deleterewardfailed',
+    winnernotfound = 'winnernotfound',
+    randomcoinsucceeded = 'randomcoinsucceeded',
+    randomcoinfailed = 'randomcoinfailed',
+    couldnotfindphonenumber = 'couldnotfindphonenumber',
+    loadexchangesucceeded = 'loadexchangesucceeded',
+    loadexchangefailed = 'loadexchangefailed',
+    loadtotalcoinsucceeded = 'loadtotalcoinsucceeded',
+    loadtotalcoinfailed = 'loadtotalcoinfailed',
+    loadcoinsucceeded = 'loadcoinsucceeded',
+    loadcoinfailed = 'loadcoinfailed',
+    showphonenumberfailed = 'showphonenumberfailed',
+    showphonenumbersucceeded = 'showphonenumbersucceeded',
+    showallresultssucceeded = 'showallresultssucceeded',
+    showallresultsfailed = 'showallresultsfailed',
+    createanewgamesucceeded = 'createanewgamesucceeded',
+    createanewgamefailed = 'createanewgamefailed',
+    rewardselected = 'rewardselected',
+    cointypesdidntmatched = 'cointypesdidntmatched',
+    updategamefailed = 'updategamefailed',
+    updategamesucceeded = 'updategamesucceeded',
+    endgamefailed = 'endgamefailed',
+    endgamesucceeded = 'endgamesucceeded',
+    cleargamesucceeded = 'cleargamesucceeded',
+    cleargamefailed = 'cleargamefailed',
+    showcurrentgamessucceeded = 'showcurrentgamessucceeded',
+    showcurrentgamefailed = 'showcurrentgamefailed',
+    selectedgamenotfound = 'selectedgamenotfound',
+    gamenotfound = 'gamenotfound',
+    pong = 'pong',
+    findoldadssucceeded = 'findoldadssucceeded',
+    findoldadsfailed = 'findoldadsfailed',
+    findadssucceeded = 'findadssucceeded',
+    findaddedfailed = 'findaddedfailed',
+    findadsfailed = 'findadsfailed',
+    createdadssucceeded = 'createdadssucceeded',
+    createdadsfailed = 'createdadsfailed',
+    imageistoolarge = 'imageistoolarge',
+    findoldsponsorlist = 'findoldsponsorlist',
+    findoldsponsorlistfailed = 'findoldsponsorlistfailed',
+    findoldsponsorlistsucceeded = 'findoldsponsorlistsucceeded',
+    findsponsorlistfailed = 'findsponsorlistfailed',
+    findsponsorlistsucceeded = 'findsponsorlistsucceeded',
+    createsponsorsucceeded = 'createsponsorsucceeded',
+    createsponsorfailed = 'createsponsorfailed',
+    updatesponsorfailed = 'updatesponsorfailed',
+    updatesponsorsucceeded = 'updatesponsorsucceeded',
+    somecointypenotfound = 'somecointypenotfound',
+    reporttotalmembervaluesucceeded = 'reporttotalmembervaluesucceeded',
+    reporttotalmembervaluefailed = 'reporttotalmembervaluefailed',
+    reporttotalmemberjoinedgamesucceeded = 'reporttotalmemberjoinedgamesucceeded',
+    reporttotalmemberjoinedgamefailed = 'reporttotalmemberjoinedgamefailed',
+    updateadsfailed = 'updateadsfailed',
+    updateadssucceeded = 'updateadssucceeded',
+    assignedtothegamesucceeded = 'assignedtothegamesucceeded',
+    assignedtothegamefailed = 'assignedtothegamefailed',
+    closethecoinsubmission = 'closethecoinsubmission',
+    gameclosed = 'gameclosed',
+    listrewardselectedgame = 'listrewardselectedgame',
+    checkcoinsubmission = 'checkcoinsubmission',
+    checkcoinsubmissionfailed = 'checkcoinsubmissionfailed',
+    turnonsumissionselectedgame = 'turnonsumissionselectedgame',
+    notallowed = 'notallowed',
+    phoneNumberNotExist = 'phoneNumberNotExist',
+    gettotalclientconnectionfailed = 'gettotalclientconnectionfailed',
+    gettotalclientconnectionsucceeded = 'gettotalclientconnectionsucceeded',
+    addownertothegamefailed = 'addownertothegamefailed',
+    addownertothegamesucceeded = 'addownertothegamesucceeded',
+    removeonwerfromthegamefailed = 'removeonwerfromthegamefailed',
+    removeonwerfromthegamesucceeded = 'removeonwerfromthegamesucceeded',
+    notexist = 'notexist',
+    showgameshardssucceeded = 'showgameshardssucceeded',
+    showgameshardsfailed = 'showgameshardsfailed',
+    checkphonenumbersucceeded = 'checkphonenumbersucceeded',
+    checkphonenumberfailed = 'checkphonenumberfailed',
+    IncorrectFormat = 'IncorrectFormat',
+    cannotreomvethefinalowner = 'cannotreomvethefinalowner',
+    couldnotremovesuperadmin = 'couldnotremovesuperadmin',
+    turnonsumissionselectedgamefailed = 'turnonsumissionselectedgamefailed',
+    checkjoinstatusok = 'checkjoinstatusok',
+    quitgamefailed = 'quitgamefailed',
+    quitgameok = 'quitgameok',
+    loadjoinstatusfailed = 'loadjoinstatusfailed',
+    ThereIsNoAnyCoins = 'ThereIsNoAnyCoins',
+    foundPhonenumber = 'foundPhonenumber',
+    tokenNotFound = 'tokenNotFound',
+    showallonlineconnection = 'showallonlineconnection',
+    SubmittedCoinIsZeroValue = 'SubmittedCoinIsZeroValue',
+    commandsucceeded = 'commandsucceeded',
+    MachineIdNotFound = 'MachineIdNotFound',
+    processingorder = 'processingorder',
+    loginok = 'loginok',
+    notloggedinyet = 'notloggedinyet',
+    notsupport = 'notsupport',
+    billnotfound = 'billnotfound',
+    confirmsucceeded = 'confirmsucceeded'
 }
 export interface IBase{
-    id?:number;
-    uuid?:string;
-    isActive?:boolean;
-    createdAt?:Date;
-    updatedAt?:Date;
+    id?: number;
+    uuid?: string;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
     // deletedAt?:Date;
 
     // imgUrl?: string,
@@ -742,13 +742,13 @@ export interface IBase{
 export interface IBC {
     hashP: string;
     hashM: string;
-   
+
 }
 export interface IAdsMedia {
-    name:string;
-    description:string;
-    url:string;
-    type:string//webm,png
+    name: string;
+    description: string;
+    url: string;
+    type: string;//webm,png
 }
 export interface IStock extends IBase, IBC{
     name: string;
@@ -757,30 +757,30 @@ export interface IStock extends IBase, IBC{
     qtty: number;
 }
 export interface IVendingMachineSale extends IBase,IBC{
-    stock:IStock;
-    position:number;
-    machineId:string;
-    max:number;
+    stock: IStock;
+    position: number;
+    machineId: string;
+    max: number;
 }
 export interface IVendingMachineBill extends IBase, IBC{
-    vendingsales:Array<IVendingMachineSale>;
-    totalvalue:number;
-    paymentmethod:string;
-    paymentstatus:string;
-    paymentref:string;
-    paymenttime:Date;
-    requestpaymenttime:Date;
-    machineId:string;
-    clientId:string;
-    transactionID:number;
-    qr:string;
+    vendingsales: Array<IVendingMachineSale>;
+    totalvalue: number;
+    paymentmethod: string;
+    paymentstatus: string;
+    paymentref: string;
+    paymenttime: Date;
+    requestpaymenttime: Date;
+    machineId: string;
+    clientId: string;
+    transactionID: number;
+    qr: string;
 }
 
 export interface IMachineID extends IBase,IBC {
-    machineId:string;
-    machineIp:string;
-    machineCommands:string;
-    logintoken:string;
+    machineId: string;
+    machineIp: string;
+    machineCommands: string;
+    logintoken: string;
 }
 
 export enum EMACHINE_COMMAND{
@@ -801,20 +801,20 @@ export enum EClientCommand {
     paidLAAB = 'paidLAAB'
 }
 export interface IMachineId{
-    machineId:string;
-    otp:string;
+    machineId: string;
+    otp: string;
 }
 
 export interface IAlive{
-    time:Date
-    isAlive:boolean;
-    test:boolean;
-    balance:number;
-    data:any;
+    time: Date;
+    isAlive: boolean;
+    test: boolean;
+    balance: number;
+    data: any;
 }
 
 export interface IClientId{
-    clientId:string;
+    clientId: string;
 }
 export interface IBillProcess {
     ownerUuid: string;

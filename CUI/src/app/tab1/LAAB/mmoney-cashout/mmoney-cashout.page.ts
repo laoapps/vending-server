@@ -17,16 +17,16 @@ export class MmoneyCashoutPage implements OnInit {
 
   @Input() stackCashoutPage: any;
 
-  showPhonenumberPage: boolean = true;
-  showMMoneyProfile: boolean = false;
+  showPhonenumberPage = true;
+  showMMoneyProfile = false;
 
   private transferValidationProcess: TransferValidationProcess;
   private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
   private getMMoneyUserInfoProcess: GetMMoneyUserInfoProccess;
 
-  subtitle: string = 'Enter your mmoney account';
+  subtitle = 'Enter your mmoney account';
   numberList: Array<string> = [];
-  placeholder: string = 'ENTER PHONE NUMBER';
+  placeholder = 'ENTER PHONE NUMBER';
   phonenumber: string;
   fullname: string;
 
@@ -34,7 +34,7 @@ export class MmoneyCashoutPage implements OnInit {
     public apiService: ApiService,
     public vendingAPIService: VendingAPIService,
     public modal: ModalController
-  ) { 
+  ) {
     this.apiService.___MmoneyCashoutPage = this.modal;
 
     this.transferValidationProcess = new TransferValidationProcess(this.apiService, this.vendingAPIService);
@@ -69,7 +69,7 @@ export class MmoneyCashoutPage implements OnInit {
   }
   deleteDigits() {
     if (this.phonenumber != this.placeholder) {
-      if (this.phonenumber != undefined && Object.entries(this.phonenumber).length == 1) {
+      if (this.phonenumber != undefined && this.phonenumber.length == 1) {
         this.phonenumber = this.placeholder;
       } else {
         this.phonenumber = this.phonenumber.substring(0, this.phonenumber.length - 1);
@@ -85,20 +85,20 @@ export class MmoneyCashoutPage implements OnInit {
   next(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
-        if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
+
+        if (this.phonenumber == this.placeholder) {throw new Error(IENMessage.invalidPhonenumber);}
 
         const params = {
           phonenumber: this.phonenumber
-        }
+        };
         const run = await this.getMMoneyUserInfoProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
 
         this.showPhonenumberPage = false;
         this.showMMoneyProfile = true;
         this.fullname = run.data[0].name + ' ' + run.data[0].surname;
 
-      
+
         resolve(IENMessage.success);
 
       } catch (error) {
@@ -112,17 +112,17 @@ export class MmoneyCashoutPage implements OnInit {
   transfer(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-       
-        if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
+
+        if (this.phonenumber == this.placeholder) {throw new Error(IENMessage.parametersEmpty);}
         let moneyFormat = this.apiService.formatMoney(this.apiService.cash.amount).toString();
         moneyFormat = moneyFormat.split('.00')[0];
 
         const params = {
           phonenumber: this.phonenumber,
           cash: this.apiService.cash.amount // debug here
-        }
+        };
         const run = await this.mmoneyCashoutValidationProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
         Swal.fire({
           icon: 'success',
           title: 'MMoney Cash out',

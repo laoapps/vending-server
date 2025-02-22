@@ -14,12 +14,12 @@ import { ModalController } from '@ionic/angular';
 export class TopupAndServiceSegmentPage implements OnInit {
 
   lists: Array<any> = [];
-    
+
   constructor(
     public apiService: ApiService,
     public modal: ModalController
 
-  ) { 
+  ) {
     this.apiService.___TopupAndServiceSegmentPage = this.modal;
 
   }
@@ -36,8 +36,8 @@ export class TopupAndServiceSegmentPage implements OnInit {
   selectMenu(value: ITopupServiceMenu): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
-        if (!Object.keys(ITopupServiceMenu).includes(value)) throw new Error(IENMessage.invalidSelectionTopupServiceMenu);
+
+        if (!Object.keys(ITopupServiceMenu).includes(value)) {throw new Error(IENMessage.invalidSelectionTopupServiceMenu);}
 
         switch (value)
         {

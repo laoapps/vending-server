@@ -10,7 +10,7 @@ export class AppcachingserviceService {
   set(k: string, v: any) {
     return this.ionicStorage.set(this.dbname + k, v);
   }
-  setWithdate(k: string, v: any,d:Date) {
+  setWithdate(k: string, v: any,d: Date) {
     return this.ionicStorage.setWithdate(this.dbname + k, v,d);
   }
   get(k: string) {

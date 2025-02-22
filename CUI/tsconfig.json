@@ -1,4 +1,3 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -10,20 +9,27 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es5",
-    "module": "commonjs",
+    "target": "ES5",
+    "module": "ESNext",
     "lib": [
-      "es2018",
-      "dom"
+      "es5",
+      "dom",
+      "es2015.collection",
+      "es2015.promise",
+      "es2015.iterable"
+    ],
+    "typeRoots": [
+      "node_modules/@types",
+       "src/typings.d.ts"
     ],
     "useDefineForClassFields": false,
-    "allowSyntheticDefaultImports":true
+    "allowSyntheticDefaultImports": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true,
-    "allowSyntheticDefaultImports":true
+    "allowSyntheticDefaultImports": true
   }
 }

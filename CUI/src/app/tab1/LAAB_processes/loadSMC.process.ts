@@ -1,6 +1,6 @@
-import { IENMessage } from "src/app/models/base.model";
-import { ApiService } from "src/app/services/api.service";
-import { VendingAPIService } from "src/app/services/vending-api.service";
+import { IENMessage } from 'src/app/models/base.model';
+import { ApiService } from 'src/app/services/api.service';
+import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as cryptojs from 'crypto-js';
 
 export class LoadSMCProcess {
@@ -9,12 +9,12 @@ export class LoadSMCProcess {
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
-    
+
     private page: number;
     private limit: number;
 
     private rows: Array<any> = [];
-    private count: number = 0;
+    private count = 0;
 
     constructor(
         apiService: ApiService,
@@ -27,7 +27,7 @@ export class LoadSMCProcess {
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                
+
 
 
                 console.log(`load smc`, 1);
@@ -42,12 +42,12 @@ export class LoadSMCProcess {
                 console.log(`load smc`, 3);
 
                 const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+                if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
 
                 console.log(`load smc`, 4);
-                
+
                 const LoadSMC = await this.LoadSMC();
-                if (LoadSMC != IENMessage.success) throw new Error(LoadSMC);
+                if (LoadSMC != IENMessage.success) {throw new Error(LoadSMC);}
 
                 console.log(`load smc`, 5);
 
@@ -59,7 +59,7 @@ export class LoadSMCProcess {
             } catch (error) {
 
                 // (await this.workload).dismiss();
-                resolve(error.message);     
+                resolve(error.message);
             }
         });
     }
@@ -71,7 +71,7 @@ export class LoadSMCProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.page && this.limit)) return IENMessage.parametersEmpty;
+        if (!(this.page && this.limit)) {return IENMessage.parametersEmpty;}
         return IENMessage.success;
     }
 
@@ -83,17 +83,17 @@ export class LoadSMCProcess {
                     page: this.page,
                     limit: this.limit,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
-                }
-                
+                };
+
                 this.vendingAPIService.loadSMC(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
-                    if (response.status != 1) return resolve(response.message);
+                    if (response.status != 1) {return resolve(response.message);}
                     this.rows = response.info.rows;
                     this.count = response.info.count;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -109,7 +109,7 @@ export class LoadSMCProcess {
                 limit: this.limit
             }],
             message: IENMessage.success
-        }
+        };
 
         return response;
     }

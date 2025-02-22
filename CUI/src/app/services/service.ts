@@ -6,12 +6,12 @@ export interface IDevice {
   driver?: object;
 }
 export interface IVideoList{
-  id:number;
-  name:string;
-  title:string;
-  description:string;
-  url:any;
-  image:string;
+  id: number;
+  name: string;
+  title: string;
+  description: string;
+  url: any;
+  image: string;
 }
 export function  hex2dec(hex: string) {
   try {
@@ -27,10 +27,10 @@ export interface IUsbDevice {
     productName: string;
     deviceId: number;
   }
-  export interface IMachineStatus{lastUpdate:Date,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
-export function  machineStatus(x:string):IMachineStatus{
-  let y:any;
-  let b = ''
+  export interface IMachineStatus{lastUpdate: Date;billStatus: string;coinStatus: string;cardStatus: string;tempconrollerStatus: string;temp: string;doorStatus: string;billChangeValue: string;coinChangeValue: string;machineIMEI: string;allMachineTemp: string}
+export function  machineStatus(x: string): IMachineStatus{
+  let y: any;
+  let b = '';
   try {
     y= JSON.parse(x);
    b = y.b;
@@ -53,7 +53,7 @@ export function  machineStatus(x:string):IMachineStatus{
   const temp= b.substring(18,20);
   // 13 // temp
   const doorStatus= b.substring(20,22);
-  // 00 // door 
+  // 00 // door
   const billChangeValue= b.substring(22,30);
   // 00000000 // bill change
   const coinChangeValue=b.substring(30,38);
@@ -65,17 +65,17 @@ export function  machineStatus(x:string):IMachineStatus{
   // // fafb header
   // // 52 command
   // // 01 length
-  // // Communication number+ 
-  // '00'//Bill acceptor status+ 
-  // '00'//Coin acceptor status+ 
+  // // Communication number+
+  // '00'//Bill acceptor status+
+  // '00'//Coin acceptor status+
   // '00'// Card reader status+
-  // '00'// Temperature controller status+ 
-  // '00'// Temperature+ 
-  // '00'// Door status+ 
-  // '00 00 00 00'// Bill change(4 byte)+ 
-  // '00 00 00 00'// Coin change(4 byte)+ 
-  // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
+  // '00'// Temperature controller status+
+  // '00'// Temperature+
+  // '00'// Door status+
+  // '00 00 00 00'// Bill change(4 byte)+
+  // '00 00 00 00'// Coin change(4 byte)+
+  // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) +
   // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
   // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-  return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp}
+  return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp};
 }

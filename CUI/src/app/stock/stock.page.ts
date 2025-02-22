@@ -21,18 +21,18 @@ export class StockPage implements OnInit {
   select(id: number) {
     this.selectedItem = this.stock.find(v => v.id == id);
     console.log('select',this.selectedItem);
-    this.apiService.dismissModal(this.selectedItem)
+    this.apiService.dismissModal(this.selectedItem);
   }
   close() {
-    if (!this.selectedItem) return alert('Selecte on item please!');
+    if (!this.selectedItem) {return alert('Selecte on item please!');}
     console.log(this.selectedItem);
-    this.apiService.dismissModal(this.selectedItem)
+    this.apiService.dismissModal(this.selectedItem);
   }
-  removeStock(id:number){
+  removeStock(id: number){
     const conf = confirm('Are you sure');
-    if(!conf) return;
+    if(!conf) {return;}
     const p = prompt('Type 123456');
-    if(p!=='123456') return;
+    if(p!=='123456') {return;}
     const idx =this.apiService.stock.findIndex(v=>v.id==id);
     if(idx!=-1){
       this.apiService.stock.splice(idx,1);
@@ -41,8 +41,8 @@ export class StockPage implements OnInit {
   }
   doFilter(){
     if(this.search)
-    this.stock=this.apiService.stock.filter(v=>v.name.toLowerCase().includes(this.search.toLowerCase()));
-    else this.stock=this.apiService.stock;
+    {this.stock=this.apiService.stock.filter(v=>v.name.toLowerCase().includes(this.search.toLowerCase()));}
+    else {this.stock=this.apiService.stock;}
   }
   ngOnInit() {
   }

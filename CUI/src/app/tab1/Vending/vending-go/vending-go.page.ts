@@ -21,13 +21,13 @@ export class VendingGoPage implements OnInit {
   @Input() machineId: any;
   @Input() orders: Array<any>;
 
-  quantity: number = 0;
-  total: number = 0;
+  quantity = 0;
+  total = 0;
 
   constructor(
     private modal: ModalController,
     public apiService: ApiService,
-  ) { 
+  ) {
     this.apiService.___VendingGoPage = this.modal;
 
   }
@@ -43,15 +43,15 @@ export class VendingGoPage implements OnInit {
         this.summarizeOrder[i].stock.qtty *
         this.summarizeOrder[i].stock.price;
     }
-    
+
     console.log(`sum total`, this.total);
     console.log(`summarizeOrder`, this.summarizeOrder);
 
-    this.apiService.vendingGoPageSound()
+    this.apiService.vendingGoPageSound();
   }
 
   buyManyMMoney() {
-    if (!this.orders.length) return alert('Please add any items first');
+    if (!this.orders.length) {return alert('Please add any items first');}
     const amount = this.orders.reduce(
       (a, b) => a + b.stock.price * b.stock.qtty,
       0
@@ -138,7 +138,7 @@ export class VendingGoPage implements OnInit {
           quantity: this.quantity,
           total: this.total,
           balance: sum_refund,
-          paidLAAB: paidLAAB,
+          paidLAAB,
           vendingGoPage: this.modal
         };
         console.log(`props`, props);

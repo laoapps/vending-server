@@ -21,7 +21,7 @@ export class PlayGamesPage implements OnInit {
     public apiService: ApiService,
     public modal: ModalController
 
-  ) { 
+  ) {
     this.apiService.___PlayGamesPage = this.modal;
 
   }
@@ -40,8 +40,8 @@ export class PlayGamesPage implements OnInit {
       try {
 
         // if (this.prod == false) return resolve(IENMessage.success);
-        
-        if (!Object.keys(IVendingGameMenu).includes(value)) throw new Error(IENMessage.invalidSelectionGameMenu);
+
+        if (!Object.keys(IVendingGameMenu).includes(value)) {throw new Error(IENMessage.invalidSelectionGameMenu);}
 
         switch (value)
         {
@@ -63,9 +63,9 @@ export class PlayGamesPage implements OnInit {
   openFortuneWheel(){
     this.apiService.showModal(FortunewheelPage).then(r=>{
       r.present();
-    })
+    });
   }
   openScratch(){
-   
+
   }
 }

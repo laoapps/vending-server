@@ -26,17 +26,17 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   parseorders: Array<any> = [];
   parseGetTotalSale: any = {} as any;
-  
+
   lists: Array<any> = [];
   drawCircle: Array<any> = [];
   billDate: Date;
   paymentmethod: string;
   paymentText: string;
   paymentLogo: string;
-  isPayment: boolean = false;
+  isPayment = false;
 
-  laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
-  questionIcon: string = `../../../../assets/logo/question-logo.png`;
+  laabIcon = `../../../../assets/logo/LAAB-logo.png`;
+  questionIcon = `../../../../assets/logo/question-logo.png`;
 
   // DOMS
   static orderlistElement: HTMLDivElement;
@@ -52,22 +52,22 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   // intervals
   reloadElement: any = {} as any;
-  countdownBill: number = 1;
+  countdownBill = 1;
   countdownBillTimer: any = {} as any;
-  countdownPayment: number = 5;
+  countdownPayment = 5;
   countdownPaymentTimer: any = {} as any;
   reloadMessageElement: any = {} as any;
-  countdownDestroy: number = 60;
+  countdownDestroy = 60;
   countdownDestroyTimer: any = {} as any;
-  countdownCheckLAAB: number = 60;
+  countdownCheckLAAB = 60;
   countdownCheckLAABTimer: any = {} as any;
-  countdownLAABDestroy: number = 5;
+  countdownLAABDestroy = 5;
   countdownLAABDestroyTimer: any = {} as any;
 
 
   // message
   static message: any = undefined;
-  messageText: string = 
+  messageText =
   `
     <div class="message-container" 
       style=
@@ -114,7 +114,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     //   detail: 'Pay your order by using LAAB',
     //   value: 'laab'
     // },
-  ]
+  ];
   ewalletList: Array<any> = [
     {
       image: `../../../../assets/logo/mmoney-logo.png`,
@@ -131,7 +131,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     //   detail: 'Pay your orders by using UMoney QRCode',
     //   value: 'umoney'
     // }
-  ]
+  ];
   bankList: Array<any> = [
     // {
     //   image: `../../../../assets/logo/bcelone-logo.png`,
@@ -140,7 +140,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     //   detail: 'Pay your orders by using BCEL One QRCode',
     //   value: 'bcelone'
     // }
-  ]
+  ];
   paymentList: Array<any> = [...this.cashesList, ...this.ewalletList, ...this.bankList];
 
 
@@ -151,7 +151,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     public modal: ModalController,
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService
-  ) { 
+  ) {
     this.apiService.___AutoPaymentPage = this.modal;
 
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
@@ -159,7 +159,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.refreshOrder();
-    
+
     // this.parseorders = JSON.parse(JSON.stringify(this.orders));
     // this.parseGetTotalSale = JSON.parse(JSON.stringify(this.getTotalSale));
 
@@ -200,7 +200,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
 
   ngOnDestroy(): void {
-    
+
     // intervals
     clearInterval(this.reloadElement);
     clearInterval(this.countdownBillTimer);
@@ -230,24 +230,24 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   loadFakeOrder() {
     for(let i = 0; i < 15; i++) {
       const item = {
-        "machineId":"11115010",
-        "position":1,
-        "isActive":true,
-        "id":-1,"max":5,
-        "stock": {
-          "image":"f287d3aa0a30548dc0e97bb4e3eedb8f",
-          "name":"LTC SIM",
-          "price":10000,
-          "qtty":1,
-          "id":123
+        machineId:'11115010',
+        position:1,
+        isActive:true,
+        id:-1,max:5,
+        stock: {
+          image:'f287d3aa0a30548dc0e97bb4e3eedb8f',
+          name:'LTC SIM',
+          price:10000,
+          qtty:1,
+          id:123
         },
-        "updatedAt":"2023-09-22T06:41:14.314Z"
-      }
+        updatedAt:'2023-09-22T06:41:14.314Z'
+      };
     this.lists.push(item);
     }
   }
 
-  
+
 
   close() {
 
@@ -272,13 +272,13 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           if (this.countdownBill <= 0) {
             clearInterval(this.countdownBillTimer);
             this.countdownBill = 1;
-            
+
             if (this.apiService.cash.amount < this.getTotalSale.t) {
 
               AutoPaymentPage.laabqrimgElement.classList.add('active');
               AutoPaymentPage.btnLAABGo.classList.remove('active');
 
-              let qrModel = {
+              const qrModel = {
                 type: 'CQR',
                 mode: 'COIN',
                 destination: this.apiService.laabuuid,
@@ -291,7 +291,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
                 },
               };
               const qrcode = await new qrlogo({ logo: this.laabIcon, content: JSON.stringify(qrModel)}).getCanvas();
-              if (AutoPaymentPage.laabqrimgElement) AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();
+              if (AutoPaymentPage.laabqrimgElement) {AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();}
 
             } else {
               AutoPaymentPage.laabqrimgElement.classList.remove('active');
@@ -299,14 +299,14 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             }
 
             const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method'}).getCanvas();
-            if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
+            if (AutoPaymentPage.qrimgElement) {AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();}
 
             this.checkOrders(AutoPaymentPage.orderlistElement);
             AutoPaymentPage.orderlistElement.className = 'order-list fit';
             AutoPaymentPage.laabCardFooter.classList.add('active');
             this.loadBillWave();
 
-            if (!list) return resolve(await this._processLoopPayment());
+            if (!list) {return resolve(await this._processLoopPayment());}
 
             this.paymentmethod = list.value;
             this.paymentText = list.name;
@@ -315,7 +315,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           }
 
         }, 1000);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -337,7 +337,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               this.paymentmethod = IPaymentMethod.laab;
               await this.laabAutoCashin();
             }
-            else 
+            else
             {
 
               this.paymentmethod = IPaymentMethod.mmoney;
@@ -349,7 +349,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           }
         }, 1000);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -359,19 +359,19 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   private _processLoopDestroy(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
-        let title: string = 'Destroy all orders';
-        let text: string = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
-        let cls: string = `countdownDestroy`;
+
+        const title = 'Destroy all orders';
+        const text = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+        const cls = `countdownDestroy`;
 
         const params: IPaymentStation = {
           orders: this.parseorders,
           getTotalSale: this.parseGetTotalSale,
           paymentmethod: this.paymentmethod
-        }
+        };
         const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
-      
+        if (run.message != IENMessage.success) {throw new Error(run);}
+
         const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode}).getCanvas();
         AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
         this.isPayment = true;
@@ -385,7 +385,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           backdrop: false
         });
 
-        let checkLAAB: number = 55;
+        let checkLAAB = 55;
         const previousAmount: number = this.apiService.cash.amount;
 
         // loop destroy
@@ -400,9 +400,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
             const checkbalance = {
               machineId: localStorage.getItem('machineId')
-            }
+            };
             const run = await this.loadVendingWalletCoinBalanceProcess.Init(checkbalance);
-            if (run.message != IENMessage.success) throw new Error(run);
+            if (run.message != IENMessage.success) {throw new Error(run);}
             this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
 
             if (previousAmount != this.apiService.cash.amount && this.apiService.cash.amount > this.parseGetTotalSale.t) {
@@ -415,9 +415,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               AutoPaymentPage.laabqrimgElement.classList.remove('active');
               AutoPaymentPage.btnLAABGo.classList.add('active');
               await this.laabAutoCashin();
-              
+
               resolve(IENMessage.success);
-              
+
             } else {
               console.log(`LAAB CASH NOT ENOUGHT balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
             }
@@ -426,18 +426,18 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           if (this.countdownDestroy <= 0) {
             clearInterval(this.countdownDestroyTimer);
             this.countdownDestroy = 60;
-            if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+            if (AutoPaymentPage.message) {AutoPaymentPage.message.close();}
             AutoPaymentPage.message = undefined;
 
-            this.apiService.myTab1.clearStockAfterLAABGo(); 
+            this.apiService.myTab1.clearStockAfterLAABGo();
             this.close();
             this.apiService.alertError(IENMessage.timeout);
             resolve(IENMessage.success);
           } else {
             AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
-            if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+            if (AutoPaymentPage.messageCount) {AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;}
           }
-          
+
         }, 1000);
 
       } catch (error) {
@@ -451,26 +451,26 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   // loop check balance and loop destroy
   private _processLoopCheckLAAB(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
-        let checkLAAB: number = 55;
+
+        let checkLAAB = 55;
         const previousAmount: number = this.apiService.cash.amount;
-        
+
         this.countdownCheckLAABTimer = setInterval(async () => {
           this.countdownCheckLAAB--;
           if (checkLAAB > -1 && this.countdownCheckLAAB == checkLAAB) {
             checkLAAB -= 5;
-            
+
             const params = {
               machineId: localStorage.getItem('machineId')
-            }
+            };
 
             const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-            if (run.message != IENMessage.success) throw new Error(run);
+            if (run.message != IENMessage.success) {throw new Error(run);}
             this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
 
             if (previousAmount != this.apiService.cash.amount) {
@@ -491,7 +491,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             clearInterval(this.countdownCheckLAABTimer);
             this.countdownCheckLAAB = 60;
 
-            this.apiService.myTab1.clearCart();  
+            this.apiService.myTab1.clearCart();
             this.close();
             this.apiService.alertError(IENMessage.orderCanceled);
           }
@@ -519,11 +519,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
             // fixed
             await this.laabGo();
-    
+
             resolve(IENMessage.success);
           }
         }, 1000);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -532,17 +532,17 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   laabGo(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         const params: IPaymentStation = {
           orders: this.orders,
           getTotalSale: this.getTotalSale,
           paymentmethod: IPaymentMethod.laab
-        }
+        };
         const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
 
         this.apiService.myTab1.refreshBalanceFromAnotherModal(Number(this.apiService.cash.amount) - Number(this.getTotalSale.t));
-        this.apiService.myTab1.clearCart();  
+        this.apiService.myTab1.clearCart();
         this.close();
 
         resolve(IENMessage.success);
@@ -564,15 +564,15 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     // this.parseGetTotalSale.q = this.parseorders.reduce((a,b) => a + b.stock.qtty, 0);
     // this.parseGetTotalSale.t = this.parseorders.reduce((a,b) => a + b.stock.qtty * b.stock.price, 0);
 
-    if (this.parseorders != undefined && Object.entries(this.parseorders).length == 0) {
+    if (this.parseorders != undefined && this.parseorders.length == 0) {
       this.resetMessage();
       this.close();
-    } 
+    }
     else
     {
 
       this.resetMessage();
-  
+
       AutoPaymentPage.orderlistElement.className = 'order-list';
       this.checkOrders(AutoPaymentPage.orderlistElement);
       AutoPaymentPage.laabCardFooter.classList.remove('active');
@@ -600,9 +600,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         this.paymentmethod = list.value;
         this.isPayment = false;
 
-        if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+        if (AutoPaymentPage.message) {AutoPaymentPage.message.close();}
         AutoPaymentPage.message = undefined;
-  
+
         this.resetCountDownBillTimer();
         this.resetCountDownPaymentTimer();
         this.resetCountDownDestroyTimer();
@@ -631,10 +631,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   private checkOrders(orderlistElement: HTMLDivElement) {
     const lists: Array<any> = this.orders;
     // const lists: Array<any> = this.lists;
-    const height7Order: boolean = lists != undefined && Object.entries(lists).length > 0 && Object.entries(lists).length <= 7;
-    const height11Order: boolean = lists != undefined && Object.entries(lists).length > 7 && Object.entries(lists).length <= 11;
-    const height15Order: boolean = lists != undefined && Object.entries(lists).length > 11 && Object.entries(lists).length <= 15;
-    const height19Order: boolean = lists != undefined && Object.entries(lists).length > 15 && Object.entries(lists).length <= 19;
+    const height7Order: boolean = lists != undefined && lists.length > 0 && lists.length <= 7;
+    const height11Order: boolean = lists != undefined && lists.length > 7 && lists.length <= 11;
+    const height15Order: boolean = lists != undefined && lists.length > 11 && lists.length <= 15;
+    const height19Order: boolean = lists != undefined && lists.length > 15 && lists.length <= 19;
 
 
     if (height7Order) {
@@ -662,8 +662,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     const ord = this.parseorders as Array<IVendingMachineSale>;
     ord.forEach((v) => {
       const x = o.find((x) => x.stock.id == v.stock.id);
-      if (!x) o.push(v);
-      else x.stock.qtty += 1;
+      if (!x) {o.push(v);}
+      else {x.stock.qtty += 1;}
     });
 
     const t = this.getTotal();
@@ -673,12 +673,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   }
   getTotal() {
     const o = this.parseorders;
-    const q = o.reduce((a, b) => {
-      return a + b.stock.qtty;
-    }, 0);
-    const t = o.reduce((a, b) => {
-      return a + b.stock.qtty * b.stock.price;
-    }, 0);
+    const q = o.reduce((a, b) => a + b.stock.qtty, 0);
+    const t = o.reduce((a, b) => a + b.stock.qtty * b.stock.price, 0);
     return { q, t };
   }
 
@@ -713,7 +709,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   }
 
   private messagetextModel(title: string, text: string, cls: string): string {
-    const result: string = 
+    const result =
     `
       <div class="message-container" 
         style=
@@ -749,11 +745,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           <div class="text" id="${cls}">${text}</div>
         </div>
       </div>
-    `
+    `;
     return result;
   }
   private resetMessage(): void {
-    if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+    if (AutoPaymentPage.message) {AutoPaymentPage.message.close();}
     AutoPaymentPage.message = undefined;
   }
 }
@@ -763,9 +759,9 @@ enum IPaymentMethod {
   mmoney = 'mmoney'
 }
 interface IPaymentStation {
-  orders: Array<any>,
-  getTotalSale: any,
-  paymentmethod: string,
+  orders: Array<any>;
+  getTotalSale: any;
+  paymentmethod: string;
 }
 class PaymentStation {
 
@@ -782,14 +778,14 @@ class PaymentStation {
   private paymentmethod: string;
 
   // props
-  refund: number = 0;
+  refund = 0;
   qrcode: string;
 
 
   constructor(
     apiService: ApiService,
     vendingAPIService: VendingAPIService
-  ) { 
+  ) {
     this.apiService = apiService;
     this.vendingAPIService = vendingAPIService;
   }
@@ -800,17 +796,17 @@ class PaymentStation {
 
         this.workload = this.apiService.load.create({ message: 'loading...', duration: 5000 });
         (await this.workload).present();
-        
+
         this.InitParams(params);
 
         const ValidateParams = this.ValidateParams();
-        if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+        if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
 
         const LAABPayment = await this.LAABPayment();
-        if (LAABPayment != IENMessage.success) throw new Error(LAABPayment);
+        if (LAABPayment != IENMessage.success) {throw new Error(LAABPayment);}
 
         const MMoneyPayment = await this.MMoneyPayment();
-        if (MMoneyPayment != IENMessage.success) throw new Error(MMoneyPayment);
+        if (MMoneyPayment != IENMessage.success) {throw new Error(MMoneyPayment);}
 
         (await this.workload).dismiss();
         resolve(this.Commit());
@@ -827,10 +823,10 @@ class PaymentStation {
     this.getTotalSale = params.getTotalSale;
     this.paymentmethod = params.paymentmethod;
   }
-  
+
   private ValidateParams(): string {
-    if (this.orders != undefined && Object.entries(this.orders).length == 0) return IENMessage.parametersEmpty;
-    if (!(this.getTotalSale.t && this.getTotalSale.q && this.paymentmethod)) return IENMessage.parametersEmpty;
+    if (this.orders != undefined && this.orders.length == 0) {return IENMessage.parametersEmpty;}
+    if (!(this.getTotalSale.t && this.getTotalSale.q && this.paymentmethod)) {return IENMessage.parametersEmpty;}
     return IENMessage.success;
   }
 
@@ -838,21 +834,21 @@ class PaymentStation {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        if (this.paymentmethod != IPaymentMethod.laab) return resolve(IENMessage.success);
+        if (this.paymentmethod != IPaymentMethod.laab) {return resolve(IENMessage.success);}
 
         const params: ILAABPayment = {
           orders: this.orders,
           getTotalSale: this.getTotalSale,
           amount: this.apiService.cash.amount
-        }
+        };
         const run = await new LAABPayment(this.apiService, this.vendingAPIService).Init(params);
         console.log(`LAABPayment`, run);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
 
         this.refund = run.data[0].refund;
 
         resolve(IENMessage.success);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -863,20 +859,20 @@ class PaymentStation {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
-        if (this.paymentmethod != IPaymentMethod.mmoney) return resolve(IENMessage.success);
+        if (this.paymentmethod != IPaymentMethod.mmoney) {return resolve(IENMessage.success);}
 
         const params: IMMoneyPayment = {
           orders: this.orders,
           getTotalSale: this.getTotalSale
-        }
+        };
         console.log(`MMONEY MODEL`, params);
         const run = await new MMoneyPayment(this.apiService, this.vendingAPIService).Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
 
         this.qrcode = run.data[0].qrcode;
 
         resolve(IENMessage.success);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -890,7 +886,7 @@ class PaymentStation {
         qrcode: this.qrcode
       }],
       message: IENMessage.success
-    }
+    };
     return response;
   }
 }
@@ -901,9 +897,9 @@ class PaymentStation {
 
 // LAAB
 interface ILAABPayment {
-  orders: Array<any>,
-  getTotalSale: any,
-  amount: number
+  orders: Array<any>;
+  getTotalSale: any;
+  amount: number;
 }
 class LAABPayment {
 
@@ -920,10 +916,10 @@ class LAABPayment {
 
   // props
   private data: Array<any> = [];
-  private qtty: number = 0;
-  private total: number = 0;
-  private refund: number = 0;
-  
+  private qtty = 0;
+  private total = 0;
+  private refund = 0;
+
   constructor(
     apiService: ApiService,
     vendingAPIService: VendingAPIService
@@ -936,16 +932,16 @@ class LAABPayment {
   public Init(params: ILAABPayment): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         this.InitParams(params);
 
         this.RemoveImageFromOrder();
 
         const SumerizeOrder = this.SumerizeOrder();
-        if (SumerizeOrder != IENMessage.success) throw new Error(SumerizeOrder);
+        if (SumerizeOrder != IENMessage.success) {throw new Error(SumerizeOrder);}
 
         const Payment = await this.Payment();
-        if (Payment != IENMessage.success) throw new Error(Payment);
+        if (Payment != IENMessage.success) {throw new Error(Payment);}
 
         resolve(this.Commit());
 
@@ -969,8 +965,8 @@ class LAABPayment {
   private SumerizeOrder(): string {
     this.qtty = this.data.reduce((a,b) => a + b.stock.qtty, 0);
     this.total = this.data.reduce((a,b) => a + b.stock.qtty * b.stock.price, 0);
-    if (this.qtty != this.getTotalSale.q && this.total != this.getTotalSale.t) return IENMessage.invalidSumerizeOrder;
-    if (this.amount < this.total) return IENMessage.balanceIsNotEnought;
+    if (this.qtty != this.getTotalSale.q && this.total != this.getTotalSale.t) {return IENMessage.invalidSumerizeOrder;}
+    if (this.amount < this.total) {return IENMessage.balanceIsNotEnought;}
     this.refund = this.amount - this.total;
 
     return IENMessage.success;
@@ -995,13 +991,13 @@ class LAABPayment {
             time: new Date().toString(),
             token: cryptojs.SHA256(this.apiService.machineId.machineId +this.apiService.machineId.otp).toString(cryptojs.enc.Hex),
           }
-        }
+        };
 
         const run = await this.paidValidationProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
 
         resolve(IENMessage.success);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -1016,7 +1012,7 @@ class LAABPayment {
         }
       ],
       message: IENMessage.success
-    }
+    };
     return response;
   }
 
@@ -1032,8 +1028,8 @@ class LAABPayment {
 
 // MMONEY
 interface IMMoneyPayment {
-  orders: Array<any>,
-  getTotalSale: any,
+  orders: Array<any>;
+  getTotalSale: any;
 }
 class MMoneyPayment {
 
@@ -1049,10 +1045,10 @@ class MMoneyPayment {
 
   // props
   private data: Array<any> = [];
-  private qtty: number = 0;
-  private total: number = 0;
+  private qtty = 0;
+  private total = 0;
   private qrcode: string;
-  
+
   constructor(
     apiService: ApiService,
     vendingAPIService: VendingAPIService
@@ -1065,16 +1061,16 @@ class MMoneyPayment {
   public Init(params: IMMoneyPayment): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         this.InitParams(params);
 
         this.RemoveImageFromOrder();
 
         const SumerizeOrder = this.SumerizeOrder();
-        if (SumerizeOrder != IENMessage.success) throw new Error(SumerizeOrder);
+        if (SumerizeOrder != IENMessage.success) {throw new Error(SumerizeOrder);}
 
         const Payment = await this.Payment();
-        if (Payment != IENMessage.success) throw new Error(Payment);
+        if (Payment != IENMessage.success) {throw new Error(Payment);}
 
         resolve(this.Commit());
 
@@ -1097,7 +1093,7 @@ class MMoneyPayment {
   private SumerizeOrder(): string {
     this.qtty = this.data.reduce((a,b) => a + b.stock.qtty, 0);
     this.total = this.data.reduce((a,b) => a + b.stock.qtty * b.stock.price, 0);
-    if (this.qtty != this.getTotalSale.q && this.total != this.getTotalSale.t) return IENMessage.invalidSumerizeOrder;
+    if (this.qtty != this.getTotalSale.q && this.total != this.getTotalSale.t) {return IENMessage.invalidSumerizeOrder;}
     return IENMessage.success;
   }
 
@@ -1109,13 +1105,13 @@ class MMoneyPayment {
           orders: this.data,
           amount: this.total,
           machineId: this.apiService.machineId.machineId
-        }
+        };
 
         const run = await this.generateMMoneyQRCodeProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
         this.qrcode = run.data[0].mmoneyQRCode.qr;
         resolve(IENMessage.success);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -1130,7 +1126,7 @@ class MMoneyPayment {
         }
       ],
       message: IENMessage.success
-    }
+    };
     return response;
   }
 

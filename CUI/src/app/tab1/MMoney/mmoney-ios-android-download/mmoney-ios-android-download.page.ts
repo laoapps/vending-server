@@ -11,13 +11,13 @@ import { ApiService } from 'src/app/services/api.service';
 export class MmoneyIosAndroidDownloadPage implements OnInit {
 
   @Input() links: Array<string>;
-  
+
   linksource: Array<string> = [];
-  
+
   constructor(
     public apiService: ApiService,
     public modal: ModalController
-  ) { 
+  ) {
     this.apiService.___MmoneyIosAndroidDownloadPage = this.modal;
 
   }

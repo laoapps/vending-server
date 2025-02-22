@@ -77,4 +77,4 @@ export const topupServiceMenuJSON = [
         lao: 'ບໍລິການເຊົ່າຕ່າງໆ',
         value: 'renting_service'
     }
-]
+];

@@ -16,7 +16,7 @@ import { ModalController } from '@ionic/angular';
 })
 export class StackCashoutPage implements OnInit {
 
-    private CONTROL_MENUList: Array<{ name: string, status: boolean }> = [];
+    private CONTROL_MENUList: Array<{ name: string; status: boolean }> = [];
     private links: NodeListOf<HTMLLinkElement>;
 
 
@@ -24,7 +24,7 @@ export class StackCashoutPage implements OnInit {
     private modal: ModalController,
     public apiService: ApiService,
     private vendingAPIService: VendingAPIService
-  ) { 
+  ) {
     this.apiService.___StackCashoutPage = this.modal;
 
   }
@@ -39,7 +39,7 @@ export class StackCashoutPage implements OnInit {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (this.apiService.cash.amount == 0)
-          throw new Error(IENMessage.thereIsNotBalance);
+          {throw new Error(IENMessage.thereIsNotBalance);}
 
         const props = {
           stackCashoutPage: this.modal
@@ -61,7 +61,7 @@ export class StackCashoutPage implements OnInit {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (this.apiService.cash.amount == 0)
-          throw new Error(IENMessage.thereIsNotBalance);
+          {throw new Error(IENMessage.thereIsNotBalance);}
 
         const props = {
           stackCashoutPage: this.modal
@@ -93,7 +93,7 @@ export class StackCashoutPage implements OnInit {
       }
     });
   }
-  
+
 
   close() {
     this.apiService.modal.dismiss();
@@ -102,17 +102,17 @@ export class StackCashoutPage implements OnInit {
   dynamicControlMenu() {
     this.CONTROL_MENUList = JSON.parse(JSON.stringify(this.apiService.controlMenuService.CONTROL_MENUList));
 
-    let i = setInterval(() => {
+    const i = setInterval(() => {
       if (this.links == undefined) {
         this.links = (document.querySelectorAll('.control-menu') as NodeListOf<HTMLLinkElement>);
         ControlMenuService.stackCashoutPageLinks = this.links;
-      } 
+      }
 
       this.links = ControlMenuService.stackCashoutPageLinks;
       this.animateControlMenu(this.links);
 
       this.apiService.controlMenuService.CONTROL_MENU.subscribe(r => {
-        if (r) this.animateControlMenu(this.links, r);
+        if (r) {this.animateControlMenu(this.links, r);}
       });
       clearInterval(i);
 
@@ -124,7 +124,7 @@ export class StackCashoutPage implements OnInit {
       if (res)
       {
         res.forEach(menu => {
-          
+
           if (name == menu.name) {
             if (menu.status == true) {
               item.classList.add('active');
@@ -134,7 +134,7 @@ export class StackCashoutPage implements OnInit {
           }
         });
       }
-      else 
+      else
       {
         this.CONTROL_MENUList.forEach(menu => {
 

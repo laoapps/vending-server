@@ -6,8 +6,8 @@ import * as XLSX from 'xlsx';
 export class ExcelService {
   name = 'This is XLSX TO JSON CONVERTER';
   willDownload = false;
-  downloadElement:HTMLAnchorElement;
-  data:any;
+  downloadElement: HTMLAnchorElement;
+  data: any;
   constructor() {
   }
 
@@ -17,7 +17,7 @@ export class ExcelService {
 
   public exportAsExcelFile(json: any[], excelFileName: string): void {
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(json);
-    const workbook: XLSX.WorkBook = {Sheets: {'data': worksheet}, SheetNames: ['data']};
+    const workbook: XLSX.WorkBook = {Sheets: {data: worksheet}, SheetNames: ['data']};
     XLSX.writeFile(workbook, ExcelService.toExportFileName(excelFileName));
   }
   public onFileChange(ev){
@@ -39,12 +39,12 @@ export class ExcelService {
       // this.setDownload(dataString);
       // console.log('DATA STRING',dataString);
       this.data = JSON.parse(dataString);
-      
-    }
+
+    };
     reader.readAsBinaryString(file);
   }
 
-  setDownloadElement(a:HTMLAnchorElement){
+  setDownloadElement(a: HTMLAnchorElement){
     this.downloadElement=a;
   }
   // setDownload(data) {

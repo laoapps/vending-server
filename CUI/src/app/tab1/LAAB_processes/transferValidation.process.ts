@@ -1,6 +1,6 @@
-import { IENMessage } from "src/app/models/base.model";
-import { ApiService } from "src/app/services/api.service";
-import { VendingAPIService } from "src/app/services/vending-api.service";
+import { IENMessage } from 'src/app/models/base.model';
+import { ApiService } from 'src/app/services/api.service';
+import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as cryptojs from 'crypto-js';
 
 export class TransferValidationProcess {
@@ -9,7 +9,7 @@ export class TransferValidationProcess {
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
-    
+
     private receiver: string;
     private cash: number;
     private description: string;
@@ -27,7 +27,7 @@ export class TransferValidationProcess {
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                
+
                 console.log(`paid validation`, 1);
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
@@ -40,12 +40,12 @@ export class TransferValidationProcess {
                 console.log(`paid validation`, 3);
 
                 const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+                if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
 
                 console.log(`paid validation`, 4);
-                
+
                 const PaidValidation = await this.PaidValidation();
-                if (PaidValidation != IENMessage.success) throw new Error(PaidValidation);
+                if (PaidValidation != IENMessage.success) {throw new Error(PaidValidation);}
 
                 console.log(`paid validation`, 5);
 
@@ -57,7 +57,7 @@ export class TransferValidationProcess {
             } catch (error) {
 
                 (await this.workload).dismiss();
-                resolve(error.message);     
+                resolve(error.message);
             }
         });
     }
@@ -70,8 +70,8 @@ export class TransferValidationProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.receiver && this.cash && this.description)) return IENMessage.parametersEmpty;
-        if (this.receiver.length != 10) return IENMessage.invalidPhonenumber;
+        if (!(this.receiver && this.cash && this.description)) {return IENMessage.parametersEmpty;}
+        if (this.receiver.length != 10) {return IENMessage.invalidPhonenumber;}
         return IENMessage.success;
     }
 
@@ -84,16 +84,16 @@ export class TransferValidationProcess {
                     cash: this.cash,
                     description: this.description,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
-                }
+                };
 
                 this.vendingAPIService.transferValidation(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
-                    if (response.status != 1) return resolve(response.message);
+                    if (response.status != 1) {return resolve(response.message);}
                     this.bill = response.info.bill;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -106,7 +106,7 @@ export class TransferValidationProcess {
                 bill: this.bill
             }],
             message: IENMessage.success
-        }
+        };
 
         return response;
     }

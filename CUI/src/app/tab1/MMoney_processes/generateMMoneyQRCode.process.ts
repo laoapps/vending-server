@@ -1,7 +1,7 @@
-import { IENMessage } from "src/app/models/base.model";
-import { IGenerateQRCode } from "src/app/models/mmoney.model";
-import { ApiService } from "src/app/services/api.service";
-import { IVendingMachineBill } from "src/app/services/syste.model";
+import { IENMessage } from 'src/app/models/base.model';
+import { IGenerateQRCode } from 'src/app/models/mmoney.model';
+import { ApiService } from 'src/app/services/api.service';
+import { IVendingMachineBill } from 'src/app/services/syste.model';
 
 export class GenerateMMoneyQRCodeProcess {
 
@@ -16,7 +16,7 @@ export class GenerateMMoneyQRCodeProcess {
 
     // props
     private mmoneyQRCode: IVendingMachineBill;
-    
+
     constructor(
         apiService: ApiService
     ) {
@@ -26,19 +26,19 @@ export class GenerateMMoneyQRCodeProcess {
     public Init(params: IGenerateQRCode): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                
+
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
                 this.InitParams(params);
 
                 const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+                if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
 
                 const GenerateQRCode = await this.GenerateQRCode();
                 console.log(`zzzz`, GenerateQRCode);
-                if (GenerateQRCode != IENMessage.success) throw new Error(GenerateQRCode);
-                
+                if (GenerateQRCode != IENMessage.success) {throw new Error(GenerateQRCode);}
+
                 (await this.workload).dismiss();
                 resolve(this.Commit());
 
@@ -56,11 +56,11 @@ export class GenerateMMoneyQRCodeProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.amount && this.machineId)) return IENMessage.parametersEmpty;
-        if (this.orders != undefined && Object.entries(this.orders).length == 0) return IENMessage.parametersEmpty;
+        if (!(this.amount && this.machineId)) {return IENMessage.parametersEmpty;}
+        if (this.orders != undefined && this.orders.length == 0) {return IENMessage.parametersEmpty;}
 
         const amount = this.orders.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
-        if (this.amount != amount) return IENMessage.invalidAmount;
+        if (this.amount != amount) {return IENMessage.invalidAmount;}
         return IENMessage.success;
     }
 
@@ -71,11 +71,11 @@ export class GenerateMMoneyQRCodeProcess {
                 this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
                     const response: any = r;
                     console.log(`response generate MMoney`, response);
-                    if (response.status != 1) return resolve(IENMessage.generateMMoneyQRCodeFail);
+                    if (response.status != 1) {return resolve(IENMessage.generateMMoneyQRCodeFail);}
                     this.mmoneyQRCode = response.data as IVendingMachineBill;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -83,13 +83,13 @@ export class GenerateMMoneyQRCodeProcess {
     }
 
     private Commit(): any {
-        
+
         const response = {
             data: [{
                 mmoneyQRCode: this.mmoneyQRCode
             }],
             message: IENMessage.success
-        }
+        };
 
         return response;
     }

@@ -25,14 +25,14 @@ export class SettingPage implements OnInit, OnDestroy {
   musicVolume=localStorage.getItem('musicVolume')?Number(localStorage.getItem('musicVolume')):6;
   productFallLimit = localStorage.getItem('product_fall_limit')?Number(localStorage.getItem('product_fall_limit')):10;
 
-  startM: number = 1;
+  startM = 1;
   endM = 60;
-  testIn:any;
-  testInTitle: string = 'test motor';
+  testIn: any;
+  testInTitle = 'test motor';
 
   successList: Array<number> = [];
   errorList: Array<number> = [];
-  
+
 
   constructor(
     private apiService: ApiService,
@@ -51,11 +51,11 @@ export class SettingPage implements OnInit, OnDestroy {
     return `${value}%`;
   }
   save() {
-    localStorage.setItem('wsurl', this.wsurl)
-    localStorage.setItem('url', this.url)
-    localStorage.setItem('machineId', this.machineId)
-    localStorage.setItem('otp', this.otp)
-    localStorage.setItem('contact', this.contact)
+    localStorage.setItem('wsurl', this.wsurl);
+    localStorage.setItem('url', this.url);
+    localStorage.setItem('machineId', this.machineId);
+    localStorage.setItem('otp', this.otp);
+    localStorage.setItem('contact', this.contact);
     localStorage.setItem('isRobotMuted',this.isRobotMuted?'yes':'');
     localStorage.setItem('isMusicMuted',this.isMusicMuted?'yes':'');
     localStorage.setItem('isAds',this.isAds?'yes':'');
@@ -63,8 +63,8 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('musicVolume',this.musicVolume+'');
 
     // product fall limit
-    if (this.productFallLimit > 30) this.productFallLimit = 30;
-    else if (this.productFallLimit < 0) this.productFallLimit = 10;
+    if (this.productFallLimit > 30) {this.productFallLimit = 30;}
+    else if (this.productFallLimit < 0) {this.productFallLimit = 10;}
     localStorage.setItem('product_fall_limit', this.productFallLimit+'');
 
 
@@ -99,9 +99,9 @@ export class SettingPage implements OnInit, OnDestroy {
         this.successList = [];
         this.errorList = [];
 
-        if (!(this.startM && this.endM)) throw new Error(IENMessage.parametersEmpty);
-        if (this.startM > this.endM) throw new Error(IENMessage.startShouldLesterThenEnd);
-        if (this.endM < this.startM) throw new Error(IENMessage.endShouldMoreThenStart);
+        if (!(this.startM && this.endM)) {throw new Error(IENMessage.parametersEmpty);}
+        if (this.startM > this.endM) {throw new Error(IENMessage.startShouldLesterThenEnd);}
+        if (this.endM < this.startM) {throw new Error(IENMessage.endShouldMoreThenStart);}
 
         if (this.testIn) {
           this.testInTitle = 'test motor';
@@ -114,7 +114,7 @@ export class SettingPage implements OnInit, OnDestroy {
         this.testInTitle = 'stop test motor';
         this.testIn = setInterval(() => {
 
-          
+
           if (start <= end)
           {
 
@@ -123,7 +123,7 @@ export class SettingPage implements OnInit, OnDestroy {
               data: {
                 slot: start
               }
-            }
+            };
             axios.post(`http://localhost:19006`, params)
             .then(r => {
               console.log(`response`);
@@ -137,7 +137,7 @@ export class SettingPage implements OnInit, OnDestroy {
             start+=1;
 
           }
-          else 
+          else
           {
             this.apiService.simpleMessage(`SUCCESS ${this.successList.length || 0 } ERROR ${this.errorList.length || 0 }`, 1000);
             clearInterval(this.testIn);
@@ -153,14 +153,14 @@ export class SettingPage implements OnInit, OnDestroy {
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
-        if (this.testIn != null) clearInterval(this.testIn);
+        if (this.testIn != null) {clearInterval(this.testIn);}
         this.testIn = null;
         start = this.startM;
         end = this.endM;
         this.testInTitle = 'test motor';
         resolve(error.message);
       }
-    })
+    });
   }
 
   // testMotor() {
@@ -200,7 +200,7 @@ export class SettingPage implements OnInit, OnDestroy {
       data: {
         slot: 1
       }
-    }
+    };
     axios.post(`http://localhost:19006`, params)
     .then(r => {
       console.log(`response`);
@@ -225,7 +225,7 @@ export class SettingPage implements OnInit, OnDestroy {
         this.apiService.alertError(error.message);
         resolve(error.message);
       }
-    }); 
+    });
   }
 
 }

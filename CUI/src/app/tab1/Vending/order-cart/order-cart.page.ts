@@ -27,16 +27,16 @@ export class OrderCartPage implements OnInit, OnDestroy {
   sweetalert: any = Swal;
 
   autoPaymentTimer: any = {} as any;
-  autoPaymentCounter: number = 15;
+  autoPaymentCounter = 15;
 
   autoSelectPaymentMethodTimer: any = {} as any;
-  autoSelectPaymentMethodCounter: number = 1;
+  autoSelectPaymentMethodCounter = 1;
 
   alertTime: any = {} as any;
-  alertCounter: number = 5;
+  alertCounter = 5;
 
   destroyTimer: any = {} as any;
-  destroyCounter: number = 60;
+  destroyCounter = 60;
 
   qrcode: string;
 
@@ -48,7 +48,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
     //   detail: 'Pay your order by using LAAB',
     //   value: 'laab'
     // },
-  ]
+  ];
 
   ewalletList: Array<any> = [
     {
@@ -65,7 +65,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
       detail: 'Pay your orders by using UMoney QRCode',
       value: 'umoney'
     }
-  ]
+  ];
 
 
   bankList: Array<any> = [
@@ -76,7 +76,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
       detail: 'Pay your orders by using BCEL One QRCode',
       value: 'bcelone'
     }
-  ]
+  ];
 
   paymentList: Array<any> = [...this.cashesList, ...this.ewalletList, ...this.bankList];
 
@@ -94,12 +94,12 @@ export class OrderCartPage implements OnInit, OnDestroy {
   elementLeft: HTMLDivElement = {} as any;
   elementRight: HTMLDivElement = {} as any;
 
-  
+
   constructor(
     public apiService: ApiService,
     public modal: ModalController,
     public vendingAPIService: VendingAPIService
-  ) { 
+  ) {
 
     this.paidValidationProcess = new PaidValidationProcess(this.apiService, this.vendingAPIService);
     this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
@@ -118,7 +118,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
     this.loadBilling();
   }
-  
+
   ngOnDestroy(): void {
     clearInterval(this.autoPaymentTimer);
     clearInterval(this.autoSelectPaymentMethodTimer);
@@ -147,14 +147,14 @@ export class OrderCartPage implements OnInit, OnDestroy {
   loadArrowScrollSuggest() {
     const arrowscrollDOWN = (document.querySelector('.arrow-scroll-down') as HTMLSpanElement);
     const element = (document.querySelector('.order-list') as HTMLDivElement);
-    if (this.orders != undefined && Object.entries(this.orders).length > 7) {
+    if (this.orders != undefined && this.orders.length > 7) {
       arrowscrollDOWN.classList.add('active');
     } else {
       arrowscrollDOWN.classList.remove('active');
     }
   }
   toggleArrowScrollSuggest(e: any) {
-    if (this.orders != undefined && Object.entries(this.orders).length > 7) {
+    if (this.orders != undefined && this.orders.length > 7) {
       const element = (document.querySelector('.order-list') as HTMLDivElement);
       const arrowscrollUP = (document.querySelector('.arrow-scroll-up') as HTMLSpanElement);
       const arrowscrollDOWN = (document.querySelector('.arrow-scroll-down') as HTMLSpanElement);
@@ -177,7 +177,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
   }
 
   loadDestroy() {
-    
+
     this.destroyTimer = setInterval(() => {
       this.destroyCounter--;
       if (this.destroyCounter == 0) {
@@ -192,7 +192,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
         clearInterval(this.destroyTimer);
         this.destroyCounter = 60;
 
-        this.apiService.myTab1.clearCart();  
+        this.apiService.myTab1.clearCart();
         this.apiService.modal.dismiss();
         this.apiService.alertWarnning(IENMessage.timeout, IENMessage.qrcodeExpired);
       }
@@ -243,12 +243,12 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
     input.checked = true;
     (document.querySelector('.qr-img') as HTMLImageElement).src = '';
-    
+
     this.apiService.myTab1.removeCart(index);
     this.getSummarizeOrder();
     this.loadArrowScrollSuggest();
     this.loadAutoPayment();
-    if (this.orders != undefined && Object.entries(this.orders).length == 0) {
+    if (this.orders != undefined && this.orders.length == 0) {
       this.apiService.modal.dismiss();
     }
   }
@@ -260,8 +260,8 @@ export class OrderCartPage implements OnInit, OnDestroy {
     ) as Array<IVendingMachineSale>;
     ord.forEach((v) => {
       const x = o.find((x) => x.stock.id == v.stock.id);
-      if (!x) o.push(v);
-      else x.stock.qtty += 1;
+      if (!x) {o.push(v);}
+      else {x.stock.qtty += 1;}
     });
 
     const t = this.getTotal();
@@ -271,12 +271,8 @@ export class OrderCartPage implements OnInit, OnDestroy {
   }
   getTotal() {
     const o = this.orders;
-    const q = o.reduce((a, b) => {
-      return a + b.stock.qtty;
-    }, 0);
-    const t = o.reduce((a, b) => {
-      return a + b.stock.qtty * b.stock.price;
-    }, 0);
+    const q = o.reduce((a, b) => a + b.stock.qtty, 0);
+    const t = o.reduce((a, b) => a + b.stock.qtty * b.stock.price, 0);
     return { q, t };
   }
 
@@ -287,39 +283,39 @@ export class OrderCartPage implements OnInit, OnDestroy {
     const paymentGroupRight = (document.querySelector('.payment-group-right') as HTMLDivElement);
     orderlist.classList.add('hidden');
     footer.classList.add('active');
-    
+
     this.autoSelectPaymentMethodTimer = setInterval(async () => {
       try {
-        
+
         this.autoSelectPaymentMethodCounter--;
         if (this.autoSelectPaymentMethodCounter == 0) {
           clearInterval(this.autoSelectPaymentMethodTimer);
           this.autoSelectPaymentMethodCounter = 1;
-  
+
           if (this.apiService.cash.amount > 0 && this.apiService.cash.amount >= this.getTotalSale.t)
           {
             this.currentLogo = this.paymentList[0].image;
             this.qrcode = 'cash';
             paymentGroupLeft.classList.add('active');
             paymentGroupRight.classList.add('active');
-            
+
             const run = await this.laabPaid();
-            if (run != IENMessage.success) throw new Error(run);
+            if (run != IENMessage.success) {throw new Error(run);}
             this.apiService.myTab1.clearStockAfterLAABGo();
             this.apiService.modal.dismiss();
 
           } else {
-  
+
               // default mmoney
               let run: any = await this.mmoneyQRCode();
-              if (run != IENMessage.success) throw new Error(run);
-              
+              if (run != IENMessage.success) {throw new Error(run);}
+
               run = await this.generateQRCode();
-              if (run != IENMessage.success) throw new Error(run);
-  
+              if (run != IENMessage.success) {throw new Error(run);}
+
               paymentGroupLeft.classList.add('active');
               paymentGroupRight.classList.add('active');
-  
+
           }
         }
 
@@ -334,7 +330,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
   clearOrders(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         const alert = this.apiService.alertConfirm(`Cancel paying orders and clear all`);
         if ((await alert).isConfirmed){
           this.orders = [];
@@ -344,7 +340,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
           clearInterval(this.autoPaymentTimer);
           this.autoPaymentCounter = 15;
 
-          this.apiService.myTab1.clearCart();  
+          this.apiService.myTab1.clearCart();
           this.apiService.modal.dismiss();
         }
 
@@ -360,8 +356,8 @@ export class OrderCartPage implements OnInit, OnDestroy {
     const summarizeOrder = JSON.parse(JSON.stringify(this.orders));
     summarizeOrder.forEach((item) => (item.stock.image = ''));
 
-    let quantity: number = 0;
-    let total: number = 0;
+    let quantity = 0;
+    let total = 0;
     for (let i = 0; i < summarizeOrder.length; i++) {
       quantity += summarizeOrder[i].stock.qtty;
       total +=
@@ -372,11 +368,11 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
     return {
       message: IENMessage.success,
-      summarizeOrder: summarizeOrder,
-      quantity: quantity,
-      total: total,
-      sum_refund: sum_refund
-    }
+      summarizeOrder,
+      quantity,
+      total,
+      sum_refund
+    };
   }
 
   laabPaid(): Promise<any> {
@@ -384,7 +380,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
       try {
 
         const setSummarizeOrder = this.setSummarizeOrder();
-        if (this.getTotalSale.q != setSummarizeOrder.quantity || this.getTotalSale.t != setSummarizeOrder.total) throw new Error(IENMessage.invalidSellDetail);
+        if (this.getTotalSale.q != setSummarizeOrder.quantity || this.getTotalSale.t != setSummarizeOrder.total) {throw new Error(IENMessage.invalidSellDetail);}
 
         const params = {
           machineId: this.apiService.machineId.machineId,
@@ -401,10 +397,10 @@ export class OrderCartPage implements OnInit, OnDestroy {
             time: new Date().toString(),
             token: cryptojs.SHA256(this.apiService.machineId.machineId +this.apiService.machineId.otp).toString(cryptojs.enc.Hex),
           }
-        }
+        };
 
         const run = await this.paidValidationProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
 
         this.apiService.cash.amount = setSummarizeOrder.sum_refund;
 
@@ -421,7 +417,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
   generateQRCode(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-        
+
         const qr = await new qrlogo({ logo: this.currentLogo, content: this.qrcode}).getCanvas();
         const qrcodeIMG = (document.querySelector('.qr-img') as HTMLImageElement);
         qrcodeIMG.src = qr.toDataURL();
@@ -445,10 +441,10 @@ export class OrderCartPage implements OnInit, OnDestroy {
           orders: setSummarizeOrder.summarizeOrder,
           amount: setSummarizeOrder.total,
           machineId: this.apiService.machineId.machineId
-        }
+        };
 
         const run = await this.generateMMoneyQRCodeProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {throw new Error(run);}
         // this.loadDestroy();
 
 
@@ -500,21 +496,21 @@ export class OrderCartPage implements OnInit, OnDestroy {
         let run: any = {} as any;
         if (this.currentValue == IGenerateQR.mmoney) {
           run = await this.mmoneyQRCode();
-          if (run != IENMessage.success) throw new Error(run);
+          if (run != IENMessage.success) {throw new Error(run);}
 
           this.billdate = new Date();
           run = await this.generateQRCode();
-          if (run != IENMessage.success) throw new Error(run);
+          if (run != IENMessage.success) {throw new Error(run);}
         }
 
         resolve(IENMessage.success);
 
       } catch (error) {
-        this.apiService.alertError(error.message); 
+        this.apiService.alertError(error.message);
         resolve(error.message);
       }
     });
   }
 
-  
+
 }

@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { IControlMenu } from '../models/menu.model';
 import { BehaviorSubject } from 'rxjs';
 import { IENMessage } from '../models/base.model';
-import cryptojs from "crypto-js";
+import cryptojs from 'crypto-js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ControlMenuService {
 
-  public CONTROL_MENUList: Array<{ name: string, status: boolean }> = [
+  public CONTROL_MENUList: Array<{ name: string; status: boolean }> = [
     {
       name: 'menu-ticket',
       status: true,
@@ -112,32 +112,32 @@ export class ControlMenuService {
       status: true,
     },
   ];
-  CONTROL_MENU = new BehaviorSubject<Array<{ name: string, status: boolean }>>([]);
-  
+  CONTROL_MENU = new BehaviorSubject<Array<{ name: string; status: boolean }>>([]);
+
   public static settingControlPageCheckboxs: NodeListOf<HTMLInputElement>;
   public static tab1PageLinks: NodeListOf<HTMLLinkElement>;
   public static stackCashoutPageLinks: NodeListOf<HTMLLinkElement>;
 
-  localname: string = 'CONTROL_MENU';
+  localname = 'CONTROL_MENU';
 
   constructor() {
     const local = localStorage.getItem(this.localname);
     if (local == undefined || local == null) {
       localStorage.setItem(this.localname, JSON.stringify(this.CONTROL_MENUList));
     } else {
-      const list: Array<{ name: string, status: boolean }> = JSON.parse(local);
+      const list: Array<{ name: string; status: boolean }> = JSON.parse(local);
       if (list != undefined && this.CONTROL_MENUList != undefined && list.length == this.CONTROL_MENUList.length)
       {
         this.CONTROL_MENUList = list;
       }
-      else 
+      else
       {
         // when user was add new menu this function will auto update localstorage
         // old -> list
         // new -> menu list
 
         localStorage.setItem(this.localname, JSON.stringify(this.CONTROL_MENUList.filter(item => !list.includes(item))));
-        
+
       }
     }
   }
@@ -147,5 +147,5 @@ export class ControlMenuService {
     const status = list.filter(item => item.name == menu_name)[0]?.status;
     return status;
   }
-  
+
 }

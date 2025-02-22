@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
 import { IAlive } from './services/syste.model';
 import * as moment from 'moment';
-import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+
 import { Platform } from '@ionic/angular';
 import { SettingPage } from './setting/setting.page';
+// import { serialconnectioncapacitor } from 'serialconnectioncapacitor';
 
 @Component({
   selector: 'app-root',
@@ -16,29 +17,31 @@ export class AppComponent {
   uT = new Date();
   now = new Date();
   version = '';
-  constructor(public apiService: ApiService, private appVersion: AppVersion, private platform: Platform) {
+  constructor(public apiService: ApiService, private platform: Platform) {
     this.platform.ready().then(r => {
+      // serialconnectioncapacitor.listPorts().then(ports => {
+      //   if (Object.keys(ports).length === 0) {
+      //     throw new Error('No serial ports available');
+      //   }
+      //   console.log('ports',ports);
+      // }).catch(e => {
+      //   console.log(e);
+      // });
+
       this.autoCheckAppVersion();
-      if (this.platform.is('cordova')) {
-        this.appVersion.getAppName();
-        this.appVersion.getPackageName();
-        this.appVersion.getVersionCode();
-        this.appVersion.getVersionNumber().then(r => {
-          this.version = r;
-        })
-      }
-    })
+
+    });
 
     this.checkOnlineStatus = apiService.wsAlive;
     // alert('DEMO started')
     setInterval(() => {
       this.now = new Date();
-    }, 1000)
+    }, 1000);
     setInterval(() => {
       this.uT = this.apiService.updateOnlineStatus();
       // console.log(this.uT);
 
-    }, 5000)
+    }, 5000);
 
   }
   count = 6;
@@ -61,16 +64,16 @@ export class AppComponent {
       const x = prompt('password');
       console.log(x, this.getPassword());
 
-      if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+      if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.apiService.machineId?.otp) || x.length < 12) {return;}
         this.apiService.showModal(SettingPage).then(r => {
           r.present();
-        })
-      
+        });
+
       if (this.t) {
         clearTimeout(this.t);
         this.t = null;
       }
-    } 
+    }
     // else {
     //   if (!this.t) {
     //     this.t = setTimeout(() => {
@@ -87,13 +90,13 @@ export class AppComponent {
   getPassword() {
     let x = '';
     this.machineuuid.split('').forEach(v => {
-      !Number.isNaN(Number.parseInt(v)) ? x += v : '';
-    })
+      !isNaN(parseInt(v)) ? x += v : '';
+    });
     return x;
   }
   autoCheckAppVersion() {
     this.apiService.checkAppVersion.subscribe(run => {
-      if (!run) return;
+      if (!run) {return;}
       // (document.querySelector('.statusbar') as HTMLDivElement).style.zIndex = '-1';
       console.log(`CHECK APP VERSION`, run);
     });
