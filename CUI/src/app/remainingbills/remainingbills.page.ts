@@ -12,8 +12,8 @@ import { IENMessage } from '../models/base.model';
 })
 export class RemainingbillsPage implements OnInit, OnDestroy {
 
-  canclick = false;
-  errorClick = 0;
+  canclick: boolean = false;
+  errorClick: number = 0;
 
   timer: any = {} as any;
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
@@ -22,21 +22,21 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   @Input()r=new Array<IBillProcess>();
   url = this.apiService.url;
   lists: Array<any> = [];
-  constructor(public apiService: ApiService, private modal: ModalController) {
-
+  constructor(public apiService:ApiService, private modal: ModalController) { 
+    
   }
 
   async ngOnInit() {
     console.log('R',this.r);
     console.log(`here`);
     await this.apiService.soundPleaseSelect();
-
+    
 
     this.loadAutoFall();
   }
   loadAutoFall() {
     console.log(`counter`, this.counter, `counterLimit`, this.counterLimit);
-    if (this.r != undefined && this.r.length > 0) {
+    if (this.r != undefined && Object.entries(this.r).length > 0) {
       if (this.counter > this.counterLimit || this.counter < this.counterLimit) {
         this.counter = this.counterLimit;
         this.canclick = true;
@@ -49,7 +49,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         localStorage.setItem('product_fall', this.counter.toString());
         if (this.counter == 0)
         {
-          if (this.r != undefined && this.r.length == 1) {
+          if (this.r != undefined && Object.entries(this.r).length == 1) {
             this.canclick = true;
             this.autoRetryProcessBill();
             clearInterval(this.timer);
@@ -64,7 +64,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           this.canclick = true;
           console.log(`can click der`, this.canclick);
         }
-        else
+        else 
         {
           this.canclick = false;
           console.log(`can not click der`, this.canclick);
@@ -75,7 +75,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     }
   }
   autoRetryProcessBill() {
-    const transactionID = String(this.r[this.r.length-1].transactionID);
+    const transactionID: string = String(this.r[this.r.length-1].transactionID);
     const position = this.r[this.r.length-1].position;
     console.log(`transactionID`, transactionID, `position`, position);
     this.retryProcessBill(transactionID, position);
@@ -84,14 +84,14 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
       this.clearTimer();
   }
-  findImage(id: number){
+  findImage(id:number){
     return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.image;
   }
-  findPrice(id: number){
+  findPrice(id:number){
     return ApiService.vendingOnSale.find(vy=>vy.stock.id==id)?.stock?.price;
   }
   // local
-  async retryProcessBill(transactionID: string,position: number, human?: boolean){
+  async retryProcessBill(transactionID:string,position:number, human?: boolean){
     console.log(`rrrrr`, this.r);
     console.log(`-->`, this.canclick);
 
@@ -104,21 +104,21 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           console.log(`vending on sale`, ApiService.vendingOnSale);
           console.log('retryProcessBill',r);
           if(r.status){
-            this.apiService.soundThankYou();
+            this.apiService.soundThankYou()
             this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
               r.present();
             });
-            let count = 0;
+            let count: number = 0;
             console.log(`lleng`, this.r);
-            if (this.r != undefined && this.r.length > 1) {
+            if (this.r != undefined && Object.entries(this.r).length > 1) {
               count = this.r.length - 1;
             } else {
               count = 0;
             }
-
+  
             const i=this.r.findIndex(v=>v.position==position);
             this.r.splice(i,1);
-
+           
             if (count == 0) {
               this.apiService,this.modal.dismiss();
             }
@@ -130,8 +130,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           this.apiService.simpleMessage(r.message);
           setTimeout(()=>{
             this.apiService.dismissLoading();
-          },3000);
-        });
+          },3000)
+        })
       }
       else {
         if (human == true) {
@@ -144,41 +144,41 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             console.log(`vending on sale`, ApiService.vendingOnSale);
             console.log('retryProcessBill',r);
             if(r.status){
-              this.apiService.soundThankYou();
+              this.apiService.soundThankYou()
               this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
                 r.present();
               });
               try {
-
+                
                 this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
-
+                  
                   if (reload_ticket.status != 1) {
                     this.cancelTimer();
                     await this.apiService.soundSystemError();
                     return;
                   }
-
+      
                   this.r = reload_ticket.data;
                   console.log(`here der`, this.r);
-
-                  if (this.r != undefined && this.r.length == 0) {
+                
+                  if (this.r != undefined && Object.entries(this.r).length == 0) {
                     localStorage.setItem('product_fall', '0');
                     this.clearTimer();
                     this.apiService,this.modal.dismiss();
                     return;
                   }
-
+      
                   if (human == true) {
                     this.loadAutoFall();
                   }
-
+      
                 });
               } catch (error) {
                 console.log(`error eiei`, error.message);
                 this.cancelTimer();
                 await this.apiService.soundSystemError();
               }
-
+              
             } else{
               this.counter = 0;
               this.canclick = true;
@@ -188,19 +188,19 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
               this.reloadDelivery(true);
               await this.apiService.soundSystemError();
             }
-
-
+    
+    
             this.apiService.simpleMessage(r.message);
-
+    
             setTimeout(()=>{
               this.apiService.dismissLoading();
-            },3000);
-
-          });
+            },3000)
+    
+          }); 
         } catch (error) {
           setTimeout(()=>{
             this.apiService.dismissLoading();
-          },3000);
+          },3000)
           this.clearTimer();
           this.r = [];
           this.reloadDelivery(true);
@@ -253,19 +253,19 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
         //           this.r = reload_ticket.data;
         //           console.log(`here der`, this.r);
-
-        //           if (this.r != undefined && this.r.length == 0) {
+                
+        //           if (this.r != undefined && Object.entries(this.r).length == 0) {
         //             localStorage.setItem('product_fall', '0');
         //             this.clearTimer();
         //             this.apiService,this.modal.dismiss();
         //             return;
         //           }
-
+  
         //         }, async error => {
         //           this.cancelTimer();
         //           await this.apiService.soundSystemError();
         //         });
-
+                
         //       } else{
         //         this.counter = 0;
         //         this.canclick = true;
@@ -287,13 +287,13 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         //       },3000)
         //       this.clearTimer();
         //       await this.apiService.soundSystemError();
-        //     });
+        //     }); 
         //   }
-        //   else
+        //   else 
         //   {
         //     this.canclick = false;
         //   }
-
+          
         // }
     }
   }
@@ -311,14 +311,14 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   //         });
   //         let count: number = 0;
   //         console.log(`lleng`, this.r);
-  //         if (this.r != undefined && this.r.length > 1) {
+  //         if (this.r != undefined && Object.entries(this.r).length > 1) {
   //           count = this.r.length - 1;
   //         } else {
   //           count = 0;
   //         }
   //         const i=this.r.findIndex(v=>v.position==position);
   //         this.r.splice(i,1);
-
+         
   //         if (this.r != undefined && this.r.length == 0) {
   //           this.apiService,this.modal.dismiss();
   //         }
@@ -331,8 +331,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   //       setTimeout(()=>{
   //         this.apiService.dismissLoading();
   //       },3000)
-
-  //     });
+        
+  //     }); 
   //   }
   // }
 
@@ -346,8 +346,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
       this.r = reload_ticket.data;
       console.log(`here der`, this.r);
-
-      if (this.r != undefined && this.r.length == 0) {
+    
+      if (this.r != undefined && Object.entries(this.r).length == 0) {
         localStorage.setItem('product_fall', '0');
         this.clearTimer();
         this.apiService,this.modal.dismiss();
@@ -365,9 +365,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     });
   }
   getPrice() {
-    return this.r.find(item => item==item);
+    return this.r.find(item => item)
   }
-  getStock(position: number){
+  getStock(position:number){
     return this.r.map(v=>v.bill.vendingsales)[0].find(v=>v.position==position)?.stock;
   }
   closeToolTip(){
@@ -380,7 +380,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   }
 
   close() {
-    if (this.r != undefined && this.r.length > 0) {return;}
+    if (this.r != undefined && Object.entries(this.r).length > 0) return;
     this.clearTimer();
     this.apiService.modal.dismiss();
   }
@@ -396,5 +396,5 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   reload() {
     window.location.reload();
   }
-
+  
 }

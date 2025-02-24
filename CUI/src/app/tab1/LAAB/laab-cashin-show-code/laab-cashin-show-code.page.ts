@@ -16,9 +16,9 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
 
   @Input() qrImage: string;
   @Input() code: string;
-
-  currentCash = 0;
-  timeClose = 0;
+  
+  currentCash: number = 0;
+  timeClose: number = 0;
   counterRefreshBalance: any = {} as any;
   counterTimeClose: any = {} as any;
 
@@ -26,7 +26,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
     public apiService: ApiService,
     public vendingAPIService: VendingAPIService,
     public modal: ModalController
-  ) {
+  ) { 
     this.apiService.___LaabCashinShowCodePage = this.modal;
 
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
@@ -55,8 +55,8 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
 
   initTime() {
     this.timeClose = 60;
-
-    let count = 60;
+    
+    let count: number = 60;
     this.counterTimeClose = setInterval(() => {
       count--;
       if (count == 0) {
@@ -68,7 +68,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
 
     }, 1000);
   }
-
+  
   balanceRefresh(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
@@ -77,12 +77,12 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
         let count = 0;
         const params = {
           machineId: localStorage.getItem('machineId')
-        };
+        }
         this.counterRefreshBalance = setInterval(async () => {
           count++;
           if (count == 5) {
             const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-            if (run.message != IENMessage.success) {throw new Error(run);}
+            if (run.message != IENMessage.success) throw new Error(run);
             console.log(`response`, run);
             this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
             console.log(`current cash`, this.currentCash, `cash`, this.apiService.cash);
@@ -104,9 +104,9 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
         this.apiService.modal.dismiss();
         resolve(error.message);
       }
-    });
+    })
   }
 
-
+  
 
 }

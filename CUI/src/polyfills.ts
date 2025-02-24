@@ -52,8 +52,6 @@
  *
  */
 
-
-
 import './zone-flags';
 
 /***************************************************************************************************
@@ -65,84 +63,3 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
-// Polyfill for Object.entries
-if (!Object.entries) {
-    Object.entries = function<T>(obj: { [key: string]: T }): [string, T][] {
-      const entries: [string, T][] = [];
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          entries.push([key, obj[key]]);
-        }
-      }
-      return entries;
-    };
-  }
-  if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(search: string, pos?: number): boolean {
-      pos = pos || 0;
-      return this.substring(pos, pos + search.length) === search;
-    };
-  }
-  // Polyfill for String.prototype.endsWith
-if (!String.prototype.endsWith) {
-    String.prototype.endsWith = function(search: string, thisLen?: number): boolean {
-      if (thisLen === undefined || thisLen > this.length) {
-        thisLen = this.length;
-      }
-      return this.substring(thisLen - search.length, thisLen) === search;
-    };
-  }
-
-  if (!Array.prototype.findIndex) {
-    Array.prototype.findIndex = function<T>(callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any): number {
-      if (this == null) {
-        throw new TypeError('Array.prototype.findIndex called on null or undefined');
-      }
-      if (typeof callback !== 'function') {
-        throw new TypeError('callback must be a function');
-      }
-      for (let i = 0; i < this.length; i++) {
-        if (callback.call(thisArg, this[i], i, this)) {
-          return i;
-        }
-      }
-      return -1;
-    };
-  }
-
-  // src/polyfills.ts
-
-// Polyfill for Array.prototype.includes
-if (!Array.prototype.includes) {
-    Array.prototype.includes = function<T>(searchElement: T, fromIndex?: number): boolean {
-      if (this == null) {
-        throw new TypeError('Array.prototype.includes called on null or undefined');
-      }
-      const o = Object(this);
-      const len = o.length >>> 0;
-      if (len === 0) {
-        return false;
-      }
-      const n = fromIndex || 0;
-      let k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-      while (k < len) {
-        if (o[k] === searchElement) {
-          return true;
-        }
-        k++;
-      }
-      return false;
-    };
-  }
-
-  if (!String.prototype.includes) {
-    String.prototype.includes = function(search: string, start?: number): boolean {
-      if (typeof start !== 'number') {
-        start = 0;
-      }
-      if (start + search.length > this.length) {
-        return false;
-      }
-      return this.indexOf(search, start) !== -1;
-    };
-  }

@@ -18,7 +18,7 @@
 //     private loadingController: LoadingController,
 //     private changeRef: ChangeDetectorRef,
 //     private toastSvc: ToastController
-//   ) {
+//   ) { 
 //     UsbSerial.usbAttachedDetached((response: UsbSerialResponse) => {
 //       if (response.success && response.data) {
 //         if (!this.usbserialResponse) {

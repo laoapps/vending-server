@@ -1,6 +1,6 @@
-import { IENMessage } from 'src/app/models/base.model';
-import { ApiService } from 'src/app/services/api.service';
-import { VendingAPIService } from 'src/app/services/vending-api.service';
+import { IENMessage } from "src/app/models/base.model";
+import { ApiService } from "src/app/services/api.service";
+import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
 export class LoadVendingWalletCoinBalanceProcess {
@@ -9,7 +9,7 @@ export class LoadVendingWalletCoinBalanceProcess {
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
-
+    
     private vendingWalletCoinBalance: number;
 
     constructor(
@@ -23,7 +23,7 @@ export class LoadVendingWalletCoinBalanceProcess {
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-
+                
 
 
                 console.log(`show vending wallet coin balance`, 1);
@@ -38,12 +38,12 @@ export class LoadVendingWalletCoinBalanceProcess {
                 console.log(`show vending wallet coin balance`, 3);
 
                 const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
                 console.log(`show vending wallet coin balance`, 4);
-
+                
                 const LoadVendingWalletCoinBalance = await this.LoadVendingWalletCoinBalance();
-                if (LoadVendingWalletCoinBalance != IENMessage.success) {throw new Error(LoadVendingWalletCoinBalance);}
+                if (LoadVendingWalletCoinBalance != IENMessage.success) throw new Error(LoadVendingWalletCoinBalance);
 
                 console.log(`show vending wallet coin balance`, 5);
 
@@ -55,7 +55,7 @@ export class LoadVendingWalletCoinBalanceProcess {
             } catch (error) {
 
                 // (await this.workload).dismiss();
-                resolve(error.message);
+                resolve(error.message);     
             }
         });
     }
@@ -75,20 +75,20 @@ export class LoadVendingWalletCoinBalanceProcess {
                 console.log(this.apiService.machineId.machineId, this.apiService.machineId.otp);
                 const params = {
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
-                };
-                console.log(`tttokn`, params.token);
+                }
+                console.log(`tttokn`, params.token)
 
                 this.vendingAPIService.showVendingWalletCoinBalance(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
-                    if (response.status != 1) {return resolve(response.message);}
+                    if (response.status != 1) return resolve(response.message);
                     this.vendingWalletCoinBalance = response.info.balance;
                     this.apiService.coinName = response.info.coinName;
                     this.apiService.name = response.info.name;
                     this.apiService.laabuuid = response.info.uuid;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-
+                
             } catch (error) {
                 resolve(error.message);
             }
@@ -101,7 +101,7 @@ export class LoadVendingWalletCoinBalanceProcess {
                 vendingWalletCoinBalance: this.vendingWalletCoinBalance
             }],
             message: IENMessage.success
-        };
+        }
 
         return response;
     }

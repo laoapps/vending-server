@@ -19,7 +19,7 @@ import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/ha
     Tab1PageRoutingModule,
      OrderModule,
      SweetAlert2Module,
-
+     
   ],
   declarations: [Tab1Page]
 })

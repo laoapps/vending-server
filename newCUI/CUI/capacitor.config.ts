@@ -11,27 +11,11 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true
   },
-  cordova: {
-    preferences: {
-      ScrollEnabled: 'false',
-      'android-minSdkVersion': '19',
-      'android-targetSdkVersion': '30',
-      'android-compileSdkVersion': '30',
-      BackupWebStorage: 'none',
-      SplashMaintainAspectRatio: 'true',
-      FadeSplashScreenDuration: '300',
-      SplashShowOnlyFirstTime: 'false',
-      SplashScreen: 'screen',
-      SplashScreenDelay: '3000',
-      WKWebViewOnly: 'true',
-      AndroidXEnabled: 'false'
-    }
-  },
-  "plugins": {
-		"CapacitorUpdater": {
-			"autoUpdate": true,
-			"resetWhenUpdate": false,
-      "version": "1.0.0"
+  plugins: {
+		CapacitorUpdater: {
+			autoUpdate: true,
+			resetWhenUpdate: false,
+      version: "1.0.0"
 		}
 	}
 };

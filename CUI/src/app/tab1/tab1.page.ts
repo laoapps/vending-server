@@ -1,4 +1,3 @@
-
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -62,10 +61,10 @@ import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hang
 import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { PlayGamesPage } from './Vending/play-games/play-games.page';
 import { OrderCartPage } from './Vending/order-cart/order-cart.page';
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
-
-const host = window.location.protocol + '//' + window.location.host;
-import { CapacitorUpdater } from '@capgo/capacitor-updater';
+var host = window.location.protocol + '//' + window.location.host;
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { AutoPaymentPage } from './Vending/auto-payment/auto-payment.page';
 
 @Component({
@@ -141,42 +140,42 @@ export class Tab1Page implements OnDestroy {
   ];
   webviewList: Array<any> = [
     {
-      icon: '../../assets/webview/hangmistore.jpeg',
+      icon: "../../assets/webview/hangmistore.jpeg",
       name: 'Hangmi Store',
       description: 'Shopping online ecomerc by Hangmi Store application services',
       link: 'hangmistore'
     },
     {
-      icon: '../../assets/webview/hangmifood.png',
+      icon: "../../assets/webview/hangmifood.png",
       name: 'Hangmi Food',
       description: 'Order and delivery your food by Hangmi Food application services',
       link: 'hangmifood'
     },
     {
-      icon: '../../assets/webview/topupandservices.jpeg',
+      icon: "../../assets/webview/topupandservices.jpeg",
       name: 'Topup & Services',
       description: 'Online payment and options',
       link: 'topupandservices'
     }
-  ];
+  ] 
   currentSegementTab: string = ITabVendingSegement.vending;
 
   autoShowMyOrderTimer: any = {} as any;
-  autoShowMyOrdersCounter = 15;
+  autoShowMyOrdersCounter: number = 15;
 
   isFranciseMode: boolean = localStorage.getItem('francisemode') ? true : false;
 
-  checkAppUpdate = false;
+  checkAppUpdate: boolean = false;
   autoDismissCheckAppUpdate: any = {} as any;
   loadingCheck: any = {} as any;
-  loadingPercent = 0;
+  loadingPercent: number = 0;
 
-  otherModalAreOpening = false;
+  otherModalAreOpening: boolean = false;
 
 
   // interval
   refreshAll: any = {} as any;
-  refreshAllCounter = 0;
+  refreshAllCounter: number = 0;
 
   constructor(
     private ref: ChangeDetectorRef,
@@ -190,7 +189,7 @@ export class Tab1Page implements OnDestroy {
     private cashingService: AppcachingserviceService,
     public loading: LoadingController
   ) {
-
+    
     this.refreshAllEveryHour();
 
     this.autopilot = this.apiService.autopilot;
@@ -238,8 +237,8 @@ export class Tab1Page implements OnDestroy {
       console.log('Width: ' + (this.swidth = platform.width()));
       console.log('Height: ' + (this.sheight = platform.height()));
       console.log('screen width', this.swidth, 'screen height', this.sheight);
-      if (this.swidth > 550) {this.smode = 3;}
-      else {this.smode = 2;}
+      if (this.swidth > 550) this.smode = 3;
+      else this.smode = 2;
       // setTimeout(() => {
       console.log('loading sale list');
 
@@ -251,7 +250,7 @@ export class Tab1Page implements OnDestroy {
 
       try {
         this.apiService.wsapi.loginSubscription.subscribe((r) => {
-          if (!r) {return console.log('empty');}
+          if (!r) return console.log('empty');
           console.log('ws login subscription', r);
           this.apiService.myTab1 = this;
           this.apiService.clientId.clientId = r.clientId;
@@ -272,22 +271,22 @@ export class Tab1Page implements OnDestroy {
                     this.otherModalAreOpening = true;
                     this.checkActiveModal(r);
                     this.openAnotherModal(r);
-
+  
                     // adsOn=true;
                     // r.onDidDismiss().then(rx=>{
                     //   adsOn=false;
                     // })
-                  });
+                  })
                 }
-
-
+  
+  
                 this.apiService.soundGreeting();
                 setTimeout(() => {
                   this.apiService.soundPleaseVisit();
                 }, 5000);
-
+    
                 setTimeout(() => {
-
+                  
                   if(new Date().getTime()%2){
                     setTimeout(() => {
                       this.apiService.soundPointToCashOut();
@@ -299,26 +298,26 @@ export class Tab1Page implements OnDestroy {
                       this.apiService.soundCheckTicketsExist();
                     }, 15000);
                     setTimeout(() => {
-                      if(this.apiService.cash.amount>0){this.apiService.soundMachineHasSomeChanges();}
+                      if(this.apiService.cash.amount>0)this.apiService.soundMachineHasSomeChanges();
                     }, 20000);
                   }
-
+                  
                 }, 10000);
                 this.autopilot.auto=0;
-
+                
               }else{
                 this.autopilot.auto++;
               }
               const hour = new Date().getHours();// >19 , >0&&<8
-
+  
             }, 10000);
-
+  
             this.loadStock();
             this.isFirstLoad = false;
           }
         });
       } catch (error) {
-
+        
       }
 
 
@@ -353,7 +352,7 @@ export class Tab1Page implements OnDestroy {
 
           // for stack order UI
           const ind = this.orders.findIndex((v) => v.position == position);
-          if (ind != -1) {this.orders.splice(ind, 1);}
+          if (ind != -1) this.orders.splice(ind, 1);
         } catch (error) {
           console.log(' error on event emitter');
         }
@@ -441,22 +440,22 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.refreshAll);
   }
   async runtoast(txt: string, duration: number = 1000) {
-        const t = this.apiService.toast.create({ message: `--> ${txt}`, duration });
+        const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: duration });
     (await t).present();
   }
   loadAutoShowMyOrders() {
-    if (this.orders != undefined && this.orders.length > 0 && this.checkAppUpdate == false) {
+    if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
       this.autoShowMyOrderTimer = setInterval(() => {
         this.autoShowMyOrdersCounter--;
         if (this.autoShowMyOrdersCounter <= 0) {
           clearInterval(this.autoShowMyOrderTimer);
           this.showMyOrdersModal();
-        }
+        } 
       }, 1000);
     }
   }
   reloadAutoPayment() {
-    if (this.orders != undefined && this.orders.length > 0 && this.checkAppUpdate == false) {
+    if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
       this.autoShowMyOrdersCounter = 15;
     }
   }
@@ -531,18 +530,18 @@ export class Tab1Page implements OnDestroy {
               // reset everytime ws activate
               // console.log(' this.vendingOnSale.length 1', this.vendingOnSale.length);
 
-              if (this.vendingOnSale?.length) {this.vendingOnSale.length = 0;}
+              if (this.vendingOnSale?.length) this.vendingOnSale.length = 0;
 
-              if (this.saleList?.length) {this.saleList.length = 0;}
+              if (this.saleList?.length) this.saleList.length = 0;
 
               // console.log(' this.vendingOnSale.length 2', this.~vendingOnSale.length);
               // console.log(`sale list der 1`, this.saleList.length);
 
               this.vendingOnSale.push(...saleitems);
               this.saleList.push(...this.vendingOnSale);
-              if (this.saleList[0]?.position == 0) {this.compensation = 1;}
+              if (this.saleList[0]?.position == 0) this.compensation = 1;
               this.saleList.sort((a, b) => {
-                if (a.position < b.position) {return -1;}
+                if (a.position < b.position) return -1;
               });
               console.log(`sale list der ni`, this.saleList);
               setTimeout(() => {
@@ -565,7 +564,20 @@ export class Tab1Page implements OnDestroy {
 
   loadBrightness(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
+      try {
 
+        const run = await ScreenBrightness.setBrightness({ brightness:0.0 });
+        this.apiService.alertSuccess(`--> run ${run}`)
+
+        // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
+        const brightness = await ScreenBrightness.getBrightness();
+        this.apiService.alertSuccess(`--> bright ${brightness}`)
+
+        resolve(IENMessage.success);
+        
+      } catch (error) {
+        resolve(error.message);
+      }
     });
   }
 
@@ -586,7 +598,7 @@ export class Tab1Page implements OnDestroy {
         };
         console.log(`params`, params);
         const run = await this.loadStockListProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        if (run.message != IENMessage.success) throw new Error(run);
 
         // fix
         // this.FakeWriteAPPVERSION();
@@ -601,20 +613,20 @@ export class Tab1Page implements OnDestroy {
         ) as Array<IVendingMachineSale>;
         console.log(`saleitems`, saleitems);
 
-        if (this.vendingOnSale?.length) {this.vendingOnSale.length = 0;}
-        if (this.saleList?.length) {this.saleList.length = 0;}
+        if (this.vendingOnSale?.length) this.vendingOnSale.length = 0;
+        if (this.saleList?.length) this.saleList.length = 0;
 
         const initVendingWalletCoinBalance =
           await this.initVendingWalletCoinBalance();
         if (initVendingWalletCoinBalance != IENMessage.success)
-          {throw new Error(initVendingWalletCoinBalance);}
+          throw new Error(initVendingWalletCoinBalance);
         if (saleitems.length) {
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
-          if (this.saleList[0]?.position == 0) {this.compensation = 1;}
+          if (this.saleList[0]?.position == 0) this.compensation = 1;
 
           this.saleList.sort((a, b) => {
-            if (a.position < b.position) {return -1;}
+            if (a.position < b.position) return -1;
           });
           setTimeout(() => {
             this.showBills();
@@ -630,9 +642,9 @@ export class Tab1Page implements OnDestroy {
 
               ApiService.vendingOnSale.push(...r.data);
               this.saleList.push(...this.vendingOnSale);
-              if (this.saleList[0]?.position == 0) {this.compensation = 1;}
+              if (this.saleList[0]?.position == 0) this.compensation = 1;
               this.saleList.sort((a, b) => {
-                if (a.position < b.position) {return -1;}
+                if (a.position < b.position) return -1;
               });
               setTimeout(() => {
                 this.showBills();
@@ -681,7 +693,7 @@ export class Tab1Page implements OnDestroy {
       !x?.startsWith(this.machineId?.otp) ||
       x?.length < 12
     )
-      {return;}
+      return;
     const m = await this.apiService.showModal(StocksalePage);
     this.checkActiveModal(m);
 
@@ -759,7 +771,7 @@ export class Tab1Page implements OnDestroy {
   // }
 
   buyMMoney(x: IVendingMachineSale) {
-    if (!x) {return alert('not found');}
+    if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
     this.apiService.showLoading();
     if (x.stock.price == 0) {
@@ -831,7 +843,7 @@ export class Tab1Page implements OnDestroy {
                     this.otherModalAreOpening = true;
                     this.checkActiveModal(r);
                     this.openAnotherModal(r);
-
+                    
                   });
               });
 
@@ -859,7 +871,7 @@ export class Tab1Page implements OnDestroy {
     }
   }
   buyManyMMoney() {
-    if (!this.orders.length) {return alert('Please add any items first');}
+    if (!this.orders.length) return alert('Please add any items first');
     const amount = this.orders.reduce(
       (a, b) => a + b.stock.price * b.stock.qtty,
       0
@@ -923,7 +935,7 @@ export class Tab1Page implements OnDestroy {
     return {
       orders: orders == null ? [] : JSON.parse(orders),
       sum: sum == null ? [] : JSON.parse(sum)
-    };
+    }
   }
   localSave() {
     localStorage.setItem(IENMessage.vendingPendingOrders, JSON.stringify(this.orders));
@@ -958,10 +970,10 @@ export class Tab1Page implements OnDestroy {
       }
 
       this.setActive();
-      if (!x) {return alert('not found');}
+      if (!x) return alert('not found');
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
-        {if (ord.length >= x?.stock.qtty) {return alert('Out of Stock');}}
+        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
       console.log('ID', x);
       console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 
@@ -972,7 +984,7 @@ export class Tab1Page implements OnDestroy {
       console.log('y', y);
       this.orders.unshift(y);
       console.log(`orders`, this.orders);
-
+      
       //  console.log('sum',this.getSummarizeOrder());
       this.getSummarizeOrder();
       // setTimeout(() => {
@@ -1005,13 +1017,13 @@ export class Tab1Page implements OnDestroy {
         }, 2000);
         return;
       }
-
+      
       this.setActive();
-      if (!x) {return alert('not found');}
+      if (!x) return alert('not found');
 
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
-        {if (ord.length >= x?.stock.qtty) {return alert('Out of Stock');}}
+        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
 
 
       console.log('ID', x);
@@ -1024,7 +1036,7 @@ export class Tab1Page implements OnDestroy {
       console.log('y', y);
       this.orders.unshift(y);
       console.log(`orders`, this.orders);
-
+      
       //  console.log('sum',this.getSummarizeOrder());
       this.getSummarizeOrder();
       // setTimeout(() => {
@@ -1037,8 +1049,8 @@ export class Tab1Page implements OnDestroy {
   }
 
   showMyOrdersModal() {
-    if (this.otherModalAreOpening == true) {return;}
-    if (this.orders != undefined && this.orders.length == 0) {return;}
+    if (this.otherModalAreOpening == true) return;
+    if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
     clearInterval(this.autoShowMyOrderTimer);
     this.autoShowMyOrdersCounter = 15;
 
@@ -1047,8 +1059,8 @@ export class Tab1Page implements OnDestroy {
     const props = {
       orders: this.orders,
       getTotalSale: this.getTotalSale
-    };
-    this.apiService.modal.create({ component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
+    }
+    this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
       r.present();
       this.otherModalAreOpening = true;
       // this.apiService.allModals.push(this.apiService.modal);
@@ -1056,7 +1068,7 @@ export class Tab1Page implements OnDestroy {
         this.otherModalAreOpening = false;
         AutoPaymentPage.message?.close();
         AutoPaymentPage.message = undefined;
-        if (this.orders != undefined && this.orders.length > 0 && this.checkAppUpdate == false) {
+        if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
           this.loadAutoShowMyOrders();
         }
       });
@@ -1073,8 +1085,8 @@ export class Tab1Page implements OnDestroy {
     ) as Array<IVendingMachineSale>;
     ord.forEach((v) => {
       const x = o.find((x) => x.stock.id == v.stock.id);
-      if (!x) {o.push(v);}
-      else {x.stock.qtty += 1;}
+      if (!x) o.push(v);
+      else x.stock.qtty += 1;
     });
     console.log('OOOO', o);
 
@@ -1091,11 +1103,13 @@ export class Tab1Page implements OnDestroy {
   getTotal() {
     const o = this.orders;
     console.log(`get total der`, o);
-    const q = o.reduce((a, b) => a + b.stock.qtty, 0);
-    const t = o.reduce((a, b) =>
+    const q = o.reduce((a, b) => {
+      return a + b.stock.qtty;
+    }, 0);
+    const t = o.reduce((a, b) => {
       // console.log(`a`, a, `b`, b.stock.qtty, b.stock.price, b.stock.qtty * b.stock.price);
-       a + b.stock.qtty * b.stock.price
-    , 0);
+      return a + b.stock.qtty * b.stock.price;
+    }, 0);
     return { q, t };
   }
   // clearOrder() {
@@ -1132,7 +1146,7 @@ export class Tab1Page implements OnDestroy {
   getPassword() {
     let x = '';
     this.apiService.machineuuid.split('').forEach((v) => {
-      !isNaN(parseInt(v)) ? (x += v) : '';
+      !Number.isNaN(Number.parseInt(v)) ? (x += v) : '';
     });
     return x;
   }
@@ -1159,7 +1173,7 @@ export class Tab1Page implements OnDestroy {
         // const machineId: string = localStorage.getItem('machineId');
         const params = {};
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
         resolve(IENMessage.success);
       } catch (error) {
@@ -1174,10 +1188,10 @@ export class Tab1Page implements OnDestroy {
         // const machineId: string = localStorage.getItem('machineId');
         const params = {};
         const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
         if (this.apiService.cash.amount > 0)
-          {this.apiService.soundMachineHasSomeChanges();}
+          this.apiService.soundMachineHasSomeChanges();
         resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -1191,7 +1205,7 @@ export class Tab1Page implements OnDestroy {
         // const machineId: string = localStorage.getItem('machineId');
         let params: any = {};
         let run: any = await this.cashValidationProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        if (run.message != IENMessage.success) throw new Error(run);
         this.acceptcash = run.data[0].acceptcash;
         const cashList = await this.cashList();
 
@@ -1200,7 +1214,7 @@ export class Tab1Page implements OnDestroy {
           description: 'VENDING CASH IN',
         };
         run = await this.cashinValidationProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        if (run.message != IENMessage.success) throw new Error(run);
         this.apiService.cash.amount = Number(this.apiService.cash.amount) + Number(cashList);
 
         resolve(IENMessage.success);
@@ -1215,7 +1229,7 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
         let message: any = {} as any;
-        const inputs: Array<any> = [
+        let inputs: Array<any> = [
           {
             type: 'radio',
             label: '1,000',
@@ -1281,7 +1295,7 @@ export class Tab1Page implements OnDestroy {
 
         message = await this.apiService.alert.create({
           header: 'Cash In',
-          inputs,
+          inputs: inputs,
         });
         message.present();
       } catch (error) {
@@ -1297,8 +1311,8 @@ export class Tab1Page implements OnDestroy {
         this.summarizeOrder.forEach((item) => (item.stock.image = ''));
 
         console.log(`summarizeOrder`, this.summarizeOrder);
-        let sum_quantity = 0;
-        let sum_total = 0;
+        let sum_quantity: number = 0;
+        let sum_total: number = 0;
         for (let i = 0; i < this.summarizeOrder.length; i++) {
           sum_quantity += this.summarizeOrder[i].stock.qtty;
           sum_total +=
@@ -1335,7 +1349,7 @@ export class Tab1Page implements OnDestroy {
           quantity: sum_quantity,
           total: sum_total,
           balance: sum_refund,
-          paidLAAB,
+          paidLAAB: paidLAAB,
         };
         console.log(`props`, props);
 
@@ -1385,12 +1399,12 @@ export class Tab1Page implements OnDestroy {
             'menu-laab-cashin'
           );
         if (disable == undefined || disable == false)
-          {return resolve(IENMessage.success);}
+          return resolve(IENMessage.success);
 
         // const machineId: string = localStorage.getItem('machineId');
         let params: any = {};
-        const run: any = await this.cashValidationProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        let run: any = await this.cashValidationProcess.Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
         this.acceptcash = run.data[0].acceptcash;
         const cashList = await this.cashList();
 
@@ -1400,7 +1414,7 @@ export class Tab1Page implements OnDestroy {
         };
         console.log(`params`, params);
 
-        const qrModel = {
+        let qrModel = {
           type: 'CQR',
           mode: 'COIN',
           destination: this.apiService.laabuuid,
@@ -1439,7 +1453,7 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
-  checkActiveModal(rx: HTMLIonModalElement){
+  checkActiveModal(rx:HTMLIonModalElement){
     const t = setInterval(() => {
       this.autopilot.auto=0;
     }, 1000);
@@ -1453,7 +1467,7 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (this.apiService.cash.amount == 0)
-          {throw new Error(IENMessage.thereIsNotBalance);}
+          throw new Error(IENMessage.thereIsNotBalance);
 
         const props = {};
         this.apiService.modal
@@ -1464,7 +1478,7 @@ export class Tab1Page implements OnDestroy {
             this.openAnotherModal(r);
             clearInterval(this.autoShowMyOrderTimer);
             resolve(IENMessage.success);
-
+            
             this.checkActiveModal(r);
           });
       } catch (error) {
@@ -1492,7 +1506,7 @@ export class Tab1Page implements OnDestroy {
               this.checkActiveModal(r);
             });
         }
-
+          
       } else {
         this.apiService.toast
           .create({ message: r.message, duration: 5000 })
@@ -1505,13 +1519,13 @@ export class Tab1Page implements OnDestroy {
   public reshowBills(count: number): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        const loading = this.apiService.load.create({
+        let loading = this.apiService.load.create({
           message: 'Please wait...',
         });
 
         if (count > 0) {
           (await loading).present();
-          const i = setTimeout(async () => {
+          let i = setTimeout(async () => {
             (await loading).dismiss();
             this.showBills();
           }, 1000);
@@ -1528,7 +1542,7 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (this.apiService.cash.amount == 0)
-          {throw new Error(IENMessage.thereIsNotBalance);}
+          throw new Error(IENMessage.thereIsNotBalance);
 
         // ##here
         this.apiService.modal
@@ -1554,9 +1568,9 @@ export class Tab1Page implements OnDestroy {
   public ShowMMoneyAppLink() {
     // this.refreshControlMenuList();
 
-    const ios_link =
+    const ios_link: string =
       'https://apps.apple.com/la/app/m-money/id1513863808';
-    const android_link =
+    const android_link: string =
       'https://play.google.com/store/apps/details?id=com.ltc.wallet';
     const props = {
       links: [android_link, ios_link],
@@ -1578,7 +1592,7 @@ export class Tab1Page implements OnDestroy {
 
   dynamicControlMenu() {
     this.refreshControlMenuList();
-    const i = setInterval(() => {
+    let i = setInterval(() => {
       if (this.links == undefined) {
         this.links = document.querySelectorAll(
           '.control-menu'
@@ -1590,7 +1604,7 @@ export class Tab1Page implements OnDestroy {
       this.animateControlMenu(this.links);
 
       this.apiService.controlMenuService.CONTROL_MENU.subscribe((r) => {
-        if (r) {this.animateControlMenu(this.links, r);}
+        if (r) this.animateControlMenu(this.links, r);
       });
       clearInterval(i);
     });
@@ -1674,7 +1688,7 @@ export class Tab1Page implements OnDestroy {
     });
   }
 
-
+  
 
   vendingGO() {
     const props = {
@@ -1742,11 +1756,11 @@ export class Tab1Page implements OnDestroy {
     }
 
     const props = {
-
-    };
+      
+    }
     this.apiService.modal
       .create({
-        component,
+        component: component,
         componentProps: props,
         cssClass: 'dialog-fullscreen',
       })
@@ -1787,7 +1801,7 @@ export class Tab1Page implements OnDestroy {
   //     if (!run) return;
 
   //     const response: any = run;
-
+      
   //     console.log(`checkAppUpdate`, this.checkAppUpdate);
   //     if (this.checkAppUpdate == true) return;
 
@@ -1814,7 +1828,7 @@ export class Tab1Page implements OnDestroy {
   //       CapacitorUpdater.set(run_download).then(async run_update => {
   //         console.log(`run_update`, run_update);
   //         if (run_update == undefined) throw new Error(IENMessage.repairFail + run_update +'');
-
+ 
   //         this.loadingPercent = 0;
   //         this.loadingCheck = setInterval(() => {
   //           this.loadingPercent++;
@@ -1861,27 +1875,27 @@ export class Tab1Page implements OnDestroy {
   // }
 
   repairText: string;
-  displayRepaireAppVersion = false;
-  checkAppVersion = false;
-
+  displayRepaireAppVersion: boolean = false;
+  checkAppVersion: boolean = false;
+  
   loopPercent: any = {} as any;
-  percentCount = 0;
-  percentCountText = '0';
-  percentLimit = 100;
+  percentCount: number = 0;
+  percentCountText: string = '0';
+  percentLimit: number = 100;
 
   installingPecent: any = {} as any;
-  installingCount = 15;
+  installingCount: number = 15;
 
   APPVERSION(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
 
         // return resolve(IENMessage.success);
-        if (!this.platform.is('capacitor')) {return resolve(IENMessage.success);}
+        if (!this.platform.is('capacitor')) return resolve(IENMessage.success);
 
         this.apiService.checkAppVersion.subscribe(async run => {
-          if (!run) {return resolve(IENMessage.success);}
-          if (this.checkAppVersion == true) {return resolve(IENMessage.success);}
+          if (!run) return resolve(IENMessage.success);
+          if (this.checkAppVersion == true) return resolve(IENMessage.success);
           this.otherModalAreOpening = true;
 
           const response: any = run;
@@ -1890,11 +1904,11 @@ export class Tab1Page implements OnDestroy {
           this.apiService.closeAllModal();
 
           this.repairText = IENMessage.downloadingVendingVersion + ' ' + response.versionText;
-
+          
           const downloadModel = {
             url: `${environment.filemanagerurl}download/${response.url}`,
             version: response.versionText
-          };
+          }
           // await this.runtoast(downloadModel.url, 60 * 10);
 
           // downloading
@@ -1924,23 +1938,23 @@ export class Tab1Page implements OnDestroy {
               this.otherModalAreOpening = false;
               this.displayRepaireAppVersion = false;
             }
-
+            
           }, 1000);
 
 
           const download = await CapacitorUpdater.download(downloadModel);
           if (download.status == IENMessage.pending)
           {
-
+            
             // download complete
-
+            
             this.percentCount = 100;
             this.percentCountText = '100';
             clearInterval(this.loopPercent);
 
             this.installingPecent = setInterval(async () => {
               this.installingCount--;
-              this.repairText = IENMessage.installVendingVersion + ' ' + response.versionText + ' in' + this.installingCount;
+              this.repairText = IENMessage.installVendingVersion + ' ' + response.versionText + ' in' + this.installingCount; 
 
               if (this.installingCount == 0) {
                 clearInterval(this.installingPecent);
@@ -1949,8 +1963,8 @@ export class Tab1Page implements OnDestroy {
                 this.displayRepaireAppVersion = false;
 
                 const install = await CapacitorUpdater.set(download);
-                if (install == undefined) {throw new Error(IENMessage.installingNewVersionFail);}
-                // CapacitorUpdater.removeAllListeners();
+                if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
+                CapacitorUpdater.removeAllListeners();
                 window.location.reload();
                 resolve(IENMessage.success);
               }
@@ -1979,7 +1993,7 @@ export class Tab1Page implements OnDestroy {
   refreshBalanceFromAnotherModal(balance: number) {
     this.apiService.cash.amount = balance;
   }
-
+  
   resetCashing(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
@@ -1994,6 +2008,6 @@ export class Tab1Page implements OnDestroy {
         this.apiService.alertError(error.message);
         resolve(error.message);
       }
-    });
+    }); 
   }
 }

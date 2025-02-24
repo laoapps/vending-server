@@ -13,7 +13,7 @@ import { QrCodeModule } from 'ng-qrcode';
 // import { NotifierModule } from 'angular-notifier';
 import { Storage } from '@ionic/storage-angular';
 import { OrderModule } from 'ngx-order-pipe';
-import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+
 
 import {NgPipesModule} from 'ngx-pipes';
 
@@ -30,7 +30,7 @@ import {NgPipesModule} from 'ngx-pipes';
   providers: [ 
     // VideoPlayer,
     // BarcodeScanner,
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage,AppVersion],
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },Storage],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -28,7 +28,7 @@ export class LaabGoPage implements OnInit {
     public apiService: ApiService,
     public vendingAPIService: VendingAPIService,
     public modal: ModalController
-  ) {
+  ) { 
     this.apiService.___LaabGoPage = this.modal;
     this.paidValidationProcess = new PaidValidationProcess(this.apiService, this.vendingAPIService);
   }
@@ -47,10 +47,10 @@ export class LaabGoPage implements OnInit {
           cash: this.total,
           description: 'VENDING WALLET COMMIT ORDER',
           paidLAAB: this.paidLAAB
-        };
+        }
         console.log(`params`, params);
         const run = await this.paidValidationProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        if (run.message != IENMessage.success) throw new Error(run);
 
         //
 
@@ -61,7 +61,7 @@ export class LaabGoPage implements OnInit {
         // await this.apiService.openSoundReady();
         // this.apiService.modal.dismiss();
         resolve(IENMessage.success);
-
+        
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);

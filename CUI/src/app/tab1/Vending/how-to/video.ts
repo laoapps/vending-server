@@ -14,4 +14,4 @@ export const howToVideoJSON = [
         title: 'How to 3',
         subtitle: '3'
     }
-];
+]

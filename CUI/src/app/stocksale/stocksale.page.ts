@@ -13,16 +13,16 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./stocksale.page.scss'],
 })
 export class StocksalePage implements OnInit,OnDestroy {
-  prod = environment.production;
+  prod = environment.production
   saleStock=new Array <IVendingMachineSale>();
   stock = new Array<IStock>();
   compensation=0;
   url = this.apiService.url;
   isDisabled='';
   search='';
-  jsonText=';';
+  jsonText=';'
   constructor(public apiService: ApiService,
-    public alertController: AlertController,
+    public alertController:AlertController,
     public storage: IonicStorageService) {
     this.saleStock = ApiService.vendingOnSale;
     this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
@@ -32,23 +32,23 @@ export class StocksalePage implements OnInit,OnDestroy {
   ngOnDestroy(): void {
     this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r=>{
       console.log(r);
-
+      
       if(r.status){
 
       }
       this.apiService.toast.create({message:r.message, duration: 2000}).then(r=>{
         r.present();
-      });
-    });
+      })
+    })
   }
   refillAll(){
     const conf =confirm('Are you sure ?');
-    if(!conf) {return;}
+    if(!conf) return;
     const p =prompt('please type 123456');
-    if(p!=='123456') {return;}
+    if(p!=='123456') return;
     this.saleStock.forEach(v=>{
       v.stock.qtty=v.max;
-    });
+    })
     alert('Done');
   }
   async reportSale(){
@@ -57,7 +57,7 @@ export class StocksalePage implements OnInit,OnDestroy {
       if (r.data) {
 
       }
-    });
+    })
     s.present();
   }
 
@@ -71,18 +71,18 @@ export class StocksalePage implements OnInit,OnDestroy {
         const e= JSON.parse(JSON.stringify(v));
 
         x.push(e);
-      });
+      })
       this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r=>{
         console.log(r);
-
+        
         if(r.status){
 
         }
         this.apiService.dismissLoading();
         this.apiService.toast.create({message:r.message, duration: 2000}).then(r=>{
           r.present();
-        });
-      });
+        })
+      })
     }
   }
   async recoverSale(){
@@ -98,32 +98,32 @@ export class StocksalePage implements OnInit,OnDestroy {
           //   this.apiService.vendingOnSale.push(v);
           // })
           console.log('recover',r.data);
-
-          ApiService.vendingOnSale.push(...r.data);
+          
+          ApiService.vendingOnSale.push(...r.data)
         }
         this.apiService.dismissLoading();
         this.apiService.toast.create({message:r.message, duration: 200}).then(r=>{
           r.present();
-        });
-      });
+        })
+      })
     }
   }
   async reportBills(){
-
+   
 
 
     const s = await this.apiService.showModal(ReportbillsPage);
     s.onDidDismiss().then(r => {
       if (r.data) {
-
+        
       }
-    });
+    })
     s.present();
   }
   async changeStock(position: number) {
     console.log('stock ', this.stock);
-
-    if (!this.stock.length) {return alert('no stock');}
+    
+    if (!this.stock.length) return alert('no stock')
     const s = await this.apiService.showModal(StockPage);
     s.onDidDismiss().then(r => {
       try {
@@ -134,23 +134,23 @@ export class StocksalePage implements OnInit,OnDestroy {
           console.log(`sale stock`, this.saleStock);
           const x = this.saleStock.find(v => v.position == position);
           const qtt = x.stock.qtty;
-           if (x) {Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);}
+           if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
           x.stock.qtty=qtt;
-
+          
           console.log('x',x);
-
-          if(this.saleStock[0].position==0){this.compensation=1;}
+          
+          if(this.saleStock[0].position==0)this.compensation=1;
           this.save();
         }
       } catch (error) {
         console.log(error);
-
+        
       }
-
-    });
+      
+    })
     s.present();
   }
-  setMax(position: number){
+  setMax(position:number){
 
     const x = this.saleStock.find(v => v.position == position);
     this.alertController.create({
@@ -171,7 +171,7 @@ export class StocksalePage implements OnInit,OnDestroy {
           role: 'cancel',
           cssClass: 'secondary',
           handler: () => {
-
+           
           },
         },
         {
@@ -181,7 +181,7 @@ export class StocksalePage implements OnInit,OnDestroy {
               console.log('CONFRIM',v);
               const x = this.saleStock.find(v => v.position == position);
               x.max=Number(v.maxqtty);
-              if(this.saleStock[0].position==0){this.compensation=1;}
+              if(this.saleStock[0].position==0)this.compensation=1;
               this.save();
             } catch (error) {
                 console.log(error);
@@ -193,9 +193,9 @@ export class StocksalePage implements OnInit,OnDestroy {
       r.present();
     });
 
-
-
-
+   
+  
+    
   }
 
 
@@ -214,20 +214,20 @@ export class StocksalePage implements OnInit,OnDestroy {
         // stock:{imgUrl: '', image:'',name:'',price:-1,qtty:0,id:-1} as IStock
         stock:{image:'',name:'',price:-1,qtty:0,id:-1} as IStock
       } as IVendingMachineSale));
-
+  
     }
-
+   
 
     console.log('saleStock',this.saleStock.length);
-
+    
     this.saleStock.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
-
+      
       if (! this.stock.find(y => y.id == v.id))
-        {this.stock.push(v);}
+        this.stock.push(v);
     });
-
-    if(this.saleStock[0].position==0){this.compensation=1;}
+    
+    if(this.saleStock[0].position==0)this.compensation=1;
   }
   reset(){
    const c =  confirm('Clear all data');
@@ -238,9 +238,9 @@ export class StocksalePage implements OnInit,OnDestroy {
       window.location.reload();
     }).catch(e=>{
       console.log('reset error',e);
-
+      
     });
-
+  
    }
   }
   close() {
@@ -257,19 +257,19 @@ export class StocksalePage implements OnInit,OnDestroy {
 
   save(){
     // TODO:
-    // remove all  base64images , using image from server
+    // remove all  base64images , using image from server 
     // this.saleStock.forEach(v=>v.stock.image='');
     this.storage.set('saleStock', this.saleStock, 'stock').then(r => {
       // console.log('SAVE saleStock', r);
     }).catch(e => {
       console.log('Error', e);
-    });
+    })
   }
   selectItem(pos=''){
     setTimeout(() => {
       this.isDisabled =pos;
     }, 200);
-
+   
   }
 
   doFilter(){
@@ -285,16 +285,16 @@ export class StocksalePage implements OnInit,OnDestroy {
   }
   saveJsonText(){
     try {
-      alert('ARE YOU SURE?');
+      alert('ARE YOU SURE?')
       console.log('jsonText',JSON.parse(this.jsonText));
-
+      
       this.apiService.saveSale(JSON.parse(this.jsonText)).subscribe(r=>{
         console.log('R',r);
-
+        
       });
     } catch (error) {
       console.log(error);
-
+      
     }
 
   }

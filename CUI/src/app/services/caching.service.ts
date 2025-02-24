@@ -18,7 +18,7 @@ export class CachingService {
     return await this.caching.clear();
   }
 
-  async saveCachingPhoto(k: string, d: Date,id: string) {
+  async saveCachingPhoto(k: string, d: Date,id:string) {
     const x = await this.getPhoto(k+id); //{v,d}
 
     if (x) {
@@ -28,19 +28,19 @@ export class CachingService {
 
         const w = await this.getBase64ImageFromUrl(k);
 
-        console.log('a', new Date(y.d).getTime(), d.getTime());
+        console.log("a", new Date(y.d).getTime(), d.getTime());
 
         // return this.caching.set(k, w);
         return this.caching.setWithdate(k+id, w, d);
       } else {
 
-        console.log('b');
+        console.log("b");
 
         if(JSON.parse(x).v.indexOf('data:application/octet-stream') !== -1){
           return x;
         }
 
-        console.log('b but add new');
+        console.log("b but add new");
 
         const w = await this.getBase64ImageFromUrl(k);
 
@@ -50,7 +50,7 @@ export class CachingService {
 
       const w = await this.getBase64ImageFromUrl(k);
 
-      console.log('c');
+      console.log("c");
 
       // return this.caching.set(k, w);
       return this.caching.setWithdate(k+id, w, d);
@@ -86,20 +86,22 @@ export class CachingService {
   async getBase64ImageFromUrl(imageUrl: string) {
     // const url = environment.serverFile+'file/download/' + imageUrl; // file manager
     const url = localStorage.getItem('url') || environment.url;
-    const res = await fetch(url);
-    const blob = await res.blob();
+    var res = await fetch(url);
+    var blob = await res.blob();
 
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+      var reader = new FileReader();
       reader.addEventListener(
         'load',
-        function() {
+        function () {
           resolve(reader.result);
         },
         false
       );
 
-      reader.onerror = () => reject(this);
+      reader.onerror = () => {
+        return reject(this);
+      };
       reader.readAsDataURL(blob);
     });
   }

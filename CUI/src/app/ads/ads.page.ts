@@ -11,7 +11,7 @@ import { IENMessage } from '../models/base.model';
 })
 export class AdsPage implements OnInit, OnDestroy {
   playList =new Array<IAdsMedia>();
-  constructor(public apiService: ApiService,public modal: ModalController) { }
+  constructor(public apiService:ApiService,public modal:ModalController) { }
   introductionMedia ={name:'Introduction',description:'Introduction how to use and change',type:'video',url:''};
 
   videoPlayer: HTMLVideoElement = {} as any;
@@ -45,16 +45,16 @@ export class AdsPage implements OnInit, OnDestroy {
   loadAds(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
+        
         this.currentType = this.adsList[0].type;
         this.currentUrl = this.adsList[0].url;
         if (this.currentType == 'video') {
-          const reload = setInterval(() => {
+          let reload = setInterval(() => {
             clearInterval(reload);
             (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
           });
         }
-        let count = 0;
+        let count: number = 0;
 
         this.loop = setInterval(() => {
           if (count == this.adsList.length - 1) {
@@ -64,19 +64,19 @@ export class AdsPage implements OnInit, OnDestroy {
           } else {
 
             if (this.currentType == 'video') {
-              const reload = setInterval(() => {
+              let reload = setInterval(() => {
                 clearInterval(reload);
                 (document.querySelector('.ads-video') as HTMLVideoElement)?.pause();
               });
             }
 
-            if (count == -1) {count = 0;}
-            else {count++;}
-
+            if (count == -1) count = 0;
+            else count++;
+            
             this.currentType = this.adsList[count].type;
             this.currentUrl = this.adsList[count].url;
             if (this.currentType == 'video') {
-              const reload = setInterval(() => {
+              let reload = setInterval(() => {
                 clearInterval(reload);
                 (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
               });
@@ -85,12 +85,12 @@ export class AdsPage implements OnInit, OnDestroy {
 
 
         }, 30000);
-
+      
         resolve(IENMessage.success);
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
-        resolve(error.message);
+        resolve(error.message); 
       }
     });
   }

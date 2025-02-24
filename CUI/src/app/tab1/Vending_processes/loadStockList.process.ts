@@ -1,8 +1,8 @@
-import { IENMessage } from 'src/app/models/base.model';
-import { ApiService } from 'src/app/services/api.service';
-import { AppcachingserviceService } from 'src/app/services/appcachingservice.service';
-import axios from 'axios';
-import { CustomloadingPage } from 'src/app/customloading/customloading.page';
+import { IENMessage } from "src/app/models/base.model";
+import { ApiService } from "src/app/services/api.service";
+import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
+import axios from "axios";
+import { CustomloadingPage } from "src/app/customloading/customloading.page";
 
 export class LoadStockListProcess {
 
@@ -11,7 +11,7 @@ export class LoadStockListProcess {
     // services
     private apiService: ApiService;
     private cashingService: AppcachingserviceService;
-
+    
     // parameters
     private ownerUuid: string;
     private filemanagerURL: string;
@@ -20,8 +20,8 @@ export class LoadStockListProcess {
     private lists: Array<any> = [];
     private images: Array<any> = [];
     private imageObject: any = {} as any;
-    private cashList: Array<{ name: string; file: string }> = [];
-    private firsttime = false;
+    private cashList: Array<{ name: string, file: string }> = [];
+    private firsttime: boolean = false;
 
     private text: string;
     constructor(
@@ -34,9 +34,9 @@ export class LoadStockListProcess {
 
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
-            const message={message:'Loading stock list....'};
+            let message={message:'Loading stock list....'};
             try {
-
+                
                 (await this.apiService.showModal(CustomloadingPage,{message})).present();
 
                 console.log(`init stock list`, 1);
@@ -47,22 +47,22 @@ export class LoadStockListProcess {
                 console.log(`init stock list`, 2);
                 message.message='Init params....';
                 this.InitParams(params);
-
+  
                 console.log(`init stock list`, 3);
                 message.message='validate params....';
                 const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
                 console.log(`init stock list`, 4);
                 message.message='Load product list....';
                 const LoadProductList = await this.LoadProductList(message);
-                if (LoadProductList != IENMessage.success) {throw new Error(LoadProductList);}
+                if (LoadProductList != IENMessage.success) throw new Error(LoadProductList);
 
                 console.log(`init stock list`, 5);
                 message.message='find caching service list....' + 5;
                 const FindCashingServiceList = await this.FindCashingServiceList(message);
-                if (FindCashingServiceList != IENMessage.success) {throw new Error(FindCashingServiceList);}
-
+                if (FindCashingServiceList != IENMessage.success) throw new Error(FindCashingServiceList);
+                
                 console.log(`init stock list`, 6);
                 message.message='Validate client load....' + 6;
                 this.ValidateClientLoad();
@@ -72,12 +72,12 @@ export class LoadStockListProcess {
                 const HttpReceiveImageAndSaveOnCashingService = await this.HttpReceiveImageAndSaveOnCashingService(message);
                 this.text = HttpReceiveImageAndSaveOnCashingService;
 
-                if (HttpReceiveImageAndSaveOnCashingService != IENMessage.success) {throw new Error(HttpReceiveImageAndSaveOnCashingService);}
+                if (HttpReceiveImageAndSaveOnCashingService != IENMessage.success) throw new Error(HttpReceiveImageAndSaveOnCashingService);
 
                 console.log(`init stock list`, 8);
                 message.message='caching image....';
                 const ReceiveImageAndSaveNewChangeOnCashingService = await this.ReceiveImageAndSaveNewChangeOnCashingService(message);
-                if (ReceiveImageAndSaveNewChangeOnCashingService != IENMessage.success) {throw new Error(ReceiveImageAndSaveNewChangeOnCashingService);}
+                if (ReceiveImageAndSaveNewChangeOnCashingService != IENMessage.success) throw new Error(ReceiveImageAndSaveNewChangeOnCashingService);
 
                 console.log(`init stock list`, 9);
                 message.message='caching images....';
@@ -85,9 +85,9 @@ export class LoadStockListProcess {
                      // (await this.workload).dismiss();
                 this.apiService.dismissModal();
                 resolve(this.Commit());
-
+                
                 }, 1000);
-
+               
 
 
             } catch (error) {
@@ -97,10 +97,10 @@ export class LoadStockListProcess {
                     this.apiService.dismissModal();
                     console.log(`error`, error.message);
                     // (await this.workload).dismiss();
-                    resolve(error.message);
+                    resolve(error.message);  
                 }, 3000);
-
-
+                
+                  
             }
         });
     }
@@ -114,37 +114,37 @@ export class LoadStockListProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.ownerUuid && this.filemanagerURL)) {return IENMessage.parametersEmpty;}
+        if (!(this.ownerUuid && this.filemanagerURL)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
 
-    private LoadProductList(message: any): Promise<any> {
+    private LoadProductList(message:any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
                 this.apiService.loadVendingSale().subscribe(r => {
                     const response: any = r;
-                    if (response.status != 1) {return resolve(IENMessage.loadVendingSaleListFail);}
-                    if (response.status == 1 && response.data.length == 0) {return resolve(IENMessage.vendingSaleListEmpty);}
+                    if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
+                    if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
                     this.lists = response.data;
-                    this.images = this.lists.map(item => ({ name: item.stock.image, file: item.stock.image }));
-                    this.lists.forEach(field => field.stock.imageurl = '');
+                    this.images = this.lists.map(item => { return { name: item.stock.image, file: item.stock.image } });
+                    this.lists.find(field => field.stock.imageurl = '');
                     message.message='found sale '+this.lists.length;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-
+                
             } catch (error) {
                 resolve(error.message);
             }
         });
     }
 
-    private FindCashingServiceList(message: any): Promise<any> {
+    private FindCashingServiceList(message:any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                const run = await this.cashingService.get(this.ownerUuid);
+                let run = await this.cashingService.get(this.ownerUuid);
                 if (run == undefined || run == null) {
                     this.cashList = [];
                     await this.cashingService.set(this.ownerUuid, []);
@@ -153,9 +153,9 @@ export class LoadStockListProcess {
                 const parse = JSON.parse(run);
                 this.cashList = parse.v;
                 console.log(`cash list`, this.cashList);
-                message.message='caching list '+this.cashList.length;
+                message.message='caching list '+this.cashList.length
                 resolve(IENMessage.success);
-
+                
             } catch (error) {
                 resolve(error.message);
             }
@@ -163,77 +163,76 @@ export class LoadStockListProcess {
     }
 
     private ValidateClientLoad() {
-        if ( this.cashList != undefined && this.cashList.length == 0){
+        if ( this.cashList != undefined && Object.entries(this.cashList).length == 0){
             this.firsttime = true;
         }
     }
 
-    private HttpReceiveImageAndSaveOnCashingService(message: any): Promise<any> {
+    private HttpReceiveImageAndSaveOnCashingService(message:any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-
-                if (this.firsttime == false) {return resolve(IENMessage.success);}
-
-                const images: Array<{ name: string; file: string}> = [];
+            
+                if (this.firsttime == false) return resolve(IENMessage.success);
+    
+                let images: Array<{ name: string, file: string}> = [];
                 for(let i = 0; i < this.images.length; i++) {
                     const name = this.images[i].name;
                     message.message=' loading image '+name +' -- '+i+'/'+this.images.length;
                     if (name != '' &&  name.substring(0,4) != 'data') {
-
+                    
                         // const url = `${this.filemanagerURL}download/${name}`;
                         const url = `${this.filemanagerURL}downloadphoto?url=${name}&w=80&h=100`;
 
                         const run = await axios({
                             method: 'POST',
-                            url,
+                            url: url,
                             responseType: 'blob'
                         });
-                        const file = await this.apiService.convertBlobToBase64(run.data);
-
+                        let file = await this.apiService.convertBlobToBase64(run.data);
+        
                         const obj = {
-                            name,
-                            file
-                        };
-
+                            name: name,
+                            file: file
+                        }
+        
                         const same = images.filter(item => item.name == name);
-                        if (same != undefined &&same.length == 0) {
+                        if (same != undefined && Object.entries(same).length == 0) {
                             images.push(obj);
                         }
 
                         // this.lists[i].stock.imageurl = this.lists[i].stock.image;
                         // this.lists[i].stock.image = file;
-
+                       
                     }
                     if (i == this.images.length-1) {
                         this.images = images;
                         await this.cashingService.set(this.ownerUuid, images);
                     }
                 }
-
+    
                 resolve(IENMessage.success);
-
+    
             } catch (error) {
-                resolve(error.message);
+                resolve(error.message)
             }
         });
     }
 
-    private ReceiveImageAndSaveNewChangeOnCashingService(message: any): Promise<any> {
+    private ReceiveImageAndSaveNewChangeOnCashingService(message:any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                if (this.firsttime == true) {return resolve(IENMessage.success);}
+                if (this.firsttime == true) return resolve(IENMessage.success);
 
                 this.images.forEach((list,i) => {
-                    this.cashList.find((cash) => {
+                    this.cashList.find((cash, cash_index) => {
                         if (list.name == cash.name) {
                             list.file = cash.file;
                             // list.stock.imageurl = cash.name;
                             // list.stock.image = cash.file;
-                            return true;
                         }
                     });
-                    message.message='caching '+i+' name:'+list.image;
+                    message.message='caching '+i+' name:'+list.image
                 });
 
                 const data = this.images.filter(item => item.file.substring(0,4) == 'data');
@@ -246,16 +245,16 @@ export class LoadStockListProcess {
                         const url = `${this.filemanagerURL}downloadphoto?url=${nodata[i].name}&w=100&h=248`;
                         const run = await axios({
                             method: 'POST',
-                            url,
+                            url: url,
                             responseType: 'blob'
                         });
                         const file = await this.apiService.convertBlobToBase64(run.data);
-
+    
                         const obj = {
                             name: nodata[i].name,
-                            file
-                        };
-
+                            file: file
+                        }
+    
                         // nodata[i].stock.imageurl = nodata[i].stock.image;
                         // nodata[i].stock.image = file;
                         this.cashList.push(obj);
@@ -267,7 +266,7 @@ export class LoadStockListProcess {
                 await this.cashingService.set(this.ownerUuid, this.cashList);
 
                 resolve(IENMessage.success);
-
+                
             } catch (error) {
                 resolve(error.message);
             }
@@ -275,11 +274,11 @@ export class LoadStockListProcess {
     }
 
     private Commit(): any {
-
+        
         this.images.forEach(list=>{
             Object.keys(list).forEach(k =>{
                 if(k=='name')
-                {this.imageObject[list.name] = list.file;}
+                this.imageObject[list.name] = list.file;
             });
         });
 
@@ -291,7 +290,7 @@ export class LoadStockListProcess {
                 cashList: this.cashList
             }],
             message: IENMessage.success
-        };
+        }
 
         return response;
     }
@@ -313,7 +312,7 @@ export class LoadStockListProcess {
 //     // services
 //     private apiService: ApiService;
 //     private cashingService: AppcachingserviceService;
-
+    
 //     // parameters
 //     private ownerUuid: string;
 //     private filemanagerURL: string;
@@ -334,7 +333,7 @@ export class LoadStockListProcess {
 //     public Init(params: any): Promise<any> {
 //         return new Promise<any> (async (resolve, reject) => {
 //             try {
-
+                
 //                 console.log(`init stock list`, 1);
 
 //                 // this.workload = this.apiService.load.create({ message: 'loading...' });
@@ -342,7 +341,7 @@ export class LoadStockListProcess {
 
 //                 console.log(`init stock list`, 2);
 //                 this.InitParams(params);
-
+  
 //                 console.log(`init stock list`, 3);
 //                 const ValidateParams = this.ValidateParams();
 //                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
@@ -354,7 +353,7 @@ export class LoadStockListProcess {
 //                 console.log(`init stock list`, 5);
 //                 const FindCashingServiceList = await this.FindCashingServiceList();
 //                 if (FindCashingServiceList != IENMessage.success) throw new Error(FindCashingServiceList);
-
+                
 //                 console.log(`init stock list`, 6);
 //                 this.ValidateClientLoad();
 
@@ -370,11 +369,11 @@ export class LoadStockListProcess {
 
 //                 resolve(this.Commit());
 
-
+               
 
 
 //             } catch (error) {
-//                 resolve(error.message);
+//                 resolve(error.message);                    
 //             }
 //         });
 //     }
@@ -410,7 +409,7 @@ export class LoadStockListProcess {
 //                     console.log(`lists`, this.lists);
 //                     resolve(IENMessage.success);
 //                 }, error => resolve(error.message));
-
+                
 //             } catch (error) {
 //                 resolve(error.message);
 //             }
@@ -431,7 +430,7 @@ export class LoadStockListProcess {
 //                 this.cashList = parse.v;
 //                 console.log(`cash list`, this.cashList);
 //                 resolve(IENMessage.success);
-
+                
 //             } catch (error) {
 //                 resolve(error.message);
 //             }
@@ -439,7 +438,7 @@ export class LoadStockListProcess {
 //     }
 
 //     private ValidateClientLoad() {
-//         if ( this.cashList != undefined && this.cashList.length == 0){
+//         if ( this.cashList != undefined && Object.entries(this.cashList).length == 0){
 //             this.firsttime = true;
 //         }
 //         console.log(`first time load`, this.firsttime);
@@ -448,14 +447,14 @@ export class LoadStockListProcess {
 //     private HttpReceiveImageAndSaveOnCashingService(): Promise<any> {
 //         return new Promise<any> (async (resolve, reject) => {
 //             try {
-
+            
 //                 if (this.firsttime == false) return resolve(IENMessage.success);
-
+    
 //                 let lists: Array<{ name: string, file: string}> = [];
 //                 for(let i = 0; i < this.lists.length; i++) {
 //                     const name = this.lists[i].stock.image;
 //                     if (name != '' && name.substring(0,4) != 'data') {
-
+                    
 //                         const url = `${this.filemanagerURL}${name}`;
 //                         const run = await axios({
 //                             method: 'GET',
@@ -463,29 +462,29 @@ export class LoadStockListProcess {
 //                             responseType: 'blob'
 //                         });
 //                         let file = await this.apiService.convertBlobToBase64(run.data);
-
+        
 //                         const obj = {
 //                             name: name,
 //                             file: file,
 
 //                         }
-
+        
 //                         const same = lists.filter(item => item.name == name);
-//                         if (same != undefined && same.length == 0) {
+//                         if (same != undefined && Object.entries(same).length == 0) {
 //                             lists.push(obj);
 //                         }
 //                         this.lists[i].stock.imageurl = this.lists[i].stock.image;
 //                         this.lists[i].stock.image = file;
-
+                       
 //                     }
 //                     if (i == this.lists.length-1) {
 //                         console.log(`first time save`, this.ownerUuid, this.lists, lists);
 //                         await this.cashingService.set(this.ownerUuid, lists);
 //                     }
 //                 }
-
+    
 //                 resolve(IENMessage.success);
-
+    
 //             } catch (error) {
 //                 resolve(error.message)
 //             }
@@ -520,12 +519,12 @@ export class LoadStockListProcess {
 //                             responseType: 'blob'
 //                         });
 //                         const file = await this.apiService.convertBlobToBase64(run.data);
-
+    
 //                         const obj = {
 //                             name: nodata[i].stock.image,
 //                             file: file
 //                         }
-
+    
 //                         nodata[i].stock.imageurl = nodata[i].stock.image;
 //                         nodata[i].stock.image = file;
 //                         this.cashList.push(obj);
@@ -537,7 +536,7 @@ export class LoadStockListProcess {
 //                 await this.cashingService.set(this.ownerUuid, this.cashList);
 
 //                 resolve(IENMessage.success);
-
+                
 //             } catch (error) {
 //                 resolve(error.message);
 //             }

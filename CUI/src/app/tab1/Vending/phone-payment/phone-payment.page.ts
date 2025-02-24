@@ -10,12 +10,12 @@ import { ApiService } from 'src/app/services/api.service';
 })
 export class PhonePaymentPage implements OnInit {
 
-  showPhonenumberPage = true;
-  showPaymentPage = false;
-  showCustomAmountPage = false;
+  showPhonenumberPage: boolean = true;
+  showPaymentPage: boolean = false;
+  showCustomAmountPage: boolean = false;
 
   numberList: Array<string> = [];
-  placeholder = 'ENTER PHONE NUMBER';
+  placeholder: string = 'ENTER PHONE NUMBER';
   phonenumber: string;
   digit: string;
   digitModel: Array<any> = [
@@ -26,20 +26,20 @@ export class PhonePaymentPage implements OnInit {
     { digit: 9, img: '../../../../assets/topup/Unitel.png' },
   ];
   currentImage: string;
-  amount = 0;
+  amount: number = 0;
   moneyList: Array<number> = [5000, 10000, 20000, 25000, 50000, 100000];
 
   customAmountNumberList: Array<string> = [];
-  customAmountPlaceholder = 'ENTER CUSTOM AMOUNT';
+  customAmountPlaceholder: string = 'ENTER CUSTOM AMOUNT';
   customAmount: string;
+  
 
-
-  subtitle = 'LTC, Best, Unitel, ETL, T-Plus';
+  subtitle: string = 'LTC, Best, Unitel, ETL, T-Plus';
 
   constructor(
     public apiService: ApiService,
     public modal: ModalController
-  ) {
+  ) { 
     this.apiService.___PhonePaymentPage = this.modal;
 
   }
@@ -74,7 +74,7 @@ export class PhonePaymentPage implements OnInit {
   }
   deleteDigits() {
     if (this.phonenumber != this.placeholder) {
-      if (this.phonenumber != undefined && this.phonenumber.length == 1) {
+      if (this.phonenumber != undefined && Object.entries(this.phonenumber).length == 1) {
         this.phonenumber = this.placeholder;
       } else {
         this.phonenumber = this.phonenumber.substring(0, this.phonenumber.length - 1);
@@ -113,11 +113,11 @@ export class PhonePaymentPage implements OnInit {
   next(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
-        if (this.phonenumber == this.placeholder) {throw new Error(IENMessage.invalidPhonenumber);}
+        
+        if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
 
         const validate = this.digitModel.find(item => item.digit==this.digit.substring(0, 3)[2]);
-        if (validate == undefined) {throw new Error(IENMessage.invalidPhonenumber);}
+        if (validate == undefined) throw new Error(IENMessage.invalidPhonenumber);
         this.currentImage = validate.img;
         // this.phonenumber = `+85620${this.phonenumber}`;
 
@@ -159,7 +159,7 @@ export class PhonePaymentPage implements OnInit {
   }
   deleteCustomDigits() {
     if (this.customAmount != this.customAmountPlaceholder) {
-      if (this.customAmount != undefined && this.customAmount.length == 1) {
+      if (this.customAmount != undefined && Object.entries(this.customAmount).length == 1) {
         this.customAmount = this.customAmountPlaceholder;
       } else {
         this.customAmount = this.customAmount.substring(0, this.customAmount.length - 1);
@@ -169,13 +169,13 @@ export class PhonePaymentPage implements OnInit {
   confirmCustomAmount(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
-        if (this.customAmount == this.customAmountPlaceholder) {throw new Error(IENMessage.invalidCustomAmount);}
-        if (this.customAmount != this.customAmountPlaceholder && this.customAmount.length > 8) {throw new Error(IENMessage.invalidCustomAmount);}
+        
+        if (this.customAmount == this.customAmountPlaceholder) throw new Error(IENMessage.invalidCustomAmount);
+        if (this.customAmount != this.customAmountPlaceholder && this.customAmount.length > 8) throw new Error(IENMessage.invalidCustomAmount);
         const amount = Number(this.customAmount);
-        if (amount < 1000){throw new Error(IENMessage.minimumOfAmountIs1000);}
+        if (amount < 1000)throw new Error(IENMessage.minimumOfAmountIs1000);
 
-        if (amount > Number(this.apiService.cash.amount)) {throw new Error(IENMessage.balanceIsNotEnought);}
+        if (amount > Number(this.apiService.cash.amount)) throw new Error(IENMessage.balanceIsNotEnought);
         this.showCustomAmountPage = false;
         this.showPaymentPage = true;
         this.amount = Number(this.customAmount);
@@ -195,7 +195,7 @@ export class PhonePaymentPage implements OnInit {
   confirm(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
+        
         this.apiService.simpleMessage(IENMessage.phonePaymentSuccess);
         this.apiService.modal.dismiss();
 

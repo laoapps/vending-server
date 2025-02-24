@@ -11,4 +11,4 @@ export const gameServiceMenuJSON = [
         lao: 'ເກມ fortune wheel',
         value: 'fortune_wheel_game'
     },
-];
+]

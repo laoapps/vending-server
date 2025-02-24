@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
 import { IAlive } from './services/syste.model';
+
 import * as moment from 'moment';
-import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+
 import { Platform } from '@ionic/angular';
 import { SettingPage } from './setting/setting.page';
 import { ScreenBrightness } from '@capacitor-community/screen-brightness';
@@ -16,17 +17,9 @@ export class AppComponent {
   uT = new Date();
   now = new Date();
   version = '';
-  constructor(public apiService: ApiService, private appVersion: AppVersion, private platform: Platform) {
+  constructor(public apiService: ApiService,  private platform: Platform) {
     this.platform.ready().then(r => {
-      this.autoCheckAppVersion();
-      if (this.platform.is('cordova')) {
-        this.appVersion.getAppName();
-        this.appVersion.getPackageName();
-        this.appVersion.getVersionCode();
-        this.appVersion.getVersionNumber().then(r => {
-          this.version = r;
-        })
-      }
+
     })
 
     this.checkOnlineStatus = apiService.wsAlive;

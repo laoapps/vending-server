@@ -1,11 +1,11 @@
 export interface IControlMenu {
-
+    
     // ***** LAAB *****
-    LAAB_MenuCashIn: boolean;
+    LAAB_MenuCashIn: boolean,
     LAAB_MenuCashOut: {
-        LAABAccount: boolean;
-        LAABEPIN: boolean;
-    };
+        LAABAccount: boolean,
+        LAABEPIN: boolean
+    }
 
 
 
@@ -13,9 +13,9 @@ export interface IControlMenu {
 
     // ***** MMoney *****
     MMoney_MenuCashOut: {
-        MMoneyAccount: boolean;
-    };
-    MMoney_MenuIOSAndroidQRLink: boolean;
+        MMoneyAccount: boolean
+    },
+    MMoney_MenuIOSAndroidQRLink: boolean,
 
 
 
@@ -23,11 +23,11 @@ export interface IControlMenu {
 
 
     // ***** Default *****
-    Vending_MenuTicket: boolean;
-    Vending_MenuCashOut: boolean;
-    Vending_MenuWhatsapp: boolean;
-    Vending_MenuHowTo: boolean;
-    Vending_MenuTemperature: boolean;
+    Vending_MenuTicket: boolean,
+    Vending_MenuCashOut: boolean,
+    Vending_MenuWhatsapp: boolean,
+    Vending_MenuHowTo: boolean,
+    Vending_MenuTemperature: boolean,
 
 }
 

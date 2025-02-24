@@ -10,7 +10,7 @@ import { ControlMenuService } from 'src/app/services/control-menu.service';
 })
 export class SettingControlMenuPage implements OnInit {
 
-  private CONTROL_MENUList: Array<{ name: string; status: boolean }> = [];
+  private CONTROL_MENUList: Array<{ name: string, status: boolean }> = [];
   private checkboxs: NodeListOf<HTMLInputElement>;
 
   constructor(
@@ -24,7 +24,7 @@ export class SettingControlMenuPage implements OnInit {
   loadSetting() {
     this.CONTROL_MENUList = JSON.parse(JSON.stringify(this.apiService.controlMenuService.CONTROL_MENUList));
 
-    const i = setInterval(() => {
+    let i = setInterval(() => {
       if (this.checkboxs == undefined)
       {
         this.checkboxs = (document.querySelectorAll('.form-check-input') as NodeListOf<HTMLInputElement>);
@@ -34,7 +34,7 @@ export class SettingControlMenuPage implements OnInit {
       this.animateStatus();
       clearInterval(i);
     });
-
+    
   }
 
   animateStatus() {
@@ -63,7 +63,7 @@ export class SettingControlMenuPage implements OnInit {
               menu.status = true;
             }
           }
-
+          
         });
 
       });
@@ -73,8 +73,8 @@ export class SettingControlMenuPage implements OnInit {
   setStatus(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
-        const msg = this.apiService.alert.create({
+        
+        const msg = this.apiService.alert.create({  
           header: 'Do you want to save this setting state !?',
           subHeader: 'Every menu will change visible by this setting',
           buttons: [

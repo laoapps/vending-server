@@ -1,32 +1,32 @@
 interface IBase {
     token: string
 }
-export type VENDING_ShowVendingWalletCoinBalance = IBase;
-export type VENDING_CashValidation = IBase
+export interface VENDING_ShowVendingWalletCoinBalance extends IBase {}
+export interface VENDING_CashValidation extends IBase {}
 
 export interface VENDING_CashinValidation extends IBase {
-    cash: number;
+    cash: number,
     description: string
 }
 export interface VENDING_PaidValidation extends IBase {
-    cash: number;
+    cash: number,
     description: string
 }
 export interface VENDING_CreateSMC extends IBase {
-    cash: number;
-    phonenumber: string;
+    cash: number,
+    phonenumber: string,
     description: string
 }
 export interface VENDING_LoadSMC extends IBase {
-    page: number;
+    page: number,
     limit: number
 }
 export interface VENDING_CreateEPIN extends IBase {
-    detail: any
+    detail: any,
 }
 export interface VENDING_TransferValidation extends IBase {
-    receiver: string;
-    cash: number;
+    receiver: string,
+    cash: number,
     description: string
 }
 
@@ -42,9 +42,9 @@ export interface VENDING_TransferValidation extends IBase {
 // MMoney
 export interface VENDING_MMoneyCashoutValidation extends IBase {
     data: {
-        phonenumber: string;
+        phonenumber: string,
         cashInValue: number
-    };
+    }
 }
 
 

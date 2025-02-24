@@ -1,6 +1,6 @@
-import { IENMessage } from 'src/app/models/base.model';
-import { ApiService } from 'src/app/services/api.service';
-import { VendingAPIService } from 'src/app/services/vending-api.service';
+import { IENMessage } from "src/app/models/base.model";
+import { ApiService } from "src/app/services/api.service";
+import { VendingAPIService } from "src/app/services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
 export class CashinValidationProcess {
@@ -9,7 +9,7 @@ export class CashinValidationProcess {
 
     private apiService: ApiService;
     private vendingAPIService: VendingAPIService;
-
+    
     private cash: number;
     private description: string;
 
@@ -24,7 +24,7 @@ export class CashinValidationProcess {
     public Init(params: any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-
+                
 
 
                 console.log(`cash validation`, 1);
@@ -39,12 +39,12 @@ export class CashinValidationProcess {
                 console.log(`cash validation`, 3);
 
                 const ValidateParams = this.ValidateParams();
-                if (ValidateParams != IENMessage.success) {throw new Error(ValidateParams);}
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
                 console.log(`cash validation`, 4);
-
+                
                 const CashinValidation = await this.CashinValidation();
-                if (CashinValidation != IENMessage.success) {throw new Error(CashinValidation);}
+                if (CashinValidation != IENMessage.success) throw new Error(CashinValidation);
 
                 console.log(`cash validation`, 5);
 
@@ -56,7 +56,7 @@ export class CashinValidationProcess {
             } catch (error) {
 
                 // (await this.workload).dismiss();
-                resolve(error.message);
+                resolve(error.message);     
             }
         });
     }
@@ -68,7 +68,7 @@ export class CashinValidationProcess {
     }
 
     private ValidateParams(): string {
-        if (!(this.cash && this.description)) {return IENMessage.parametersEmpty;}
+        if (!(this.cash && this.description)) return IENMessage.parametersEmpty;
         return IENMessage.success;
     }
 
@@ -80,15 +80,15 @@ export class CashinValidationProcess {
                     cash: this.cash,
                     description: this.description,
                     token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex)
-                };
+                }
 
                 this.vendingAPIService.cashinValidation(params).subscribe(r => {
                     const response: any = r;
                     console.log(`response`, response);
-                    if (response.status != 1) {return resolve(response.message);}
+                    if (response.status != 1) return resolve(response.message);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-
+                
             } catch (error) {
                 resolve(error.message);
             }
@@ -100,7 +100,7 @@ export class CashinValidationProcess {
             data: [{
             }],
             message: IENMessage.success
-        };
+        }
 
         return response;
     }

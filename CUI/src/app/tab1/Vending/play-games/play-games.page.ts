@@ -4,7 +4,7 @@ import { gameServiceMenuJSON } from './menu';
 import { IVendingGameMenu } from 'src/app/models/vending.model';
 import { IENMessage } from 'src/app/models/base.model';
 import { FortunewheelPage } from 'src/app/fortunewheel/fortunewheel.page';
-
+import { ScratchingPage } from 'src/app/scratching/scratching.page';
 import { environment } from 'src/environments/environment';
 import { ModalController } from '@ionic/angular';
 
@@ -21,7 +21,7 @@ export class PlayGamesPage implements OnInit {
     public apiService: ApiService,
     public modal: ModalController
 
-  ) {
+  ) { 
     this.apiService.___PlayGamesPage = this.modal;
 
   }
@@ -40,8 +40,8 @@ export class PlayGamesPage implements OnInit {
       try {
 
         // if (this.prod == false) return resolve(IENMessage.success);
-
-        if (!Object.keys(IVendingGameMenu).includes(value)) {throw new Error(IENMessage.invalidSelectionGameMenu);}
+        
+        if (!Object.keys(IVendingGameMenu).includes(value)) throw new Error(IENMessage.invalidSelectionGameMenu);
 
         switch (value)
         {
@@ -63,9 +63,11 @@ export class PlayGamesPage implements OnInit {
   openFortuneWheel(){
     this.apiService.showModal(FortunewheelPage).then(r=>{
       r.present();
-    });
+    })
   }
   openScratch(){
-
+    this.apiService.showModal(ScratchingPage).then(r=>{
+      r.present();
+    })
   }
 }

@@ -48,7 +48,7 @@
 //     // }
 //     // processCoolingSystemTask(resBuffer:any, minTemp = 3, maxTemp = 10) {
 //     //     console.log('CHECK BUFFER',resBuffer[0],resBuffer[1],resBuffer[1]=='03');
-
+        
 //     //     if(resBuffer[1]!='03') return;
 //     //     const slot = '00'; // relay number;
 //     //     let state = '00';// on 01 off
@@ -238,7 +238,7 @@
 //                     // //Note: This command is valid only for lift systems. 8.31
 //                     // case EZDM8_COMMAND.motortimeout:
 //                     //     buff = ['06', '10', '04', '0B', 'B8', 'CB', '89'];
-//                     // //
+//                     // //             
 //                     // // Sending packet description.
 //                     // // Packet 1~2 bytes: motor timeout time, 0BB8-transformed to decimal 3'00'0.means motor timeout time is 3'00'0mS
 //                     // // Driver board return (example): 01 06 10 04 0B B8 CB 89

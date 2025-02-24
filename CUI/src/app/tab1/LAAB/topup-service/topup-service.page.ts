@@ -12,7 +12,7 @@ export class TopupServicePage implements OnInit {
   constructor(
     public apiService: ApiService,
     public modal: ModalController
-  ) {
+  ) { 
     this.apiService.___TopupServicePage = this.modal;
 
   }

@@ -35,7 +35,7 @@ import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import { BehaviorSubject } from 'rxjs';
 import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
 import { EpinShowCodePageModule } from '../tab1/LAAB/epin-show-code/epin-show-code.module';
@@ -82,9 +82,9 @@ import { TopupAndServiceSegmentPage } from '../tab1/VendingSegment/topup-and-ser
   providedIn: 'root',
 })
 export class ApiService {
+  
 
-
-  toggleWebviewTab = false;
+  toggleWebviewTab: boolean = false;
 
 
   vendingGoPageSound() {
@@ -121,7 +121,7 @@ export class ApiService {
           this.soundCheckTicketsExist();
         }, 15000);
         setTimeout(() => {
-          if (this.cash.amount > 0) {this.soundMachineHasSomeChanges();}
+          if (this.cash.amount > 0) this.soundMachineHasSomeChanges();
         }, 20000);
       }
 
@@ -157,27 +157,27 @@ export class ApiService {
 
   public static __percent: any;
 
-  ___LaabGoPage: any;
-  ___EpinCashOutPage: any;
-  ___EpinShowCodePage: any;
-  ___SmcListPage: any;
-  ___LaabCashinShowCodePage: any;
-  ___LaabCashoutPage: any;
-  ___StackCashoutPage: any;
-  ___MmoneyIosAndroidDownloadPage: any;
-  ___TopupServicePage: any;
-  ___TopupAndServicePage: any;
-  ___PhonePaymentPage: any;
-  ___VendingGoPage: any;
-  ___HowToPage: any;
-  ___MmoneyCashoutPage: any;
-  ___HangmiStoreSegmentPage: any;
-  ___HangmiFoodSegmentPage: any;
-  ___TopupAndServiceSegmentPage: any;
-  ___PlayGamesPage: any;
-  ___OrderCartPage: any;
-  ___OrderPaidPage: any;
-  ___AutoPaymentPage: any;
+  ___LaabGoPage:any
+  ___EpinCashOutPage:any
+  ___EpinShowCodePage:any
+  ___SmcListPage:any
+  ___LaabCashinShowCodePage:any
+  ___LaabCashoutPage:any
+  ___StackCashoutPage:any
+  ___MmoneyIosAndroidDownloadPage:any
+  ___TopupServicePage:any
+  ___TopupAndServicePage:any
+  ___PhonePaymentPage:any
+  ___VendingGoPage:any
+  ___HowToPage:any
+  ___MmoneyCashoutPage:any
+  ___HangmiStoreSegmentPage:any
+  ___HangmiFoodSegmentPage:any
+  ___TopupAndServiceSegmentPage:any
+  ___PlayGamesPage:any
+  ___OrderCartPage:any
+  ___OrderPaidPage:any
+  ___AutoPaymentPage:any
 
   backGroundMusicElement: HTMLAudioElement = {} as any;
   muteSound = false;
@@ -252,7 +252,7 @@ export class ApiService {
   _cuiSetting = {} as any;
   musicVolume=6;
 
-  countErrorPay = 0;
+  countErrorPay: number = 0;
 
   checkAppVersion: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(
@@ -268,7 +268,7 @@ export class ApiService {
     public load: LoadingController,
     public alert: AlertController
   ) {
-    if (!localStorage.getItem('remoteProcess')) {localStorage.setItem('remoteProcess', 'yes');}
+    if (!localStorage.getItem('remoteProcess')) localStorage.setItem('remoteProcess', 'yes');
     const that = this;
     this.wsapi = wsapi;
     this.muteSound = localStorage.getItem('isRobotMuted')?true:false;
@@ -277,7 +277,7 @@ export class ApiService {
     setTimeout(() => {
       this.playBackGroundMusic();
     }, 3000);
-
+    
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = localStorage.getItem('machineId') || '12345678';
     this.machineId.otp = localStorage.getItem('otp') || '111111';
@@ -294,7 +294,7 @@ export class ApiService {
       const response: any = r;
 
       try {
-        if (!r) {return console.log('empty');}
+        if (!r) return console.log('empty');
         console.log('ws alive subscription', that.cash, r);
 
         that.cash.amount = r.balance;
@@ -310,7 +310,7 @@ export class ApiService {
           pendingstockcount=0;
           pendingstock= response.data.pendingStock;
         }
-        if (response.data.pendingStock != undefined && response.data.pendingStock.length > 0&&pendingstockcount===3) {
+        if (response.data.pendingStock != undefined && Object.entries(response.data.pendingStock).length > 0&&pendingstockcount===3) {
           this.reconfirmStock(response.data.pendingStock);
           pendingstockcount=0;
           pendingstock=[];
@@ -324,7 +324,7 @@ export class ApiService {
         //   this.validateDB();
         // }
         if (r.balance) {
-          if (that.cash.amount < r.balance) {that.soundLaabIncreased();}
+          if (that.cash.amount < r.balance) that.soundLaabIncreased();
           that.cash.amount = r.balance;
         }
 
@@ -337,8 +337,8 @@ export class ApiService {
         that._cuiSetting.imgLogo != cset.imgLogo||(that._cuiSetting.imgLogo = cset.imgLogo);
         that._cuiSetting.imgFooter != cset.imgFooter||(that._cuiSetting.imgFooter = cset.imgFooter);
 
-        if (!that._cuiSetting?.imgHeader) {that._cuiSetting.imgHeader = {background:'url(\'../../assets/background/1910.jpg\') rgb(255, 255, 255) no-repeat center fixed','background-size': 'contain'};}
-
+        if (!that._cuiSetting?.imgHeader) that._cuiSetting.imgHeader = {"background":"url(\'../../assets/background/1910.jpg\') rgb(255, 255, 255) no-repeat center fixed","background-size": "contain"};
+        
         // if(!this._cuiSetting.imgFooter)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
         // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
 
@@ -351,8 +351,8 @@ export class ApiService {
         // const local_version = undefined;
 
 
-        if (app_version != undefined && app_version.length > 0)
-        {
+        if (app_version != undefined && Object.entries(app_version).length > 0)
+        { 
 
           // * update
           if (local_version == null) {
@@ -363,7 +363,7 @@ export class ApiService {
             const localVersion = parseInt(parseLocalVersion.version);
 
             // update
-            if (appVersion != localVersion) {this.checkAppVersion.next(app_version);}
+            if (appVersion != localVersion) this.checkAppVersion.next(app_version);
           }
         }
 
@@ -384,7 +384,7 @@ export class ApiService {
 
     // this.wsapi.vsales =ApiService.vendingOnSale;
     this.wsapi.onBillProcess((r) => {
-      if (!r) {return console.log('empty');}
+      if (!r) return console.log('empty');
       console.log('ws process subscription', r);
       const message =
         'processing slot ' +
@@ -395,20 +395,20 @@ export class ApiService {
           ?.name;
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-
+      
       const params = {
         trans: [
-          {
+          { 
             transactionID: r?.transactionID, position: r?.position
           }
         ]
-      };
+      }
       this.confirmDeductStock(params).subscribe(res_confirm => {
         try {
           console.log(`confirm deduct stock`, res_confirm);
-        if (res_confirm.status != 1) {throw new Error(res_confirm.message);}
+        if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
-        const vsales = ApiService.vendingOnSale;
+        const vsales = ApiService.vendingOnSale; 
         const x = vsales.find((v) => {
           if (v.position == r.position) {
             v.stock.qtty--;
@@ -428,15 +428,15 @@ export class ApiService {
             }
           });
         }
-
+        
         console.log('X', x, r.position, x && r.position);
-
+  
         if (x && r.position) {
           // # save to machine
           console.log('saveSale', vsales);
-
+  
           // this.clearWaitingT();
-
+  
           // PLAY SOUNDS
           this.soundCompleted();
           setTimeout(() => {
@@ -445,7 +445,7 @@ export class ApiService {
           that.toast.create({ message, duration: 2000 }).then(r => {
             r.present();
           });
-
+  
           r.bill.updatedAt = new Date();
           console.log(`vendingOnSale-->`, vsales);
           this.storage.set('saleStock', vsales, 'stock').then((r) => {
@@ -472,8 +472,8 @@ export class ApiService {
           console.log(error.message);
           this.alertError(error.message);
         }
-
-
+        
+  
 
       });
 
@@ -496,9 +496,9 @@ export class ApiService {
             this.dismissModal();
             const pb = r.data as Array<IBillProcess>;
             if (pb.length)
-              {this.showModal(RemainingbillsPage, { r: pb }, false).then((r) => {
+              this.showModal(RemainingbillsPage, { r: pb }, false).then((r) => {
                 r.present();
-              });}
+              });
           } else {
             this.toast
               .create({ message: r.message, duration: 5000 })
@@ -529,31 +529,32 @@ export class ApiService {
   //   return ApiService.vendingOnSale;
   // }
 
-  reconfirmStock(pendingStock: Array<{ transactionID: any; position: number }>) {
+  reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
     const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
     console.log(`ping pending stock`, trans);
     const params = {
-      trans
-    };
+      trans: trans
+    }
 
     try {
       this.confirmDeductStock(params).subscribe(res_confirm => {
         console.log(`return confirm deduct stock`, res_confirm);
-        if (res_confirm.status != 1) {throw new Error(res_confirm.message);}
-
-        const vsales = ApiService.vendingOnSale;
-        const x = vsales.find((v) => pendingStock.some((item) => {
-            if (v.position === item.position) {
+        if (res_confirm.status != 1) throw new Error(res_confirm.message);
+  
+        const vsales = ApiService.vendingOnSale; 
+        const x = vsales.find((v) => {
+          pendingStock.filter(item => {
+            if (v.position == item.position) {
               if (v.stock.qtty > 0) {
                 v.stock.qtty--;
               }
-              return true; // Return true if the condition is met
+              return true;
             }
-            return false; // Return false otherwise
-          }));
+          });
+        });
         this.eventEmitter.emit('stockdeduct', x);
         if (!localStorage.getItem('debug')) {
-
+  
           this.saveSale(vsales).subscribe((r) => {
             console.log(r);
             if (r.status) {
@@ -562,13 +563,13 @@ export class ApiService {
               this.simpleMessage(IENMessage.saveSaleFail);
             }
           });
-
+    
           console.log(`pending stock mode vendingOnSale-->`, vsales);
           this.storage.set('saleStock', vsales, 'stock').then((r) => {
             // that.deductOrderUpdate(x.position);
           });
         }
-
+        
       });
     } catch (error) {
       console.log(error.message);
@@ -599,12 +600,12 @@ export class ApiService {
     });
   }
 
-
+  
   public alertSuccess(text: string) {
     Swal.fire({
       icon: 'success',
       title: 'Successfully',
-      text,
+      text: text,
       showConfirmButton: true,
       confirmButtonText: 'OK',
       confirmButtonColor: '#28B463',
@@ -620,7 +621,7 @@ export class ApiService {
     Swal.fire({
       icon: 'error',
       title: 'Fail',
-      text,
+      text: text,
       showConfirmButton: true,
       confirmButtonText: 'OK',
       confirmButtonColor: '#CB4335',
@@ -635,8 +636,8 @@ export class ApiService {
   public alertWarnning(title: string,text: string) {
     Swal.fire({
       icon: 'warning',
-      title,
-      text,
+      title: title,
+      text: text,
       showConfirmButton: true,
       confirmButtonText: 'OK',
       confirmButtonColor: '#CB4335',
@@ -652,7 +653,7 @@ export class ApiService {
     const alert = Swal.fire({
       icon: 'error',
       title: 'Fail',
-      text,
+      text: text,
       showConfirmButton: true,
       confirmButtonText: 'OK',
       confirmButtonColor: '#CB4335',
@@ -661,10 +662,10 @@ export class ApiService {
     return alert;
   }
   public alertConfirm(text: string) {
-    const alert = Swal.fire({
+    const alert = Swal.fire({ 
       icon: 'question',
       title: 'Are you sure!?',
-      text,
+      text: text,
       showConfirmButton: true,
       confirmButtonText: 'Confirm',
       confirmButtonColor: '#CB4335',
@@ -676,7 +677,7 @@ export class ApiService {
     return alert;
   }
 
-
+  
   public updateOnlineStatus() {
     this.wsAlive.isAlive = this.checkOnlineStatus();
     // console.log(this.wsAlive.time);
@@ -686,7 +687,7 @@ export class ApiService {
   private headerBase(): any {
     const token = localStorage.getItem('token');
     //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
-    const headers = new HttpHeaders();
+    var headers = new HttpHeaders();
     headers.append('Access-Control-Allow-Origin', '*');
     headers.append('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
     headers.append('Accept', 'application/json');
@@ -707,7 +708,7 @@ export class ApiService {
       console.log('stock', v);
 
       if (!this.stock.find((y) => y.id == v.id))
-        {this.stock.push(JSON.parse(JSON.stringify(v)));}
+        this.stock.push(JSON.parse(JSON.stringify(v)));
     });
     console.log(`new stock`, this.stock);
     this.storage.set('productItems', this.stock, 'item');
@@ -718,7 +719,7 @@ export class ApiService {
       // console.log('stock',v);
 
       if (!this.stock.find((y) => y.id == v.id))
-        {this.stock.push(JSON.parse(JSON.stringify(v)));}
+        this.stock.push(JSON.parse(JSON.stringify(v)));
     });
     this.storage.set('productItems', this.stock, 'item');
   }
@@ -851,8 +852,8 @@ export class ApiService {
       headers: this.headerBase(),
     });
   }
-  // if there is a new ads then remove the old ones
-  loadAds(existIds: Array<number>) {
+  // if there is a new ads then remove the old ones 
+  loadAds(existIds:Array<number>) {
     return this.http.post<IResModel>(
       this.url + '/loadAds',
       {
@@ -901,7 +902,7 @@ export class ApiService {
       headers: this.headerBase(),
     });
   }
-
+  
 
   getFreeProduct(position: number, id: number) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;
@@ -941,7 +942,7 @@ export class ApiService {
   audioElement: HTMLAudioElement = {} as any;
   playBackGroundMusic(path ='../../assets/background_music.mp3'){
     try {
-      if (this.backgrounSound) {return;}
+      if (this.backgrounSound) return;
       this.backGroundMusicElement.src = path;
       this.backGroundMusicElement.loop=true;
       this.backGroundMusicElement.volume=this.musicVolume/100;
@@ -953,7 +954,7 @@ export class ApiService {
   }
   playSound(path: string) {
     try {
-      if (this.muteSound) {return;}
+      if (this.muteSound) return;
       this.audioElement.src = path;
       this.audioElement.play();
     } catch (error) {
@@ -990,7 +991,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-let-us-serve-you.mp3',
         '../../assets/lao-voices/lo-la-let-us-serve-you3.mp3',
         '../../assets/lao-voices/lo-la-let-us-serve-you4.mp3',
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1007,7 +1008,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-f-please-wait.mp3',
         '../../assets/lao-voices/lo-la-m-waiting-for-your-item.mp3',
         '../../assets/lao-voices/lo-la-m-waiting-for-your-item2.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1022,7 +1023,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-f-view-video-for-more-info.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1042,7 +1043,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-wish-the-best-luck-always.mp3',
         '../../assets/lao-voices/lo-la-m-please-buy-more.mp3',
         '../../assets/lao-voices/lo-la-m-thank-you.mp3',
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1060,7 +1061,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-f-wish-the-best-luck-always.mp3',
         '../../assets/lao-voices/lo-la-m-wish-much-luck.mp3',
         '../../assets/lao-voices/lo-la-m-wish-the-best-luck-always.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1075,7 +1076,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-cashout-on-the-right-hand.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1090,7 +1091,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-completed.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1105,7 +1106,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-what-is-your-payment-method.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1120,7 +1121,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-laab-payment.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1135,7 +1136,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-mmoney-payment.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1150,7 +1151,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-input-laab-phonenumber.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1165,7 +1166,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-input-mmoney-phonenumber.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1180,7 +1181,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-input-secret-password.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1195,7 +1196,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-laab-increased.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1210,7 +1211,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-other-services.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1226,7 +1227,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-please-select.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1241,7 +1242,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-please-topup-or-insert-bank-note.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1256,7 +1257,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-select-target.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1271,7 +1272,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-target-is-epin.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1286,7 +1287,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-transfer-to-mmoney.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1301,7 +1302,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-transfer-to-laab.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1316,7 +1317,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-tickets-exist.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1331,7 +1332,7 @@ export class ApiService {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [
         '../../assets/lao-voices/lo-la-m-we-have-some-changes.mp3'
-      ];
+      ]
       try {
          this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
@@ -1346,7 +1347,7 @@ export class ApiService {
   convertBlobToBase64(blob: Blob): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        const base64 = '';
+        let base64: string = '';
         const reader = new FileReader();
         reader.addEventListener('load', (event) => {
           resolve(event.target.result as string);
@@ -1415,7 +1416,7 @@ export class ApiService {
     // PlayGamesPage
     // OrderCartPage
     // OrderPaidPage
-
+    
     this.___LaabGoPage?.dismiss();
     this.___EpinCashOutPage?.dismiss();
     this.___EpinShowCodePage?.dismiss();

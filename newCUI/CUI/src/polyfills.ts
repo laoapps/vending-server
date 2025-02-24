@@ -52,23 +52,23 @@
  *
  */
 
-// import './zone-flags';
+import './zone-flags';
 
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.
  */
-// import 'zone.js/dist/zone';  // Included with Angular CLI.
+import 'zone.js/dist/zone';  // Included with Angular CLI.
 
 
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
 
-import 'core-js/stable';  // Full ES5+ polyfills
-import 'regenerator-runtime/runtime';
-import 'dynamic-import-polyfill';
-import 'classlist.js';
-import 'web-animations-js';
-import './zone-flags';
-import 'zone.js/dist/zone';
-import "es6-shim";
+// import 'core-js/stable';  // Full ES5+ polyfills
+// import 'regenerator-runtime/runtime';
+// import 'dynamic-import-polyfill';
+// import 'classlist.js';
+// import 'web-animations-js';
+// import './zone-flags';
+// import 'zone.js/dist/zone';
+// import "es6-shim";

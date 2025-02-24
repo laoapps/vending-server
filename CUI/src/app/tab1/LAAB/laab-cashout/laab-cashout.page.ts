@@ -20,14 +20,14 @@ export class LaabCashoutPage implements OnInit {
   private mmoneyCashoutValidationProcess: MMoneyCashOutValidationProcess;
 
   numberList: Array<string> = [];
-  placeholder = 'ENTER PHONE NUMBER';
+  placeholder: string = 'ENTER PHONE NUMBER';
   phonenumber: string;
 
   constructor(
     public apiService: ApiService,
     public vendingAPIService: VendingAPIService,
     public modal: ModalController
-  ) {
+  ) { 
     this.apiService.___LaabCashoutPage = this.modal;
 
     this.transferValidationProcess = new TransferValidationProcess(this.apiService, this.vendingAPIService);
@@ -61,7 +61,7 @@ export class LaabCashoutPage implements OnInit {
   }
   deleteDigits() {
     if (this.phonenumber != this.placeholder) {
-      if (this.phonenumber != undefined && this.phonenumber.length == 1) {
+      if (this.phonenumber != undefined && Object.entries(this.phonenumber).length == 1) {
         this.phonenumber = this.placeholder;
       } else {
         this.phonenumber = this.phonenumber.substring(0, this.phonenumber.length - 1);
@@ -71,8 +71,8 @@ export class LaabCashoutPage implements OnInit {
   transfer(): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
-        if (this.phonenumber == this.placeholder) {throw new Error(IENMessage.parametersEmpty);}
+       
+        if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
         let moneyFormat = this.apiService.formatMoney(this.apiService.cash.amount).toString();
         moneyFormat = moneyFormat.split('.00')[0];
         const params = {
@@ -80,10 +80,10 @@ export class LaabCashoutPage implements OnInit {
           receiver: this.phonenumber,
           cash: this.apiService.cash.amount,
           description: 'VENDING CASH OUT TO ANOTHER LAAB ACCOUNT'
-        };
+        }
 
         const run = await this.transferValidationProcess.Init(params);
-        if (run.message != IENMessage.success) {throw new Error(run);}
+        if (run.message != IENMessage.success) throw new Error(run);
 
         Swal.fire({
           icon: 'success',

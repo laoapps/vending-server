@@ -5,7 +5,7 @@ import { ModalController, Platform } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
 // import { VideoPlayer } from '@ionic-native/video-player/ngx';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-
+ 
 @Component({
   selector: 'app-how-to',
   templateUrl: './how-to.page.html',
@@ -14,16 +14,16 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 export class HowToPage implements OnInit {
 
   currentPlay: any = {} as any;
-  autoPlayVideo = false;
+  autoPlayVideo: boolean = false;  
   lists: Array<any> = [];
-  currentPlaying = false;
+  currentPlaying: boolean = false;
 
   constructor(
     // private videoPlayer: VideoPlayer,
     public apiService: ApiService,
     private platform: Platform,
     public modal: ModalController
-  ) {
+  ) { 
     this.apiService.___HowToPage = this.modal;
 
   }
@@ -40,7 +40,7 @@ export class HowToPage implements OnInit {
     //     this.loadAutoPlayState();
     //     this.loadCurrentPlay();
     //  }else{
-
+      
     //  }
     // this.platform.ready().then(() => {
     //   setTimeout(() => {
@@ -48,7 +48,7 @@ export class HowToPage implements OnInit {
     //     this.loadAutoPlayState();
     //     this.loadCurrentPlay();
     //   }, 1000);
-
+     
     // });
   }
 
@@ -62,7 +62,7 @@ export class HowToPage implements OnInit {
       this.autoPlayVideo = false;
       localStorage.setItem('vending_guid', JSON.stringify({ auto_play_video: false }));
 
-    } else
+    } else 
     {
       this.autoPlayVideo = JSON.parse(local).auto_play_video;
     }
@@ -74,7 +74,7 @@ export class HowToPage implements OnInit {
         this.currentPlay = this.lists[0];
         const howToPlayerCover = (document.querySelector('#how-to-player-cover') as HTMLVideoElement);
 
-        const i = setInterval(() => {
+        let i = setInterval(() => {
           const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
           const autoPlayVideo = (document.querySelector('#auto-play-video') as HTMLInputElement);
           howToPlayer.src = this.currentPlay.video;
@@ -114,12 +114,12 @@ export class HowToPage implements OnInit {
   selectCurrentPlay(id: number): Promise<any> {
     return new Promise<any> (async (resolve, reject) => {
       try {
-
+        
         const howToPlayer = (document.querySelector('#how-to-player') as HTMLVideoElement);
         const howToPlayerCover = (document.querySelector('#how-to-player-cover') as HTMLVideoElement);
 
         const current = this.lists.filter(item => item.id == id)[0];
-        if (current.video == undefined) {throw new Error(IENMessage.notFoundFile);}
+        if (current.video == undefined) throw new Error(IENMessage.notFoundFile);
         this.currentPlay = current;
 
         howToPlayer.classList.remove('active');
@@ -128,7 +128,7 @@ export class HowToPage implements OnInit {
         howToPlayer.src = this.currentPlay.video;
         howToPlayer.load();
         howToPlayer.play();
-
+        
         setTimeout(() => {
           howToPlayer.classList.add('active');
           howToPlayerCover.classList.remove('active');

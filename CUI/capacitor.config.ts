@@ -5,28 +5,35 @@ const config: CapacitorConfig = {
   appName: 'cui',
   webDir: 'www',
   bundledWebRuntime: false,
-
   server: {
-    allowNavigation: [] // Add external URLs if needed
+    allowNavigation: []
   },
-
   android: {
-    allowMixedContent: true // Disable this in production
+    allowMixedContent: true
   },
-
-  plugins: {
-    SplashScreen: {
-      launchShowDuration: 3000, // 3 seconds
-      showSpinner: false // No spinner
-    },
-    StatusBar: {
-      style: "dark" // Dark text for light backgrounds
-    },
-    CapacitorUpdater: {
-      autoUpdate: true, // Enable auto-updates
-      resetWhenUpdate: false // Preserve app data
+  cordova: {
+    preferences: {
+      ScrollEnabled: 'false',
+      'android-minSdkVersion': '19',
+      'android-targetSdkVersion': '30',
+      'android-compileSdkVersion': '30',
+      BackupWebStorage: 'none',
+      SplashMaintainAspectRatio: 'true',
+      FadeSplashScreenDuration: '300',
+      SplashShowOnlyFirstTime: 'false',
+      SplashScreen: 'screen',
+      SplashScreenDelay: '3000',
+      WKWebViewOnly: 'true',
+      AndroidXEnabled: 'false'
     }
-  }
+  },
+  "plugins": {
+		"CapacitorUpdater": {
+			"autoUpdate": true,
+			"resetWhenUpdate": false,
+      "version": "1.0.0"
+		}
+	}
 };
 
 export default config;

@@ -11,8 +11,8 @@ import { IENMessage } from '../models/base.model';
 })
 export class WsapiService {
   // vsales: IVendingMachineSale[];
-  setting_allowCashIn = false;
-  setting_allowVending = false;
+  setting_allowCashIn: boolean = false;
+  setting_allowVending: boolean = false;
 
   wsurl = 'ws://localhost:9009';
   webSocket: WebSocket;
@@ -34,10 +34,10 @@ export class WsapiService {
   // vsales=new Array<IVendingMachineSale>();
   constructor(
     private cashingService: AppcachingserviceService,
-
+    
   ) {
   }
-  onBillProcess(cb: (data) => void){
+  onBillProcess(cb:(data)=>void){
     if(cb){
       this.eventEmmiter.on('billProcess',cb);
     }
@@ -86,7 +86,7 @@ export class WsapiService {
         }, 5000);
 
       // }, 5000)
-    };
+    }
     this.webSocket.onmessage = async (ev) => {
       try {
         const res = JSON.parse(ev.data) as IResModel;
@@ -98,7 +98,7 @@ export class WsapiService {
           case 'ping':
 
             // control version
-
+            
 
 
             console.log('Ping');
@@ -113,17 +113,17 @@ export class WsapiService {
             // this.billProcessSubscription.next(data);
             this.eventEmmiter.emit('billProcess',data);
             break;
-
+            
           case 'waitingt':
             console.log('Start waiting');
-            this.waitingDelivery.next(data);
+            this.waitingDelivery.next(data)
             break;
-
+            
           case 'login':
             if (data.data)
-            {console.log('LOGIN',data);}
-
-              this.loginSubscription.next(data.data);
+            console.log('LOGIN',data);
+            
+              this.loginSubscription.next(data.data)
             break;
 
           case 'CREDIT_NOTE':
@@ -150,16 +150,16 @@ export class WsapiService {
       }
       } catch (error) {
         console.log('WS MESSAGE',error);
-
+        
       }
-
-    };
+      
+    }
   }
   send(data: IReqModel | IResModel) {
     const that = this;
     console.log('sending');
 
-    this.waitForSocketConnection(function() {
+    this.waitForSocketConnection(function () {
       console.log('connection is ready to send', data);
       that.webSocket.send(JSON.stringify(data));
     });
@@ -172,12 +172,12 @@ export class WsapiService {
     console.log('waiting for sending');
 
     setTimeout(
-      function() {
+      function () {
         console.log('wating count', socket.readyState, new Date().getTime());
 
         // console.log('ws ready state', socket.readyState);
         if (socket.readyState === 1) {
-          console.log('Connection is made');
+          console.log("Connection is made")
           if (callback) {
             callback();
             that.retries = 0;
@@ -190,7 +190,7 @@ export class WsapiService {
             that.connect(that.wsurl, that.machineId, that.otp);
             that.retries = 0;
           } else {
-            console.log('waiting for the connection...');
+            console.log("waiting for the connection...")
             that.waitForSocketConnection(callback);
           }
           that.retries++;
@@ -210,9 +210,9 @@ export class WsapiService {
 
          resolve(IENMessage.success);
       } catch (error) {
-
+ 
         resolve(error.message);
       }
-    });
+    }); 
   }
 }
