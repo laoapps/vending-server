@@ -1,141 +1,97 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { SerialConnectionCapacitor } from 'SerialConnectionCapacitor';
-import { Serial, SerialDriverEnum, SerialError } from '@adeunis/capacitor-serial';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SerialserviceService {
+export class SerialServiceService {
+  private initialized = false;  // Guard against multiple initializations
 
   constructor(public toast: ToastController) {
-
   }
+
+  // Convert bytes to hex string
   bytesToHexString(bytes: number[]): string {
     return bytes.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
   }
 
-  async useSerialPort() {
-    try {
+  async initializeSerialPort(portName: string, baudRate: number): Promise<void> {
+    if (this.initialized) {
+      console.log("Serial port already initialized, skipping...");
+      return;
+    }
 
+    try {
+      // List ports once
+      // const result = await SerialConnectionCapacitor.listPorts();
+      // console.log("Available ports:", result.ports);
+
+      // Add listeners before opening
       SerialConnectionCapacitor.addListener('nativeSerialOpened', (data) => {
-        console.log('Connection opened:', data);
+        console.log('Native serial opened:', data.message);
       });
       SerialConnectionCapacitor.addListener('usbSerialOpened', (data) => {
-        console.log('Connection opened:', data);
+        console.log('USB serial opened:', data.message);
       });
       SerialConnectionCapacitor.addListener('connectionClosed', (data) => {
-        console.log('Connection closed:', data);
-      });
-      SerialConnectionCapacitor.addListener('connectionError', (data) => {
-        console.error('connectionError received:', data);
-      });
-      SerialConnectionCapacitor.addListener('dataReceived', (data) => {
-        console.error('connectionError received:', data);
-      });
-      SerialConnectionCapacitor.addListener('listError', (data) => {
-        console.error('listError received:', data);
-      });
-      SerialConnectionCapacitor.addListener('portsListed', (data) => {
-        console.error('portsListed received:', data);
-      });
-      SerialConnectionCapacitor.addListener('readError', (data) => {
-        console.error('readError received:', data);
-      });
-      SerialConnectionCapacitor.addListener('readingStarted', (data) => {
-        console.error('readingStarted received:', data);
-      });
-      SerialConnectionCapacitor.addListener('readingStopped', (data) => {
-        console.error('readingStopped received:', data);
-      });
-      SerialConnectionCapacitor.addListener('writeError', (data) => {
-        console.error('writeError received:', data);
-      });
-      SerialConnectionCapacitor.addListener('usbWriteSuccess', (data) => {
-        console.error('writeError received:', data);
+        console.log('Connection closed:', data.message);
       });
       SerialConnectionCapacitor.addListener('nativeWriteSuccess', (data) => {
-        console.error('nativeWriteSuccess received:', data);
+        console.log('Native write succeeded:', data.message);
       });
-      SerialConnectionCapacitor.addListener('portsListed', (data) => {
-        console.error('nativeWriteSuccess received:', data);
+      SerialConnectionCapacitor.addListener('usbWriteSuccess', (data) => {
+        console.log('USB write succeeded:', data.message);
       });
-      SerialConnectionCapacitor.listPorts().then(async (result) => {
-        console.log("Available ports:", result.ports);
-        const ports = Object.keys(result.ports);
+      SerialConnectionCapacitor.addListener('dataReceived', (data) => {
+        console.log('Data received:', data.data);  // Log received data
+      });
+      SerialConnectionCapacitor.addListener('readingStarted', (data) => {
+        console.log('Reading started:', data.message);
+      });
+      SerialConnectionCapacitor.addListener('readingStopped', (data) => {
+        console.log('Reading stopped:', data.message);
+      });
+      SerialConnectionCapacitor.addListener('connectionError', (data) => {
+        console.error('Connection error:', data.error);
+      });
+      SerialConnectionCapacitor.addListener('listError', (data) => {
+        console.error('List error:', data.error);
+      });
+      SerialConnectionCapacitor.addListener('writeError', (data) => {
+        console.error('Write error:', data.error);
+      });
+      SerialConnectionCapacitor.addListener('readError', (data) => {
+        console.error('Read error:', data.error);
+      });
 
-        for (const port of ports) {
-          if (port.startsWith("/dev/ttyS")) {
-            try {
-              if(port !== "/dev/ttyS0") {
-                continue
-              }
-              await SerialConnectionCapacitor.openNativeSerial({ portName: port, baudRate: 57600 });
-              console.log(`Opened ${port}`);
-               await SerialConnectionCapacitor.startReading();
-               console.log(`Started reading ${port}`);
-              const pollCommand = this.bytesToHexString([0xFA, 0xFB, 0x41, 0x00, 0x40]);
-              await SerialConnectionCapacitor.write({ data: pollCommand });
-              console.log(`Wrote to ${port}`);
-             
-              
-              // // Wait a bit or listen for data
-              // await new Promise(resolve => setTimeout(resolve, 2000));
-              // await SerialConnectionCapacitor.close();
-              // console.log(`Closed ${port}`);
-            } catch (err) {
-              console.error(`Failed ${port}:`, err);
-            }
-          }
-        }
+      // Open serial port
+      console.log("Opening openUsbSerial:", { portName, baudRate });
+      await SerialConnectionCapacitor.openUsbSerial({ portName, baudRate });
+      console.log(`Opened ${portName}`);
 
-      }).catch((err) => {
-        console.error('Failed to list ports:', err);
-      }
-      );
+      // Write initial poll command
+      const pollCommand = this.bytesToHexString([0xFA, 0xFB, 0x41, 0x00, 0x40]);
+      await SerialConnectionCapacitor.write({ data: pollCommand });
+      console.log(`Wrote to ${portName}: ${pollCommand}`);
 
-    } catch (error) {
-      console.error('Failed to list ports:', error);
+      // Start reading
+      await SerialConnectionCapacitor.startReading();
+      console.log(`Started reading ${portName}`);
+
+      this.initialized = true;  // Mark as initialized
+    } catch (err) {
+      console.error('Error initializing serial port:', err);
     }
-    // async useSerialPort() {
-    //   //Connection
-    //   Serial.requestSerialPermissions({vendorId: '1111', productId: '2222', driver: SerialDriverEnum.FTDI_SERIAL_DRIVER})
-    //   .then((permissionResponse) => {
-    //       if (!permissionResponse.granted) {
-    //           return Promise.reject('Permission refused');
-    //       }
-    //       return Promise.resolve();
-
-    //   })
-    //   .then(() => Serial.openConnection({baudRate: 57600}))
-    //   .then(() => console.info('Serial connection opend'))
-    //   .catch((error) => console.error(error));
-
-    //   //Write
-    //   const pollCommand = this.bytesToHexString([0xFA, 0xFB, 0x41, 0x00, 0x40]);
-    //   Serial.write({data: pollCommand})
-    //       .then(() => console.info('Data sent'))
-    //       .catch((error: SerialError ) => {
-    //         console.error(`error : ${error}`);
-    //       });
-
-
-    //   //Read
-    //   Serial.read({readRaw: false}).then((message) => console.info(message.data));
-    //   Serial.registerReadRawCallback((message, error) => {
-    //       console.info(`message : ${message}`,error);
-    //     });
-    //   //Read callback 
-    //   Serial.registerReadCallback((message, error) => {
-    //       if (message !== undefined && message !== null) {
-    //         console.info(message.data);
-
-    //       } else if (error !== undefined && error !== null) {
-    //         console.error(`error : ${error}`);
-    //       }
-    //   })
   }
-  //   Serial.closeConnection().then(() => console.info('Serial connection closed'));
-  // }
 
+  // Optional: Method to list ports on demand
+  async listPorts(): Promise<void> {
+    try {
+      const result = await SerialConnectionCapacitor.listPorts();
+      console.log("Available ports:", result.ports);
+    } catch (err) {
+      console.error('Error listing ports:', err);
+    }
+  }
 }

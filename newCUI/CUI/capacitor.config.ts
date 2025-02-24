@@ -6,7 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'www',
   bundledWebRuntime: false,
   server: {
-    allowNavigation: []
+    allowNavigation: [],
+    cleartext: true
   },
   android: {
     allowMixedContent: true

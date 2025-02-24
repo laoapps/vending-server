@@ -1,8 +1,11 @@
 {
   "name": "CUI",
   "integrations": {
-    "capacitor": {},
-    "cordova": {}
+    "capacitor": {
+      "server": {
+      "cleartext": true
+      }
+    }
   },
   "type": "angular"
 }

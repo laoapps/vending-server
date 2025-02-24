@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { SerialserviceService } from '../services/serialservice.service';
+import { SerialServiceService } from '../services/serialservice.service';
 
 @Component({
   selector: 'app-testmotor',
@@ -8,7 +8,7 @@ import { SerialserviceService } from '../services/serialservice.service';
 })
 export class TestmotorPage implements OnInit {
 
-  constructor(private serialService: SerialserviceService) {
+  constructor(private serialService: SerialServiceService) {
   }
 
   ngOnInit() {
@@ -16,7 +16,9 @@ export class TestmotorPage implements OnInit {
 
 
   scan() {
-    this.serialService.useSerialPort();
+   this.serialService.initializeSerialPort('/dev/ttyS0', 57600).then(()=>{
+      console.log('Serial port initialized');
+   })
   }
 
 }
