@@ -1,167 +1,182 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
+import { PluginListenerHandle } from '@capacitor/core/types/definitions';
 import { ToastController } from '@ionic/angular';
-import { SerialConnectionCapacitor } from 'SerialConnectionCapacitor';
+import { SerialConnectionCapacitor, SerialPortListResult ,SerialPortEventTypes} from 'SerialConnectionCapacitor';
 import crc from 'crc';
+import { Subject, Subscription, } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class SerialServiceService {
+export class SerialServiceService implements OnDestroy {
   private initialized = false;  // Guard against multiple initializations
-  log = '';
-  pcbarray = '01'
-  constructor(public toast: ToastController) {
+
+  // Subject to broadcast serial events to subscribers
+  private serialEventSubject = new Subject<any>();
+  // Subscriptions to Capacitor listeners for cleanup
+  private listenerSubscriptions: Array<Promise<PluginListenerHandle> & PluginListenerHandle> = [];
+  constructor() {
   }
 
-  // Convert bytes to hex string
-  bytesToHexString(bytes: number[]): string {
-    return bytes.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-  }
 
-  async initializeSerialPort(portName: string, baudRate: number, log: { data: string },reading:{data:string}): Promise<void> {
+  // Cleanup on service destruction (app close)
+  async ngOnDestroy() {
+    this.initialized = false;
+    await this.close();  // Close serial port
+    // Remove all Capacitor listeners
+    await Promise.all(this.listenerSubscriptions.map(handle => handle.remove()));
+    this.listenerSubscriptions = [];
+    this.serialEventSubject.complete();  // Complete the subject
+    console.log('SerialServiceService destroyed and cleaned up');
+  }
+  async initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number } = { data: '', len: 100 }, isNative = true): Promise<void> {
     if (this.initialized) {
       console.log("Serial port already initialized, skipping...");
       return;
     }
 
     try {
-      // List ports once
-      // const result = await SerialConnectionCapacitor.listPorts();
-      // console.log("Available ports:", result.ports);
-
-      // Add listeners before opening
-      SerialConnectionCapacitor.addListener('nativeSerialOpened', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('Native serial opened:', data?.message);
-      });
-      SerialConnectionCapacitor.addListener('usbSerialOpened', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('USB serial opened:', data?.message);
-      });
-      SerialConnectionCapacitor.addListener('connectionClosed', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('Connection closed:', data?.message);
-      });
-      SerialConnectionCapacitor.addListener('nativeWriteSuccess', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('Native write succeeded:', data?.message);
-      });
-      SerialConnectionCapacitor.addListener('usbWriteSuccess', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('USB write succeeded:', data?.message);
-      });
-      SerialConnectionCapacitor.addListener('dataReceived', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('Data received:', data?.data);  // Log received data
-      });
-      SerialConnectionCapacitor.addListener('readingStarted', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('Reading started:', data?.message);
-      });
-      SerialConnectionCapacitor.addListener('readingStopped', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.log('Reading stopped:', data?.message);
-      });
-      SerialConnectionCapacitor.addListener('connectionError', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.error('Connection error:', data?.error);
-      });
-      SerialConnectionCapacitor.addListener('listError', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.error('List error:', data?.error);
-      });
-      SerialConnectionCapacitor.addListener('writeError', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.error('Write error:', data?.error);
-      });
-      SerialConnectionCapacitor.addListener('readError', (data) => {
-        log.data += JSON.stringify(data) + '\n';
-        console.error('Read error:', data?.error);
-      });
+      // Add event listeners
+      // Add event listeners and store subscriptions
+      this.listenerSubscriptions.push(
+        SerialConnectionCapacitor.addListener('nativeSerialOpened', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('Native serial opened:', data?.message);
+          this.serialEventSubject.next({ event: SerialPortEvent.NativeSerialOpened, data });
+        }),
+        SerialConnectionCapacitor.addListener('usbSerialOpened', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('USB serial opened:', data?.message);
+          this.serialEventSubject.next({ event: SerialPortEvent.UsbSerialOpened, data });
+        }),
+        SerialConnectionCapacitor.addListener('connectionClosed', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('Connection closed:', data?.message);
+          this.serialEventSubject.next({ event: SerialPortEvent.ConnectionClosed, data });
+        }),
+        SerialConnectionCapacitor.addListener('nativeWriteSuccess', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('Native write succeeded:', data?.message);
+          this.serialEventSubject.next({ event: SerialPortEvent.NativeWriteSuccess, data });
+        }),
+        SerialConnectionCapacitor.addListener('usbWriteSuccess', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('USB write succeeded:', data?.message);
+          this.serialEventSubject.next({ event: SerialPortEvent.NativeWriteSuccess, data });
+        }),
+        SerialConnectionCapacitor.addListener('dataReceived', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('Data received:', data?.data);
+          this.serialEventSubject.next({ event: SerialPortEvent.DataReceived, data });
+        }),
+        SerialConnectionCapacitor.addListener('readingStarted', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('Reading started:', data?.message);
+          this.serialEventSubject.next({ event: SerialPortEvent.ReadingStarted, data });
+        }),
+        SerialConnectionCapacitor.addListener('readingStopped', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.log('Reading stopped:', data?.message);
+          this.serialEventSubject.next({ event: SerialPortEvent.ReadingStopped, data });
+        }),
+        SerialConnectionCapacitor.addListener('connectionError', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.error('Connection error:', data?.error);
+          this.serialEventSubject.next({ event: SerialPortEvent.ConnectionError, data });
+        }),
+        SerialConnectionCapacitor.addListener('listError', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.error('List error:', data?.error);
+          this.serialEventSubject.next({ event: SerialPortEvent.ListError, data });
+        }),
+        SerialConnectionCapacitor.addListener('writeError', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.error('Write error:', data?.error);
+          this.serialEventSubject.next({ event: SerialPortEvent.WriteError, data });
+        }),
+        SerialConnectionCapacitor.addListener('readError', (data) => {
+          !log || (log.data += JSON.stringify(data) + '\n');
+          console.error('Read error:', data?.error);
+          this.serialEventSubject.next({ event: SerialPortEvent.ReadError, data });
+        })
+        // Note: 'readingData' event isn't in your plugin—remove or implement if needed
+      );
       SerialConnectionCapacitor.addListener('readingData', (data) => {
-        
-        if(reading.data.split('\n').length>50)
-          reading.data.split('\n').shift();
-        reading.data += JSON.stringify(data) + '\n';
+        if (reading) {
+          if (reading.data.split('\n').length > reading?.len || 100)
+            reading.data.split('\n').shift();
+          reading.data += JSON.stringify(data) + '\n';
+          this.serialEventSubject.next({ event: SerialPortEvent.ReadingData, data });
+        }
+
         console.log('Reading data:', data?.data);
       }
       );
 
       const result = await SerialConnectionCapacitor.listPorts();
+
       console.log("Available ports:", result.ports);
+
       log.data += JSON.stringify(result) + '\n';
       // Open serial port
       console.log("Opening openNativeSerial:", { portName, baudRate });
-      await SerialConnectionCapacitor.openNativeSerial({ portName, baudRate });
+      if (isNative)
+        await SerialConnectionCapacitor.openNativeSerial({ portName, baudRate });
+      else
+        await SerialConnectionCapacitor.openUsbSerial({ portName, baudRate });
+      console.log(`Opened ${portName}`);
       // Start reading
       await SerialConnectionCapacitor.startReading();
       console.log(`Started reading ${portName}`);
-
-      console.log(`Opened ${portName}`);
-
-      // Write initial poll command
-      // const pollCommand = bytesToHexString([0xFA, 0xFB, 0x41, 0x00, 0x40]);
-
-
-
-
       this.initialized = true;  // Mark as initialized
     } catch (err) {
       console.error('Error initializing serial port:', err);
     }
   }
+  // Public method for components to subscribe to serial events
+  getSerialEvents() {
+    return this.serialEventSubject.asObservable();
+  }
 
-  checkSum(buff: string[]): string {
+  async write(data: any): Promise<void> {
     try {
-        let hexString = buff.join('');
-        let data = new Uint8Array(buff.map(b => parseInt(b, 16))); // Replace Buffer
-        let x = crc.crc16modbus(data).toString(16);
-
-        x = x.padStart(4, '0'); // Ensure 4 characters
-        return x.substring(2) + x.substring(0, 2); // Swap bytes
-    } catch (e) {
-        console.error('Error:', e);
-        return '';
-    }
-}
-  async write(data: any) {
-    try {
-
-      await SerialConnectionCapacitor.write({ data });
-      console.log(`writeData  ${data}`);
+      if (this.initialized) {
+        await SerialConnectionCapacitor.write({ data });
+        console.log(`writeData  ${data}`);
+      }
+      else {
+        console.log('Serial port not initialized');
+      }
     }
     catch (e) {
       console.log('writeData error', e);
     }
   }
 
+  async close(): Promise<void> {
+    await SerialConnectionCapacitor.stopReading();
+    this.initialized = false;
+    await SerialConnectionCapacitor.close();
+    console.log('Serial port closed');
+
+  }
+  // Optional: Method to list ports on demand
+  async listPorts(): Promise<SerialPortListResult> {
+    try {
+      const result = await SerialConnectionCapacitor.listPorts();
+      console.log("Available ports:", result.ports);
+      return result;
+    } catch (err) {
+      console.error('Error listing ports:', err);
+    }
+  }
   int2hex(i: number) {
     const str = Number(i).toString(16);
     return str.length === 1 ? '0' + str : str;
   }
-  shipOrder(s = 2,log:{data:string}=null) {
-    const slot = this.int2hex(s - 1);
-    const isspring = '01';
-    const dropdetect = '00';
-    const liftsystem = '00';
-    let buff = [this.pcbarray, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
-    // 011000010002040A010000
 
-    let check = this.checkSum(buff)
-    const x = buff.join('') + check;
-    console.log('shipOrder', x);
-    if(log)
-    log.data += 'shipOrder' + x + '\n';
-    this.write(x);
-  }
-  // Optional: Method to list ports on demand
-  async listPorts(): Promise<void> {
-    try {
-      const result = await SerialConnectionCapacitor.listPorts();
-
-      console.log("Available ports:", result.ports);
-    } catch (err) {
-      console.error('Error listing ports:', err);
-    }
+  // Convert bytes to hex string
+  bytesToHexString(bytes: number[]): string {
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
   }
   hexStringToArray(hex: string): string[] {
     // Remove spaces if any and ensure even-length
@@ -175,12 +190,43 @@ export class SerialServiceService {
 
     return hexArray;
   }
-   chk8xor(byteArray = new Array<any>()) {
+  checkSumCRC(buff: string[]): string {
+    try {
+      let hexString = buff.join('');
+      let data = new Uint8Array(buff.map(b => parseInt(b, 16))); // Replace Buffer
+      let x = crc.crc16modbus(data).toString(16);
+
+      x = x.padStart(4, '0'); // Ensure 4 characters
+      return x.substring(2) + x.substring(0, 2); // Swap bytes
+    } catch (e) {
+      console.error('Error:', e);
+      return '';
+    }
+  }
+  chk8xor(byteArray = new Array<any>()) {
     let checksum = 0x00
     for (let i = 0; i < byteArray.length - 1; i++)
-        checksum ^= parseInt(byteArray[i].replace(/^#/, ''), 16)
+      checksum ^= parseInt(byteArray[i].replace(/^#/, ''), 16)
     const x = checksum.toString(16);
     if (x.length == 1) return '0' + x;
     return x;
+  }
 }
+
+export enum SerialPortEvent {
+  PortsListed = 'portsListed',
+  ConnectionOpened = 'connectionOpened',
+  NativeSerialOpened = 'nativeSerialOpened',
+  UsbSerialOpened = 'usbSerialOpened',
+  ConnectionClosed = 'connectionClosed',
+  NativeWriteSuccess = 'nativeWriteSuccess',
+  UsbWriteSuccess = 'usbWriteSuccess',
+  DataReceived = 'dataReceived',
+  ReadingStarted = 'readingStarted',
+  ReadingStopped = 'readingStopped',
+  ListError = 'listError',
+  ConnectionError = 'connectionError',
+  WriteError = 'writeError',
+  ReadError = 'readError',
+  ReadingData = 'readingData'
 }

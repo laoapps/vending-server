@@ -8,7 +8,7 @@ import { SerialServiceService } from '../services/serialservice.service';
 })
 export class TestmotorPage implements OnInit {
   log = { data: '' };
-  readingData = { data: '' };
+  readingData = { data: '',len:100 };
   slot = 1;
   val='011000010002040A010000';
   sendingDate={data:''};
@@ -31,7 +31,7 @@ export class TestmotorPage implements OnInit {
     this.serialService.shipOrder(this.slot, this.log);
   }
   checkSum(){
-    this.datachecksum=this.val+this.serialService.checkSum(this.serialService.hexStringToArray(this.val));
+    this.datachecksum=this.val+this.serialService.checkSumCRC(this.serialService.hexStringToArray(this.val));
   }
 
 }

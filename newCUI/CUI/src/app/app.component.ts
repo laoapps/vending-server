@@ -1,12 +1,15 @@
 import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
 import { IAlive } from './services/syste.model';
-
+import { App } from '@capacitor/app';
 import * as moment from 'moment';
 
 import { Platform } from '@ionic/angular';
 import { SettingPage } from './setting/setting.page';
-import { ScreenBrightness } from '@capacitor-community/screen-brightness';
+import { EVendingIndex, VendingIndexServiceService } from './vending-index-service.service';
+
+
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -17,9 +20,9 @@ export class AppComponent {
   uT = new Date();
   now = new Date();
   version = '';
-  constructor(public apiService: ApiService,  private platform: Platform) {
+  constructor(public apiService: ApiService,  private platform: Platform,public vendingIndex: VendingIndexServiceService) {
     this.platform.ready().then(r => {
-
+      this.initializeApp();
     })
 
     this.checkOnlineStatus = apiService.wsAlive;
@@ -94,6 +97,60 @@ export class AppComponent {
   startActive() {
     const hour = new Date().getHours();// >19 , >0&&<8
     // ScreenBrightness.setBrightness({ brightness:1 });
+  }
+  initializeApp() {
+    // Detect when the app goes to background
+    App.addListener('pause', async () => {
+      console.log('App moved to background, closing port...');
+      this.closePort();  // Function to close the port
+    });
+
+    // Detect when the app is resumed
+    App.addListener('resume', async () => {
+      console.log('App resumed');
+      this.reopenPort();  // Function to reopen the port if needed
+    });
+
+    // Detect when the app is about to close
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) {
+        console.log('App is inactive, closing port...');
+        this.closePort();
+      }
+    });
+
+
+  }
+
+  // Example function to close the port
+  private closePort() {
+    try {
+      // Close the port logic here
+      console.log('Port closed successfully.');
+    } catch (error) {
+      console.error('Error closing port:', error);
+    }
+  }
+
+  // Example function to reopen the port (if needed)
+  private reopenPort() {
+    try {
+      // Reopen the port logic if needed
+      let vendingName = localStorage.getItem('vendingName')
+      if(!vendingName){
+        localStorage.setItem('vendingName',EVendingIndex.zdm8+'');
+        vendingName=EVendingIndex.zdm8+'';
+      }
+      if(vendingName==EVendingIndex.zdm8+''){
+        this.vendingIndex.initZDM8(localStorage.getItem('portName'),parseInt(localStorage.getItem('braudRate')));
+      }else if(vendingName==EVendingIndex.vmc+''){
+        this.vendingIndex.initVMC(localStorage.getItem('portName'),parseInt(localStorage.getItem('braudRate')));
+      }
+   
+      console.log('Reopening port if necessary...');
+    } catch (error) {
+      console.error('Error reopening port:', error);
+    }
   }
 }
 
