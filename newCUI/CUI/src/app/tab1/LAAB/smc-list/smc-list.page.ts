@@ -6,7 +6,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
 import * as QRCode from 'qrcode';
 import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
-import moment from 'moment';
+import * as  moment from 'moment';
 import { ModalController } from '@ionic/angular';
 
 @Component({

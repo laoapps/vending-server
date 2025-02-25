@@ -25,7 +25,7 @@ import {
   ToastController,
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
-import moment from 'moment';
+import * as  moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';

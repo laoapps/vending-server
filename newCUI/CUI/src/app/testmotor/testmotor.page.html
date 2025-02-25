@@ -11,4 +11,11 @@
     </ion-toolbar>
   </ion-header>
   <button style="font-size: 30px;" (click)="scan()">Scan</button>
+  <ion-button (click)="testDrop()">Ship</ion-button><ion-input type="number" placeholder="Enter slow" [(ngModel)]="slot"></ion-input>
+  <textarea style="width: 100%; height: 200px;" [(ngModel)]="log.data"></textarea>
+  <ion-label>Reading data</ion-label>
+  <textarea style="width: 100%; height: 500px;" #textarea [scrollTop]="textarea.scrollHeight" [(ngModel)]="readingData.data"></textarea>
+  <ion-button (click)="checkSum()">checkSum</ion-button>
+  <ion-input type="text" placeholder="Enter checkSum" [(ngModel)]="val"></ion-input>
+  <ion-textarea style="width: 100%; height: 500px;" [(ngModel)]="datachecksum"></ion-textarea>
 </ion-content>

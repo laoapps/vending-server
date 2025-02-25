@@ -1,6 +1,6 @@
 import { Component, OnInit ,Input} from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import moment from 'moment';
+import * as  moment from 'moment';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
