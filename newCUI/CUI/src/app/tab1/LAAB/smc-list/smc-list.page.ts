@@ -34,7 +34,7 @@ export class SmcListPage implements OnInit {
     public apiService: ApiService,
     public vendingAPIService: VendingAPIService,
     public modal: ModalController
-  ) { 
+  ) {
     this.apiService.___SmcListPage = this.modal;
 
     this.loadSMCListProcess = new LoadSMCProcess(this.apiService, this.vendingAPIService);
@@ -43,7 +43,7 @@ export class SmcListPage implements OnInit {
   }
 
   async ngOnInit() {
-    this.apiService.autopilot.auto=0;
+    this.apiService.autopilot.auto = 0;
     this.loadHideList();
     await this.loadSMC();
 
@@ -73,7 +73,7 @@ export class SmcListPage implements OnInit {
   }
 
   loadSMC(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         const params = {
@@ -84,7 +84,7 @@ export class SmcListPage implements OnInit {
         console.log(`params`, params);
         const run = await this.loadSMCListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        
+
         this.count = run.data[0].count;
         this.totalpage = Math.ceil(this.count / this.limit);
         if (this.lists != undefined && Object.entries(this.lists).length == 0) {
@@ -92,23 +92,23 @@ export class SmcListPage implements OnInit {
         } else if (this.lists != undefined && Object.entries(this.lists).length > 0) {
           this.lists = this.lists.concat(run.data[0].rows);
         }
-        
-        console.log(`lists`, this.lists);
-        const c = this.lists.filter(v=>!this.hiddenList.find(vx=>vx.uuid==v.uuid));
-        console.log(`c`, c);
-        this.lists=
-        this.lists.filter(v=> this.hiddenList.find(vx=>vx.uuid==v.uuid&&moment().diff
-        (
-          moment(vx.time),'seconds'
-        )
-        >
-        24*60*60));
 
-        this.lists =this.lists.concat(c);
-        this.lists = this.lists.sort((a,b) => a.id-b.id);
-        
+        console.log(`lists`, this.lists);
+        const c = this.lists.filter(v => !this.hiddenList.find(vx => vx.uuid == v.uuid));
+        console.log(`c`, c);
+        this.lists =
+          this.lists.filter(v => this.hiddenList.find(vx => vx.uuid == v.uuid && moment().diff
+            (
+              moment(vx.time), 'seconds'
+            )
+            >
+            24 * 60 * 60));
+
+        this.lists = this.lists.concat(c);
+        this.lists = this.lists.sort((a, b) => a.id - b.id);
+
         resolve(IENMessage.success);
-        
+
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
@@ -117,7 +117,7 @@ export class SmcListPage implements OnInit {
   }
 
   scrollLoadSMC(event: any): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         if (this.lists != undefined && Object.entries(this.lists).length == this.count) {
@@ -135,7 +135,7 @@ export class SmcListPage implements OnInit {
           event.target.complete();
           resolve(IENMessage.success);
         }
-        
+
 
 
       } catch (error) {
@@ -150,22 +150,22 @@ export class SmcListPage implements OnInit {
   }
 
   createEPIN(data: any): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         let local = localStorage.getItem('smc_list');
         if (local == undefined || local == null) throw new Error(IENMessage.thisSmcHaveAlreadyUsedOrThatOneWasDelete);
-        
+
         const localList: Array<any> = JSON.parse(local);
         console.log(`local`, localList);
         console.log(`data`, data);
         const findsave: Array<any> = localList.filter(item => item.bill.chash == data.hash);
         if (findsave != undefined && Object.entries(findsave).length == 0) throw new Error(IENMessage.notFoundAnySaveSMC);
-        
+
 
         console.log(`save`, findsave);
-        
-        
+
+
         const params = {
           machineId: localStorage.getItem('machineId'),
           detail: findsave[0].detail
@@ -189,7 +189,7 @@ export class SmcListPage implements OnInit {
           const props = {
             data: data,
             qrImage: r,
-            code: findsave[0].detail.items[0].code[0] 
+            code: findsave[0].detail.items[0].code[0]
           }
           this.apiService.modal.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
             r.present();

@@ -348,8 +348,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
             if (this.apiService.cash.amount < this.getTotalSale.t) {
 
-              AutoPaymentPage.laabqrimgElement.classList.add('active');
-              AutoPaymentPage.btnLAABGo.classList.remove('active');
+              // AutoPaymentPage.laabqrimgElement.classList.add('active');
+              // AutoPaymentPage.btnLAABGo.classList.remove('active');
 
               let qrModel = {
                 type: 'CQR',
@@ -367,7 +367,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               if (AutoPaymentPage.laabqrimgElement) AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();
 
             } else {
-              AutoPaymentPage.laabqrimgElement.classList.remove('active');
+              // AutoPaymentPage.laabqrimgElement.classList.remove('active');
               AutoPaymentPage.btnLAABGo.classList.add('active');
             }
 
@@ -700,7 +700,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               checkLAAB - 1;
               console.log(`LAAB CASHIN balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
               this.apiService.soundLaabIncreased();
-              AutoPaymentPage.laabqrimgElement.classList.remove('active');
+              // AutoPaymentPage.laabqrimgElement.classList.remove('active');
               AutoPaymentPage.btnLAABGo.classList.add('active');
               await this.laabAutoCashin();
 
