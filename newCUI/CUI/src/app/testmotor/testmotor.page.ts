@@ -12,7 +12,7 @@ export class TestmotorPage implements OnInit,OnDestroy {
   readingData = { data: '',len:100 };
   slot = 1;
   //val='0110200100020410010100'; //with checksum 0110200100020410010100ff32
-  val = 'fafb4200'
+  val = 'fafb420000';//with checksum fafb420043
   sendingDate={data:''};
   datachecksum=''
   machineId='11111111';
