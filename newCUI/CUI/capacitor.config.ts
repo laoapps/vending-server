@@ -17,7 +17,12 @@ const config: CapacitorConfig = {
 			autoUpdate: true,
 			resetWhenUpdate: false,
       version: "1.0.0"
-		}
+		},
+    CapacitorSQLite: {
+      iosDatabaseLocation: 'Library', // Recommended for iOS
+      iosIsEncryption: false, // Optional: enable encryption if needed
+      androidIsEncryption: false, // Optional
+    }
 	}
 };
 

@@ -10,12 +10,25 @@
       <ion-title size="large">testmotor</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-select [(ngModel)]="isNative" (ionChange)="selectPlatform($event)">
+    <ion-select-option *ngFor="let platform of platforms" [value]="platform">{{platform}}</ion-select-option>
+  </ion-select>
+  <ion-input type="text" placeholder="Enter Port name" [(ngModel)]="portName"></ion-input>
+  <ion-input type="number" placeholder="Enter baud ratet" [(ngModel)]="baudRate"></ion-input>
+
   <button style="font-size: 30px;" (click)="scan()">Scan</button>
-  <ion-button (click)="testDrop()">Ship</ion-button><ion-input type="number" placeholder="Enter slow" [(ngModel)]="slot"></ion-input>
+  <ion-select [(ngModel)]="selectedDevice" (ionChange)="selectDevice($event)">
+    <ion-select-option *ngFor="let device of devices" [value]="device">{{device}}</ion-select-option>
+  </ion-select>
+  <ion-button (click)="connect()">Connect</ion-button>
+  <ion-button (click)="close()">Close</ion-button>
+  <ion-button (click)="testDrop()">Ship</ion-button><ion-input type="number" placeholder="Enter slot" [(ngModel)]="slot"></ion-input>
   <textarea style="width: 100%; height: 200px;" [(ngModel)]="log.data"></textarea>
   <ion-label>Reading data</ion-label>
   <textarea style="width: 100%; height: 500px;" #textarea [scrollTop]="textarea.scrollHeight" [(ngModel)]="readingData.data"></textarea>
   <ion-button (click)="checkSum()">checkSum</ion-button>
   <ion-input type="text" placeholder="Enter checkSum" [(ngModel)]="val"></ion-input>
+  <ion-label>Data Checksum</ion-label>
   <ion-textarea style="width: 100%; height: 500px;" [(ngModel)]="datachecksum"></ion-textarea>
+
 </ion-content>

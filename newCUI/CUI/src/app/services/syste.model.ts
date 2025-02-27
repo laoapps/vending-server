@@ -464,7 +464,132 @@ export const EESSP_COMMANDS = {
         description: 'Resets the fixed encryption key to the device default. The device may have extra security requirements before it will accept this command (e.g. The Hopper must be empty) if these requirements are not met, the device will reply with Command Cannot be Processed. If successful, the device will reply OK, then reset. When it starts up the fixed key will be the default.'
     }
 }
+export function PrintSucceeded(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
+    return {
+        command, data, message, code, status: 1, transactionID
+    } as IResModel;
+}
+export function PrintError(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
+    return {
+        command, data: data, message, code, status: 0, transactionID
+    } as IResModel;
+}
 
+export  enum EZDM8_COMMAND {
+    hwversion = 'hwversion',
+    swversion = 'swversion',
+    status = 'status',
+    hutemp = 'hutemp',
+    statusgrid = 'statusgrid',
+    positionhoraxis = 'positionhoraxis',
+    dropdetectstatus = 'dropdetectstatus',
+    arrayoutputstatus = 'arrayoutputstatus',
+    arrayinputstatus = 'arrayinputstatus',
+    yaxiselevatorstatus = 'yaxiselevatorstatus',
+    xaxiselevatorstatus = 'xaxiselevatorstatus',
+    yaxisliftmotor = 'yaxisliftmotor',
+    xaxisliftmotor = 'xaxisliftmotor',
+    relaycommand = 'relaycommand',
+    disabled = 'disabled',
+    enable = 'enable',
+    lifterreset = 'lifterreset',
+    manualspeedmode = 'manualspeedmode',
+    motortimeout = 'motortimeout',
+    setyaxisposition = 'setyaxisposition',
+    setxaxisposition = 'setxaxisposition',
+    setyaxismotor = 'setyaxismotor',
+    setxaxismotor = 'setxaxismotor',
+    shippingcontrol = 'shippingcontrol',
+    yaxisliftmotorissue = 'yaxisliftmotorissue',
+    xaxisliftmotorissue = 'xaxisliftmotorissue',
+    arrayoutput = 'arrayoutput',
+    liftoutput = 'liftoutput',
+    positionliftmotor = "positionliftmotor",
+    disable = "disable",
+    limiter = "limiter",
+    balance = "balance",
+    logs = "logs",
+    temp = "temp",
+    restart = "restart"
+}
+export interface ICreditData{id:number,name:string,transactionID,data:ICreditDataDetails,description:string};
+export interface ICreditDataDetails{raw:string,data:string,t:number,transactionID:string,command:EMACHINE_COMMAND}
+export enum EMACHINE_COMMAND {
+  login = 'login',
+  ping = 'ping',
+  status = 'status',
+  confirm = "confirm",
+  note_credit = "note_credit",
+  CREDIT_NOTE = "CREDIT_NOTE",
+  READ_NOTE = "READ_NOTE",
+  NOTE_REJECTED = "NOTE_REJECTED",
+  JAMMED = "JAMMED",
+  start = "start",
+  stop = "stop",
+  setcounter = "setcounter",
+  restart = "restart",
+  logs = "logs",
+  confirmOrder = "confirmOrder",
+  shippingcontrol='shippingcontrol',
+  temp = "temp",
+  balance = "balance",
+  limiter = "limiter",
+  disable = "disable",
+  enable = "enable",
+  sync='sync',
+  setpoll='setpoll',
+  version = "version",
+  dropdetectstatus = "dropdetectstatus",
+  arrayoutputstatus = "arrayoutputstatus",
+  arrayinputstatus = "arrayinputstatus",
+  relaycommand = "relaycommand",
+  swversion = "swversion",
+  hutemp = "hutemp",
+  statusgrid = "statusgrid",
+  hwversion = "hwversion",
+
+
+}
+export enum ESerialPortType{
+    Native=1,
+    USB=2,
+    McNative=3
+  }
+
+ 
+  export enum EVMC_COMMAND {
+    _41 = '41',
+    _03 = '03',
+    _28 = '28',
+    _06 = "06",
+    disable = "disable",
+    enable = "enable",
+    _51 = "51",
+    _61 = "61",
+    _7017 = "7017",
+    _7001 = "7001",
+    _7018 = "0718",
+    _7019 = "0719",
+    _7020 = "0720",
+    _7023 = "0723",
+    sync = "sync",
+    setpoll = "setpoll",
+    acceptnote = "acceptnote",
+    _7036 = "7036",
+    _7016 = "7016",
+    _7028 = "7028",
+    _7037 = "7037",
+    temp = "temp"
+  }
+import {  SerialPortListResult } from 'SerialConnectionCapacitor';
+export interface ISerialService{
+    initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number },machineId:string,otp:string,isNative:ESerialPortType): Promise<void>;
+    getSerialEvents():any;
+    command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
+    close(): Promise<void>;
+    listPorts(): Promise<SerialPortListResult>;
+    checkSum(data?: any[]): string;
+  }
 
 export interface IResModel {
     transactionID?: number;
@@ -783,9 +908,7 @@ export interface IMachineID extends IBase, IBC {
     logintoken: string;
 }
 
-export enum EMACHINE_COMMAND {
-    login = 'login'
-}
+
 
 export interface IMachineClientID {
     otp: string;

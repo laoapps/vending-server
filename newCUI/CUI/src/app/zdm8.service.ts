@@ -1,35 +1,25 @@
 import { Injectable } from '@angular/core';
 
 import crc from 'crc';
-import { SerialServiceService } from './services/serialservice.service';
+import { SerialServiceService, } from './services/serialservice.service';
 import { IlogSerial, IreadingData } from './vending-index-service.service';
-enum EZDM8_COMMAND {
-  hwversion = 'hwversion',
-  swversion = 'swversion',
-  status = 'status',
-  hutemp = 'hutemp',
-  statusgrid = 'statusgrid',
-  dropdetectstatus = 'dropdetectstatus',
-  arrayoutputstatus = 'arrayoutputstatus',
-  arrayinputstatus = 'arrayinputstatus',
-  shippingcontrol = 'shippingcontrol',
-  relaycommand = 'relaycommand'
-  // Add more as needed below
-}
+import { IResModel,ESerialPortType,ISerialService,EZDM8_COMMAND,EMACHINE_COMMAND } from './services/syste.model';
+import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 
-interface IResModel {
-  command: string;
-  params: any;
-  result: string;
-}
+
+
+
 @Injectable({
   providedIn: 'root'
 })
-export class Zdm8Service {
-  pcbarray = '01';
-
+export class Zdm8Service  implements ISerialService {
+  // pcbarray = '01';
+  machineId:string='11111111';
+  otp='111111';
+  portName = '/dev/ttyS1';
+  braudRate=9600;
   constructor(private serialService: SerialServiceService) { }
-  async command(command: string, params: any): Promise<IResModel> {
+  async commandZDM8(command: EZDM8_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>((resolve, reject) => {
       let buff: string[] = [];
       let check = '';
@@ -72,7 +62,7 @@ export class Zdm8Service {
           case EZDM8_COMMAND.shippingcontrol:
             const slot = this.serialService.int2hex(params.slot - 1); // 0-99
             const isspring = params.isspring || '01'; // Default spring motor
-            const dropdetect = params.dropdetect || '00'; // Default off
+            const dropdetect = params.dropdetect || '01'; // Default off
             const liftsystem = params.liftsystem || '00'; // Default off
             buff = [slaveAddress, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
             check = this.serialService.checkSumCRC(buff);
@@ -83,8 +73,9 @@ export class Zdm8Service {
             buff = [slaveAddress, '06', relayNum, relayState];
             check = this.serialService.checkSumCRC(buff);
             break;
+
           default:
-            reject({ command, params, result: 'Unknown command' });
+            reject({ command, data:params, message: 'Unknown command' });
             return;
         }
 
@@ -93,7 +84,7 @@ export class Zdm8Service {
 
         this.serialService.write(x).then(() => {
           console.log('Command succeeded:', x);
-          resolve({ command, params, result: 'Command sent successfully' });
+          resolve({ command, data:params, message: 'Command sent successfully' }as IResModel);
         }).catch(e => {
           console.error('Command failed:', e);
           reject({ command, params, result: e.message });
@@ -108,11 +99,65 @@ export class Zdm8Service {
       }
     });
   }
-  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null, isNative: boolean): Promise<void> {
-    return this.serialService.initializeSerialPort(portName, baudRate, log, reading, isNative);
+  command = async (command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> => {
+    return new Promise<IResModel>((resolve, reject) => {
+      switch (command) {
+        case EMACHINE_COMMAND.version:
+          this.commandZDM8(EZDM8_COMMAND.hwversion, params, transactionID).then(resolve).catch(reject);
+          
+          break;
+        case EMACHINE_COMMAND.status:
+          this.commandZDM8(EZDM8_COMMAND.status, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.dropdetectstatus:
+          this.commandZDM8(EZDM8_COMMAND.dropdetectstatus, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.arrayoutputstatus:
+          this.commandZDM8(EZDM8_COMMAND.arrayoutputstatus, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.arrayinputstatus:
+          this.commandZDM8(EZDM8_COMMAND.arrayinputstatus, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.shippingcontrol:
+          this.commandZDM8(EZDM8_COMMAND.shippingcontrol, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.relaycommand:
+          this.commandZDM8(EZDM8_COMMAND.relaycommand, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.swversion:
+          this.commandZDM8(EZDM8_COMMAND.swversion, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.hutemp:
+          this.commandZDM8(EZDM8_COMMAND.hutemp, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.statusgrid:
+          this.commandZDM8(EZDM8_COMMAND.statusgrid, params, transactionID).then(resolve).catch(reject);
+          break;
+        case EMACHINE_COMMAND.hwversion:
+          this.commandZDM8(EZDM8_COMMAND.hwversion, params, transactionID).then(resolve).catch(reject);
+          break;
+        default:
+          break;
+      } 
+    });
+  }
+  checkSum(buff: string[]): string {
+    const x = buff.join('') + this.serialService.checkSumCRC(buff);
+    return x;
+  }
+  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null,machineId:string,otp:string, isNative=ESerialPortType.Native): Promise<void> {
+    this.machineId=machineId;
+    this.otp=otp;
+    return this.serialService.initializeSerialPort(portName||this.portName, baudRate||this.braudRate, log, reading, isNative);
   }
   getSerialEvents(){
     return this.serialService.getSerialEvents();
   }
-  
+  close(): Promise<void> {
+    return this.serialService.close();
+  }
+  public async listPorts(): Promise<SerialPortListResult> { 
+    return await this.serialService.listPorts();
+   }
+
 }
