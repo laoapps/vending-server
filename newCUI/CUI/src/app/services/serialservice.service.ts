@@ -31,7 +31,7 @@ export class SerialServiceService implements OnDestroy {
     this.serialEventSubject.complete();  // Complete the subject
     console.log('SerialServiceService destroyed and cleaned up');
   }
-  async initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number } = { data: '', len: 100 }, isNative=ESerialPortType.Native): Promise<void> {
+  async initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number } = { data: '', len: 100 }, isNative=ESerialPortType.Serial): Promise<void> {
     if (this.initialized) {
       console.log("Serial port already initialized, skipping...");
       return;
@@ -41,7 +41,7 @@ export class SerialServiceService implements OnDestroy {
       // Add event listeners
       // Add event listeners and store subscriptions
       this.listenerSubscriptions.push(
-        SerialConnectionCapacitor.addListener('nativeSerialOpened', (data) => {
+        SerialConnectionCapacitor.addListener('SerialOpened', (data) => {
           !log || (log.data += JSON.stringify(data) + '\n');
           console.log('Native serial opened:', data?.message);
           this.serialEventSubject.next({ event: SerialPortEvent.NativeSerialOpened, data });
@@ -56,7 +56,7 @@ export class SerialServiceService implements OnDestroy {
           console.log('Connection closed:', data?.message);
           this.serialEventSubject.next({ event: SerialPortEvent.ConnectionClosed, data });
         }),
-        SerialConnectionCapacitor.addListener('nativeWriteSuccess', (data) => {
+        SerialConnectionCapacitor.addListener('serialWriteSuccess', (data) => {
           !log || (log.data += JSON.stringify(data) + '\n');
           console.log('Native write succeeded:', data?.message);
           this.serialEventSubject.next({ event: SerialPortEvent.NativeWriteSuccess, data });
@@ -81,40 +81,12 @@ export class SerialServiceService implements OnDestroy {
           console.log('Reading stopped:', data?.message);
           this.serialEventSubject.next({ event: SerialPortEvent.ReadingStopped, data });
         }),
-        SerialConnectionCapacitor.addListener('connectionError', (data) => {
-          !log || (log.data += JSON.stringify(data) + '\n');
-          console.error('Connection error:', data?.error);
-          this.serialEventSubject.next({ event: SerialPortEvent.ConnectionError, data });
-        }),
-        SerialConnectionCapacitor.addListener('listError', (data) => {
-          !log || (log.data += JSON.stringify(data) + '\n');
-          console.error('List error:', data?.error);
-          this.serialEventSubject.next({ event: SerialPortEvent.ListError, data });
-        }),
+
+
         SerialConnectionCapacitor.addListener('portsListed', (data) => {
           !log || (log.data += JSON.stringify(data) + '\n');
           console.error('List error:', data?.error);
           this.serialEventSubject.next({ event: SerialPortEvent.ListError, data });
-        }),
-        SerialConnectionCapacitor.addListener('writeError', (data) => {
-          !log || (log.data += JSON.stringify(data) + '\n');
-          console.error('Write error:', data?.error);
-          this.serialEventSubject.next({ event: SerialPortEvent.WriteError, data });
-        }),
-        SerialConnectionCapacitor.addListener('readError', (data) => {
-          !log || (log.data += JSON.stringify(data) + '\n');
-          console.error('Read error:', data?.error);
-          this.serialEventSubject.next({ event: SerialPortEvent.ReadError, data });
-        }),
-        SerialConnectionCapacitor.addListener('mcNativeSerialOpened', (data) => {
-          !log || (log.data += JSON.stringify(data) + '\n');
-          console.error('mcNativeSerialOpened error:', data?.error);
-          this.serialEventSubject.next({ event: SerialPortEvent.mcNativeSerialOpened, data });
-        }),
-        SerialConnectionCapacitor.addListener('mcNativeWriteSuccess', (data) => {
-          !log || (log.data += JSON.stringify(data) + '\n');
-          console.error('Read error:', data?.error);
-          this.serialEventSubject.next({ event: SerialPortEvent.mcNativeWriteSuccess, data });
         })
         // Note: 'readingData' event isn't in your plugin—remove or implement if needed
       );
@@ -137,11 +109,8 @@ export class SerialServiceService implements OnDestroy {
       log.data += JSON.stringify(result) + '\n';
       // Open serial port
       console.log("Opening openNativeSerial:", { portName, baudRate });
-      if (isNative===ESerialPortType.Native)
-        await SerialConnectionCapacitor.openNativeSerial({ portName, baudRate });
-      else if(isNative =ESerialPortType.McNative){
-        await SerialConnectionCapacitor.openMcNativeSerial({ portName, baudRate });
-      }
+      if (isNative===ESerialPortType.Serial)
+        await SerialConnectionCapacitor.openSerial({ portName, baudRate });
       else
         await SerialConnectionCapacitor.openUsbSerial({ portName, baudRate });
       console.log(`Opened ${portName}`);

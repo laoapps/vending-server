@@ -2,7 +2,6 @@ import { Component, OnInit ,OnDestroy} from '@angular/core';
 import {VendingIndexServiceService} from '../vending-index-service.service'
 import {ISerialService,EMACHINE_COMMAND,ESerialPortType} from '../services/syste.model'
 import { Toast } from '@capacitor/toast';
-import { VmcService } from '../vmc.service';
 @Component({
   selector: 'app-testmotor',
   templateUrl: './testmotor.page.html',
@@ -12,7 +11,8 @@ export class TestmotorPage implements OnInit,OnDestroy {
   log = { data: '' };
   readingData = { data: '',len:100 };
   slot = 1;
-  val='011000010002040A010000';
+  //val='0110200100020410010100'; //with checksum 0110200100020410010100ff32
+  val = 'fafb4200'
   sendingDate={data:''};
   datachecksum=''
   machineId='11111111';
@@ -21,15 +21,21 @@ export class TestmotorPage implements OnInit,OnDestroy {
   open =false;
   devices=['VMC','ZDM8'];
   selectedDevice='VMC';
-  isNative=ESerialPortType.McNative;
+ 
   portName = '/dev/ttyS0';
   baudRate = 57600;
-  platforms =[];
+  platforms: { label: string; value: ESerialPortType }[] = [];
+  isSerial: ESerialPortType = ESerialPortType.Serial; // Default selected value
   constructor(private vendingIndex :VendingIndexServiceService) {
   }
 
   ngOnInit() {
-    this.platforms=Object.values(ESerialPortType).filter(value => typeof value === "string") as string[];
+    this.platforms=Object.keys(ESerialPortType)
+    .filter(key => isNaN(Number(key))) // Remove numeric keys
+    .map(key => ({
+      label: key,  // Display name
+      value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
+    }));
   }
   ngOnDestroy(): void {
     if(this.serial){
@@ -38,9 +44,11 @@ export class TestmotorPage implements OnInit,OnDestroy {
     }
   }
   selectPlatform(event){
-    console.log('selected platform',event.detail.value);
-    // this.isNative=event.detail.value;
-    Toast.show({text:'selected platform'+event.detail.value})
+    this.isSerial = event.detail.value;
+    console.log('Selected platform:', this.isSerial);
+    
+    // Show toast message
+    Toast.show({ text: `Selected platform: ${this.isSerial}` });
   }
   connect(){
 
@@ -66,14 +74,14 @@ export class TestmotorPage implements OnInit,OnDestroy {
       await this.serial.close();
       this.serial=null;
     }
-    this.serial= this.vendingIndex.initVMC(this.portName, this.baudRate,this.machineId,this.otp,this.isNative);
+    this.serial= this.vendingIndex.initVMC(this.portName, this.baudRate,this.machineId,this.otp,this.isSerial);
   }
   async startZDM8(){
     if(this.serial){
       await this.serial.close();
       this.serial=null;
     }
-    this.serial= this.vendingIndex.initZDM8(this.portName, this.baudRate,this.machineId,this.otp,this.isNative);
+    this.serial= this.vendingIndex.initZDM8(this.portName, this.baudRate,this.machineId,this.otp,this.isSerial);
   }
 
   scan() {
@@ -111,7 +119,7 @@ export class TestmotorPage implements OnInit,OnDestroy {
     }
   }
   checkSum(){
-    const buff = this.stringToHexArray(this.val);
+    const buff = this.hexStringToArray(this.val);
     if(this.serial){
       this.datachecksum = this.serial.checkSum(buff);
       console.log('checkSum',this.datachecksum);
@@ -123,10 +131,20 @@ export class TestmotorPage implements OnInit,OnDestroy {
    
 
   }
-   stringToHexArray(input: string): string[] {
-    return Array.from(input)
-      .map(char => char.charCodeAt(0).toString(16).padStart(2, '0').toUpperCase());
-  }
+  hexStringToArray(hex: string): string[] {
+    // Ensure even-length hex string
+    if (hex.length % 2 !== 0) {
+        throw new Error("Hex string length must be even.");
+    }
+
+    // Split into pairs of two characters
+    const hexArray: string[] = [];
+    for (let i = 0; i < hex.length; i += 2) {
+        hexArray.push(hex.substring(i, i + 2).toUpperCase()); // Ensure uppercase
+    }
+
+    return hexArray;
+}
 
 
 

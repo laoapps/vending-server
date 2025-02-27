@@ -10,8 +10,8 @@
       <ion-title size="large">testmotor</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-select [(ngModel)]="isNative" (ionChange)="selectPlatform($event)">
-    <ion-select-option *ngFor="let platform of platforms" [value]="platform">{{platform}}</ion-select-option>
+  <ion-select [(ngModel)]="isSerial" (ionChange)="selectPlatform($event)">
+    <ion-select-option *ngFor="let platform of platforms" [value]="platform.value">{{platform.label}}</ion-select-option>
   </ion-select>
   <ion-input type="text" placeholder="Enter Port name" [(ngModel)]="portName"></ion-input>
   <ion-input type="number" placeholder="Enter baud ratet" [(ngModel)]="baudRate"></ion-input>

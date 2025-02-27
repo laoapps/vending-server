@@ -551,9 +551,8 @@ export enum EMACHINE_COMMAND {
 
 }
 export enum ESerialPortType{
-    Native=1,
-    USB=2,
-    McNative=3
+    Serial=1,
+    USB=2
   }
 
  

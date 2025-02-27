@@ -48,7 +48,7 @@ export class VendingIndexServiceService {
       });
     });
    }
-  initZDM8(portName:string='/dev/ttyS1',baudRate:number=9600,machineId='11111111',otp='111111',isNative=ESerialPortType.Native){
+  initZDM8(portName:string='/dev/ttyS1',baudRate:number=9600,machineId='11111111',otp='111111',isNative=ESerialPortType.Serial){
     this.portName = portName;
     this.braudRate = baudRate;
     this.zdm8.initializeSerialPort(portName,baudRate,this.log,this.readingData,machineId,otp,isNative).then(() => {
@@ -57,7 +57,7 @@ export class VendingIndexServiceService {
     this.task = this.zdm8;
     return this.zdm8;
   }
-  initVMC(portName:string='/dev/ttyS0',baudRate:number=57600,machineId='11111111',otp='111111',isNative=ESerialPortType.Native){
+  initVMC(portName:string='/dev/ttyS0',baudRate:number=57600,machineId='11111111',otp='111111',isNative=ESerialPortType.Serial){
     this.portName = portName;
     this.braudRate = baudRate;
     this.vmc.initializeSerialPort(portName,baudRate,this.log,this.readingData,machineId,otp,isNative).then(() => {

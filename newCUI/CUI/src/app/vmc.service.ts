@@ -519,7 +519,7 @@ export class VmcService implements ISerialService {
     return data.join('');
   }
 
-  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null, machineId: string, otp: string, isNative = ESerialPortType.Native): Promise<void> {
+  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<void> {
     this.machineId = machineId;
     this.otp = otp;
     this.serialService.initializeSerialPort(portName, baudRate, log, reading, isNative).then(() => this.vmcInitilize());

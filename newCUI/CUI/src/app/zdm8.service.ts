@@ -145,7 +145,7 @@ export class Zdm8Service  implements ISerialService {
     const x = buff.join('') + this.serialService.checkSumCRC(buff);
     return x;
   }
-  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null,machineId:string,otp:string, isNative=ESerialPortType.Native): Promise<void> {
+  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null,machineId:string,otp:string, isNative=ESerialPortType.Serial): Promise<void> {
     this.machineId=machineId;
     this.otp=otp;
     return this.serialService.initializeSerialPort(portName||this.portName, baudRate||this.braudRate, log, reading, isNative);
