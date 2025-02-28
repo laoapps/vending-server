@@ -42,7 +42,7 @@ export class SerialServiceService implements OnDestroy {
       // Add event listeners
       // Add event listeners and store subscriptions
       this.listenerSubscriptions.push(
-        SerialConnectionCapacitor.addListener('serialOpened', (data) => {
+        SerialConnectionCapacitor.addListener('SerialOpened', (data) => {
           !log || (log.data += JSON.stringify(data) + '\n');
           console.log('Native serial opened:', data?.message);
           this.serialEventSubject.next({ event: SerialPortEvent.NativeSerialOpened, data });

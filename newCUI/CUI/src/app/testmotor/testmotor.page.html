@@ -24,15 +24,18 @@
   <ion-button (click)="close()">Close</ion-button>
   <ion-button (click)="testDrop()">Ship</ion-button><ion-input type="number" placeholder="Enter slot" [(ngModel)]="slot"></ion-input>
   <ion-button (click)="scanTestMotor()">Scan testing  Motors</ion-button>
+  <hr/>
   <ion-label>Log data</ion-label>
-  <textarea style="width: 100%; height: 200px;" [(ngModel)]="vlog.log.data"></textarea>
+  <textarea  *ngIf="vlog?.log" style="width: 100%; height: 200px;" [(ngModel)]="vlog.log.data"></textarea>
+  <hr/>
   <ion-label>Reading data</ion-label>
-  <textarea style="width: 100%; height: 500px;" #textarea [scrollTop]="textarea.scrollHeight" [(ngModel)]="vreadingData.readingData.data"></textarea>
+  <textarea *ngIf="vreadingData?.readingData" style="width: 100%; height: 500px;" #textarea [scrollTop]="textarea.scrollHeight" [(ngModel)]="vreadingData.readingData.data"></textarea>
   <hr/>
   <ion-button (click)="checkSum()">checkSum</ion-button>
   <ion-input type="text" placeholder="Enter checkSum" [(ngModel)]="val"></ion-input>
   <ion-label>Data Checksum</ion-label>
   <ion-textarea style="width: 100%; height: 500px;" [(ngModel)]="datachecksum"></ion-textarea>
+  <hr/>
   <ion-button (click)="initDirectSerial()">Initi Direct service</ion-button> 
   <ion-button (click)="directCommand()">Direct Command</ion-button>  
   <ion-button (click)="closeDirectCommand()">Close Direct Command</ion-button>  

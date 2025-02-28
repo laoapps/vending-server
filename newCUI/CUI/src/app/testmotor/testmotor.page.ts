@@ -131,7 +131,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       const arr = this.parseMotorInput(test);
       const t = 5;
       Toast.show({ text: 'scanTestMotor ' + JSON.stringify(arr) });
-      arr.forEach(async (slot) => {
+      arr.forEach(async (slot,i) => {
         setTimeout(() => {
           Toast.show({ text: 'scanTestMotor ' + slot });
           const param = { slot };
@@ -141,7 +141,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
             await Toast.show({ text: 'scanTestMotor ' + JSON.stringify(r) })
           });
 
-        }, 1000 * 5 * t);
+        }, 1000 * 5 * i);
 
       });
     } catch (error) {
