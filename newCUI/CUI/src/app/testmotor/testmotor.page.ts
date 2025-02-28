@@ -90,15 +90,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
     this.vlog.log = this.serial.log;
     this.vreadingData.readingData = this.serial.readingData;
   }
-  startMultiplePorts() {
 
-  };
-  writeToPort() {
-
-  }
-  closeAllPorts() {
-
-  }
 
   scanPorts() {
     if (this.serial) {
@@ -129,7 +121,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
     try {
       const test = prompt('Scan Test motor every 5 seconds 1,2,3 or 1-60', '1-60');
       const arr = this.parseMotorInput(test);
-      const t = 5;
+      const t = 10; // ******** too fast it would have an error
       Toast.show({ text: 'scanTestMotor ' + JSON.stringify(arr) });
       arr.forEach(async (slot,i) => {
         setTimeout(() => {
@@ -141,7 +133,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
             await Toast.show({ text: 'scanTestMotor ' + JSON.stringify(r) })
           });
 
-        }, 1000 * 5 * i);
+        }, 1000 * t * i);
 
       });
     } catch (error) {
