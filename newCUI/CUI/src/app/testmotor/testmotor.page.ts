@@ -121,7 +121,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
     try {
       const test = prompt('Scan Test motor every 5 seconds 1,2,3 or 1-60', '1-60');
       const arr = this.parseMotorInput(test);
-      const t = 10; // ******** too fast it would have an error
+      const t = 7; // ******** too fast it would have an error
       Toast.show({ text: 'scanTestMotor ' + JSON.stringify(arr) });
       arr.forEach(async (slot,i) => {
         setTimeout(() => {
