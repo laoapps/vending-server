@@ -64,7 +64,7 @@ import { OrderCartPage } from './Vending/order-cart/order-cart.page';
 import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 var host = window.location.protocol + '//' + window.location.host;
-import { CapacitorUpdater } from '@capgo/capacitor-updater'
+// import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { AutoPaymentPage } from './Vending/auto-payment/auto-payment.page';
 import { TestmotorPage } from '../testmotor/testmotor.page';
 
@@ -2010,19 +2010,19 @@ export class Tab1Page implements OnDestroy {
   }
 
   updateNewVersion() {
-    CapacitorUpdater.download({
-      // url: 'http://192.168.88.4:8989/test/public/dist.zip',
-      url: `${environment.filemanagerurl}/download/`,
-      version: '1.0.0'
-    }).then(run_download => {
-      CapacitorUpdater.set(run_download).then(async run_update => {
-        await this.runtoast(`update: success`);
-      }).catch(async error => {
-        await this.runtoast(`update: ` + error.message);
-      });
-    }).catch(async error => {
-      await this.runtoast(`download: ` + error.message);
-    });
+    // CapacitorUpdater.download({
+    //   // url: 'http://192.168.88.4:8989/test/public/dist.zip',
+    //   url: `${environment.filemanagerurl}/download/`,
+    //   version: '1.0.0'
+    // }).then(run_download => {
+    //   CapacitorUpdater.set(run_download).then(async run_update => {
+    //     await this.runtoast(`update: success`);
+    //   }).catch(async error => {
+    //     await this.runtoast(`update: ` + error.message);
+    //   });
+    // }).catch(async error => {
+    //   await this.runtoast(`download: ` + error.message);
+    // });
   }
 
   // autoCheckAppVersion() {
@@ -2171,34 +2171,34 @@ export class Tab1Page implements OnDestroy {
           }, 1000);
 
 
-          const download = await CapacitorUpdater.download(downloadModel);
-          if (download.status == IENMessage.pending) {
+          // const download = await CapacitorUpdater.download(downloadModel);
+          // if (download.status == IENMessage.pending) {
 
-            // download complete
+          //   // download complete
 
-            this.percentCount = 100;
-            this.percentCountText = '100';
-            clearInterval(this.loopPercent);
+          //   this.percentCount = 100;
+          //   this.percentCountText = '100';
+          //   clearInterval(this.loopPercent);
 
-            this.installingPecent = setInterval(async () => {
-              this.installingCount--;
-              this.repairText = IENMessage.installVendingVersion + ' ' + response.versionText + ' in' + this.installingCount;
+          //   this.installingPecent = setInterval(async () => {
+          //     this.installingCount--;
+          //     this.repairText = IENMessage.installVendingVersion + ' ' + response.versionText + ' in' + this.installingCount;
 
-              if (this.installingCount == 0) {
-                clearInterval(this.installingPecent);
-                localStorage.setItem('app_version', JSON.stringify(response));
-                this.otherModalAreOpening = false;
-                this.displayRepaireAppVersion = false;
+          //     if (this.installingCount == 0) {
+          //       clearInterval(this.installingPecent);
+          //       localStorage.setItem('app_version', JSON.stringify(response));
+          //       this.otherModalAreOpening = false;
+          //       this.displayRepaireAppVersion = false;
 
-                const install = await CapacitorUpdater.set(download);
-                if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
-                CapacitorUpdater.removeAllListeners();
-                window.location.reload();
-                resolve(IENMessage.success);
-              }
+          //       const install = await CapacitorUpdater.set(download);
+          //       if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
+          //       CapacitorUpdater.removeAllListeners();
+          //       window.location.reload();
+          //       resolve(IENMessage.success);
+          //     }
 
-            }, 1000);
-          }
+          //   }, 1000);
+          // }
 
 
         }, error => {

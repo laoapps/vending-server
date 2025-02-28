@@ -18,6 +18,8 @@ export class Zdm8Service  implements ISerialService {
   otp='111111';
   portName = '/dev/ttyS1';
   braudRate=9600;
+  log: { data: string; };
+  reading: { data: string; len: number; };
   constructor(private serialService: SerialServiceService) { }
   async commandZDM8(command: EZDM8_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>((resolve, reject) => {
@@ -62,7 +64,7 @@ export class Zdm8Service  implements ISerialService {
           case EZDM8_COMMAND.shippingcontrol:
             const slot = this.serialService.int2hex(params.slot - 1); // 0-99
             const isspring = params.isspring || '01'; // Default spring motor
-            const dropdetect = params.dropdetect || '01'; // Default off
+            const dropdetect = params.dropdetect || '00'; // Default off  bug and nothing happen
             const liftsystem = params.liftsystem || '00'; // Default off
             buff = [slaveAddress, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
             check = this.serialService.checkSumCRC(buff);
@@ -84,6 +86,7 @@ export class Zdm8Service  implements ISerialService {
 
         this.serialService.write(x).then(() => {
           console.log('Command succeeded:', x);
+          params.x=x;
           resolve({ command, data:params, message: 'Command sent successfully' }as IResModel);
         }).catch(e => {
           console.error('Command failed:', e);

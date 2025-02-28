@@ -582,6 +582,8 @@ export enum ESerialPortType{
   }
 import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 export interface ISerialService{
+    log: { data: string };
+    reading: { data: string, len: number };
     initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number },machineId:string,otp:string,isNative:ESerialPortType): Promise<void>;
     getSerialEvents():any;
     command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;

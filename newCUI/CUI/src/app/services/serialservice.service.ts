@@ -1,10 +1,11 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core/types/definitions';
 import { ToastController } from '@ionic/angular';
-import { SerialConnectionCapacitor, SerialPortListResult ,SerialPortEventTypes} from 'SerialConnectionCapacitor';
+import { SerialConnectionCapacitor, SerialPortListResult, SerialPortEventTypes } from 'SerialConnectionCapacitor';
 import crc from 'crc';
-import{ESerialPortType} from '../services/syste.model'
+import { ESerialPortType } from '../services/syste.model'
 import { Subject, Subscription, } from 'rxjs';
+import { Buffer } from 'buffer';
 
 
 @Injectable({
@@ -31,7 +32,7 @@ export class SerialServiceService implements OnDestroy {
     this.serialEventSubject.complete();  // Complete the subject
     console.log('SerialServiceService destroyed and cleaned up');
   }
-  async initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number } = { data: '', len: 100 }, isNative=ESerialPortType.Serial): Promise<void> {
+  async initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number } = { data: '', len: 100 }, isNative = ESerialPortType.Serial): Promise<void> {
     if (this.initialized) {
       console.log("Serial port already initialized, skipping...");
       return;
@@ -41,7 +42,7 @@ export class SerialServiceService implements OnDestroy {
       // Add event listeners
       // Add event listeners and store subscriptions
       this.listenerSubscriptions.push(
-        SerialConnectionCapacitor.addListener('SerialOpened', (data) => {
+        SerialConnectionCapacitor.addListener('serialOpened', (data) => {
           !log || (log.data += JSON.stringify(data) + '\n');
           console.log('Native serial opened:', data?.message);
           this.serialEventSubject.next({ event: SerialPortEvent.NativeSerialOpened, data });
@@ -109,7 +110,7 @@ export class SerialServiceService implements OnDestroy {
       log.data += JSON.stringify(result) + '\n';
       // Open serial port
       console.log("Opening openNativeSerial:", { portName, baudRate });
-      if (isNative===ESerialPortType.Serial)
+      if (isNative === ESerialPortType.Serial)
         await SerialConnectionCapacitor.openSerial({ portName, baudRate });
       else
         await SerialConnectionCapacitor.openUsbSerial({ portName, baudRate });
@@ -130,7 +131,7 @@ export class SerialServiceService implements OnDestroy {
   async write(data: string): Promise<any> {
     try {
       if (this.initialized) {
-       const x =  await SerialConnectionCapacitor.write({ data });
+        const x = await SerialConnectionCapacitor.write({ data });
         console.log(`writeData  ${data}`);
         return x;
       }
@@ -147,7 +148,7 @@ export class SerialServiceService implements OnDestroy {
   async close(): Promise<any> {
     await SerialConnectionCapacitor.stopReading();
     this.initialized = false;
-    const x =await SerialConnectionCapacitor.close();
+    const x = await SerialConnectionCapacitor.close();
     console.log('Serial port closed');
     return x;
   }
@@ -182,19 +183,39 @@ export class SerialServiceService implements OnDestroy {
 
     return hexArray;
   }
-  checkSumCRC(buff: string[]): string {
-    try {
-      let hexString = buff.join('');
-      let data = new Uint8Array(buff.map(b => parseInt(b, 16))); // Replace Buffer
-      let x = crc.crc16modbus(data).toString(16);
+  // checkSumCRC(buff: string[]): string {
+  //   try {
+  //     let x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
+  //     x.length < 4 ? x = '0' + x : '';
+  //     console.log(x);
+  //     console.log(x.substring(2) + x.substring(0, 2));
 
-      x = x.padStart(4, '0'); // Ensure 4 characters
-      return x.substring(2) + x.substring(0, 2); // Swap bytes
-    } catch (e) {
-      console.error('Error:', e);
-      return '';
+  //     return x.substring(2) + x.substring(0, 2);
+  //   }
+  //   catch (e) {
+  //     console.log('error', e);
+  //     return '';
+  //   }
+  // }
+  checkSumCRC(d: string[]): string {
+    const data = d.join('');
+    let crc = 0xFFFF; // Initial CRC value
+    for (let i = 0; i < data.length; i += 2) {
+      const byte = parseInt(data.substring(i, i + 2), 16); // Convert hex string to byte
+      crc ^= byte; // XOR with the current byte
+        for (let j = 0; j < 8; j++) {
+            if (crc & 0x0001) { // Check if the least significant bit is set
+                crc = (crc >> 1) ^ 0xA001; // Shift right and XOR with polynomial
+            } else {
+                crc >>= 1; // Just shift right
+            }
+        }
     }
-  }
+    // Convert the CRC to a 4-character hexadecimal string
+    const crcHex = crc.toString(16).padStart(4, '0');
+    // Swap the bytes (little-endian to big-endian)
+    return crcHex.substring(2) + crcHex.substring(0, 2);
+}
   chk8xor(byteArray = new Array<any>()) {
     let checksum = 0x00
     for (let i = 0; i < byteArray.length - 1; i++)
@@ -221,7 +242,7 @@ export enum SerialPortEvent {
   WriteError = 'writeError',
   ReadError = 'readError',
   ReadingData = 'readingData',
-  mcNativeSerialOpened='mcNativeSerialOpened',
+  mcNativeSerialOpened = 'mcNativeSerialOpened',
   mcNativeWriteSuccess = "mcNativeWriteSuccess",
-  
+
 }

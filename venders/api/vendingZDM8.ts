@@ -195,7 +195,7 @@ export class VendingZDM8 {
                     case EZDM8_COMMAND.shippingcontrol:
                         const slot = int2hex(params.slot-1);
                         const isspring = '01';
-                        const dropdetect = '00';
+                        const dropdetect = '00';// bug and nothing happen
                         const liftsystem = '00';
                         buff = [pcbarray, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
                         check = this.checkSum(buff)

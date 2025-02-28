@@ -14,6 +14,9 @@ import {  SerialPortListResult } from 'SerialConnectionCapacitor';
   providedIn: 'root'
 })
 export class VmcService implements ISerialService {
+  log: { data: string; };
+  reading: { data: string; len: number
+  };
   machineId: string = '11111111';
   otp = '111111';
   commands = Array<{ b: string, transactionID: number }>();
