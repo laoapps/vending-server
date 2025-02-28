@@ -19,7 +19,7 @@ export class Zdm8Service  implements ISerialService {
   portName = '/dev/ttyS1';
   braudRate=9600;
   log: { data: string; };
-  reading: { data: string; len: number; };
+  readingData: { data: string; len: number; };
   constructor(private serialService: SerialServiceService) { }
   async commandZDM8(command: EZDM8_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>((resolve, reject) => {

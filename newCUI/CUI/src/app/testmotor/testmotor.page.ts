@@ -78,7 +78,8 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = this.vendingIndex.initVMC(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
-
+    this.vlog.log = this.serial.log;
+    this.vreadingData.readingData = this.serial.readingData;
   }
   async startZDM8() {
     if (this.serial) {
@@ -86,7 +87,8 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = this.vendingIndex.initZDM8(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
-
+    this.vlog.log = this.serial.log;
+    this.vreadingData.readingData = this.serial.readingData;
   }
   startMultiplePorts() {
 
