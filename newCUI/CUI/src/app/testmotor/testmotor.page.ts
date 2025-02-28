@@ -127,11 +127,13 @@ export class TestmotorPage implements OnInit, OnDestroy {
   }
   scanTestMotor() {
     try {
-      const test = prompt('Scan Test motor every 5 seconds', '1,2,3 or 1-60');
+      const test = prompt('Scan Test motor every 5 seconds 1,2,3 or 1-60', '1-60');
       const arr = this.parseMotorInput(test);
       const t = 5;
+      Toast.show({ text: 'scanTestMotor ' + JSON.stringify(arr) });
       arr.forEach(async (slot) => {
         setTimeout(() => {
+          Toast.show({ text: 'scanTestMotor ' + slot });
           const param = { slot };
           this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
             console.log('scanTestMotor', r);
@@ -139,7 +141,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
             await Toast.show({ text: 'scanTestMotor ' + JSON.stringify(r) })
           });
 
-        }, 1000 * 5 * 1);
+        }, 1000 * 5 * t);
 
       });
     } catch (error) {
