@@ -3,7 +3,7 @@ import { PluginListenerHandle } from '@capacitor/core/types/definitions';
 import { ToastController } from '@ionic/angular';
 import { SerialConnectionCapacitor, SerialPortListResult, SerialPortEventTypes } from 'SerialConnectionCapacitor';
 import crc from 'crc';
-import { ESerialPortType } from '../services/syste.model'
+import { ESerialPortType, IlogSerial } from '../services/syste.model'
 import { Subject, Subscription, } from 'rxjs';
 import { Buffer } from 'buffer';
 
@@ -32,7 +32,7 @@ export class SerialServiceService implements OnDestroy {
     this.serialEventSubject.complete();  // Complete the subject
     console.log('SerialServiceService destroyed and cleaned up');
   }
-  async initializeSerialPort(portName: string, baudRate: number, log: { data: string }, isNative = ESerialPortType.Serial): Promise<void> {
+  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, isNative = ESerialPortType.Serial): Promise<void> {
     if (this.initialized) {
       console.log("Serial port already initialized, skipping...");
       return;

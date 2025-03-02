@@ -21,7 +21,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   otp = '111111';
   serial: ISerialService;
   open = false;
-  devices = ['VMC', 'ZDM8','Tp77p','essp','cctalk'];
+  devices = ['VMC', 'ZDM8','Tp77p','essp','cctalk','m102','adh815'];
   selectedDevice = 'essp';
 
   portName = '/dev/ttyS0';
@@ -73,6 +73,14 @@ export class TestmotorPage implements OnInit, OnDestroy {
     if (this.selectedDevice == 'cctalk') {
       this.satrtTp77p();
       Toast.show({ text: 'Start essp' });
+    }
+    if (this.selectedDevice == 'adh815') {
+      this.satrtTp77p();
+      Toast.show({ text: 'Start adh815' });
+    }
+    if (this.selectedDevice == 'm102') {
+      this.satrtTp77p();
+      Toast.show({ text: 'Start m102' });
     }
     else {
       Toast.show({ text: 'Please select device' })

@@ -556,6 +556,8 @@ export enum EMACHINE_COMMAND {
   ACCEPT = "ACCEPT",
   SET_POLL = "SET_POLL",
   GET_SN = "GET_SN",
+  READ_TEMP = "READ_TEMP",
+  DISPENSE = "DISPENSE",
 
 
 }
