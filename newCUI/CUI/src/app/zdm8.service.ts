@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 
 import crc from 'crc';
 import { SerialServiceService, } from './services/serialservice.service';
-import { IlogSerial, IreadingData } from './vending-index-service.service';
-import { IResModel,ESerialPortType,ISerialService,EZDM8_COMMAND,EMACHINE_COMMAND } from './services/syste.model';
+
+import { IResModel,ESerialPortType,ISerialService,EZDM8_COMMAND,EMACHINE_COMMAND ,IlogSerial} from './services/syste.model';
 import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 
 
@@ -19,9 +19,22 @@ export class Zdm8Service  implements ISerialService {
   portName = '/dev/ttyS1';
   braudRate=9600;
   log: { data: string; };
-  readingData: { data: string; len: number; };
+
   constructor(private serialService: SerialServiceService) { }
-  async commandZDM8(command: EZDM8_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+  initZDM8(){
+    const that = this;
+      that.getSerialEvents().subscribe(function (event) {
+        that.log.data +=event+'\n';
+          if (event.event === 'dataReceived') {
+            console.log('Received from device:', event);
+            // Process MODBUS response in TypeScript
+            if (event.event === 'dataReceived') {
+              that.log.data +=event+'\n';
+            }
+          }
+        });
+  }
+  async commandZDM8(command: EZDM8_COMMAND, params: any): Promise<IResModel> {
     return new Promise<IResModel>((resolve, reject) => {
       let buff: string[] = [];
       let check = '';
@@ -106,38 +119,38 @@ export class Zdm8Service  implements ISerialService {
     return new Promise<IResModel>((resolve, reject) => {
       switch (command) {
         case EMACHINE_COMMAND.version:
-          this.commandZDM8(EZDM8_COMMAND.hwversion, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.hwversion, params).then(resolve).catch(reject);
           
           break;
         case EMACHINE_COMMAND.status:
-          this.commandZDM8(EZDM8_COMMAND.status, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.status, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.dropdetectstatus:
-          this.commandZDM8(EZDM8_COMMAND.dropdetectstatus, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.dropdetectstatus, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.arrayoutputstatus:
-          this.commandZDM8(EZDM8_COMMAND.arrayoutputstatus, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.arrayoutputstatus, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.arrayinputstatus:
-          this.commandZDM8(EZDM8_COMMAND.arrayinputstatus, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.arrayinputstatus, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.shippingcontrol:
-          this.commandZDM8(EZDM8_COMMAND.shippingcontrol, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.shippingcontrol, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.relaycommand:
-          this.commandZDM8(EZDM8_COMMAND.relaycommand, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.relaycommand, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.swversion:
-          this.commandZDM8(EZDM8_COMMAND.swversion, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.swversion, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.hutemp:
-          this.commandZDM8(EZDM8_COMMAND.hutemp, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.hutemp, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.statusgrid:
-          this.commandZDM8(EZDM8_COMMAND.statusgrid, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.statusgrid, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.hwversion:
-          this.commandZDM8(EZDM8_COMMAND.hwversion, params, transactionID).then(resolve).catch(reject);
+          this.commandZDM8(EZDM8_COMMAND.hwversion, params).then(resolve).catch(reject);
           break;
         default:
           break;
@@ -148,15 +161,16 @@ export class Zdm8Service  implements ISerialService {
     const x = buff.join('') + this.serialService.checkSumCRC(buff);
     return x;
   }
-  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null,machineId:string,otp:string, isNative=ESerialPortType.Serial): Promise<void> {
+  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial,machineId:string,otp:string, isNative=ESerialPortType.Serial): Promise<void> {
     this.machineId=machineId;
     this.otp=otp;
-    return this.serialService.initializeSerialPort(portName||this.portName, baudRate||this.braudRate, log, reading, isNative);
+    return this.serialService.initializeSerialPort(portName||this.portName, baudRate||this.braudRate, log, isNative).then(()=>this.initZDM8());
   }
   getSerialEvents(){
     return this.serialService.getSerialEvents();
   }
   close(): Promise<void> {
+    
     return this.serialService.close();
   }
   public async listPorts(): Promise<SerialPortListResult> { 

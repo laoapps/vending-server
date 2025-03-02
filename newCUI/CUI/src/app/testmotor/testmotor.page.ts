@@ -11,7 +11,6 @@ import { SerialServiceService } from '../services/serialservice.service';
 })
 export class TestmotorPage implements OnInit, OnDestroy {
   vlog = { log: { data: '' } };
-  vreadingData = { readingData: { data: '', len: 100 } };
   slot = 1;
   //val='011020010002040A010000';//011000010002040A010094F8'
   val = '0110200100020410010000'; //with checksum 0110200100020410010100ff32
@@ -22,10 +21,10 @@ export class TestmotorPage implements OnInit, OnDestroy {
   otp = '111111';
   serial: ISerialService;
   open = false;
-  devices = ['VMC', 'ZDM8'];
-  selectedDevice = 'ZDM8';
+  devices = ['VMC', 'ZDM8','Tp77p','essp','cctalk'];
+  selectedDevice = 'essp';
 
-  portName = '/dev/ttyS1';
+  portName = '/dev/ttyS0';
   baudRate = 9600;
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial; // Default selected value
@@ -62,7 +61,20 @@ export class TestmotorPage implements OnInit, OnDestroy {
     if (this.selectedDevice == 'ZDM8') {
       this.startZDM8();
       Toast.show({ text: 'Start ZDM8' });
-    } else {
+    }
+    if (this.selectedDevice == 'Tp77p') {
+      this.satrtTp77p();
+      Toast.show({ text: 'Start Tp77p3b' });
+    }
+    if (this.selectedDevice == 'essp') {
+      this.satrtTp77p();
+      Toast.show({ text: 'Start essp' });
+    }
+    if (this.selectedDevice == 'cctalk') {
+      this.satrtTp77p();
+      Toast.show({ text: 'Start essp' });
+    }
+    else {
       Toast.show({ text: 'Please select device' })
     }
 
@@ -77,18 +89,40 @@ export class TestmotorPage implements OnInit, OnDestroy {
       await this.serial.close();
       this.serial = null;
     }
-    this.serial = this.vendingIndex.initVMC(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.serial = await this.vendingIndex.initVMC(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
     this.vlog.log = this.serial.log;
-    this.vreadingData.readingData = this.serial.readingData;
   }
   async startZDM8() {
     if (this.serial) {
       await this.serial.close();
       this.serial = null;
     }
-    this.serial = this.vendingIndex.initZDM8(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.serial = await  this.vendingIndex.initZDM8(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
     this.vlog.log = this.serial.log;
-    this.vreadingData.readingData = this.serial.readingData;
+  }
+  async satrtTp77p() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initTop77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.vlog.log = this.serial.log;
+  }
+  async startEssp() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initEssp(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.vlog.log = this.serial.log;
+  }
+  async startCctalk() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initCctalk(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.vlog.log = this.serial.log;
   }
 
 
@@ -147,7 +181,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
 
 
   initDirectSerial() {
-    this.serialService.initializeSerialPort(this.portName, this.baudRate, this.vlog.log, this.vreadingData.readingData, this.isSerial).then(() => {
+    this.serialService.initializeSerialPort(this.portName, this.baudRate, this.vlog.log,  this.isSerial).then(() => {
       console.log('Serial port initialized');
       Toast.show({ text: 'Serial port initialized' });
     });

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { IlogSerial, IreadingData } from './vending-index-service.service';
+
 import { SerialServiceService, } from './services/serialservice.service';
-import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, ICreditDataDetails,EVMC_COMMAND, PrintSucceeded, PrintError, EMessage } from './services/syste.model';
+import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, ICreditDataDetails,EVMC_COMMAND, PrintSucceeded, PrintError, EMessage,IlogSerial } from './services/syste.model';
 import * as moment from 'moment-timezone';
 import { LoggingService } from './logging-service.service';
 import { DatabaseService } from './database.service';
@@ -15,8 +15,7 @@ import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 })
 export class VmcService implements ISerialService {
   log: { data: string; };
-  readingData: { data: string; len: number
-  };
+
   machineId: string = '11111111';
   otp = '111111';
   commands = Array<{ b: string, transactionID: number }>();
@@ -32,7 +31,7 @@ export class VmcService implements ISerialService {
   creditPending = new Array<ICreditData>();
   no = 0;
   pendingRetry = 10;// 10s
-
+  T:NodeJS.Timeout
   portName = '/dev/ttyS0';
   braudRate = 57600;
   sock = {
@@ -522,15 +521,19 @@ export class VmcService implements ISerialService {
     return data.join('');
   }
 
-  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, reading: IreadingData = null, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<void> {
+  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<void> {
     this.machineId = machineId;
     this.otp = otp;
-    this.serialService.initializeSerialPort(portName, baudRate, log, reading, isNative).then(() => this.vmcInitilize());
+    this.serialService.initializeSerialPort(portName, baudRate, log,isNative).then(() => this.vmcInitilize());
   }
   public getSerialEvents() {
     return this.serialService.getSerialEvents();
   }
   close(): Promise<void> {
+    if(this.T)
+      clearInterval(this.T);
+      this.T=null;;
+  
     return this.serialService.close();
   }
   public async listPorts(): Promise<SerialPortListResult> { 
@@ -597,7 +600,7 @@ export class VmcService implements ISerialService {
     var b = '';
 
     setTimeout(() => {
-      setInterval(() => {
+      that.T=setInterval(() => {
         try {
           console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate), that.setting?.allowCashIn);
 
@@ -636,6 +639,7 @@ export class VmcService implements ISerialService {
 
     that.getSerialEvents().subscribe(function (event) {
       if (event.event === 'dataReceived') {
+        that.log.data +=event+'\n';
         console.log('Received from device:', event);
         // Process MODBUS response in TypeScript
         const hex = event.data.data;

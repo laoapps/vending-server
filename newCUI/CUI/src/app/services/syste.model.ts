@@ -474,7 +474,9 @@ export function PrintError(command: string, data: any, message: string, transact
         command, data: data, message, code, status: 0, transactionID
     } as IResModel;
 }
-
+export interface IlogSerial{
+    data:string;
+  }
 export  enum EZDM8_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
@@ -547,6 +549,13 @@ export enum EMACHINE_COMMAND {
   hutemp = "hutemp",
   statusgrid = "statusgrid",
   hwversion = "hwversion",
+  getSN = "getSN",
+  READ_EVENTS = "READ_EVENTS",
+  POLL = "POLL",
+  RESET = "RESET",
+  ACCEPT = "ACCEPT",
+  SET_POLL = "SET_POLL",
+  GET_SN = "GET_SN",
 
 
 }
@@ -583,8 +592,7 @@ export enum ESerialPortType{
 import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 export interface ISerialService{
     log: { data: string };
-    readingData: { data: string, len: number };
-    initializeSerialPort(portName: string, baudRate: number, log: { data: string }, reading: { data: string, len: number },machineId:string,otp:string,isNative:ESerialPortType): Promise<void>;
+    initializeSerialPort(portName: string, baudRate: number, log: { data: string },machineId:string,otp:string,isNative:ESerialPortType): Promise<void>;
     getSerialEvents():any;
     command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
     close(): Promise<void>;

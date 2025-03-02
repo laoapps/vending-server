@@ -27,10 +27,7 @@
   <hr/>
   <ion-label>Log data</ion-label>
   <textarea  *ngIf="vlog?.log" style="width: 100%; height: 200px;" [(ngModel)]="vlog.log.data"></textarea>
-  <hr/>
-  <ion-label>Reading data</ion-label>
-  <textarea *ngIf="vreadingData?.readingData" style="width: 100%; height: 500px;" #textarea [scrollTop]="textarea.scrollHeight" [(ngModel)]="vreadingData.readingData.data"></textarea>
-  <hr/>
+ <hr/>
   <ion-button (click)="checkSum()">checkSum</ion-button>
   <ion-input type="text" placeholder="Enter checkSum" [(ngModel)]="val"></ion-input>
   <ion-label>Data Checksum</ion-label>
