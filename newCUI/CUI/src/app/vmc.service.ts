@@ -646,6 +646,10 @@ export class VmcService implements ISerialService {
           console.log('Received from device:', event);
           console.log('Received from device:'+typeof event, typeof event);
           console.log('Received from device:', typeof event!== 'string'||JSON.stringify(event));
+          if(typeof event !=='string'){
+            console.log('Received OBJ from device: '+JSON.stringify(event));
+
+          }
           console.log('Received from device:',  event.data.data?.toString('hex'));
 
           
