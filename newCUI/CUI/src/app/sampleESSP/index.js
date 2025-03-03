@@ -8,6 +8,7 @@ const chalk = require('chalk');
 const semver = require('semver');
 const pkg = require('../package.json');
 const ESSPProtocolParser = require('./parser');
+import {Buffer} from 'buffer';
 
 module.exports = class SSP extends EventEmitter {
   constructor(param) {

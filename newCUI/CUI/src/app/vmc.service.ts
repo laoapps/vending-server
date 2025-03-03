@@ -8,7 +8,7 @@ import { DatabaseService } from './database.service';
 import cryptojs from 'crypto-js';
 import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 
-
+import {Buffer} from 'buffer';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +39,9 @@ export class VmcService implements ISerialService {
   };
 
 
-  constructor(private serialService: SerialServiceService, private loggingService: LoggingService, private dbService: DatabaseService) { }
+  constructor(private serialService: SerialServiceService, private loggingService: LoggingService, private dbService: DatabaseService) { 
+    this.loggingService.initializeIndex();
+  }
   public async commandVMC(command: EVMC_COMMAND, params: any, transactionID: number, series = 1): Promise<IResModel> {
     return new Promise<IResModel>((resolve, reject) => {
       const slot = params?.slot;
@@ -524,7 +526,8 @@ export class VmcService implements ISerialService {
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<void> {
     this.machineId = machineId;
     this.otp = otp;
-    this.serialService.initializeSerialPort(portName, baudRate, log,isNative).then(() => this.vmcInitilize());
+    this.log = log ;
+    this.serialService.initializeSerialPort(portName, baudRate, this.log,isNative).then(() => this.vmcInitilize());
   }
   public getSerialEvents() {
     return this.serialService.getSerialEvents();
@@ -638,144 +641,162 @@ export class VmcService implements ISerialService {
     }, 7000);
 
     that.getSerialEvents().subscribe(function (event) {
-      if (event.event === 'dataReceived') {
-        that.log.data +=event+'\n';
-        console.log('Received from device:', event);
-        // Process MODBUS response in TypeScript
-        const hex = event.data.data;
-        b = event.data.data;
-        console.log('===>BUFFER', b);
-        let buff = that.checkCommandsForSubmission();
-        if (b == 'fafb410040' && buff != null) {// POLL and submit command
+      try {
+        if (event.event === 'dataReceived') {
+          console.log('Received from device:', event);
+          console.log('Received from device:', typeof event);
+          console.log('Received from device:', typeof event!== 'string'||JSON.stringify(event));
+          console.log('Received from device:',  event.data.data?.toString('hex'));
 
-          console.log('X command', buff);
-          that.serialService.write(buff?.b).then((e) => {
-            if (e) {
-              console.log('Error command', e.message);
-              that.sock?.send(buff?.b, -5);
-            } else {
-              console.log('WRITE COMMAND succeeded', new Date().getTime());
-              that.sock?.send(buff?.b, -6);
-              // confirm by socket
+          
+          that.log.data +=event+'\n';
+  
+          // Process MODBUS response in TypeScript
+          const hex = event.data.data;
+          b = event.data.data;
+          console.log('===>BUFFER', b);
+          let buff = that.checkCommandsForSubmission();
+          if (b == 'fafb410040' && buff != null) {// POLL and submit command
+  
+            console.log('X command', buff);
+            that.serialService.write(buff?.b).then((e) => {
+              if (e) {
+                console.log('Error command', e.message);
+                that.sock?.send(buff?.b, -5);
+              } else {
+                console.log('WRITE COMMAND succeeded', new Date().getTime());
+                that.sock?.send(buff?.b, -6);
+                // confirm by socket
+              }
+            })
+            that.retry--;
+            if (that.retry <= 0) {
+              const t = that.clearTransactionID();
+              that.sock?.send(b, -1);
             }
-          })
-          that.retry--;
-          if (that.retry <= 0) {
+          }
+          else if (b == 'fafb420043') {// ACK 
+            that.retry = 5;
+            console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
             const t = that.clearTransactionID();
-            that.sock?.send(b, -1);
+            that.sock?.send(b, t?.transactionID || -2);
           }
-        }
-        else if (b == 'fafb420043') {// ACK 
-          that.retry = 5;
-          console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
-          const t = that.clearTransactionID();
-          that.sock?.send(b, t?.transactionID || -2);
-        }
-        else if (b.startsWith('fafb04')) {// drop sensor
-          //FA FB 04 05 packNo 03 00 19
-          console.log('drop detect', b);
-          that.sock?.send(b, -9);
-          that.createNewLogFile('dropdetect', b);
-        }
-        else if (b.startsWith('fafb21')) {// receive banknotes
-          console.log('receive banknotes 21', b);
-          //FAFB2106C608000186A0CF.  // if it is 08 then ignore
-          if (b.substring(10, 12) == '08') {//fafb21068308000186a08a
-            // ignore because it is a report that it was swallowed
-
-          } else if (b.substring(10, 12) == '01') {
-            // accept for banknote only 
-            //1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
-
-
-            // fafb2106ee01 00000002 cb
-            // fafb2106f501 00000002 d0
-            // fafb2106d501 000186a0 d5 == 100000 == 1000,00
-            // fafb21069101 000186a0 91 == 100000 == 1000,00
-            // fafb2106c301 00030d40 aa == 200000 == 2000,00
-            // fafb21065401 0007a120 f5 == 500000 == 5000,00
-            // fafb21065701 000f4240 7d == 1000000 == 10000,00
-            // fafb21064a01 000f4240 60
-            // fafb21060701 001e8480 3a == 2000000 == 20000,00
-            // fafb2106bf01 001e8480 82
-            // fafb21066001 004c4b40 00 == 5000000 == 50000,00
-            // new 50k not working
-            // fafb21067c01 00989680 d5 == 10000000 == 100000,00
-            // new 100k not working
-            // if(that.firstInit){
-            //     that.firstInit=false;
-            //     return;
-            // }
-
-            const t = Number('-21' + moment.now());
-            const v = that.getNoteValue(b);
-            const pending: ICreditDataDetails = { raw: b, data: cryptojs.SHA256(that.sock?.machineId + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE };
-            // const data = JSON.stringify(pending);
-            const c = { data: pending, name: 'credit', transactionID: '', description: '' } as ICreditData;
-            that.creditPending.push(c);
-            that.addOrUpdateCredit(c);
-
-            that.sock?.send(cryptojs.SHA256(that.sock?.machineId + v).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE);
-
-          } else {
-
+          else if (b.startsWith('fafb04')) {// drop sensor
+            //FA FB 04 05 packNo 03 00 19
+            console.log('drop detect', b);
+            that.sock?.send(b, -9);
+            that.createNewLogFile('dropdetect', b);
           }
-
-
-
+          else if (b.startsWith('fafb21')) {// receive banknotes
+            console.log('receive banknotes 21', b);
+            //FAFB2106C608000186A0CF.  // if it is 08 then ignore
+            if (b.substring(10, 12) == '08') {//fafb21068308000186a08a
+              // ignore because it is a report that it was swallowed
+  
+            } else if (b.substring(10, 12) == '01') {
+              // accept for banknote only 
+              //1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
+  
+  
+              // fafb2106ee01 00000002 cb
+              // fafb2106f501 00000002 d0
+              // fafb2106d501 000186a0 d5 == 100000 == 1000,00
+              // fafb21069101 000186a0 91 == 100000 == 1000,00
+              // fafb2106c301 00030d40 aa == 200000 == 2000,00
+              // fafb21065401 0007a120 f5 == 500000 == 5000,00
+              // fafb21065701 000f4240 7d == 1000000 == 10000,00
+              // fafb21064a01 000f4240 60
+              // fafb21060701 001e8480 3a == 2000000 == 20000,00
+              // fafb2106bf01 001e8480 82
+              // fafb21066001 004c4b40 00 == 5000000 == 50000,00
+              // new 50k not working
+              // fafb21067c01 00989680 d5 == 10000000 == 100000,00
+              // new 100k not working
+              // if(that.firstInit){
+              //     that.firstInit=false;
+              //     return;
+              // }
+  
+              const t = Number('-21' + moment.now());
+              const v = that.getNoteValue(b);
+              const pending: ICreditDataDetails = { raw: b, data: cryptojs.SHA256(that.sock?.machineId + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE };
+              // const data = JSON.stringify(pending);
+              const c = { data: pending, name: 'credit', transactionID: '', description: '' } as ICreditData;
+              that.creditPending.push(c);
+              that.addOrUpdateCredit(c);
+  
+              that.sock?.send(cryptojs.SHA256(that.sock?.machineId + v).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE);
+  
+            } else {
+  
+            }
+  
+  
+  
+          }
+          else if (b.startsWith('fafb23')) {// receive banknotes
+            console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
+            // fafb23052e
+            // 0098968087 100k
+            // fafb2305d0
+            // 00e4e1c032 50k
+            // fafb230529
+            // 00e4e1c0cb 20k
+            // fafb2305b1
+            // 00e4e1c053 10k
+            // fafb2305f9
+            // 00e4e1c01b 5k
+            // fafb23056f
+            // 00e4e1c08d 2k
+            // fafb2305bc
+            // 00e6686075 1k 
+            // fafb23055c
+            // 00e7ef0073 
+  
+            // that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
+            that.createNewLogFile('receive banknotes 23', b);
+  
+  
+          }
+          else if (b.startsWith('fafb71')) {
+            //FA FB 70 len packNO 18 01 00 crc 
+            // FA FB 70 len packNO 18 01 C8 crc 
+            // writeLogs(b, -1);
+  
+          }
+          else if (b.startsWith('fafb52')) {
+            // report status to the server
+            console.log('SEND REPORT', b);
+            that.machinestatus = b;
+            that.sock?.send(b, -52);
+  
+          }
+  
+  
+          if (b != 'fafb410040' && b != 'fafb420043') {// POLL only with no commands in the queue
+  
+            let x = that.getACK().join('')
+            console.log('X ACK', x, (Buffer.from(x, 'hex')));
+            that.serialService.write(x).then((e) => {
+              console.log('WRITE ACK succeeded', e);
+  
+              that.sock?.send(b, -3);
+            })
+          }
+  
+          b = '';
+          return;
         }
-        else if (b.startsWith('fafb23')) {// receive banknotes
-          console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
-          // fafb23052e
-          // 0098968087 100k
-          // fafb2305d0
-          // 00e4e1c032 50k
-          // fafb230529
-          // 00e4e1c0cb 20k
-          // fafb2305b1
-          // 00e4e1c053 10k
-          // fafb2305f9
-          // 00e4e1c01b 5k
-          // fafb23056f
-          // 00e4e1c08d 2k
-          // fafb2305bc
-          // 00e6686075 1k 
-          // fafb23055c
-          // 00e7ef0073 
-
-          // that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
-          that.createNewLogFile('receive banknotes 23', b);
-
-
+        if (event.event === 'error') {
+          console.log('Error from device:', event);
+          that.createNewLogFile('error', event);
+          return;
         }
-        else if (b.startsWith('fafb71')) {
-          //FA FB 70 len packNO 18 01 00 crc 
-          // FA FB 70 len packNO 18 01 C8 crc 
-          // writeLogs(b, -1);
-
-        }
-        else if (b.startsWith('fafb52')) {
-          // report status to the server
-          console.log('SEND REPORT', b);
-          that.machinestatus = b;
-          that.sock?.send(b, -52);
-
-        }
-
-
-        if (b != 'fafb410040' && b != 'fafb420043') {// POLL only with no commands in the queue
-
-          let x = that.getACK().join('')
-          console.log('X ACK', x, (Buffer.from(x, 'hex')));
-          that.serialService.write(x).then((e) => {
-            console.log('WRITE ACK succeeded', e);
-
-            that.sock?.send(b, -3);
-          })
-        }
-
-        b = '';
+      } catch (error) {
+        console.log(' getSerialEvents ERROR', error);
+        
       }
+    
     });
 
   }
@@ -859,12 +880,6 @@ export class VmcService implements ISerialService {
     this.logFiles = await this.loggingService.getLogFiles();
   }
 
-  private async writeLog(selectedFile: string, logMessage: string) {
-    if (selectedFile && logMessage) {
-      await this.loggingService.writeLog(selectedFile, logMessage);
-
-    }
-  }
 
   async readLog(selectedFile: string) {
     if (selectedFile) {

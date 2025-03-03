@@ -12,7 +12,7 @@ export class LoggingService {
   }
 
   // Initialize the index file if it doesn’t exist
-  private async initializeIndex() {
+   async initializeIndex() {
     try {
       await Filesystem.stat({
         path: this.indexFileName,

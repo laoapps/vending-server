@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Zdm8Service } from './zdm8.service';
 import { VmcService } from './vmc.service';
-import { Tp77PulseService } from './Tp77PulseService';
+import { Tp77PulseService } from './Tp77Pulse.Service';
 import { ESerialPortType, ISerialService } from './services/syste.model';
 import { BackgroundTask } from '@capawesome/capacitor-background-task';
 import { App } from '@capacitor/app';

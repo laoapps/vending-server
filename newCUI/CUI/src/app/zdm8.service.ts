@@ -164,7 +164,9 @@ export class Zdm8Service  implements ISerialService {
   initializeSerialPort(portName: string, baudRate: number, log: IlogSerial,machineId:string,otp:string, isNative=ESerialPortType.Serial): Promise<void> {
     this.machineId=machineId;
     this.otp=otp;
-    return this.serialService.initializeSerialPort(portName||this.portName, baudRate||this.braudRate, log, isNative).then(()=>this.initZDM8());
+    this.log = log ;
+
+    return this.serialService.initializeSerialPort(portName||this.portName, baudRate||this.braudRate, this.log, isNative).then(()=>this.initZDM8());
   }
   getSerialEvents(){
     return this.serialService.getSerialEvents();

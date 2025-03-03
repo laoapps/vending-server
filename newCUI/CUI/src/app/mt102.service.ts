@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
+import {Buffer} from 'buffer';
 
 
 
@@ -83,7 +84,7 @@ export class MT102Service implements ISerialService {
     this.otp = otp;
     this.portName = portName || this.portName;
     this.baudRate = baudRate || this.baudRate;
-    this.log = log || this.log;
+    this.log = log ;
 
     return this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
   }

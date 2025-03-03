@@ -4,6 +4,7 @@ import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definit
 import { EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialServiceService } from './services/serialservice.service';
 
+import {Buffer} from 'buffer';
 
 
 @Injectable({
@@ -70,7 +71,7 @@ export class ADH815Service implements ISerialService {
         this.otp = otp;
         this.portName = portName || this.portName;
         this.baudRate = baudRate || this.baudRate;
-        this.log = log || this.log;
+        this.log = log ;
 
         return this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative)
             .then(() => this.initProtocol());
