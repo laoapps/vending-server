@@ -89,7 +89,7 @@ export class Tp77PulseService implements ISerialService {
     this.otp = otp;
     this.portName = portName || this.portName;
     this.baudRate = baudRate || this.baudRate;
-    this.log = log || this.log;
+    this.log = log ;
 
     return this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative)
       .then(() => this.initTop());
