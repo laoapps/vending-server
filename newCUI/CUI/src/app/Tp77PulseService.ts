@@ -7,7 +7,7 @@ import { Buffer } from 'buffer';
 @Injectable({
   providedIn: 'root'
 })
-export class Tp77p3bcashacceptorService implements ISerialService {
+export class Tp77PulseService implements ISerialService {
   pulseCount = 0;
   lastPulseTime = Date.now();
   pulsesPerBill = 15; // Adjust based on DIP switch (e.g., 15, 30, 45, etc.)

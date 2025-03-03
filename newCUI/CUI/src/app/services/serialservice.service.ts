@@ -42,7 +42,7 @@ export class SerialServiceService implements OnDestroy {
       // Add event listeners
       // Add event listeners and store subscriptions
       this.listenerSubscriptions.push(
-        SerialConnectionCapacitor.addListener('SerialOpened', (data) => {
+        SerialConnectionCapacitor.addListener('serialOpened', (data) => {
           !log || (log.data += JSON.stringify(data) + '\n');
           console.log('Native serial opened:', data?.message);
           this.serialEventSubject.next({ event: SerialPortEvent.NativeSerialOpened, data });
@@ -221,6 +221,7 @@ export class SerialServiceService implements OnDestroy {
     // Swap the bytes (little-endian to big-endian)
     return crcHex.substring(2) + crcHex.substring(0, 2);
 }
+
   chk8xor(byteArray = new Array<any>()) {
     let checksum = 0x00
     for (let i = 0; i < byteArray.length - 1; i++)

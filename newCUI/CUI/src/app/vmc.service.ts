@@ -79,7 +79,7 @@ export class VmcService implements ISerialService {
         buff[buff.length - 1] = this.serialService.chk8xor(buff);// update checksum
         // that.commands.push(['fa', 'fb', '06', '05',int2hex(getNextNo()),'01','00','00','01']);
       }
-      else if (command == EVMC_COMMAND.enable) {
+      else if (command == EVMC_COMMAND.ENABLE) {
         // FA FB 70 len packNO 18 01 C8 crc 
         // FA FB 70 03 44 19 00 2F
         // FA FB 70 04 47 01 00 00 33
@@ -359,21 +359,21 @@ export class VmcService implements ISerialService {
             reject(PrintError(command as any, params, e.message));
           })
           break;
-        case EMACHINE_COMMAND.sync:
+        case EMACHINE_COMMAND.SYNC:
           this.commandVMC(EVMC_COMMAND.sync, params, transactionID, this.getNextNo()).then(r => {
             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
           }).catch(e => {
             reject(PrintError(command as any, params, e.message));
           })
           break;
-        case EMACHINE_COMMAND.enable:
-          this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
+        case EMACHINE_COMMAND.ENABLE:
+          this.commandVMC(EVMC_COMMAND.ENABLE, params, transactionID, this.getNextNo()).then(r => {
             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
           }).catch(e => {
             reject(PrintError(command as any, params, e.message));
           })
           break;
-        case EMACHINE_COMMAND.disable:
+        case EMACHINE_COMMAND.DISABLE:
           this.commandVMC(EVMC_COMMAND.disable, params, transactionID, this.getNextNo()).then(r => {
             resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
           }).catch(e => {
@@ -442,7 +442,7 @@ export class VmcService implements ISerialService {
                 console.log('ENABLE', this.setting.allowCashIn);
                 if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
                 this.enable = true;
-                this.commandVMC(EVMC_COMMAND.enable, params, transactionID, this.getNextNo()).then(r => {
+                this.commandVMC(EVMC_COMMAND.ENABLE, params, transactionID, this.getNextNo()).then(r => {
                   resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
                 }).catch(e => {
                   reject(PrintError(command as any, params, e.message));
@@ -493,7 +493,7 @@ export class VmcService implements ISerialService {
             that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
             console.log('INIT enable');
-            that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+            that.commandVMC(EVMC_COMMAND.ENABLE, {}, -701801, that.getNextNo());
             console.log('INIT accept banknote');
             that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
             console.log('INIT temperature');
@@ -565,7 +565,7 @@ export class VmcService implements ISerialService {
         that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
         console.log('INIT enable');
-        that.commandVMC(EVMC_COMMAND.enable, {}, -701801, that.getNextNo());
+        that.commandVMC(EVMC_COMMAND.ENABLE, {}, -701801, that.getNextNo());
         console.log('INIT accept banknote');
         that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
         // console.log('INIT temperature');
@@ -606,7 +606,7 @@ export class VmcService implements ISerialService {
 
           if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
             if (!that.enable) return;
-            that.command(EMACHINE_COMMAND.disable, {}, -118);
+            that.command(EMACHINE_COMMAND.DISABLE, {}, -118);
             that.enable = false;
             return;
           }
@@ -798,7 +798,7 @@ export class VmcService implements ISerialService {
 
   private sycnVMC() {
     //FA FB 31 01 02 33
-    this.command(EMACHINE_COMMAND.sync, {}, -31);
+    this.command(EMACHINE_COMMAND.SYNC, {}, -31);
   }
   private setPoll(ms: number = 3) {
     this.command(EMACHINE_COMMAND.setpoll, { ms }, -16);

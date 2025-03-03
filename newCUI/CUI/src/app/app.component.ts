@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
 import { IAlive } from './services/syste.model';
-import { App } from '@capacitor/app';
+
 import * as moment from 'moment';
+
 import { Platform } from '@ionic/angular';
 import { SettingPage } from './setting/setting.page';
-import { EVendingIndex, VendingIndexServiceService } from './vending-index-service.service';
-
-// Import LiveUpdate from the capacitor-live-update plugin
+// import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
-
+import { VendingIndexServiceService } from './vending-index-service.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -20,10 +19,26 @@ export class AppComponent {
   uT = new Date();
   now = new Date();
   version = '';
-  machineuuid = '11111111';
-  t: any;
   count = 6;
-  
+  machineuuid = this.apiService.machineuuid;
+  t: any;
+  // constructor(public apiService: ApiService,  private platform: Platform) {
+  //   this.platform.ready().then(r => {
+
+  //   })
+
+  //   this.checkOnlineStatus = apiService.wsAlive;
+  //   // alert('DEMO started')
+  //   setInterval(() => {
+  //     this.now = new Date();
+  //   }, 1000)
+  //   setInterval(() => {
+  //     this.uT = this.apiService.updateOnlineStatus();
+  //     // console.log(this.uT);
+
+  //   }, 5000)
+
+  // }
   constructor(
     public apiService: ApiService,
     private platform: Platform,
@@ -45,15 +60,6 @@ export class AppComponent {
   async initializeApp() {
     await this.checkForLiveUpdate(); // Check for updates on app start
 
-    App.addListener('pause', async () => {
-      console.log('App moved to background, closing port...');
-      this.closePort();
-    });
-
-    App.addListener('resume', async () => {
-      console.log('App resumed');
-      this.reopenPort();
-    });
   }
 
   async checkForLiveUpdate() {
@@ -75,13 +81,14 @@ export class AppComponent {
     }
   }
 
-  // Existing methods (unchanged)
   showSetting() {
+
     if (!this.t) {
       this.t = setTimeout(() => {
         this.count = 6;
         console.log('re count');
         if (this.t) {
+          // clearTimeout(this.t);
           this.t = null;
         }
       }, 1500);
@@ -90,48 +97,47 @@ export class AppComponent {
       this.count = 6;
       const x = prompt('password');
       console.log(x, this.getPassword());
-      this.apiService.showModal(SettingPage).then((r) => {
+
+      // if (!this.getPassword().endsWith(x.substring(6))||!x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+      this.apiService.showModal(SettingPage).then(r => {
         r.present();
-      });
+      })
+
       if (this.t) {
         clearTimeout(this.t);
         this.t = null;
       }
     }
+    // else {
+    //   if (!this.t) {
+    //     this.t = setTimeout(() => {
+    //       this.count = 6;
+    //       console.log('re count');
+    //       if (this.t) {
+    //         clearTimeout(this.t);
+    //         this.t = null;
+    //       }
+    //     }, 1500);
+    //   }
+    // }
   }
-
   getPassword() {
     let x = '';
-    this.machineuuid.split('').forEach((v) => {
-      !Number.isNaN(Number.parseInt(v)) ? (x += v) : '';
-    });
+    this.machineuuid.split('').forEach(v => {
+      !Number.isNaN(Number.parseInt(v)) ? x += v : '';
+    })
     return x;
   }
-
   autoCheckAppVersion() {
-    this.apiService.checkAppVersion.subscribe((run) => {
+    this.apiService.checkAppVersion.subscribe(run => {
       if (!run) return;
+      // (document.querySelector('.statusbar') as HTMLDivElement).style.zIndex = '-1';
       console.log(`CHECK APP VERSION`, run);
     });
   }
-
   startActive() {
-    const hour = new Date().getHours();
-  }
-
-  private closePort() {
-    try {
-      console.log('Port closed successfully.');
-    } catch (error) {
-      console.error('Error closing port:', error);
-    }
-  }
-
-  private reopenPort() {
-    try {
-      console.log('Reopening port if necessary...');
-    } catch (error) {
-      console.error('Error reopening port:', error);
-    }
+    const hour = new Date().getHours();// >19 , >0&&<8
+    // ScreenBrightness.setBrightness({ brightness:1 });
   }
 }
+

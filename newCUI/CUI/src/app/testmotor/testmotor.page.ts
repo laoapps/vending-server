@@ -67,19 +67,19 @@ export class TestmotorPage implements OnInit, OnDestroy {
       Toast.show({ text: 'Start Tp77p3b' });
     }
     if (this.selectedDevice == 'essp') {
-      this.satrtTp77p();
+      this.startEssp();
       Toast.show({ text: 'Start essp' });
     }
     if (this.selectedDevice == 'cctalk') {
-      this.satrtTp77p();
+      this.startCctalk();
       Toast.show({ text: 'Start essp' });
     }
     if (this.selectedDevice == 'adh815') {
-      this.satrtTp77p();
+      this.startAHD815();
       Toast.show({ text: 'Start adh815' });
     }
     if (this.selectedDevice == 'm102') {
-      this.satrtTp77p();
+      this.startM102();
       Toast.show({ text: 'Start m102' });
     }
     else {
@@ -132,7 +132,22 @@ export class TestmotorPage implements OnInit, OnDestroy {
     this.serial = await this.vendingIndex.initCctalk(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
     this.vlog.log = this.serial.log;
   }
-
+  async startAHD815() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initADH815(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.vlog.log = this.serial.log;
+  }
+  async startM102() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initM102(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.vlog.log = this.serial.log;
+  }
 
   scanPorts() {
     if (this.serial) {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Zdm8Service } from './zdm8.service';
 import { VmcService } from './vmc.service';
-import { Tp77p3bcashacceptorService } from './tp77p3bcashacceptor.service';
+import { Tp77PulseService } from './Tp77PulseService';
 import { ESerialPortType, ISerialService } from './services/syste.model';
 import { BackgroundTask } from '@capawesome/capacitor-background-task';
 import { App } from '@capacitor/app';
@@ -30,7 +30,7 @@ export class VendingIndexServiceService {
   task: ISerialService;
 
 
-  constructor(public zdm8: Zdm8Service, public vmc: VmcService, public tp773b: Tp77p3bcashacceptorService, public essp: EsspNV9USBService, public cctalk: CCTALKTb74Service,public m102:MT102Service,public adh815:ADH815Service) {
+  constructor(public zdm8: Zdm8Service, public vmc: VmcService, public tp773b: Tp77PulseService, public essp: EsspNV9USBService, public cctalk: CCTALKTb74Service,public m102:MT102Service,public adh815:ADH815Service) {
     App.addListener('appStateChange', async ({ isActive }) => {
       if (isActive) {
         return;
@@ -72,9 +72,10 @@ export class VendingIndexServiceService {
     this.task = this.tp773b;
     return this.tp773b;
   }
-  async initEssp(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial) {
+  async initEssp(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial,channels=[1,1,1,1,1,1,1]) {
     this.portName = portName;
     this.braudRate = baudRate;
+    this.essp.setChannels(channels);
     await this.essp.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
     console.log('initEssp Serial port initialized');
     this.task = this.essp;
@@ -84,7 +85,7 @@ export class VendingIndexServiceService {
     this.portName = portName;
     this.braudRate = baudRate;
     await this.cctalk.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    console.log('initEssp Serial port initialized');
+    console.log('initCctalk Serial port initialized');
     this.task = this.cctalk;
     return this.cctalk;
   }
@@ -92,7 +93,7 @@ export class VendingIndexServiceService {
     this.portName = portName;
     this.braudRate = baudRate;
     await this.m102.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    console.log('initEssp Serial port initialized');
+    console.log('initM102 Serial port initialized');
     this.task = this.m102;
     return this.m102;
   }
@@ -100,7 +101,7 @@ export class VendingIndexServiceService {
     this.portName = portName;
     this.braudRate = baudRate;
     await this.adh815.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    console.log('initEssp Serial port initialized');
+    console.log('initADH815 Serial port initialized');
     this.task = this.adh815;
     return this.adh815;
   }
