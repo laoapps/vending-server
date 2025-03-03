@@ -22,7 +22,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   serial: ISerialService;
   open = false;
   devices = ['VMC', 'ZDM8','Tp77p','essp','cctalk','m102','adh815'];
-  selectedDevice = 'essp';
+  selectedDevice = 'VMC';
 
   portName = '/dev/ttyS0';
   baudRate = 9600;
@@ -55,6 +55,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   connect() {
 
     if (this.selectedDevice == 'VMC') {
+      this.baudRate=57600;
       this.startVMC();
       Toast.show({ text: 'Start VMC' });
     }

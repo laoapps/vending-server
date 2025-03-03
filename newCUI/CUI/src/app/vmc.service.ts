@@ -644,12 +644,12 @@ export class VmcService implements ISerialService {
       try {
         if (event.event === 'dataReceived') {
           console.log('Received from device:', event);
-          console.log('Received from device:', typeof event);
+          console.log('Received from device:'+typeof event, typeof event);
           console.log('Received from device:', typeof event!== 'string'||JSON.stringify(event));
           console.log('Received from device:',  event.data.data?.toString('hex'));
 
           
-          that.log.data +=event+'\n';
+          that.log.data +=typeof event ==='string'?event+'\n':JSON.stringify(event)+'\n';
   
           // Process MODBUS response in TypeScript
           const hex = event.data.data;
