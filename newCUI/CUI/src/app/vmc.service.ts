@@ -900,8 +900,11 @@ export class VmcService implements ISerialService {
 
   private async createNewLogFile(newFileName: string, logMessage: string) {
     if (newFileName) {
-      await this.loggingService.writeLog(newFileName, logMessage);
-      await this.loadLogFiles(); // Refresh list
+      setTimeout(async () => {
+         await this.loggingService.writeLog(newFileName, logMessage);
+         this.loadLogFiles(); // Refresh list
+      }, 500);
+     
     }
   }
 
