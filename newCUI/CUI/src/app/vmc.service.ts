@@ -591,13 +591,13 @@ export class VmcService implements ISerialService {
 
       } catch (error) {
         console.log('readCreditRecord');
-        this.createNewLogFile('credit', 'error readCreditRecord' + error)
+        this.createNewLogFile('credit', 'error readCreditRecord' + JSON.stringify(error))
         that.creditPending = [];
       }
 
     } catch (error) {
       console.log('ERROR', error);
-      this.createNewLogFile('vmcInitilize', 'error readCreditRecord' + error)
+      this.createNewLogFile('vmcInitilize', 'error readCreditRecord' + JSON.stringify(error))
     }
 
     var b = '';
@@ -780,7 +780,7 @@ export class VmcService implements ISerialService {
           if (b != 'fafb410040' && b != 'fafb420043') {// POLL only with no commands in the queue
   
             let x = that.getACK().join('')
-            console.log('X ACK', x, (Buffer.from(x, 'hex')));
+            console.log('X ACK: '+x, x, (Buffer.from(x, 'hex')));
             that.serialService.write(x).then((e) => {
               console.log('WRITE ACK succeeded', e);
   
@@ -792,8 +792,8 @@ export class VmcService implements ISerialService {
           return;
         }
         if (event.event === 'error') {
-          console.log('Error from device:', event);
-          that.createNewLogFile('error', event);
+          console.log('Error from device:', JSON.stringify(event));
+          that.createNewLogFile('error', JSON.stringify(event));
           return;
         }
       } catch (error) {
