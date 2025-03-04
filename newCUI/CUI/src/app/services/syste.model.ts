@@ -1,4 +1,5 @@
 
+
 export const EESSP_COMMANDS = {
     RESET: {
         code: 1,
@@ -475,6 +476,7 @@ export function PrintError(command: string, data: any, message: string, transact
     } as IResModel;
 }
 export interface IlogSerial{
+    limit:number;
     data:string;
   }
 export  enum EZDM8_COMMAND {
@@ -558,6 +560,9 @@ export enum EMACHINE_COMMAND {
   GET_SN = "GET_SN",
   READ_TEMP = "READ_TEMP",
   DISPENSE = "DISPENSE",
+  READ_SWITCH_OUTPUT = "READ_SWITCH_OUTPUT",
+  READ_SWITCH_INPUT = "READ_SWITCH_INPUT",
+  SET_ADDRESS = "SET_ADDRESS",
 
 
 }
@@ -591,10 +596,34 @@ export enum ESerialPortType{
     _7037 = "7037",
     temp = "temp"
   }
+export function  addLogMessage(log: IlogSerial, message: string, consoleMessage?: string) {
+  if (!log) return; // Skip if no log object
+
+  const newMessage = consoleMessage !== undefined ? `${message} (${consoleMessage})` : message;
+  const lines = log.data ? log.data.split('\n').filter(line => line.trim() !== '') : [];
+  lines.unshift(newMessage); // Add new message at the start
+
+  // Enforce line limit (default to 100 if not specified)
+  const limit = log.limit || 100;
+  if (lines.length > limit) {
+    lines.splice(limit); // Remove excess lines from the end
+  }
+
+  log.data = lines.join('-- ' + new Date().toISOString() + '\n');
+}
+export function  hexToUint8Array(hexString: string): Uint8Array {
+    const bytes = [];
+    for (let i = 0; i < hexString.length; i += 2) {
+      bytes.push(parseInt(hexString.slice(i, i + 2), 16));
+    }
+    return new Uint8Array(bytes);
+  }
+
 import {  SerialPortListResult } from 'SerialConnectionCapacitor';
+
 export interface ISerialService{
-    log: { data: string };
-    initializeSerialPort(portName: string, baudRate: number, log: { data: string },machineId:string,otp:string,isNative:ESerialPortType): Promise<void>;
+    log:IlogSerial;
+    initializeSerialPort(portName: string, baudRate: number, log:IlogSerial,machineId:string,otp:string,isNative:ESerialPortType): Promise<string>;
     getSerialEvents():any;
     command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
     close(): Promise<void>;

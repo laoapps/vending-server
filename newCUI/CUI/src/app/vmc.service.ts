@@ -1,20 +1,20 @@
 import { Injectable } from '@angular/core';
 
 import { SerialServiceService, } from './services/serialservice.service';
-import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, ICreditDataDetails,EVMC_COMMAND, PrintSucceeded, PrintError, EMessage,IlogSerial } from './services/syste.model';
+import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, ICreditDataDetails, EVMC_COMMAND, PrintSucceeded, PrintError, EMessage, IlogSerial, hexToUint8Array } from './services/syste.model';
 import * as moment from 'moment-timezone';
 import { LoggingService } from './logging-service.service';
 import { DatabaseService } from './database.service';
 import cryptojs from 'crypto-js';
-import {  SerialPortListResult } from 'SerialConnectionCapacitor';
+import { SerialPortListResult } from 'SerialConnectionCapacitor';
 
-import {Buffer} from 'buffer';
+// // import { Buffer } from 'buffer';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VmcService implements ISerialService {
-  log: { data: string; };
+  log: IlogSerial;
 
   machineId: string = '11111111';
   otp = '111111';
@@ -24,22 +24,22 @@ export class VmcService implements ISerialService {
   limiter = 100000;
   balance = 0;
   lastupdate = 0;
-  setting = { settingName: 'setting', allowCashIn: false, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
+  setting = { settingName: 'setting', allowCashIn: true, allowVending: true, lowTemp: 5, highTemp: 10, light: true };//{settingName:string,allowCashIn:boolean,allowVending:boolean}
   logduration = 15;
   countProcessClearLog = 60 * 60 * 24;
   machinestatus = '';
   creditPending = new Array<ICreditData>();
   no = 0;
   pendingRetry = 10;// 10s
-  T:NodeJS.Timeout
+  T: NodeJS.Timeout
   portName = '/dev/ttyS0';
-  braudRate = 57600;
+  baudRate = 57600;
   sock = {
-    send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.status) => { console.log('send', b, t, c) }, machineId: '', otp: ''
+    send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.status) => { console.log('vmc service  send', b, t, c) }, machineId: '', otp: ''
   };
 
 
-  constructor(private serialService: SerialServiceService, private loggingService: LoggingService, private dbService: DatabaseService) { 
+  constructor(private serialService: SerialServiceService, private loggingService: LoggingService, private dbService: DatabaseService) {
     this.loggingService.initializeIndex();
   }
   public async commandVMC(command: EVMC_COMMAND, params: any, transactionID: number, series = 1): Promise<IResModel> {
@@ -345,7 +345,7 @@ export class VmcService implements ISerialService {
       // }
       const x = buff.join('');
       this.commands.push({ b: x, transactionID })
-      console.log('X', x, transactionID);
+      console.log('vmc service  X', x, transactionID);
       resolve({ command, data: params, message: 'Command sent successfully' } as IResModel);
 
     })
@@ -388,7 +388,7 @@ export class VmcService implements ISerialService {
           this.lastupdate = moment.now();
           if (params?.confirmCredit) {
             const transactionID = params.transactionID;
-            console.log('RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING', params);
+            console.log('vmc service  RECONFIRM BALANCE---------- WITH REMOVING CREDIT PENDING', params);
             const x = this.creditPending.find(v => v.transactionID == transactionID)
             if (x) {
               this.deleteCredit(x.id)
@@ -407,7 +407,7 @@ export class VmcService implements ISerialService {
                 this.setting.lowTemp = setting.lowTemp;
                 this.setting.highTemp = setting.highTemp;
                 // this.setting.allowCashIn=false;
-                console.log('new setting', this.setting);
+                console.log('vmc service  new setting', this.setting);
                 // that.command(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
                 this.commandVMC(EVMC_COMMAND._7028, params, -7028, this.getNextNo()).then(r => {
                   resolve(PrintSucceeded(command as any, params, EMessage.commandsucceeded));
@@ -431,7 +431,7 @@ export class VmcService implements ISerialService {
                 this.setting.allowCashIn = setting.allowCashIn;
 
               if (this.balance < this.limiter || !setting.allowCashIn) {
-                console.log('DISABLE', this.setting.allowCashIn);
+                console.log('vmc service  DISABLE', this.setting.allowCashIn);
 
                 if (!this.enable) return resolve(PrintSucceeded(command as any, params, ''));
                 this.enable = false;
@@ -441,7 +441,7 @@ export class VmcService implements ISerialService {
                   reject(PrintError(command as any, params, e.message));
                 })
               } else {
-                console.log('ENABLE', this.setting.allowCashIn);
+                console.log('vmc service  ENABLE', this.setting.allowCashIn);
                 if (this.enable) return resolve(PrintSucceeded(command as any, params, ''));
                 this.enable = true;
                 this.commandVMC(EVMC_COMMAND.ENABLE, params, transactionID, this.getNextNo()).then(r => {
@@ -478,35 +478,35 @@ export class VmcService implements ISerialService {
 
         case EMACHINE_COMMAND.restart:
           setTimeout(() => {
-            console.log('INITIALIZE.............................................................!');
-            console.log('INIT 51');
+            console.log('vmc service  INITIALIZE.............................................................!');
+            console.log('vmc service  INIT 51');
             that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
-            console.log('INIT 7001');
+            console.log('vmc service  INIT 7001');
             that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
-            console.log('INIT 7001');
+            console.log('vmc service  INIT 7001');
             that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
-            console.log('INIT 7018');
+            console.log('vmc service  INIT 7018');
             that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
-            console.log('INIT 7019');
+            console.log('vmc service  INIT 7019');
             that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
-            console.log('INIT 7020');
+            console.log('vmc service  INIT 7020');
             that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
-            console.log('INIT 7023');
+            console.log('vmc service  INIT 7023');
             that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
-            console.log('INIT enable');
+            console.log('vmc service  INIT enable');
             that.commandVMC(EVMC_COMMAND.ENABLE, {}, -701801, that.getNextNo());
-            console.log('INIT accept banknote');
+            console.log('vmc service  INIT accept banknote');
             that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
-            console.log('INIT temperature');
+            console.log('vmc service  INIT temperature');
             that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
-            console.log('INIT temperature');
+            console.log('vmc service  INIT temperature');
             that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
             // setTimeout(() => {
-            //     console.log('INIT disable');
+            //     console.log('vmc service  INIT disable');
             //     that.command(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
             // }, 30000);
-            // console.log('INIT disable');
+            // console.log('vmc service  INIT disable');
             // that.command(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
           }, 2000);
           break;
@@ -523,25 +523,37 @@ export class VmcService implements ISerialService {
     return data.join('');
   }
 
-  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<void> {
-    this.machineId = machineId;
-    this.otp = otp;
-    this.log = log ;
-    this.serialService.initializeSerialPort(portName, baudRate, this.log,isNative).then(() => this.vmcInitilize());
+  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<string> {
+    return new Promise<string>(async(resolve, reject) => {
+      this.machineId = machineId;
+      this.otp = otp;
+      this.log = log;
+      this.portName = portName;
+      this.baudRate = baudRate;
+      console.log('vmc service  INITIALIZE.............................................................!'+this.portName+' '+this.baudRate);
+      const init =await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      if(init==this.portName){
+      this.vmcInitilize();
+      resolve(init);
+      }
+      else  reject(init);
+
+    });
+   
   }
   public getSerialEvents() {
     return this.serialService.getSerialEvents();
   }
   close(): Promise<void> {
-    if(this.T)
+    if (this.T)
       clearInterval(this.T);
-      this.T=null;;
-  
+    this.T = null;;
+
     return this.serialService.close();
   }
-  public async listPorts(): Promise<SerialPortListResult> { 
+  public async listPorts(): Promise<SerialPortListResult> {
     return await this.serialService.listPorts();
-   }
+  }
   // public write(data: string): Promise<void> { return this.serialService.write(data); }
   private async vmcInitilize() {
     const that = this;
@@ -551,61 +563,61 @@ export class VmcService implements ISerialService {
       that.setPoll(10);
 
       setTimeout(() => {
-        console.log('INITIALIZE.............................................................!');
-        console.log('INIT 51');
+        console.log('vmc service  INITIALIZE.............................................................!');
+        console.log('vmc service  INIT 51');
         that.commandVMC(EVMC_COMMAND._51, {}, -51, that.getNextNo());
-        console.log('INIT 7001');
+        console.log('vmc service  INIT 7001');
         that.commandVMC(EVMC_COMMAND._7001, {}, -7001, that.getNextNo());
-        console.log('INIT 7001');
+        console.log('vmc service  INIT 7001');
         that.commandVMC(EVMC_COMMAND._7017, {}, -7017, that.getNextNo());
-        console.log('INIT 7018');
+        console.log('vmc service  INIT 7018');
         that.commandVMC(EVMC_COMMAND._7018, {}, -7018, that.getNextNo());
-        console.log('INIT 7019');
+        console.log('vmc service  INIT 7019');
         that.commandVMC(EVMC_COMMAND._7019, {}, -7019, that.getNextNo());
-        console.log('INIT 7020');
+        console.log('vmc service  INIT 7020');
         that.commandVMC(EVMC_COMMAND._7020, {}, -7020, that.getNextNo());
-        console.log('INIT 7023');
+        console.log('vmc service  INIT 7023');
         that.commandVMC(EVMC_COMMAND._7023, {}, -7023, that.getNextNo());
 
-        console.log('INIT enable');
+        console.log('vmc service  INIT enable');
         that.commandVMC(EVMC_COMMAND.ENABLE, {}, -701801, that.getNextNo());
-        console.log('INIT accept banknote');
+        console.log('vmc service  INIT accept banknote');
         that.commandVMC(EVMC_COMMAND._28, {}, -28, that.getNextNo());
-        // console.log('INIT temperature');
+        // console.log('vmc service  INIT temperature');
         that.commandVMC(EVMC_COMMAND._7037, {}, -7037, that.getNextNo());
-        console.log('INIT temperature 2');
+        console.log('vmc service  INIT temperature 2');
         that.commandVMC(EVMC_COMMAND._7028, {}, -7028, that.getNextNo());
         // setTimeout(() => {
-        //     console.log('INIT disable');
+        //     console.log('vmc service  INIT disable');
         //     that.command(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
         // }, 30000);
-        // console.log('INIT disable');
+        // console.log('vmc service  INIT disable');
         // that.command(EVMC_COMMAND.disable, {}, -701800, that.getNextNo());
       }, 2000);
 
 
       try {
         const creditdata = await this.loadCredits() as Array<ICreditData>;
-        console.log('readCreditRecord', creditdata);
+        console.log('vmc service  readCreditRecord', creditdata);
         that.creditPending = creditdata;
 
       } catch (error) {
-        console.log('readCreditRecord');
-        this.createNewLogFile('credit', 'error readCreditRecord' + JSON.stringify(error))
+        console.log('vmc service  readCreditRecord');
+        // this.createNewLogFile('credit', 'error readCreditRecord' + JSON.stringify(error));
         that.creditPending = [];
       }
 
     } catch (error) {
-      console.log('ERROR', error);
-      this.createNewLogFile('vmcInitilize', 'error readCreditRecord' + JSON.stringify(error))
+      console.log('vmc service  ERROR', error);
+      // this.createNewLogFile('vmcInitilize', 'error readCreditRecord' + JSON.stringify(error))
     }
 
     var b = '';
 
     setTimeout(() => {
-      that.T=setInterval(() => {
+      that.T = setInterval(() => {
         try {
-          console.log('check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate), that.setting?.allowCashIn);
+          // console.log('vmc service  check last update ', moment.now(), that.lastupdate, moment().diff(that.lastupdate), that.setting?.allowCashIn);
 
           if (moment().diff(that.lastupdate) >= 7000 || !that.setting?.allowCashIn) {
             if (!that.enable) return;
@@ -618,7 +630,7 @@ export class VmcService implements ISerialService {
           } else {
             that.countProcessClearLog -= 2;
           }
-          console.log('pending retry======= ', that.pendingRetry, 'credit pending------', that.creditPending);
+          // console.log('vmc service  pending retry======= ', that.pendingRetry, 'credit pending------', that.creditPending);
           const cpx = that.creditPending[0];
           const cp = cpx.data;
           if (cp) {
@@ -643,32 +655,32 @@ export class VmcService implements ISerialService {
     that.getSerialEvents().subscribe(function (event) {
       try {
         if (event.event === 'dataReceived') {
-          console.log('Received from device:', event);
-          console.log('Received from device:'+typeof event, typeof event);
-          console.log('Received from device:', typeof event!== 'string'||JSON.stringify(event));
-          if(typeof event !=='string'){
-            console.log('Received OBJ from device: '+JSON.stringify(event));
+          console.log('vmc service  Received from device:', event);
+          console.log('vmc service  Received from device:' + typeof event, typeof event);
+          console.log('vmc service  Received from device:', typeof event !== 'string' || JSON.stringify(event));
+          if (typeof event !== 'string') {
+            console.log('vmc service  Received OBJ from device: ' + JSON.stringify(event));
 
           }
-          console.log('Received from device:',  event.data.data?.toString('hex'));
+          console.log('vmc service  Received from device:', event.data.data?.toString('hex'));
 
-          
-          that.log.data +=typeof event ==='string'?event+'\n':JSON.stringify(event)+'\n';
-  
+
+          // that.log.data += typeof event === 'string' ? event + '\n' : JSON.stringify(event) + '\n';
+
           // Process MODBUS response in TypeScript
           const hex = event.data.data;
           b = event.data.data;
-          console.log('===>BUFFER', b);
+          console.log('vmc service  ===>BUFFER', b);
           let buff = that.checkCommandsForSubmission();
           if (b == 'fafb410040' && buff != null) {// POLL and submit command
-  
-            console.log('X command', buff);
+
+            console.log('vmc service  X command', buff);
             that.serialService.write(buff?.b).then((e) => {
               if (e) {
-                console.log('Error command', e.message);
+                console.log('vmc service  Error command', e.message);
                 that.sock?.send(buff?.b, -5);
               } else {
-                console.log('WRITE COMMAND succeeded', new Date().getTime());
+                console.log('vmc service  WRITE COMMAND succeeded', new Date().getTime());
                 that.sock?.send(buff?.b, -6);
                 // confirm by socket
               }
@@ -681,27 +693,27 @@ export class VmcService implements ISerialService {
           }
           else if (b == 'fafb420043') {// ACK 
             that.retry = 5;
-            console.log('ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
+            console.log('vmc service  ACK COMMAND FROM VMC and it has to send to the server with current transactionID');
             const t = that.clearTransactionID();
             that.sock?.send(b, t?.transactionID || -2);
           }
           else if (b.startsWith('fafb04')) {// drop sensor
             //FA FB 04 05 packNo 03 00 19
-            console.log('drop detect', b);
+            console.log('vmc service  drop detect', b);
             that.sock?.send(b, -9);
-            that.createNewLogFile('dropdetect', b);
+            // that.createNewLogFile('dropdetect', b);
           }
           else if (b.startsWith('fafb21')) {// receive banknotes
-            console.log('receive banknotes 21', b);
+            console.log('vmc service  receive banknotes 21', b);
             //FAFB2106C608000186A0CF.  // if it is 08 then ignore
             if (b.substring(10, 12) == '08') {//fafb21068308000186a08a
               // ignore because it is a report that it was swallowed
-  
+
             } else if (b.substring(10, 12) == '01') {
               // accept for banknote only 
               //1: Bill 2: Coin 3: IC card 4: Bank card 5: Wechat payment 6: Alipay 7: Jingdong Pay 8: Swallowing money 9: Union scan pay
-  
-  
+
+
               // fafb2106ee01 00000002 cb
               // fafb2106f501 00000002 d0
               // fafb2106d501 000186a0 d5 == 100000 == 1000,00
@@ -720,7 +732,7 @@ export class VmcService implements ISerialService {
               //     that.firstInit=false;
               //     return;
               // }
-  
+
               const t = Number('-21' + moment.now());
               const v = that.getNoteValue(b);
               const pending: ICreditDataDetails = { raw: b, data: cryptojs.SHA256(that.sock?.machineId + '' + v).toString(cryptojs.enc.Hex), t: moment.now(), transactionID: t + '', command: EMACHINE_COMMAND.CREDIT_NOTE };
@@ -728,18 +740,18 @@ export class VmcService implements ISerialService {
               const c = { data: pending, name: 'credit', transactionID: '', description: '' } as ICreditData;
               that.creditPending.push(c);
               that.addOrUpdateCredit(c);
-  
+
               that.sock?.send(cryptojs.SHA256(that.sock?.machineId + v).toString(cryptojs.enc.Hex), t, EMACHINE_COMMAND.CREDIT_NOTE);
-  
+
             } else {
-  
+
             }
-  
-  
-  
+
+
+
           }
           else if (b.startsWith('fafb23')) {// receive banknotes
-            console.log('receive banknotes 23-----------------------------------------------------------------------------', b);
+            console.log('vmc service  receive banknotes 23-----------------------------------------------------------------------------', b);
             // fafb23052e
             // 0098968087 100k
             // fafb2305d0
@@ -756,54 +768,57 @@ export class VmcService implements ISerialService {
             // 00e6686075 1k 
             // fafb23055c
             // 00e7ef0073 
-  
+
             // that.sock?.send(b, -23, EMACHINE_COMMAND.CREDIT_NOTE);
-            that.createNewLogFile('receive banknotes 23', b);
-  
-  
+            // that.createNewLogFile('receive banknotes 23', b);
+            that.addOrUpdateCredit({ data: { raw: b, command: EMACHINE_COMMAND.CREDIT_NOTE, data: b, t: new Date().getTime(), transactionID: '23' }, id: -1, transactionID: '23', description: 'receive banknotes 23', name: 'Credit' })
+
+
           }
           else if (b.startsWith('fafb71')) {
             //FA FB 70 len packNO 18 01 00 crc 
             // FA FB 70 len packNO 18 01 C8 crc 
             // writeLogs(b, -1);
-  
+
           }
           else if (b.startsWith('fafb52')) {
             // report status to the server
-            console.log('SEND REPORT', b);
+            console.log('vmc service  SEND REPORT', b);
             that.machinestatus = b;
             that.sock?.send(b, -52);
-  
+
           }
-  
-  
+
+
           if (b != 'fafb410040' && b != 'fafb420043') {// POLL only with no commands in the queue
-  
+
             let x = that.getACK().join('')
-            console.log('X ACK: '+x, x, (Buffer.from(x, 'hex')));
+            console.log('vmc service  X ACK: ' + x, x, (hexToUint8Array(x)));
+
             that.serialService.write(x).then((e) => {
-              console.log('WRITE ACK succeeded', e);
-  
+              console.log('vmc service  WRITE ACK succeeded', e);
+
               that.sock?.send(b, -3);
             })
           }
-  
+
           b = '';
           return;
         }
         if (event.event === 'error') {
-          console.log('Error from device:', JSON.stringify(event));
-          that.createNewLogFile('error', JSON.stringify(event));
+          console.log('vmc service  Error from device:', JSON.stringify(event));
+          // that.createNewLogFile('error', JSON.stringify(event));
           return;
         }
       } catch (error) {
-        console.log(' getSerialEvents ERROR', error);
-        
+        console.log('vmc service   getSerialEvents ERROR', error);
+
       }
-    
+
     });
 
   }
+
   private getNoteValue(b: string) {
     try {
       return this.hex2dec(b?.substring(12, 20));
@@ -868,7 +883,7 @@ export class VmcService implements ISerialService {
     try {
       return this.commands[0];
     } catch (error) {
-      console.log('ERROR NO COMMAND FOUND');
+      console.log('vmc service  ERROR NO COMMAND FOUND');
 
     }
 
@@ -901,10 +916,10 @@ export class VmcService implements ISerialService {
   private async createNewLogFile(newFileName: string, logMessage: string) {
     if (newFileName) {
       setTimeout(async () => {
-         await this.loggingService.writeLog(newFileName, logMessage);
-         this.loadLogFiles(); // Refresh list
+        await this.loggingService.writeLog(newFileName, logMessage);
+        this.loadLogFiles(); // Refresh list
       }, 500);
-     
+
     }
   }
 

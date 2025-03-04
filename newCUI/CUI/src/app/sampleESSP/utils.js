@@ -55,7 +55,7 @@ function argsToByte(command, args, protocolVersion) {
   if (args !== undefined) {
     if (command === 'SET_DENOMINATION_ROUTE') {
       if (protocolVersion >= 6) {
-        return [args.route === 'payout' ? 0 : 1].concat([...int32LE(args.value)], [...Buffer.from(args.country_code, 'ascii')]);
+        return [args.route === 'payout' ? 0 : 1].concat([...int32LE(args.value)], [...this.serialService.hexToUint8Array(args.country_code, 'ascii')]);
       }
       return [args.route === 'payout' ? 0 : 1].concat([...args.isHopper ? int16LE(args.value) : int32LE(args.value)]);
     } else if (command === 'SET_CHANNEL_INHIBITS') {
@@ -72,12 +72,12 @@ function argsToByte(command, args, protocolVersion) {
       return [...int16LE(res)];
     } else if (command === 'GET_DENOMINATION_ROUTE') {
       if (protocolVersion >= 6) {
-        return [...int32LE(args.value)].concat([...Buffer.from(args.country_code, 'ascii')]);
+        return [...int32LE(args.value)].concat([...this.serialService.hexToUint8Array(args.country_code, 'ascii')]);
       }
       return [...args.isHopper ? int16LE(args.value) : int32LE(args.value)];
     } else if (command === 'SET_DENOMINATION_LEVEL') {
       if (protocolVersion >= 6) {
-        return [...int16LE(args.value)].concat([...int32LE(args.denomination)], [...Buffer.from(args.country_code, 'ascii')]);
+        return [...int16LE(args.value)].concat([...int32LE(args.denomination)], [...this.serialService.hexToUint8Array(args.country_code, 'ascii')]);
       }
       return [...int16LE(args.value)].concat([...int16LE(args.denomination)]);
     } else if (command === 'SET_REFILL_MODE') {
@@ -108,29 +108,29 @@ function argsToByte(command, args, protocolVersion) {
       return [byte];
     } else if (command === 'PAYOUT_AMOUNT') {
       if (protocolVersion >= 6) {
-        return [...int32LE(args.amount)].concat([...Buffer.from(args.country_code, 'ascii')], [args.test ? 0x19 : 0x58]);
+        return [...int32LE(args.amount)].concat([...this.serialService.hexToUint8Array(args.country_code, 'ascii')], [args.test ? 0x19 : 0x58]);
       }
       return [...int32LE(args.amount)];
     } else if (command === 'GET_DENOMINATION_LEVEL') {
       if (protocolVersion >= 6) {
-        return [...int32LE(args.amount)].concat([...Buffer.from(args.country_code, 'ascii')]);
+        return [...int32LE(args.amount)].concat([...this.serialService.hexToUint8Array(args.country_code, 'ascii')]);
       }
       return [...int32LE(args.amount)];
     } else if (command === 'FLOAT_AMOUNT') {
       if (protocolVersion >= 6) {
-        return [...int16LE(args.min_possible_payout)].concat([...int32LE(args.amount)], [...Buffer.from(args.country_code, 'ascii')], [args.test ? 0x19 : 0x58]);
+        return [...int16LE(args.min_possible_payout)].concat([...int32LE(args.amount)], [...this.serialService.hexToUint8Array(args.country_code, 'ascii')], [args.test ? 0x19 : 0x58]);
       }
       return [...int16LE(args.min_possible_payout)].concat([...int32LE(args.amount)]);
     } else if (command === 'SET_COIN_MECH_INHIBITS') {
       if (protocolVersion >= 6) {
-        return [args.inhibited ? 0x00 : 0x01].concat([...int32LE(args.amount)], [...Buffer.from(args.country_code, 'ascii')]);
+        return [args.inhibited ? 0x00 : 0x01].concat([...int32LE(args.amount)], [...this.serialService.hexToUint8Array(args.country_code, 'ascii')]);
       }
       return [args.inhibited ? 0x00 : 0x01].concat([...int32LE(args.amount)]);
     } else if (command === 'FLOAT_BY_DENOMINATION' || command === 'PAYOUT_BY_DENOMINATION') {
       let tmpArray = [args.value.length];
 
       for (let i = 0; i < args.value.length; i++) {
-        tmpArray = tmpArray.concat([...int16LE(args.value[i].number)], [...int32LE(args.value[i].denomination)], [...Buffer.from(args.value[i].country_code, 'ascii')]);
+        tmpArray = tmpArray.concat([...int16LE(args.value[i].number)], [...int32LE(args.value[i].denomination)], [...this.serialService.hexToUint8Array(args.value[i].country_code, 'ascii')]);
       }
 
       return tmpArray.concat([args.test ? 0x19 : 0x58]);
@@ -142,7 +142,7 @@ function argsToByte(command, args, protocolVersion) {
 
       return [byte, args.reset_to_default_on_reset ? 0 : 1];
     } else if (command === 'CONFIGURE_BEZEL') {
-      return [...Buffer.from(args.RGB, 'hex')].concat(args.volatile ? 0 : 1);
+      return [...this.serialService.hexToUint8Array(args.RGB, 'hex')].concat(args.volatile ? 0 : 1);
     } else if (command === 'ENABLE_PAYOUT_DEVICE') {
       let byte = 0;
       byte += args.GIVE_VALUE_ON_STORED || args.REQUIRE_FULL_STARTUP ? 1 : 0;
@@ -176,35 +176,35 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
       result.info.key = data;
     } else if (currentCommand === 'SETUP_REQUEST') {
       result.info.unit_type = unitType[data[0]];
-      result.info.firmware_version = (parseInt(Buffer.from(data.slice(1, 5)).toString()) / 100).toFixed(2);
-      result.info.country_code = Buffer.from(data.slice(5, 8)).toString();
+      result.info.firmware_version = (parseInt(this.serialService.hexToUint8Array(data.slice(1, 5)).toString()) / 100).toFixed(2);
+      result.info.country_code = this.serialService.hexToUint8Array(data.slice(5, 8)).toString();
 
       if (data[0] === 3) {
         result.info.protocol_version = parseInt(data.slice(8, 9).toString('hex'));
-        let n = parseInt(Buffer.from(data.slice(9, 10)).toString('hex'));
+        let n = parseInt(this.serialService.hexToUint8Array(data.slice(9, 10)).toString('hex'));
         result.info.coin_values = data.slice(10, 10 + (n * 2));
-        result.info.country_codes_for_values = Buffer.from(data.slice(10 + (n * 2), 10 + (n * 2) + (n * 3))).toString().match(/.{3}/g);
+        result.info.country_codes_for_values = this.serialService.hexToUint8Array(data.slice(10 + (n * 2), 10 + (n * 2) + (n * 3))).toString().match(/.{3}/g);
       } else {
-        result.info.value_multiplier = parseInt(Buffer.from(data.slice(8, 11)).toString('hex'));
-        let n = parseInt(Buffer.from(data.slice(11, 12)).toString('hex'));
+        result.info.value_multiplier = parseInt(this.serialService.hexToUint8Array(data.slice(8, 11)).toString('hex'));
+        let n = parseInt(this.serialService.hexToUint8Array(data.slice(11, 12)).toString('hex'));
         result.info.channel_value = data.slice(12, 12 + n);
         result.info.channel_security = data.slice(12 + n, 12 + (n * 2));
-        result.info.real_value_multiplier = parseInt(Buffer.from(data.slice(12 + (n * 2), 12 + (n * 2) + 3)).toString('hex'), 16);
+        result.info.real_value_multiplier = parseInt(this.serialService.hexToUint8Array(data.slice(12 + (n * 2), 12 + (n * 2) + 3)).toString('hex'), 16);
         result.info.protocol_version = parseInt(data.slice(15 + (n * 2), 15 + (n * 2) + 1).toString('hex'));
         if (result.info.protocol_version >= 6) {
-          result.info.expanded_channel_country_code = Buffer.from(data.slice(16 + (n * 2), 16 + (n * 2) + (n * 3))).toString().match(/.{3}/g);
+          result.info.expanded_channel_country_code = this.serialService.hexToUint8Array(data.slice(16 + (n * 2), 16 + (n * 2) + (n * 3))).toString().match(/.{3}/g);
           result.info.expanded_channel_value = [];
           for (let i = 0; i < n; i++) {
-            result.info.expanded_channel_value[i] = Buffer.from(data.slice(16 + (n * 5) + (i * 4), 20 + (n * 5) + (i * 4))).readInt32LE();
+            result.info.expanded_channel_value[i] = this.serialService.hexToUint8Array(data.slice(16 + (n * 5) + (i * 4), 20 + (n * 5) + (i * 4))).readInt32LE();
           }
         }
       }
     } else if (currentCommand === 'GET_SERIAL_NUMBER') {
-      result.info.serial_number = Buffer.from(data.slice(0, 4)).readInt32BE();
+      result.info.serial_number = this.serialService.hexToUint8Array(data.slice(0, 4)).readInt32BE();
     } else if (currentCommand === 'UNIT_DATA') {
       result.info.unit_type = unitType[data[0]];
-      result.info.firmware_version = (parseInt(Buffer.from(data.slice(1, 5)).toString()) / 100).toFixed(2);
-      result.info.country_code = Buffer.from(data.slice(5, 8)).toString();
+      result.info.firmware_version = (parseInt(this.serialService.hexToUint8Array(data.slice(1, 5)).toString()) / 100).toFixed(2);
+      result.info.country_code = this.serialService.hexToUint8Array(data.slice(5, 8)).toString();
       result.info.value_multiplier = parseInt(data.slice(8, 11).toString('hex'));
       result.info.protocol_version = parseInt(data.slice(11, 12).toString('hex'));
     } else if (currentCommand === 'CHANNEL_VALUE_REQUEST') {
@@ -212,8 +212,8 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
 
       if (protocolVersion >= 6) {
         result.info.channel = data.slice(1, count + 1);
-        result.info.country_code = Buffer.from(data.slice(count + 1, (count * 4) + 1)).toString().match(/.{3}/g);
-        result.info.value = Buffer.from(data.slice((count * 4) + 1, (count * 8) + 1)).toString('hex').match(/.{8}/g).map(value => Buffer.from(value, 'hex').readInt32LE());
+        result.info.country_code = this.serialService.hexToUint8Array(data.slice(count + 1, (count * 4) + 1)).toString().match(/.{3}/g);
+        result.info.value = this.serialService.hexToUint8Array(data.slice((count * 4) + 1, (count * 8) + 1)).toString('hex').match(/.{8}/g).map(value => this.serialService.hexToUint8Array(value, 'hex').readInt32LE());
       } else {
         result.info.channel = data.slice(1, count + 1);
       }
@@ -236,15 +236,15 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
       result.info.name = rejectNote[data[0]].name;
       result.info.description = rejectNote[data[0]].description;
     } else if (currentCommand === 'GET_FIRMWARE_VERSION' || currentCommand === 'GET_DATASET_VERSION') {
-      result.info.version = Buffer.from(data).toString();
+      result.info.version = this.serialService.hexToUint8Array(data).toString();
     } else if (currentCommand === 'GET_ALL_LEVELS') {
       result.info.counter = {};
       for (let i = 0; i < data[0]; i++) {
         let tmp = data.slice((i * 9) + 1, (i * 9) + 10);
         result.info.counter[i + 1] = {
-          'denomination_level': Buffer.from(tmp.slice(0, 2)).readInt16LE(),
-          'value': Buffer.from(tmp.slice(2, 6)).readInt32LE(),
-          'country_code': Buffer.from(tmp.slice(6, 9)).toString()
+          'denomination_level': this.serialService.hexToUint8Array(tmp.slice(0, 2)).readInt16LE(),
+          'value': this.serialService.hexToUint8Array(tmp.slice(2, 6)).readInt32LE(),
+          'country_code': this.serialService.hexToUint8Array(tmp.slice(6, 9)).toString()
         };
       }
     } else if (currentCommand === 'GET_BAR_CODE_READER_CONFIGURATION') {
@@ -265,14 +265,14 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
     } else if (currentCommand === 'GET_BAR_CODE_DATA') {
       let status = { 0: 'no_valid_data', 1: 'ticket_in_escrow', 2: 'ticket_stacked', 3: 'ticket_rejected' };
       result.info.status = status[data[0]];
-      result.info.data = Buffer.from(data.slice(2, data[1] + 2)).toString();
+      result.info.data = this.serialService.hexToUint8Array(data.slice(2, data[1] + 2)).toString();
     } else if (currentCommand === 'GET_DENOMINATION_LEVEL') {
-      result.info.level = Buffer.from(data).readInt16LE();
+      result.info.level = this.serialService.hexToUint8Array(data).readInt16LE();
     } else if (currentCommand === 'GET_DENOMINATION_ROUTE') {
       let res = { 0: { code: 0, value: 'Recycled and used for payouts' }, 1: { code: 1, value: 'Detected denomination is routed to system cashbox' } };
       result.info = res[data[0]];
     } else if (currentCommand === 'GET_MINIMUM_PAYOUT') {
-      result.info.value = Buffer.from(data).readInt32LE();
+      result.info.value = this.serialService.hexToUint8Array(data).readInt32LE();
     } else if (currentCommand === 'GET_NOTE_POSITIONS') {
       let count = data[0];
       data = data.slice(1);
@@ -283,7 +283,7 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
           result.info.slot[i + 1] = { channel: data[i] };
         }
       } else {
-        let tmp = Buffer.from(data).toString().match(/.{4}/g);
+        let tmp = this.serialService.hexToUint8Array(data).toString().match(/.{4}/g);
         for (let i = 0; i < count; i++) {
           result.info.slot[i + 1] = { value: tmp[i] };
         }
@@ -294,17 +294,17 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
       for (let i = 0; i < count; i++) {
         result.info.device[i] = {
           unitType: unitType[data[(i * 3)]],
-          revision: Buffer.from(data.slice((i * 3) + 1, (i * 3) + 3)).readInt16BE()
+          revision: this.serialService.hexToUint8Array(data.slice((i * 3) + 1, (i * 3) + 3)).readInt16BE()
         };
       }
     } else if (currentCommand === 'GET_COUNTERS') {
-      result.info.stacked = Buffer.from(data.slice(1, 5)).readInt32LE();
-      result.info.stored = Buffer.from(data.slice(5, 9)).readInt32LE();
-      result.info.dispensed = Buffer.from(data.slice(9, 13)).readInt32LE();
-      result.info.transferred_from_store_to_stacker = Buffer.from(data.slice(13, 17)).readInt32LE();
-      result.info.rejected = Buffer.from(data.slice(17, 21)).readInt32LE();
+      result.info.stacked = this.serialService.hexToUint8Array(data.slice(1, 5)).readInt32LE();
+      result.info.stored = this.serialService.hexToUint8Array(data.slice(5, 9)).readInt32LE();
+      result.info.dispensed = this.serialService.hexToUint8Array(data.slice(9, 13)).readInt32LE();
+      result.info.transferred_from_store_to_stacker = this.serialService.hexToUint8Array(data.slice(13, 17)).readInt32LE();
+      result.info.rejected = this.serialService.hexToUint8Array(data.slice(17, 21)).readInt32LE();
     } else if (currentCommand === 'GET_HOPPER_OPTIONS') {
-      let tmp = Buffer.from(data.slice(1, 3)).readInt16LE().toString(2).split('').reverse();
+      let tmp = this.serialService.hexToUint8Array(data.slice(1, 3)).readInt16LE().toString(2).split('').reverse();
       result.info.payMode = (tmp[0] === 0 || tmp[0] === undefined) ? false : true;
       result.info.levelCheck = (tmp[1] === 0 || tmp[1] === undefined) ? false : true;
       result.info.motorSpeed = (tmp[2] === 0 || tmp[2] === undefined) ? false : true;
@@ -343,13 +343,13 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
               info.value = [];
               for (let i = 0; i < count; i++) {
                 info.value[i] = {
-                  value: Buffer.from(chunk.slice((i * 7) + 1, (i * 7) + 5)).readInt32LE(),
-                  country_code: Buffer.from(chunk.slice((i * 7) + 5, (i * 7) + 8)).toString()
+                  value: this.serialService.hexToUint8Array(chunk.slice((i * 7) + 1, (i * 7) + 5)).readInt32LE(),
+                  country_code: this.serialService.hexToUint8Array(chunk.slice((i * 7) + 5, (i * 7) + 8)).toString()
                 };
               }
               k += 1 + count * 7;
             } else if (protocolVersion < 6 && smartDevice) {
-              info.value = Buffer.from(chunk.slice(1, 5)).readInt32LE();
+              info.value = this.serialService.hexToUint8Array(chunk.slice(1, 5)).readInt32LE();
               k += 5;
             } else {
               info.channel = chunk[1];
@@ -377,8 +377,8 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
               info.value = [];
               for (let i = 0; i < count; i++) {
                 info.value[i] = {
-                  value: Buffer.from(chunk.slice((i * 7) + 2, (i * 7) + 6)).readInt32LE(),
-                  country_code: Buffer.from(chunk.slice((i * 7) + 6, (i * 7) + 9)).toString()
+                  value: this.serialService.hexToUint8Array(chunk.slice((i * 7) + 2, (i * 7) + 6)).readInt32LE(),
+                  country_code: this.serialService.hexToUint8Array(chunk.slice((i * 7) + 6, (i * 7) + 9)).toString()
                 };
               }
               if (info.name === 'ERROR_DURING_PAYOUT') {
@@ -386,28 +386,28 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
               }
               k += 1 + count * 7;
             } else {
-              info.value = Buffer.from(chunk.slice(0, 4)).readInt32LE();
+              info.value = this.serialService.hexToUint8Array(chunk.slice(0, 4)).readInt32LE();
               k += 5;
             }
           } else if (info.name === 'NOTE_HELD_IN_BEZEL') {
             info.value = {
-              value: Buffer.from(chunk.slice(1, 5)).readInt32LE(),
-              country_code: Buffer.from(chunk.slice(5, 8)).toString()
+              value: this.serialService.hexToUint8Array(chunk.slice(1, 5)).readInt32LE(),
+              country_code: this.serialService.hexToUint8Array(chunk.slice(5, 8)).toString()
             };
             k += 8;
           } else if (info.name === 'INCOMPLETE_PAYOUT') {
             if (protocolVersion < 6) {
-              info.dispensed = Buffer.from(chunk.slice(1, 5)).readInt32LE();
-              info.requested = Buffer.from(chunk.slice(5, 9)).readInt32LE();
+              info.dispensed = this.serialService.hexToUint8Array(chunk.slice(1, 5)).readInt32LE();
+              info.requested = this.serialService.hexToUint8Array(chunk.slice(5, 9)).readInt32LE();
               k += 9;
             } else {
               let count = chunk[1];
               info.value = [];
               for (let i = 0; i < count; i++) {
                 info.value[i] = {
-                  dispensed: Buffer.from(chunk.slice((i * 11) + 1, (i * 11) + 5)).readInt32LE(),
-                  requested: Buffer.from(chunk.slice((i * 11) + 5, (i * 11) + 9)).readInt32LE(),
-                  country_code: Buffer.from(chunk.slice((i * 11) + 9, (i * 11) + 12)).toString()
+                  dispensed: this.serialService.hexToUint8Array(chunk.slice((i * 11) + 1, (i * 11) + 5)).readInt32LE(),
+                  requested: this.serialService.hexToUint8Array(chunk.slice((i * 11) + 5, (i * 11) + 9)).readInt32LE(),
+                  country_code: this.serialService.hexToUint8Array(chunk.slice((i * 11) + 9, (i * 11) + 12)).toString()
                 };
               }
 
@@ -415,17 +415,17 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
             }
           } else if (info.name === 'INCOMPLETE_FLOAT') {
             if (protocolVersion < 6) {
-              info.dispensed = Buffer.from(chunk.slice(1, 5)).readInt32LE();
-              info.floated = Buffer.from(chunk.slice(5, 9)).readInt32LE();
+              info.dispensed = this.serialService.hexToUint8Array(chunk.slice(1, 5)).readInt32LE();
+              info.floated = this.serialService.hexToUint8Array(chunk.slice(5, 9)).readInt32LE();
               k += 9;
             } else {
               let count = chunk[1];
               info.value = [];
               for (let i = 0; i < count; i++) {
                 info.value[i] = {
-                  floated: Buffer.from(chunk.slice((i * 11) + 1, (i * 11) + 5)).readInt32LE(),
-                  requested: Buffer.from(chunk.slice((i * 11) + 5, (i * 11) + 9)).readInt32LE(),
-                  country_code: Buffer.from(chunk.slice((i * 11) + 9, (i * 11) + 12)).toString()
+                  floated: this.serialService.hexToUint8Array(chunk.slice((i * 11) + 1, (i * 11) + 5)).readInt32LE(),
+                  requested: this.serialService.hexToUint8Array(chunk.slice((i * 11) + 5, (i * 11) + 9)).readInt32LE(),
+                  country_code: this.serialService.hexToUint8Array(chunk.slice((i * 11) + 9, (i * 11) + 12)).toString()
                 };
               }
 
@@ -442,9 +442,9 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
         console.log(data);
         for (let i = 0; i < data[0]; i++) {
           result.info.res[i] = {
-            quantity: Buffer.from(data.slice((i * 9) + 2, (i * 9) + 4)).readInt16LE(),
-            value: Buffer.from(data.slice((i * 9) + 4, (i * 9) + 8)).readInt32LE(),
-            country_code: Buffer.from(data.slice((i * 9) + 8, (i * 9) + 11)).toString()
+            quantity: this.serialService.hexToUint8Array(data.slice((i * 9) + 2, (i * 9) + 4)).readInt16LE(),
+            value: this.serialService.hexToUint8Array(data.slice((i * 9) + 4, (i * 9) + 8)).readInt32LE(),
+            country_code: this.serialService.hexToUint8Array(data.slice((i * 9) + 8, (i * 9) + 11)).toString()
           };
         }
       }

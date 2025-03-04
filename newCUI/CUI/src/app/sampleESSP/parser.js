@@ -91,7 +91,7 @@ class ESSPProtocolParser extends Transform {
 
             let increment = 1;
             if (this.packet.crcl === crcl && this.packet.crch === crch) {
-              this.push(Buffer.from([this.packet.stx, this.packet.seqSlaveId, this.packet.length, ...this.packet.data, this.packet.crcl, this.packet.crch]));
+              this.push(this.serialService.hexToUint8Array([this.packet.stx, this.packet.seqSlaveId, this.packet.length, ...this.packet.data, this.packet.crcl, this.packet.crch]));
               if (crch === 0x7F) increment = 2; // Fix for byte stuffing
             } else {
               debug(`Checksum "${[crcl, crch]}" doesn't match received CheckSum "${[this.packet.crcl, this.packet.crch]}"`);

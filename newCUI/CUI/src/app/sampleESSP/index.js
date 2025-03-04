@@ -135,7 +135,7 @@ module.exports = class SSP extends EventEmitter {
     }
 
     let tmp = [SEQ_SLAVE_ID].concat(LENGTH, DATA);
-    let comandLine = Buffer.from([STX].concat(tmp, CRC16(tmp)).join(',').replace(/,127/g, ',127,127').split(','));
+    let comandLine = this.serialService.hexToUint8Array([STX].concat(tmp, CRC16(tmp)).join(',').replace(/,127/g, ',127,127').split(','));
 
     if (this.debug) { console.log('COM <-', chalk.cyan(comandLine.toString('hex')), chalk.green(this.currentCommand), this.count); }
 
@@ -160,7 +160,7 @@ module.exports = class SSP extends EventEmitter {
   exec(command, args = []) {
     command = command.toUpperCase();
     if (commandList[command] === undefined) { throw new Error('command not found'); }
-    let buffer = Buffer.from(this.getPacket(command, args));
+    let buffer = this.serialService.hexToUint8Array(this.getPacket(command, args));
     return this.getPromise(command, buffer);
   }
 
@@ -208,10 +208,10 @@ module.exports = class SSP extends EventEmitter {
         return { success: false, error: 'Wrong CRC16' };
       }
       if (this.keys.key !== null && DATA[0] === 0x7E) {
-        DATA = this.aesEncryption.decrypt(Buffer.from(DATA.slice(1)));
-        if (this.debug) { console.log('Decrypted:', chalk.red(Buffer.from(DATA).toString('hex'))); }
+        DATA = this.aesEncryption.decrypt(this.serialService.hexToUint8Array(DATA.slice(1)));
+        if (this.debug) { console.log('Decrypted:', chalk.red(this.serialService.hexToUint8Array(DATA).toString('hex'))); }
         let eLENGTH = DATA[0];
-        let eCOUNT = Buffer.from(DATA.slice(1, 5)).readInt32LE();
+        let eCOUNT = this.serialService.hexToUint8Array(DATA.slice(1, 5)).readInt32LE();
         DATA = DATA.slice(5, eLENGTH + 5);
         this.count = eCOUNT;
       }
@@ -238,17 +238,17 @@ module.exports = class SSP extends EventEmitter {
 
   createHostEncryptionKeys(data) {
     if (this.keys.key === null) {
-      this.keys.slaveIntKey = Buffer.from(data).readBigInt64LE();
+      this.keys.slaveIntKey = this.serialService.hexToUint8Array(data).readBigInt64LE();
       this.keys.key = this.keys.slaveIntKey ** this.keys.hostRandom % this.keys.modulusKey;
       this.encryptKey = Buffer.concat([
-        int64LE(Buffer.from(this.keys.fixedKey, 'hex').readBigInt64BE()),
+        int64LE(this.serialService.hexToUint8Array(this.keys.fixedKey, 'hex').readBigInt64BE()),
         int64LE(this.keys.key)
       ]);
 
       this.aesEncryption = new aesjs.ModeOfOperation.ecb(this.encryptKey, null, 0);
       this.count = 0;
       if (this.debug) {
-        console.log('AES encrypt key:', chalk.red('0x' + Buffer.from(this.encryptKey).toString('hex')));
+        console.log('AES encrypt key:', chalk.red('0x' + this.serialService.hexToUint8Array(this.encryptKey).toString('hex')));
         console.log('');
         console.log(this.keys);
         console.log('');

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
-import { EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
-import { Buffer } from 'buffer';
+import * as moment from 'moment'; // Add moment import
 
 @Injectable({
   providedIn: 'root'
@@ -11,16 +11,15 @@ export class CCTALKTb74Service implements ISerialService {
   private ccTalk: CcTalkTB74;
   private T: NodeJS.Timeout;
 
-  // Configuration properties
-  pulseCount = 0; // Legacy from pulse mode, unused in ccTalk
+  pulseCount = 0;
   lastPulseTime = Date.now();
-  pulsesPerBill = 15; // Unused in ccTalk mode
-  totalValue = 0; // Total value in your currency
-  pulseTimeout = 1000; // Unused in ccTalk
+  pulsesPerBill = 15;
+  totalValue = 0;
+  pulseTimeout = 1000;
   machineId = '11111111';
   portName = '/dev/ttyS0';
   baudRate = 9600;
-  log: IlogSerial = { data: '' };
+  log: IlogSerial = { data: '', limit: 50 };
   otp = '111111';
   parity: 'none' = 'none';
   dataBits: 8 = 8;
@@ -28,53 +27,50 @@ export class CCTALKTb74Service implements ISerialService {
 
   constructor(private serialService: SerialServiceService) {}
 
-  // Initialize ccTalk and set up event listeners
+  private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
+    addLogMessage(log, message, consoleMessage);
+  }
+
   private initCctalk(): void {
-    // Callback to send data via SerialServiceService
     const sendData = (data: string) => {
-      if(this.log)
-      this.log.data += `Sending data: ${data}\n`;
-      this.serialService.write(data); // Assuming writeSerial accepts Buffer
+      this.addLogMessage(this.log, `Sending data: ${data}`);
+      this.serialService.write(data);
     };
 
     this.ccTalk = new CcTalkTB74(sendData);
 
-    // Listen for ccTalk events
     this.ccTalk.on('billEvent', (data) => {
       const event = data.details![0] as BillEvent;
-      this.log.data += `Bill Event - Code: ${event.code}, Value: ${event.value}\n`;
-      this.totalValue += this.parseBillValue(event.value); // Update total value
+      this.addLogMessage(this.log, `Bill Event - Code: ${event.code}, Value: ${event.value}`);
+      this.totalValue += this.parseBillValue(event.value);
       console.log(`Bill accepted: ${event.value}, Total: ${this.totalValue}`);
     });
 
     this.ccTalk.on('response', (data) => {
       const [command, response] = data.details!;
-      this.log.data += `Response to ${command}: ${response}\n`;
+      this.addLogMessage(this.log, `Response to ${command}: ${response}`);
       console.log(`Response to ${command}: ${response}`);
     });
 
     this.ccTalk.on('error', (data) => {
-      this.log.data += `Error: ${data.details![0]}\n`;
+      this.addLogMessage(this.log, `Error: ${data.details![0]}`);
       console.error('ccTalk Error:', data.details![0]);
     });
 
-    // Subscribe to serial events from SerialServiceService
     this.getSerialEvents().subscribe((event) => {
       if (event.event === 'dataReceived') {
-        const hexData = Buffer.from(event.data as any).toString('hex'); // Convert data to hex string
-        this.log.data += `Raw data: ${hexData}\n`;
-        this.ccTalk.handleData(hexData); // Process incoming data
+        const hexData = event.data;
+        this.addLogMessage(this.log, `Raw data: ${hexData}`);
+        this.ccTalk.handleData(hexData);
       }
     });
   }
 
-  // Parse bill value to number (for totalValue)
   private parseBillValue(value: string): number {
-    const match = value.match(/(\d+)/); // Extract number from "10 PHP", etc.
+    const match = value.match(/(\d+)/);
     return match ? parseInt(match[0], 10) : 0;
   }
 
-  // Initialize serial port and ccTalk
   initializeSerialPort(
     portName: string,
     baudRate: number,
@@ -82,20 +78,25 @@ export class CCTALKTb74Service implements ISerialService {
     machineId: string,
     otp: string,
     isNative: ESerialPortType
-  ): Promise<void> {
-    this.machineId = machineId;
-    this.otp = otp;
-    this.portName = portName || this.portName;
-    this.baudRate = baudRate || this.baudRate;
-    this.log = log ;
+  ): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+      if (this.T) clearInterval(this.T);
+      this.log = log;
+      this.machineId = machineId;
+      this.otp = otp;
+      this.portName = portName || this.portName;
+      this.baudRate = baudRate || this.baudRate;
 
-    return this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative)
-      .then(() => {
+      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      if (init === this.portName) {
         this.initCctalk();
-      });
+        resolve(init);
+      } else {
+        reject(init);
+      }
+    });
   }
 
-  // Execute machine commands
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
       try {
@@ -126,7 +127,7 @@ export class CCTALKTb74Service implements ISerialService {
   }
 
   checkSum(data?: any[]): string {
-    return data ? data.join('') : ''; // Simple concatenation, adjust if needed
+    return data ? data.join('') : '';
   }
 
   getSerialEvents() {
@@ -142,26 +143,25 @@ export class CCTALKTb74Service implements ISerialService {
     return await this.serialService.listPorts();
   }
 }
-// Interface for bill event data
+
 interface BillEvent {
-  code: string; // Hex event code (e.g., "01")
-  value: string; // Decoded bill value (e.g., "10 PHP")
+  code: string;
+  value: string;
 }
 
-// Events emitted by the class
 type CctalkEvent = 'billEvent' | 'response' | 'error';
 
 type ListenerCallback = (data: { event: CctalkEvent; details?: any[] }) => void;
 
 class CcTalkTB74 {
-  private readonly destAddr: string; // Hex string (e.g., "02")
-  private readonly srcAddr: string; // Hex string (e.g., "01")
+  private readonly destAddr: string;
+  private readonly srcAddr: string;
   private listeners: Map<CctalkEvent, ListenerCallback[]> = new Map();
   private pendingCommands: Map<string, (response: string) => void> = new Map();
   private sendDataCallback: (data: string) => void;
 
   constructor(
-    sendDataCallback: (data: string) => void, // Callback to send data via service
+    sendDataCallback: (data: string) => void,
     destAddr: string = "02",
     srcAddr: string = "01"
   ) {
@@ -170,7 +170,6 @@ class CcTalkTB74 {
     this.srcAddr = srcAddr.padStart(2, '0');
   }
 
-  // Build ccTalk frame as hex string
   private buildFrame(header: string, data: string[] = []): string {
     const dataLength = data.length.toString(16).padStart(2, '0');
     const frame = [this.destAddr, dataLength, this.srcAddr, header.padStart(2, '0'), ...data];
@@ -179,7 +178,6 @@ class CcTalkTB74 {
     return frame.join('') + checksum;
   }
 
-  // Send command and wait for response
   private async sendCommand(header: string, data: string[] = []): Promise<string> {
     const frame = this.buildFrame(header, data);
     return new Promise((resolve, reject) => {
@@ -194,7 +192,6 @@ class CcTalkTB74 {
     });
   }
 
-  // Process incoming data (called by service)
   public handleData(hexData: string): void {
     const srcAddr = hexData.slice(0, 2);
     const dataLength = parseInt(hexData.slice(2, 4), 16);
@@ -231,7 +228,6 @@ class CcTalkTB74 {
     return events;
   }
 
-  // ccTalk Commands
   public async simplePoll(): Promise<boolean> {
     const response = await this.sendCommand("fe");
     return response.slice(6, 8) === "00";
@@ -253,7 +249,7 @@ class CcTalkTB74 {
   public async requestBillId(): Promise<string> {
     const response = await this.sendCommand("e3");
     if (response.length > 10) {
-      return Buffer.from(response.slice(8, -2), 'hex').toString('ascii');
+      return response.slice(8, -2);
     }
     return "Unknown";
   }
@@ -269,7 +265,6 @@ class CcTalkTB74 {
     return billMap[code] || `Unknown (${code})`;
   }
 
-  // Event listener methods
   public on(event: CctalkEvent, callback: ListenerCallback): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
@@ -284,31 +279,3 @@ class CcTalkTB74 {
     }
   }
 }
-// Usage example in Angular component
-/*
-import { Component, OnInit } from '@angular/core';
-import { CCTALKTb74Service } from './cctalk-tb74.service';
-
-@Component({
-  selector: 'app-root',
-  template: `<div>{{ log }}</div>`,
-})
-export class AppComponent implements OnInit {
-  log: string = '';
-
-  constructor(private cctalkService: CCTALKTb74Service) {}
-
-  ngOnInit() {
-    this.cctalkService.initializeSerialPort('/dev/ttyS0', 9600, { data: '' }, '11111111', '111111', ESerialPortType.NATIVE)
-      .then(() => {
-        this.cctalkService.getSerialEvents().subscribe((event) => {
-          this.log = this.cctalkService.log.data;
-        });
-        // Example command
-        this.cctalkService.command(EMACHINE_COMMAND.POLL, {}, 1)
-          .then((res) => console.log('Poll result:', res));
-      })
-      .catch((err) => console.error('Init error:', err));
-  }
-}
-*/

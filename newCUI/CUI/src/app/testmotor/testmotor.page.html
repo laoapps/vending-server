@@ -25,7 +25,7 @@
   <ion-button (click)="testDrop()">Ship</ion-button><ion-input type="number" placeholder="Enter slot" [(ngModel)]="slot"></ion-input>
   <ion-button (click)="scanTestMotor()">Scan testing  Motors</ion-button>
   <hr/>
-  <ion-label>Log data</ion-label>
+  <ion-label>Log data</ion-label><ion-button (click)="clearLog()">Clear</ion-button>
   <textarea  *ngIf="vlog?.log" style="width: 100%; height: 200px;" [(ngModel)]="vlog.log.data"></textarea>
  <hr/>
   <ion-button (click)="checkSum()">checkSum</ion-button>

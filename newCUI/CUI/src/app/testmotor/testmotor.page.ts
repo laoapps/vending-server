@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { VendingIndexServiceService } from '../vending-index-service.service'
-import { ISerialService, EMACHINE_COMMAND, ESerialPortType } from '../services/syste.model'
+import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial } from '../services/syste.model'
 import { Toast } from '@capacitor/toast';
 // import {SerialConnectionCapacitor} from 'SerialConnectionCapacitor';
 import { SerialServiceService } from '../services/serialservice.service';
@@ -10,7 +10,7 @@ import { SerialServiceService } from '../services/serialservice.service';
   styleUrls: ['./testmotor.page.scss'],
 })
 export class TestmotorPage implements OnInit, OnDestroy {
-  vlog = { log: { data: '' } };
+  vlog = { log: { data: '',limit:50 }as IlogSerial };
   slot = 1;
   //val='011020010002040A010000';//011000010002040A010094F8'
   val = '0110200100020410010000'; //with checksum 0110200100020410010100ff32
@@ -59,27 +59,27 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.startVMC();
       Toast.show({ text: 'Start VMC' });
     }
-    if (this.selectedDevice == 'ZDM8') {
+    else if (this.selectedDevice == 'ZDM8') {
       this.startZDM8();
       Toast.show({ text: 'Start ZDM8' });
     }
-    if (this.selectedDevice == 'Tp77p') {
+    else if (this.selectedDevice == 'Tp77p') {
       this.satrtTp77p();
       Toast.show({ text: 'Start Tp77p3b' });
     }
-    if (this.selectedDevice == 'essp') {
+    else if (this.selectedDevice == 'essp') {
       this.startEssp();
       Toast.show({ text: 'Start essp' });
     }
-    if (this.selectedDevice == 'cctalk') {
+    else if (this.selectedDevice == 'cctalk') {
       this.startCctalk();
       Toast.show({ text: 'Start essp' });
     }
-    if (this.selectedDevice == 'adh815') {
+    else if (this.selectedDevice == 'adh815') {
       this.startAHD815();
       Toast.show({ text: 'Start adh815' });
     }
-    if (this.selectedDevice == 'm102') {
+    else if (this.selectedDevice == 'm102') {
       this.startM102();
       Toast.show({ text: 'Start m102' });
     }
@@ -99,6 +99,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initVMC(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
+      Toast.show({ text: 'serial not init' });
+    }
     this.vlog.log = this.serial.log;
   }
   async startZDM8() {
@@ -107,6 +110,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await  this.vendingIndex.initZDM8(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
+      Toast.show({ text: 'serial not init' });
+    }
     this.vlog.log = this.serial.log;
   }
   async satrtTp77p() {
@@ -115,6 +121,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initTop77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
+      Toast.show({ text: 'serial not init' });
+    }
     this.vlog.log = this.serial.log;
   }
   async startEssp() {
@@ -123,6 +132,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initEssp(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
+      Toast.show({ text: 'serial not init' });
+    }
     this.vlog.log = this.serial.log;
   }
   async startCctalk() {
@@ -131,6 +143,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initCctalk(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
+      Toast.show({ text: 'serial not init' });
+    }
     this.vlog.log = this.serial.log;
   }
   async startAHD815() {
@@ -139,6 +154,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initADH815(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
+      Toast.show({ text: 'serial not init' });
+    }
     this.vlog.log = this.serial.log;
   }
   async startM102() {
@@ -147,6 +165,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initM102(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
+      Toast.show({ text: 'serial not init' });
+    }
     this.vlog.log = this.serial.log;
   }
 
@@ -161,6 +182,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
       Toast.show({ text: 'serial not init' })
     }
 
+  }
+  clearLog(){
+    this.vlog.log.data='';
   }
   testDrop() {
     if (this.serial) {
@@ -179,7 +203,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
     try {
       const test = prompt('Scan Test motor every 5 seconds 1,2,3 or 1-60', '1-60');
       const arr = this.parseMotorInput(test);
-      const t = 7; // ******** too fast it would have an error
+      const t = 10; // ******** too fast it would have an error
       Toast.show({ text: 'scanTestMotor ' + JSON.stringify(arr) });
       arr.forEach(async (slot,i) => {
         setTimeout(() => {

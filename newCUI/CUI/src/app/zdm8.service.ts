@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import crc from 'crc';
 import { SerialServiceService, } from './services/serialservice.service';
 
-import { IResModel,ESerialPortType,ISerialService,EZDM8_COMMAND,EMACHINE_COMMAND ,IlogSerial} from './services/syste.model';
+import { IResModel,ESerialPortType,ISerialService,EZDM8_COMMAND,EMACHINE_COMMAND ,IlogSerial, addLogMessage} from './services/syste.model';
 import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 
 
@@ -17,20 +17,17 @@ export class Zdm8Service  implements ISerialService {
   machineId:string='11111111';
   otp='111111';
   portName = '/dev/ttyS1';
-  braudRate=9600;
-  log: { data: string; };
+  baudRate=9600;
+  log: IlogSerial;
 
   constructor(private serialService: SerialServiceService) { }
   initZDM8(){
     const that = this;
       that.getSerialEvents().subscribe(function (event) {
-        that.log.data +=event+'\n';
           if (event.event === 'dataReceived') {
-            console.log('Received from device:', event);
+            that.addLogMessage(that.log, `Raw data: ${event}`);
+            console.log('zdm service  Received from device:', event);
             // Process MODBUS response in TypeScript
-            if (event.event === 'dataReceived') {
-              that.log.data +=event+'\n';
-            }
           }
         });
   }
@@ -95,14 +92,14 @@ export class Zdm8Service  implements ISerialService {
         }
 
         const x = buff.join('') + check;
-        console.log('Command sent:', x);
+        console.log('zdm service  Command sent:', x);
 
         this.serialService.write(x).then(() => {
-          console.log('Command succeeded:', x);
+          console.log('zdm service  Command succeeded:', x);
           params.x=x;
           resolve({ command, data:params, message: 'Command sent successfully' }as IResModel);
         }).catch(e => {
-          console.error('Command failed:', e);
+          console.log('zdm service  Command failed:', e);
           reject({ command, params, result: e.message });
         });
 
@@ -161,12 +158,24 @@ export class Zdm8Service  implements ISerialService {
     const x = buff.join('') + this.serialService.checkSumCRC(buff);
     return x;
   }
-  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial,machineId:string,otp:string, isNative=ESerialPortType.Serial): Promise<void> {
-    this.machineId=machineId;
-    this.otp=otp;
-    this.log = log ;
+  initializeSerialPort(portName: string, baudRate: number, log: IlogSerial,machineId:string,otp:string, isNative=ESerialPortType.Serial): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+      this.machineId = machineId;
+      this.otp = otp;
+      this.portName = portName || this.portName;
+      this.baudRate = baudRate || this.baudRate;
+      this.log = log;
 
-    return this.serialService.initializeSerialPort(portName||this.portName, baudRate||this.braudRate, this.log, isNative).then(()=>this.initZDM8());
+
+      const init =await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      if(init==this.portName){
+      this.initZDM8();
+      resolve(init);
+      }
+      else  reject(init);
+
+    });
+ 
   }
   getSerialEvents(){
     return this.serialService.getSerialEvents();
@@ -178,5 +187,7 @@ export class Zdm8Service  implements ISerialService {
   public async listPorts(): Promise<SerialPortListResult> { 
     return await this.serialService.listPorts();
    }
-
+  private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
+    addLogMessage(log, message, consoleMessage);
+  }
 }

@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
-import { EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
-import {Buffer} from 'buffer';
-
-
+import * as moment from 'moment'; // Add moment import
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +12,7 @@ export class MT102Service implements ISerialService {
   machineId = '11111111';
   portName = '/dev/ttyS1';
   baudRate = 9600;
-  log: IlogSerial = { data: '' };
+  log: IlogSerial = { data: '', limit: 50 };
   otp = '111111';
   parity: 'none' = 'none';
   dataBits: 8 = 8;
@@ -25,49 +23,63 @@ export class MT102Service implements ISerialService {
     this.setupListeners();
   }
 
+  private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
+    addLogMessage(log, message, consoleMessage);
+  }
+
   private setupListeners(): void {
     this.m102.on('SERIAL_NUMBER', ({ details }) => {
-      this.log.data += `Serial Number: ${details}\n`;
-      console.log('Serial Number:', details);
+      this.addLogMessage(this.log, `Serial Number: ${details}`);
+      console.log('mt102 service  Serial Number:', details);
     });
     this.m102.on('MOTOR_POLL', ({ details }) => {
-      this.log.data += `Motor Poll: ${details}\n`;
-      console.log('Motor Poll:', details);
+      this.addLogMessage(this.log, `Motor Poll: ${details}`);
+      console.log('mt102 service  Motor Poll:', details);
     });
     this.m102.on('MOTOR_RUN', ({ details }) => {
-      this.log.data += `Motor Run Result: ${details?.[0]}\n`;
-      console.log('Motor Run Result:', details?.[0]);
+      this.addLogMessage(this.log, `Motor Run Result: ${details?.[0]}`);
+      console.log('mt102 service  Motor Run Result:', details?.[0]);
     });
     this.m102.on('TEMPERATURE', ({ details }) => {
-      const temp = (details![1] << 8) | details![0]; // Z1-Z2 as 16-bit signed
-      this.log.data += `Temperature: ${temp / 10} °C\n`;
-      console.log('Temperature:', temp / 10, '°C');
+      const temp = (details![1] << 8) | details![0];
+      this.addLogMessage(this.log, `Temperature: ${temp / 10} °C`);
+      console.log('mt102 service  Temperature:', temp / 10, '°C');
     });
     this.m102.on('SWITCH_OUTPUT', ({ details }) => {
-      this.log.data += `Switch Output: Index ${details![0]}, Result ${details![1]}\n`;
-      console.log('Switch Output:', details);
+      this.addLogMessage(this.log, `Switch Output: Index ${details![0]}, Result ${details![1]}`);
+      console.log('mt102 service  Switch Output:', details);
     });
     this.m102.on('SWITCH_INPUT', ({ details }) => {
-      this.log.data += `Switch Input: ${details}\n`;
-      console.log('Switch Input:', details);
+      this.addLogMessage(this.log, `Switch Input: ${details}`);
+      console.log('mt102 service  Switch Input:', details);
     });
     this.m102.on('ERROR', ({ details }) => {
-      this.log.data += `Error: ${details?.[0]}\n`;
-      console.log('Error:', details?.[0]);
+      this.addLogMessage(this.log, `Error: ${details?.[0]}`);
+      console.log('mt102 service  Error:', details?.[0]);
     });
 
-    // Listen to serial events
     this.getSerialEvents().subscribe((event) => {
       if (event.event === 'dataReceived') {
-        const hexData = Buffer.from(event.data as any).toString('hex').toUpperCase();
-        this.log.data += `Raw data: ${hexData}\n`;
-        console.log('Received:', hexData);
+        const hexData = event.data;
+        this.addLogMessage(this.log, `Raw data: ${hexData}`);
+        console.log('mt102 service  Received:', hexData);
         try {
           this.m102.parseResponse(hexData);
         } catch (error) {
-          this.log.data += `Parse error: ${error.message}\n`;
-          console.error('Parse error:', error);
+          this.addLogMessage(this.log, `Parse error: ${error.message}`);
+          console.log('mt102 service  Parse error:'+JSON.stringify(error) );
         }
+      }
+    });
+  }
+
+  initM102() {
+    const that = this;
+    that.getSerialEvents().subscribe(function (event) {
+      that.addLogMessage(that.log, JSON.stringify(event));
+      if (event.event === 'dataReceived') {
+        console.log('mt102 service  Received from device:', event);
+        // Removed redundant log entry here since it's handled above
       }
     });
   }
@@ -79,14 +91,25 @@ export class MT102Service implements ISerialService {
     machineId: string,
     otp: string,
     isNative: ESerialPortType
-  ): Promise<void> {
-    this.machineId = machineId;
-    this.otp = otp;
-    this.portName = portName || this.portName;
-    this.baudRate = baudRate || this.baudRate;
-    this.log = log ;
+  ): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+      if (this.machineId) {
+        await this.close();
+      }
+      this.machineId = machineId;
+      this.otp = otp;
+      this.portName = portName || this.portName;
+      this.baudRate = baudRate || this.baudRate;
+      this.log = log;
 
-    return this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      if (init === this.portName) {
+        this.initM102();
+        resolve(init);
+      } else {
+        reject(init);
+      }
+    });
   }
 
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
@@ -96,34 +119,44 @@ export class MT102Service implements ISerialService {
         case EMACHINE_COMMAND.POLL:
           m102Command = this.m102.motorPoll();
           break;
-        case EMACHINE_COMMAND.shippingcontrol: // Assuming dispense maps to motorRun
+        case EMACHINE_COMMAND.shippingcontrol:
           const { motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout } = params;
           m102Command = this.m102.motorRun(
             motorIndex || 0,
-            motorType || 3, // Default to 3-wire motor
+            motorType || 3,
             lightCurtainMode || 0,
             overcurrent || 100,
             undercurrent || 50,
             timeout || 70
           );
           break;
-        case EMACHINE_COMMAND.READ_TEMP: // Custom command for temperature
+        case EMACHINE_COMMAND.READ_TEMP:
           m102Command = this.m102.readTemp();
+          break;
+        case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
+          const { switchIndex } = params;
+          m102Command = this.m102.writeDO(switchIndex || 0, 0);
+          break;
+        case EMACHINE_COMMAND.READ_SWITCH_INPUT:
+          m102Command = this.m102.readDI();
+          break;
+        case EMACHINE_COMMAND.SET_ADDRESS:
+          const { newAddress } = params;
+          m102Command = this.m102.setAddress(newAddress || 1);
           break;
         default:
           resolve(PrintSucceeded(command, params, 'unknown command'));
           return;
       }
 
-      this.log.data += `Sending: ${m102Command}\n`;
-      console.log('Sending:', m102Command);
+      this.addLogMessage(this.log, `Sending: ${m102Command}`);
+      console.log('mt102 service  Sending:', m102Command);
       this.serialService.write(m102Command)
         .then(() => {
-          // Response handling is via event listener, resolve with a placeholder
           resolve(PrintSucceeded(command, params, 'Command sent, awaiting response'));
         })
         .catch((error) => {
-          this.log.data += `Error sending: ${error.message}\n`;
+          this.addLogMessage(this.log, `Error sending: ${error.message}`);
           reject(error);
         });
     });
