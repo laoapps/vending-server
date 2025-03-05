@@ -52,41 +52,69 @@ export class TestmotorPage implements OnInit, OnDestroy {
     // Show toast message
     Toast.show({ text: `Selected platform: ${this.isSerial}` });
   }
-  connect() {
+  connecting =false;
+  async connect() {
 
+    if (this.connecting) {
+      return Toast.show({ text: 'Connecting' });
+    }
     if (this.selectedDevice == 'VMC') {
       this.baudRate=57600;
-      this.startVMC();
+      await this.startVMC();
       Toast.show({ text: 'Start VMC' });
     }
     else if (this.selectedDevice == 'ZDM8') {
-      this.startZDM8();
+      await this.startZDM8();
       Toast.show({ text: 'Start ZDM8' });
     }
     else if (this.selectedDevice == 'Tp77p') {
-      this.satrtTp77p();
+      await this.satrtTp77p();
       Toast.show({ text: 'Start Tp77p3b' });
     }
     else if (this.selectedDevice == 'essp') {
-      this.startEssp();
+      await this.startEssp();
       Toast.show({ text: 'Start essp' });
     }
     else if (this.selectedDevice == 'cctalk') {
-      this.startCctalk();
+      await this.startCctalk();
       Toast.show({ text: 'Start essp' });
     }
     else if (this.selectedDevice == 'adh815') {
-      this.startAHD815();
+      await this.startAHD815();
       Toast.show({ text: 'Start adh815' });
     }
     else if (this.selectedDevice == 'm102') {
-      this.startM102();
+      await  this.startM102();
       Toast.show({ text: 'Start m102' });
     }
     else {
       Toast.show({ text: 'Please select device' })
     }
-
+    this.connecting = false;
+  }
+  disableCashin(){
+    if (this.serial&&this.selectedDevice=='VMC') {
+      this.serial.command(EMACHINE_COMMAND.DISABLE, {enable:false}, 1).then(async (r) => {
+        console.log('disablecashin', r);
+        this.val = r?.data?.x;
+        await Toast.show({ text: 'disablecashin' + JSON.stringify(r) })
+      });
+    } else {
+      console.log('serial not init');
+      Toast.show({ text: 'serial not init' })
+    }
+  }
+  enableCashin(){
+    if (this.serial&&this.selectedDevice=='VMC') {
+      this.serial.command(EMACHINE_COMMAND.ENABLE, {enable:true}, 1).then(async (r) => {
+        console.log('disablecashin', r);
+        this.val = r?.data?.x;
+        await Toast.show({ text: 'disablecashin' + JSON.stringify(r) })
+      });
+    } else {
+      console.log('serial not init');
+      Toast.show({ text: 'serial not init' })
+    }
   }
   selectDevice(event) {
     console.log('selected device', event.detail.value);

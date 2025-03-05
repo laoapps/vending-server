@@ -33,6 +33,8 @@
   <ion-label>Data Checksum</ion-label>
   <ion-textarea style="width: 100%; height: 500px;" [(ngModel)]="datachecksum"></ion-textarea>
   <hr/>
+  <ion-button (click)="disableCashin()">Disable</ion-button> 
+  <ion-button (click)="enableCashin()">Enable</ion-button> 
   <ion-button (click)="initDirectSerial()">Initi Direct service</ion-button> 
   <ion-button (click)="directCommand()">Direct Command</ion-button>  
   <ion-button (click)="closeDirectCommand()">Close Direct Command</ion-button>  

@@ -2,26 +2,23 @@ import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
-import * as moment from 'moment'; // Add moment import
 
 @Injectable({
   providedIn: 'root'
 })
 export class MT102Service implements ISerialService {
   private m102: M102Protocol;
-  machineId = '11111111';
-  portName = '/dev/ttyS1';
-  baudRate = 9600;
-  log: IlogSerial = { data: '', limit: 50 };
-  otp = '111111';
-  parity: 'none' = 'none';
-  dataBits: 8 = 8;
-  stopBits: 1 = 1;
-
-  constructor(private serialService: SerialServiceService) {
-    this.m102 = new M102Protocol(1); // Default slave address 1
-    this.setupListeners();
-  }
+  private machineId = '11111111';
+  private portName = '/dev/ttyS1';
+  private baudRate = 9600;
+  public log: IlogSerial = { data: '', limit: 50 };
+  private otp = '111111';
+  private parity: 'none' = 'none';
+  private dataBits: 8 = 8;
+  private stopBits: 1 = 1;
+  private totalValue = 0; // Optional: for tracking if MT102 reports values
+  machinestatus = {data:''};
+  constructor(private serialService: SerialServiceService) {}
 
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
@@ -29,59 +26,69 @@ export class MT102Service implements ISerialService {
 
   private setupListeners(): void {
     this.m102.on('SERIAL_NUMBER', ({ details }) => {
-      this.addLogMessage(this.log, `Serial Number: ${details}`);
-      console.log('mt102 service  Serial Number:', details);
+      this.addLogMessage(this.log, `Serial Number: ${this.formatHexArray(details)}`);
     });
     this.m102.on('MOTOR_POLL', ({ details }) => {
-      this.addLogMessage(this.log, `Motor Poll: ${details}`);
-      console.log('mt102 service  Motor Poll:', details);
+      this.addLogMessage(this.log, `Motor Poll: ${this.formatHexArray(details)}`);
     });
     this.m102.on('MOTOR_RUN', ({ details }) => {
-      this.addLogMessage(this.log, `Motor Run Result: ${details?.[0]}`);
-      console.log('mt102 service  Motor Run Result:', details?.[0]);
+      const result = details?.[0] === 0 ? 'Success' : `Error ${details?.[0]}`;
+      this.addLogMessage(this.log, `Motor Run Result: ${result}`);
     });
     this.m102.on('TEMPERATURE', ({ details }) => {
       const temp = (details![1] << 8) | details![0];
       this.addLogMessage(this.log, `Temperature: ${temp / 10} °C`);
-      console.log('mt102 service  Temperature:', temp / 10, '°C');
     });
     this.m102.on('SWITCH_OUTPUT', ({ details }) => {
       this.addLogMessage(this.log, `Switch Output: Index ${details![0]}, Result ${details![1]}`);
-      console.log('mt102 service  Switch Output:', details);
     });
     this.m102.on('SWITCH_INPUT', ({ details }) => {
-      this.addLogMessage(this.log, `Switch Input: ${details}`);
-      console.log('mt102 service  Switch Input:', details);
+      this.addLogMessage(this.log, `Switch Input: ${this.formatHexArray(details)}`);
+    });
+    this.m102.on('ADDRESS_SET', ({ details }) => {
+      this.addLogMessage(this.log, `Address Set: ${details![0]}`);
     });
     this.m102.on('ERROR', ({ details }) => {
-      this.addLogMessage(this.log, `Error: ${details?.[0]}`);
-      console.log('mt102 service  Error:', details?.[0]);
+      this.addLogMessage(this.log, `Error: Code ${details?.[0]}`);
     });
 
     this.getSerialEvents().subscribe((event) => {
       if (event.event === 'dataReceived') {
         const hexData = event.data;
         this.addLogMessage(this.log, `Raw data: ${hexData}`);
-        console.log('mt102 service  Received:', hexData);
         try {
           this.m102.parseResponse(hexData);
         } catch (error) {
           this.addLogMessage(this.log, `Parse error: ${error.message}`);
-          console.log('mt102 service  Parse error:'+JSON.stringify(error) );
         }
+      } else if (event.event === 'serialOpened') {
+        this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
+        this.setupDevice().catch(err => {
+          this.addLogMessage(this.log, `Setup failed: ${err.message}`);
+        });
       }
     });
   }
 
-  initM102() {
-    const that = this;
-    that.getSerialEvents().subscribe(function (event) {
-      that.addLogMessage(that.log, JSON.stringify(event));
-      if (event.event === 'dataReceived') {
-        console.log('mt102 service  Received from device:', event);
-        // Removed redundant log entry here since it's handled above
-      }
-    });
+  private formatHexArray(data: number[]): string {
+    return data.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+  }
+
+  private initM102(slaveAddress: number = 1): void {
+    this.m102 = new M102Protocol(slaveAddress);
+    this.setupListeners();
+  }
+
+  private async setupDevice(): Promise<void> {
+    try {
+      const serialNumberPacket = this.m102.getSerialNumber();
+      await this.serialService.write(serialNumberPacket);
+      this.addLogMessage(this.log, 'MT102 setup complete');
+    } catch (err) {
+      this.addLogMessage(this.log, `Setup error: ${err.message}`);
+      return new Promise<void>((resolve, reject) => reject(err));
+    }
+    return new Promise<void>((resolve) => resolve());
   }
 
   initializeSerialPort(
@@ -93,9 +100,6 @@ export class MT102Service implements ISerialService {
     isNative: ESerialPortType
   ): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
-      if (this.machineId) {
-        await this.close();
-      }
       this.machineId = machineId;
       this.otp = otp;
       this.portName = portName || this.portName;
@@ -103,8 +107,10 @@ export class MT102Service implements ISerialService {
       this.log = log;
 
       const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      this.serialService.startReading();
+
       if (init === this.portName) {
-        this.initM102();
+        this.initM102(); // Default slave address 1
         resolve(init);
       } else {
         reject(init);
@@ -113,52 +119,55 @@ export class MT102Service implements ISerialService {
   }
 
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
-    return new Promise<IResModel>((resolve, reject) => {
-      let m102Command: string;
-      switch (command) {
-        case EMACHINE_COMMAND.POLL:
-          m102Command = this.m102.motorPoll();
-          break;
-        case EMACHINE_COMMAND.shippingcontrol:
-          const { motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout } = params;
-          m102Command = this.m102.motorRun(
-            motorIndex || 0,
-            motorType || 3,
-            lightCurtainMode || 0,
-            overcurrent || 100,
-            undercurrent || 50,
-            timeout || 70
-          );
-          break;
-        case EMACHINE_COMMAND.READ_TEMP:
-          m102Command = this.m102.readTemp();
-          break;
-        case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
-          const { switchIndex } = params;
-          m102Command = this.m102.writeDO(switchIndex || 0, 0);
-          break;
-        case EMACHINE_COMMAND.READ_SWITCH_INPUT:
-          m102Command = this.m102.readDI();
-          break;
-        case EMACHINE_COMMAND.SET_ADDRESS:
-          const { newAddress } = params;
-          m102Command = this.m102.setAddress(newAddress || 1);
-          break;
-        default:
-          resolve(PrintSucceeded(command, params, 'unknown command'));
-          return;
+    return new Promise<IResModel>(async (resolve, reject) => {
+      if (!this.m102) {
+        reject(new Error('MT102 protocol not initialized'));
+        return;
       }
 
-      this.addLogMessage(this.log, `Sending: ${m102Command}`);
-      console.log('mt102 service  Sending:', m102Command);
-      this.serialService.write(m102Command)
-        .then(() => {
-          resolve(PrintSucceeded(command, params, 'Command sent, awaiting response'));
-        })
-        .catch((error) => {
-          this.addLogMessage(this.log, `Error sending: ${error.message}`);
-          reject(error);
-        });
+      try {
+        let m102Command: string;
+        switch (command) {
+          case EMACHINE_COMMAND.POLL:
+            m102Command = this.m102.motorPoll();
+            break;
+          case EMACHINE_COMMAND.START_MOTOR: // Renamed for clarity
+            const { motorIndex = 0, motorType = 3, lightCurtainMode = 0, overcurrent = 100, undercurrent = 50, timeout = 70 } = params || {};
+            m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
+            break;
+          case EMACHINE_COMMAND.READ_TEMP:
+            m102Command = this.m102.readTemp();
+            break;
+          case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
+            const { switchIndex = 0 } = params || {};
+            m102Command = this.m102.writeDO(switchIndex, 0); // Read by setting operation to 0
+            break;
+          case EMACHINE_COMMAND.READ_SWITCH_INPUT:
+            m102Command = this.m102.readDI();
+            break;
+          case EMACHINE_COMMAND.SET_ADDRESS:
+            const { newAddress = 1 } = params || {};
+            m102Command = this.m102.setAddress(newAddress);
+            break;
+          case EMACHINE_COMMAND.RESET:
+            this.totalValue = 0;
+            resolve(PrintSucceeded(command, {}, 'reset'));
+            return;
+          case EMACHINE_COMMAND.READ_EVENTS:
+            resolve(PrintSucceeded(command, { totalValue: this.totalValue }, 'read events'));
+            return;
+          default:
+            resolve(PrintSucceeded(command, params, 'unknown command'));
+            return;
+        }
+
+        this.addLogMessage(this.log, `Sending: ${m102Command}`);
+        await this.serialService.write(m102Command);
+        resolve(PrintSucceeded(command, params, 'Command sent, awaiting response'));
+      } catch (error) {
+        this.addLogMessage(this.log, `Error sending: ${error.message}`);
+        reject(error);
+      }
     });
   }
 
@@ -175,7 +184,7 @@ export class MT102Service implements ISerialService {
   }
 
   public async listPorts(): Promise<SerialPortListResult> {
-    return await this.serialService.listPorts();
+    return  this.serialService.listPorts();
   }
 }
 
@@ -210,7 +219,7 @@ class M102Protocol {
       crc ^= byte;
       for (let i = 0; i < 8; i++) {
         if (crc & 0x0001) {
-          crc = (crc >> 1) ^ 0x8408;
+          crc = (crc >> 1) ^ 0x8408; // Polynomial used in original code
         } else {
           crc >>= 1;
         }
@@ -243,19 +252,19 @@ class M102Protocol {
   public parseResponse(hexString: string): { instruction: number; data: number[] } {
     const matches = hexString.match(/.{1,2}/g);
     if (!matches || matches.length !== 20) {
-      this.emit('ERROR', [0x01]);
+      this.emit('ERROR', [0x01]); // Invalid length
       throw new Error('Response must be 20 bytes');
     }
     const packet = new Uint8Array(matches.map(byte => parseInt(byte, 16)));
     if (packet[0] !== this.hostAddress) {
-      this.emit('ERROR', [0x02]);
+      this.emit('ERROR', [0x02]); // Invalid host address
       throw new Error('Invalid host address');
     }
 
     const crcData = packet.slice(0, 18);
     const crc = (packet[19] << 8) | packet[18];
     if (this.calculateCrc16(crcData) !== crc) {
-      this.emit('ERROR', [0x03]);
+      this.emit('ERROR', [0x03]); // CRC mismatch
       throw new Error('CRC mismatch');
     }
 
@@ -292,7 +301,7 @@ class M102Protocol {
         this.emit('ADDRESS_SET', [data[0]]);
         break;
       default:
-        this.emit('ERROR', [instruction]);
+        this.emit('ERROR', [instruction]); // Unknown instruction
         break;
     }
   }
@@ -336,6 +345,6 @@ class M102Protocol {
   public setAddress(newAddress: number): string {
     if (newAddress < 1 || newAddress > 8) throw new Error('New address must be 1-8');
     const packet = this.buildPacket(0xFF, [newAddress]);
-    return 'FF' + packet.slice(2);
+    return 'FF' + packet.slice(2); // Special case for broadcast address
   }
 }

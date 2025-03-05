@@ -563,6 +563,12 @@ export enum EMACHINE_COMMAND {
   READ_SWITCH_OUTPUT = "READ_SWITCH_OUTPUT",
   READ_SWITCH_INPUT = "READ_SWITCH_INPUT",
   SET_ADDRESS = "SET_ADDRESS",
+  SET_PULSE_COUNT = "SET_PULSE_COUNT",
+  REJECT = "REJECT",
+  START_MOTOR = "START_MOTOR",
+  SET_TEMP = "SET_TEMP",
+  CLEAR_RESULT = "CLEAR_RESULT",
+  ERROR = "ERROR",
 
 
 }
@@ -623,12 +629,14 @@ import {  SerialPortListResult } from 'SerialConnectionCapacitor';
 
 export interface ISerialService{
     log:IlogSerial;
+    machinestatus:{data:string};//machine status send to server and local : fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
     initializeSerialPort(portName: string, baudRate: number, log:IlogSerial,machineId:string,otp:string,isNative:ESerialPortType): Promise<string>;
     getSerialEvents():any;
     command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
     close(): Promise<void>;
     listPorts(): Promise<SerialPortListResult>;
     checkSum(data?: any[]): string;
+
   }
 
 export interface IResModel {

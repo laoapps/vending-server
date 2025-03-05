@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
+import { promise } from 'protractor';
 
 @Injectable({
   providedIn: 'root',
@@ -42,10 +43,15 @@ export class DatabaseService {
       const jsonData = JSON.stringify(data); // Convert object to JSON string
       const query = `INSERT INTO items (name, data,transactionID, description) VALUES (?, ?, ?);`;
       const result = await this.db!.run(query, [name, jsonData, description]);
-      return result.changes?.lastId || -1; // Return the auto-generated ID
+      return new Promise((resolve, reject) => {
+        resolve(result.changes?.lastId || -1);
+      });
     } catch (e) {
       console.error('Error creating item:', e);
-      return -1;
+     return new Promise((resolve, reject) => {
+        reject(e);
+      }
+      );
     }
   }
 
@@ -54,18 +60,23 @@ export class DatabaseService {
     try {
       const query = `SELECT * FROM items;`;
       const result = await this.db!.query(query);
-      return (result.values || []).map(item => ({
-        id: item.id,
-        name: item.name,
-        data: JSON.parse(item.data), // Parse JSON back to object
-        transactionID: item.transactionID,
-        description: item.description,
-      }));
+      return new Promise((resolve, reject) => {
+        resolve((result.values || []).map(item => ({
+          id: item.id,
+          name: item.name,
+          data: JSON.parse(item.data), // Parse JSON back to object
+          transactionID: item.transactionID,
+          description: item.description,
+        })));
+      });
     } catch (e) {
       console.error('Error reading items:', e);
-      return [];
+      return new Promise((resolve, reject) => {
+        reject(e);
+      });
     }
   }
+      
 
   // Read a single item by ID
   async getItemById(id: number): Promise<any> {
@@ -74,18 +85,25 @@ export class DatabaseService {
       const result = await this.db!.query(query, [id]);
       if (result.values && result.values.length > 0) {
         const item = result.values[0];
-        return {
-          id: item.id,
-          name: item.name,
-          data: JSON.parse(item.data), // Parse JSON back to object
-          transactionID: item.transactionID,
-          description: item.description,
-        };
+        return new Promise((resolve, reject) => {
+          resolve({
+            id: item.id,
+            name: item.name,
+            data: JSON.parse(item.data), // Parse JSON back to object
+            transactionID: item.transactionID,
+            description: item.description,
+          });
+        });
       }
-      return null;
+      return new Promise((resolve, reject) => {
+        resolve(null);
+      });
     } catch (e) {
       console.error('Error reading item:', e);
-      return null;
+      return new Promise((resolve, reject) => {
+        reject(null);
+      }
+      );
     }
   }
 
@@ -95,10 +113,14 @@ export class DatabaseService {
       const jsonData = JSON.stringify(data); // Convert object to JSON string
       const query = `UPDATE items SET name = ?, data = ?,transactionID = ?, description = ? WHERE id = ?;`;
       const result = await this.db!.run(query, [name, jsonData,transactionID, description, id]);
-      return result.changes?.changes! > 0;
+      return new Promise((resolve, reject) => {
+        resolve(result.changes?.changes! > 0);
+      });
     } catch (e) {
       console.error('Error updating item:', e);
-      return false;
+      return new Promise((resolve, reject) => {
+        reject(false);
+      });
     }
   }
 
@@ -107,10 +129,14 @@ export class DatabaseService {
     try {
       const query = `DELETE FROM items WHERE id = ?;`;
       const result = await this.db!.run(query, [id]);
-      return result.changes?.changes! > 0;
+      return new Promise((resolve, reject) => {
+        resolve(result.changes?.changes! > 0);
+      });
     } catch (e) {
       console.error('Error deleting item:', e);
-      return false;
+      return new Promise((resolve, reject) => {
+        reject(false);
+      });
     }
   }
 

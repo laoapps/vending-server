@@ -1,39 +1,34 @@
 import { Injectable } from '@angular/core';
-import { EventEmitter } from 'events';
 import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialServiceService } from './services/serialservice.service';
-import * as moment from 'moment'; // Add moment import
-
+/// FOR RS485 only 
 @Injectable({
     providedIn: 'root'
 })
 export class ADH815Service implements ISerialService {
-    lastPulseTime = Date.now();
-    pulsesPerBill = 15;
-    totalValue = 0;
-    pulseTimeout = 1000;
     machineId = '11111111';
     portName = '/dev/ttyS1';
-    baudRate = 9600;
+    baudRate = 9600; // Typical RS485 baud rate, adjust if specified
     log: IlogSerial = { data: '', limit: 50 };
     otp = '111111';
     parity: 'none' = 'none';
     dataBits: 8 = 8;
     stopBits: 1 = 1;
     private adh815: ADH815Protocol;
-    private T: NodeJS.Timeout;
-
+    private totalValue = 0; // Optional: track value if bill validator functionality is intended
+    machinestatus = {data:''};
     constructor(private serialService: SerialServiceService) { }
 
     private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
-       addLogMessage(log, message, consoleMessage);
+        addLogMessage(log, message, consoleMessage);
     }
 
     private initADH815(): void {
         const portAdapter: CommunicationPort = {
             send: async (data: string) => {
                 await this.serialService.write(data);
+                this.addLogMessage(this.log, `Sent: ${data}`);
             },
             on: (event: 'data', listener: (data: Uint8Array) => void) => {
                 this.serialService.getSerialEvents().subscribe((serialEvent) => {
@@ -55,9 +50,30 @@ export class ADH815Service implements ISerialService {
             if (event.event === 'dataReceived') {
                 const hexData = event.data;
                 this.addLogMessage(this.log, `Raw data: ${hexData}`);
-                console.log('adh815 service  Received from device:', hexData);
+            } else if (event.event === 'serialOpened') {
+                this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
+                this.setupDevice().catch(err => {
+                    this.addLogMessage(this.log, `Setup failed: ${err.message}`);
+                });
             }
         });
+    }
+
+    private async setupDevice(): Promise<void> {
+        try {
+            const idResponse = await this.adh815.requestID(0x02); // Example slave address 2
+            this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
+            // Additional setup (e.g., enable bill acceptance) can be added if specified
+            this.addLogMessage(this.log, 'ADH815 setup complete');
+            return new Promise((resolve) => {
+                resolve();
+            });
+        } catch (err) {
+            this.addLogMessage(this.log, `Setup error: ${err.message}`);
+            return new Promise((resolve, reject) => {
+                reject(err);
+            });
+        }
     }
 
     initializeSerialPort(
@@ -75,10 +91,11 @@ export class ADH815Service implements ISerialService {
             this.baudRate = baudRate || this.baudRate;
             this.log = log;
 
-            if (this.T) clearInterval(this.T);
             if (this.adh815) this.adh815.dispose();
 
             const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      this.serialService.startReading();
+
             if (init === this.portName) {
                 this.initADH815();
                 resolve(init);
@@ -98,8 +115,8 @@ export class ADH815Service implements ISerialService {
             const onResponse = (response: IADH815) => {
                 const result: IResModel = {
                     command,
-                    data: params,
-                    status: response.data[0] === 0 ? 1 : 0,
+                    data: { response },
+                    status: response.data[0] === 0 ? 1 : 0, // Assuming 0 means success
                     message: `Command 0x${response.command.toString(16)} executed`,
                     transactionID
                 };
@@ -111,11 +128,24 @@ export class ADH815Service implements ISerialService {
             };
 
             switch (command) {
-                case EMACHINE_COMMAND.temp:
-                    this.adh815.setTemperature(0x02, 0x01, 0x0008, onResponse).catch(onError);
+                case EMACHINE_COMMAND.SET_TEMP: // Renamed for clarity
+                    const { mode = 0x00, tempValue = 0x0008, address = 0x02 } = params || {};
+                    this.adh815.setTemperature(address, mode, tempValue, onResponse).catch(onError);
                     break;
-                case EMACHINE_COMMAND.shippingcontrol:
-                    this.adh815.startMotor(0x01, 0x00, onResponse).catch(onError);
+                case EMACHINE_COMMAND.START_MOTOR: // Renamed for clarity
+                    const { motorNumber = 0x00, address: motorAddress = 0x01 } = params || {};
+                    this.adh815.startMotor(motorAddress, motorNumber, onResponse).catch(onError);
+                    break;
+                case EMACHINE_COMMAND.CLEAR_RESULT:
+                    const { motor1 = 0x00, motor2 = 0x01, clearAddress = 0x01 } = params || {};
+                    this.adh815.clearResult(clearAddress, motor1, motor2, onResponse).catch(onError);
+                    break;
+                case EMACHINE_COMMAND.RESET:
+                    this.totalValue = 0;
+                    resolve(PrintSucceeded(command, {}, 'reset'));
+                    break;
+                case EMACHINE_COMMAND.READ_EVENTS:
+                    resolve(PrintSucceeded(command, { totalValue: this.totalValue }, 'read events'));
                     break;
                 default:
                     resolve(PrintSucceeded(command, params, 'unknown command'));
@@ -132,17 +162,16 @@ export class ADH815Service implements ISerialService {
     }
 
     close(): Promise<void> {
-        if (this.T) clearInterval(this.T);
         if (this.adh815) this.adh815.dispose();
         return this.serialService.close();
     }
 
     public async listPorts(): Promise<SerialPortListResult> {
-        return await this.serialService.listPorts();
+        return  this.serialService.listPorts();
     }
 }
 
-// Interface for a generic protocol message
+// Interface for ADH815 protocol message
 interface IADH815 {
     address: number;
     command: number;
@@ -163,7 +192,7 @@ function calculateCRC16(data: number[]): number {
             if (lsb) crc ^= polynomial;
         }
     }
-    return ((crc >> 8) & 0xFF) | ((crc << 8) & 0xFF00);
+    return ((crc >> 8) & 0xFF) | ((crc << 8) & 0xFF00); // Byte swap as per example
 }
 
 // Utility to convert Uint8Array to hex string
@@ -173,14 +202,13 @@ function toHexString(data: Uint8Array): string {
         .join('');
 }
 
-// CommunicationPort interface adapted for hex string output
+// CommunicationPort interface
 interface CommunicationPort {
     send(data: string): Promise<void>;
     on(event: 'data', listener: (data: Uint8Array) => void): void;
     off(event: 'data', listener: (data: Uint8Array) => void): void;
 }
 
-// Protocol class with listener support
 class ADH815Protocol {
     private port: CommunicationPort;
     private responseListeners: Map<number, (response: IADH815) => void>;
@@ -204,16 +232,16 @@ class ADH815Protocol {
                     console.warn(`No listener for command: 0x${command.toString(16)}`);
                 }
             } catch (error) {
-                console.log('adh815 service  adh815 service  Error parsing response:', error);
+                console.log('ADH815 Error parsing response:', error);
             }
         });
     }
 
-    async sendRequest(request: Uint8Array, onResponse: (response: IADH815) => void): Promise<void> {
+    private async sendRequest(request: Uint8Array, onResponse: (response: IADH815) => void): Promise<void> {
         const command = request[1];
         this.responseListeners.set(command, onResponse);
         const hexRequest = toHexString(request);
-        await this.port.send(hexRequest);
+        return  this.port.send(hexRequest);
     }
 
     private createRequest(address: number, command: number, data: number[]): Uint8Array {
@@ -232,7 +260,7 @@ class ADH815Protocol {
         const calculatedCRC = calculateCRC16(payloadToCheck);
 
         if (receivedCRC !== calculatedCRC) {
-            throw new Error('CRC validation failed');
+            throw new Error(`CRC validation failed: received 0x${receivedCRC.toString(16)}, calculated 0x${calculatedCRC.toString(16)}`);
         }
         return { address, command, data, crc: receivedCRC };
     }
@@ -245,7 +273,7 @@ class ADH815Protocol {
     ): Promise<void> {
         const data = [mode, tempValue & 0xFF, (tempValue >> 8) & 0xFF];
         const request = this.createRequest(address, 0x04, data);
-        await this.sendRequest(request, onResponse);
+        return  this.sendRequest(request, onResponse);
     }
 
     async startMotor(
@@ -255,7 +283,27 @@ class ADH815Protocol {
     ): Promise<void> {
         const data = [motorNumber];
         const request = this.createRequest(address, 0x05, data);
-        await this.sendRequest(request, onResponse);
+        return  this.sendRequest(request, onResponse);
+    }
+
+    async clearResult(
+        address: number,
+        motorNumber1: number,
+        motorNumber2: number,
+        onResponse: (response: IADH815) => void
+    ): Promise<void> {
+        const data = [motorNumber1, motorNumber2];
+        const request = this.createRequest(address, 0x15, data);
+        return  this.sendRequest(request, onResponse);
+    }
+
+    async requestID(
+        address: number
+    ): Promise<IADH815> {
+        return new Promise((resolve, reject) => {
+            const request = this.createRequest(address, 0x01, []);
+            this.sendRequest(request, resolve).catch(reject);
+        });
     }
 
     dispose() {

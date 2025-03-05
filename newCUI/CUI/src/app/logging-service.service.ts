@@ -8,11 +8,11 @@ export class LoggingService {
   private indexFileName = 'log_index.json'; // File to store the list of log files
 
   constructor() {
-    this.initializeIndex();
+    // this.initializeLogging();
   }
 
   // Initialize the index file if it doesn’t exist
-   async initializeIndex() {
+   async initializeLogging() {
     try {
       await Filesystem.stat({
         path: this.indexFileName,
@@ -37,10 +37,15 @@ export class LoggingService {
         directory: Directory.Documents,
         encoding: Encoding.UTF8,
       });
-      return JSON.parse(result.data+'' || '[]');
+      return new Promise((resolve, reject) => {
+        resolve(JSON.parse(result.data+'' || '[]'));
+      });
     } catch (e) {
       console.error('Error reading index:', e);
-      return [];
+      return new Promise((resolve, reject) => {
+        reject('Error reading index');
+      }
+      );
     }
   }
 
@@ -113,10 +118,17 @@ export class LoggingService {
         directory: Directory.Documents,
         encoding: Encoding.UTF8,
       });
-      return result.data+'' || 'No content in this log file';
+      // return result.data+'' || 'No content in this log file';
+      return new Promise((resolve, reject) => {
+        resolve(result.data+'' || 'No content in this log file');
+      });
+
     } catch (e) {
       console.error(`Error reading ${fileName}:`, e);
-      return `Error reading ${fileName}`;
+      // return `Error reading ${fileName}`;
+      return new Promise((resolve, reject) => {
+        reject(`Error reading ${fileName}`);
+      });
     }
   }
 

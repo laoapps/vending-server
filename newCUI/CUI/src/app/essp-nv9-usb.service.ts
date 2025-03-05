@@ -3,7 +3,7 @@ import { SerialServiceService } from './services/serialservice.service';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
 import * as CryptoJS from 'crypto-js';
-import * as moment from 'moment'; // Add this import
+import BigInt from 'big-integer'; // For Diffie-Hellman key exchange
 
 @Injectable({
   providedIn: 'root'
@@ -27,8 +27,8 @@ export class EsspNV9USBService implements ISerialService {
   private creditNotes: { value: number; channel: number }[] = [];
   private channelMap: { [key: number]: number } = {};
   private channels = [1, 1, 1, 1, 1, 1, 1];
-
-  constructor(private serialService: SerialServiceService) { }
+  machinestatus = {data:''};
+  constructor(private serialService: SerialServiceService) {}
 
   async initializeSerialPort(
     portName: string,
@@ -37,6 +37,7 @@ export class EsspNV9USBService implements ISerialService {
     machineId: string,
     otp: string,
     isNative: ESerialPortType
+    
   ): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
       this.machineId = machineId;
@@ -46,6 +47,8 @@ export class EsspNV9USBService implements ISerialService {
       this.log = log;
 
       const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      this.serialService.startReading();
+
       if (init === this.portName) {
         this.initEssp(this.channels);
         resolve(init);
@@ -64,33 +67,44 @@ export class EsspNV9USBService implements ISerialService {
   }
 
   private initEssp(channels = [1, 1, 1, 1, 1, 1, 1]): void {
-    console.log('essp Initializing NV9 USB');
+    console.log('eSSP Initializing NV9 USB');
     this.essp = new EsspProtocol({ id: 0x00, fixedKey: '0123456701234567', timeout: 3000 });
     this.initBankNotes();
-    console.log('essp init bank notes');
 
     this.getSerialEvents().subscribe((event) => {
-      console.log('essp Serial event:', JSON.stringify(event));
       if (event.event === 'dataReceived') {
         const hexData = event.data;
         this.addLogMessage(this.log, `Raw data: ${hexData}`);
-        console.log('essp Received:', hexData);
+        console.log('eSSP Received:', hexData);
         try {
           const response = this.essp.parsePacket(hexData);
           this.handleResponse(response.command, response.data);
         } catch (err) {
           this.addLogMessage(this.log, `Parse error: ${err.message}`, `Stack: ${err.stack}`);
-          console.log('essp Parse error:'+JSON.stringify(err));
+          console.error('eSSP Parse error:', err);
         }
       } else if (event.event === 'serialOpened') {
         this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
         this.setupDevice(channels).catch(err => {
           this.addLogMessage(this.log, `Setup failed: ${err.message}`);
-          console.log('essp Setup failed:', err);
+          console.error('eSSP Setup failed:', err);
         });
       }
     });
 
+    // Register event listeners
+    this.registerEventListeners();
+
+    setInterval(async () => {
+      if (this.transactionID !== -1) {
+        const pollPacket = this.essp.poll();
+        this.addLogMessage(this.log, `Polling with packet: ${pollPacket}`);
+        await this.serialService.write(pollPacket);
+      }
+    }, 1000);
+  }
+
+  private registerEventListeners(): void {
     this.essp.on('CREDIT_NOTE', ({ details }) => {
       const channel = details![0];
       const value = this.getValueFromChannel(channel);
@@ -98,76 +112,46 @@ export class EsspNV9USBService implements ISerialService {
       this.creditValue += value;
       this.creditNotes.push({ value, channel });
       this.addLogMessage(this.log, `CREDIT_NOTE: channel=${channel}, value=${value}, total=${this.creditValue}`);
-      console.log(`CREDIT_NOTE: channel=${channel}, value=${value}, total=${this.creditValue}`);
     });
 
     this.essp.on('READ_NOTE', ({ details }) => {
       this.addLogMessage(this.log, `READ_NOTE: channel=${details![0]}`);
-      console.log(`READ_NOTE: channel=${details![0]}`);
     });
 
     this.essp.on('NOTE_REJECTED', () => {
       this.addLogMessage(this.log, 'NOTE_REJECTED');
-      console.log('essp NOTE_REJECTED');
     });
 
     this.essp.on('JAMMED', () => {
       this.addLogMessage(this.log, 'JAMMED');
-      console.log('essp JAMMED');
     });
 
     this.essp.on('JAM_RECOVERY', () => {
       this.addLogMessage(this.log, 'JAM_RECOVERY');
-      console.log('essp JAM_RECOVERY');
     });
 
     this.essp.on('DISABLED', () => {
       this.addLogMessage(this.log, 'DISABLED');
-      console.log('essp DISABLED');
-    });
-
-    this.essp.on('DISPENSED', () => {
-      this.addLogMessage(this.log, 'DISPENSED');
-      console.log('essp DISPENSED');
     });
 
     this.essp.on('FRAUD_ATTEMPT', ({ details }) => {
       this.addLogMessage(this.log, `FRAUD_ATTEMPT: channel=${details?.[0]}`);
-      console.log(`FRAUD_ATTEMPT: channel=${details?.[0]}`);
     });
 
     this.essp.on('OK', () => {
       this.addLogMessage(this.log, 'OK');
-      console.log('essp OK');
     });
 
     this.essp.on('ERROR', ({ details }) => {
       this.addLogMessage(this.log, `ERROR: code=${details![0].toString(16)}`);
-      console.log(`ERROR: code=${details![0].toString(16)}`);
     });
 
-    console.log('essp set polling');
-    setInterval(async () => {
-      if (this.transactionID !== -1) {
-        const pollPacket = this.essp.poll();
-        this.addLogMessage(this.log, `Polling with packet: ${pollPacket}`);
-        console.log('essp Polling...', pollPacket);
-        await this.serialService.write(pollPacket);
-      }
-    }, 1000);
-
-    this.essp.on('CREDIT_NOTE', ({ details }) => {
-      const channel = details![0];
-      const value = this.getValueFromChannel(channel);
-      this.creditCount++;
-      this.creditValue += value;
-      this.creditNotes.push({ value, channel });
-      this.addLogMessage(this.log, `Credited note, channel: ${channel}, Value: ${value}, Total: ${this.creditValue}`);
-    });
+    // Add more NV9USB-specific events as needed from the protocol manual
   }
 
   private async setupDevice(channels = [1, 1, 1, 1, 1, 1, 1]): Promise<void> {
     try {
+      // Key negotiation using Diffie-Hellman
       const generator = this.hexToBytes('D4E2F63A5B7C1900');
       const modulus = this.hexToBytes('F7A9B3C8D1E4F200');
       const hostIntKey = this.hexToBytes('1234567890ABCDEF');
@@ -176,8 +160,8 @@ export class EsspNV9USBService implements ISerialService {
       await this.serialService.write(this.essp.sync());
       await this.waitForResponse(0xF0, 'SYNC');
 
-      this.logCommand('HOST_PROTOCOL_VERSION', this.essp.hostProtocolVersion(6));
-      await this.serialService.write(this.essp.hostProtocolVersion(6));
+      this.logCommand('HOST_PROTOCOL_VERSION', this.essp.hostProtocolVersion(7)); // Use protocol version 7 for NV9USB
+      await this.serialService.write(this.essp.hostProtocolVersion(7));
       await this.waitForResponse(0xF0, 'HOST_PROTOCOL_VERSION');
 
       this.logCommand('SET_GENERATOR', this.essp.setGenerator(generator));
@@ -190,7 +174,8 @@ export class EsspNV9USBService implements ISerialService {
 
       this.logCommand('REQUEST_KEY_EXCHANGE', this.essp.requestKeyExchange(hostIntKey));
       await this.serialService.write(this.essp.requestKeyExchange(hostIntKey));
-      await this.waitForResponse(0x4C, 'REQUEST_KEY_EXCHANGE');
+      const keyResponse = await this.waitForResponse(0x4C, 'REQUEST_KEY_EXCHANGE');
+      // Key negotiation completed in parsePacket
 
       this.logCommand('GET_SERIAL_NUMBER', this.essp.getSerialNumber());
       await this.serialService.write(this.essp.getSerialNumber());
@@ -213,31 +198,24 @@ export class EsspNV9USBService implements ISerialService {
       await this.waitForResponse(0xF0, 'ENABLE');
 
       this.addLogMessage(this.log, 'NV9 USB setup complete');
-      console.log('essp NV9 USB setup complete');
+      return new Promise<void>(resolve => resolve());
     } catch (err) {
       this.addLogMessage(this.log, `Setup error: ${err.message}`, `Stack: ${err.stack}`);
-      console.log('essp Setup error:', err);
+      return new Promise<void>((resolve, reject) => reject(err));
     }
   }
 
   private logCommand(commandName: string, packet: string): void {
     this.addLogMessage(this.log, `Sending ${commandName}: ${packet}`);
-    console.log(`Sending ${commandName}: ${packet}`);
   }
 
   private hexToBytes(hex: string): number[] {
-    const bytes = [];
-    for (let i = 0; i < hex.length; i += 2) {
-      bytes.push(parseInt(hex.substr(i, 2), 16));
-    }
-    return bytes;
+    return hex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16));
   }
 
   private waitForResponse(expectedCommand: number, commandName: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        this.addLogMessage(this.log, `${commandName} timeout after 1000ms`);
-        console.error(`${commandName} timeout`);
         reject(new Error(`${commandName} timeout`));
       }, 1000);
 
@@ -246,8 +224,6 @@ export class EsspNV9USBService implements ISerialService {
           const hexData = event.data;
           try {
             const response = this.essp.parsePacket(hexData);
-            this.addLogMessage(this.log, `${commandName} response: Command=${response.command.toString(16)}, Data=${response.data.map(d => d.toString(16)).join(' ')}`);
-            console.log(`${commandName} response:`, response);
             if (response.command === expectedCommand) {
               clearTimeout(timeout);
               sub.unsubscribe();
@@ -270,26 +246,17 @@ export class EsspNV9USBService implements ISerialService {
       case 0x20: // SERIAL_NUMBER
         const sn = data.reduce((acc, byte, i) => acc + (byte << (i * 8)), 0);
         this.addLogMessage(this.log, `Serial Number: ${sn}`);
-        console.log(`Serial Number: ${sn}`);
         break;
       case 0x05: // SETUP_REQUEST
-        this.addLogMessage(this.log, 'Command SETUP_REQUEST');
         this.parseSetupRequest(data);
         break;
       case 0x07: // POLL
-        this.addLogMessage(this.log, 'Command POLL');
-        break;
+        break; // Handled by processPollResponse
       case 0xF0: // OK
-        this.addLogMessage(this.log, 'Command OK');
-        break;
+        break; // Handled by event
       case 0x4C: // REQUEST_KEY_EXCHANGE
-        try {
-          this.essp.key = new Uint8Array([...this.essp.fixedKey, ...data]);
-          this.addLogMessage(this.log, 'Encryption key set');
-        } catch (error) {
-          console.log('essp Error concatenating key:', error.message);
-          this.addLogMessage(this.log, `Error concatenating key: ${error.message}`);
-        }
+        this.essp.completeKeyNegotiation(data);
+        this.addLogMessage(this.log, 'Encryption key negotiated');
         break;
       default:
         this.addLogMessage(this.log, `Unhandled command: ${command.toString(16)}`);
@@ -304,7 +271,6 @@ export class EsspNV9USBService implements ISerialService {
       this.channelMap[i + 1] = value * valueMultiplier;
     });
     this.addLogMessage(this.log, `Setup: Channels=${JSON.stringify(this.channelMap)}`);
-    console.log('essp Setup:', this.channelMap);
   }
 
   private initBankNotes(): void {
@@ -337,12 +303,10 @@ export class EsspNV9USBService implements ISerialService {
     if (this.tCounter) clearInterval(this.tCounter);
     this.tCounter = setInterval(() => {
       this.counter--;
-      this.addLogMessage(this.log, `Counter: ${this.counter}`);
       if (this.counter <= 0) {
         clearInterval(this.tCounter);
         this.transactionID = -1;
         this.serialService.write(this.essp.disable());
-        this.addLogMessage(this.log, 'Transaction timed out, disabled');
       }
     }, 1000);
   }
@@ -412,42 +376,58 @@ export class EsspNV9USBService implements ISerialService {
   }
 
   async listPorts(): Promise<SerialPortListResult> {
-    return await this.serialService.listPorts();
+    return  this.serialService.listPorts();
   }
 }
-
-// Rest of the code (EsspProtocol class) remains unchanged
 
 type EsspEvent =
   | 'JAM_RECOVERY'
   | 'DISABLED'
-  | 'DISPENSED'
   | 'JAMMED'
   | 'CREDIT_NOTE'
   | 'READ_NOTE'
   | 'OK'
   | 'ERROR'
   | 'NOTE_REJECTED'
-  | 'FRAUD_ATTEMPT';
+  | 'FRAUD_ATTEMPT'
+  | 'STACKING'
+  | 'STACKED'
+  | 'REJECTING'
+  | 'REJECTED'
+  | 'SAFE_JAM'
+  | 'UNSAFE_JAM'
+  | 'STACKER_FULL'
+  | 'NOTE_CLEARED_FROM_FRONT'
+  | 'NOTE_CLEARED_TO_CASHBOX'
+  | 'CASHBOX_REMOVED'
+  | 'CASHBOX_REPLACED'
+  | 'NOTE_PATH_OPEN'
+  | 'CHANNEL_DISABLE';
 
 type ListenerCallback = (data: { event: EsspEvent; details?: number[] }) => void;
 
 class EsspProtocol {
   private sequenceCounter: number = 0;
   private id: number;
-  public fixedKey: Uint8Array | null;
+  public fixedKey: Uint8Array;
   private timeout: number;
   public key: Uint8Array | null = null;
+  private encryptCounter: number = 0;
+  private generator: BigInt.BigInteger;
+  private modulus: BigInt.BigInteger;
+  private hostInter: BigInt.BigInteger;
 
   private listeners: Map<EsspEvent, ListenerCallback[]> = new Map();
 
-  private channelMap: { [key: number]: number } = {};
   constructor(options: { id?: number; fixedKey?: string; timeout?: number } = {}) {
     this.id = options.id ?? 0x00;
     this.fixedKey = options.fixedKey
       ? new Uint8Array(options.fixedKey.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)))
-      : null;
+      : new Uint8Array([0x01, 0x23, 0x45, 0x67, 0x01, 0x23, 0x45, 0x67]);
     this.timeout = options.timeout ?? 3000;
+    this.generator = BigInt(0);
+    this.modulus = BigInt(0);
+    this.hostInter = BigInt(0);
   }
 
   private calculateCrc16(data: Uint8Array): number {
@@ -471,70 +451,83 @@ class EsspProtocol {
       .join('');
   }
 
+  private padTo16Bytes(data: Uint8Array): Uint8Array {
+    const paddingLength = 16 - (data.length % 16);
+    const padded = new Uint8Array(data.length + (paddingLength === 16 ? 0 : paddingLength));
+    padded.set(data);
+    for (let i = data.length; i < padded.length; i++) padded[i] = Math.floor(Math.random() * 256);
+    return padded;
+  }
+
   public buildPacket(command: number, data: number[] = []): string {
     const length = data.length + 1;
-    const packet = new Uint8Array(5 + data.length);
-    packet[0] = 0x7F;
-    packet[1] = 0x80 | (this.sequenceCounter & 0x7F);
-    packet[2] = length;
-    packet[3] = command;
-    packet.set(data, 4);
-    const crcData = packet.slice(1, 4 + data.length);
-    const crc = this.calculateCrc16(crcData);
-    packet[4 + data.length] = crc & 0xFF;
-    packet[5 + data.length] = (crc >> 8) & 0xFF;
-  
-    console.log(`Building packet: Command=${command.toString(16)}, Data=${data.map(d => d.toString(16)).join(' ')}`);
-    let result = packet;
+    const seqId = (this.sequenceCounter << 7) | this.id;
+    const packetBody = new Uint8Array(2 + length);
+    packetBody[0] = seqId;
+    packetBody[1] = length;
+    packetBody[2] = command;
+    packetBody.set(data, 3);
+
+    let result: Uint8Array;
     if (this.key && this.isEncryptionEnabled(command)) {
-      const plaintext = packet.slice(1, -2);
-      const padded = this.padTo16Bytes(plaintext);
-      console.log(`Encrypting: Plaintext=${this.toHexString(padded)}`);
+      const counterBytes = new Uint8Array(4);
+      counterBytes[0] = this.encryptCounter & 0xFF;
+      counterBytes[1] = (this.encryptCounter >> 8) & 0xFF;
+      counterBytes[2] = (this.encryptCounter >> 16) & 0xFF;
+      counterBytes[3] = (this.encryptCounter >> 24) & 0xFF;
+      const plainText = new Uint8Array([0x7E, length + 4, ...counterBytes, command, ...data]);
+      const padded = this.padTo16Bytes(plainText);
       const encrypted = CryptoJS.AES.encrypt(
         CryptoJS.lib.WordArray.create(padded),
         CryptoJS.enc.Hex.parse(this.toHexString(this.key)),
         { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding }
       ).ciphertext.toString(CryptoJS.enc.Hex);
       const encryptedBytes = hexToUint8Array(encrypted);
-      const newPacket = new Uint8Array(1 + encryptedBytes.length + 2);
-      newPacket[0] = 0x7F;
-      newPacket.set(encryptedBytes, 1);
-      const newCrcData = newPacket.slice(1, -2);
-      const newCrc = this.calculateCrc16(newCrcData);
-      newPacket[newPacket.length - 2] = newCrc & 0xFF;
-      newPacket[newPacket.length - 1] = (newCrc >> 8) & 0xFF;
-      result = newPacket;
-      console.log(`Encrypted packet: ${this.toHexString(result)}`);
+      result = new Uint8Array(1 + encryptedBytes.length + 2);
+      result[0] = 0x7F;
+      result.set(encryptedBytes, 1);
+      const crcData = result.slice(1, -2);
+      const crc = this.calculateCrc16(crcData);
+      result[result.length - 2] = crc & 0xFF;
+      result[result.length - 1] = (crc >> 8) & 0xFF;
+      this.encryptCounter++;
+    } else {
+      result = new Uint8Array(1 + packetBody.length + 2);
+      result[0] = 0x7F;
+      result.set(packetBody, 1);
+      const crc = this.calculateCrc16(packetBody);
+      result[result.length - 2] = crc & 0xFF;
+      result[result.length - 1] = (crc >> 8) & 0xFF;
     }
-  
+
     const stuffed = [0x7F];
     for (let i = 1; i < result.length; i++) {
       stuffed.push(result[i]);
       if (result[i] === 0x7F) stuffed.push(0x7F);
     }
-  
-    this.sequenceCounter = (this.sequenceCounter + 1) % 0x80;
-    const finalPacket = this.toHexString(new Uint8Array(stuffed));
-    console.log(`Final packet (stuffed): ${finalPacket}`);
-    return finalPacket;
+
+    this.sequenceCounter = (this.sequenceCounter + 1) % 2;
+    return this.toHexString(new Uint8Array(stuffed));
   }
 
-  private padTo16Bytes(data: Uint8Array): Uint8Array {
-    const paddingLength = 16 - (data.length % 16);
-    const padded = new Uint8Array(data.length + (paddingLength === 16 ? 0 : paddingLength));
-    padded.set(data);
-    for (let i = data.length; i < padded.length; i++) padded[i] = 0;
-    return padded;
+  public completeKeyNegotiation(slaveInterKey: number[]): void {
+    const slaveKeyBig = BigInt.fromArray(slaveInterKey, 256);
+    const hostKey = this.hostInter.modPow(slaveKeyBig, this.modulus);
+    const hostKeyBytes = this.bigIntToBytes(hostKey, 8);
+    this.key = new Uint8Array([...this.fixedKey, ...hostKeyBytes]);
   }
 
-  public setGenerator(generator: number[]): string { return this.buildPacket(0x4A, generator); }
-  public setModulus(modulus: number[]): string { return this.buildPacket(0x4B, modulus); }
-  public requestKeyExchange(key: number[]): string { return this.buildPacket(0x4C, key); }
+  private bigIntToBytes(big: BigInt.BigInteger, length: number): Uint8Array {
+    const hex = big.toString(16).padStart(length * 2, '0');
+    return new Uint8Array(this.hexToBytes(hex));
+  }
+
+  private hexToBytes(hex: string): number[] {
+    return hex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16));
+  }
 
   public parsePacket(hexString: string): { command: number; data: number[] } {
-    const matches = hexString.match(/.{1,2}/g);
-    if (!matches) throw new Error('Invalid hex string format');
-    const bytes = matches.map(byte => parseInt(byte, 16));
+    const bytes = hexString.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16));
     const unstuffed = [bytes[0]];
     for (let i = 1; i < bytes.length; i++) {
       if (bytes[i] === 0x7F && bytes[i - 1] === 0x7F) continue;
@@ -542,21 +535,45 @@ class EsspProtocol {
     }
     const packet = new Uint8Array(unstuffed);
     if (packet[0] !== 0x7F) throw new Error('Invalid STX');
-    const length = packet[2];
-    const dataEnd = 3 + length;
-    if (dataEnd + 2 > packet.length) throw new Error('Packet too short');
-    const crc = (packet[dataEnd + 1] << 8) | packet[dataEnd];
-    const crcData = packet.slice(1, dataEnd);
-    if (this.calculateCrc16(crcData) !== crc) throw new Error('CRC mismatch');
-
-    const command = packet[3];
-    const data = Array.from(packet.slice(4, dataEnd));
+  
+    const crcData = packet.slice(1, -2);
+    const crcReceived = (packet[packet.length - 1] << 8) | packet[packet.length - 2];
+    if (this.calculateCrc16(crcData) !== crcReceived) throw new Error('CRC mismatch');
+  
+    let command: number;
+    let data: number[];
+    if (this.key && packet[1] === 0x7E) { // Encrypted packet
+      const encryptedData = packet.slice(1, -2);
+      // Convert encrypted data to hex string for decryption
+      const encryptedHex = this.toHexString(encryptedData);
+      // Decrypt using CryptoJS
+      const decrypted = CryptoJS.AES.decrypt(
+        { ciphertext: CryptoJS.enc.Hex.parse(encryptedHex) } as CryptoJS.lib.CipherParams, // Explicitly cast to CipherParams
+        CryptoJS.enc.Hex.parse(this.toHexString(this.key)),
+        { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding }
+      );
+      const decryptedHex = decrypted.toString(CryptoJS.enc.Hex);
+      const decryptedBytes = hexToUint8Array(decryptedHex);
+      if (decryptedBytes[0] !== 0x7E) throw new Error('Invalid STEX');
+      const length = decryptedBytes[1];
+      const counter = decryptedBytes.slice(2, 6).reduce((acc, byte, i) => acc + (byte << (i * 8)), 0);
+      if (counter !== this.encryptCounter) throw new Error('Sequence counter mismatch');
+      this.encryptCounter++;
+      command = decryptedBytes[6];
+      data = Array.from(decryptedBytes.slice(7, 6 + length));
+    } else {
+      const seqId = packet[1];
+      const length = packet[2];
+      command = packet[3];
+      data = Array.from(packet.slice(4, 3 + length));
+    }
+  
     if (command === 0x07) this.processPollResponse(data);
     return { command, data };
   }
 
   private isEncryptionEnabled(command: number): boolean {
-    return command !== 0x11 && command !== 0x06; // SYNC and Protocol Version unencrypted
+    return ![0x11, 0x06, 0x4A, 0x4B, 0x4C].includes(command); // SYNC, PROTOCOL_VERSION, SET_GENERATOR, SET_MODULUS, REQUEST_KEY_EXCHANGE unencrypted
   }
 
   // Core Commands
@@ -571,41 +588,55 @@ class EsspProtocol {
     for (let i = 0; i < Math.min(channels.length, 8); i++) {
       if (channels[i] === 1) lowByte |= (1 << i);
     }
-    const highByte = 0; // No channels 9-16
+    const highByte = 0;
     return this.buildPacket(0x02, [lowByte, highByte]);
   }
   public hostProtocolVersion(version: number): string { return this.buildPacket(0x06, [version]); }
   public setupRequest(): string { return this.buildPacket(0x05); }
+  public setGenerator(generator: number[]): string {
+    this.generator = BigInt.fromArray(generator, 256);
+    return this.buildPacket(0x4A, generator);
+  }
+  public setModulus(modulus: number[]): string {
+    this.modulus = BigInt.fromArray(modulus, 256);
+    return this.buildPacket(0x4B, modulus);
+  }
+  public requestKeyExchange(key: number[]): string {
+    this.hostInter = BigInt.fromArray(key, 256);
+    return this.buildPacket(0x4C, key);
+  }
 
   private processPollResponse(data: number[]): void {
-    for (let i = 0; i < data.length; i++) {
+    let i = 0;
+    while (i < data.length) {
       switch (data[i]) {
-        case 0xF0: this.emit('OK'); break;
-        case 0xEF:
-          if (i + 1 < data.length) { this.emit('READ_NOTE', [data[++i]]); } else { this.emit('ERROR', [data[i]]); }
-          break;
-        case 0xEE:
-          if (i + 1 < data.length) { this.emit('CREDIT_NOTE', [data[++i]]); } else { this.emit('ERROR', [data[i]]); }
-          break;
-        case 0xEC: this.emit('NOTE_REJECTED'); break;
-        case 0xE8: this.emit('JAMMED'); break;
-        case 0xE7: this.emit('JAM_RECOVERY'); break;
-        case 0xE6: this.emit('DISABLED'); break;
-        case 0xE1: this.emit('FRAUD_ATTEMPT', i + 1 < data.length ? [data[++i]] : undefined); break;
-        case 0xD6: this.emit('DISPENSED'); break;
-        default: this.emit('ERROR', [data[i]]); break;
+        case 0xF0: this.emit('OK'); i++; break;
+        case 0xEF: this.emit('READ_NOTE', [data[++i]]); i++; break;
+        case 0xEE: this.emit('CREDIT_NOTE', [data[++i]]); i++; break;
+        case 0xED: this.emit('REJECTING'); i++; break;
+        case 0xEC: this.emit('REJECTED'); i++; break;
+        case 0xEB: this.emit('STACKING'); i++; break;
+        case 0xEA: this.emit('STACKED'); i++; break;
+        case 0xE8: this.emit('JAMMED'); i++; break;
+        case 0xE7: this.emit('JAM_RECOVERY'); i++; break;
+        case 0xE6: this.emit('DISABLED'); i++; break;
+        case 0xE2: this.emit('SAFE_JAM'); i++; break;
+        case 0xE1: this.emit('FRAUD_ATTEMPT', [data[++i]]); i++; break;
+        case 0xCC: this.emit('UNSAFE_JAM'); i++; break;
+        case 0xE9: this.emit('STACKER_FULL'); i++; break;
+        case 0xE3: this.emit('NOTE_CLEARED_FROM_FRONT', [data[++i]]); i++; break;
+        case 0xE4: this.emit('NOTE_CLEARED_TO_CASHBOX', [data[++i]]); i++; break;
+        case 0xDA: this.emit('CASHBOX_REMOVED'); i++; break;
+        case 0xD9: this.emit('CASHBOX_REPLACED'); i++; break;
+        case 0xB2: this.emit('NOTE_PATH_OPEN'); i++; break;
+        case 0xB6: this.emit('CHANNEL_DISABLE'); i++; break;
+        default: this.emit('ERROR', [data[i]]); i++; break;
       }
     }
   }
 
-  private getValueFromChannel(channel: number): number {
-    return this.channelMap[channel] || 0;
-  }
-
   public on(event: EsspEvent, callback: ListenerCallback): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, []);
-    }
+    if (!this.listeners.has(event)) this.listeners.set(event, []);
     this.listeners.get(event)!.push(callback);
   }
 
