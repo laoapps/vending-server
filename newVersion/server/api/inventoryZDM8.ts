@@ -4154,7 +4154,7 @@ export class InventoryZDM8 implements IBaseClass {
                 "mobileNo": "2055516321", // CashIn to Wallet Number (Merchant)
                 "channel": "Vending", // Vending Machine 
                 "owner": "Moocher Orange", // Merchant Name
-                "callbackurl": "https://c1fe-115-84-76-245.ngrok-free.app"
+                "callbackurl": "https://tvending.khamvong.com"
             }
             console.log("LAOQR", qr);
 

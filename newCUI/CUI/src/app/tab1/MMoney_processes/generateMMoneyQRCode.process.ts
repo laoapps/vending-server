@@ -68,13 +68,13 @@ export class GenerateMMoneyQRCodeProcess {
         return new Promise<any>(async (resolve, reject) => {
             try {
 
-                // this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
-                //     const response: any = r;
-                //     console.log(`response generate MMoney`, response);
-                //     if (response.status != 1) return resolve(IENMessage.generateMMoneyQRCodeFail);
-                //     this.mmoneyQRCode = response.data as IVendingMachineBill;
-                //     resolve(IENMessage.success);
-                // }, error => resolve(error.message));
+                this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
+                    const response: any = r;
+                    console.log(`response generate MMoney`, response);
+                    if (response.status != 1) return resolve(IENMessage.generateMMoneyQRCodeFail);
+                    this.mmoneyQRCode = response.data as IVendingMachineBill;
+                    resolve(IENMessage.success);
+                }, error => resolve(error.message));
 
             } catch (error) {
                 resolve(error.message);

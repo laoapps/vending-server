@@ -14,6 +14,7 @@ import { WsapiService } from 'src/app/services/wsapi.service';
 import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
 import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
 import { clear } from 'console';
+import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 
 @Component({
   selector: 'app-auto-payment',
@@ -137,13 +138,13 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     // }
   ]
   bankList: Array<any> = [
-    // {
-    //   image: `../../../../assets/logo/bcelone-logo.png`,
-    //   name: 'BCEL One',
-    //   title: 'BCEL One (optional)',
-    //   detail: 'Pay your orders by using BCEL One QRCode',
-    //   value: 'bcelone'
-    // }
+    {
+      image: `../../../../assets/logo/bcelone-logo.png`,
+      name: 'BCEL One',
+      title: 'BCEL One (optional)',
+      detail: 'Pay your orders by using BCEL One QRCode',
+      value: 'bcelone'
+    }
   ]
   paymentList: Array<any> = [...this.cashesList, ...this.ewalletList, ...this.bankList];
 
@@ -384,7 +385,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             this.paymentmethod = list.value;
             this.paymentText = list.name;
             this.paymentLogo = list.image;
-            resolve(await this._processLoopDestroyNew());
+            resolve(await this._processLoopDestroy());
           }
 
         }, 1000);
@@ -415,7 +416,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               this.paymentmethod = IPaymentMethod.mmoney;
               this.paymentText = this.paymentList[0].name;
               this.paymentLogo = this.paymentList[0].image;
-              this._processLoopDestroyNew();
+              this._processLoopDestroy();
             }
 
 
@@ -552,14 +553,18 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         console.log('START GENERATE LAOQR');
 
         const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
+
         if (run.message != IENMessage.success) throw new Error(run);
+
+        console.log('=====>RUN', run);
+
 
         const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
         AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
         this.isPayment = true;
         this.billDate = new Date();
         console.log('END GENERATE LAOQR AND SUCCESS');
-        console.log('=====>RUN', run);
+        // console.log('=====>RUN', run);
         const transactionID = localStorage.getItem('transactionID');
         console.log('QR CODE :');
 
@@ -584,35 +589,88 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           this.countdownDestroy--;
 
 
-          console.log(`ERROR SHOULD NOT HERE`);
-          // when choose payment method success and client has not scaned pay yet this process will loop check laab balance
-          // if (checkLAAB > -1 && this.countdownDestroy == checkLAAB) {
-          //   checkLAAB -= 5;
+          // console.log(`ERROR SHOULD NOT HERE`);
 
-          //   const checkbalance = {
-          //     machineId: localStorage.getItem('machineId')
-          //   }
-          //   const run = await this.loadVendingWalletCoinBalanceProcess.Init(checkbalance);
-          //   if (run.message != IENMessage.success) throw new Error(run);
-          //   this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
+          if (this.countdownDestroy <= 0) {
+            clearInterval(this.countdownDestroyTimer);
+            this.countdownDestroy = 60;
+            if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+            AutoPaymentPage.message = undefined;
 
-          //   if (previousAmount != this.apiService.cash.amount && this.apiService.cash.amount > this.parseGetTotalSale.t) {
-          //     // everytime when balance change stop check laab
-          //     // but continue loop destroy
-          //     checkLAAB - 1;
+            this.apiService.myTab1.clearStockAfterLAABGo();
+            this.close();
+            this.apiService.alertError(IENMessage.timeout);
+            resolve(IENMessage.success);
+          } else {
+            AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
+            if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+          }
 
-          //     console.log(`LAAB CASHIN balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
-          //     this.apiService.soundLaabIncreased();
-          //     AutoPaymentPage.laabqrimgElement.classList.remove('active');
-          //     AutoPaymentPage.btnLAABGo.classList.add('active');
-          //     await this.laabAutoCashin();
+        }, 1000);
 
-          //     resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.alertError(error.message);
 
-          //   } else {
-          //     console.log(`LAAB CASH NOT ENOUGHT balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
-          //   }
-          // }
+        // when choose payment method and it does not work this process will auto loop check laab balance
+        const transactionID = localStorage.getItem('transactionID');
+        this._processLoopCheckLaoQRPaid(transactionID ?? '');;
+        // this._processLoopPayment();
+
+        resolve(error.message);
+      }
+    });
+  }
+
+
+  private _processLoopDestroy(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+
+        let title: string = 'Destroy all orders';
+        let text: string = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+        let cls: string = `countdownDestroy`;
+
+        const params: IPaymentStation = {
+          orders: this.parseorders,
+          getTotalSale: this.parseGetTotalSale,
+          paymentmethod: this.paymentmethod
+        }
+        console.log('START GENERATE Mmoney');
+
+        const run = await new PaymentStation(this.apiService, this.vendingAPIService).InitMMoney(params);
+        if (run.message != IENMessage.success) throw new Error(run);
+
+        const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
+        AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
+        this.isPayment = true;
+        this.billDate = new Date();
+        console.log('END GENERATE Mmoney AND SUCCESS');
+        console.log('=====>RUN', run);
+        const transactionID = localStorage.getItem('transactionID');
+        console.log('QR CODE MMoney:');
+
+        this._processLoopCheckLaoQRPaid(transactionID);
+
+
+
+
+        AutoPaymentPage.message = Swal.fire({
+          position: 'top-end',
+          html: this.messagetextModel(title, text, cls),
+          showConfirmButton: false,
+          heightAuto: false,
+          backdrop: false
+        });
+
+        // let checkLAAB: number = 55;
+        // const previousAmount: number = this.apiService.cash.amount;
+
+        // loop destroy
+        this.countdownDestroyTimer = setInterval(async () => {
+          this.countdownDestroy--;
+
+
+          // console.log(`ERROR SHOULD NOT HERE`);
 
           if (this.countdownDestroy <= 0) {
             clearInterval(this.countdownDestroyTimer);
@@ -647,9 +705,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   private _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
-      console.log('transactionID', transactionID);
+      clearInterval(this.countdownCheckLaoQRPaidTimer);
 
       this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+        console.log('transactionID', transactionID);
+
         this.countdownCheckLaoQRPaid -= 5;
         const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid(transactionID);
         if (run.status == 1) {
@@ -830,9 +890,23 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         this.paymentmethod = list.value;
         this.paymentLogo = list.image;
-        resolve(await this._processLoopDestroyNew());
+        console.log('=====>paymentmethod', this.paymentmethod);
+        console.log('=====>paymentLogo', this.paymentLogo);
 
-        resolve(IENMessage.success);
+        if (this.paymentmethod == IPaymentMethod.mmoney) {
+          this.paymentText = 'MMoney';
+          resolve(await this._processLoopDestroy());
+          resolve(IENMessage.success);
+        } else if (this.paymentmethod == IPaymentMethod.bcelone) {
+          this.paymentText = 'BCEL One';
+          resolve(await this._processLoopDestroyNew());
+          resolve(IENMessage.success);
+        } else {
+
+        }
+
+        // resolve(await this._processLoopDestroyNew());
+
 
       } catch (error) {
 
@@ -981,7 +1055,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 enum IPaymentMethod {
   laab = 'laab',
   mmoney = 'mmoney',
-  LaoQR = 'LaoQR'
+  LaoQR = 'LaoQR',
+  bcelone = 'bcelone'
 }
 interface IPaymentStation {
   orders: Array<any>,
@@ -1030,8 +1105,10 @@ class PaymentStation {
         // const LAABPayment = await this.LAABPayment();
         // if (LAABPayment != IENMessage.success) throw new Error(LAABPayment);
 
-        const MMoneyPayment = await this.LaoQRPayment();
-        if (MMoneyPayment != IENMessage.success) throw new Error(MMoneyPayment);
+        const LaoQRPayment = await this.LaoQRPayment();
+        console.log('=====> Init LaoQRPayment', LaoQRPayment);
+
+        if (LaoQRPayment != IENMessage.success) throw new Error(LaoQRPayment);
 
 
         (await this.workload).dismiss();
@@ -1043,6 +1120,30 @@ class PaymentStation {
       }
     });
   }
+
+  public InitMMoney(params: IPaymentStation): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        this.workload = this.apiService.load.create({ message: 'loading...', duration: 5000 });
+        (await this.workload).present();
+        this.InitParams(params);
+
+        const ValidateParams = this.ValidateParams();
+        if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+
+        const MMoneyQRPayment = await this.MMoneyPayment();
+        if (MMoneyQRPayment != IENMessage.success) throw new Error(MMoneyQRPayment);
+
+        (await this.workload).dismiss();
+        resolve(this.Commit());
+
+      } catch (error) {
+        (await this.workload).dismiss();
+        resolve(error.message);
+      }
+    });
+  }
+
 
   private InitParams(params: IPaymentStation): void {
     this.orders = params.orders;
@@ -1081,36 +1182,36 @@ class PaymentStation {
     });
   }
 
-  // private MMoneyPayment(): Promise<any> {
-  //   return new Promise<any>(async (resolve, reject) => {
-  //     try {
+  private MMoneyPayment(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
 
-  //       if (this.paymentmethod != IPaymentMethod.mmoney) return resolve(IENMessage.success);
+        if (this.paymentmethod != IPaymentMethod.mmoney) return resolve(IENMessage.success);
 
-  //       const params: ILaoQRPayment = {
-  //         orders: this.orders,
-  //         getTotalSale: this.getTotalSale
-  //       }
-  //       console.log(`LaoQR MODEL`, params);
-  //       const run = await new LaoQRPayment(this.apiService, this.vendingAPIService).Init(params);
-  //       if (run.message != IENMessage.success) throw new Error(run);
+        const params: ILaoQRPayment = {
+          orders: this.orders,
+          getTotalSale: this.getTotalSale
+        }
+        console.log(`MMoney MODEL`, params);
+        const run = await new MMoneyPayment(this.apiService, this.vendingAPIService).Init(params);
+        if (run.message != IENMessage.success) throw new Error(run);
 
-  //       this.qrcode = run.data[0].qrcode;
+        this.qrcode = run.data[0].qrcode;
 
-  //       resolve(IENMessage.success);
+        resolve(IENMessage.success);
 
-  //     } catch (error) {
-  //       resolve(error.message);
-  //     }
-  //   });
-  // }
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
 
 
   private LaoQRPayment(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        if (this.paymentmethod != IPaymentMethod.mmoney) return resolve(IENMessage.success);
+        if (this.paymentmethod != IPaymentMethod.bcelone) return resolve(IENMessage.success);
 
         const params: ILaoQRPayment = {
           orders: this.orders,
@@ -1279,7 +1380,7 @@ class LAABPayment {
 
 
 
-// MMONEY
+// LaoQR
 interface ILaoQRPayment {
   orders: Array<any>,
   getTotalSale: any,
@@ -1402,6 +1503,148 @@ class LaoQRPayment {
         if (run.message != IENMessage.success) throw new Error(run);
         this.qrcode = run.data[0].mmoneyQRCode.qr;
         console.log('=====>LAOQR Payment', this.qrcode);
+
+        const transactionID = run.data[0].mmoneyQRCode.transactionID;
+        // console.log('=====>LAOQR', transactionID);
+        localStorage.setItem('transactionID', transactionID);
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+
+  private Commit() {
+    const response = {
+      data: [
+        {
+          qrcode: this.qrcode
+        }
+      ],
+      message: IENMessage.success
+    }
+    return response;
+  }
+
+}
+
+
+
+interface IMMoneyPayment {
+  orders: Array<any>,
+  getTotalSale: any,
+}
+class MMoneyPayment {
+
+  // services
+  private apiService: ApiService;
+  private vendingAPIService: VendingAPIService;
+
+
+  // processes
+  private generateMMoneyQRCodeProcess: GenerateMMoneyQRCodeProcess;
+
+  // private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
+
+  private orders: Array<any> = [];
+  private getTotalSale: any = {} as any;
+
+  // props
+  private data: Array<any> = [];
+  private qtty: number = 0;
+  private total: number = 0;
+  private qrcode: string;
+
+  constructor(
+    apiService: ApiService,
+    vendingAPIService: VendingAPIService
+
+  ) {
+    this.apiService = apiService;
+    this.vendingAPIService = vendingAPIService;
+    this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
+    // this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
+  }
+
+  public Init(params: ILaoQRPayment): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+
+        this.InitParams(params);
+
+        this.RemoveImageFromOrder();
+
+        const SumerizeOrder = this.SumerizeOrder();
+        if (SumerizeOrder != IENMessage.success) throw new Error(SumerizeOrder);
+
+        const Payment = await this.Payment();
+        if (Payment != IENMessage.success) throw new Error(Payment);
+
+        resolve(this.Commit());
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+
+
+  private InitParams(params: ILaoQRPayment): void {
+    this.orders = params.orders;
+    this.getTotalSale = params.getTotalSale;
+  }
+
+  private RemoveImageFromOrder(): void {
+    this.data = JSON.parse(JSON.stringify(this.orders));
+    this.data.forEach(item => item.stock.image = '');
+  }
+
+  private SumerizeOrder(): string {
+    this.qtty = this.data.reduce((a, b) => a + b.stock.qtty, 0);
+    this.total = this.data.reduce((a, b) => a + b.stock.qtty * b.stock.price, 0);
+    if (this.qtty != this.getTotalSale.q && this.total != this.getTotalSale.t) return IENMessage.invalidSumerizeOrder;
+    return IENMessage.success;
+  }
+
+  // private Payment(): Promise<any> {
+  //   return new Promise<any> (async (resolve, reject) => {
+  //     try {
+
+  //       const params = {
+  //         orders: this.data,
+  //         amount: this.total,
+  //         machineId: this.apiService.machineId.machineId
+  //       }
+
+  //       const run = await this.generateMMoneyQRCodeProcess.Init(params);
+  //       if (run.message != IENMessage.success) throw new Error(run);
+  //       this.qrcode = run.data[0].mmoneyQRCode.qr;
+  //       resolve(IENMessage.success);
+
+  //     } catch (error) {
+  //       resolve(error.message);
+  //     }
+  //   });
+  // }
+
+
+  private Payment(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+
+        const params = {
+          orders: this.data,
+          amount: this.total,
+          machineId: this.apiService.machineId.machineId
+        }
+
+        const run = await this.generateMMoneyQRCodeProcess.Init(params);
+
+        if (run.message != IENMessage.success) throw new Error(run);
+        this.qrcode = run.data[0].mmoneyQRCode.qr;
+        console.log('=====>MMoney Payment', this.qrcode);
 
         const transactionID = run.data[0].mmoneyQRCode.transactionID;
         // console.log('=====>LAOQR', transactionID);

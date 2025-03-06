@@ -78,6 +78,7 @@ import { HangmiFoodSegmentPage } from '../tab1/VendingSegment/hangmi-food-segmen
 import { HangmiStoreSegmentPage } from '../tab1/VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 import { TopupAndServiceSegmentPage } from '../tab1/VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { IndexedDBService } from './indededdb.service';
+import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
 
 @Injectable({
   providedIn: 'root',
@@ -539,7 +540,7 @@ export class ApiService {
       }
 
       if (pb.length)
-        this.showModal(RemainingbillsPage, { r: pb }, true).then((r) => {
+        this.showModal(RemainingbilllocalPage, { r: pb }, true).then((r) => {
           r.present();
         });
       this.eventEmmiter.emit('delivery');
@@ -929,25 +930,25 @@ export class ApiService {
     });
   }
 
-  // buyMMoney(ids: Array<IVendingMachineSale>, value: number, machineId: string) {
-  //   this.currentPaymentProvider = EPaymentProvider.mmoney;
-  //   const req = {} as IReqModel;
-  //   req.command = EClientCommand.buyMMoney;
-  //   req.data = {
-  //     ids,
-  //     value,
-  //     clientId: this.clientId.clientId,
-  //   };
-  //   req.ip;
-  //   req.time = new Date().toString();
-  //   req.token = cryptojs
-  //     .SHA256(this.machineId.machineId + this.machineId.otp)
-  //     .toString(cryptojs.enc.Hex);
-  //   // req.data.clientId = this.clientId.clientId;
-  //   return this.http.post<IResModel>(this.url, req, {
-  //     headers: this.headerBase(),
-  //   });
-  // }
+  buyMMoney(ids: Array<IVendingMachineSale>, value: number, machineId: string) {
+    this.currentPaymentProvider = EPaymentProvider.mmoney;
+    const req = {} as IReqModel;
+    req.command = EClientCommand.buyMMoney;
+    req.data = {
+      ids,
+      value,
+      clientId: this.clientId.clientId,
+    };
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+    // req.data.clientId = this.clientId.clientId;
+    return this.http.post<IResModel>(this.url, req, {
+      headers: this.headerBase(),
+    });
+  }
 
 
   checkPaidBill(transactionID: string) {
