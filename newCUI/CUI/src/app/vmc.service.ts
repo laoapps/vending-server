@@ -199,9 +199,9 @@ export class VmcService implements ISerialService {
       // { cmd: EVMC_COMMAND._7020, params: {} },         // Bill low-change (read)
       { cmd: EVMC_COMMAND._7023, params: {} },         // Remaining credit management (read)
       { cmd: EVMC_COMMAND.ENABLE, params: { enable: true, value: 200 } }, // 0x7018 enable
-      { cmd: EVMC_COMMAND._28, params: {} },           // Accept coins/notes
       { cmd: EVMC_COMMAND._7037, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
-      { cmd: EVMC_COMMAND._7028, params: {} }          // Temp mode (read)
+      { cmd: EVMC_COMMAND._7028, params: {} },          // Temp mode (read)
+      { cmd: EVMC_COMMAND._28, params: { enable: true } } // Enable bills
     ];
     for (const x of commands) {
       await this.serialService.writeVMC(x.cmd, x.params);
@@ -335,21 +335,14 @@ export class VmcService implements ISerialService {
       }
     } else if (hex.startsWith('fafb23')) {
       console.log('receive banknotes 23-----------------------------------------------------------------------------', hex);
-      // const now = Date.now();
-      // if (this.lastReported23 && hex === this.lastReported23.hex && (now - this.lastReported23.timestamp < 1000)) {
-      //   console.log('Ignoring duplicate 0x23:', hex);
-      //   return;
-      // }
-      // this.lastReported23 = { hex, timestamp: now };
-    
-      // const amountHex = hex.substring(8, 16);
-      // const amountDecimal = parseInt(amountHex.match(/.{2}/g).reverse().join(''), 16) / 100;
-      // this.balance = amountDecimal; // Track balance in your app
-      // console.log('Updated credit balance:', this.balance);
-      // this.sock.send(hex, -23, EMACHINE_COMMAND.CREDIT_NOTE);
-    
-      // // Deduct credit immediately with mode 1 (bill)
-      // this.serialService.writeVMC(EVMC_COMMAND._27, { mode: 1, amount: amountHex });
+      const amountHex = hex.substring(8, 16);
+      const amountDecimal = parseInt(amountHex.match(/.{2}/g).reverse().join(''), 16) / 100;
+      this.balance += amountDecimal; // Your software tracks balance
+      console.log('Updated credit balance:', this.balance);
+      this.sock.send(hex, -23, EMACHINE_COMMAND.CREDIT_NOTE);
+
+      // Tell VMC money is received and clear credit
+      this.serialService.writeVMC(EVMC_COMMAND._27, { mode: 1, amount: amountHex });
     } else if (hex.startsWith('fafb52')) {// status to server and update and local
       //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
       this.machinestatus.data = hex;
