@@ -994,3 +994,96 @@ export interface IBillProcess {
     position: number;
     bill: IVendingMachineBill;
 }
+
+// Interface for machine status with typed fields where appropriate
+export interface IVMCMachineStatus {
+    packNo: number;                // Communication number (byte)
+    billStatus: number;            // Bill acceptor status (byte)
+    coinStatus: number;            // Coin acceptor status (byte)
+    cardStatus: number;            // Card reader status (byte)
+    tempControllerStatus: number;  // Temperature controller status (byte)
+    temperature: number;           // Temperature (byte)
+    doorStatus: number;            // Door status (byte)
+    billChange: number;            // Bill change (4 bytes as number)
+    coinChange: number;            // Coin change (4 bytes as number)
+    machineIMEI: string;           // Machine ID (10 bytes as hex string)
+    machineTemp: string;           // Machine temperature (8 bytes as hex string)
+    machineHumidity?: string;      // Machine humidity (8 bytes, optional)
+}
+
+/**
+ * Parses a hex string packet for command 0x52 into a machine status object.
+ * @param hexString Hex string representing the packet (e.g., "fafb522154...")
+ * @returns IMachineStatus object with parsed values
+ * @throws Error if packet is malformed or too short
+ */
+export function machineVMCStatus(hexString: string): IVMCMachineStatus {
+    // Remove any spaces or non-hex characters if present
+    const cleanHex = hexString.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+
+    // Minimum length check: header (4) + cmd (2) + len (2) + packNo (2) = 10 hex chars
+    if (cleanHex.length < 10) {
+        throw new Error("Packet too short");
+    }
+
+    // Verify header and command
+    if (cleanHex.substring(0, 4) !== "fafb" || cleanHex.substring(4, 6) !== "52") {
+        throw new Error("Invalid header or command");
+    }
+
+    // Extract length (1 byte, 2 hex chars)
+    const length = parseInt(cleanHex.substring(6, 8), 16);
+    const expectedDataLength = length * 2; // Length in hex chars
+    const packetEnd = 8 + expectedDataLength; // End of data before checksum
+
+    // Check if packet has enough data (including 2 chars for checksum)
+    if (cleanHex.length < packetEnd + 2) {
+        throw new Error(`Insufficient data: expected ${packetEnd + 2} chars, got ${cleanHex.length}`);
+    }
+
+    // Extract PackNO+Text (starts at offset 8)
+    const data = cleanHex.substring(8, packetEnd);
+
+    // Parse fields with bounds checking
+    const packNo = parseInt(data.substring(0, 2), 16);
+    const billStatus = parseInt(data.substring(2, 4), 16);
+    const coinStatus = parseInt(data.substring(4, 6), 16);
+    const cardStatus = parseInt(data.substring(6, 8), 16);
+    const tempControllerStatus = parseInt(data.substring(8, 10), 16);
+    const temperature = parseInt(data.substring(10, 12), 16);
+    const doorStatus = parseInt(data.substring(12, 14), 16);
+    const billChange = parseInt(data.substring(14, 22), 16) || 0; // Handle '00000000'
+    const coinChange = parseInt(data.substring(22, 30), 16) || 0; // Handle '00000000'
+    const machineIMEI = data.substring(30, 50); // 10 bytes = 20 hex chars
+
+    // Machine temperature (8 bytes = 16 hex chars)
+    let machineTemp = "";
+    let machineHumidity = undefined;
+    if (data.length >= 66) { // 50 + 16 = 66
+        machineTemp = data.substring(50, 66);
+        // Machine humidity (optional, 8 bytes = 16 hex chars)
+        if (data.length >= 82) { // 66 + 16 = 82
+            machineHumidity = data.substring(66, 82);
+        }
+    } else if (data.length >= 50) {
+        // Partial temp if truncated
+        machineTemp = data.substring(50);
+    }
+
+    return {
+        packNo,
+        billStatus,
+        coinStatus,
+        cardStatus,
+        tempControllerStatus,
+        temperature,
+        doorStatus,
+        billChange,
+        coinChange,
+        machineIMEI,
+        machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
+        machineHumidity, // Undefined if not present
+    };
+}
+
+// Example usage
