@@ -89,15 +89,15 @@ export class VmcService implements ISerialService {
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.SYNC:
-            await this.serialService.writeVMC(EVMC_COMMAND.SYNC, {});
+            await this.sycnVMC();
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.ENABLE:
-            await this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { enable: true, value: 200 });
+            await this.enableCashIn();
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.DISABLE:
-            await this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { enable: false });
+            await this.disableCashIn();
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.balance:
@@ -191,33 +191,68 @@ export class VmcService implements ISerialService {
 
   private async initializeVMCCommands(): Promise<void> {
     const commands = [
-      { cmd: EVMC_COMMAND._51, params: {} },           // Machine status
-      // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
-      // { cmd: EVMC_COMMAND._7017, params: {} },         // Unionpay/POS (read)
-      { cmd: EVMC_COMMAND._7018, params: {} },         // Bill value accepted (read)
-      { cmd: EVMC_COMMAND._7019, params: {} },         // Bill accepting mode (read)
-      // { cmd: EVMC_COMMAND._7020, params: {} },         // Bill low-change (read)
-      { cmd: EVMC_COMMAND._7023, params: {} },         // Remaining credit management (read)
-      { cmd: EVMC_COMMAND.ENABLE, params: { enable: true, value: 200 } }, // 0x7018 enable
-      { cmd: EVMC_COMMAND._7037, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
-      { cmd: EVMC_COMMAND._7028, params: {} },          // Temp mode (read)
-      { cmd: EVMC_COMMAND._28, params: { enable: true } } // Enable bills
+    { cmd: EVMC_COMMAND._51, params: {} },           // Machine status
+    // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
+    // { cmd: EVMC_COMMAND._7017, params: { read: true, enable: 0 } }, // Unionpay/POS (read)
+    // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
+    { cmd: EVMC_COMMAND._7019, params: { read: false,value:1 } },     // Bill accepting mode (read)
+    // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
+    // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 100 } }, // Enable bills
+    // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
+    // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
+    { cmd: EVMC_COMMAND._7037, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
+    { cmd: EVMC_COMMAND._7028, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
+    // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
+
+    
+      // // { cmd: EVMC_COMMAND._27, params: { mode: 1, amount: "00000000" } },// Clear credit
+      // { cmd: EVMC_COMMAND._51, params: {} },           // Machine status ---
+      // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read) ---
+      // { cmd: EVMC_COMMAND._7017, params: {read:true,enable:0} },         // Unionpay/POS (read) 00 02 ---
+      // // { cmd: EVMC_COMMAND._7017, params: {read:false,enable:1} },         // Unionpay/POS (read) 00 02 ---
+
+      // { cmd: EVMC_COMMAND._7018, params: {read:true} },         // Bill value accepted (read)---
+      // { cmd: EVMC_COMMAND._7019, params: {read:true} },         // Bill accepting mode (read)--
+      // // { cmd: EVMC_COMMAND._7019, params: {read:false,enable:3} },         // Bill accepting mode (read)-- // 01 always accept , 02 hold credit temperary, 03 force vend
+
+      // { cmd: EVMC_COMMAND._7020, params: {read:true} },         // Bill low-change (read)---
+      // // { cmd: EVMC_COMMAND._7020, params: {read:false,enable:100} },         // Bill low-change (read)--- enable:0-100
+
+      // { cmd: EVMC_COMMAND.ENABLE, params: {read:false, enable: true, value: 200 } }, // 0x7018 enable bills
+      // { cmd: EVMC_COMMAND._7023, params: {read:true} },         // // read 01 set value 
+      // // { cmd: EVMC_COMMAND._7023, params: {read:true,mode: 0} },         // // read 01 set value 01 holding , 02 return change 03 change first holding later
+
+     
+      // { cmd: EVMC_COMMAND._7037, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
+      // { cmd: EVMC_COMMAND._7028, params: {lowTemp: this.setting.lowTemp} },          // Temp mode (read)
+      // { cmd: EVMC_COMMAND._28, params: { enable: true } } // Enable bills
     ];
     for (const x of commands) {
+      if(!x) continue
       await this.serialService.writeVMC(x.cmd, x.params);
       this.addLogMessage(`INIT ${JSON.stringify(x)}`);
     }
 
   }
   public disableCashIn() {
-    this.setting.allowCashIn = false;
-    this.enable = false;
-    this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { enable: false });
+    return new Promise<void>(async (resolve, reject) => {
+      this.setting.allowCashIn = false;
+      this.enable = false;
+      await this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { read:false, value: 0 });
+    // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
+
+      resolve();
+    });
   }
   public enableCashIn() {
-    this.setting.allowCashIn = true;
-    this.enable = true;
-    this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { enable: true, value: 200 });
+    return new Promise<void>(async (resolve, reject) => {
+      this.setting.allowCashIn = true;
+      this.enable = true;
+      await this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false, value: 200 });
+       // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: 'ffff' });
+      resolve();
+    });
+   
   }
   private getNoteValue(b: string) {
     try {
@@ -330,19 +365,13 @@ export class VmcService implements ISerialService {
         this.creditPending.push(credit);
         this.addOrUpdateCredit(credit);
         this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
+        
       } else if (mode == '08') {//fafb21068308000186a08a
         //bank note swollen
       }
     } else if (hex.startsWith('fafb23')) {
-      console.log('receive banknotes 23-----------------------------------------------------------------------------', hex);
-      const amountHex = hex.substring(8, 16);
-      const amountDecimal = parseInt(amountHex.match(/.{2}/g).reverse().join(''), 16) / 100;
-      this.balance += amountDecimal; // Your software tracks balance
-      console.log('Updated credit balance:', this.balance);
-      this.sock.send(hex, -23, EMACHINE_COMMAND.CREDIT_NOTE);
 
-      // Tell VMC money is received and clear credit
-      this.serialService.writeVMC(EVMC_COMMAND._27, { mode: 1, amount: amountHex });
+      console.log('receive banknotes 23-----------------------------------------------------------------------------', hex);
     } else if (hex.startsWith('fafb52')) {// status to server and update and local
       //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
       this.machinestatus.data = hex;

@@ -742,7 +742,7 @@ export class VendingVMC {
             }
             else if (command == EVMC_COMMAND._28) {
                 buff.push('28');
-                buff.push(this.int2hex(6)); //? 6
+                buff.push(this.int2hex(4)); //? 4
                 buff.push(this.int2hex(series));
                 buff.push(this.int2hex(0));
                 buff.push('ff');
