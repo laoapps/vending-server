@@ -213,7 +213,9 @@ export class SerialServiceService implements OnDestroy {
         }
     });
 }
-
+isPortOpen(): boolean {
+  return this.initialized;
+}
   async close(): Promise<any> {
     await SerialConnectionCapacitor.stopReading();
     this.initialized = false;

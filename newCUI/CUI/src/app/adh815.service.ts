@@ -243,59 +243,7 @@ class ADH815Protocol {
         const hexRequest = toHexString(request);
         return  this.port.send(hexRequest);
     }
-
-    private createRequest(address: number, command: number, data: number[]): Uint8Array {
-        const payload = [address, command, ...data];
-        const crc = calculateCRC16(payload);
-        return new Uint8Array([...payload, crc & 0xFF, (crc >> 8) & 0xFF]);
-    }
-
-    private parseResponse(buffer: Uint8Array): IADH815 {
-        if (buffer.length < 4) throw new Error('Invalid response length');
-        const address = buffer[0];
-        const command = buffer[1];
-        const data = Array.from(buffer.slice(2, buffer.length - 2));
-        const receivedCRC = (buffer[buffer.length - 1] << 8) | buffer[buffer.length - 2];
-        const payloadToCheck = Array.from(buffer.slice(0, buffer.length - 2));
-        const calculatedCRC = calculateCRC16(payloadToCheck);
-
-        if (receivedCRC !== calculatedCRC) {
-            throw new Error(`CRC validation failed: received 0x${receivedCRC.toString(16)}, calculated 0x${calculatedCRC.toString(16)}`);
-        }
-        return { address, command, data, crc: receivedCRC };
-    }
-
-    async setTemperature(
-        address: number,
-        mode: number,
-        tempValue: number,
-        onResponse: (response: IADH815) => void
-    ): Promise<void> {
-        const data = [mode, tempValue & 0xFF, (tempValue >> 8) & 0xFF];
-        const request = this.createRequest(address, 0x04, data);
-        return  this.sendRequest(request, onResponse);
-    }
-
-    async startMotor(
-        address: number,
-        motorNumber: number,
-        onResponse: (response: IADH815) => void
-    ): Promise<void> {
-        const data = [motorNumber];
-        const request = this.createRequest(address, 0x05, data);
-        return  this.sendRequest(request, onResponse);
-    }
-
-    async clearResult(
-        address: number,
-        motorNumber1: number,
-        motorNumber2: number,
-        onResponse: (response: IADH815) => void
-    ): Promise<void> {
-        const data = [motorNumber1, motorNumber2];
-        const request = this.createRequest(address, 0x15, data);
-        return  this.sendRequest(request, onResponse);
-    }
+ 
 
     async requestID(
         address: number
@@ -309,4 +257,64 @@ class ADH815Protocol {
     dispose() {
         this.responseListeners.clear();
     }
+
+    private createRequest(address: number, command: number, data: number[]): Uint8Array {
+      if (address < 0 || address > 255) throw new Error('Address must be 0-255');
+      const payload = [address, command, ...data];
+      const crc = calculateCRC16(payload);
+      return new Uint8Array([...payload, crc & 0xFF, (crc >> 8) & 0xFF]);
+  }
+
+  async setTemperature(
+      address: number,
+      mode: number,
+      tempValue: number,
+      onResponse: (response: IADH815) => void
+  ): Promise<void> {
+      if (![0x00, 0x01, 0x02].includes(mode)) throw new Error('Mode must be 0x00-0x02');
+      if (tempValue < 0 || tempValue > 0xFFFF) throw new Error('Temp value must be 0-65535');
+      const data = [mode, tempValue & 0xFF, (tempValue >> 8) & 0xFF];
+      const request = this.createRequest(address, 0x04, data);
+      return this.sendRequest(request, onResponse);
+  }
+
+  async startMotor(
+      address: number,
+      motorNumber: number,
+      onResponse: (response: IADH815) => void
+  ): Promise<void> {
+      if (motorNumber < 0x00 || motorNumber > 0x63) throw new Error('Motor number must be 0x00-0x63');
+      const data = [motorNumber];
+      const request = this.createRequest(address, 0x05, data);
+      return this.sendRequest(request, onResponse);
+  }
+
+  async clearResult(
+      address: number,
+      motorNumber1: number,
+      motorNumber2: number,
+      onResponse: (response: IADH815) => void
+  ): Promise<void> {
+      if (motorNumber1 < 0x00 || motorNumber1 > 0x63 || motorNumber2 < 0x00 || motorNumber2 > 0x63) {
+          throw new Error('Motor numbers must be 0x00-0x63');
+      }
+      const data = [motorNumber1, motorNumber2];
+      const request = this.createRequest(address, 0x15, data);
+      return this.sendRequest(request, onResponse);
+  }
+  
+
+  private parseResponse(buffer: Uint8Array): IADH815 {
+      if (buffer.length < 4) throw new Error(`Invalid response length: ${buffer.length}`);
+      const address = buffer[0];
+      const command = buffer[1];
+      const data = Array.from(buffer.slice(2, buffer.length - 2));
+      const receivedCRC = (buffer[buffer.length - 1] << 8) | buffer[buffer.length - 2];
+      const calculatedCRC = calculateCRC16(Array.from(buffer.slice(0, buffer.length - 2)));
+      if (receivedCRC !== calculatedCRC) {
+          console.warn(`CRC mismatch: received 0x${receivedCRC.toString(16)}, calculated 0x${calculatedCRC.toString(16)}`);
+          throw new Error('CRC validation failed');
+      }
+      return { address, command, data, crc: receivedCRC };
+  }
 }
