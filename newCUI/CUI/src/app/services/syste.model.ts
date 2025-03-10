@@ -569,6 +569,16 @@ export enum EMACHINE_COMMAND {
   SET_TEMP = "SET_TEMP",
   CLEAR_RESULT = "CLEAR_RESULT",
   ERROR = "ERROR",
+  INIT = "INIT",
+  CLOSE = "CLOSE",
+  LISTPORTS = "LISTPORTS",
+  GETSERIALEVENTS = "GETSERIALEVENTS",
+  GETFIRMWAREVERSION = "GETFIRMWAREVERSION",
+  UNLOCK = "UNLOCK",
+  READALLLOCKSTATUS = "READALLLOCKSTATUS",
+  ONETOUCHUNLOCK = "ONETOUCHUNLOCK",
+  LIGHTSON = "LIGHTSON",
+  LIGHTSOFF = "LIGHTSOFF",
 
 
 }
@@ -994,7 +1004,11 @@ export interface IBillProcess {
     position: number;
     bill: IVendingMachineBill;
 }
-
+export interface ILockControlService extends ISerialService {
+    unlock(lockAddress: number): Promise<IResModel>;
+    readAllLockStatus(): Promise<IResModel>;
+    getFirmwareVersion(): Promise<IResModel>;
+  }
 // Interface for machine status with typed fields where appropriate
 export interface IVMCMachineStatus {
     packNo: number;                // Communication number (byte)

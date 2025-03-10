@@ -197,7 +197,7 @@ export class VmcService implements ISerialService {
     // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
     { cmd: EVMC_COMMAND._7019, params: { read: false,value:1 } },     // Bill accepting mode (read)
     // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
-    // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 100 } }, // Enable bills
+    // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 200 } }, // Enable bills
     // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
     // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
     { cmd: EVMC_COMMAND._7037, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
