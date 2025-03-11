@@ -844,7 +844,11 @@ export enum EZDM8_COMMAND {
 export enum EPaymentStatus {
     paid = 'paid',
     pending = 'pending',
-    delivered = 'delivered'
+    delivered = 'delivered',
+    succeeded = 'succeeded',
+    failed = 'failed',
+    error = 'error',
+    timeout = 'timeout'
 }
 export enum EMessage {
     resetCashingSuccess = 'reset cashing success',
@@ -1032,7 +1036,8 @@ export enum EMessage {
     refreshsucceeded = "refreshsucceeded",
     doorExist = "doorExist",
     BillCreatedTemp = "--_",
-    LaoQRNotPaid = "LaoQRNotPaid"
+    LaoQRNotPaid = "LaoQRNotPaid",
+    machineisdisabled = "machineisdisabled"
 }
 export interface IBase {
     id?: number;

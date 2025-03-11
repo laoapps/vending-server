@@ -107,3 +107,9 @@ dist
 server/.DS_Store
 server/.DS_Store
 .DS_Store
+server/.DS_Store
+server/certs/.DS_Store
+server/laab_service/.DS_Store
+venders/.DS_Store
+venders/certs/.DS_Store
+.DS_Store
