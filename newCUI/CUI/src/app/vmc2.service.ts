@@ -117,22 +117,24 @@ export class Vmc2Service implements ISerialService {
   }
 
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<string> {
-    this.machineId = machineId;
-    this.otp = otp;
-    this.log = log;
-    this.portName = portName;
-    this.baudRate = baudRate;
-    this.sock.machineId = machineId;
-    this.sock.otp = otp;
-
-    const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-    await this.serialService.startReadingVMC();
-
-    if (init === this.portName) {
-      await this.vmcInitilize();
-      return this.portName;
-    }
-    throw new Error(init);
+    return new Promise<string>(async (resolve, reject) => {
+      this.machineId = machineId;
+      this.otp = otp;
+      this.log = log;
+      this.portName = portName;
+      this.baudRate = baudRate;
+      this.sock.machineId = machineId;
+      this.sock.otp = otp;
+  
+      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      await this.serialService.startReadingVMC();
+  
+      if (init == this.portName) {
+        this.vmcInitilize();
+        resolve(init);
+      }
+      else reject(init);
+    });
   }
 
   getSerialEvents() {
@@ -412,7 +414,7 @@ export enum EVMC_COMMAND {
   TEMP_MODE = '7028',          // Temperature mode
   LIGHT_CONTROL = '7016',      // Light control settings
   TEMP_CONTROLLER = '7037',    // Temperature controller settings
-
+  ENABLE_SELECTION='12',
   // Placeholder/Unused (if needed)
   RESERVED_21 = '21',          // Unspecified in original
   RESERVED_23 = '23',          // Unspecified in original
@@ -492,6 +494,18 @@ class PacketBuilder {
         const elevator = this.clampToByte(params.getInteger("elevator", 0));
         const dropSensor = this.clampToByte(params.getInteger("dropSensor", 1));
         text = [packNo, dropSensor, elevator, 0x00, slot];
+        break;
+        case EVMC_COMMAND.ENABLE_SELECTION:
+        cmdByte = 0x12;
+        const selectionNumber = this.clampToByte(params.getInteger("selectionNumber", 0));
+        const price = this.clampToByte(params.getInteger("price", 1));
+        text = [packNo, 
+          selectionNumber & 0xFF,
+          (selectionNumber >> 8) & 0xFF,
+          price & 0xFF, 
+          (price >> 8) & 0xFF,
+          (price >> 16) & 0xFF,
+          (price >>24) & 0xFF];
         break;
       case EVMC_COMMAND.SLOT_STATUS:
         cmdByte = 0x11;

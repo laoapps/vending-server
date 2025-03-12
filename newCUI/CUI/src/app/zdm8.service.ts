@@ -5,7 +5,7 @@ import { SerialServiceService, } from './services/serialservice.service';
 
 import { IResModel, ESerialPortType, ISerialService, EZDM8_COMMAND, EMACHINE_COMMAND, IlogSerial, addLogMessage } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
-
+import { Buffer } from 'buffer';
 
 
 
@@ -334,7 +334,7 @@ export class Zdm8Service implements ISerialService {
 
 
       const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-      this.serialService.startReading
+      this.serialService.startReading();
       if (init == this.portName) {
         this.initZDM8();
         resolve(init);

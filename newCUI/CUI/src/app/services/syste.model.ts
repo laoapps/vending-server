@@ -579,12 +579,16 @@ export enum EMACHINE_COMMAND {
   ONETOUCHUNLOCK = "ONETOUCHUNLOCK",
   LIGHTSON = "LIGHTSON",
   LIGHTSOFF = "LIGHTSOFF",
+  SETCHANNELINHIBITS = "SETCHANNELINHIBITS",
+  GETSERIALNUMBER = "GETSERIALNUMBER",
+  SETUPREQUEST = "SETUPREQUEST",
 
 
 }
 export enum ESerialPortType{
     Serial=1,
-    USB=2
+    USB=2,
+    Essp=3
   }
 
  
@@ -1098,6 +1102,13 @@ export function machineVMCStatus(hexString: string): IVMCMachineStatus {
         machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
         machineHumidity, // Undefined if not present
     };
+}
+export interface IBankNote{
+    value:number;
+    amount:number;
+    currency:string;
+    channel:number;
+    image:string;
 }
 
 // Example usage

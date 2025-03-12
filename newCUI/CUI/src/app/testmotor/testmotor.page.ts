@@ -22,9 +22,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
   serial: ISerialService;
   open = false;
   devices = ['VMC', 'ZDM8','Tp77p','essp','cctalk','m102','adh815'];
-  selectedDevice = 'VMC';
+  selectedDevice = 'essp';
 
-  portName = '/dev/ttyS0';
+  portName = '/dev/ttyS1';
   baudRate = 9600;
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial; // Default selected value
@@ -72,6 +72,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       Toast.show({ text: 'Start Tp77p3b' });
     }
     else if (this.selectedDevice == 'essp') {
+      this.baudRate=9600;
       await this.startEssp();
       Toast.show({ text: 'Start essp' });
     }
@@ -155,11 +156,13 @@ export class TestmotorPage implements OnInit, OnDestroy {
     this.vlog.log = this.serial.log;
   }
   async startEssp() {
+    console.log('startEssp');
+    
     if (this.serial) {
       await this.serial.close();
       this.serial = null;
     }
-    this.serial = await this.vendingIndex.initEssp(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.serial = await this.vendingIndex.initEssp(this.portName, this.baudRate, this.machineId, this.otp, ESerialPortType.Essp);
     if(!this.serial){
       Toast.show({ text: 'serial not init' });
     }

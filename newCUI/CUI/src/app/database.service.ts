@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { promise } from 'protractor';
 
 @Injectable({
   providedIn: 'root',

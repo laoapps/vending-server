@@ -8,12 +8,14 @@ export class LoggingService {
   private indexFileName = 'log_index.json'; // File to store the list of log files
 
   constructor() {
-    // this.initializeLogging();
+    this.initializeLogging();
+
   }
 
   // Initialize the index file if it doesn’t exist
    async initializeLogging() {
     try {
+      console.log('Initializing logging');
       await Filesystem.stat({
         path: this.indexFileName,
         directory: Directory.Documents,

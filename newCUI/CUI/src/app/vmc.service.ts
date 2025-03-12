@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
-import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, PrintSucceeded, PrintError, EMessage, IlogSerial } from './services/syste.model';
+import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, PrintSucceeded, PrintError, EMessage, IlogSerial, machineVMCStatus } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
 import * as moment from 'moment-timezone';
 import { LoggingService } from './logging-service.service';
@@ -12,33 +12,35 @@ import cryptojs, { mode } from 'crypto-js';
 export enum EVMC_COMMAND {
   POLL = '41',
   ACK = '42',
-  _01 = '01',
-  _03 = '03',
-  _04 = '04',
-  _06 = '06',
-  _11 = '11',
-  _16 = '16',
-  _21 = '21',
-  _23 = '23',
-  _25 = '25',
-  _27 = '27',
-  _28 = '28',
-  _31 = '31',
-  _51 = '51',
-  _61 = '61',
-  _7037 = '7037',
+  SLOT_TEST = '01',
+  VEND = '03',
+  RESET = '04',
+  SHIPPING_CONTROL = '06',
+  SLOT_STATUS = '11',
+  SET_POLL_INTERVAL = '16',
+  MONEY_RECEIVED = '21',
+  REPORT_CURRENT_AMOUNT = '23',
+  COIN_REPORT = '25',
+  REPORT_MONEY = '27',
+  ENABLE_BILL_ACCEPTOR = '28',
+  MACHINE_STATUS = '51',
+  READ_COUNTERS = '61',
+  TEMP_CONTROLLER = '7037',
   SYNC = '31',
   ENABLE = '7018',
   DISABLE = '7018',
   SET_POLL = '16',
-  _7001 = '7001',
-  _7017 = '7017',
-  _7018 = '7018',
-  _7019 = '7019',
-  _7020 = '7020',
-  _7023 = '7023',
-  _7028 = "7028"
+  COIN_SYSTEM_READ = '7001',
+  UNIONPAY_POS = '7017',
+  BILL_VALUE = '7018',
+  BILL_ACCEPT_MODE = '7019',
+  BILL_LOW_CHANGE = '7020',    // Bill low-change settings = '7020',
+  CREDIT_MODE = '7023',
+  TEMP_MODE = "7028",
+  ENABLE_SELECTION = "12",
+  LIGHT_CONTROL="7016"
 }
+
 
 @Injectable({
   providedIn: 'root'
@@ -85,7 +87,7 @@ export class VmcService implements ISerialService {
       try {
         switch (command) {
           case EMACHINE_COMMAND.shippingcontrol:
-            await this.serialService.writeVMC(EVMC_COMMAND._06, { slot: params?.slot || 1 });
+            await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot: params?.slot || 1 });
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.SYNC:
@@ -119,7 +121,7 @@ export class VmcService implements ISerialService {
                 if (setting.lowTemp !== this.setting.lowTemp || setting.highTemp !== this.setting.highTemp) {
                   this.setting.lowTemp = setting.lowTemp;
                   this.setting.highTemp = setting.highTemp;
-                  await this.serialService.writeVMC(EVMC_COMMAND._7037, { lowTemp: setting.lowTemp, highTemp: setting.highTemp });
+                  await this.serialService.writeVMC(EVMC_COMMAND.TEMP_CONTROLLER, { lowTemp: setting.lowTemp, highTemp: setting.highTemp });
                 }
                 this.setting.allowCashIn = setting.allowCashIn;
 
@@ -146,22 +148,25 @@ export class VmcService implements ISerialService {
   }
 
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<string> {
-    this.machineId = machineId;
-    this.otp = otp;
-    this.log = log;
-    this.portName = portName;
-    this.baudRate = baudRate;
-    this.sock.machineId = machineId;
-    this.sock.otp = otp;
-
-    const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-    await this.serialService.startReadingVMC();
-
-    if (init === this.portName) {
-      await this.vmcInitilize();
-      return this.portName;
-    }
-    throw new Error(init);
+    return new Promise<string>(async (resolve, reject) => {
+      this.machineId = machineId;
+      this.otp = otp;
+      this.log = log;
+      this.portName = portName;
+      this.baudRate = baudRate;
+      this.sock.machineId = machineId;
+      this.sock.otp = otp;
+  
+      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      await this.serialService.startReadingVMC();
+  
+      if (init == this.portName) {
+        this.vmcInitilize();
+        resolve(init);
+      }
+      else reject(init);
+    });
+   
   }
 
   getSerialEvents() {
@@ -191,18 +196,20 @@ export class VmcService implements ISerialService {
 
   private async initializeVMCCommands(): Promise<void> {
     const commands = [
-    { cmd: EVMC_COMMAND._51, params: {} },           // Machine status
+    { cmd: EVMC_COMMAND.MACHINE_STATUS, params: {} },           // Machine status
     // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
     // { cmd: EVMC_COMMAND._7017, params: { read: true, enable: 0 } }, // Unionpay/POS (read)
     // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
-    { cmd: EVMC_COMMAND._7019, params: { read: false,value:1 } },     // Bill accepting mode (read)
+    { cmd: EVMC_COMMAND.BILL_ACCEPT_MODE, params: { read: false,value:1 } },     // Bill accepting mode (read)
     // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
     // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 200 } }, // Enable bills
     // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
     // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
-    { cmd: EVMC_COMMAND._7037, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
-    { cmd: EVMC_COMMAND._7028, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
+    { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
+    { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
     // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
+    {cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber:0,price:1 } }    // set value slection , but the cash acceptor is flashing need to solve later
+
 
     
 
@@ -355,6 +362,7 @@ export class VmcService implements ISerialService {
     } else if (hex.startsWith('fafb52')) {// status to server and update and local
       //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
       this.machinestatus.data = hex;
+      const m = machineVMCStatus(hex);
       this.sock.send(hex, -52);
     } else {
       this.lastReported23 = null;

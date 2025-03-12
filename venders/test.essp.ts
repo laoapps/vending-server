@@ -1,7 +1,4 @@
-// import axios from 'axios';
-
-
-const sspLib = require('encrypted-smiley-secure-protocol');
+const sspLib = require('@kybarg/ssp')
 // import { SerialPort } from 'serialport';
 
 export class KiosServer {
@@ -15,30 +12,10 @@ export class KiosServer {
 
         let buffer = '';
         const that = this;
-
+        this.initSSP();
          
       
 
-
-        this.eSSP.on('OPEN', () => {
-            console.log('open');
-        
-            this.eSSP.command('SYNC')
-            .then(() => this.eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
-            .then(() => this.eSSP.initEncryption())
-            .then(() => this.eSSP.command('GET_SERIAL_NUMBER'))
-            .then(result => {
-                console.log('SERIAL NUMBER:', result.info.serial_number)
-                return;
-            })
-            .then(() => this.eSSP.enable())
-            .then(result => {
-                if(result.status == 'OK'){
-                    console.log('Device is active')
-                }
-                return;
-            })
-        })
         
         this.eSSP.on('NOTE_REJECTED', result => {
             console.log('NOTE_REJECTED', result);
@@ -49,14 +26,26 @@ export class KiosServer {
                 // //this.send(sock, EMessage.all,'LAST_REJECT_CODE', result);
             })
         })
+        this.eSSP.on('DISABLED', result => {
+            try {
+                console.log('DISABLED', result)
 
+                // this.isReading=false;
+            } catch (error) {
+                console.log(error);
+            }
 
+        })
+        this.eSSP.on('ENABLED', result => {
+            try {
+                console.log('ENABLED', result)
 
+                // this.isReading=false;
+            } catch (error) {
+                console.log(error);
+            }
 
-
-
-
-      
+        })
         this.eSSP.on('JAM_RECOVERY', result => {
             console.log(result)
             // //this.send(sock, EMessage.all,'JAM_RECOVERY', result);
@@ -180,7 +169,7 @@ export class KiosServer {
             console.log(result)
             //this.send(sock, EMessage.all,'CASHBOX_PAID', result);
         })
-        this.eSSP.on('COIN_CREDIT', result => {
+        this.eSSP.on('CREDIT_NOTE', result => {
             console.log(result)
             //this.send(sock, EMessage.all,'COIN_CREDIT', result);
         })
@@ -265,15 +254,87 @@ export class KiosServer {
             console.log(result)
              //this.send(sock, EMessage.all,'CASHBOX_REPLACED', result);
         })
-        this.eSSP.command('SET_BAUD_RATE', {
-            baudrate: 9600, // 9600|38400|115200
-            reset_to_default_on_reset: true
-        })
         // this.eSSP.open('/dev/ttyS0')
          this.eSSP.open('/dev/ttyS1');
 
 
     }
+        initSSP() {
+            try {
+                // this.eSSP.close();
+                this.eSSP.on('OPEN', () => {
+                    console.log('OPEN');
+                    try {
+                        this.eSSP.command('SYNC')
+                            .then(result => {
+                                console.log('SYNC:', result)
+                            })
+                            .then(() => this.eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
+                            .then(() => this.eSSP.initEncryption())
+                            .then(() => this.eSSP.command('GET_SERIAL_NUMBER'))
+                            .then(result => {
+                                console.log('SERIAL NUMBER:', result.info.serial_number)
+                                return;
+                            })
+
+                            .then(() => this.eSSP.command('RESET_COUNTERS').then(result => {
+                                if (result) if (result.status == 'OK') {
+                                    console.log('RESET_COUNTERS', result)
+                                }
+                                return;
+                            }))
+                            .then(() => this.eSSP.enable())
+                            .then(result => {
+                                if (result) if (result.status == 'OK') {
+                                    console.log('enable request', result.info)
+                                }
+                                return;
+                            })
+                            .then(() => this.eSSP.command('SETUP_REQUEST'))
+                            .then(result => {
+                                if (result) if (result.status == 'OK') {
+                                    console.log('SETUP_REQUEST request', result.info)
+                                }
+                                return;
+                            })
+    
+                            .then(() => this.eSSP.command('SET_CHANNEL_INHIBITS', { channels: process.env.channels || [1, 1, 1, 1, 1, 1, 1] })
+                                .then(result => {
+                                    if (result) if (result.status == 'OK') {
+                                        console.log('SET_CHANNEL_INHIBITS', result.info)
+                                    }
+                                }));
+                        
+                    } catch (error) {
+                        console.log('error'+error);
+    
+                    }
+    
+                })
+    
+  
+    
+    
+    
+    
+    
+    
+                process.on("exit", () => {
+                    try {
+                        this.eSSP.close();
+                    } catch (error) {
+                        console.log(error, 'error');
+    
+                    }
+    
+                })
+            } catch (error) {
+                console.log(error, 'error');
+    
+            }
+    
+        }
+    
     //  checkSum(buff: any) {
     //     try {
     //         const x = crc.crc16modbus(Buffer.from(buff as any, 'hex')).toString(16);
@@ -298,5 +359,3 @@ export class KiosServer {
     
 
 }
-
-const k =new KiosServer();

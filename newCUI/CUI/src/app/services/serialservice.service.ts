@@ -31,11 +31,11 @@ export class SerialServiceService implements OnDestroy {
     this.serialEventSubject.complete();  // Complete the subject
     console.log('serial service  SerialServiceService destroyed and cleaned up');
   }
-  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, isNative = ESerialPortType.Serial): Promise<string> {
+  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, isNative = ESerialPortType.Serial,dataBits= 8, stopBits= 1, parity= 'none',bufferSize=1024,flags=0): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
       if (this.initialized) {
         console.log("Serial port already initialized, skipping...");
-        return;
+        return reject('Serial port already initialized');
       }
 
       try {
@@ -108,7 +108,12 @@ export class SerialServiceService implements OnDestroy {
         // Open serial port
         console.log("Opening openNativeSerial:", { portName, baudRate });
         if (isNative === ESerialPortType.Serial)
-          await SerialConnectionCapacitor.openSerial({ portName, baudRate });
+          await SerialConnectionCapacitor.openSerial({ portName, baudRate,dataBits, stopBits, parity, bufferSize,flags });
+        else if(isNative==ESerialPortType.Essp){
+        console.log("Opening openSerialEssp:", { portName, baudRate, dataBits, stopBits, parity, bufferSize,flags });
+
+          await SerialConnectionCapacitor.openSerialEssp({ portName, baudRate, dataBits, stopBits, parity, bufferSize,flags});
+        }
         else
           await SerialConnectionCapacitor.openUsbSerial({ portName, baudRate });
         console.log(`Opened ${portName}`);
@@ -139,6 +144,22 @@ export class SerialServiceService implements OnDestroy {
         }
       } catch (e) {
         console.log('VMC serial service  startReading error', e);
+        reject(e);
+      }
+    });
+  }
+  async startReadingEssp(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if (this.initialized) {
+          await SerialConnectionCapacitor.startReadingEssp();
+          resolve('Reading started');
+        } else {
+          console.log('serial service  Serial port not initialized');
+          reject('Serial port not initialized');
+        }
+      } catch (e) {
+        console.log('serial service  startReading error', e);
         reject(e);
       }
     });
@@ -212,6 +233,25 @@ export class SerialServiceService implements OnDestroy {
             reject(e);
         }
     });
+}
+async writeEssp(command: string, params: any): Promise<any> {
+  return new Promise<any>(async (resolve, reject) => {
+      try {
+          if (!this.initialized) {
+              console.log('serial service  Serial port not initialized');
+              reject('Serial port not initialized');
+              return;
+          }
+          const data = JSON.stringify({ command, params });
+          console.log(`serial service  Writing to VMC: ${data}`);
+          const x = await SerialConnectionCapacitor.writeEssp({ data });
+          console.log(`serial service  Command queued: ${data}`);
+          resolve(x);
+      } catch (e) {
+          console.log('serial service  writeVMC error', e);
+          reject(e);
+      }
+  });
 }
 isPortOpen(): boolean {
   return this.initialized;
