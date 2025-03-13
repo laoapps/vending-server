@@ -118,12 +118,12 @@ export class EsspService implements ISerialService {
     this.getEvents().subscribe(async (event)=>{
       // GET THE CREDIT_NOTE here 
 
-      if(event.name== EsspEvent.CREDIT_NOTE){
-        await this.disable();
-        setTimeout(async()=>{
-          await this.enable();
-        },10000)
-      }
+      // if(event.name== EsspEvent.CREDIT_NOTE){
+      //   await this.disable();
+      //   setTimeout(async()=>{
+      //     await this.enable();
+      //   },10000)
+      // }
       console.log('COMMING DATA: '+`name: ${event.name}, data: ${event.data}, description: ${event.description}`);
     })
   }
@@ -736,38 +736,38 @@ export class EsspService implements ISerialService {
   }
 
   async syncEssp(): Promise<IResModel> {
-    return this.commandEssp(EEsspCommand.Sync, {});
+    return this.retryCommand(EEsspCommand.Sync, {});
   }
 
   async setHostProtocol(): Promise<IResModel> {
-    return this.commandEssp(EEsspCommand.HostProtocolVersion, { version: 6 });
+    return this.retryCommand(EEsspCommand.HostProtocolVersion, { version: 6 });
   }
 
   async setChannelInhibits(channels: number[]): Promise<IResModel> {
-    return this.commandEssp(EEsspCommand.SetChannelInhibits, { channels });
+    return this.retryCommand(EEsspCommand.SetChannelInhibits, { channels });
   }
 
   async reset(): Promise<IResModel> {
-    return this.commandEssp(EEsspCommand.Reset, {});
+    return await this.retryCommand(EEsspCommand.Reset, {});
   }
 
   async getSerialNumber(): Promise<IResModel> {
-    return this.commandEssp(EEsspCommand.GetSerialNumber, {});
+    return await this.retryCommand(EEsspCommand.GetSerialNumber, {});
   }
 
   async setupRequest(): Promise<IResModel> {
-    return this.commandEssp(EEsspCommand.SetupRequest, {});
+    return await this.retryCommand(EEsspCommand.SetupRequest, {});
   }
 
   // [Updated] disable method
   async disable(): Promise<IResModel> {
     this.stopPolling();
-    return this.commandEssp(EEsspCommand.Disable, {});
+    return await this.retryCommand(EEsspCommand.Disable, {});
   }
 
   // [Updated] enable method
   async enable(): Promise<IResModel> {
-    const result = await this.commandEssp(EEsspCommand.Enable, {});
+    const result = await this.retryCommand(EEsspCommand.Enable, {});
     if (result.status === 1) {
       this.startPolling();
     }
