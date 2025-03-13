@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { EsspService } from './essp.service';
 
-describe('EsspService', () => {
+describe('EsspNV9USBService', () => {
   let service: EsspService;
 
   beforeEach(() => {

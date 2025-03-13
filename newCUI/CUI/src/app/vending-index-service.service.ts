@@ -5,8 +5,8 @@ import { Tp77PulseService } from './Tp77Pulse.Service';
 import { ESerialPortType, IlogSerial, ISerialService } from './services/syste.model';
 import { BackgroundTask } from '@capawesome/capacitor-background-task';
 import { App } from '@capacitor/app';
-import { EsspService } from './essp-nv9-usb.service';
-import { esspService } from './essp.service';
+import { EsspService } from './essp.service';
+
 import { CCTALKTb74Service } from './cctalktb74.service';
 import { MT102Service } from './mt102.service';
 import { ADH815Service } from './adh815.service';
