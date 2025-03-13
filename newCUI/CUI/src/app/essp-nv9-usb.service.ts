@@ -89,7 +89,7 @@ export class EsspService implements ISerialService {
   private generator = BigInt(0);
   private modulus = BigInt(0);
   private hostInter = BigInt(0);
-  respTimeOut = 30000; // 30s for slower responses
+  respTimeOut = 3000; // 30s for slower responses
 
   private pendingCommands: Map<number, { command: EEsspCommand; packet: string }> = new Map();
   private responseBuffer: string = '';
@@ -373,7 +373,7 @@ export class EsspService implements ISerialService {
 
   async initEssp(): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
-      let retries = 5;
+      let retries = 20;
       while (retries > 0) {
         try {
           this.initBankNotes();
@@ -480,7 +480,7 @@ export class EsspService implements ISerialService {
   }
 
 
-  private async retryCommand(command: EEsspCommand, params: any = {}, retries: number = 5): Promise<IResModel> {
+  private async retryCommand(command: EEsspCommand, params: any = {}, retries: number =20): Promise<IResModel> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         return await this.commandEssp(command, params);
@@ -858,7 +858,7 @@ export class EsspService implements ISerialService {
       if (!this.isPolling) return;
       try {
         this.addLogMessage(this.log, 'POLLING');
-        const result = await this.retryCommand(EEsspCommand.Poll, {}, 3);
+        const result = await this.retryCommand(EEsspCommand.Poll, {}, 20);
         this.addLogMessage(this.log, `Poll result: ${JSON.stringify(result)}`);
         retryCount = 0;
         lastResponseTime = Date.now();
