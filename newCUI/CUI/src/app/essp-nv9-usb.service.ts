@@ -494,6 +494,7 @@ export class EsspService implements ISerialService {
   }
 
   private async commandEssp(command: EEsspCommand, params: any = {}): Promise<IResModel> {
+    console.log(`Sending ESSP command: ${command}`)
     this.addLogMessage(this.log, `Sending ESSP command: ${command}`);
 
     const STX = 0x7F;
