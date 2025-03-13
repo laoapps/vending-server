@@ -109,11 +109,6 @@ export class SerialServiceService implements OnDestroy {
         console.log("Opening openNativeSerial:", { portName, baudRate });
         if (isNative === ESerialPortType.Serial)
           await SerialConnectionCapacitor.openSerial({ portName, baudRate,dataBits, stopBits, parity, bufferSize,flags });
-        else if(isNative==ESerialPortType.Essp){
-        console.log("Opening openSerialEssp:", { portName, baudRate, dataBits, stopBits, parity, bufferSize,flags });
-
-          await SerialConnectionCapacitor.openSerialEssp({ portName, baudRate, dataBits, stopBits, parity, bufferSize,flags});
-        }
         else
           await SerialConnectionCapacitor.openUsbSerial({ portName, baudRate });
         console.log(`Opened ${portName}`);
@@ -148,22 +143,7 @@ export class SerialServiceService implements OnDestroy {
       }
     });
   }
-  async startReadingEssp(): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      try {
-        if (this.initialized) {
-          await SerialConnectionCapacitor.startReadingEssp();
-          resolve('Reading started');
-        } else {
-          console.log('serial service  Serial port not initialized');
-          reject('Serial port not initialized');
-        }
-      } catch (e) {
-        console.log('serial service  startReading error', e);
-        reject(e);
-      }
-    });
-  }
+
   async startReading(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
@@ -234,25 +214,7 @@ export class SerialServiceService implements OnDestroy {
         }
     });
 }
-async writeEssp(command: string, params: any): Promise<any> {
-  return new Promise<any>(async (resolve, reject) => {
-      try {
-          if (!this.initialized) {
-              console.log('serial service  Serial port not initialized');
-              reject('Serial port not initialized');
-              return;
-          }
-          const data = JSON.stringify({ command, params });
-          console.log(`serial service  Writing to VMC: ${data}`);
-          const x = await SerialConnectionCapacitor.writeEssp({ data });
-          console.log(`serial service  Command queued: ${data}`);
-          resolve(x);
-      } catch (e) {
-          console.log('serial service  writeVMC error', e);
-          reject(e);
-      }
-  });
-}
+
 isPortOpen(): boolean {
   return this.initialized;
 }
