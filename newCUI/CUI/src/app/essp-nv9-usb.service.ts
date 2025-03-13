@@ -23,31 +23,37 @@ enum EEsspCommand {
   UnitData = 'UNIT_DATA',
   ChannelValueRequest = 'CHANNEL_VALUE_REQUEST'
 }
-
-type EsspEvent =
-  | 'JAM_RECOVERY'
-  | 'DISABLED'
-  | 'JAMMED'
-  | 'CREDIT_NOTE'
-  | 'READ_NOTE'
-  | 'OK'
-  | 'ERROR'
-  | 'NOTE_REJECTED'
-  | 'FRAUD_ATTEMPT'
-  | 'STACKING'
-  | 'STACKED'
-  | 'REJECTING'
-  | 'REJECTED'
-  | 'SAFE_JAM'
-  | 'UNSAFE_JAM'
-  | 'STACKER_FULL'
-  | 'NOTE_CLEARED_FROM_FRONT'
-  | 'NOTE_CLEARED_TO_CASHBOX'
-  | 'CASHBOX_REMOVED'
-  | 'CASHBOX_REPLACED'
-  | 'NOTE_PATH_OPEN'
-  | 'CHANNEL_DISABLE'
-  | 'INITIALISING';
+interface IEventInfo{
+  name:EsspEvent;
+  description:string;
+  data:any;
+}
+enum EsspEvent {
+  JAM_RECOVERY = 'JAM_RECOVERY',
+  DISABLED = 'DISABLED',
+  JAMMED = 'JAMMED',
+  CREDIT_NOTE = 'CREDIT_NOTE',
+  READ_NOTE = 'READ_NOTE',
+  OK = 'OK',
+  ERROR = 'ERROR',
+  NOTE_REJECTED = 'NOTE_REJECTED',
+  FRAUD_ATTEMPT = 'FRAUD_ATTEMPT',
+  STACKING = 'STACKING',
+  STACKED = 'STACKED',
+  REJECTING = 'REJECTING',
+  REJECTED = 'REJECTED',
+  SAFE_JAM = 'SAFE_JAM',
+  UNSAFE_JAM = 'UNSAFE_JAM',
+  STACKER_FULL = 'STACKER_FULL',
+  NOTE_CLEARED_FROM_FRONT = 'NOTE_CLEARED_FROM_FRONT',
+  NOTE_CLEARED_TO_CASHBOX = 'NOTE_CLEARED_TO_CASHBOX',
+  CASHBOX_REMOVED = 'CASHBOX_REMOVED',
+  CASHBOX_REPLACED = 'CASHBOX_REPLACED',
+  NOTE_PATH_OPEN = 'NOTE_PATH_OPEN',
+  CHANNEL_DISABLE = 'CHANNEL_DISABLE',
+  INITIALISING = 'INITIALISING',
+  UNKNOWN = 'UNKNOWN',
+}
 
 @Injectable({
   providedIn: 'root'
@@ -78,7 +84,7 @@ export class EsspService implements ISerialService {
   private channels: number[] = [1, 1, 1, 1, 1, 1, 1];
   machinestatus = { data: '' };
   private responseSubject = new Subject<{ command: EEsspCommand; seqId: number; response: { status: number; data: number[] }; name?: string; description?: string }>();
-  private eventSubject = new Subject<{ event: EsspEvent; details: number[]; description?: string }>();
+  private eventSubject = new Subject<IEventInfo>();
   private fixedKey = new Uint8Array([0x01, 0x23, 0x45, 0x67, 0x01, 0x23, 0x45, 0x67]);
   private generator = BigInt(0);
   private modulus = BigInt(0);
@@ -109,6 +115,17 @@ export class EsspService implements ISerialService {
         this.processBuffer();
       }
     });
+    this.getEvents().subscribe(async (event)=>{
+      // GET THE CREDIT_NOTE here 
+
+      if(event.name== EsspEvent.CREDIT_NOTE){
+        await this.disable();
+        setTimeout(async()=>{
+          await this.enable();
+        },10000)
+      }
+      console.log('COMMING DATA: '+`name: ${event.name}, data: ${event.data}, description: ${event.description}`);
+    })
   }
   isPrime(n: BigInt.BigInteger): boolean {
     if (n.lesserOrEquals(BigInt(1))) return false;
@@ -198,21 +215,22 @@ export class EsspService implements ISerialService {
             try {
               const parsed = this.parsePacket(packetHex);
               const decodedResponse = this.decodeEvents(parsed.command, parsed.seqId, parsed.data);
+              console.log(' decodedResponse COMMING DATA: '+`name: ${this.responseMap[parsed.command]?.name}, Parsed packet: ${packetHex}, Decoded: ${JSON.stringify(decodedResponse)}`)
               this.addLogMessage(this.log, `Parsed packet: ${packetHex}, Decoded: ${decodedResponse}`);
-
               const commandEntry = this.pendingCommands.get(parsed.seqId);
+              this.eventSubject.next({ name: decodedResponse.name , data: decodedResponse.data, description:decodedResponse.description });
+
               if (commandEntry) {
                 this.responseSubject.next({
                   command: commandEntry.command,
                   seqId: parsed.seqId,
                   response: { status: parsed.command, data: parsed.data },
                   name: this.responseMap[parsed.command]?.name,
-                  description: decodedResponse
+                  description: JSON.stringify(decodedResponse)
                 });
                 this.pendingCommands.delete(parsed.seqId);
               } else {
                 this.addLogMessage(this.log, `No pending command for seqId ${parsed.seqId}, likely a POLL event: ${decodedResponse}`);
-                this.eventSubject.next({ event: this.responseMap[parsed.command]?.name as EsspEvent , details: parsed.data, description: decodedResponse });
               }
               this.resetPacket();
               this.responseBuffer = this.responseBuffer.substring(packetHex.length);
@@ -355,39 +373,52 @@ export class EsspService implements ISerialService {
 
   async initEssp(): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
-      try {
-        this.initBankNotes();
-        const results = new Array<IResModel>();
-
-        // Initialization sequence
-        results.push(await this.retryCommand(EEsspCommand.Sync, {}));
-        await this.delay(100);
-        results.push(await this.retryCommand(EEsspCommand.HostProtocolVersion, { version: 6 })); // Protocol 6 as specified
-        await this.delay(100);
-        await this.initEncryption();
-        results.push(await this.retryCommand(EEsspCommand.GetSerialNumber, {}));
-        await this.delay(100);
-        results.push(await this.retryCommand(EEsspCommand.Reset, {}));
-        await this.delay(500); // Give device time to reset
-        results.push(await this.retryCommand(EEsspCommand.DisplayOn, {}));
-        await this.delay(100);
-        results.push(await this.retryCommand(EEsspCommand.Enable, {}));
-        await this.delay(100);
-        results.push(await this.retryCommand(EEsspCommand.SetupRequest, {}));
-        await this.delay(100);
-        results.push(await this.retryCommand(EEsspCommand.SetChannelInhibits, { channels: this.channels }));
-
-        // Start polling after full initialization
-        this.startPolling();
-
-        this.addLogMessage(this.log, `Initialization completed: ${JSON.stringify(results)}`);
-        this.getEvents().subscribe(event => {
-          this.addLogMessage(this.log, `Event: ${JSON.stringify(event)}`);
-        });
-        resolve(results[0]);
-      } catch (error) {
-        this.addLogMessage(this.log, `Initialization failed: ${error.message}`);
-        reject(error);
+      let retries = 5;
+      while (retries > 0) {
+        try {
+          this.initBankNotes();
+          const results = new Array<IResModel>();
+          this.addLogMessage(this.log, 'Starting initialization...');
+  
+          results.push(await this.retryCommand(EEsspCommand.Sync, {}));
+          this.addLogMessage(this.log, 'SYNC completed');
+          // await this.delay(100);
+          results.push(await this.retryCommand(EEsspCommand.HostProtocolVersion, { version: 6 }));
+          this.addLogMessage(this.log, 'HostProtocolVersion completed');
+          // await this.delay(100);
+          await this.initEncryption();
+          this.addLogMessage(this.log, 'Encryption completed');
+          results.push(await this.retryCommand(EEsspCommand.GetSerialNumber, {}));
+          this.addLogMessage(this.log, 'GetSerialNumber completed');
+          // await this.delay(100);
+          results.push(await this.retryCommand(EEsspCommand.Reset, {}));
+          this.addLogMessage(this.log, 'Reset completed');
+          // await this.delay(500);
+          results.push(await this.retryCommand(EEsspCommand.DisplayOn, {}));
+          this.addLogMessage(this.log, 'DisplayOn completed');
+          // await this.delay(100);
+          results.push(await this.retryCommand(EEsspCommand.Enable, {}));
+          this.addLogMessage(this.log, 'Enable completed');
+          // await this.delay(100);
+          results.push(await this.retryCommand(EEsspCommand.SetupRequest, {}));
+          this.addLogMessage(this.log, 'SetupRequest completed');
+          // await this.delay(100);
+          results.push(await this.retryCommand(EEsspCommand.SetChannelInhibits, { channels: this.channels }));
+          this.addLogMessage(this.log, 'SetChannelInhibits completed');
+  
+          this.startPolling();
+          this.addLogMessage(this.log, `Initialization completed: ${JSON.stringify(results)}`);
+          resolve(results[0]);
+          return;
+        } catch (error) {
+          retries--;
+          this.addLogMessage(this.log, `Init attempt ${6 - retries} failed: ${error.message}, retries left: ${retries}`);
+          if (retries === 0) {
+            reject(new Error(`Initialization failed after 5 retries: ${error.message}`));
+          } else {
+            await this.delay(1000);
+          }
+        }
       }
     });
   }
@@ -456,7 +487,7 @@ export class EsspService implements ISerialService {
       } catch (e) {
         this.addLogMessage(this.log, `Attempt ${attempt} failed for ${command}: ${e.message}`);
         if (attempt === retries) throw e;
-        await this.delay(1000);
+        await this.delay(100);
       }
     }
     throw new Error(`Failed to execute ${command} after ${retries} attempts`);
@@ -771,90 +802,80 @@ export class EsspService implements ISerialService {
     };
     return unitTypes[type] || `Unknown (${type})`;
   }
-  private decodeEvents(command: number, seqId: number, data: number[]): string {
 
-    console.log('seqId '+seqId+' command '+command+' status '+command);
+  private decodeEvents(command: number, seqId: number, data: number[]): IEventInfo {
+    console.log('seqId ' + seqId + ' command ' + command + ' status ' + command);
     const response = this.responseMap[command];
-    let decoded = response ? `${response.name}: ${response.description}` : `Unknown status: ${command.toString(16)}`;
-
-    // Handle specific command responses with data
-
-        if (command === 0xF0 && data.length >= 4) {
-          const serialNumber = this.convertBytesToInt32(data.slice(0, 4));
-          decoded += `, Serial Number: ${serialNumber}`;
-          
-        }
-        if (command === 0xF0 && data.length > 0) {
-          // Parse NV9USB setup response (example format from docs)
-          const unitType = data[0]; // 0 = Banknote validator
-          const firmwareVersion = String.fromCharCode(...data.slice(1, 5)); // 4 bytes ASCII
-          const countryCode = String.fromCharCode(...data.slice(5, 8)); // 3 bytes ASCII
-          const valueMultiplier = this.convertBytesToInt32(data.slice(8, 11)); // 3 bytes, assuming padded with 0
-          const channelCount = data[11]; // Number of channels
-          const channelValues = data.slice(12, 12 + channelCount); // Channel denominations
-          decoded += `, Unit Type: ${this.getUnitType(unitType)}, Firmware: ${firmwareVersion}, Country: ${countryCode}, Multiplier: ${valueMultiplier}, Channels: ${channelValues.join(', ')}`;
-        }
-        if (data.length > 0) {
-          const eventCode = data[0];
-          const eventInfo = this.responseMap[eventCode];
-          decoded = eventInfo ? `${eventInfo.name}: ${eventInfo.description}` : `Unknown event: ${eventCode.toString(16)}`;
-          if (data.length > 1) {
-            // Handle event-specific data
-            switch (eventCode) {
-              case 238: // CREDIT_NOTE
-              case 239: // READ_NOTE
-                decoded += `, Channel: ${data[1]}`;
-                break;
-              case 225: // NOTE_CLEARED_FROM_FRONT
-              case 226: // NOTE_CLEARED_TO_CASHBOX
-                decoded += `, Channel: ${data[1]}`;
-                break;
-              case 230: // FRAUD_ATTEMPT
-                if (data.length >= 2) decoded += `, Channel/Value: ${data[1]}`;
-                break;
-              default:
-                decoded += `, Event Data: ${this.toHexString(new Uint8Array(data.slice(1)))}`;
-            }
+    let decoded = {} as IEventInfo
+    decoded = response ? {name:response.name as EsspEvent,description:response.description,data}as IEventInfo : {name:'UNKNOWN' as EsspEvent,description:command.toString(16),data} as IEventInfo;
+  
+    if (command === 0xF0) { // OK response
+      if (data.length === 0) {
+        decoded = {name:response.name as EsspEvent,description:response.description,data} ; // Simple OK
+      } else if (data.length >= 4 && this.pendingCommands.get(seqId)?.command === EEsspCommand.GetSerialNumber) {
+        const serialNumber = this.convertBytesToInt32(data.slice(0, 4));
+        decoded = {name:response.name as EsspEvent,description:serialNumber+'',data} ;
+      } else if (data.length > 0) { // Poll events
+        const eventCode = data[0];
+        const eventInfo = this.responseMap[eventCode];
+        decoded = eventInfo ? {name:eventInfo.name as EsspEvent,description:eventInfo.description,data} as IEventInfo: {name:'UNKNOWN' as EsspEvent,description:eventCode.toString(16),data} as IEventInfo;;
+        if (data.length > 1) {
+          switch (eventCode) {
+            case 238: // CREDIT_NOTE
+            case 239: // READ_NOTE
+              decoded.data= data[1];
+              break;
+            case 225: // NOTE_CLEARED_FROM_FRONT
+            case 226: // NOTE_CLEARED_TO_CASHBOX
+              decoded.data =data[1];
+              break;
+            case 230: // FRAUD_ATTEMPT
+              if (data.length >= 2) decoded.data=data[1];
+              break;
+            default:
+              decoded.data= this.toHexString(new Uint8Array(data.slice(1)));
           }
         }
-        if (command === 0xF0 && data.length > 0) {
-          const rejectCode = data[0];
-          const rejectInfo = this.rejectCodeMap[rejectCode] || { name: "UNKNOWN", description: "Unknown reject reason" };
-          decoded += `, Reject Reason: ${rejectInfo.name} - ${rejectInfo.description}`;
-        }
-        if (command === 0xF0 && data.length >= 12) {
-          const unitType = data[0];
-          const firmwareVersion = String.fromCharCode(...data.slice(1, 5));
-          const countryCode = String.fromCharCode(...data.slice(5, 8));
-          const valueMultiplier = this.convertBytesToInt32(data.slice(8, 11).concat(0)); // Pad to 4 bytes
-          const protocolVersion = data[11];
-          decoded += `, Unit Type: ${this.getUnitType(unitType)}, Firmware: ${firmwareVersion}, Country: ${countryCode}, Multiplier: ${valueMultiplier}, Protocol: ${protocolVersion}`;
-        }
-        
-        if (command === 0xF0 && data.length > 0) {
-          const channelCount = data[0];
-          const channelValues = data.slice(1, 1 + channelCount);
-          decoded += `, Channel Count: ${channelCount}, Values: ${channelValues.join(', ')}`;
-        }
-    
-    response.description+=':'+decoded;
-    this.eventSubject.next({ event: this.responseMap[command]?.name as EsspEvent , details: data, description: response.description });
-
+      }
+    } else if (data.length > 0) { // Non-OK events (unlikely for POLL, but kept for robustness)
+      const eventCode = data[0];
+      const eventInfo = this.responseMap[eventCode];
+      decoded = eventInfo ? {name:eventInfo.name as EsspEvent ,description:eventInfo.description,data}as IEventInfo: {name:'UNKNOWN'as EsspEvent,description:eventCode.toString(16),data}as IEventInfo;
+    }
+  
+    this.addLogMessage(this.log, `Decoded event: ${decoded}`);
     return decoded;
   }
   private startPolling(): void {
     if (this.tCounter) clearInterval(this.tCounter);
     this.isPolling = true;
+    let retryCount = 0;
+    const maxRetries = 5;
+    let lastResponseTime = Date.now();
+  
     this.tCounter = setInterval(async () => {
       if (!this.isPolling) return;
       try {
         this.addLogMessage(this.log, 'POLLING');
-        const result = await this.retryCommand(EEsspCommand.Poll, {}, 3); // Removed transactionID
+        const result = await this.retryCommand(EEsspCommand.Poll, {}, 3);
         this.addLogMessage(this.log, `Poll result: ${JSON.stringify(result)}`);
+        retryCount = 0;
+        lastResponseTime = Date.now();
       } catch (error) {
-        this.addLogMessage(this.log, `Polling failed: ${error.message}`);
+        retryCount++;
+        this.addLogMessage(this.log, `Polling failed (attempt ${retryCount}/${maxRetries}): ${error.message}`);
+        if (retryCount >= maxRetries) {
+          this.stopPolling();
+          console.log(`Polling failed after ${maxRetries} retries: ${error.message}`);
+          // throw new Error(`Polling failed after ${maxRetries} retries: ${error.message}`);
+        }
+        if (Date.now() - lastResponseTime > 10000) { // 10s silence
+          this.addLogMessage(this.log, 'No response from device for 10s, restarting polling...');
+          this.stopPolling();
+          this.startPolling();
+        }
       }
-    }, 300); // Set to 300ms per your 200ms-1000ms range
+    }, 300);
   }
   private readonly responseMap: { [key: number]: { name: string; description: string } } = {
     // Status Codes (240-250)
