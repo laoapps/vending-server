@@ -20,14 +20,14 @@ import { ADH815Service } from './adh815.service';
   providedIn: 'root'
 })
 export class VendingIndexServiceService {
-  log: IlogSerial={data:'',limit:50};
+  log: IlogSerial = { data: '', limit: 50 };
   portName = '/dev/ttyS1';
   baudRate = 9600;
 
   task: ISerialService;
 
 
-  constructor( public vmc: VmcService,public zdm8:Zdm8Service, public pulseTp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service,public m102:MT102Service,public adh815:ADH815Service) {
+  constructor(public vmc: VmcService, public zdm8: Zdm8Service, public tp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service, public m102: MT102Service, public adh815: ADH815Service) {
     App.addListener('appStateChange', async ({ isActive }) => {
       if (isActive) {
         return;
@@ -45,47 +45,48 @@ export class VendingIndexServiceService {
       });
     });
   }
-  async initZDM8(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial):Promise<ISerialService> {
-    return new Promise<ISerialService>(async (resolve, reject) => { 
+  async initZDM8(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
       this.baudRate = baudRate;
-  
+
       const x = await this.zdm8.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-      if(x!=this.portName){
-        reject(null) ;
+      if (x != this.portName) {
+        reject(null);
       }
       console.log('vendingindex service  zdm8 Serial port initialized');
       this.task = this.zdm8;
       return resolve(this.zdm8);
     });
-  
+
   }
-  async initVMC(portName: string = '/dev/ttyS0', baudRate: number = 57600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial):Promise<ISerialService> {
-    return new Promise<ISerialService>(async (resolve, reject) => { 
-    this.portName = portName;
-    this.baudRate = baudRate;
-    const x = await this.vmc.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    if(x!=this.portName){
-      return reject(null);
-    }
-    console.log('vendingindex service  VMC Serial port initialized');
-    this.task = this.vmc;
-    return resolve( this.vmc);
-  });
-  }
-  async initPulse77p(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial) :Promise<ISerialService> {
-    return new Promise<ISerialService>(async (resolve, reject) => { 
+  async initVMC(portName: string = '/dev/ttyS0', baudRate: number = 57600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
-    this.baudRate = baudRate;
-    const x = await this.pulseTp773b.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    if(x!=this.portName){
-      return reject(null);
-    }
-    console.log('vendingindex service  tp773b Serial port initialized');
-    this.task = this.pulseTp773b;
-    return resolve(this.pulseTp773b);});
+      this.baudRate = baudRate;
+      const x = await this.vmc.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  VMC Serial port initialized');
+      this.task = this.vmc;
+      return resolve(this.vmc);
+    });
   }
-   // async initEssp(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial,channels=[1,1,1,1,1,1,1]):Promise<ISerialService> {
+  async initTop77p(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
+      this.portName = portName;
+      this.baudRate = baudRate;
+      const x = await this.tp773b.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  tp773b Serial port initialized');
+      this.task = this.tp773b;
+      return resolve(this.tp773b);
+    });
+  }
+  // async initEssp(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial,channels=[1,1,1,1,1,1,1]):Promise<ISerialService> {
   //   return new Promise<ISerialService>(async (resolve, reject) => { 
   //     this.portName = portName;
   //   this.baudRate = baudRate;
@@ -99,58 +100,58 @@ export class VendingIndexServiceService {
   //   return resolve(this.essp);
   // });
   // }
-  async initEssp(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Essp,channels=[1, 1, 1, 1, 1, 1, 1]):Promise<ISerialService> {
-    return new Promise<ISerialService>(async (resolve, reject) => { 
+  async initEssp(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial, channels = [1, 1, 1, 1, 1, 1, 1]): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
-    this.baudRate = baudRate;
-    this.essp.setChannels(channels);
-    const  x= await this.essp.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    if(x!=this.portName){
-      return reject(null);
-    }
-    console.log('vendingindex service  initEssp Serial port initialized');
-    this.task = this.essp;
-    return resolve(this.essp);
-  });
+      this.baudRate = baudRate;
+      this.essp.setChannels(channels);
+      const x = await this.essp.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  initEssp Serial port initialized');
+      this.task = this.essp;
+      return resolve(this.essp);
+    });
   }
-  async initCctalk(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial):Promise<ISerialService> {
-    return new Promise<ISerialService>(async (resolve, reject) => { 
-       this.portName = portName;
-    this.baudRate = baudRate;
-    const x =await this.cctalk.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    if(x!=this.portName){
-      return reject(null);
-    }
-    console.log('vendingindex service  initCctalk Serial port initialized');
-    this.task = this.cctalk;
-    return resolve(this.cctalk);
-  });
-  }
-  async initM102(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial) :Promise<ISerialService> {
-    return new Promise<ISerialService>(async (resolve, reject) => { 
+  async initCctalk(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
-    this.baudRate = baudRate;
-    const x = await this.m102.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    if(x!=this.portName){
-      return reject(null);
-    }
-    console.log('vendingindex service  initM102 Serial port initialized');
-    this.task = this.m102;
-    return resolve(this.m102);
-  });
+      this.baudRate = baudRate;
+      const x = await this.cctalk.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  initCctalk Serial port initialized');
+      this.task = this.cctalk;
+      return resolve(this.cctalk);
+    });
   }
-  async initADH815(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial):Promise<ISerialService> {
-    return new Promise<ISerialService>(async (resolve, reject) => { 
+  async initM102(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
-    this.baudRate = baudRate;
-    const x = await this.adh815.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-    if(x!=this.portName){
-      return reject(null);
-    }
-    console.log('vendingindex service  initADH815 Serial port initialized');
-    this.task = this.adh815;
-    return resolve(this.adh815);
-  });
+      this.baudRate = baudRate;
+      const x = await this.m102.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  initM102 Serial port initialized');
+      this.task = this.m102;
+      return resolve(this.m102);
+    });
+  }
+  async initADH815(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
+      this.portName = portName;
+      this.baudRate = baudRate;
+      const x = await this.adh815.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  initADH815 Serial port initialized');
+      this.task = this.adh815;
+      return resolve(this.adh815);
+    });
   }
 
 

@@ -23,10 +23,10 @@ enum EEsspCommand {
   UnitData = 'UNIT_DATA',
   ChannelValueRequest = 'CHANNEL_VALUE_REQUEST'
 }
-interface IEventInfo{
-  name:EsspEvent;
-  description:string;
-  data:any;
+interface IEventInfo {
+  name: EsspEvent;
+  description: string;
+  data: any;
 }
 enum EsspEvent {
   JAM_RECOVERY = 'JAM_RECOVERY',
@@ -115,7 +115,7 @@ export class EsspService implements ISerialService {
         this.processBuffer();
       }
     });
-    this.getEvents().subscribe(async (event)=>{
+    this.getEvents().subscribe(async (event) => {
       // GET THE CREDIT_NOTE here 
 
       // if(event.name== EsspEvent.CREDIT_NOTE){
@@ -124,7 +124,7 @@ export class EsspService implements ISerialService {
       //     await this.enable();
       //   },10000)
       // }
-      console.log('COMMING DATA: '+`name: ${event.name}, data: ${event.data}, description: ${event.description}`);
+      console.log('COMMING DATA: ' + `name: ${event.name}, data: ${event.data}, description: ${event.description}`);
     })
   }
   isPrime(n: BigInt.BigInteger): boolean {
@@ -215,10 +215,10 @@ export class EsspService implements ISerialService {
             try {
               const parsed = this.parsePacket(packetHex);
               const decodedResponse = this.decodeEvents(parsed.command, parsed.seqId, parsed.data);
-              console.log(' decodedResponse COMMING DATA: '+`name: ${this.responseMap[parsed.command]?.name}, Parsed packet: ${packetHex}, Decoded: ${JSON.stringify(decodedResponse)}`)
+              console.log(' decodedResponse COMMING DATA: ' + `name: ${this.responseMap[parsed.command]?.name}, Parsed packet: ${packetHex}, Decoded: ${JSON.stringify(decodedResponse)}`)
               this.addLogMessage(this.log, `Parsed packet: ${packetHex}, Decoded: ${decodedResponse}`);
               const commandEntry = this.pendingCommands.get(parsed.seqId);
-              this.eventSubject.next({ name: decodedResponse.name , data: decodedResponse.data, description:decodedResponse.description });
+              this.eventSubject.next({ name: decodedResponse.name, data: decodedResponse.data, description: decodedResponse.description });
 
               if (commandEntry) {
                 this.responseSubject.next({
@@ -379,7 +379,7 @@ export class EsspService implements ISerialService {
           this.initBankNotes();
           const results = new Array<IResModel>();
           this.addLogMessage(this.log, 'Starting initialization...');
-  
+
           results.push(await this.retryCommand(EEsspCommand.Sync, {}));
           this.addLogMessage(this.log, 'SYNC completed');
           // await this.delay(100);
@@ -405,7 +405,7 @@ export class EsspService implements ISerialService {
           // await this.delay(100);
           results.push(await this.retryCommand(EEsspCommand.SetChannelInhibits, { channels: this.channels }));
           this.addLogMessage(this.log, 'SetChannelInhibits completed');
-  
+
           this.startPolling();
           this.addLogMessage(this.log, `Initialization completed: ${JSON.stringify(results)}`);
           resolve(results[0]);
@@ -480,7 +480,7 @@ export class EsspService implements ISerialService {
   }
 
 
-  private async retryCommand(command: EEsspCommand, params: any = {}, retries: number =20): Promise<IResModel> {
+  private async retryCommand(command: EEsspCommand, params: any = {}, retries: number = 20): Promise<IResModel> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         return await this.commandEssp(command, params);
@@ -808,42 +808,42 @@ export class EsspService implements ISerialService {
     console.log('seqId ' + seqId + ' command ' + command + ' status ' + command);
     const response = this.responseMap[command];
     let decoded = {} as IEventInfo
-    decoded = response ? {name:response.name as EsspEvent,description:response.description,data}as IEventInfo : {name:'UNKNOWN' as EsspEvent,description:command.toString(16),data} as IEventInfo;
-  
+    decoded = response ? { name: response.name as EsspEvent, description: response.description, data } as IEventInfo : { name: 'UNKNOWN' as EsspEvent, description: command.toString(16), data } as IEventInfo;
+
     if (command === 0xF0) { // OK response
       if (data.length === 0) {
-        decoded = {name:response.name as EsspEvent,description:response.description,data} ; // Simple OK
+        decoded = { name: response.name as EsspEvent, description: response.description, data }; // Simple OK
       } else if (data.length >= 4 && this.pendingCommands.get(seqId)?.command === EEsspCommand.GetSerialNumber) {
         const serialNumber = this.convertBytesToInt32(data.slice(0, 4));
-        decoded = {name:response.name as EsspEvent,description:serialNumber+'',data} ;
+        decoded = { name: response.name as EsspEvent, description: serialNumber + '', data };
       } else if (data.length > 0) { // Poll events
         const eventCode = data[0];
         const eventInfo = this.responseMap[eventCode];
-        decoded = eventInfo ? {name:eventInfo.name as EsspEvent,description:eventInfo.description,data} as IEventInfo: {name:'UNKNOWN' as EsspEvent,description:eventCode.toString(16),data} as IEventInfo;;
+        decoded = eventInfo ? { name: eventInfo.name as EsspEvent, description: eventInfo.description, data } as IEventInfo : { name: 'UNKNOWN' as EsspEvent, description: eventCode.toString(16), data } as IEventInfo;;
         if (data.length > 1) {
           switch (eventCode) {
             case 238: // CREDIT_NOTE
             case 239: // READ_NOTE
-              decoded.data= data[1];
+              decoded.data = data[1];
               break;
             case 225: // NOTE_CLEARED_FROM_FRONT
             case 226: // NOTE_CLEARED_TO_CASHBOX
-              decoded.data =data[1];
+              decoded.data = data[1];
               break;
             case 230: // FRAUD_ATTEMPT
-              if (data.length >= 2) decoded.data=data[1];
+              if (data.length >= 2) decoded.data = data[1];
               break;
             default:
-              decoded.data= this.toHexString(new Uint8Array(data.slice(1)));
+              decoded.data = this.toHexString(new Uint8Array(data.slice(1)));
           }
         }
       }
     } else if (data.length > 0) { // Non-OK events (unlikely for POLL, but kept for robustness)
       const eventCode = data[0];
       const eventInfo = this.responseMap[eventCode];
-      decoded = eventInfo ? {name:eventInfo.name as EsspEvent ,description:eventInfo.description,data}as IEventInfo: {name:'UNKNOWN'as EsspEvent,description:eventCode.toString(16),data}as IEventInfo;
+      decoded = eventInfo ? { name: eventInfo.name as EsspEvent, description: eventInfo.description, data } as IEventInfo : { name: 'UNKNOWN' as EsspEvent, description: eventCode.toString(16), data } as IEventInfo;
     }
-  
+
     this.addLogMessage(this.log, `Decoded event: ${decoded}`);
     return decoded;
   }
@@ -853,7 +853,7 @@ export class EsspService implements ISerialService {
     let retryCount = 0;
     const maxRetries = 5;
     let lastResponseTime = Date.now();
-  
+
     this.tCounter = setInterval(async () => {
       if (!this.isPolling) return;
       try {
