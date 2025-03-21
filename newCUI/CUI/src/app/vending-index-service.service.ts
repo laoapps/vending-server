@@ -27,7 +27,7 @@ export class VendingIndexServiceService {
   task: ISerialService;
 
 
-  constructor( public vmc: VmcService,public zdm8:Zdm8Service, public tp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service,public m102:MT102Service,public adh815:ADH815Service) {
+  constructor( public vmc: VmcService,public zdm8:Zdm8Service, public pulseTp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service,public m102:MT102Service,public adh815:ADH815Service) {
     App.addListener('appStateChange', async ({ isActive }) => {
       if (isActive) {
         return;
@@ -73,17 +73,17 @@ export class VendingIndexServiceService {
     return resolve( this.vmc);
   });
   }
-  async initTop77p(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial) :Promise<ISerialService> {
+  async initPulse77p(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial) :Promise<ISerialService> {
     return new Promise<ISerialService>(async (resolve, reject) => { 
       this.portName = portName;
     this.baudRate = baudRate;
-    const x = await this.tp773b.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+    const x = await this.pulseTp773b.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
     if(x!=this.portName){
       return reject(null);
     }
     console.log('vendingindex service  tp773b Serial port initialized');
-    this.task = this.tp773b;
-    return resolve(this.tp773b);});
+    this.task = this.pulseTp773b;
+    return resolve(this.pulseTp773b);});
   }
    // async initEssp(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial,channels=[1,1,1,1,1,1,1]):Promise<ISerialService> {
   //   return new Promise<ISerialService>(async (resolve, reject) => { 

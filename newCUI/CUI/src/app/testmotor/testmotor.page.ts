@@ -71,7 +71,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       Toast.show({ text: 'Start ZDM8' });
     }
     else if (this.selectedDevice == 'Tp77p') {
-      await this.satrtTp77p();
+      await this.startPulseTP77p();
       Toast.show({ text: 'Start Tp77p3b' });
     }
     else if (this.selectedDevice == 'essp') {
@@ -81,7 +81,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
     }
     else if (this.selectedDevice == 'cctalk') {
       await this.startCctalk();
-      Toast.show({ text: 'Start essp' });
+      Toast.show({ text: 'Start cctalk' });
     }
     else if (this.selectedDevice == 'adh815') {
       await this.startAHD815();
@@ -253,13 +253,13 @@ export class TestmotorPage implements OnInit, OnDestroy {
     }
     this.vlog.log = this.serial.log;
   }
-  async satrtTp77p() {
+  async startPulseTP77p() {
     if (this.serial) {
       await this.serial.close();
       this.serial = null;
     }
-    this.serial = await this.vendingIndex.initTop77p(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
-    if (!this.serial) {
+    this.serial = await this.vendingIndex.initTop77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    if(!this.serial){
       Toast.show({ text: 'serial not init' });
     }
     this.vlog.log = this.serial.log;
