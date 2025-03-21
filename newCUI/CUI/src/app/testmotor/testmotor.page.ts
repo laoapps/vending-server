@@ -258,7 +258,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       await this.serial.close();
       this.serial = null;
     }
-    this.serial = await this.vendingIndex.initPulse77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+    this.serial = await this.vendingIndex.initPulseTop77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
     if(!this.serial){
       Toast.show({ text: 'serial not init' });
     }

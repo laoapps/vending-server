@@ -73,7 +73,7 @@ export class VendingIndexServiceService {
       return resolve(this.vmc);
     });
   }
-  async initTop77p(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+  async initPulseTop77p(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
     return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
       this.baudRate = baudRate;

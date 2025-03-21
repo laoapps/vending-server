@@ -696,7 +696,7 @@ export class Tab1Page implements OnDestroy {
       await this.serial.close();
       this.serial = null;
     }
-    this.serial = await this.vendingIndex.initTop77p(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    this.serial = await this.vendingIndex.initPulseTop77p(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
     if (!this.serial) {
       Toast.show({ text: 'serial not init' });
     }
