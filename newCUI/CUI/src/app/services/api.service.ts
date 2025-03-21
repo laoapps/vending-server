@@ -3,13 +3,16 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
   EClientCommand,
   EPaymentProvider,
+  ESerialPortType,
   IAlive,
   IBillProcess,
   IClientId,
+  IlogSerial,
   IMachineClientID,
   IMachineId,
   IReqModel,
   IResModel,
+  ISerialService,
   IStock,
   IVendingMachineBill,
   IVendingMachineSale,
@@ -29,7 +32,7 @@ import * as  moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
-import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+// import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
@@ -79,6 +82,9 @@ import { HangmiStoreSegmentPage } from '../tab1/VendingSegment/hangmi-store-segm
 import { TopupAndServiceSegmentPage } from '../tab1/VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { IndexedDBService } from './indededdb.service';
 import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
+import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+import { Toast } from '@capacitor/toast';
+import { VendingIndexServiceService } from '../vending-index-service.service';
 
 @Injectable({
   providedIn: 'root',
@@ -226,6 +232,10 @@ export class ApiService {
   laabuuid: string;
 
   imageList: any = {};
+
+
+
+
 
   _billEvents = new EventEmitter();
   stock = new Array<IStock>();
@@ -521,30 +531,49 @@ export class ApiService {
     // this.initLocalHowToVideoPlayList();
   }
 
-  public waitingDelivery(r: any) {
+  async waitingDelivery(r: any, serial: ISerialService) {
     console.log('WAITING DELIVERY NEW :', r);
 
-    if (r) {
-      this.dismissModal();
-      this.dismissModal();
-      this.dismissLoading();
-      const pb = r.data as Array<IBillProcess>;
-      // console.log('=====> PB', pb);
+    console.log('VENDING ON SALE :', ApiService.vendingOnSale);
 
-      // console.log('=====> PB Length :', pb.length);
 
-      for (let index = 0; index < pb.length; index++) {
-        const element = pb[index];
-        this.IndexedDB.addBillProcess(element);
-        console.log('=====> PB ELEMENT :', element);
-      }
+    try {
+      if (r) {
+        this.dismissModal();
+        this.dismissModal();
+        this.dismissLoading();
+        const pb = r.data as Array<IBillProcess>;
+        // console.log('=====> PB', pb);
 
-      if (pb.length)
-        this.showModal(RemainingbilllocalPage, { r: pb }, true).then((r) => {
-          r.present();
+        // console.log('=====> PB Length :', pb.length);
+        // const pdStock = [];
+        let transactionList = [];
+        for (let index = 0; index < pb.length; index++) {
+          const element = pb[index];
+          this.IndexedDB.addBillProcess(element);
+          console.log('=====> PB ELEMENT :', element);
+          transactionList.push(element.transactionID);
+          // pdStock.push({ transactionID: element.transactionID, position: element.position });
+          // this.reconfirmStockNew([{ transactionID: element.transactionID, position: element.position }]);
+        }
+        // console.log('transactionList :', transactionList);
+
+        this.confirmBillPaid(transactionList).subscribe((r) => {
+          console.log('=====> CONFIRM BILL PAID :', r);
         });
-      this.eventEmmiter.emit('delivery');
 
+        // console.log('=====> PD STOCK :', pdStock);
+
+
+        if (pb.length)
+          this.showModal(RemainingbillsPage, { r: pb, serial: serial }, true).then((r) => {
+            r.present();
+          });
+        this.eventEmmiter.emit('delivery');
+
+      }
+    } catch (error) {
+      console.log('error waitingDelivery is:', error);
     }
 
   }
@@ -563,11 +592,65 @@ export class ApiService {
   //   return ApiService.vendingOnSale;
   // }
 
-  reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
+  reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>) {
     const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
     console.log(`ping pending stock`, trans);
     const params = {
       trans: trans
+    }
+
+    try {
+      const vsales = ApiService.vendingOnSale;
+      // const x = vsales.find((v) => {
+      //   pendingStock.filter(item => {
+      //     if (v.position == item.position) {
+      //       if (v.stock.qtty > 0) {
+      //         v.stock.qtty--;
+      //       }
+      //       return true;
+      //     }
+      //   });
+      // });
+
+      const x = vsales.find((v) => {
+        for (let i = 0; i < pendingStock.length; i++) {
+          const item = pendingStock[i];
+          if (v.position == item.position) {
+            if (v.stock.qtty > 0) {
+              v.stock.qtty--;
+            }
+            return true;
+          }
+        }
+      });
+      this.eventEmitter.emit('stockdeduct', x);
+      if (!localStorage.getItem('debug')) {
+
+        // this.saveSale(vsales).subscribe((r) => {
+        //   console.log(r);
+        //   if (r.status) {
+        //     console.log(`save sale success`);
+        //   } else {
+        //     this.simpleMessage(IENMessage.saveSaleFail);
+        //   }
+        // });
+
+        console.log(`pending stock mode vendingOnSale-->`, vsales);
+        this.storage.set('saleStock', vsales, 'stock').then((r) => {
+          // that.deductOrderUpdate(x.position);
+        });
+      }
+    } catch (error) {
+      console.log(error.message);
+      this.alertError(error.message);
+    }
+  }
+
+  reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
+    const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
+    console.log(`ping pending stock`, trans);
+    const params = {
+
     }
 
     try {
@@ -610,6 +693,9 @@ export class ApiService {
       this.alertError(error.message);
     }
   }
+
+
+
   public validateDB() { }
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);
@@ -758,7 +844,7 @@ export class ApiService {
     this.storage.set('productItems', this.stock, 'item');
   }
 
-  async showModal(component: any, d: any = {}, closebyblackdrop: boolean = true) {
+  async showModal(component: any, d: any = {}, closebyblackdrop: boolean = true, cssClass: string = '') {
     try {
       // let x = '{';
       // const l = Object.keys(d).length;
@@ -773,7 +859,7 @@ export class ApiService {
       return await this.modal.create({
         component,
         componentProps: d,
-        cssClass: 'dialog-fullscreen',
+        cssClass: cssClass || 'dialog-fullscreen',
         backdropDismiss: closebyblackdrop
       });
     } catch (error) {
@@ -912,6 +998,38 @@ export class ApiService {
       { headers: this.headerBase() }
     );
   }
+
+
+  confirmBillPaid(transactionList: any) {
+    console.log('confirmBillPaid', transactionList);
+
+    return this.http.post<IResModel>(
+      this.url + '/confirmPaidBill',
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+        machineId: this.machineId.machineId,
+        transactionList: transactionList
+      },
+      { headers: this.headerBase() }
+    );
+  }
+
+
+  retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
+    return this.http.post<IResModel>(
+      this.url + '/retryProcessBillNew?T=' + T + '&position=' + position,
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+        ownerUuid: ownerUuid,
+        trandID: trandID
+      },
+      { headers: this.headerBase() }
+    );
+  }
   retryProcessBill(T: string, position: number) {
     return this.http.post<IResModel>(
       this.url + '/retryProcessBill?T=' + T + '&position=' + position,
@@ -951,13 +1069,15 @@ export class ApiService {
   }
 
 
-  checkPaidBill(transactionID: string) {
+  checkPaidBill() {
     const body = {
       command: "findLaoQRPaid",
       data: {
-        trandID: transactionID
+        machineId: this.machineId.machineId
       }
     };
+    console.log('checkPaidBill', body.data);
+
     return this.http.post(
       this.serverUrl, body, {
       headers: this.headerBase()
@@ -980,6 +1100,8 @@ export class ApiService {
     req.token = cryptojs
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
+    // console.log('req', req);
+
     // req.data.clientId = this.clientId.clientId;
     return this.http.post<IResModel>(this.url, req, {
       headers: this.headerBase(),
@@ -1526,4 +1648,6 @@ export class ApiService {
     this.___OrderPaidPage?.dismiss();
     this.___AutoPaymentPage?.dismiss();
   }
+
+
 }

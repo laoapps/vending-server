@@ -5,9 +5,9 @@
 export const environment = {
   production: false,
   // url:'http://localhost:9006',
-  baseurl: 'http://192.168.88.38:9006',
-  url: 'http://192.168.88.38:9006/zdm8',
-  wsurl: 'ws://192.168.88.38:9006/zdm8',
+  baseurl: 'https://tvending.khamvong.com',
+  url: 'https://tvending.khamvong.com/zdm8',
+  wsurl: 'ws://tvending.khamvong.com/zdm8',
   filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
   // filemanagerurl: 'http://192.168.2.107:24556/api/v1/file/'
 

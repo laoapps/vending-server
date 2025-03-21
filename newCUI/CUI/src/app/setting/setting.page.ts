@@ -6,6 +6,8 @@ import { IENMessage } from '../models/base.model';
 import axios from 'axios';
 import { IonicStorageService } from '../ionic-storage.service';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
+import { TestmotorPage } from '../testmotor/testmotor.page';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-setting',
@@ -17,27 +19,34 @@ export class SettingPage implements OnInit, OnDestroy {
   url = localStorage.getItem('url') || environment.url;
   machineId = localStorage.getItem('machineId') || '12345678';
   otp = localStorage.getItem('otp') || '111111';
+
+  portName = localStorage.getItem('portName') || '/dev/ttyS0';
+  baudRate = localStorage.getItem('baudRate') || '9600';
+  device = localStorage.getItem('device') || 'VMC';
+
   contact = localStorage.getItem('contact') || '55516321';
-  isRobotMuted=localStorage.getItem('isRobotMuted')?true:false;
-  isMusicMuted=localStorage.getItem('isMusicMuted')?true:false;
-  isAds=localStorage.getItem('isAds')?true:false;
-  francisemode=localStorage.getItem('francisemode')?true:false;
-  musicVolume=localStorage.getItem('musicVolume')?Number(localStorage.getItem('musicVolume')):6;
-  productFallLimit = localStorage.getItem('product_fall_limit')?Number(localStorage.getItem('product_fall_limit')):10;
+  isRobotMuted = localStorage.getItem('isRobotMuted') ? true : false;
+  isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
+  isAds = localStorage.getItem('isAds') ? true : false;
+  francisemode = localStorage.getItem('francisemode') ? true : false;
+  musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
+  productFallLimit = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
   startM: number = 1;
   endM = 60;
-  testIn:any;
+  testIn: any;
   testInTitle: string = 'test motor';
 
   successList: Array<number> = [];
   errorList: Array<number> = [];
-  
+
+  devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
 
   constructor(
     private apiService: ApiService,
     public storage: IonicStorageService,
     private cashingService: AppcachingserviceService,
+    public modal: ModalController,
   ) { }
 
   ngOnInit() {
@@ -56,33 +65,58 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('machineId', this.machineId)
     localStorage.setItem('otp', this.otp)
     localStorage.setItem('contact', this.contact)
-    localStorage.setItem('isRobotMuted',this.isRobotMuted?'yes':'');
-    localStorage.setItem('isMusicMuted',this.isMusicMuted?'yes':'');
-    localStorage.setItem('isAds',this.isAds?'yes':'');
-    localStorage.setItem('francisemode',this.francisemode?'yes':'');
-    localStorage.setItem('musicVolume',this.musicVolume+'');
+    localStorage.setItem('isRobotMuted', this.isRobotMuted ? 'yes' : '');
+    localStorage.setItem('isMusicMuted', this.isMusicMuted ? 'yes' : '');
+    localStorage.setItem('isAds', this.isAds ? 'yes' : '');
+    localStorage.setItem('francisemode', this.francisemode ? 'yes' : '');
+    localStorage.setItem('musicVolume', this.musicVolume + '');
+
+    localStorage.setItem('portName', this.portName);
+    localStorage.setItem('baudRate', this.baudRate);
+    localStorage.setItem('device', this.device);
 
     // product fall limit
     if (this.productFallLimit > 30) this.productFallLimit = 30;
     else if (this.productFallLimit < 0) this.productFallLimit = 10;
-    localStorage.setItem('product_fall_limit', this.productFallLimit+'');
+    localStorage.setItem('product_fall_limit', this.productFallLimit + '');
 
 
-    this.storage.set('saleStock',[], 'stock').then(r=>{
-      console.log('reset',r);
+    this.storage.set('saleStock', [], 'stock').then(r => {
+      console.log('reset', r);
       window.location.reload();
-    }).catch(e=>{
-      console.log('reset error',e);
+    }).catch(e => {
+      console.log('reset error', e);
     });
   }
-  reset(){
-    this.storage.set('saleStock',[], 'stock').then(r=>{
-      console.log('reset',r);
+
+
+
+  getToTestMotorPage(i: string) {
+    let data = {
+      action: i
+    }
+    console.log(TestmotorPage, data);
+
+    this.apiService.showModal(TestmotorPage, data, true, 'dialog-fullscreen').then(r => {
+      r.present();
+      r.onDidDismiss().then(res => {
+        if (res.data.reload) {
+        }
+      })
+    })
+  }
+
+  selectDevice(event) {
+    localStorage.setItem('device', this.device);
+  }
+  reset() {
+    this.storage.set('saleStock', [], 'stock').then(r => {
+      console.log('reset', r);
       window.location.reload();
-    }).catch(e=>{
-      console.log('reset error',e);
+    }).catch(e => {
+      console.log('reset error', e);
     });
-   }
+  }
 
   openSettingControlMenu() {
     this.apiService.modal.create({ component: SettingControlMenuPage, cssClass: 'dialog-fullscreen' }).then(r => {
@@ -91,7 +125,7 @@ export class SettingPage implements OnInit, OnDestroy {
   }
 
   testMotor(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       let start = this.startM;
       let end = this.endM;
       try {
@@ -114,9 +148,8 @@ export class SettingPage implements OnInit, OnDestroy {
         this.testInTitle = 'stop test motor';
         this.testIn = setInterval(() => {
 
-          
-          if (start <= end)
-          {
+
+          if (start <= end) {
 
             const params = {
               command: 'test',
@@ -125,21 +158,20 @@ export class SettingPage implements OnInit, OnDestroy {
               }
             }
             axios.post(`http://localhost:19006`, params)
-            .then(r => {
-              console.log(`response`);
-              this.successList.push(start);
-              this.apiService.simpleMessage(`SUCCESS: test motor ${start}`, 1000);
-            })
-            .catch(error => {
-              this.errorList.push(start);
-              this.apiService.simpleMessage(`ERROR: test motor ${start}`, 1000);
-            });
-            start+=1;
+              .then(r => {
+                console.log(`response`);
+                this.successList.push(start);
+                this.apiService.simpleMessage(`SUCCESS: test motor ${start}`, 1000);
+              })
+              .catch(error => {
+                this.errorList.push(start);
+                this.apiService.simpleMessage(`ERROR: test motor ${start}`, 1000);
+              });
+            start += 1;
 
           }
-          else 
-          {
-            this.apiService.simpleMessage(`SUCCESS ${this.successList.length || 0 } ERROR ${this.errorList.length || 0 }`, 1000);
+          else {
+            this.apiService.simpleMessage(`SUCCESS ${this.successList.length || 0} ERROR ${this.errorList.length || 0}`, 1000);
             clearInterval(this.testIn);
             this.testIn = null;
             start = this.startM;
@@ -202,17 +234,17 @@ export class SettingPage implements OnInit, OnDestroy {
       }
     }
     axios.post(`http://localhost:19006`, params)
-    .then(r => {
-      console.log(`response`);
-      this.apiService.simpleMessage(`SUCCESS: test motor ${1}`, 5000);
-    })
-    .catch(error => {
-      this.apiService.simpleMessage(`ERROR: test motor ${1}`, 5000);
-    });
+      .then(r => {
+        console.log(`response`);
+        this.apiService.simpleMessage(`SUCCESS: test motor ${1}`, 5000);
+      })
+      .catch(error => {
+        this.apiService.simpleMessage(`ERROR: test motor ${1}`, 5000);
+      });
   }
 
   resetCashing(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         const ownerUuid = localStorage.getItem('machineId');
         if (ownerUuid) {
@@ -220,12 +252,12 @@ export class SettingPage implements OnInit, OnDestroy {
           window.location.reload();
         }
 
-         resolve(IENMessage.success);
+        resolve(IENMessage.success);
       } catch (error) {
         this.apiService.alertError(error.message);
         resolve(error.message);
       }
-    }); 
+    });
   }
 
 }

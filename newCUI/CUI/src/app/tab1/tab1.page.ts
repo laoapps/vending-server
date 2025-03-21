@@ -9,13 +9,18 @@ import {
 import { ApiService } from '../services/api.service';
 import {
   EClientCommand,
+  EMACHINE_COMMAND,
+  ESerialPortType,
   IBillProcess,
+  IlogSerial,
   IMachineClientID,
   IMachineId,
   IMMoneyQRRes,
+  ISerialService,
   IStock,
   IVendingMachineBill,
   IVendingMachineSale,
+  machineVMCStatus,
 } from '../services/syste.model';
 import { LoadingController, ModalController, Platform } from '@ionic/angular';
 // import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
@@ -67,6 +72,12 @@ var host = window.location.protocol + '//' + window.location.host;
 // import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { AutoPaymentPage } from './Vending/auto-payment/auto-payment.page';
 import { TestmotorPage } from '../testmotor/testmotor.page';
+import { VendingIndexServiceService } from '../vending-index-service.service';
+import { SerialServiceService } from '../services/serialservice.service';
+import { Toast } from '@capacitor/toast';
+import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
+import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.process';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-tab1',
@@ -74,6 +85,31 @@ import { TestmotorPage } from '../testmotor/testmotor.page';
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page implements OnDestroy {
+
+
+
+  serial: ISerialService;
+  open = false;
+
+  vlog = { log: { data: '', limit: 50 } as IlogSerial };
+
+
+  devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
+
+  selectedDevice = localStorage.getItem('device') || 'VMC';
+
+  portName = localStorage.getItem('portName') || '/dev/ttyS0';
+  baudRate = localStorage.getItem('baudRate') || 9600;
+  platforms: { label: string; value: ESerialPortType }[] = [];
+  isSerial: ESerialPortType = ESerialPortType.Serial;
+
+  connecting = false;
+
+  isDropStock = false;
+
+
+
+
   isShowLaabTabEnabled: boolean = false;
 
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
@@ -89,6 +125,8 @@ export class Tab1Page implements OnDestroy {
 
   acceptcash: number;
   _machineStatus = { status: {} as IMachineStatus } as any;
+
+  machinestatus = { data: '' };
 
   production = environment.production;
 
@@ -176,6 +214,13 @@ export class Tab1Page implements OnDestroy {
   otherModalAreOpening: boolean = false;
 
 
+  countdownCheckLaoQRPaidTimer: any = {} as any;
+  // countdownCheckLaoQRPaid: number = 90;
+  private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
+
+
+
+
   // interval
   refreshAll: any = {} as any;
   refreshAllCounter: number = 0;
@@ -206,7 +251,10 @@ export class Tab1Page implements OnDestroy {
     private vendingAPIService: VendingAPIService,
     private WSAPIService: WsapiService,
     private cashingService: AppcachingserviceService,
-    public loading: LoadingController
+    public loading: LoadingController,
+    private vendingIndex: VendingIndexServiceService,
+    private serialService: SerialServiceService,
+
   ) {
 
     this.refreshAllEveryHour();
@@ -235,6 +283,10 @@ export class Tab1Page implements OnDestroy {
       this.apiService,
       this.cashingService
     );
+
+
+    this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
+
 
     // alert('V1_'+this.mmLogo);
 
@@ -268,11 +320,11 @@ export class Tab1Page implements OnDestroy {
       this.onlineMachines = this.apiService.onlineMachines;
 
       try {
-        this.apiService.wsapi.loginSubscription.subscribe((r) => {
-          if (!r) return console.log('empty');
-          console.log('ws login subscription', r);
+        this.apiService.wsapi.loginSubscription.subscribe((rxx) => {
+          if (!rxx) return console.log('empty');
+          console.log('ws login subscription', rxx);
           this.apiService.myTab1 = this;
-          this.apiService.clientId.clientId = r.clientId;
+          this.apiService.clientId.clientId = rxx.clientId;
           this.apiService.wsAlive.time = new Date();
           this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
           // this.loadSaleList();
@@ -453,6 +505,34 @@ export class Tab1Page implements OnDestroy {
   ngOnInit() {
     this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
 
+    this.platforms = Object.keys(ESerialPortType)
+      .filter(key => isNaN(Number(key))) // Remove numeric keys
+      .map(key => ({
+        label: key,  // Display name
+        value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
+      }));
+    this.connect();
+
+    // this._processLoopCheckLaoQRPaid();
+    clearInterval(this.countdownCheckLaoQRPaidTimer);
+    this.countdownCheckLaoQRPaidTimer = setInterval(() => {
+      this._processLoopCheckLaoQRPaid();
+      this.apiService.IndexedDB.getBillProcesses().then((r) => {
+        if (r.length > 0) {
+          console.log('dropStock', r);
+          this.isDropStock = true;
+        } else {
+          console.log('out dropStock', r);
+          this.isDropStock = false;
+        }
+      }).catch((e) => {
+        console.log('Error get dropStock from local', e);
+        this.isDropStock = false;
+      });
+
+      console.log('*****CHECK 30 SECOND');
+    }, 30000);
+
   }
 
   ngOnDestroy(): void {
@@ -462,10 +542,313 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.loopPercent);
     clearInterval(this.installingPecent);
     clearInterval(this.refreshAll);
+    clearInterval(this.countdownCheckLaoQRPaidTimer);
+
+
+    if (this.serial) {
+      this.serial.close();
+      console.log('serial closed');
+    }
   }
+
+
+  private _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+
+      const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
+      console.log('=====> LAOQR CHECK :', run);
+
+      if (run.status == 1) {
+        this.apiService.waitingDelivery(run.message['data']['bill'], this.serial);
+      }
+
+      // clearInterval(this.countdownCheckLaoQRPaidTimer);
+
+      // this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+      //   console.log('transactionID', transactionID);
+      //   // console.log('CHECK');
+
+      //   // this.countdownCheckLaoQRPaid -= 5;
+      //   const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
+      //   console.log('=====> LAOQR CHECK :', run);
+
+      //   if (run.status == 1) {
+      //     this.apiService.waitingDelivery(run.message['data']['bill']);
+      //   }
+
+      //   // console.log('=====> LAOQR RUN :', run);
+
+      //   // console.log(`=====>LAOQR LOOP`, this.countdownCheckLaoQRPaid);
+      //   // if (this.countdownCheckLaoQRPaid <= 0) {
+      //   //   clearInterval(this.countdownCheckLaoQRPaidTimer);
+      //   //   this.countdownCheckLaoQRPaid = 90;
+      //   //   console.log('=====>LAOQR LOOP END');
+
+      //   //   resolve(IENMessage.success);
+      //   // }
+      // }, 30000);
+    });
+  }
+
+
+  async connect() {
+
+    if (this.connecting) {
+      return Toast.show({ text: 'Connecting' });
+    }
+    if (this.selectedDevice == 'VMC') {
+      this.baudRate = 57600;
+      await this.startVMC();
+      Toast.show({ text: 'Start VMC' });
+    }
+    else if (this.selectedDevice == 'ZDM8') {
+      await this.startZDM8();
+      Toast.show({ text: 'Start ZDM8' });
+    }
+    else if (this.selectedDevice == 'Tp77p') {
+      await this.satrtTp77p();
+      Toast.show({ text: 'Start Tp77p3b' });
+    }
+    else if (this.selectedDevice == 'essp') {
+      await this.startEssp();
+      Toast.show({ text: 'Start essp' });
+    }
+    else if (this.selectedDevice == 'cctalk') {
+      await this.startCctalk();
+      Toast.show({ text: 'Start essp' });
+    }
+    else if (this.selectedDevice == 'adh815') {
+      await this.startAHD815();
+      Toast.show({ text: 'Start adh815' });
+    }
+    else if (this.selectedDevice == 'm102') {
+      await this.startM102();
+      Toast.show({ text: 'Start m102' });
+    }
+    else {
+      Toast.show({ text: 'Please select device' })
+    }
+    this.connecting = false;
+  }
+
+
+  async startVMC() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initVMC(this.portName, Number(this.baudRate), '', '', this.isSerial);
+    this.serial.getSerialEvents().subscribe(event => {
+      try {
+        console.log('vmc service event received: ' + JSON.stringify(event));
+        if (event.event === 'dataReceived') {
+          // this.addLogMessage(`Received: ${event.data}`);
+          // this.processVMCResponse(event.data);
+          this.processVMCResponse(event.data);
+        } else if (event.event === 'commandAcknowledged') {
+          console.log('Command acknowledged by VMC:', event.data);
+        } else if (event.event === 'error') {
+          console.error('Serial error:', event);
+          // this.addLogMessage(`Serial error: ${JSON.stringify(event)}`);
+        }
+      } catch (error: any) {
+        console.error('Error processing event:', error);
+        // this.addLogMessage(`Error processing event: ${error.message}`);
+      }
+    });
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init for start VMC' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+
+
+  testDrop(slot: number) {
+    // console.log('=====> testDrop', slot);
+
+    if (this.serial) {
+      const param = { slot: slot };
+      this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+        console.log('shippingcontrol', r);
+        // this.val = r?.data?.x;
+        await Toast.show({ text: 'shippingcontrol' + JSON.stringify(r) })
+      });
+
+    } else {
+      console.log('serial not init');
+      Toast.show({ text: 'serial not init' })
+    }
+  }
+
+  async startZDM8() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initZDM8(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async satrtTp77p() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initTop77p(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startEssp() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initEssp(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startCctalk() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initCctalk(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startAHD815() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initADH815(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startM102() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+
   async runtoast(txt: string, duration: number = 1000) {
     const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: duration });
     (await t).present();
+  }
+
+
+  private processVMCResponse(hex: string): void {
+    if (hex.startsWith('fafb04')) {
+
+      console.log('Dispensing status:', hex);
+      //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
+      if (hex.substring(10, 12) == '01') console.log('Dispensing');
+      if (hex.substring(10, 12) == '02') console.log('Dispensed');
+      if (hex.substring(10, 12) == '03') console.log('Drop failed');
+
+      // FA FB 04 04 A3 01 00 3C 9F ==> 3C is 60 slot sent command, 01 = status processing
+      // FA FB 04 04 A4 02 00 3C 9B ==> 3C is 60 slot sent command, 02 = status dispensed
+      // fa fb 04 04 9e 03 00 3c a0 ==> 3C is 60 slot sent command, 03 = status drop failed
+
+    } else if (hex.startsWith('fafb21')) { // process credit note with bank note value
+      console.log('receive banknotes 21', hex);
+      const mode = hex.substring(10, 12);
+      if (mode === '01') { //fafb21069101 ==> 01 receive
+        // banknote receive
+        const value = this.getNoteValue(hex);
+        const t = Number('-21' + moment.now());
+        // fafb2106d501 000186a0 d5 == 100000 == 1000,00
+        //               // fafb21069101 000186a0 91 == 100000 == 1000,00
+        //               // fafb2106c301 00030d40 aa == 200000 == 2000,00
+        //               // fafb21065401 0007a120 f5 == 500000 == 5000,00
+        //               // fafb21065701 000f4240 7d == 1000000 == 10000,00
+        //               // fafb21064a01 000f4240 60
+        //               // fafb21060701 001e8480 3a == 2000000 == 20000,00
+        //               // fafb2106bf01 001e8480 82
+        //               // fafb21066001 004c4b40 00 == 5000000 == 50000,00
+        //               // new 50k not working
+        //               // fafb21067c01 00989680 d5 == 10000000 == 100000,00
+        //               // new 100k not working
+        // const hash = cryptojs.SHA256(this.sock.machineId + value).toString(cryptojs.enc.Hex);
+        // const credit: ICreditData = {
+        //   id: -1,
+        //   name: 'credit',
+        //   data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.CREDIT_NOTE },
+        //   transactionID: t.toString(),
+        //   description: ''
+        // };
+        // this.creditPending.push(credit);
+        // this.addOrUpdateCredit(credit);
+        // this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
+      } else if (mode == '08') {//fafb21068308000186a08a
+        //bank note swollen
+      }
+    } else if (hex.startsWith('fafb23')) {
+      console.log('receive banknotes 23-----------------------------------------------------------------------------', hex);
+      // const now = Date.now();
+      // if (this.lastReported23 && hex === this.lastReported23.hex && (now - this.lastReported23.timestamp < 1000)) {
+      //   console.log('Ignoring duplicate 0x23:', hex);
+      //   return;
+      // }
+      // this.lastReported23 = { hex, timestamp: now };
+
+      // const amountHex = hex.substring(8, 16);
+      // const amountDecimal = parseInt(amountHex.match(/.{2}/g).reverse().join(''), 16) / 100;
+      // this.balance = amountDecimal; // Track balance in your app
+      // console.log('Updated credit balance:', this.balance);
+      // this.sock.send(hex, -23, EMACHINE_COMMAND.CREDIT_NOTE);
+
+      // // Deduct credit immediately with mode 1 (bill)
+      // this.serialService.writeVMC(EVMC_COMMAND._27, { mode: 1, amount: amountHex });
+    } else if (hex.startsWith('fafb52')) {// status to server and update and local
+      //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
+      // this.machinestatus.data = hex; 
+      // this.machinestatus.data = hex;
+      // this._machineStatus.status = hex
+      const resultStatus = machineVMCStatus(hex);
+      console.log('******machine status:', resultStatus);
+
+      // this._machineStatus = resultStatus;
+
+    } else {
+
+
+      console.log('Unhandled response:', hex);
+    }
+  }
+
+
+  private getNoteValue(b: string) {
+    try {
+      return this.hex2dec(b?.substring(12, 20));
+    } catch (error) {
+      return -1;
+    }
+  }
+
+  private hex2dec(hex: string) {
+    try {
+      return parseInt(hex, 16);
+    } catch (error) {
+      return -1;
+    }
+
   }
   loadAutoShowMyOrders() {
     if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
@@ -484,18 +867,18 @@ export class Tab1Page implements OnDestroy {
     }
   }
 
-  getToTestMotorPage(i: string) {
-    let data = {
-      action: i
-    }
-    this.showModal(TestmotorPage, data, 'dialog-fullscreen').then(r => {
-      r.present();
-      r.onDidDismiss().then(res => {
-        if (res.data.reload) {
-        }
-      })
-    })
-  }
+  // getToTestMotorPage(i: string) {
+  //   let data = {
+  //     action: i
+  //   }
+  //   this.showModal(TestmotorPage, data, 'dialog-fullscreen').then(r => {
+  //     r.present();
+  //     r.onDidDismiss().then(res => {
+  //       if (res.data.reload) {
+  //       }
+  //     })
+  //   })
+  // }
 
   toggleWebviewTab(e: any) {
     // console.log(e.detail);
@@ -1150,6 +1533,11 @@ export class Tab1Page implements OnDestroy {
       this.autopilot.auto = 0;
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
 
+      console.log('POS', x.position);
+
+      // this.testDrop(x.position);
+
+
       if (this.WSAPIService?.setting_allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
@@ -1246,32 +1634,54 @@ export class Tab1Page implements OnDestroy {
       alert(JSON.stringify(error));
     }
   }
-
+  1
   showMyOrdersModal() {
-    if (this.otherModalAreOpening == true) return;
-    if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
-    clearInterval(this.autoShowMyOrderTimer);
-    this.autoShowMyOrdersCounter = 15;
+    try {
+      // timer check payment for any orders
+      clearInterval(this.countdownCheckLaoQRPaidTimer);
+      this.countdownCheckLaoQRPaidTimer = setInterval(() => {
+        console.log('*****CHECK 5 SECOND');
+        this._processLoopCheckLaoQRPaid();
+      }, 5000);
 
-    // const component = OrderCartPage;
-    const component = AutoPaymentPage;
-    const props = {
-      orders: this.orders,
-      getTotalSale: this.getTotalSale
-    }
-    this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
-      r.present();
-      this.otherModalAreOpening = true;
-      // this.apiService.allModals.push(this.apiService.modal);
-      r.onDidDismiss().then(cb => {
-        this.otherModalAreOpening = false;
-        AutoPaymentPage.message?.close();
-        AutoPaymentPage.message = undefined;
-        if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
-          this.loadAutoShowMyOrders();
-        }
+      if (this.otherModalAreOpening == true) return;
+      if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
+      clearInterval(this.autoShowMyOrderTimer);
+      this.autoShowMyOrdersCounter = 15;
+
+      // const component = OrderCartPage;
+      const component = AutoPaymentPage;
+      const props = {
+        orders: this.orders,
+        getTotalSale: this.getTotalSale
+      }
+      const that = this;
+      this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
+        r.present();
+        this.otherModalAreOpening = true;
+        // this.apiService.allModals.push(this.apiService.modal);
+        r.onDidDismiss().then(cb => {
+          this.otherModalAreOpening = false;
+          AutoPaymentPage.message?.close();
+          AutoPaymentPage.message = undefined;
+          if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
+            this.loadAutoShowMyOrders();
+          }
+          clearInterval(this.countdownCheckLaoQRPaidTimer);
+          that.countdownCheckLaoQRPaidTimer = setInterval(() => {
+            console.log('*****CHECK 30 SECOND');
+
+            that._processLoopCheckLaoQRPaid();
+          }, 30000);
+        });
+        //5s
+
+
       });
-    });
+    } catch (error) {
+
+    }
+
   }
   checkCartCount(position: number) {
     return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;
@@ -1726,7 +2136,7 @@ export class Tab1Page implements OnDestroy {
         this.apiService.pb = r as Array<IBillProcess>;
         if (this.apiService.pb.length) {
           this.apiService
-            .showModal(RemainingbillsPage, { r: this.apiService.pb }, true)
+            .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, true)
             .then((r) => {
               r.present();
               this.otherModalAreOpening = true;

@@ -475,11 +475,11 @@ export function PrintError(command: string, data: any, message: string, transact
         command, data: data, message, code, status: 0, transactionID
     } as IResModel;
 }
-export interface IlogSerial{
-    limit:number;
-    data:string;
-  }
-export  enum EZDM8_COMMAND {
+export interface IlogSerial {
+    limit: number;
+    data: string;
+}
+export enum EZDM8_COMMAND {
     hwversion = 'hwversion',
     swversion = 'swversion',
     status = 'status',
@@ -516,83 +516,79 @@ export  enum EZDM8_COMMAND {
     temp = "temp",
     restart = "restart"
 }
-export interface ICreditData{id:number,name:string,transactionID,data:ICreditDataDetails,description:string};
-export interface ICreditDataDetails{raw:string,data:string,t:number,transactionID:string,command:EMACHINE_COMMAND}
+export interface ICreditData { id: number, name: string, transactionID, data: ICreditDataDetails, description: string };
+export interface ICreditDataDetails { raw: string, data: string, t: number, transactionID: string, command: EMACHINE_COMMAND }
 export enum EMACHINE_COMMAND {
-  login = 'login',
-  ping = 'ping',
-  status = 'status',
-  confirm = "confirm",
-  note_credit = "note_credit",
-  CREDIT_NOTE = "CREDIT_NOTE",
-  READ_NOTE = "READ_NOTE",
-  NOTE_REJECTED = "NOTE_REJECTED",
-  JAMMED = "JAMMED",
-  start = "start",
-  stop = "stop",
-  setcounter = "setcounter",
-  restart = "restart",
-  logs = "logs",
-  confirmOrder = "confirmOrder",
-  shippingcontrol='shippingcontrol',
-  temp = "temp",
-  balance = "balance",
-  limiter = "limiter",
-  DISABLE = "DISABLE",
-  ENABLE = "ENABLE",
-  SYNC='SYNC',
-  setpoll='setpoll',
-  version = "version",
-  dropdetectstatus = "dropdetectstatus",
-  arrayoutputstatus = "arrayoutputstatus",
-  arrayinputstatus = "arrayinputstatus",
-  relaycommand = "relaycommand",
-  swversion = "swversion",
-  hutemp = "hutemp",
-  statusgrid = "statusgrid",
-  hwversion = "hwversion",
-  getSN = "getSN",
-  READ_EVENTS = "READ_EVENTS",
-  POLL = "POLL",
-  RESET = "RESET",
-  ACCEPT = "ACCEPT",
-  SET_POLL = "SET_POLL",
-  GET_SN = "GET_SN",
-  READ_TEMP = "READ_TEMP",
-  DISPENSE = "DISPENSE",
-  READ_SWITCH_OUTPUT = "READ_SWITCH_OUTPUT",
-  READ_SWITCH_INPUT = "READ_SWITCH_INPUT",
-  SET_ADDRESS = "SET_ADDRESS",
-  SET_PULSE_COUNT = "SET_PULSE_COUNT",
-  REJECT = "REJECT",
-  START_MOTOR = "START_MOTOR",
-  SET_TEMP = "SET_TEMP",
-  CLEAR_RESULT = "CLEAR_RESULT",
-  ERROR = "ERROR",
-  INIT = "INIT",
-  CLOSE = "CLOSE",
-  LISTPORTS = "LISTPORTS",
-  GETSERIALEVENTS = "GETSERIALEVENTS",
-  GETFIRMWAREVERSION = "GETFIRMWAREVERSION",
-  UNLOCK = "UNLOCK",
-  READALLLOCKSTATUS = "READALLLOCKSTATUS",
-  ONETOUCHUNLOCK = "ONETOUCHUNLOCK",
-  LIGHTSON = "LIGHTSON",
-  LIGHTSOFF = "LIGHTSOFF",
-  SETCHANNELINHIBITS = "SETCHANNELINHIBITS",
-  GETSERIALNUMBER = "GETSERIALNUMBER",
-  SETUPREQUEST = "SETUPREQUEST",
+    login = 'login',
+    ping = 'ping',
+    status = 'status',
+    confirm = "confirm",
+    note_credit = "note_credit",
+    CREDIT_NOTE = "CREDIT_NOTE",
+    READ_NOTE = "READ_NOTE",
+    NOTE_REJECTED = "NOTE_REJECTED",
+    JAMMED = "JAMMED",
+    start = "start",
+    stop = "stop",
+    setcounter = "setcounter",
+    restart = "restart",
+    logs = "logs",
+    confirmOrder = "confirmOrder",
+    shippingcontrol = 'shippingcontrol',
+    temp = "temp",
+    balance = "balance",
+    limiter = "limiter",
+    DISABLE = "DISABLE",
+    ENABLE = "ENABLE",
+    SYNC = 'SYNC',
+    setpoll = 'setpoll',
+    version = "version",
+    dropdetectstatus = "dropdetectstatus",
+    arrayoutputstatus = "arrayoutputstatus",
+    arrayinputstatus = "arrayinputstatus",
+    relaycommand = "relaycommand",
+    swversion = "swversion",
+    hutemp = "hutemp",
+    statusgrid = "statusgrid",
+    hwversion = "hwversion",
+    getSN = "getSN",
+    READ_EVENTS = "READ_EVENTS",
+    POLL = "POLL",
+    RESET = "RESET",
+    ACCEPT = "ACCEPT",
+    SET_POLL = "SET_POLL",
+    GET_SN = "GET_SN",
+    READ_TEMP = "READ_TEMP",
+    DISPENSE = "DISPENSE",
+    READ_SWITCH_OUTPUT = "READ_SWITCH_OUTPUT",
+    READ_SWITCH_INPUT = "READ_SWITCH_INPUT",
+    SET_ADDRESS = "SET_ADDRESS",
+    SET_PULSE_COUNT = "SET_PULSE_COUNT",
+    REJECT = "REJECT",
+    START_MOTOR = "START_MOTOR",
+    SET_TEMP = "SET_TEMP",
+    CLEAR_RESULT = "CLEAR_RESULT",
+    ERROR = "ERROR",
+    INIT = "INIT",
+    CLOSE = "CLOSE",
+    LISTPORTS = "LISTPORTS",
+    GETSERIALEVENTS = "GETSERIALEVENTS",
+    GETFIRMWAREVERSION = "GETFIRMWAREVERSION",
+    UNLOCK = "UNLOCK",
+    READALLLOCKSTATUS = "READALLLOCKSTATUS",
+    ONETOUCHUNLOCK = "ONETOUCHUNLOCK",
+    LIGHTSON = "LIGHTSON",
+    LIGHTSOFF = "LIGHTSOFF",
 
 
 }
-export enum ESerialPortType{
-    Serial=1,
-    USB=2,
-    Essp=3
-  }
+export enum ESerialPortType {
+    Serial = 1,
+    USB = 2
+}
 
- 
-  export enum EVMC_COMMAND {
+
+export enum EVMC_COMMAND {
     _41 = '41',
     _03 = '03',
     _28 = '28',
@@ -615,43 +611,43 @@ export enum ESerialPortType{
     _7028 = "7028",
     _7037 = "7037",
     temp = "temp"
-  }
-export function  addLogMessage(log: IlogSerial, message: string, consoleMessage?: string) {
-  if (!log) return; // Skip if no log object
-
-  const newMessage = consoleMessage !== undefined ? `${message} (${consoleMessage})` : message;
-  const lines = log.data ? log.data.split('\n').filter(line => line.trim() !== '') : [];
-  lines.unshift(newMessage); // Add new message at the start
-
-  // Enforce line limit (default to 100 if not specified)
-  const limit = log.limit || 100;
-  if (lines.length > limit) {
-    lines.splice(limit); // Remove excess lines from the end
-  }
-
-  log.data = lines.join('-- ' + new Date().toISOString() + '\n');
 }
-export function  hexToUint8Array(hexString: string): Uint8Array {
+export function addLogMessage(log: IlogSerial, message: string, consoleMessage?: string) {
+    if (!log) return; // Skip if no log object
+
+    const newMessage = consoleMessage !== undefined ? `${message} (${consoleMessage})` : message;
+    const lines = log.data ? log.data.split('\n').filter(line => line.trim() !== '') : [];
+    lines.unshift(newMessage); // Add new message at the start
+
+    // Enforce line limit (default to 100 if not specified)
+    const limit = log.limit || 100;
+    if (lines.length > limit) {
+        lines.splice(limit); // Remove excess lines from the end
+    }
+
+    log.data = lines.join('-- ' + new Date().toISOString() + '\n');
+}
+export function hexToUint8Array(hexString: string): Uint8Array {
     const bytes = [];
     for (let i = 0; i < hexString.length; i += 2) {
-      bytes.push(parseInt(hexString.slice(i, i + 2), 16));
+        bytes.push(parseInt(hexString.slice(i, i + 2), 16));
     }
     return new Uint8Array(bytes);
-  }
+}
 
-import {  SerialPortListResult } from 'SerialConnectionCapacitor';
+import { SerialPortListResult } from 'SerialConnectionCapacitor';
 
-export interface ISerialService{
-    log:IlogSerial;
-    machinestatus:{data:string};//machine status send to server and local : fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
-    initializeSerialPort(portName: string, baudRate: number, log:IlogSerial,machineId:string,otp:string,isNative:ESerialPortType): Promise<string>;
-    getSerialEvents():any;
+export interface ISerialService {
+    log: IlogSerial;
+    machinestatus: { data: string };//machine status send to server and local : fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
+    initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative: ESerialPortType): Promise<string>;
+    getSerialEvents(): any;
     command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
     close(): Promise<void>;
     listPorts(): Promise<SerialPortListResult>;
     checkSum(data?: any[]): string;
 
-  }
+}
 
 export interface IResModel {
     transactionID?: number;
@@ -1012,7 +1008,7 @@ export interface ILockControlService extends ISerialService {
     unlock(lockAddress: number): Promise<IResModel>;
     readAllLockStatus(): Promise<IResModel>;
     getFirmwareVersion(): Promise<IResModel>;
-  }
+}
 // Interface for machine status with typed fields where appropriate
 export interface IVMCMachineStatus {
     packNo: number;                // Communication number (byte)
@@ -1103,12 +1099,12 @@ export function machineVMCStatus(hexString: string): IVMCMachineStatus {
         machineHumidity, // Undefined if not present
     };
 }
-export interface IBankNote{
-    value:number;
-    amount:number;
-    currency:string;
-    channel:number;
-    image:string;
+export interface IBankNote {
+    value: number;
+    amount: number;
+    currency: string;
+    channel: number;
+    image: string;
 }
 
 // Example usage

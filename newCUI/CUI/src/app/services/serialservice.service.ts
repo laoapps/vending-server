@@ -31,7 +31,7 @@ export class SerialServiceService implements OnDestroy {
     this.serialEventSubject.complete();  // Complete the subject
     console.log('serial service  SerialServiceService destroyed and cleaned up');
   }
-  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, isNative = ESerialPortType.Serial,dataBits= 8, stopBits= 1, parity= 'none',bufferSize=1024,flags=0): Promise<string> {
+  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, isNative = ESerialPortType.Serial, dataBits = 8, stopBits = 1, parity = 'none', bufferSize = 1024, flags = 0): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
       if (this.initialized) {
         console.log("Serial port already initialized, skipping...");
@@ -45,56 +45,56 @@ export class SerialServiceService implements OnDestroy {
           SerialConnectionCapacitor.addListener('serialOpened', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Native serial opened:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.NativeSerialOpened,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.SerialOpened, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('usbSerialOpened', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  USB serial opened:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.UsbSerialOpened,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.UsbSerialOpened, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('connectionClosed', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Connection closed:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.ConnectionClosed,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.ConnectionClosed, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('serialWriteSuccess', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Native write succeeded:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.NativeWriteSuccess,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.SerialWriteSuccess, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('usbWriteSuccess', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  USB write succeeded:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.NativeWriteSuccess,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.UsbWriteSuccess, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('dataReceived', (data) => {
-            console.log('serial service  Serial Data received: '+JSON.stringify(data));
+            console.log('serial service  Serial Data received: ' + JSON.stringify(data));
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Data received:', data?.data);
-            this.serialEventSubject.next({ event: SerialPortEvent.DataReceived, data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.DataReceived, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('readingStarted', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Reading started:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.ReadingStarted,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.ReadingStarted, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('readingStopped', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Reading stopped:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.ReadingStopped,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.ReadingStopped, data: data?.data });
           }),
           // commandAcknowledged
           SerialConnectionCapacitor.addListener('commandAcknowledged', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service commandAcknowledged:', data?.message);
-            this.serialEventSubject.next({ event: SerialPortEvent.ack,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.CommandAcknowledged, data: data?.data });
           }),
 
 
           SerialConnectionCapacitor.addListener('portsListed', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  serial service  List error:', data?.error);
-            this.serialEventSubject.next({ event: SerialPortEvent.ListError,  data:data?.data });
+            this.serialEventSubject.next({ event: SerialPortEvent.PortsListed, data: data?.data });
           })
           // Note: 'readingData' event isn't in your plugin—remove or implement if needed
         );
@@ -108,11 +108,11 @@ export class SerialServiceService implements OnDestroy {
         // Open serial port
         console.log("Opening openNativeSerial:", { portName, baudRate });
         if (isNative === ESerialPortType.Serial)
-          await SerialConnectionCapacitor.openSerial({ portName, baudRate,dataBits, stopBits, parity, bufferSize,flags });
+          await SerialConnectionCapacitor.openSerial({ portName, baudRate, dataBits, stopBits, parity, bufferSize, flags });
         else
           await SerialConnectionCapacitor.openUsbSerial({ portName, baudRate });
         console.log(`Opened ${portName}`);
-      
+
         console.log(`Started reading ${portName}`);
         this.initialized = true;  // Mark as initialized
         resolve(portName);
@@ -180,7 +180,7 @@ export class SerialServiceService implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (this.initialized) {
-          const x =  await SerialConnectionCapacitor.write({ data });
+          const x = await SerialConnectionCapacitor.write({ data });
           console.log(`writeData  ${data}`);
           resolve(x);
         }
@@ -197,27 +197,26 @@ export class SerialServiceService implements OnDestroy {
   }
   async writeVMC(command: string, params: any): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
-        try {
-            if (!this.initialized) {
-                console.log('serial service  Serial port not initialized');
-                reject('Serial port not initialized');
-                return;
-            }
-            const data = JSON.stringify({ command, params });
-            console.log(`serial service  Writing to VMC: ${data}`);
-            const x = await SerialConnectionCapacitor.writeVMC({ data });
-            console.log(`serial service  Command queued: ${data}`);
-            resolve(x);
-        } catch (e) {
-            console.log('serial service  writeVMC error', e);
-            reject(e);
+      try {
+        if (!this.initialized) {
+          console.log('serial service  Serial port not initialized');
+          reject('Serial port not initialized');
+          return;
         }
+        const data = JSON.stringify({ command, params });
+        console.log(`serial service  Writing to VMC: ${data}`);
+        const x = await SerialConnectionCapacitor.writeVMC({ data });
+        console.log(`serial service  Command queued: ${data}`);
+        resolve(x);
+      } catch (e) {
+        console.log('serial service  writeVMC error', e);
+        reject(e);
+      }
     });
-}
-
-isPortOpen(): boolean {
-  return this.initialized;
-}
+  }
+  isPortOpen(): boolean {
+    return this.initialized;
+  }
   async close(): Promise<any> {
     await SerialConnectionCapacitor.stopReading();
     this.initialized = false;
@@ -225,7 +224,7 @@ isPortOpen(): boolean {
     this.listenerSubscriptions = [];
     this.serialEventSubject.complete();  // Complete the subject
     console.log('serial service  SerialServiceService destroyed and cleaned up');
-    const x =  await SerialConnectionCapacitor.close();
+    const x = await SerialConnectionCapacitor.close();
     console.log('serial service  Serial port closed');
 
     return new Promise((resolve, reject) => {
@@ -271,7 +270,7 @@ isPortOpen(): boolean {
 
     return hexArray;
   }
-  
+
   checkSumCRC(d: string[]): string {
     const data = d.join('');
     let crc = 0xFFFF; // Initial CRC value
@@ -311,22 +310,15 @@ isPortOpen(): boolean {
 
 export enum SerialPortEvent {
   PortsListed = 'portsListed',
-  ConnectionOpened = 'connectionOpened',
-  NativeSerialOpened = 'nativeSerialOpened',
+  SerialOpened = 'serialOpened',
   UsbSerialOpened = 'usbSerialOpened',
   ConnectionClosed = 'connectionClosed',
-  NativeWriteSuccess = 'nativeWriteSuccess',
   UsbWriteSuccess = 'usbWriteSuccess',
   DataReceived = 'dataReceived',
   ReadingStarted = 'readingStarted',
   ReadingStopped = 'readingStopped',
-  ListError = 'listError',
-  ConnectionError = 'connectionError',
-  WriteError = 'writeError',
-  ReadError = 'readError',
-  ReadingData = 'readingData',
-  mcNativeSerialOpened = 'mcNativeSerialOpened',
-  mcNativeWriteSuccess = "mcNativeWriteSuccess",
-  ack = "ack",
+  SerialWriteSuccess = 'serialWriteSuccess',
+  CommandAcknowledged = 'commandAcknowledged',
+  CommandQueued = 'commandQueued'
 
 }

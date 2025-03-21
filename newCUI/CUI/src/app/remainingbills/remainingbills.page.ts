@@ -1,9 +1,10 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { IBillProcess } from '../services/syste.model';
+import { EMACHINE_COMMAND, IBillProcess, ISerialService } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
 import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-remainingbills',
@@ -20,13 +21,28 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
   @Input() r = new Array<IBillProcess>();
+  @Input() serial: ISerialService;
   url = this.apiService.url;
   lists: Array<any> = [];
   constructor(public apiService: ApiService, private modal: ModalController) {
 
   }
 
+
+  async loadBillLocal() {
+    try {
+      const data = await this.apiService.IndexedDB.getBillProcesses();
+      console.log('data loadBillLocal', data);
+      this.r = data;
+
+
+    } catch (error) {
+      console.log('Error loadBillLocal', error);
+    }
+  }
+
   async ngOnInit() {
+    await this.loadBillLocal();
     console.log('R', this.r);
     console.log(`here`);
     await this.apiService.soundPleaseSelect();
@@ -72,11 +88,17 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
     }
   }
-  autoRetryProcessBill() {
+  async autoRetryProcessBill() {
     const transactionID: string = String(this.r[this.r.length - 1].transactionID);
     const position = this.r[this.r.length - 1].position;
-    console.log(`transactionID`, transactionID, `position`, position);
-    this.retryProcessBill(transactionID, position);
+
+    const ownerUuid = this.r[this.r.length - 1].ownerUuid
+    const trandID = this.r[this.r.length - 1].bill.transactionID;
+
+    console.log(`autoRetryProcessBill transactionID`, transactionID, `position`, position, `ownerUuid`, ownerUuid, `trandID`, trandID);
+
+
+    this.retryProcessBillNew(transactionID, position, ownerUuid, trandID + '');
   }
 
   ngOnDestroy(): void {
@@ -89,16 +111,212 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     return ApiService.vendingOnSale.find(vy => vy.stock.id == id)?.stock?.price;
   }
   // local
-  async retryProcessBill(transactionID: string, position: number, human?: boolean) {
+
+
+
+
+  async retryProcessBillNew(transactionID: string, position: number, ownerUuid: string, trandID: string, human?: boolean) {
+    console.log('transactionID', transactionID, 'position', position, 'ownerUuid', ownerUuid, 'trandID', trandID);
+
     console.log(`rrrrr`, this.r);
     console.log(`-->`, this.canclick);
-    this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+
+    if (human == true) {
+      this.clearTimer();
+    }
+
+    try {
+      if (this.serial) {
+        const param = { slot: position };
+        this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+          console.log('shippingcontrol', r);
+          this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
+            // this.apiService.dismissLoading();
+            console.log(`vending on sale`, ApiService.vendingOnSale);
+            console.log('retryProcessBill', r);
+            // if (r.status) {
+            // } else {
+            //   this.counter = 0;
+            //   this.canclick = true;
+            //   localStorage.setItem('product_fall', '0');
+            //   this.clearTimer();
+            //   this.r = [];
+            //   this.reloadDelivery(true);
+            //   await this.apiService.soundSystemError();
+            // }
+
+
+            // this.apiService.simpleMessage(r.message);
+
+            // setTimeout(() => {
+            //   this.apiService.dismissLoading();
+            // }, 3000)
+
+          });
+
+          this.apiService.soundThankYou()
+          this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
+            r.present();
+          });
+          try {
+            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+            this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+
+            this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
+              console.log('reload_ticket', reload_ticket);
+
+              this.r = reload_ticket;
+              console.log(`=====>here der`, this.r);
+
+              if (this.r != undefined && Object.entries(this.r).length == 0) {
+                localStorage.setItem('product_fall', '0');
+                this.clearTimer();
+                this.apiService, this.modal.dismiss();
+                return;
+              }
+
+              if (human == true) {
+                this.loadAutoFall();
+              }
+
+            });
+          } catch (error) {
+            console.log(`error eiei`, error.message);
+            this.cancelTimer();
+            await this.apiService.soundSystemError();
+          }
+
+
+
+        }).catch(async (error) => {
+          console.log('error shippingcontrol', error);
+        });
+
+      } else {
+        console.log('serial not init');
+        Toast.show({ text: 'serial not init for drop' })
+      }
+
+
+
+      // this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
+      //   // this.apiService.dismissLoading();
+      //   console.log(`vending on sale`, ApiService.vendingOnSale);
+      //   console.log('retryProcessBill', r);
+      //   if (r.status) {
+      //     this.apiService.soundThankYou()
+      //     this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
+      //       r.present();
+      //     });
+      //     try {
+      //       this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+      //       this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+
+      //       this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
+      //         console.log('reload_ticket', reload_ticket);
+
+      //         this.r = reload_ticket;
+      //         console.log(`=====>here der`, this.r);
+
+      //         if (this.r != undefined && Object.entries(this.r).length == 0) {
+      //           localStorage.setItem('product_fall', '0');
+      //           this.clearTimer();
+      //           this.apiService, this.modal.dismiss();
+      //           return;
+      //         }
+
+      //         if (human == true) {
+      //           this.loadAutoFall();
+      //         }
+
+      //       });
+      //     } catch (error) {
+      //       console.log(`error eiei`, error.message);
+      //       this.cancelTimer();
+      //       await this.apiService.soundSystemError();
+      //     }
+
+      //   } else {
+      //     this.counter = 0;
+      //     this.canclick = true;
+      //     localStorage.setItem('product_fall', '0');
+      //     this.clearTimer();
+      //     this.r = [];
+      //     this.reloadDelivery(true);
+      //     await this.apiService.soundSystemError();
+      //   }
+
+
+      //   this.apiService.simpleMessage(r.message);
+
+      //   setTimeout(() => {
+      //     this.apiService.dismissLoading();
+      //   }, 3000)
+
+      // });
+    } catch (error) {
+      setTimeout(() => {
+        this.apiService.dismissLoading();
+      }, 3000)
+      this.clearTimer();
+      this.r = [];
+      this.reloadDelivery(true);
+      await this.apiService.soundSystemError();
+    }
+
+    // if (this.canclick == true) {
+    //   this.apiService.showLoading('', 3000);
+
+
+    //   this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+
+
+    //   this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
+    //     console.log(`vending on sale`, ApiService.vendingOnSale);
+    //     console.log('retryProcessBill', r);
+    //     if (r.status) {
+    //       this.apiService.soundThankYou()
+    //       this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
+    //         r.present();
+    //       });
+    //       let count: number = 0;
+    //       console.log(`lleng`, this.r);
+    //       if (this.r != undefined && Object.entries(this.r).length > 1) {
+    //         count = this.r.length - 1;
+    //       } else {
+    //         count = 0;
+    //       }
+
+    //       const i = this.r.findIndex(v => v.position == position);
+    //       this.r.splice(i, 1);
+    //       this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+
+
+    //       if (count == 0) {
+    //         this.apiService, this.modal.dismiss();
+    //       }
+    //     } else {
+    //       await this.apiService.soundSystemError();
+    //     }
+    //     this.apiService.simpleMessage(r.message);
+    //     setTimeout(() => {
+    //       this.apiService.dismissLoading();
+    //     }, 3000)
+    //   })
+    // }
+  }
+
+  async retryProcessBill(transactionID: string, position: number, human?: boolean) {
+
+    console.log(`rrrrr`, this.r);
+    console.log(`-->`, this.canclick);
+    // this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
 
     if (this.canclick == true) {
       this.apiService.showLoading('', 30000);
       const isRemote = localStorage.getItem('remoteProcess');
       if (!isRemote) {
-        this.apiService.retryProcessBillLocal(transactionID, position).subscribe(async r => {
+        this.apiService.retryProcessBill(transactionID, position).subscribe(async r => {
           console.log(`vending on sale`, ApiService.vendingOnSale);
           console.log('retryProcessBill', r);
           if (r.status) {

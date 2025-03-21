@@ -33,10 +33,15 @@ export class GenerateLaoQRCodeProcess {
             if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
             const GenerateQRCode = await this.GenerateQRCode();
-            console.log(`zzzz LaoQR`, GenerateQRCode);
-            if (GenerateQRCode != IENMessage.success) throw new Error(GenerateQRCode);
-
             (await this.workload).dismiss();
+
+            console.log(`zzzz LaoQR`, GenerateQRCode);
+            if (GenerateQRCode != IENMessage.success) {
+                // this.apiService.toast.create({ message: GenerateQRCode, duration: 3000 }).then(toast => toast.present());
+                this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
+                throw new Error(GenerateQRCode);
+            }
+
             resolve(this.Commit());
 
         });
@@ -75,10 +80,10 @@ export class GenerateLaoQRCodeProcess {
     }
 
 
-    public async CheckLaoQRPaid(transactionID: string): Promise<{ status: number, message: any }> {
+    public async CheckLaoQRPaid(): Promise<{ status: number, message: any }> {
         return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
             try {
-                this.apiService.checkPaidBill(transactionID).subscribe(r => {
+                this.apiService.checkPaidBill().subscribe(r => {
 
                     const response: any = r;
                     console.log('response check LaoQR', response);

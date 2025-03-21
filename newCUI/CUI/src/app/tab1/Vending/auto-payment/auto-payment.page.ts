@@ -12,7 +12,7 @@ import * as cryptojs from 'crypto-js';
 import qrlogo from 'qrcode-with-logos';
 import { WsapiService } from 'src/app/services/wsapi.service';
 import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
-import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
+// import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
 import { clear } from 'console';
 import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 
@@ -139,11 +139,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   ]
   bankList: Array<any> = [
     {
-      image: `../../../../assets/logo/bcelone-logo.png`,
-      name: 'BCEL One',
-      title: 'BCEL One (optional)',
-      detail: 'Pay your orders by using BCEL One QRCode',
-      value: 'bcelone'
+      image: `../../../../assets/logo/laoqr.png`,
+      name: 'Lao QR',
+      title: 'Lao QR (optional)',
+      detail: 'Pay your orders by using Lao QR One QRCode',
+      value: 'LaoQR'
     }
   ]
   paymentList: Array<any> = [...this.cashesList, ...this.ewalletList, ...this.bankList];
@@ -568,18 +568,18 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         const transactionID = localStorage.getItem('transactionID');
         console.log('QR CODE :');
 
-        this._processLoopCheckLaoQRPaid(transactionID);
+        // this._processLoopCheckLaoQRPaid(transactionID);
 
 
 
 
-        AutoPaymentPage.message = Swal.fire({
-          position: 'top-end',
-          html: this.messagetextModel(title, text, cls),
-          showConfirmButton: false,
-          heightAuto: false,
-          backdrop: false
-        });
+        // AutoPaymentPage.message = Swal.fire({
+        //   position: 'top-end',
+        //   html: this.messagetextModel(title, text, cls),
+        //   showConfirmButton: false,
+        //   heightAuto: false,
+        //   backdrop: false
+        // });
 
         // let checkLAAB: number = 55;
         // const previousAmount: number = this.apiService.cash.amount;
@@ -604,6 +604,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           } else {
             AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
             if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+            // if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `Test`;
           }
 
         }, 1000);
@@ -613,7 +614,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         // when choose payment method and it does not work this process will auto loop check laab balance
         const transactionID = localStorage.getItem('transactionID');
-        this._processLoopCheckLaoQRPaid(transactionID ?? '');;
+        // this._processLoopCheckLaoQRPaid(transactionID ?? '');;
         // this._processLoopPayment();
 
         resolve(error.message);
@@ -649,18 +650,20 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         const transactionID = localStorage.getItem('transactionID');
         console.log('QR CODE MMoney:');
 
-        this._processLoopCheckLaoQRPaid(transactionID);
+        // this._processLoopCheckLaoQRPaid(transactionID);
 
 
 
 
-        AutoPaymentPage.message = Swal.fire({
-          position: 'top-end',
-          html: this.messagetextModel(title, text, cls),
-          showConfirmButton: false,
-          heightAuto: false,
-          backdrop: false
-        });
+        // AutoPaymentPage.message = Swal.fire({
+        //   position: 'top-end',
+        //   html: this.messagetextModel(title, text, cls),
+        //   showConfirmButton: false,
+        //   heightAuto: false,
+        //   backdrop: false
+        // });
+
+        // alert('TEST')
 
         // let checkLAAB: number = 55;
         // const previousAmount: number = this.apiService.cash.amount;
@@ -694,7 +697,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         // when choose payment method and it does not work this process will auto loop check laab balance
         const transactionID = localStorage.getItem('transactionID');
-        this._processLoopCheckLaoQRPaid(transactionID ?? '');;
+        // this._processLoopCheckLaoQRPaid(transactionID ?? '');;
         // this._processLoopPayment();
 
         resolve(error.message);
@@ -703,35 +706,35 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   }
 
 
-  private _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      clearInterval(this.countdownCheckLaoQRPaidTimer);
+  // private _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
+  //   return new Promise<any>(async (resolve, reject) => {
+  //     clearInterval(this.countdownCheckLaoQRPaidTimer);
 
-      this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
-        console.log('transactionID', transactionID);
+  //     this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+  //       console.log('transactionID', transactionID);
 
-        this.countdownCheckLaoQRPaid -= 5;
-        const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid(transactionID);
-        if (run.status == 1) {
-          clearInterval(this.countdownCheckLaoQRPaidTimer);
-          this.countdownCheckLaoQRPaid = 90;
-          this.apiService.waitingDelivery(run.message['data']['bill']);
+  //       this.countdownCheckLaoQRPaid -= 5;
+  //       const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
+  //       if (run.status == 1) {
+  //         clearInterval(this.countdownCheckLaoQRPaidTimer);
+  //         this.countdownCheckLaoQRPaid = 90;
+  //         this.apiService.waitingDelivery(run.message['data']['bill']);
 
-        }
+  //       }
 
-        console.log('=====> LAOQR RUN :', run);
+  //       // console.log('=====> LAOQR RUN :', run);
 
-        console.log(`=====>LAOQR LOOP`, this.countdownCheckLaoQRPaid);
-        if (this.countdownCheckLaoQRPaid <= 0) {
-          clearInterval(this.countdownCheckLaoQRPaidTimer);
-          this.countdownCheckLaoQRPaid = 90;
-          console.log('=====>LAOQR LOOP END');
+  //       console.log(`=====>LAOQR LOOP`, this.countdownCheckLaoQRPaid);
+  //       if (this.countdownCheckLaoQRPaid <= 0) {
+  //         clearInterval(this.countdownCheckLaoQRPaidTimer);
+  //         this.countdownCheckLaoQRPaid = 90;
+  //         console.log('=====>LAOQR LOOP END');
 
-          resolve(IENMessage.success);
-        }
-      }, 5000);
-    });
-  }
+  //         resolve(IENMessage.success);
+  //       }
+  //     }, 5000);
+  //   });
+  // }
 
   // loop check balance and loop destroy
   private _processLoopCheckLAAB(): Promise<any> {
@@ -897,8 +900,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           this.paymentText = 'MMoney';
           resolve(await this._processLoopDestroy());
           resolve(IENMessage.success);
-        } else if (this.paymentmethod == IPaymentMethod.bcelone) {
-          this.paymentText = 'BCEL One';
+        } else if (this.paymentmethod == IPaymentMethod.LaoQR) {
+          this.paymentText = 'Lao QR';
           resolve(await this._processLoopDestroyNew());
           resolve(IENMessage.success);
         } else {
@@ -1211,7 +1214,7 @@ class PaymentStation {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        if (this.paymentmethod != IPaymentMethod.bcelone) return resolve(IENMessage.success);
+        if (this.paymentmethod != IPaymentMethod.LaoQR) return resolve(IENMessage.success);
 
         const params: ILaoQRPayment = {
           orders: this.orders,
@@ -1437,10 +1440,10 @@ class LaoQRPayment {
     });
   }
 
-  public CheckLaoQRPaid(transactionID: string): Promise<{ status: number, message: any }> {
+  public CheckLaoQRPaid(): Promise<{ status: number, message: any }> {
     return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
       try {
-        const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid(transactionID);
+        const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
         resolve(run);
       } catch (error) {
         resolve({ status: 0, message: error.message });

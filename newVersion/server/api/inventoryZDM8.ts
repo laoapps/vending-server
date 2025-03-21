@@ -520,7 +520,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else if (d.command == EClientCommand.buyLAOQR) {
-                            console.log(" buyLAOQR" + d.data.value);
+                            console.log("=====>buyLAOQR" + JSON.stringify(d.data));
 
                             const sale = d.data.ids as Array<IVendingMachineSale>; // item id
                             const machineId = this.ssocket.findMachineIdToken(d.token);
@@ -4410,10 +4410,20 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
-                    console.log("callBackConfirmLaoQR", b);
+                    console.log("*****callBackConfirmLaoQR", b);
 
-                    this.setBillProces(bill.machineId, b);
+
+
+
+
                     res.data = b.filter((v) => v.ownerUuid == ownerUuid);
+
+                    // this.setBillProces(bill.machineId, b);
+
+
+                    console.log('*****BILL CONFIRMED RES', res.data);
+
+
                     this.sendWSToMachine(bill?.machineId + "", res);
 
                     resolve(bill);
@@ -4464,7 +4474,7 @@ export class InventoryZDM8 implements IBaseClass {
                             });
                         });
 
-                        console.log("findCallBackConfirmLaoQR", b);
+                        // console.log("findCallBackConfirmLaoQR", b);
 
                         // this.setBillProces(bill.machineId, b);
                         res.data = b.filter((v) => v.ownerUuid == ownerUuid);
@@ -4480,8 +4490,10 @@ export class InventoryZDM8 implements IBaseClass {
                             (bItem) => !res.data.some((aItem: any) => aItem.bill.qr === bItem.bill.qr)
                         );
 
-                        console.log('=====>RES CONFIRMED B', filteredB);
-                        resolve(filterData);
+                        // console.log('=====>RES CONFIRMED B', filteredB);
+                        console.log('*****RES CONFIRMED', res.data);
+
+                        resolve(res);
                         this.setBillProces(bill.machineId, filteredB);
                     });
                 } else {

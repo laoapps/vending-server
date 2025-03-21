@@ -37,9 +37,15 @@ export class GenerateMMoneyQRCodeProcess {
 
                 const GenerateQRCode = await this.GenerateQRCode();
                 console.log(`zzzz`, GenerateQRCode);
-                if (GenerateQRCode != IENMessage.success) throw new Error(GenerateQRCode);
-
+                // if (GenerateQRCode != IENMessage.success) throw new Error(GenerateQRCode);
                 (await this.workload).dismiss();
+
+                if (GenerateQRCode != IENMessage.success) {
+                    // this.apiService.toast.create({ message: GenerateQRCode, duration: 3000 }).then(toast => toast.present());
+                    this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ Lao QR ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
+                    throw new Error(GenerateQRCode);
+                }
+
                 resolve(this.Commit());
 
             } catch (error) {

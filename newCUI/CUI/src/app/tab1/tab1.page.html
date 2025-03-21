@@ -116,8 +116,8 @@
   <!-- <a (click)="showMyOrdersModal()" href="javascript:void(0)" class="btn-shopping-cart"><i class="fa-solid fa-cart-shopping"></i></a> -->
 
   <span class="btn-abs-list">
-    <a (click)="getToTestMotorPage('')" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
-      <div class="text">Test Motor</div>
+    <a *ngIf="isDropStock" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
+      <div class="text">ເຄື່ອງບໍ່ທັນຕົກ</div>
       <div class="icon">
         <i class="fa-solid fa-cart-shopping"></i>
       </div>
