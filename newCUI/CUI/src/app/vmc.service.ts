@@ -32,7 +32,6 @@ export enum EVMC_COMMAND {
   SET_POLL = '16',
   COIN_SYSTEM_READ = '7001',
   UNIONPAY_POS = '7017',
-  BILL_VALUE = '7018',
   BILL_ACCEPT_MODE = '7019',
   BILL_LOW_CHANGE = '7020',    // Bill low-change settings = '7020',
   CREDIT_MODE = '7023',
@@ -70,7 +69,7 @@ export class VmcService implements ISerialService {
     machineId: '',
     otp: ''
   };
-
+  offlineMode=true;
   constructor(
     private serialService: SerialServiceService,
     private loggingService: LoggingService,
@@ -128,7 +127,12 @@ export class VmcService implements ISerialService {
                 const shouldEnable = this.balance < this.limiter && this.setting.allowCashIn;
                 if (shouldEnable !== this.enable) {
                   this.enable = shouldEnable;
-                  await this.serialService.writeVMC(shouldEnable ? EVMC_COMMAND.ENABLE : EVMC_COMMAND.DISABLE, { enable: shouldEnable, value: shouldEnable ? 200 : 0 });
+                  if(this.enable){
+                    this.enableCashIn();
+                  }else{
+                    this.disableCashIn();
+                  }
+                  // await this.serialService.writeVMC(shouldEnable ? EVMC_COMMAND.ENABLE : EVMC_COMMAND.DISABLE, { read: !shouldEnable, value: !shouldEnable ? 200 : 0 });
                 }
               }
             }
@@ -156,7 +160,7 @@ export class VmcService implements ISerialService {
       this.baudRate = baudRate;
       this.sock.machineId = machineId;
       this.sock.otp = otp;
-  
+      this.offlineMode = Boolean(localStorage.getItem('offlineMode')??'true');
       const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
       await this.serialService.startReadingVMC();
   
@@ -191,7 +195,12 @@ export class VmcService implements ISerialService {
     await this.setPoll(10);
     await this.initializeVMCCommands();
     await this.loadCreditPending();
-    this.startPeriodicTasks();
+
+    // check connection and update new status setting from server
+    if(!this.offlineMode){
+      this.startPeriodicTasks();
+    }
+   
   }
 
   private async initializeVMCCommands(): Promise<void> {
@@ -277,7 +286,8 @@ export class VmcService implements ISerialService {
       if (moment().diff(this.lastUpdate) >= 7000 || !this.setting.allowCashIn) {
         if (!this.enable) return;
         this.enable = false;
-        this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { enable: false });
+        // this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { enable: false });
+        this.disableCashIn();
       }
       if (this.creditPending.length > 0) {
         if (this.pendingRetry <= 0) {
