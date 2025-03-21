@@ -658,6 +658,10 @@ export class Tab1Page implements OnDestroy {
     });
     if (!this.serial) {
       Toast.show({ text: 'serial not init for start VMC' });
+    } else {
+      await this.vendingIndex.vmc.enableCashIn();
+      Toast.show({ text: 'VMC Cashin', duration: 'long' });
+      console.log('VMC Cashin');
     }
     this.vlog.log = this.serial.log;
   }
@@ -823,6 +827,11 @@ export class Tab1Page implements OnDestroy {
       // this._machineStatus.status = hex
       const resultStatus = machineVMCStatus(hex);
       console.log('******machine status:', resultStatus);
+      // this.apiService.alert.create({
+      //   header: 'Machine Status',
+      //   message: JSON.stringify(resultStatus),
+      //   buttons: ['OK']
+      // }).then(r => r.present());
 
       // this._machineStatus = resultStatus;
 
