@@ -7,7 +7,7 @@ import qrlogo from 'qrcode-with-logos';
 import { IENMessage, IGenerateQR } from 'src/app/models/base.model';
 // import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as cryptojs from 'crypto-js';
@@ -26,7 +26,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
   // private generateMMoneyQRCodeProcess: GenerateMMoneyQRCodeProcess;
   private generateLaoQRCodeProcess: GenerateMMoneyQRCodeProcess;
 
-  sweetalert: any = Swal;
+  // sweetalert: any = Swal;
 
   autoPaymentTimer: any = {} as any;
   autoPaymentCounter: number = 15;
@@ -338,7 +338,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
       try {
 
         const alert = this.apiService.alertConfirm(`Cancel paying orders and clear all`);
-        if ((await alert).isConfirmed) {
+        if ((await alert).isConnected) {
           this.orders = [];
           this.getTotalSale.q = 0;
           this.getTotalSale.t = 0;

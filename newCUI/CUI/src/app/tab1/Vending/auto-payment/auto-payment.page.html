@@ -59,6 +59,20 @@
             </a>
           </div>
 
+          <div class="title" *ngIf="isAllowLocal == true" style="margin-top: 20px;">
+            ທາງເລືອກເພີ່ມເຕີມ</div>
+
+          <div class="item-list" *ngIf="isAllowLocal == true">
+            <a *ngFor="let list of paymentOptions; let i = index" (click)="chooseLocalPaymentMethod()"
+              href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+          </div>
+
+
 
           <!-- <div class="vending-section">
             <div class="title">LAAB Cash</div>
@@ -86,6 +100,10 @@
               <img src="" alt="" id="qr-img" class="qr-img">
 
               <div class="total">{{ parseGetTotalSale.t | number }}</div>
+              <div *ngIf="isPayment == true"
+                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;">
+                ຫນ້ານີ້ຈະປິດພາຍໃນ {{
+                countdownDestroy }} ວິນາທີ </div>
             </div>
             <div *ngIf="isPayment == false" class="bill-body">
 
@@ -102,7 +120,7 @@
               <div class="line"></div>
               <div class="group">
                 <div class="text">{{ paymentText }}</div>
-                <div>{{ countdownDestroy }}</div>
+                <!-- <div>{{ countdownDestroy }}</div> -->
 
 
                 <div class="value">{{ billDate | date: 'yyyy-MM-dd HH:MM:SS':'+7' }}</div>

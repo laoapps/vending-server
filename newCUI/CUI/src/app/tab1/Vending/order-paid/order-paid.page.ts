@@ -249,7 +249,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
       try {
 
         const alert = this.apiService.alertConfirm(`Cancel paying orders and clear all`);
-        if ((await alert).isConfirmed) {
+        if ((await alert).isConnected) {
           this.orders = [];
           this.getTotalSale.q = 0;
           this.getTotalSale.t = 0;

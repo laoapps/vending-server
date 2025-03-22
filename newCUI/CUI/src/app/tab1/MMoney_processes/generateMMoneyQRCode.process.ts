@@ -42,8 +42,9 @@ export class GenerateMMoneyQRCodeProcess {
 
                 if (GenerateQRCode != IENMessage.success) {
                     // this.apiService.toast.create({ message: GenerateQRCode, duration: 3000 }).then(toast => toast.present());
-                    this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ Lao QR ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
-                    throw new Error(GenerateQRCode);
+                    // this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ Lao QR ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
+                    // throw new Error(GenerateQRCode);
+                    resolve(null);
                 }
 
                 resolve(this.Commit());
@@ -77,7 +78,10 @@ export class GenerateMMoneyQRCodeProcess {
                 this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
                     const response: any = r;
                     console.log(`response generate MMoney`, response);
-                    if (response.status != 1) return resolve(IENMessage.generateMMoneyQRCodeFail);
+                    if (response.status != 1) {
+                        // return resolve(IENMessage.generateMMoneyQRCodeFail);
+                        resolve(null);
+                    }
                     this.mmoneyQRCode = response.data as IVendingMachineBill;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));

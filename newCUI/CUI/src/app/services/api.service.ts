@@ -38,7 +38,7 @@ import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
 import axios from 'axios';
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 import { BehaviorSubject } from 'rxjs';
 import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
 import { EpinShowCodePageModule } from '../tab1/LAAB/epin-show-code/epin-show-code.module';
@@ -235,7 +235,7 @@ export class ApiService {
 
 
 
-
+  localBalance: number = Number(localStorage.getItem('balanceLocal') ?? 0);
 
   _billEvents = new EventEmitter();
   stock = new Array<IStock>();
@@ -261,7 +261,7 @@ export class ApiService {
   static __T: any;
   static waiting_T: any;
 
-  _machineStatus = { status: {} as IMachineStatus } as any;
+  // _machineStatus = { status: {} as IMachineStatus };
   _cuiSetting = {} as any;
   musicVolume = 6;
 
@@ -344,10 +344,10 @@ export class ApiService {
           that.cash.amount = r.balance;
         }
 
-        that._machineStatus.status = r.data.mstatus;
-        that._machineStatus.status.temp = hex2dec(
-          that._machineStatus.status.temp
-        );
+        // that._machineStatus.status = r.data.mstatus;
+        // that._machineStatus.status.temp = hex2dec(
+        //   that._machineStatus.status.temp
+        // );
         const cset = r.data.setting;
         that._cuiSetting.imgHeader != cset.imgHeader || (that._cuiSetting.imgHeader = cset.imgHeader);
         that._cuiSetting.imgLogo != cset.imgLogo || (that._cuiSetting.imgLogo = cset.imgLogo);
@@ -722,77 +722,162 @@ export class ApiService {
 
 
   public alertSuccess(text: string) {
-    Swal.fire({
-      icon: 'success',
-      title: 'Successfully',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#28B463',
-      heightAuto: false,
-      timer: 5000
-    });
+    // Swal.fire({
+    //   icon: 'success',
+    //   title: 'Successfully',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#28B463',
+    //   heightAuto: false,
+    //   timer: 5000
+    // });
 
-    // setTimeout(() => {
-    //   Swal.close();
-    // }, 5000);
+    this.alert.create({
+      header: 'Successfully',
+      message: text,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'confirm',
+          cssClass: 'alert-ok-button',
+        },
+      ],
+      backdropDismiss: false,
+    }).then((v) => v.present());
+
+
+    // this.alert(text);
+
+    setTimeout(() => {
+      this.alert.dismiss();
+    }, 5000);
   }
   public alertError(text: string) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Fail',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#CB4335',
-      heightAuto: false,
-      timer: 5000
+    // Swal.fire({
+    //   icon: 'error',
+    //   title: 'Fail',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#CB4335',
+    //   heightAuto: false,
+    //   timer: 5000
 
-    });
-    // setTimeout(() => {
-    //   Swal.close();
-    // }, 5000);
+    this.alert.create({
+      header: 'Fail',
+      message: text,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'confirm',
+          cssClass: 'alert-ok-button',
+        },
+      ],
+      backdropDismiss: false,
+    }).then((v) => v.present());
+
+    // });
+    setTimeout(() => {
+      this.alert.dismiss();
+    }, 5000);
   }
   public alertWarnning(title: string, text: string) {
-    Swal.fire({
-      icon: 'warning',
-      title: title,
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#CB4335',
-      heightAuto: false,
-      timer: 5000
+    // Swal.fire({
+    //   icon: 'warning',
+    //   title: title,
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#CB4335',
+    //   heightAuto: false,
+    //   timer: 5000
 
-    });
-    // setTimeout(() => {
-    //   Swal.close();
-    // }, 5000);
+    this.alert.create({
+      header: title,
+      message: text,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'confirm',
+          cssClass: 'alert-ok-button',
+        },
+      ],
+      backdropDismiss: false,
+    }).then((v) => v.present());
+
+    // });
+    setTimeout(() => {
+      this.alert.dismiss();
+    }, 5000);
   }
   public alertErrorNoDimiss(text: string) {
-    const alert = Swal.fire({
-      icon: 'error',
-      title: 'Fail',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#CB4335',
-      heightAuto: false
+    // const alert = Swal.fire({
+    //   icon: 'error',
+    //   title: 'Fail',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#CB4335',
+    //   heightAuto: false
+    // });
+
+    const alert = this.alert.create({
+      header: 'Are you sure!?',
+      message: text,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: (blah) => {
+            console.log('Confirm Cancel: blah');
+          },
+        },
+        {
+          text: 'Confirm',
+          handler: () => {
+            console.log('Confirm Okay');
+          },  // handler  end
+        },
+      ],
+
     });
     return alert;
   }
   public alertConfirm(text: string) {
-    const alert = Swal.fire({
-      icon: 'question',
-      title: 'Are you sure!?',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'Confirm',
-      confirmButtonColor: '#CB4335',
-      showCancelButton: true,
-      cancelButtonText: 'Cancel',
-      cancelButtonColor: '#5D6D7E',
-      heightAuto: false
+    // const alert = Swal.fire({
+    //   icon: 'question',
+    //   title: 'Are you sure!?',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'Confirm',
+    //   confirmButtonColor: '#CB4335',
+    //   showCancelButton: true,
+    //   cancelButtonText: 'Cancel',
+    //   cancelButtonColor: '#5D6D7E',
+    //   heightAuto: false
+    // });
+    const alert = this.alert.create({
+      header: 'Are you sure!?',
+      message: text,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: (blah) => {
+            console.log('Confirm Cancel: blah');
+          },
+        },
+        {
+          text: 'Confirm',
+          handler: () => {
+            console.log('Confirm Okay');
+          },  // handler  end
+        },
+      ],
+
     });
     return alert;
   }
@@ -1647,6 +1732,17 @@ export class ApiService {
     this.___OrderPaidPage?.dismiss();
     this.___OrderPaidPage?.dismiss();
     this.___AutoPaymentPage?.dismiss();
+  }
+
+
+  updateNewLocalBalance(balance: string) {
+    const balanceLocal = localStorage.getItem('balanceLocal') ?? '0';
+    const newBalance = Number(balanceLocal) + Number(balance);
+    this.localBalance = newBalance;
+    localStorage.setItem('balanceLocal', newBalance + '');
+    console.log('balanceLocal', balanceLocal);
+    console.log('newBalance', newBalance);
+
   }
 
 

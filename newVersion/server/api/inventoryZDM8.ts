@@ -604,11 +604,10 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                             const qr = await this.generateBillLaoQRPro(
-                                mId,
                                 value,
-                                machineId.machineId,
                                 mId + '',
-                                a.owner + ''
+                                a.owner + '',
+                                ownerPhone
                             );
                             console.log('QR IS :', qr);
 
@@ -4411,7 +4410,7 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    generateBillLaoQRPro(phoneNumber: string, value: number, machineId: string, channel: string, mechantId: string) {
+    generateBillLaoQRPro(value: number, channel: string, mechantId: string, ownerPhone: string) {
         return new Promise<ILaoQRGenerateQRRes>((resolve, reject) => {
             // generate QR from MMoney
 
@@ -4419,12 +4418,14 @@ export class InventoryZDM8 implements IBaseClass {
                 "requestId": "",
                 "mechantId": mechantId, //DBK :25ATP48M8RD1MKJ4W8FGLGXYC
                 "txnAmount": value,
-                "terminalId": "2055516321", //Device Number
+                "terminalId": ownerPhone, //Device Number ເບີຄົນຮັບເງິນ
                 "terminalLabel": "laabxserver", // Device Name
-                "mobileNo": "2055516321", // CashIn to Wallet Number (Merchant)
-                "channel": channel, // Vending Machine 
-                "owner": "Moocher Orange", // Merchant Name
-                "callbackurl": "https://tvending.khamvong.com"
+                "mobileNo": ownerPhone, // CashIn to Wallet Number (Merchant)  ເບີຄົນຮັບເງິນ
+                "channel": `VENDING_` + channel, // Vending Machine 
+                "owner": "LAABX", // Merchant Name  LAABX
+                // "callbackurl": "https://tvending.khamvong.com"
+                "callbackurl": "https://vendingserviceapi.laoapps.com"
+
             }
             console.log("LAOQR", qr);
 

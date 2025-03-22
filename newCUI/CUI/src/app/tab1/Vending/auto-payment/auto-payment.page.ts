@@ -4,7 +4,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { EClientCommand, IBillProcess, IVendingMachineSale } from 'src/app/services/syste.model';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
 // import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 import { GenerateLaoQRCodeProcess } from '../../LaoQR_processes/generateLaoQRCode.process';
@@ -37,6 +37,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   paymentText: string;
   paymentLogo: string;
   isPayment: boolean = false;
+
+  isAllowLocal: boolean = false;
 
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
   questionIcon: string = `../../../../assets/logo/question-logo.png`;
@@ -137,6 +139,20 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     //   value: 'umoney'
     // }
   ]
+
+  ewalletOptionList: Array<any> = [
+    {
+      image: `../../../../assets/logo/localbalance.png`,
+      name: 'ເງິນໃນຕູ້',
+      title: 'Local Balance (optional)',
+      detail: 'Pay your orders by using Money in Machine',
+      value: 'localBalance',
+      count: 5
+    },
+
+  ]
+
+
   bankList: Array<any> = [
     {
       image: `../../../../assets/logo/laoqr.png`,
@@ -147,6 +163,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     }
   ]
   paymentList: Array<any> = [...this.cashesList, ...this.ewalletList, ...this.bankList];
+  paymentOptions: Array<any> = [...this.ewalletOptionList];
+
+
 
 
 
@@ -180,6 +199,13 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     console.log(`order der`, this.parseorders);
     console.log(`--->`, this.parseGetTotalSale);
+    if (this.parseGetTotalSale.t <= this.apiService.localBalance) {
+      this.isAllowLocal = true;
+      console.log('ALLOW LOCAL');
+    } else {
+      this.isAllowLocal = false;
+      console.log('NOT ALLOW LOCAL');
+    }
     this.loadDOMs();
     // this.loadFakeOrder();
 
@@ -553,10 +579,22 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         console.log('START GENERATE LAOQR');
 
         const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
-
-        if (run.message != IENMessage.success) throw new Error(run);
-
         console.log('=====>RUN', run);
+
+        // if (run.message != IENMessage.success) throw new Error(run);
+        if (!run) {
+          // this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
+          clearInterval(this.countdownDestroyTimer);
+          this.countdownDestroy = 60;
+          if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+          AutoPaymentPage.message = undefined;
+
+          // this.apiService.myTab1.clearStockAfterLAABGo();
+          this.close();
+          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
+          resolve(IENMessage.success);
+        }
+
 
 
         const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
@@ -610,7 +648,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         }, 1000);
 
       } catch (error) {
-        this.apiService.alertError(error.message);
+        // this.apiService.alertError(error.message);
 
         // when choose payment method and it does not work this process will auto loop check laab balance
         const transactionID = localStorage.getItem('transactionID');
@@ -639,7 +677,18 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         console.log('START GENERATE Mmoney');
 
         const run = await new PaymentStation(this.apiService, this.vendingAPIService).InitMMoney(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        // if (run.message != IENMessage.success) throw new Error(run);
+        if (!run) {
+          clearInterval(this.countdownDestroyTimer);
+          this.countdownDestroy = 60;
+          if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+          AutoPaymentPage.message = undefined;
+
+          // this.apiService.myTab1.clearStockAfterLAABGo();
+          this.close();
+          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ Lao QR ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
+          resolve(IENMessage.success);
+        }
 
         const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
         AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
@@ -693,7 +742,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         }, 1000);
 
       } catch (error) {
-        this.apiService.alertError(error.message);
+        // this.apiService.alertError(error.message);
 
         // when choose payment method and it does not work this process will auto loop check laab balance
         const transactionID = localStorage.getItem('transactionID');
@@ -920,6 +969,22 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   }
 
 
+  chooseLocalPaymentMethod(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if (this.parseGetTotalSale.t <= this.apiService.localBalance) {
+
+        } else {
+          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກຕົວເລືອກອື່ນແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
+        }
+      } catch (error) {
+
+        this.apiService.alertError(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
 
 
 
@@ -1111,7 +1176,10 @@ class PaymentStation {
         const LaoQRPayment = await this.LaoQRPayment();
         console.log('=====> Init LaoQRPayment', LaoQRPayment);
 
-        if (LaoQRPayment != IENMessage.success) throw new Error(LaoQRPayment);
+        if (LaoQRPayment != IENMessage.success) {
+          // throw new Error(LaoQRPayment);
+          resolve(null);
+        }
 
 
         (await this.workload).dismiss();
@@ -1135,7 +1203,10 @@ class PaymentStation {
         if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
         const MMoneyQRPayment = await this.MMoneyPayment();
-        if (MMoneyQRPayment != IENMessage.success) throw new Error(MMoneyQRPayment);
+        if (MMoneyQRPayment != IENMessage.success) {
+          // throw new Error(MMoneyQRPayment);
+          resolve(null);
+        }
 
         (await this.workload).dismiss();
         resolve(this.Commit());
@@ -1197,7 +1268,10 @@ class PaymentStation {
         }
         console.log(`MMoney MODEL`, params);
         const run = await new MMoneyPayment(this.apiService, this.vendingAPIService).Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {
+          // throw new Error(run);
+          resolve(null);
+        }
 
         this.qrcode = run.data[0].qrcode;
 
@@ -1222,7 +1296,10 @@ class PaymentStation {
         }
         console.log(`LaoQR MODEL`, params);
         const run = await new LaoQRPayment(this.apiService, this.vendingAPIService).Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {
+          // throw new Error(run);
+          resolve(null);
+        }
 
         this.qrcode = run.data[0].qrcode;
         console.log('=====>LAOQR', this.qrcode);
@@ -1430,7 +1507,10 @@ class LaoQRPayment {
         if (SumerizeOrder != IENMessage.success) throw new Error(SumerizeOrder);
 
         const Payment = await this.Payment();
-        if (Payment != IENMessage.success) throw new Error(Payment);
+        if (Payment != IENMessage.success) {
+          // throw new Error(Payment);
+          resolve(null);
+        }
 
         resolve(this.Commit());
 
@@ -1503,9 +1583,12 @@ class LaoQRPayment {
 
         const run = await this.generateLaoQRCodeProcess.Init(params);
 
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {
+          // throw new Error(run);
+          resolve(null)
+        }
         this.qrcode = run.data[0].mmoneyQRCode.qr;
-        console.log('=====>LAOQR Payment', this.qrcode);
+        // console.log('=====>LAOQR Payment', this.qrcode);
 
         const transactionID = run.data[0].mmoneyQRCode.transactionID;
         // console.log('=====>LAOQR', transactionID);
@@ -1583,7 +1666,10 @@ class MMoneyPayment {
         if (SumerizeOrder != IENMessage.success) throw new Error(SumerizeOrder);
 
         const Payment = await this.Payment();
-        if (Payment != IENMessage.success) throw new Error(Payment);
+        if (Payment != IENMessage.success) {
+          // throw new Error(Payment);
+          resolve(null);
+        }
 
         resolve(this.Commit());
 
@@ -1645,7 +1731,10 @@ class MMoneyPayment {
 
         const run = await this.generateMMoneyQRCodeProcess.Init(params);
 
-        if (run.message != IENMessage.success) throw new Error(run);
+        if (run.message != IENMessage.success) {
+          // throw new Error(run);
+          resolve(null);
+        }
         this.qrcode = run.data[0].mmoneyQRCode.qr;
         console.log('=====>MMoney Payment', this.qrcode);
 

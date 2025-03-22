@@ -57,7 +57,7 @@
       </svg>
     </a>
     <div (click)="laabCashin()" class="cash-balance control-menu menu-laab-cashin active"><img
-        src="../../assets/logo/LAAB-logo.png" alt=""> {{ apiService.cash.amount | number }}</div>
+        src="../../assets/logo/LAAB-logo.png" alt=""> {{ apiService.localBalance | number }}</div>
 
     <a (click)="openStackCashOutPage()" href="javascript:void(0)" class="item control-menu menu-cashout active">
       <svg class="svg-top" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
@@ -115,8 +115,31 @@
 
   <!-- <a (click)="showMyOrdersModal()" href="javascript:void(0)" class="btn-shopping-cart"><i class="fa-solid fa-cart-shopping"></i></a> -->
 
+
   <span class="btn-abs-list">
-    <a *ngIf="isDropStock" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
+    <!-- <a (click)="Disble()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
+      <div class="text">Disable </div>
+      <div class="icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+    </a> -->
+
+    <a (click)="Enable()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
+      <div class="text">Enable </div>
+      <div class="icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+    </a>
+
+    <a (click)="apiService.updateNewLocalBalance('1000')" href="javascript:void(0)"
+      class="item-deep-blue menu-shopping-cart">
+      <div class="text">TEST Balance </div>
+      <div class="icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+    </a>
+    <a *ngIf="isDropStock == true" (click)="showBills()" href="javascript:void(0)"
+      class="item-deep-blue menu-shopping-cart">
       <div class="text">ເຄື່ອງບໍ່ທັນຕົກ</div>
       <div class="icon">
         <i class="fa-solid fa-cart-shopping"></i>
@@ -157,7 +180,10 @@
       <div class="text" *ngIf="_machineStatus?.status?.temp">{{_machineStatus?.status?.temp}}</div>
       <div class="text" *ngIf="!_machineStatus?.status?.temp">loading...</div>
       <div class="icon">
-        <i class="fa-solid fa-temperature-low"></i>
+        <!-- <i class="fa-solid fa-temperature-low"></i>
+          -->
+        <ion-icon name="thermometer-outline"></ion-icon>
+
       </div>
     </a>
     <a (click)="ShowMMoneyAppLink()" href="javascript:void(0)"

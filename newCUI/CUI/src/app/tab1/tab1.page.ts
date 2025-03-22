@@ -59,7 +59,7 @@ import { HowtoPageModule } from '../howto/howto.module';
 import { HowToPage } from './Vending/how-to/how-to.page';
 import { LoadStockListProcess } from './Vending_processes/loadStockList.process';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 import { AdsPage } from '../ads/ads.page';
 import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
@@ -108,7 +108,7 @@ export class Tab1Page implements OnDestroy {
   isDropStock = false;
 
 
-
+  enableCashIn: boolean = false;
 
   isShowLaabTabEnabled: boolean = false;
 
@@ -124,7 +124,7 @@ export class Tab1Page implements OnDestroy {
   filemanagerURL: string = environment.filemanagerurl;
 
   acceptcash: number;
-  _machineStatus = { status: {} as IMachineStatus } as any;
+  _machineStatus = { status: {} as IMachineStatus };
 
   machinestatus = { data: '' };
 
@@ -224,6 +224,7 @@ export class Tab1Page implements OnDestroy {
   // interval
   refreshAll: any = {} as any;
   refreshAllCounter: number = 0;
+  firstCredit: boolean = true;
 
   async showModal(component: any, d: any = {}, cssClass: string = '') {
     try {
@@ -263,7 +264,7 @@ export class Tab1Page implements OnDestroy {
     const that = this;
     this.dynamicControlMenu();
 
-    this._machineStatus = this.apiService._machineStatus;
+
     // this.autoUpdateCash();
 
     this.loadVendingWalletCoinBalanceProcess =
@@ -521,6 +522,7 @@ export class Tab1Page implements OnDestroy {
         if (r.length > 0) {
           console.log('dropStock', r);
           this.isDropStock = true;
+
         } else {
           console.log('out dropStock', r);
           this.isDropStock = false;
@@ -631,7 +633,22 @@ export class Tab1Page implements OnDestroy {
     this.connecting = false;
   }
 
+  async Enable() {
+    await this.vendingIndex.vmc.enableCashIn();
+    this.apiService.toast.create({
+      message: 'Enable cash in',
+      duration: 2000
+    }).then(r => r.present());
+  }
 
+  async Disble() {
+
+    await this.vendingIndex.vmc.disableCashIn();
+    this.apiService.toast.create({
+      message: 'Disable cash in',
+      duration: 2000
+    }).then(r => r.present());
+  }
   async startVMC() {
     if (this.serial) {
       await this.serial.close();
@@ -662,6 +679,18 @@ export class Tab1Page implements OnDestroy {
       await this.vendingIndex.vmc.enableCashIn();
       Toast.show({ text: 'VMC Cashin', duration: 'long' });
       console.log('VMC Cashin');
+
+      // FIX FIRMWARE bugs when reconnect to VMC
+      setTimeout(() => {
+        this.isFirstLoad = false;
+        if (this.enableCashIn) {
+          this.vendingIndex.vmc.enableCashIn();
+        }
+        else {
+          this.vendingIndex.vmc.disableCashIn();
+        }
+
+      }, 45000);
     }
     this.vlog.log = this.serial.log;
   }
@@ -775,8 +804,15 @@ export class Tab1Page implements OnDestroy {
       const mode = hex.substring(10, 12);
       if (mode === '01') { //fafb21069101 ==> 01 receive
         // banknote receive
-        const value = this.getNoteValue(hex);
+        const value = this.getNoteValue(hex) / 100;
         const t = Number('-21' + moment.now());
+        // this.apiService.alert.create({
+        //   header: 'Banknote received',
+        //   message: `Banknote received: ${value}`,
+        //   buttons: ['OK'] //, 'Cancel'
+        // }).then(r => r.present());
+        if (this.firstCredit) { this.firstCredit = false; return; }
+        this.apiService.updateNewLocalBalance(value + '');
         // fafb2106d501 000186a0 d5 == 100000 == 1000,00
         //               // fafb21069101 000186a0 91 == 100000 == 1000,00
         //               // fafb2106c301 00030d40 aa == 200000 == 2000,00
@@ -826,6 +862,7 @@ export class Tab1Page implements OnDestroy {
       // this.machinestatus.data = hex;
       // this._machineStatus.status = hex
       const resultStatus = machineVMCStatus(hex);
+      this._machineStatus.status.temp = resultStatus.temperature + '';
       console.log('******machine status:', resultStatus);
       // this.apiService.alert.create({
       //   header: 'Machine Status',
@@ -1550,18 +1587,19 @@ export class Tab1Page implements OnDestroy {
       if (this.WSAPIService?.setting_allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
-        const alert = Swal.fire({
-          icon: 'error',
-          title: 'Vender is out of service',
-          text: `Please, try again later`,
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#EE3124',
-          heightAuto: false,
-        });
-        setTimeout(() => {
-          Swal.close();
-        }, 2000);
+        // const alert = Swal.fire({
+        //   icon: 'error',
+        //   title: 'Vender is out of service',
+        //   text: `Please, try again later`,
+        //   showConfirmButton: true,
+        //   confirmButtonText: 'OK',
+        //   confirmButtonColor: '#EE3124',
+        //   heightAuto: false,
+        // });
+        this.apiService.alertError('Please, try again later');
+        // setTimeout(() => {
+        //   Swal.close();
+        // }, 2000);
         return;
       }
 
@@ -1599,18 +1637,20 @@ export class Tab1Page implements OnDestroy {
       if (this.WSAPIService?.setting_allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
-        const alert = Swal.fire({
-          icon: 'error',
-          title: 'Vender is out of service',
-          text: `Please, try again later`,
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#EE3124',
-          heightAuto: false,
-        });
-        setTimeout(() => {
-          Swal.close();
-        }, 2000);
+        // const alert = Swal.fire({
+        //   icon: 'error',
+        //   title: 'Vender is out of service',
+        //   text: `Please, try again later`,
+        //   showConfirmButton: true,
+        //   confirmButtonText: 'OK',
+        //   confirmButtonColor: '#EE3124',
+        //   heightAuto: false,
+        // });
+        // setTimeout(() => {
+        //   Swal.close();
+        // }, 2000);
+
+        this.apiService.alertError('Please, try again later');
         return;
       }
 
@@ -1681,6 +1721,20 @@ export class Tab1Page implements OnDestroy {
             console.log('*****CHECK 30 SECOND');
 
             that._processLoopCheckLaoQRPaid();
+
+            this.apiService.IndexedDB.getBillProcesses().then((r) => {
+              if (r.length > 0) {
+                console.log('dropStock', r);
+                this.isDropStock = true;
+
+              } else {
+                console.log('out dropStock', r);
+                this.isDropStock = false;
+              }
+            }).catch((e) => {
+              console.log('Error get dropStock from local', e);
+              this.isDropStock = false;
+            });
           }, 30000);
         });
         //5s
