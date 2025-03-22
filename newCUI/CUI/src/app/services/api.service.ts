@@ -1733,6 +1733,24 @@ export class ApiService {
     this.___OrderPaidPage?.dismiss();
     this.___AutoPaymentPage?.dismiss();
   }
+  async updateStatus(data:any) {
+    return new Promise<IResModel>((resolve, reject) => {
+      const req = {} as IReqModel;
+      req.command = data.command||EClientCommand.MACHINE_STATAUS;
+      req.data = data.data;
+      req.transactionID = data.transactionID;
+      req.ip;
+      req.time = new Date().toString();
+      req.token = cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex);
+      // req.data.clientId = this.clientId.clientId;
+      console.log(`req der`, req);
+      return this.http.post<IResModel>(this.url + '/updateStatus', req, {
+        headers: this.headerBase(),
+      });
+    });
+  }
 
 
   updateNewLocalBalance(balance: string) {

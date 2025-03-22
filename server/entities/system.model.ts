@@ -1113,7 +1113,13 @@ export enum EClientCommand {
     list = 'list',
     buyMMoney = 'buyMMoney',
     confirmMMoney = 'confirmMMoney',
-    confirmLAAB = 'confirmLAAB'
+    confirmLAAB = 'confirmLAAB',
+    CREDIT_NOTE = "CREDIT_NOTE",
+    MACHINE_STATUS = "MACHINE_STATUS",
+    DISPENSE = "DISPENSE",
+    DISPENSED = "DISPENSED",
+    DISPENSEFAILED = "DISPENSEFAILED",
+    UNKNOWN = "UNKNOWN"
 }
 export interface IVendingMachineSale extends IBase, IBC {
     machineId: string;

@@ -7,6 +7,7 @@ import * as moment from 'moment-timezone';
 import { LoggingService } from './logging-service.service';
 import { DatabaseService } from './database.service';
 import cryptojs, { mode } from 'crypto-js';
+import { ApiService } from './services/api.service';
 // import { setTimeout } from 'timers';
 
 export enum EVMC_COMMAND {
@@ -49,6 +50,7 @@ export class VmcService implements ISerialService {
   log: IlogSerial = { data: '', limit: 50 };
   machineId: string = '11111111';
   otp = '111111';
+  notes = new Array<IBankNote>();
   retryCmd = 5;
   private enable = true;
   private limiter = 100000;
@@ -65,7 +67,39 @@ export class VmcService implements ISerialService {
   stopBits: 1 = 1;
   machinestatus = { data: '' };
   sock = {
-    send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.status) => { console.log('vmc service send', b, t, c); },
+    send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) => {
+       console.log('vmc service send', b, t, c); 
+       // API TO SEND TO SERVER 
+       // create API TO ACCEPT THIS 
+       try {
+        
+        this.apiservice.updateStatus({data:b,transactionID:t,command:c}).then(r=>{
+          console.log('vmc service send response', r);
+          if(r.command===EMACHINE_COMMAND.CREDIT_NOTE){
+            if(r.transactionID){
+              const x =this.creditPending.find(v=>v.transactionID===r.transactionID);
+              if(x){  
+              this.deleteCredit(x.id);
+              this.creditPending= this.creditPending.filter(v=>v.transactionID!==r.transactionID);
+              }
+            }else{
+              console.log('vmc service send response falied', r);
+              setTimeout(() => {
+                this.sock.send(b, t
+                  , c);
+              }, 5000);
+            }
+          }else{
+            console.log('update machine Status', r);
+          }
+        }).catch(e=>{
+          console.log('vmc service send error', e);
+        });
+       } catch (error) {
+        console.log('vmc service send error', error);
+       }
+     
+    },
     machineId: '',
     otp: ''
   };
@@ -73,7 +107,8 @@ export class VmcService implements ISerialService {
   constructor(
     private serialService: SerialServiceService,
     private loggingService: LoggingService,
-    private dbService: DatabaseService
+    private dbService: DatabaseService,
+    private apiservice:ApiService
   ) { }
 
   private addLogMessage(message: string, consoleMessage?: string): void {
@@ -106,13 +141,14 @@ export class VmcService implements ISerialService {
             this.limiter = params?.limiter || 100000;
             this.lastUpdate = moment.now();
 
-            if (params?.confirmCredit) {
-              const credit = this.creditPending.find(v => v.transactionID === params.transactionID);
-              if (credit) {
-                this.deleteCredit(credit.id);
-                this.creditPending = this.creditPending.filter(v => v.transactionID !== params.transactionID);
-              }
-            }
+            // remove this because we will handle the send function
+            // if (params?.confirmCredit) {
+            //   const credit = this.creditPending.find(v => v.transactionID === params.transactionID);
+            //   if (credit) {
+            //     this.deleteCredit(credit.id);
+            //     this.creditPending = this.creditPending.filter(v => v.transactionID !== params.transactionID);
+            //   }
+            // }
 
             if (Array.isArray(params?.setting)) {
               const setting = params.setting.find(v => v.settingName === 'setting');
@@ -195,7 +231,7 @@ export class VmcService implements ISerialService {
     await this.setPoll(10);
     await this.initializeVMCCommands();
     await this.loadCreditPending();
-
+    this.initBankNotes();
     // check connection and update new status setting from server
     if(!this.offlineMode){
       this.startPeriodicTasks();
@@ -289,15 +325,16 @@ export class VmcService implements ISerialService {
         // this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { enable: false });
         this.disableCashIn();
       }
-      if (this.creditPending.length > 0) {
-        if (this.pendingRetry <= 0) {
-          const credit = this.creditPending[0];
-          this.sock.send(credit.data.data, Number(credit.transactionID), EMACHINE_COMMAND.CREDIT_NOTE);
-          this.pendingRetry = 10;
-        } else {
-          this.pendingRetry -= 2;
-        }
-      }
+      // remove this as we will handle at the send function 
+      // if (this.creditPending.length > 0) {
+      //   if (this.pendingRetry <= 0) {
+      //     const credit = this.creditPending[0];
+      //     this.sock.send(credit.data.data, Number(credit.transactionID), EMACHINE_COMMAND.CREDIT_NOTE);
+      //     this.pendingRetry = 10;
+      //   } else {
+      //     this.pendingRetry -= 2;
+      //   }
+      // }
     }, 2000);
   }
 
@@ -320,20 +357,20 @@ export class VmcService implements ISerialService {
   }
 
   private processVMCResponse(hex: string): void {
+    const t = Number('-21' + moment.now());
     if (hex.startsWith('fafb04')) {
-      this.sock.send(hex, -9);
       console.log('Dispensing status:', hex);
+      const t = Number('-21' + moment.now());
       //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
-      if (hex.substring(10, 12) == '01') console.log('Dispensing');
-      if (hex.substring(10, 12) == '02') console.log('Dispensed');
-      if (hex.substring(10, 12) == '03') console.log('Drop failed');
+      if (hex.substring(10, 12) == '01') {console.log('Dispensing'); this.sock.send(hex,t,EMACHINE_COMMAND.DISPENSE)};
+      if (hex.substring(10, 12) == '02')  {console.log('Dispensed'); this.sock.send(hex,t,EMACHINE_COMMAND.DISPENSED)};
+      if (hex.substring(10, 12) == '03') {console.log('Dispensed failed'); this.sock.send(hex,t,EMACHINE_COMMAND.DISPENSEFAILED)};
 
       // FA FB 04 04 A3 01 00 3C 9F ==> 3C is 60 slot sent command, 01 = status processing
       // FA FB 04 04 A4 02 00 3C 9B ==> 3C is 60 slot sent command, 02 = status dispensed
       // fa fb 04 04 9e 03 00 3c a0 ==> 3C is 60 slot sent command, 03 = status drop failed
 
     } else if (hex.startsWith('fafb21')) { // process credit note with bank note value
-      console.log('receive banknotes 21', hex);
       const mode = hex.substring(10, 12);
       if (mode === '01') { //fafb21069101 ==> 01 receive
         // banknote receive
@@ -361,7 +398,18 @@ export class VmcService implements ISerialService {
         };
         this.creditPending.push(credit);
         this.addOrUpdateCredit(credit);
-        this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
+
+        // check Hashing 
+        const bn = this.initHashBankNotes(this.machineId);
+        const note = bn.find(v => v.hash === hash);
+        if(!note){
+          console.log('Hash not found', hash);
+          return;
+        }else{
+          /// send to server and need to confirm from server
+          this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
+        }
+       
         
       } else if (mode == '08') {//fafb21068308000186a08a
         //bank note swollen
@@ -373,13 +421,32 @@ export class VmcService implements ISerialService {
       //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
       this.machinestatus.data = hex;
       const m = machineVMCStatus(hex);
-      this.sock.send(hex, -52);
+      this.sock.send(JSON.stringify(m), t);
     } else {
-      this.lastReported23 = null;
-      this.sock?.send(hex, -3);
+      this.sock.send(JSON.stringify(hex), t,EMACHINE_COMMAND.UNKNOWN);
       console.log('Unhandled response:', hex);
     }
   }
+  initHashBankNotes(machineId: string) {
+    const hashNotes = Array<IHashBankNote>();
+    for (let i = 0; i < this.notes.length; i++) {
+        const x = JSON.parse(JSON.stringify(this.notes[i])) as IHashBankNote;
+        x.hash = cryptojs
+            .SHA256(machineId + this.notes[i].value * 100)
+            .toString(cryptojs.enc.Hex);
+        hashNotes.push(x);
+    }
+    return hashNotes;
+}
+initBankNotes() {
+  this.notes.push({ value: 1000, amount: 0, currency: 'LAK', channel: 1, image: 'lak1000.jpg' });
+  this.notes.push({ value: 2000, amount: 0, currency: 'LAK', channel: 2, image: 'lak2000.jpg' });
+  this.notes.push({ value: 5000, amount: 0, currency: 'LAK', channel: 3, image: 'lak5000.jpg' });
+  this.notes.push({ value: 10000, amount: 0, currency: 'LAK', channel: 4, image: 'lak10000.jpg' });
+  this.notes.push({ value: 20000, amount: 0, currency: 'LAK', channel: 5, image: 'lak20000.jpg' });
+  this.notes.push({ value: 50000, amount: 0, currency: 'LAK', channel: 6, image: 'lak50000.jpg' });
+  this.notes.push({ value: 100000, amount: 0, currency: 'LAK', channel: 7, image: 'lak100000.jpg' });
+}
 
   private async sycnVMC(): Promise<IResModel> {
     await this.serialService.writeVMC(EVMC_COMMAND.SYNC, {});
@@ -416,6 +483,16 @@ export class VmcService implements ISerialService {
     }
     return bytes;
   }
+}
+export interface IBankNote  {
+  value: number;
+  amount: number;
+  currency: string;
+  channel: number;
+  image: string;
+}
+export interface IHashBankNote extends IBankNote {
+  hash: string;
 }
 
 

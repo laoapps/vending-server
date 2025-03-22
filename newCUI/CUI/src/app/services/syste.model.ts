@@ -582,6 +582,10 @@ export enum EMACHINE_COMMAND {
     SETCHANNELINHIBITS = "SETCHANNELINHIBITS",
     GETSERIALNUMBER = "GETSERIALNUMBER",
     SETUPREQUEST = "SETUPREQUEST",
+    DISPENSED = "DISPENSED",
+    DISPENSEFAILED = "DISPENSEFAILED",
+    UNKNOWN = "UNKNOWN",
+    MACHINE_STATUS = "MACHINE_STATUS",
 
 
 }
@@ -983,7 +987,8 @@ export enum EClientCommand {
     buyMMoney = 'buyMMoney',
     confirmMMoney = 'confirmMMoney',
     paidLAAB = 'paidLAAB',
-    buyLAOQR = "buyLAOQR"
+    buyLAOQR = "buyLAOQR",
+    MACHINE_STATAUS = "MACHINE_STATAUS"
 }
 export interface IMachineId {
     machineId: string;
