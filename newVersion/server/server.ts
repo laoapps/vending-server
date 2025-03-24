@@ -117,7 +117,7 @@ CreateDatabase("")
         if (d.command == EClientCommand.confirmMMoney) {
           console.log("confirmMMoney");
           invZDM8.confirmMMoneyOder(c).then((r) => {
-            console.log(r.data);
+            // console.log(r.data);
             // res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
             if (r) {
               res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
@@ -128,13 +128,13 @@ CreateDatabase("")
         } else if (d.command == EClientCommand.confirmLAAB) {
           console.log("confirmLAAB");
           invZDM8.confirmLAABOder(c).then((r) => {
-            console.log(r.data);
+            // console.log(r.data);
             res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
           });
         } else if (d.command == EClientCommand.confirmLAOQR) {
           console.log('confirmLAOQR');
           invZDM8.confirmLaoQROrder(c).then((r) => {
-            console.log(r.data);
+            // console.log(r.data);
             if (r) {
               res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
             } else {
