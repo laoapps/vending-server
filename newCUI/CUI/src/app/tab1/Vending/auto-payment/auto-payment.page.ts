@@ -38,7 +38,6 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   paymentLogo: string;
   isPayment: boolean = false;
 
-  isAllowLocal: boolean = false;
 
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
   questionIcon: string = `../../../../assets/logo/question-logo.png`;
@@ -162,7 +161,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       value: 'LaoQR'
     }
   ]
-  paymentList: Array<any> = [...this.cashesList, ...this.ewalletList, ...this.bankList];
+  paymentList: Array<any> = [...this.cashesList, ...this.bankList];
   paymentOptions: Array<any> = [...this.ewalletOptionList];
 
 
@@ -199,13 +198,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     console.log(`order der`, this.parseorders);
     console.log(`--->`, this.parseGetTotalSale);
-    if (this.parseGetTotalSale.t <= this.apiService.localBalance) {
-      this.isAllowLocal = true;
-      console.log('ALLOW LOCAL');
-    } else {
-      this.isAllowLocal = false;
-      console.log('NOT ALLOW LOCAL');
-    }
+
     this.loadDOMs();
     // this.loadFakeOrder();
 
@@ -439,10 +432,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             }
             else {
 
-              this.paymentmethod = IPaymentMethod.mmoney;
+              this.paymentmethod = IPaymentMethod.LaoQR;
               this.paymentText = this.paymentList[0].name;
               this.paymentLogo = this.paymentList[0].image;
-              this._processLoopDestroy();
+              this._processLoopDestroyNew();
             }
 
 

@@ -38,7 +38,7 @@ export enum EVMC_COMMAND {
   CREDIT_MODE = '7023',
   TEMP_MODE = "7028",
   ENABLE_SELECTION = "12",
-  LIGHT_CONTROL="7016"
+  LIGHT_CONTROL = "7016"
 }
 
 
@@ -68,47 +68,47 @@ export class VmcService implements ISerialService {
   machinestatus = { data: '' };
   sock = {
     send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) => {
-       console.log('vmc service send', b, t, c); 
-       // API TO SEND TO SERVER 
-       // create API TO ACCEPT THIS 
-       try {
-        
-        this.apiservice.updateStatus({data:b,transactionID:t,command:c}).then(r=>{
+      console.log('vmc service send', b, t, c);
+      // API TO SEND TO SERVER 
+      // create API TO ACCEPT THIS 
+      try {
+
+        this.apiservice.updateStatus({ data: b, transactionID: t, command: c }).then(r => {
           console.log('vmc service send response', r);
-          if(r.command===EMACHINE_COMMAND.CREDIT_NOTE){
-            if(r.transactionID){
-              const x =this.creditPending.find(v=>v.transactionID===r.transactionID);
-              if(x){  
-              this.deleteCredit(x.id);
-              this.creditPending= this.creditPending.filter(v=>v.transactionID!==r.transactionID);
+          if (r.command === EMACHINE_COMMAND.CREDIT_NOTE) {
+            if (r.transactionID) {
+              const x = this.creditPending.find(v => v.transactionID === r.transactionID);
+              if (x) {
+                this.deleteCredit(x.id);
+                this.creditPending = this.creditPending.filter(v => v.transactionID !== r.transactionID);
               }
-            }else{
-              console.log('vmc service send response falied', r);
+            } else {
+              console.log('vmc service send response falied and retry', r);
               setTimeout(() => {
                 this.sock.send(b, t
                   , c);
               }, 5000);
             }
-          }else{
+          } else {
             console.log('update machine Status', r);
           }
-        }).catch(e=>{
+        }).catch(e => {
           console.log('vmc service send error', e);
         });
-       } catch (error) {
+      } catch (error) {
         console.log('vmc service send error', error);
-       }
-     
+      }
+
     },
     machineId: '',
     otp: ''
   };
-  offlineMode=true;
+  offlineMode = true;
   constructor(
     private serialService: SerialServiceService,
     private loggingService: LoggingService,
     private dbService: DatabaseService,
-    private apiservice:ApiService
+    private apiservice: ApiService
   ) { }
 
   private addLogMessage(message: string, consoleMessage?: string): void {
@@ -163,9 +163,9 @@ export class VmcService implements ISerialService {
                 const shouldEnable = this.balance < this.limiter && this.setting.allowCashIn;
                 if (shouldEnable !== this.enable) {
                   this.enable = shouldEnable;
-                  if(this.enable){
+                  if (this.enable) {
                     this.enableCashIn();
-                  }else{
+                  } else {
                     this.disableCashIn();
                   }
                   // await this.serialService.writeVMC(shouldEnable ? EVMC_COMMAND.ENABLE : EVMC_COMMAND.DISABLE, { read: !shouldEnable, value: !shouldEnable ? 200 : 0 });
@@ -196,17 +196,17 @@ export class VmcService implements ISerialService {
       this.baudRate = baudRate;
       this.sock.machineId = machineId;
       this.sock.otp = otp;
-      this.offlineMode = Boolean(localStorage.getItem('offlineMode')??'true');
+      this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
       const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
       await this.serialService.startReadingVMC();
-  
+
       if (init == this.portName) {
         this.vmcInitilize();
         resolve(init);
       }
       else reject(init);
     });
-   
+
   }
 
   getSerialEvents() {
@@ -233,34 +233,34 @@ export class VmcService implements ISerialService {
     await this.loadCreditPending();
     this.initBankNotes();
     // check connection and update new status setting from server
-    if(!this.offlineMode){
+    if (!this.offlineMode) {
       this.startPeriodicTasks();
     }
-   
+
   }
 
   private async initializeVMCCommands(): Promise<void> {
     const commands = [
-    { cmd: EVMC_COMMAND.MACHINE_STATUS, params: {} },           // Machine status
-    // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
-    // { cmd: EVMC_COMMAND._7017, params: { read: true, enable: 0 } }, // Unionpay/POS (read)
-    // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
-    { cmd: EVMC_COMMAND.BILL_ACCEPT_MODE, params: { read: false,value:1 } },     // Bill accepting mode (read)
-    // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
-    // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 200 } }, // Enable bills
-    // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
-    // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
-    { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
-    { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
-    // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
-    {cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber:0,price:1 } }    // set value slection , but the cash acceptor is flashing need to solve later
+      { cmd: EVMC_COMMAND.MACHINE_STATUS, params: {} },           // Machine status
+      // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
+      // { cmd: EVMC_COMMAND._7017, params: { read: true, enable: 0 } }, // Unionpay/POS (read)
+      // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
+      { cmd: EVMC_COMMAND.BILL_ACCEPT_MODE, params: { read: false, value: 1 } },     // Bill accepting mode (read)
+      // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
+      // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 200 } }, // Enable bills
+      // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
+      // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
+      { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
+      { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
+      // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
+      { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 } }    // set value slection , but the cash acceptor is flashing need to solve later
 
 
-    
+
 
     ];
     for (const x of commands) {
-      if(!x) continue
+      if (!x) continue
       await this.serialService.writeVMC(x.cmd, x.params);
       this.addLogMessage(`INIT ${JSON.stringify(x)}`);
     }
@@ -270,8 +270,8 @@ export class VmcService implements ISerialService {
     return new Promise<void>(async (resolve, reject) => {
       this.setting.allowCashIn = false;
       this.enable = false;
-      await this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { read:false, value: 0 });
-    // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
+      await this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { read: false, value: 0 });
+      // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
 
       resolve();
     });
@@ -280,11 +280,11 @@ export class VmcService implements ISerialService {
     return new Promise<void>(async (resolve, reject) => {
       this.setting.allowCashIn = true;
       this.enable = true;
-      await this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false, value: 200 });
-       // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: 'ffff' });
+      await this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read: false, value: 200 });
+      // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: 'ffff' });
       resolve();
     });
-   
+
   }
   private getNoteValue(b: string) {
     try {
@@ -362,9 +362,9 @@ export class VmcService implements ISerialService {
       console.log('Dispensing status:', hex);
       const t = Number('-21' + moment.now());
       //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
-      if (hex.substring(10, 12) == '01') {console.log('Dispensing'); this.sock.send(hex,t,EMACHINE_COMMAND.DISPENSE)};
-      if (hex.substring(10, 12) == '02')  {console.log('Dispensed'); this.sock.send(hex,t,EMACHINE_COMMAND.DISPENSED)};
-      if (hex.substring(10, 12) == '03') {console.log('Dispensed failed'); this.sock.send(hex,t,EMACHINE_COMMAND.DISPENSEFAILED)};
+      if (hex.substring(10, 12) == '01') { console.log('Dispensing'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSE) };
+      if (hex.substring(10, 12) == '02') { console.log('Dispensed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSED) };
+      if (hex.substring(10, 12) == '03') { console.log('Dispensed failed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSEFAILED) };
 
       // FA FB 04 04 A3 01 00 3C 9F ==> 3C is 60 slot sent command, 01 = status processing
       // FA FB 04 04 A4 02 00 3C 9B ==> 3C is 60 slot sent command, 02 = status dispensed
@@ -392,7 +392,7 @@ export class VmcService implements ISerialService {
         const credit: ICreditData = {
           id: -1,
           name: 'credit',
-          data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.CREDIT_NOTE },
+          data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.VMC_CREDIT_NOTE },
           transactionID: t.toString(),
           description: ''
         };
@@ -402,15 +402,15 @@ export class VmcService implements ISerialService {
         // check Hashing 
         const bn = this.initHashBankNotes(this.machineId);
         const note = bn.find(v => v.hash === hash);
-        if(!note){
+        if (!note) {
           console.log('Hash not found', hash);
           return;
-        }else{
+        } else {
           /// send to server and need to confirm from server
-          this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
+          this.sock.send(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
         }
-       
-        
+
+
       } else if (mode == '08') {//fafb21068308000186a08a
         //bank note swollen
       }
@@ -421,32 +421,32 @@ export class VmcService implements ISerialService {
       //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
       this.machinestatus.data = hex;
       const m = machineVMCStatus(hex);
-      this.sock.send(JSON.stringify(m), t);
+      this.sock.send(JSON.stringify(m), t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
     } else {
-      this.sock.send(JSON.stringify(hex), t,EMACHINE_COMMAND.UNKNOWN);
+      this.sock.send(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
       console.log('Unhandled response:', hex);
     }
   }
   initHashBankNotes(machineId: string) {
     const hashNotes = Array<IHashBankNote>();
     for (let i = 0; i < this.notes.length; i++) {
-        const x = JSON.parse(JSON.stringify(this.notes[i])) as IHashBankNote;
-        x.hash = cryptojs
-            .SHA256(machineId + this.notes[i].value * 100)
-            .toString(cryptojs.enc.Hex);
-        hashNotes.push(x);
+      const x = JSON.parse(JSON.stringify(this.notes[i])) as IHashBankNote;
+      x.hash = cryptojs
+        .SHA256(machineId + this.notes[i].value * 100)
+        .toString(cryptojs.enc.Hex);
+      hashNotes.push(x);
     }
     return hashNotes;
-}
-initBankNotes() {
-  this.notes.push({ value: 1000, amount: 0, currency: 'LAK', channel: 1, image: 'lak1000.jpg' });
-  this.notes.push({ value: 2000, amount: 0, currency: 'LAK', channel: 2, image: 'lak2000.jpg' });
-  this.notes.push({ value: 5000, amount: 0, currency: 'LAK', channel: 3, image: 'lak5000.jpg' });
-  this.notes.push({ value: 10000, amount: 0, currency: 'LAK', channel: 4, image: 'lak10000.jpg' });
-  this.notes.push({ value: 20000, amount: 0, currency: 'LAK', channel: 5, image: 'lak20000.jpg' });
-  this.notes.push({ value: 50000, amount: 0, currency: 'LAK', channel: 6, image: 'lak50000.jpg' });
-  this.notes.push({ value: 100000, amount: 0, currency: 'LAK', channel: 7, image: 'lak100000.jpg' });
-}
+  }
+  initBankNotes() {
+    this.notes.push({ value: 1000, amount: 0, currency: 'LAK', channel: 1, image: 'lak1000.jpg' });
+    this.notes.push({ value: 2000, amount: 0, currency: 'LAK', channel: 2, image: 'lak2000.jpg' });
+    this.notes.push({ value: 5000, amount: 0, currency: 'LAK', channel: 3, image: 'lak5000.jpg' });
+    this.notes.push({ value: 10000, amount: 0, currency: 'LAK', channel: 4, image: 'lak10000.jpg' });
+    this.notes.push({ value: 20000, amount: 0, currency: 'LAK', channel: 5, image: 'lak20000.jpg' });
+    this.notes.push({ value: 50000, amount: 0, currency: 'LAK', channel: 6, image: 'lak50000.jpg' });
+    this.notes.push({ value: 100000, amount: 0, currency: 'LAK', channel: 7, image: 'lak100000.jpg' });
+  }
 
   private async sycnVMC(): Promise<IResModel> {
     await this.serialService.writeVMC(EVMC_COMMAND.SYNC, {});
@@ -484,7 +484,7 @@ initBankNotes() {
     return bytes;
   }
 }
-export interface IBankNote  {
+export interface IBankNote {
   value: number;
   amount: number;
   currency: string;

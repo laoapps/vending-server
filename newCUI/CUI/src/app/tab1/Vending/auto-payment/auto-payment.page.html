@@ -59,10 +59,11 @@
             </a>
           </div>
 
-          <div class="title" *ngIf="isAllowLocal == true" style="margin-top: 20px;">
+          <div class="title" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false"
+            style="margin-top: 20px;">
             ທາງເລືອກເພີ່ມເຕີມ</div>
 
-          <div class="item-list" *ngIf="isAllowLocal == true">
+          <div class="item-list" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false">
             <a *ngFor="let list of paymentOptions; let i = index" (click)="chooseLocalPaymentMethod()"
               href="javascript:void(0)" class="item active">
               <div class="icon">

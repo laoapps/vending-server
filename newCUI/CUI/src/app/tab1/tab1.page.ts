@@ -558,9 +558,10 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
 
       const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
-      console.log('=====> LAOQR CHECK :', run);
 
       if (run.status == 1) {
+        console.log('=====> LAOQR CHECK :', run.message['data']['bill']);
+
         this.apiService.waitingDelivery(run.message['data']['bill'], this.serial);
       }
 

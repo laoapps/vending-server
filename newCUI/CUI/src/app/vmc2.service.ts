@@ -125,10 +125,10 @@ export class Vmc2Service implements ISerialService {
       this.baudRate = baudRate;
       this.sock.machineId = machineId;
       this.sock.otp = otp;
-  
+
       const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
       await this.serialService.startReadingVMC();
-  
+
       if (init == this.portName) {
         this.vmcInitilize();
         resolve(init);
@@ -253,7 +253,7 @@ export class Vmc2Service implements ISerialService {
       if (this.creditPending.length > 0) {
         if (this.pendingRetry <= 0) {
           const credit = this.creditPending[0];
-          this.sock.send(credit.data.data, Number(credit.transactionID), EMACHINE_COMMAND.CREDIT_NOTE);
+          this.sock.send(credit.data.data, Number(credit.transactionID), EMACHINE_COMMAND.VMC_CREDIT_NOTE);
           this.pendingRetry = 10;
         } else {
           this.pendingRetry -= 2;
@@ -316,13 +316,13 @@ export class Vmc2Service implements ISerialService {
         const credit: ICreditData = {
           id: -1,
           name: 'credit',
-          data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.CREDIT_NOTE },
+          data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.VMC_CREDIT_NOTE },
           transactionID: t.toString(),
           description: ''
         };
         this.creditPending.push(credit);
         this.addOrUpdateCredit(credit);
-        this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
+        this.sock.send(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
 
       } else if (mode == '08') {//fafb21068308000186a08a
         //bank note swollen
@@ -350,7 +350,7 @@ export class Vmc2Service implements ISerialService {
   }
 
   private async setPoll(ms: number): Promise<IResModel> {
-    const params = createParams({ms});
+    const params = createParams({ ms });
     const x = this.vmcPacketBuilder.buildPacketHex(EVMC_COMMAND.SYNC, params);
     await this.serialService.write(x);
     return { command: EMACHINE_COMMAND.SET_POLL, data: { ms }, message: 'Poll set queued', status: 1, transactionID: -16 };
@@ -414,7 +414,7 @@ export enum EVMC_COMMAND {
   TEMP_MODE = '7028',          // Temperature mode
   LIGHT_CONTROL = '7016',      // Light control settings
   TEMP_CONTROLLER = '7037',    // Temperature controller settings
-  ENABLE_SELECTION='12',
+  ENABLE_SELECTION = '12',
   // Placeholder/Unused (if needed)
   RESERVED_21 = '21',          // Unspecified in original
   RESERVED_23 = '23',          // Unspecified in original
@@ -495,17 +495,17 @@ class PacketBuilder {
         const dropSensor = this.clampToByte(params.getInteger("dropSensor", 1));
         text = [packNo, dropSensor, elevator, 0x00, slot];
         break;
-        case EVMC_COMMAND.ENABLE_SELECTION:
+      case EVMC_COMMAND.ENABLE_SELECTION:
         cmdByte = 0x12;
         const selectionNumber = this.clampToByte(params.getInteger("selectionNumber", 0));
         const price = this.clampToByte(params.getInteger("price", 1));
-        text = [packNo, 
+        text = [packNo,
           selectionNumber & 0xFF,
           (selectionNumber >> 8) & 0xFF,
-          price & 0xFF, 
+          price & 0xFF,
           (price >> 8) & 0xFF,
           (price >> 16) & 0xFF,
-          (price >>24) & 0xFF];
+          (price >> 24) & 0xFF];
         break;
       case EVMC_COMMAND.SLOT_STATUS:
         cmdByte = 0x11;
