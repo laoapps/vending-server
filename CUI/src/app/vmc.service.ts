@@ -262,14 +262,14 @@ export class VmcService implements ISerialService {
       // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
       // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
       { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
-      { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
+      { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } } // Temp mode
       // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
-      { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 } }    // set value slection , but the cash acceptor is flashing need to solve later
-
-
-
-
     ];
+         // set value slection , but the cash acceptor is flashing need to solve later
+         // TODO: check if remove ENABLE_SELECTION will work for old VMC
+      // commands.push(
+      //   { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 }} as any
+      // )
     for (const x of commands) {
       if (!x) continue
       await this.serialService.writeVMC(x.cmd, x.params);
