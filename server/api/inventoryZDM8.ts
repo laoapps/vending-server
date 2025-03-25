@@ -2590,21 +2590,21 @@ export class InventoryZDM8 implements IBaseClass {
 
                         const data = req.body;
                         const subadmin = res.locals['subadmin'];
-                        const parmas: ILoadVendingMachineSaleBillReport = {
-                            ownerUuid: res.locals["ownerUuid"],
-                            machineId: data.machineId,
-                            fromDate: data.fromDate,
-                            toDate: data.toDate
-                        }
-                        this._loadVendingMachineSaleBillReport(parmas).then(run => {
-                            if (run.message != IENMessage.success) {
-                                res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
-                                return;
-                            }
-                            res.send(PrintSucceeded("report", run, EMessage.succeeded, returnLog(req, res)));
-                        }).catch(error => {
-                            res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
-                        });
+                        // const parmas: ILoadVendingMachineSaleBillReport = {
+                        //     ownerUuid: res.locals["ownerUuid"],
+                        //     machineId: data.machineId,
+                        //     fromDate: data.fromDate,
+                        //     toDate: data.toDate
+                        // }
+                        // this._loadVendingMachineSaleBillReport(parmas).then(run => {
+                        //     if (run.message != IENMessage.success) {
+                        //         res.send(PrintError("report", run, EMessage.error, returnLog(req, res, true)));
+                        //         return;
+                        //     }
+                        //     res.send(PrintSucceeded("report", run, EMessage.succeeded, returnLog(req, res)));
+                        // }).catch(error => {
+                        //     res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
+                        // });
 
 
                         const ownerUuid = res.locals["ownerUuid"];
