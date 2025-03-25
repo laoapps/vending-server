@@ -142,10 +142,10 @@ export class VmcService implements ISerialService {
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.LIGHTSON:
-            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { enable: true });
+            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start: params.start||8, end: params.end||3});
             break;
           case EMACHINE_COMMAND.LIGHTSOFF:
-            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { enable: false });
+            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start: params.start||3, end: params.end||8 });
             break;
           case EMACHINE_COMMAND.balance:
             this.balance = params?.balance || 0;

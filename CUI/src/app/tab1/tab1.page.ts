@@ -600,7 +600,7 @@ export class Tab1Page implements OnDestroy {
     setTimeout(() => {
       this.readyState = true;
       Toast.show({ text: 'READY', duration: 'long' })
-    }, 60000);
+    }, 30000);
 
     this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
 
@@ -659,11 +659,11 @@ export class Tab1Page implements OnDestroy {
           }
 
           // set Temperature
-          // if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
-          //   this.tempStatus.lowTemp = r.lowTemp;
-          //   this.tempStatus.highTemp = r.highTemp;
-          //   this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
-          // }
+          if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
+            this.tempStatus.lowTemp = r.lowTemp;
+            this.tempStatus.highTemp = r.highTemp;
+            this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
+          }
 
           // set light
           // if (this.light !== r.light) {
@@ -857,7 +857,7 @@ export class Tab1Page implements OnDestroy {
         }
 
 
-      }, 45000);
+      }, 20000);
     }
     this.vlog.log = this.serial.log;
   }

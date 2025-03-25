@@ -6,6 +6,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+.angular
+www
+android
+
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -113,3 +117,4 @@ server/laab_service/.DS_Store
 venders/.DS_Store
 venders/certs/.DS_Store
 .DS_Store
+AdminUI/AdminUI/.angular/cache/15.1.1/angular-webpack/0ce82afef319178bd632349f64fbeb0715d761eb/0.pack
