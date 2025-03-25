@@ -4449,8 +4449,15 @@ export class InventoryZDM8 implements IBaseClass {
                     EEntity.vendingmachinebill + "_" + element.ownerUuid,
                     dbConnection
                 );
+                const currentTime = new Date();
+                const oneHourAgo = new Date(currentTime.getTime() - 60 * 60 * 1000); // Subtract 1 hour in milliseconds
                 ent.findAll({
-                    where: { paymentstatus: EPaymentStatus.paid },
+                    where: {
+                        paymentstatus: EPaymentStatus.paid,
+                        createdAt: {
+                            [Op.between]: [oneHourAgo, currentTime] // Records from 1 hour ago to now
+                        }
+                    },
                 }).then(async r => {
                     // console.log('=====>InitBillPaid bill', r);
                     let dataForSave = [];
