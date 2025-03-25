@@ -113,7 +113,7 @@ export class Tab1Page implements OnDestroy {
   offlineMode: Boolean = true;
 
 
-  enableCashIn: boolean = false;
+  // enableCashIn: boolean = false;
 
   isShowLaabTabEnabled: boolean = false;
 
@@ -271,6 +271,12 @@ export class Tab1Page implements OnDestroy {
     machineId: '',
     otp: ''
   };
+
+  allowCashIn = false;
+  light = true;;
+  ;
+  allowVending = true;
+  tempStatus: { lowTemp: number, highTemp: number } = { lowTemp: 5, highTemp: 15 };
 
   initHashBankNotes(machineId: string) {
     const hashNotes = Array<IHashBankNote>();
@@ -615,6 +621,43 @@ export class Tab1Page implements OnDestroy {
       console.log('*****CHECK 30 SECOND');
     }, 30000);
 
+
+    this.WSAPIService.aliveSubscription.subscribe(res => {
+      console.log('ALIVE', res);
+      const r = res?.data?.setting;
+      if (r) {
+        // set allow cashIn
+        if (this.allowCashIn != r.allowCashIn) {
+          this.allowCashIn = r.allowCashIn;
+          if (this.allowCashIn) {
+            this.vendingIndex.vmc.enableCashIn();
+          } else {
+            this.vendingIndex.vmc.disableCashIn();
+          }
+        }
+        // set allow vending
+        if (this.allowVending != r.allowVending) {
+          this.allowVending = r.allowVending;
+        }
+
+        // set Temperature
+        if (this.tempStatus.lowTemp !== r.tempStatus.lowTemp || this.tempStatus.highTemp !== r.tempStatus.highTemp) {
+          this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
+        }
+
+        // set light
+        if (this.light !== r.light) {
+          this.light = r.light;
+          if (this.light)
+            this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSON, {}, -1);
+          else
+            this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSOFF, {}, -1);
+        }
+
+      }
+
+
+    });
   }
 
   ngOnDestroy(): void {
@@ -780,15 +823,11 @@ export class Tab1Page implements OnDestroy {
       // FIX FIRMWARE bugs when reconnect to VMC
       setTimeout(() => {
         this.isFirstLoad = false;
-        if (this.enableCashIn) {
+        if (!this.offlineMode) {
           this.vendingIndex.vmc.enableCashIn();
         }
         else {
           this.vendingIndex.vmc.disableCashIn();
-        }
-
-        if (this.offlineMode) {
-          this.vendingIndex.vmc.enableCashIn();
         }
 
 
@@ -1713,14 +1752,14 @@ export class Tab1Page implements OnDestroy {
   addOrder(x: IVendingMachineSale) {
     try {
       this.autopilot.auto = 0;
-      console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
+      console.log(`allow vending`, this.allowVending);
 
       console.log('POS', x.position);
 
       // this.testDrop(x.position);
 
 
-      if (this.WSAPIService?.setting_allowVending == false) {
+      if (this.allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
         // const alert = Swal.fire({
@@ -1768,9 +1807,9 @@ export class Tab1Page implements OnDestroy {
   addOrderTest(x: IVendingMachineSale) {
     try {
       this.autopilot.auto = 0;
-      console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
+      console.log(`allow vending`, this.allowVending);
 
-      if (this.WSAPIService?.setting_allowVending == false) {
+      if (this.allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
         // const alert = Swal.fire({

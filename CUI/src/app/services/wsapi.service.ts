@@ -11,8 +11,7 @@ import { IENMessage } from '../models/base.model';
 })
 export class WsapiService {
   // vsales: IVendingMachineSale[];
-  setting_allowCashIn: boolean = false;
-  setting_allowVending: boolean = false;
+
 
   wsurl = 'ws://localhost:9009';
   webSocket: WebSocket;
@@ -104,8 +103,8 @@ export class WsapiService {
 
               console.log('Ping');
               // { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
-              this.setting_allowCashIn = res.data.setting.allowCashIn;
-              this.setting_allowVending = res.data.setting.allowVending;
+              // this.setting_allowCashIn = data.setting.allowCashIn;
+              // this.setting_allowVending = data.setting.allowVending;
               this.aliveSubscription.next({ test: data?.test, data, balance: Number(data.balance) } as IAlive);
               break;
             case 'confirm':

@@ -136,6 +136,17 @@ export class VmcService implements ISerialService {
             await this.disableCashIn();
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
+          case EMACHINE_COMMAND.SET_TEMP:
+            const result = await this.serialService.writeVMC(EVMC_COMMAND.TEMP_CONTROLLER, { lowTemp: params.lowTemp, highTemp: params.highTemp });
+            console.log('set temp result', result);
+            resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
+            break;
+          case EMACHINE_COMMAND.LIGHTSON:
+            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { enable: true });
+            break;
+          case EMACHINE_COMMAND.LIGHTSOFF:
+            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { enable: false });
+            break;
           case EMACHINE_COMMAND.balance:
             this.balance = params?.balance || 0;
             this.limiter = params?.limiter || 100000;
@@ -150,28 +161,28 @@ export class VmcService implements ISerialService {
             //   }
             // }
 
-            if (Array.isArray(params?.setting)) {
-              const setting = params.setting.find(v => v.settingName === 'setting');
-              if (setting) {
-                if (setting.lowTemp !== this.setting.lowTemp || setting.highTemp !== this.setting.highTemp) {
-                  this.setting.lowTemp = setting.lowTemp;
-                  this.setting.highTemp = setting.highTemp;
-                  await this.serialService.writeVMC(EVMC_COMMAND.TEMP_CONTROLLER, { lowTemp: setting.lowTemp, highTemp: setting.highTemp });
-                }
-                this.setting.allowCashIn = setting.allowCashIn;
+            // if (Array.isArray(params?.setting)) {
+            //   const setting = params.setting.find(v => v.settingName === 'setting');
+            //   if (setting) {
+            //     if (setting.lowTemp !== this.setting.lowTemp || setting.highTemp !== this.setting.highTemp) {
+            //       this.setting.lowTemp = setting.lowTemp;
+            //       this.setting.highTemp = setting.highTemp;
+            //       await this.serialService.writeVMC(EVMC_COMMAND.TEMP_CONTROLLER, { lowTemp: setting.lowTemp, highTemp: setting.highTemp });
+            //     }
+            //     this.setting.allowCashIn = setting.allowCashIn;
 
-                const shouldEnable = this.balance < this.limiter && this.setting.allowCashIn;
-                if (shouldEnable !== this.enable) {
-                  this.enable = shouldEnable;
-                  if (this.enable) {
-                    this.enableCashIn();
-                  } else {
-                    this.disableCashIn();
-                  }
-                  // await this.serialService.writeVMC(shouldEnable ? EVMC_COMMAND.ENABLE : EVMC_COMMAND.DISABLE, { read: !shouldEnable, value: !shouldEnable ? 200 : 0 });
-                }
-              }
-            }
+            //     const shouldEnable = this.balance < this.limiter && this.setting.allowCashIn;
+            //     if (shouldEnable !== this.enable) {
+            //       this.enable = shouldEnable;
+            //       if (this.enable) {
+            //         this.enableCashIn();
+            //       } else {
+            //         this.disableCashIn();
+            //       }
+            //       // await this.serialService.writeVMC(shouldEnable ? EVMC_COMMAND.ENABLE : EVMC_COMMAND.DISABLE, { read: !shouldEnable, value: !shouldEnable ? 200 : 0 });
+            //     }
+            //   }
+            // }
             resolve(PrintSucceeded(command, params, EMessage.commandsucceeded));
             break;
           case EMACHINE_COMMAND.restart:

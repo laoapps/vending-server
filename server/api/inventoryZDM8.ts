@@ -5629,6 +5629,12 @@ export class InventoryZDM8 implements IBaseClass {
                                     const merchant = 0; // TODO:Get merchant balance
 
 
+                                    ////**** CHECK BALANCE OF THIS VENDING MACHINE AND COMPARE TO LIMITER */
+
+                                    // setting.allowCashIn = machineId.balance<setting.limiter;
+                                    //// TODO: LATER WITH LAABX
+                                    ///////////
+
                                     // control version
                                     let app_version = {} as any;
                                     const machine: string = ws['machineId'];
