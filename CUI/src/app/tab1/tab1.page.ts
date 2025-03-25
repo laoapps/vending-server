@@ -88,6 +88,7 @@ import { IBankNote, IHashBankNote } from '../vmc.service';
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page implements OnDestroy {
+  readyState = false;
 
 
 
@@ -276,7 +277,7 @@ export class Tab1Page implements OnDestroy {
   light = true;;
   ;
   allowVending = true;
-  tempStatus: { lowTemp: number, highTemp: number } = { lowTemp: 5, highTemp: 15 };
+  tempStatus: { lowTemp: number, highTemp: number } = { lowTemp: 5, highTemp: 10 };
 
   initHashBankNotes(machineId: string) {
     const hashNotes = Array<IHashBankNote>();
@@ -342,7 +343,7 @@ export class Tab1Page implements OnDestroy {
 
   ) {
 
-    this.refreshAllEveryHour();
+    // this.refreshAllEveryHour();
 
     this.autopilot = this.apiService.autopilot;
     const that = this;
@@ -590,6 +591,17 @@ export class Tab1Page implements OnDestroy {
   }
 
   ngOnInit() {
+
+    // window.addEventListener('beforeunload', async (event) => {
+    //   Toast.show({ text: 'Before reload', duration: 'long' });
+    //   await this.serial.close();
+
+    // });
+    setTimeout(() => {
+      this.readyState = true;
+      Toast.show({ text: 'READY', duration: 'long' })
+    }, 60000);
+
     this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
 
     this.platforms = Object.keys(ESerialPortType)
@@ -622,39 +634,49 @@ export class Tab1Page implements OnDestroy {
     }, 30000);
 
 
-    this.WSAPIService.aliveSubscription.subscribe(res => {
+    this.WSAPIService.aliveSubscription.subscribe(async res => {
       console.log('ALIVE', res);
-      const r = res?.data?.setting;
-      if (r) {
-        // set allow cashIn
-        if (this.allowCashIn != r.allowCashIn) {
-          this.allowCashIn = r.allowCashIn;
-          if (this.allowCashIn) {
-            this.vendingIndex.vmc.enableCashIn();
-          } else {
-            this.vendingIndex.vmc.disableCashIn();
+      try {
+        const r = res?.data?.setting;
+        if (r && this.readyState) {
+          // set allow cashIn
+          if (this.allowCashIn != r.allowCashIn) {
+            this.allowCashIn = r.allowCashIn;
+            if (this.allowCashIn) {
+
+              await this.vendingIndex.vmc.enableCashIn();
+              Toast.show({ text: 'CashIn enabled', duration: 'long' });
+            } else {
+              await this.vendingIndex.vmc.disableCashIn();
+              Toast.show({ text: 'CashIn disabled', duration: 'long' });
+            }
           }
-        }
-        // set allow vending
-        if (this.allowVending != r.allowVending) {
-          this.allowVending = r.allowVending;
-        }
+          // set allow vending
+          if (this.allowVending != r.allowVending) {
+            this.allowVending = r.allowVending;
+          }
 
-        // set Temperature
-        if (this.tempStatus.lowTemp !== r.tempStatus.lowTemp || this.tempStatus.highTemp !== r.tempStatus.highTemp) {
-          this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
-        }
+          // set Temperature
+          // if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
+          //   this.tempStatus.lowTemp = r.lowTemp;
+          //   this.tempStatus.highTemp = r.highTemp;
+          //   this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
+          // }
 
-        // set light
-        if (this.light !== r.light) {
-          this.light = r.light;
-          if (this.light)
-            this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSON, {}, -1);
-          else
-            this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSOFF, {}, -1);
-        }
+          // set light
+          // if (this.light !== r.light) {
+          //   this.light = r.light;
+          //   if (this.light)
+          //     this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSON, {}, -1);
+          //   else
+          //     this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSOFF, {}, -1);
+          // }
 
+        }
+      } catch (error) {
+        Toast.show({ text: 'Error alive ' + JSON.stringify(error || '{}'), duration: 'long' })
       }
+
 
 
     });
@@ -723,7 +745,7 @@ export class Tab1Page implements OnDestroy {
       return Toast.show({ text: 'Connecting' });
     }
     if (this.selectedDevice == 'VMC') {
-      this.baudRate = 57600;
+      // this.baudRate = 57600;
       await this.startVMC();
       Toast.show({ text: 'Start VMC' });
     }
@@ -813,7 +835,7 @@ export class Tab1Page implements OnDestroy {
     if (!this.serial) {
       Toast.show({ text: 'serial not init for start VMC' });
     } else {
-
+      this.apiService.serialPort = this.serial;
       // await this.vendingIndex.vmc.enableCashIn();
 
       Toast.show({ text: 'VMC Cashin', duration: 'long' });
@@ -821,13 +843,15 @@ export class Tab1Page implements OnDestroy {
       this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
 
       // FIX FIRMWARE bugs when reconnect to VMC
-      setTimeout(() => {
+      setTimeout(async () => {
         this.isFirstLoad = false;
         if (!this.offlineMode) {
-          this.vendingIndex.vmc.enableCashIn();
+          await this.vendingIndex.vmc.enableCashIn();
+          Toast.show({ text: 'CashIn enabled', duration: 'long' });
         }
         else {
-          this.vendingIndex.vmc.disableCashIn();
+          await this.vendingIndex.vmc.disableCashIn();
+          Toast.show({ text: 'CashIn disabled', duration: 'long' });
         }
 
 
@@ -1129,12 +1153,14 @@ export class Tab1Page implements OnDestroy {
       if (this.refreshAllCounter == hour) {
         clearInterval(this.refreshAll);
         this.refreshAllCounter = 0;
-        window.location.reload();
+        // window.location.reload();
+        this.apiService.reloadPage();
       }
     }, 1000);
   }
   refresh() {
-    window.location.reload();
+    // window.location.reload();
+    this.apiService.reloadPage();
   }
   initStock() {
     // if (this.vendingOnSale?.length) return;
@@ -2876,7 +2902,8 @@ export class Tab1Page implements OnDestroy {
         const ownerUuid = localStorage.getItem('machineId');
         if (ownerUuid) {
           await this.cashingService.remove(ownerUuid);
-          window.location.reload();
+          // window.location.reload();
+          this.apiService.reloadPage();
         }
 
         resolve(IENMessage.success);

@@ -92,7 +92,7 @@ import { IndexdblocalService } from './indexdblocal.service';
 })
 export class ApiService {
 
-
+  serialPort: ISerialService;
   toggleWebviewTab: boolean = false;
 
 
@@ -337,7 +337,7 @@ export class ApiService {
 
         // if (!this.vendingOnSale.length) {
         //   setTimeout(() => {
-        //     window.location.reload();
+        //     this.apiService.reloadPage();
         //   }, 3000);
         //   this.validateDB();
         // }
@@ -393,8 +393,8 @@ export class ApiService {
     this.wsapi.refreshSubscription.subscribe((r) => {
       console.log(`refreshing`, r);
       if (r) {
-        setTimeout(() => {
-          window.location.reload();
+        setTimeout(async () => {
+          await this.reloadPage();
         }, 3000);
       }
     });
@@ -632,26 +632,41 @@ export class ApiService {
         }
       });
       this.eventEmitter.emit('stockdeduct', x);
-      if (!localStorage.getItem('debug')) {
+      // if (!localStorage.getItem('debug')) {
 
-        // this.saveSale(vsales).subscribe((r) => {
-        //   console.log(r);
-        //   if (r.status) {
-        //     console.log(`save sale success`);
-        //   } else {
-        //     this.simpleMessage(IENMessage.saveSaleFail);
-        //   }
-        // });
 
-        console.log(`pending stock mode vendingOnSale-->`, vsales);
-        this.storage.set('saleStock', vsales, 'stock').then((r) => {
-          // that.deductOrderUpdate(x.position);
-        });
-      }
+      // }
+
+      this.saveSale(vsales).subscribe((r) => {
+        console.log(r);
+        if (r.status) {
+          console.log(`save sale success`);
+        } else {
+          this.simpleMessage(IENMessage.saveSaleFail);
+        }
+      });
+
+      console.log(`pending stock mode vendingOnSale-->`, vsales);
+      this.storage.set('saleStock', vsales, 'stock').then((r) => {
+        // that.deductOrderUpdate(x.position);
+      });
     } catch (error) {
       console.log(error.message);
       this.alertError(error.message);
     }
+  }
+  async reloadPage() {
+    Toast.show({ text: 'Before Reload', duration: 'long' });
+    try {
+      await this.serialPort?.close();
+    } catch (error) {
+      console.log('CLOSE FAILED', error);
+
+    }
+
+    setTimeout(async () => {
+      window.location.reload();
+    }, 10000);
   }
 
   reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {

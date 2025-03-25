@@ -20,8 +20,8 @@ export class SettingPage implements OnInit, OnDestroy {
   machineId = localStorage.getItem('machineId') || '12345678';
   otp = localStorage.getItem('otp') || '111111';
 
-  portName = localStorage.getItem('portName') || '/dev/ttyS0';
-  baudRate = localStorage.getItem('baudRate') || '9600';
+  portName = localStorage.getItem('portName') || '/dev/ttyS1';
+  baudRate = localStorage.getItem('baudRate') || '57600';
   device = localStorage.getItem('device') || 'VMC';
 
   contact = localStorage.getItem('contact') || '55516321';
@@ -87,7 +87,8 @@ export class SettingPage implements OnInit, OnDestroy {
 
     this.storage.set('saleStock', [], 'stock').then(r => {
       console.log('reset', r);
-      window.location.reload();
+      // window.location.reload();
+      this.apiService.reloadPage();
     }).catch(e => {
       console.log('reset error', e);
     });
@@ -116,7 +117,8 @@ export class SettingPage implements OnInit, OnDestroy {
   reset() {
     this.storage.set('saleStock', [], 'stock').then(r => {
       console.log('reset', r);
-      window.location.reload();
+      // window.location.reload();
+      this.apiService.reloadPage();
     }).catch(e => {
       console.log('reset error', e);
     });
@@ -253,7 +255,8 @@ export class SettingPage implements OnInit, OnDestroy {
         const ownerUuid = localStorage.getItem('machineId');
         if (ownerUuid) {
           await this.cashingService.remove(ownerUuid);
-          window.location.reload();
+          // window.location.reload();
+          this.apiService.reloadPage();
         }
 
         resolve(IENMessage.success);

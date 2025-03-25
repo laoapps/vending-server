@@ -71,7 +71,7 @@ export class AppComponent {
       // Check if a new bundle was downloaded
       if (result.nextBundleId) {
         console.log('New update applied, reloading app...');
-        await LiveUpdate.reload(); // Reload the app to apply the update
+        // await LiveUpdate.reload(); // Reload the app to apply the update
         console.log('App reloaded with the new update');
       } else {
         console.log('No update available or no change needed');

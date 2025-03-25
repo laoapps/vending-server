@@ -641,7 +641,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.clearTimer();
   }
   reload() {
-    window.location.reload();
+    this.apiService.reloadPage();
   }
 
 }

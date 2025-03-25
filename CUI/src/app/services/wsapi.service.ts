@@ -205,7 +205,7 @@ export class WsapiService {
         if (ownerUuid) {
           console.log(`reset cashing...`);
           await this.cashingService.remove(ownerUuid);
-          window.location.reload();
+          // window.location.reload();
         }
 
         resolve(IENMessage.success);

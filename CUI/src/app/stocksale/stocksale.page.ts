@@ -12,46 +12,46 @@ import { AlertController } from '@ionic/angular';
   templateUrl: './stocksale.page.html',
   styleUrls: ['./stocksale.page.scss'],
 })
-export class StocksalePage implements OnInit,OnDestroy {
+export class StocksalePage implements OnInit, OnDestroy {
   prod = environment.production
-  saleStock=new Array <IVendingMachineSale>();
+  saleStock = new Array<IVendingMachineSale>();
   stock = new Array<IStock>();
-  compensation=0;
+  compensation = 0;
   url = this.apiService.url;
-  isDisabled='';
-  search='';
-  jsonText=';'
+  isDisabled = '';
+  search = '';
+  jsonText = ';'
   constructor(public apiService: ApiService,
-    public alertController:AlertController,
+    public alertController: AlertController,
     public storage: IonicStorageService) {
     this.saleStock = ApiService.vendingOnSale;
-    this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
+    this.saleStock.sort((a, b) => a.position > b.position ? 1 : -1);
     console.log(`TEST SALE STOCK`, this.saleStock);
     // this.stock=apiService.stock;
   }
   ngOnDestroy(): void {
-    this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r=>{
+    this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r => {
       console.log(r);
-      
-      if(r.status){
+
+      if (r.status) {
 
       }
-      this.apiService.toast.create({message:r.message, duration: 2000}).then(r=>{
+      this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
         r.present();
       })
     })
   }
-  refillAll(){
-    const conf =confirm('Are you sure ?');
-    if(!conf) return;
-    const p =prompt('please type 123456');
-    if(p!=='123456') return;
-    this.saleStock.forEach(v=>{
-      v.stock.qtty=v.max;
+  refillAll() {
+    const conf = confirm('Are you sure ?');
+    if (!conf) return;
+    const p = prompt('please type 123456');
+    if (p !== '123456') return;
+    this.saleStock.forEach(v => {
+      v.stock.qtty = v.max;
     })
     alert('Done');
   }
-  async reportSale(){
+  async reportSale() {
     const s = await this.apiService.showModal(ReportrefillsalePage);
     s.onDidDismiss().then(r => {
       if (r.data) {
@@ -61,68 +61,68 @@ export class StocksalePage implements OnInit,OnDestroy {
     s.present();
   }
 
-  async saveSale(){
+  async saveSale() {
     alert('Are you going to save sale to online');
-    const p=prompt('please type 12345678');
-    if(p=='12345678'){
+    const p = prompt('please type 12345678');
+    if (p == '12345678') {
       await this.apiService.showLoading();
-      const x =[];
-      ApiService.vendingOnSale.forEach(v=>{
-        const e= JSON.parse(JSON.stringify(v));
+      const x = [];
+      ApiService.vendingOnSale.forEach(v => {
+        const e = JSON.parse(JSON.stringify(v));
 
         x.push(e);
       })
-      this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r=>{
+      this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r => {
         console.log(r);
-        
-        if(r.status){
+
+        if (r.status) {
 
         }
         this.apiService.dismissLoading();
-        this.apiService.toast.create({message:r.message, duration: 2000}).then(r=>{
+        this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
           r.present();
         })
       })
     }
   }
-  async recoverSale(){
+  async recoverSale() {
     alert('Are you going to recover sale from online');
-    const p=prompt('please type 12345678');
-    if(p=='12345678'){
+    const p = prompt('please type 12345678');
+    if (p == '12345678') {
       await this.apiService.showLoading();
-      this.apiService.recoverSale().subscribe(r=>{
+      this.apiService.recoverSale().subscribe(r => {
         console.log(r);
-        if(r.status){
-          ApiService.vendingOnSale.length=0;
+        if (r.status) {
+          ApiService.vendingOnSale.length = 0;
           // r.data.forEach(v=>{
           //   this.apiService.vendingOnSale.push(v);
           // })
-          console.log('recover',r.data);
-          
+          console.log('recover', r.data);
+
           ApiService.vendingOnSale.push(...r.data)
         }
         this.apiService.dismissLoading();
-        this.apiService.toast.create({message:r.message, duration: 200}).then(r=>{
+        this.apiService.toast.create({ message: r.message, duration: 200 }).then(r => {
           r.present();
         })
       })
     }
   }
-  async reportBills(){
-   
+  async reportBills() {
+
 
 
     const s = await this.apiService.showModal(ReportbillsPage);
     s.onDidDismiss().then(r => {
       if (r.data) {
-        
+
       }
     })
     s.present();
   }
   async changeStock(position: number) {
     console.log('stock ', this.stock);
-    
+
     if (!this.stock.length) return alert('no stock')
     const s = await this.apiService.showModal(StockPage);
     s.onDidDismiss().then(r => {
@@ -130,27 +130,27 @@ export class StocksalePage implements OnInit,OnDestroy {
         if (r.data) {
           const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
           // console.log('r.data',r.data);
-           console.log('s',s);
+          console.log('s', s);
           console.log(`sale stock`, this.saleStock);
           const x = this.saleStock.find(v => v.position == position);
           const qtt = x.stock.qtty;
-           if (x) Object.keys(x.stock).forEach(k=>x.stock[k]=s[k]);
-          x.stock.qtty=qtt;
-          
-          console.log('x',x);
-          
-          if(this.saleStock[0].position==0)this.compensation=1;
+          if (x) Object.keys(x.stock).forEach(k => x.stock[k] = s[k]);
+          x.stock.qtty = qtt;
+
+          console.log('x', x);
+
+          if (this.saleStock[0].position == 0) this.compensation = 1;
           this.save();
         }
       } catch (error) {
         console.log(error);
-        
+
       }
-      
+
     })
     s.present();
   }
-  setMax(position:number){
+  setMax(position: number) {
 
     const x = this.saleStock.find(v => v.position == position);
     this.alertController.create({
@@ -160,7 +160,7 @@ export class StocksalePage implements OnInit,OnDestroy {
         {
           name: 'maxqtty',
           type: 'number',
-          value:5,
+          value: 5,
           min: 3,
           max: 20,
         }
@@ -171,77 +171,78 @@ export class StocksalePage implements OnInit,OnDestroy {
           role: 'cancel',
           cssClass: 'secondary',
           handler: () => {
-           
+
           },
         },
         {
           text: 'Ok',
           handler: (v) => {
             try {
-              console.log('CONFRIM',v);
+              console.log('CONFRIM', v);
               const x = this.saleStock.find(v => v.position == position);
-              x.max=Number(v.maxqtty);
-              if(this.saleStock[0].position==0)this.compensation=1;
+              x.max = Number(v.maxqtty);
+              if (this.saleStock[0].position == 0) this.compensation = 1;
               this.save();
             } catch (error) {
-                console.log(error);
+              console.log(error);
             }
           },
         },
       ],
-    }).then(r=>{
+    }).then(r => {
       r.present();
     });
 
-   
-  
-    
+
+
+
   }
 
 
   ngOnInit() {
-    this.stock=[];
-    const maxPosition=Number(localStorage.getItem('maxPosition'))||60;
-    console.log('saleStock',this.saleStock.length);
-    if(this.saleStock.length<maxPosition){
-      Array.from(Array(maxPosition), (_, i) => i+1).forEach(v=>this.saleStock.find(vx=>vx.position==v)||
-      this.saleStock.push({
-        machineId:this.apiService.machineId.machineId,
-        position:v,
-        isActive:true,
-        id:-1,
-        max:5,
-        // stock:{imgUrl: '', image:'',name:'',price:-1,qtty:0,id:-1} as IStock
-        stock:{image:'',name:'',price:-1,qtty:0,id:-1} as IStock
-      } as IVendingMachineSale));
-  
-    }
-   
+    this.stock = [];
+    const maxPosition = Number(localStorage.getItem('maxPosition')) || 60;
+    console.log('saleStock', this.saleStock.length);
+    if (this.saleStock.length < maxPosition) {
+      Array.from(Array(maxPosition), (_, i) => i + 1).forEach(v => this.saleStock.find(vx => vx.position == v) ||
+        this.saleStock.push({
+          machineId: this.apiService.machineId.machineId,
+          position: v,
+          isActive: true,
+          id: -1,
+          max: 5,
+          // stock:{imgUrl: '', image:'',name:'',price:-1,qtty:0,id:-1} as IStock
+          stock: { image: '', name: '', price: -1, qtty: 0, id: -1 } as IStock
+        } as IVendingMachineSale));
 
-    console.log('saleStock',this.saleStock.length);
-    
+    }
+
+
+    console.log('saleStock', this.saleStock.length);
+
     this.saleStock.map(vs => vs.stock).forEach(v => {
       // console.log('stock',v);
-      
-      if (! this.stock.find(y => y.id == v.id))
+
+      if (!this.stock.find(y => y.id == v.id))
         this.stock.push(v);
     });
-    
-    if(this.saleStock[0].position==0)this.compensation=1;
+
+    if (this.saleStock[0].position == 0) this.compensation = 1;
   }
-  reset(){
-   const c =  confirm('Clear all data');
-   if(c){
-    // this.storage.clear();
-    this.storage.set('saleStock',[], 'stock').then(r=>{
-      console.log('reset',r);
-      window.location.reload();
-    }).catch(e=>{
-      console.log('reset error',e);
-      
-    });
-  
-   }
+  reset() {
+    const c = confirm('Clear all data');
+    if (c) {
+      // this.storage.clear();
+      this.storage.set('saleStock', [], 'stock').then(r => {
+        console.log('reset', r);
+        // window.location.reload();
+        this.apiService.reloadPage();
+      }).catch(e => {
+        console.log('reset error', e);
+
+      });
+
+    }
   }
   close() {
     console.log('CLOSE');
@@ -255,7 +256,7 @@ export class StocksalePage implements OnInit,OnDestroy {
     this.apiService.closeModal(false);
   }
 
-  save(){
+  save() {
     // TODO:
     // remove all  base64images , using image from server 
     // this.saleStock.forEach(v=>v.stock.image='');
@@ -265,36 +266,35 @@ export class StocksalePage implements OnInit,OnDestroy {
       console.log('Error', e);
     })
   }
-  selectItem(pos=''){
+  selectItem(pos = '') {
     setTimeout(() => {
-      this.isDisabled =pos;
+      this.isDisabled = pos;
     }, 200);
-   
+
   }
 
-  doFilter(){
-    if(this.search)
-    {
-      this.saleStock = ApiService.vendingOnSale.filter(v=>(v.position+'').includes(this.search.toLowerCase())||(v.stock.name.toLowerCase()).includes(this.search.toLowerCase()));
-      this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
+  doFilter() {
+    if (this.search) {
+      this.saleStock = ApiService.vendingOnSale.filter(v => (v.position + '').includes(this.search.toLowerCase()) || (v.stock.name.toLowerCase()).includes(this.search.toLowerCase()));
+      this.saleStock.sort((a, b) => a.position > b.position ? 1 : -1);
     }
     else {
       this.saleStock = ApiService.vendingOnSale;
-      this.saleStock.sort((a,b)=>a.position>b.position?1:-1);
+      this.saleStock.sort((a, b) => a.position > b.position ? 1 : -1);
     }
   }
-  saveJsonText(){
+  saveJsonText() {
     try {
       alert('ARE YOU SURE?')
-      console.log('jsonText',JSON.parse(this.jsonText));
-      
-      this.apiService.saveSale(JSON.parse(this.jsonText)).subscribe(r=>{
-        console.log('R',r);
-        
+      console.log('jsonText', JSON.parse(this.jsonText));
+
+      this.apiService.saveSale(JSON.parse(this.jsonText)).subscribe(r => {
+        console.log('R', r);
+
       });
     } catch (error) {
       console.log(error);
-      
+
     }
 
   }

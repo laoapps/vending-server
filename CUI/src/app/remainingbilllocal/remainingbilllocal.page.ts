@@ -241,6 +241,6 @@ export class RemainingbilllocalPage implements OnInit {
     this.clearTimer();
   }
   reload() {
-    window.location.reload();
+    this.apiService.reloadPage();
   }
 }

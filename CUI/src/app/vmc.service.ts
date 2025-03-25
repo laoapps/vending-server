@@ -277,6 +277,16 @@ export class VmcService implements ISerialService {
     }
 
   }
+  public shipItem(slot = 1) {
+    return new Promise<void>(async (resolve, reject) => {
+      this.setting.allowCashIn = false;
+      this.enable = false;
+      await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot });
+      // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
+
+      resolve();
+    });
+  }
   public disableCashIn() {
     return new Promise<void>(async (resolve, reject) => {
       this.setting.allowCashIn = false;
