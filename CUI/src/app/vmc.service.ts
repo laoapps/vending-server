@@ -121,7 +121,7 @@ export class VmcService implements ISerialService {
       try {
         switch (command) {
           case EMACHINE_COMMAND.shippingcontrol:
-            await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot: params?.slot || 1 });
+            await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot: params?.slot || 1, dropSensor: params.dropSensor || 0 });
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.SYNC:
@@ -277,11 +277,11 @@ export class VmcService implements ISerialService {
     }
 
   }
-  public shipItem(slot = 1) {
+  public shipItem(slot = 1, dropSensor = 0) {
     return new Promise<void>(async (resolve, reject) => {
       this.setting.allowCashIn = false;
       this.enable = false;
-      await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot });
+      await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot, dropSensor });
       // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
 
       resolve();

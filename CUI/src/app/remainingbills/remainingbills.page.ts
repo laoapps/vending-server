@@ -127,7 +127,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
     try {
       if (this.serial) {
-        const param = { slot: position };
+        const param = { slot: position, dropSensor: 0 };
         this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
           console.log('shippingcontrol', r);
           this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {

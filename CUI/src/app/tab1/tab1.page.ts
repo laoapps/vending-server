@@ -610,7 +610,9 @@ export class Tab1Page implements OnDestroy {
         label: key,  // Display name
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
-    this.connect();
+    setTimeout(() => {
+      this.connect();
+    }, 10000);
 
     // this._processLoopCheckLaoQRPaid();
     clearInterval(this.countdownCheckLaoQRPaidTimer);
@@ -790,7 +792,7 @@ export class Tab1Page implements OnDestroy {
       }).then(r => r.present());
     } else {
       Toast.show({ text: 'serial not init' });
-      await this.connect();
+
     }
   }
 
@@ -805,7 +807,7 @@ export class Tab1Page implements OnDestroy {
       }).then(r => r.present());
     } else {
       Toast.show({ text: 'serial not init' });
-      await this.connect();
+
     }
   }
   async startVMC() {
@@ -865,7 +867,7 @@ export class Tab1Page implements OnDestroy {
     // console.log('=====> testDrop', slot);
 
     if (this.serial) {
-      const param = { slot: slot };
+      const param = { slot: slot, dropSensor: 0 };
       this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
         console.log('shippingcontrol', r);
         // this.val = r?.data?.x;
