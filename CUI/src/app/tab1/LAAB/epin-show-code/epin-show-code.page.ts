@@ -1,6 +1,6 @@
-import { Component, OnInit ,Input} from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import moment from 'moment';
+import * as  moment from 'moment';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
@@ -12,23 +12,23 @@ export class EpinShowCodePage implements OnInit {
 
   @Input() data: any = {} as any;
   @Input() qrImage: string;
-  @Input() code: string;  
+  @Input() code: string;
 
   constructor(
     public apiService: ApiService,
     public modal: ModalController
-  ) { 
+  ) {
     this.apiService.___EpinShowCodePage = this.modal;
 
   }
 
   ngOnInit() {
-    this.apiService.autopilot.auto=0;
+    this.apiService.autopilot.auto = 0;
     this.loadQR();
   }
 
   loadQR() {
-      (document.querySelector('#qr-img') as HTMLImageElement).src = this.qrImage;
+    (document.querySelector('#qr-img') as HTMLImageElement).src = this.qrImage;
   }
 
   close() {
@@ -36,10 +36,10 @@ export class EpinShowCodePage implements OnInit {
   }
 
   confirmHide(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
-        const msg = this.apiService.alert.create({ 
+
+        const msg = this.apiService.alert.create({
           header: 'Do you want to hide this EPIN',
           subHeader: 'It would be hidden within 24H, please note well',
           buttons: [
@@ -66,26 +66,25 @@ export class EpinShowCodePage implements OnInit {
   EPINHidden() {
     let local = localStorage.getItem('epin_hide_list');
     let lists: Array<any> = [];
-    if (local == null)
-      {
-        local='[]';
+    if (local == null) {
+      local = '[]';
+    }
+    lists = JSON.parse(local);
+    if (lists != undefined && Object.entries(lists).length == 0) {
+      const params = {
+        uuid: this.data.uuid,
+        time: moment.now()
       }
-      lists = JSON.parse(local);
-      if (lists != undefined && Object.entries(lists).length == 0) {
-        const params = {
-          uuid: this.data.uuid,
-          time: moment.now()
-        }
-        lists.push(params);
-        localStorage.setItem('epin_hide_list', JSON.stringify(lists));
-      } else {
-        const params = {
-          uuid: this.data.uuid,
-          time: moment.now()
-        }
-        lists.push(params);
-        localStorage.setItem('epin_hide_list', JSON.stringify(lists));
+      lists.push(params);
+      localStorage.setItem('epin_hide_list', JSON.stringify(lists));
+    } else {
+      const params = {
+        uuid: this.data.uuid,
+        time: moment.now()
       }
+      lists.push(params);
+      localStorage.setItem('epin_hide_list', JSON.stringify(lists));
+    }
 
     this.apiService.modal.dismiss();
   }

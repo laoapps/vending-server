@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as jwt from 'jsonwebtoken';
-import {createClient}from 'redis';
+import { createClient } from 'redis';
 import { compareSync, hashSync } from 'bcryptjs';
 import axios from "axios";
 import crypto from 'crypto';
@@ -12,7 +12,7 @@ const short = require('short-uuid');
 const translate = short();
 
 const LAABbase: string = process.env.LAAB_URL + '/api/v1/laoapps_ewallet/' || 'http://localhost:30000/api/v1/laoapps_ewallet/';
-const EPINBase: string =  process.env.EPIN_URL + '/api/' || 'http://localhost:30001/api/';
+const EPINBase: string = process.env.EPIN_URL + '/api/' || 'http://localhost:30001/api/';
 export const Self_CALLBACK_CashValidation: string = `${process.env.TEST_CALLBACK}/laab/client/cash_validation` || `http://localhost:9006/laab/client/cash_validation`;
 export const Self_CALLBACK_CashinValidation: string = `${process.env.TEST_CALLBACK}/laab/client/cash_in_validation` || `http://localhost:9006/laab/client/cash_in_validation`;
 
@@ -170,13 +170,13 @@ export enum IKeys {
 }
 
 
-export function decimalToHex (value: string, padding: number) {
+export function decimalToHex(value: string, padding: number) {
     let hex: string = Number(value).toString(16);
-    while(hex.length < padding) {
+    while (hex.length < padding) {
         hex = "0" + hex;
     }
     return hex;
-  } 
+}
 
 export function hexToDecimal(value: string) {
     return parseInt(value, 16);
@@ -184,7 +184,7 @@ export function hexToDecimal(value: string) {
 
 export function APIAdminAccess(req: Request, res: Response, next: NextFunction) {
     try {
-        
+
         const func = new VerifyToken();
         const data = req.body;
         func.Init(data).then(run => {
@@ -205,27 +205,27 @@ export function APIAdminAccess(req: Request, res: Response, next: NextFunction) 
 class VerifyToken {
 
     private token: string;
-    
-    constructor() {}
+
+    constructor() { }
 
     public Init(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
 
                 console.log(`verify token`, 1);
 
                 this.InitParams(params);
-        
+
                 console.log(`verify token`, 2);
 
                 const ValidateParams = this.ValidateParams();
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
-    
+
                 console.log(`verify token`, 3);
 
                 this.SetTypeOfParams();
-    
+
                 console.log(`verify token`, 4);
 
                 console.log(`verify token`, 5);
@@ -235,9 +235,9 @@ class VerifyToken {
                 console.log(`verify token`, 6);
 
                 resolve(VerifyFromUsermanager);
-                
+
             } catch (error) {
-                
+
                 resolve(error.message);
 
             }
@@ -246,20 +246,20 @@ class VerifyToken {
 
     private InitParams(params: any): void {
         console.log(params);
-        
+
         this.token = params.token;
     }
     private ValidateParams(): string {
         if (!(this.token)) return IENMessage.needToken;
         return IENMessage.success;
-    }   
-    
+    }
+
     private SetTypeOfParams(): void {
         this.token = String(this.token);
     }
 
     private VerifyFromUsermanager(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 let validateTokenData: any = {
@@ -283,18 +283,18 @@ class VerifyToken {
                 resolve(response);
 
             } catch (error) {
-                
+
                 resolve(error.message);
 
             }
         });
     }
-    
+
 }
 
 export class LAABHashService {
 
-    constructor() {}
+    constructor() { }
 
     public CalculateHash(s: string) {
         return crypto.createHash('sha256').update(s).digest('hex');
@@ -329,4 +329,3 @@ export enum IFranchiseStockSignature {
 
 
 export const IForwordKeys = { name: 'VENDING', value: `gEWMNBZPzTXKSWrCUPUeN4MMv2qUzaljKOFjkDQYGRGT2GQ5GGP6oPGf0p4lptfXjAZ97B8H8G1w96igMrXDPItVrrLVVrSYnHBX` }
-

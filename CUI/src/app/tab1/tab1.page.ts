@@ -9,13 +9,19 @@ import {
 import { ApiService } from '../services/api.service';
 import {
   EClientCommand,
+  EMACHINE_COMMAND,
+  ESerialPortType,
   IBillProcess,
+  ICreditData,
+  IlogSerial,
   IMachineClientID,
   IMachineId,
   IMMoneyQRRes,
+  ISerialService,
   IStock,
   IVendingMachineBill,
   IVendingMachineSale,
+  machineVMCStatus,
 } from '../services/syste.model';
 import { LoadingController, ModalController, Platform } from '@ionic/angular';
 // import { BarcodeScanner, BarcodeScannerOptions } from "@ionic-native/barcode-scanner/ngx";
@@ -34,7 +40,7 @@ import { CashValidationProcess } from './LAAB_processes/cashValidation.process';
 import { CashinValidationProcess } from './LAAB_processes/cashinValidation.process';
 import { LaabGoPage } from './LAAB/laab-go/laab-go.page';
 import { EpinCashOutPage } from './LAAB/epin-cash-out/epin-cash-out.page';
-import * as cryptojs from 'crypto-js';
+import cryptojs from 'crypto-js';
 
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import * as QRCode from 'qrcode';
@@ -54,7 +60,7 @@ import { HowtoPageModule } from '../howto/howto.module';
 import { HowToPage } from './Vending/how-to/how-to.page';
 import { LoadStockListProcess } from './Vending_processes/loadStockList.process';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 import { AdsPage } from '../ads/ads.page';
 import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
@@ -64,8 +70,17 @@ import { OrderCartPage } from './Vending/order-cart/order-cart.page';
 import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 var host = window.location.protocol + '//' + window.location.host;
-import { CapacitorUpdater } from '@capgo/capacitor-updater'
+// import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { AutoPaymentPage } from './Vending/auto-payment/auto-payment.page';
+import { TestmotorPage } from '../testmotor/testmotor.page';
+import { VendingIndexServiceService } from '../vending-index-service.service';
+import { SerialServiceService } from '../services/serialservice.service';
+import { Toast } from '@capacitor/toast';
+import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
+import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.process';
+import * as moment from 'moment';
+import { DatabaseService } from '../database.service';
+import { IBankNote, IHashBankNote } from '../vmc.service';
 
 @Component({
   selector: 'app-tab1',
@@ -73,6 +88,35 @@ import { AutoPaymentPage } from './Vending/auto-payment/auto-payment.page';
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page implements OnDestroy {
+
+
+
+  serial: ISerialService;
+  open = false;
+
+  vlog = { log: { data: '', limit: 50 } as IlogSerial };
+
+
+  devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
+
+  selectedDevice = localStorage.getItem('device') || 'VMC';
+
+  portName = localStorage.getItem('portName') || '/dev/ttyS0';
+  baudRate = localStorage.getItem('baudRate') || 9600;
+  platforms: { label: string; value: ESerialPortType }[] = [];
+  isSerial: ESerialPortType = ESerialPortType.Serial;
+
+  connecting = false;
+
+  isDropStock = false;
+
+  offlineMode: Boolean = true;
+
+
+  enableCashIn: boolean = false;
+
+  isShowLaabTabEnabled: boolean = false;
+
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
   private cashValidationProcess: CashValidationProcess;
   private cashinValidationProcess: CashinValidationProcess;
@@ -85,7 +129,9 @@ export class Tab1Page implements OnDestroy {
   filemanagerURL: string = environment.filemanagerurl;
 
   acceptcash: number;
-  _machineStatus = { status: {} as IMachineStatus } as any;
+  _machineStatus = { status: {} as IMachineStatus };
+
+  machinestatus = { data: '' };
 
   production = environment.production;
 
@@ -119,6 +165,9 @@ export class Tab1Page implements OnDestroy {
   _howToPage: HTMLIonModalElement;
   isFirstLoad = true;
   autopilot = { auto: 0 };
+
+
+  notes = new Array<IBankNote>();
 
   segementList: Array<any> = [
     {
@@ -157,7 +206,7 @@ export class Tab1Page implements OnDestroy {
       description: 'Online payment and options',
       link: 'topupandservices'
     }
-  ] 
+  ]
   currentSegementTab: string = ITabVendingSegement.vending;
 
   autoShowMyOrderTimer: any = {} as any;
@@ -173,31 +222,128 @@ export class Tab1Page implements OnDestroy {
   otherModalAreOpening: boolean = false;
 
 
+  countdownCheckLaoQRPaidTimer: any = {} as any;
+  // countdownCheckLaoQRPaid: number = 90;
+  private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
+
+
+  private creditPending: ICreditData[] = [];
+
   // interval
   refreshAll: any = {} as any;
   refreshAllCounter: number = 0;
+  firstCredit: boolean = true;
+
+  sock = {
+    send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) => {
+      console.log('vmc service send', b, t, c);
+      // API TO SEND TO SERVER 
+      // create API TO ACCEPT THIS 
+      try {
+
+        this.apiService.updateStatus({ data: b, transactionID: t, command: c }).then(r => {
+          console.log('vmc service send response', r);
+          if (r.command === EMACHINE_COMMAND.CREDIT_NOTE) {
+            if (r.transactionID) {
+              const x = this.creditPending.find(v => v.transactionID === r.transactionID);
+              if (x) {
+                this.deleteCredit(x.id);
+                this.creditPending = this.creditPending.filter(v => v.transactionID !== r.transactionID);
+              }
+            } else {
+              console.log('vmc service send response falied and retry', r);
+              setTimeout(() => {
+                this.sock.send(b, t
+                  , c);
+              }, 5000);
+            }
+          } else {
+            console.log('update machine Status', r);
+          }
+        }).catch(e => {
+          console.log('vmc service send error', e);
+        });
+      } catch (error) {
+        console.log('vmc service send error', error);
+      }
+
+    },
+    machineId: '',
+    otp: ''
+  };
+
+  initHashBankNotes(machineId: string) {
+    const hashNotes = Array<IHashBankNote>();
+    for (let i = 0; i < this.notes.length; i++) {
+      const x = JSON.parse(JSON.stringify(this.notes[i])) as IHashBankNote;
+      x.hash = cryptojs
+        .SHA256(machineId + this.notes[i].value * 100)
+        .toString(cryptojs.enc.Hex);
+      hashNotes.push(x);
+    }
+    return hashNotes;
+  }
+
+  async deleteCredit(id: number) {
+    await this.dbService.deleteItem(id);
+    return await this.loadCredits();
+  }
+
+  async loadCredits() {
+    return await this.dbService.getItems();
+  }
+
+  async addOrUpdateCredit(data: ICreditData) {
+    if (data.id >= 0) {
+      await this.dbService.updateItem(data.id, data.name, data.data, data.transactionID, data.description);
+    } else {
+      await this.dbService.createItem(data.name, data.data, data.transactionID, data.description);
+    }
+    return await this.loadCredits();
+  }
+
+
+  async showModal(component: any, d: any = {}, cssClass: string = '') {
+    try {
+      return await this.modal.create({
+        component,
+        componentProps: d,
+        cssClass: cssClass || 'full-modal',
+        // backdropDismiss:false
+      });
+    } catch (error) {
+      console.log('ERROR', error);
+      alert('Error')
+    }
+  }
+
 
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
     public platform: Platform,
+    public modal: ModalController,
     // private scanner: @ionic-native/serial,
     public storage: IonicStorageService,
     public appCaching: CachingService,
     private vendingAPIService: VendingAPIService,
     private WSAPIService: WsapiService,
     private cashingService: AppcachingserviceService,
-    public loading: LoadingController
+    public loading: LoadingController,
+    private vendingIndex: VendingIndexServiceService,
+    private serialService: SerialServiceService,
+    private dbService: DatabaseService,
+
   ) {
-    
+
     this.refreshAllEveryHour();
 
     this.autopilot = this.apiService.autopilot;
     const that = this;
     this.dynamicControlMenu();
 
-    this._machineStatus = this.apiService._machineStatus;
-    this.autoUpdateCash();
+
+    // this.autoUpdateCash();
 
     this.loadVendingWalletCoinBalanceProcess =
       new LoadVendingWalletCoinBalanceProcess(
@@ -217,6 +363,10 @@ export class Tab1Page implements OnDestroy {
       this.cashingService
     );
 
+
+    this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
+
+
     // alert('V1_'+this.mmLogo);
 
     // ref.detach();
@@ -224,6 +374,8 @@ export class Tab1Page implements OnDestroy {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url;
     // this.initVendingSale();
+
+
 
     platform.ready().then(() => {
       // this.loadBrightness();
@@ -249,45 +401,45 @@ export class Tab1Page implements OnDestroy {
       this.onlineMachines = this.apiService.onlineMachines;
 
       try {
-        this.apiService.wsapi.loginSubscription.subscribe((r) => {
-          if (!r) return console.log('empty');
-          console.log('ws login subscription', r);
+        this.apiService.wsapi.loginSubscription.subscribe((rxx) => {
+          if (!rxx) return console.log('empty');
+          console.log('ws login subscription', rxx);
           this.apiService.myTab1 = this;
-          this.apiService.clientId.clientId = r.clientId;
+          this.apiService.clientId.clientId = rxx.clientId;
           this.apiService.wsAlive.time = new Date();
           this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
           // this.loadSaleList();
-          // this.initStock();
-          if(this.isFirstLoad){
+          this.initStock();
+          if (this.isFirstLoad) {
             // let adsOn =false
-            setInterval(()=>{
-              if(this.autopilot.auto>=6){
+            setInterval(() => {
+              if (this.autopilot.auto >= 6) {
                 // load ads when no active
                 // if(!adsOn)
                 const adsSlide = localStorage.getItem('isAds');
-                if (adsSlide != undefined && adsSlide == 'yes' ) {
-                  this.apiService.showModal(AdsPage).then(r=>{
+                if (adsSlide != undefined && adsSlide == 'yes') {
+                  this.apiService.showModal(AdsPage).then(r => {
                     r.present();
                     this.otherModalAreOpening = true;
                     this.checkActiveModal(r);
                     this.openAnotherModal(r);
-  
+
                     // adsOn=true;
                     // r.onDidDismiss().then(rx=>{
                     //   adsOn=false;
                     // })
                   })
                 }
-  
-  
+
+
                 this.apiService.soundGreeting();
                 setTimeout(() => {
                   this.apiService.soundPleaseVisit();
                 }, 5000);
-    
+
                 setTimeout(() => {
-                  
-                  if(new Date().getTime()%2){
+
+                  if (new Date().getTime() % 2) {
                     setTimeout(() => {
                       this.apiService.soundPointToCashOut();
                     }, 5000);
@@ -298,26 +450,26 @@ export class Tab1Page implements OnDestroy {
                       this.apiService.soundCheckTicketsExist();
                     }, 15000);
                     setTimeout(() => {
-                      if(this.apiService.cash.amount>0)this.apiService.soundMachineHasSomeChanges();
+                      if (this.apiService.cash.amount > 0) this.apiService.soundMachineHasSomeChanges();
                     }, 20000);
                   }
-                  
+
                 }, 10000);
-                this.autopilot.auto=0;
-                
-              }else{
+                this.autopilot.auto = 0;
+
+              } else {
                 this.autopilot.auto++;
               }
               const hour = new Date().getHours();// >19 , >0&&<8
-  
+
             }, 10000);
-  
+
             this.loadStock();
             this.isFirstLoad = false;
           }
         });
       } catch (error) {
-        
+
       }
 
 
@@ -431,6 +583,40 @@ export class Tab1Page implements OnDestroy {
     }, 5000);
   }
 
+  ngOnInit() {
+    this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
+
+    this.platforms = Object.keys(ESerialPortType)
+      .filter(key => isNaN(Number(key))) // Remove numeric keys
+      .map(key => ({
+        label: key,  // Display name
+        value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
+      }));
+    this.connect();
+
+    // this._processLoopCheckLaoQRPaid();
+    clearInterval(this.countdownCheckLaoQRPaidTimer);
+    this.countdownCheckLaoQRPaidTimer = setInterval(() => {
+      this._processLoopCheckLaoQRPaid();
+      this.apiService.IndexedDB.getBillProcesses().then((r) => {
+        if (r.length > 0) {
+          console.log('dropStock', r);
+          this.isDropStock = true;
+
+        } else {
+          console.log('out dropStock', r);
+          this.isDropStock = false;
+        }
+      }).catch((e) => {
+        console.log('Error get dropStock from local', e);
+        this.isDropStock = false;
+      });
+
+      console.log('*****CHECK 30 SECOND');
+    }, 30000);
+
+  }
+
   ngOnDestroy(): void {
     clearInterval(this.autoShowMyOrderTimer);
     clearInterval(this.autoDismissCheckAppUpdate);
@@ -438,10 +624,413 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.loopPercent);
     clearInterval(this.installingPecent);
     clearInterval(this.refreshAll);
+    clearInterval(this.countdownCheckLaoQRPaidTimer);
+
+
+    if (this.serial) {
+      this.serial.close();
+      console.log('serial closed');
+    }
   }
+
+
+  public _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+
+      const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
+
+      if (run.status == 1) {
+        console.log('=====> LAOQR CHECK :', run.message['data']['bill']);
+
+        this.apiService.waitingDelivery(run.message['data']['bill'], this.serial);
+      }
+
+      // clearInterval(this.countdownCheckLaoQRPaidTimer);
+
+      // this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+      //   console.log('transactionID', transactionID);
+      //   // console.log('CHECK');
+
+      //   // this.countdownCheckLaoQRPaid -= 5;
+      //   const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
+      //   console.log('=====> LAOQR CHECK :', run);
+
+      //   if (run.status == 1) {
+      //     this.apiService.waitingDelivery(run.message['data']['bill']);
+      //   }
+
+      //   // console.log('=====> LAOQR RUN :', run);
+
+      //   // console.log(`=====>LAOQR LOOP`, this.countdownCheckLaoQRPaid);
+      //   // if (this.countdownCheckLaoQRPaid <= 0) {
+      //   //   clearInterval(this.countdownCheckLaoQRPaidTimer);
+      //   //   this.countdownCheckLaoQRPaid = 90;
+      //   //   console.log('=====>LAOQR LOOP END');
+
+      //   //   resolve(IENMessage.success);
+      //   // }
+      // }, 30000);
+    });
+  }
+
+
+  async connect() {
+
+    if (this.connecting) {
+      return Toast.show({ text: 'Connecting' });
+    }
+    if (this.selectedDevice == 'VMC') {
+      this.baudRate = 57600;
+      await this.startVMC();
+      Toast.show({ text: 'Start VMC' });
+    }
+    else if (this.selectedDevice == 'ZDM8') {
+      await this.startZDM8();
+      Toast.show({ text: 'Start ZDM8' });
+    }
+    else if (this.selectedDevice == 'Tp77p') {
+      await this.satrtTp77p();
+      Toast.show({ text: 'Start Tp77p3b' });
+    }
+    else if (this.selectedDevice == 'essp') {
+      await this.startEssp();
+      Toast.show({ text: 'Start essp' });
+    }
+    else if (this.selectedDevice == 'cctalk') {
+      await this.startCctalk();
+      Toast.show({ text: 'Start essp' });
+    }
+    else if (this.selectedDevice == 'adh815') {
+      await this.startAHD815();
+      Toast.show({ text: 'Start adh815' });
+    }
+    else if (this.selectedDevice == 'm102') {
+      await this.startM102();
+      Toast.show({ text: 'Start m102' });
+    }
+    else {
+      Toast.show({ text: 'Please select device' })
+    }
+    this.connecting = false;
+  }
+
+  async Enable() {
+    console.log('Enable');
+
+    if (this.serial) {
+      await this.vendingIndex.vmc.enableCashIn();
+      this.apiService.toast.create({
+        message: 'Enable cash in',
+        duration: 2000
+      }).then(r => r.present());
+    } else {
+      Toast.show({ text: 'serial not init' });
+      await this.connect();
+    }
+  }
+
+  async Disable() {
+    console.log('Disable');
+
+    if (this.serial) {
+      await this.vendingIndex.vmc.disableCashIn();
+      this.apiService.toast.create({
+        message: 'Disable cash in',
+        duration: 2000
+      }).then(r => r.present());
+    } else {
+      Toast.show({ text: 'serial not init' });
+      await this.connect();
+    }
+  }
+  async startVMC() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initVMC(this.portName, Number(this.baudRate), '', '', this.isSerial);
+    this.serial.getSerialEvents().subscribe(event => {
+      try {
+        console.log('vmc service event received: ' + JSON.stringify(event));
+        if (event.event === 'dataReceived') {
+          // this.addLogMessage(`Received: ${event.data}`);
+          // this.processVMCResponse(event.data);
+          this.processVMCResponse(event.data);
+        } else if (event.event === 'commandAcknowledged') {
+          console.log('Command acknowledged by VMC:', event.data);
+        } else if (event.event === 'error') {
+          console.error('Serial error:', event);
+          // this.addLogMessage(`Serial error: ${JSON.stringify(event)}`);
+        }
+      } catch (error: any) {
+        console.error('Error processing event:', error);
+        // this.addLogMessage(`Error processing event: ${error.message}`);
+      }
+    });
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init for start VMC' });
+    } else {
+
+      // await this.vendingIndex.vmc.enableCashIn();
+
+      Toast.show({ text: 'VMC Cashin', duration: 'long' });
+      console.log('VMC Cashin');
+      this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
+
+      // FIX FIRMWARE bugs when reconnect to VMC
+      setTimeout(() => {
+        this.isFirstLoad = false;
+        if (this.enableCashIn) {
+          this.vendingIndex.vmc.enableCashIn();
+        }
+        else {
+          this.vendingIndex.vmc.disableCashIn();
+        }
+
+        if (this.offlineMode) {
+          this.vendingIndex.vmc.enableCashIn();
+        }
+
+
+      }, 45000);
+    }
+    this.vlog.log = this.serial.log;
+  }
+
+
+  testDrop(slot: number) {
+    // console.log('=====> testDrop', slot);
+
+    if (this.serial) {
+      const param = { slot: slot };
+      this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+        console.log('shippingcontrol', r);
+        // this.val = r?.data?.x;
+        await Toast.show({ text: 'shippingcontrol' + JSON.stringify(r) })
+      });
+
+    } else {
+      console.log('serial not init');
+      Toast.show({ text: 'serial not init' })
+    }
+  }
+
+  async startZDM8() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initZDM8(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async satrtTp77p() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initPulseTop77p(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startEssp() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initEssp(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startCctalk() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initCctalk(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startAHD815() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initADH815(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+  async startM102() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+
   async runtoast(txt: string, duration: number = 1000) {
-        const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: duration });
+    const t = this.apiService.toast.create({ message: `--> ${txt}`, duration: duration });
     (await t).present();
+  }
+
+
+  private processVMCResponse(hex: string): void {
+    const t = Number('-21' + moment.now());
+
+    if (hex.startsWith('fafb04')) {
+      const t = Number('-21' + moment.now());
+      console.log('Dispensing status:', hex);
+      //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
+      if (hex.substring(10, 12) == '01') { console.log('Dispensing'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSE) }
+      if (hex.substring(10, 12) == '02') { console.log('Dispensed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSED) }
+      if (hex.substring(10, 12) == '03') { console.log('Drop failed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSEFAILED) }
+
+      // FA FB 04 04 A3 01 00 3C 9F ==> 3C is 60 slot sent command, 01 = status processing
+      // FA FB 04 04 A4 02 00 3C 9B ==> 3C is 60 slot sent command, 02 = status dispensed
+      // fa fb 04 04 9e 03 00 3c a0 ==> 3C is 60 slot sent command, 03 = status drop failed
+
+    } else if (hex.startsWith('fafb21')) { // process credit note with bank note value
+      console.log('receive banknotes 21', hex);
+      const mode = hex.substring(10, 12);
+      if (mode === '01') { //fafb21069101 ==> 01 receive
+        // banknote receive
+        const value = this.getNoteValue(hex) / 100;
+        const t = Number('-21' + moment.now());
+        // this.apiService.alert.create({
+        //   header: 'Banknote received',
+        //   message: `Banknote received: ${value}`,
+        //   buttons: ['OK'] //, 'Cancel'
+        // }).then(r => r.present());
+        if (this.firstCredit) { this.firstCredit = false; return; }
+        if (this.offlineMode) {
+
+          this.apiService.updateNewLocalBalance(value + '');
+        } else {
+          const hash = cryptojs.SHA256(this.sock.machineId + value).toString(cryptojs.enc.Hex);
+          const credit: ICreditData = {
+            id: -1,
+            name: 'credit',
+            data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.VMC_CREDIT_NOTE },
+            transactionID: t.toString(),
+            description: ''
+          };
+
+          this.creditPending.push(credit);
+          this.addOrUpdateCredit(credit);
+
+          // check Hashing 
+          const bn = this.initHashBankNotes(this.machineId.machineId);
+          const note = bn.find(v => v.hash === hash);
+          if (!note) {
+            console.log('Hash not found', hash);
+            return;
+          } else {
+            /// send to server and need to confirm from server
+            this.sock.send(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
+          }
+        }
+
+
+
+        // fafb2106d501 000186a0 d5 == 100000 == 1000,00
+        //               // fafb21069101 000186a0 91 == 100000 == 1000,00
+        //               // fafb2106c301 00030d40 aa == 200000 == 2000,00
+        //               // fafb21065401 0007a120 f5 == 500000 == 5000,00
+        //               // fafb21065701 000f4240 7d == 1000000 == 10000,00
+        //               // fafb21064a01 000f4240 60
+        //               // fafb21060701 001e8480 3a == 2000000 == 20000,00
+        //               // fafb2106bf01 001e8480 82
+        //               // fafb21066001 004c4b40 00 == 5000000 == 50000,00
+        //               // new 50k not working
+        //               // fafb21067c01 00989680 d5 == 10000000 == 100000,00
+        //               // new 100k not working
+        // const hash = cryptojs.SHA256(this.sock.machineId + value).toString(cryptojs.enc.Hex);
+        // const credit: ICreditData = {
+        //   id: -1,
+        //   name: 'credit',
+        //   data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.CREDIT_NOTE },
+        //   transactionID: t.toString(),
+        //   description: ''
+        // };
+        // this.creditPending.push(credit);
+        // this.addOrUpdateCredit(credit);
+        // this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
+      } else if (mode == '08') {//fafb21068308000186a08a
+        //bank note swollen
+      }
+    } else if (hex.startsWith('fafb23')) {
+      console.log('receive banknotes 23-----------------------------------------------------------------------------', hex);
+      // const now = Date.now();
+      // if (this.lastReported23 && hex === this.lastReported23.hex && (now - this.lastReported23.timestamp < 1000)) {
+      //   console.log('Ignoring duplicate 0x23:', hex);
+      //   return;
+      // }
+      // this.lastReported23 = { hex, timestamp: now };
+
+      // const amountHex = hex.substring(8, 16);
+      // const amountDecimal = parseInt(amountHex.match(/.{2}/g).reverse().join(''), 16) / 100;
+      // this.balance = amountDecimal; // Track balance in your app
+      // console.log('Updated credit balance:', this.balance);
+      // this.sock.send(hex, -23, EMACHINE_COMMAND.CREDIT_NOTE);
+
+      // // Deduct credit immediately with mode 1 (bill)
+      // this.serialService.writeVMC(EVMC_COMMAND._27, { mode: 1, amount: amountHex });
+    } else if (hex.startsWith('fafb52')) {// status to server and update and local
+      //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
+      // this.machinestatus.data = hex; 
+      // this.machinestatus.data = hex;
+      // this._machineStatus.status = hex
+      const resultStatus = machineVMCStatus(hex);
+      this._machineStatus.status.temp = resultStatus.temperature + '';
+      // console.log('******machine status:', resultStatus);
+
+      this.machinestatus.data = hex;
+      const m = machineVMCStatus(hex);
+      this.sock.send(JSON.stringify(m), t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
+      // this.apiService.alert.create({
+      //   header: 'Machine Status',
+      //   message: JSON.stringify(resultStatus),
+      //   buttons: ['OK']
+      // }).then(r => r.present());
+
+      // this._machineStatus = resultStatus;
+
+    } else {
+      this.sock.send(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
+      console.log('Unhandled response:', hex);
+    }
+  }
+
+
+  private getNoteValue(b: string) {
+    try {
+      return this.hex2dec(b?.substring(12, 20));
+    } catch (error) {
+      return -1;
+    }
+  }
+
+  private hex2dec(hex: string) {
+    try {
+      return parseInt(hex, 16);
+    } catch (error) {
+      return -1;
+    }
+
   }
   loadAutoShowMyOrders() {
     if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
@@ -450,7 +1039,7 @@ export class Tab1Page implements OnDestroy {
         if (this.autoShowMyOrdersCounter <= 0) {
           clearInterval(this.autoShowMyOrderTimer);
           this.showMyOrdersModal();
-        } 
+        }
       }, 1000);
     }
   }
@@ -460,9 +1049,20 @@ export class Tab1Page implements OnDestroy {
     }
   }
 
+  // getToTestMotorPage(i: string) {
+  //   let data = {
+  //     action: i
+  //   }
+  //   this.showModal(TestmotorPage, data, 'dialog-fullscreen').then(r => {
+  //     r.present();
+  //     r.onDidDismiss().then(res => {
+  //       if (res.data.reload) {
+  //       }
+  //     })
+  //   })
+  // }
 
-
-  toggleWebviewTab(e: any){
+  toggleWebviewTab(e: any) {
     // console.log(e.detail);
     if (e.detail.scrollTop > 126) {
       this.apiService.toggleWebviewTab = true;
@@ -475,13 +1075,13 @@ export class Tab1Page implements OnDestroy {
     this._checkHowTo_Time = this._checkHowTo_Duration + 1000;
   }
 
-  autoUpdateCash() {
-    this.WSAPIService.balanceUpdateSubscription.subscribe(async (r) => {
-      if (r) {
-        await this.initVendingWalletCoinBalance();
-      }
-    });
-  }
+  // autoUpdateCash() {
+  //   this.WSAPIService.balanceUpdateSubscription.subscribe(async (r) => {
+  //     if (r) {
+  //       await this.initVendingWalletCoinBalance();
+  //     }
+  //   });
+  // }
 
   refreshAllEveryHour() {
     const hour = 60 * 60 * 1000;
@@ -501,6 +1101,8 @@ export class Tab1Page implements OnDestroy {
     // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().subscribe((r) => {
       try {
+        console.log('initStock');
+
         console.log(`load vending sale`, r.data);
         if (r.status) {
           const saleServer = r.data as Array<IVendingMachineSale>;
@@ -514,7 +1116,7 @@ export class Tab1Page implements OnDestroy {
 
           // })
           // window.location.reload();
-          this.initVendingWalletCoinBalance().then(() => {});
+          // this.initVendingWalletCoinBalance().then(() => { });
           this.storage.get('saleStock', 'stock').then((s) => {
             try {
               console.log(`storage get`, s);
@@ -563,10 +1165,10 @@ export class Tab1Page implements OnDestroy {
   }
 
   loadBrightness(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
-        const run = await ScreenBrightness.setBrightness({ brightness:0.0 });
+        const run = await ScreenBrightness.setBrightness({ brightness: 0.0 });
         this.apiService.alertSuccess(`--> run ${run}`)
 
         // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
@@ -574,7 +1176,7 @@ export class Tab1Page implements OnDestroy {
         this.apiService.alertSuccess(`--> bright ${brightness}`)
 
         resolve(IENMessage.success);
-        
+
       } catch (error) {
         resolve(error.message);
       }
@@ -616,10 +1218,10 @@ export class Tab1Page implements OnDestroy {
         if (this.vendingOnSale?.length) this.vendingOnSale.length = 0;
         if (this.saleList?.length) this.saleList.length = 0;
 
-        const initVendingWalletCoinBalance =
-          await this.initVendingWalletCoinBalance();
-        if (initVendingWalletCoinBalance != IENMessage.success)
-          throw new Error(initVendingWalletCoinBalance);
+        // const initVendingWalletCoinBalance =
+        //   // await this.initVendingWalletCoinBalance();
+        // if (initVendingWalletCoinBalance != IENMessage.success)
+        //   throw new Error(initVendingWalletCoinBalance);
         if (saleitems.length) {
           this.vendingOnSale.push(...saleitems);
           this.saleList.push(...this.vendingOnSale);
@@ -687,13 +1289,13 @@ export class Tab1Page implements OnDestroy {
     const x = prompt('password');
     console.log(x, this.getPassword());
 
-    // if (environment.production)
-    if (
-      !this.getPassword().endsWith(x?.substring(6)) ||
-      !x?.startsWith(this.machineId?.otp) ||
-      x?.length < 12
-    )
-      return;
+    if (environment.production)
+      if (
+        !this.getPassword().endsWith(x?.substring(6)) ||
+        !x?.startsWith(this.machineId?.otp) ||
+        x?.length < 12
+      )
+        return;
     const m = await this.apiService.showModal(StocksalePage);
     this.checkActiveModal(m);
 
@@ -770,7 +1372,109 @@ export class Tab1Page implements OnDestroy {
   //   })
   // }
 
-  buyMMoney(x: IVendingMachineSale) {
+  // buyMMoney(x: IVendingMachineSale) {
+  //   if (!x) return alert('not found');
+  //   // if (x.stock.qtty <= 0) alert('Out Of order');
+  //   this.apiService.showLoading();
+  //   if (x.stock.price == 0) {
+  //     this.apiService.getFreeProduct(x.position, x.stock.id).subscribe((r) => {
+  //       console.log(r);
+  //       if (r.status) {
+  //         this.apiService.toast
+  //           .create({ message: r.message, duration: 2000 })
+  //           .then((r) => {
+  //             r.present();
+  //             this.otherModalAreOpening = true;
+  //             this.openAnotherModal(r);
+
+  //             const y = ApiService.vendingOnSale.find(
+  //               (v) => v.position == x.position
+  //             );
+  //             y.stock.qtty--;
+  //             console.log('yyyyy', y, x);
+
+  //             this.storage.set('bill_' + new Date().getTime(), y, 'bills');
+  //             // PLAY SOUNDS
+  //             this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
+  //           });
+  //       } else {
+  //         this.apiService.toast
+  //           .create({ message: r.message, duration: 5000 })
+  //           .then((r) => {
+  //             r.present();
+  //           });
+  //       }
+  //       setTimeout(() => {
+  //         this.apiService.soundThankYou();
+  //         this.apiService.dismissLoading();
+  //       }, 3000);
+  //     });
+  //   } else {
+  //     const amount = x.stock.price * 1;
+
+  //     this.apiService
+  //       .buyMMoney([x], amount, this.machineId.machineId)
+  //       .subscribe((r) => {
+  //         console.log(r);
+  //         if (r.status) {
+  //           this.bills = r.data as IVendingMachineBill;
+  //           // localStorage.setItem('order', JSON.stringify(this.bills));
+  //           this.storage.set(
+  //             'order_' + new Date().getTime(),
+  //             this.bills,
+  //             'orders'
+  //           );
+  //           new qrlogo({
+  //             logo: '../../assets/icon/mmoney.png',
+  //             content: this.bills.qr,
+  //           })
+  //             .getCanvas()
+  //             .then((r) => {
+  //               this.apiService.modal
+  //                 .create({
+  //                   component: QrpayPage,
+  //                   componentProps: {
+  //                     encodedData: r.toDataURL(),
+  //                     amount,
+  //                     ref: this.bills.paymentref,
+  //                   },
+  //                   cssClass: 'dialog-fullscreen',
+  //                 })
+  //                 .then((r) => {
+  //                   r.present();
+  //                   this.otherModalAreOpening = true;
+  //                   this.checkActiveModal(r);
+  //                   this.openAnotherModal(r);
+
+  //                 });
+  //             });
+
+  //           // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
+  //           //   res => {
+  //           //     console.log(res);
+  //           //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
+  //           //       r.present();
+  //           //     })
+  //           //   }, error => {
+  //           //     alert(error);
+  //           //   }
+  //           // );
+  //         } else {
+  //           this.apiService.toast
+  //             .create({ message: r.message, duration: 5000 })
+  //             .then((r) => {
+  //               r.present();
+  //             });
+  //         }
+  //         setTimeout(() => {
+  //           this.apiService.dismissLoading();
+  //         }, 1000);
+  //       });
+  //   }
+  // }
+
+
+  buyLaoQR(x: IVendingMachineSale) {
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
     this.apiService.showLoading();
@@ -811,7 +1515,7 @@ export class Tab1Page implements OnDestroy {
       const amount = x.stock.price * 1;
 
       this.apiService
-        .buyMMoney([x], amount, this.machineId.machineId)
+        .buyLaoQR([x], amount, this.machineId.machineId)
         .subscribe((r) => {
           console.log(r);
           if (r.status) {
@@ -843,7 +1547,7 @@ export class Tab1Page implements OnDestroy {
                     this.otherModalAreOpening = true;
                     this.checkActiveModal(r);
                     this.openAnotherModal(r);
-                    
+
                   });
               });
 
@@ -870,7 +1574,67 @@ export class Tab1Page implements OnDestroy {
         });
     }
   }
-  buyManyMMoney() {
+  // buyManyMMoney() {
+  //   if (!this.orders.length) return alert('Please add any items first');
+  //   const amount = this.orders.reduce(
+  //     (a, b) => a + b.stock.price * b.stock.qtty,
+  //     0
+  //   );
+  //   // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
+  //   this.apiService.showLoading();
+  //   console.log(this.orders, amount);
+  //   this.apiService
+  //     .buyMMoney(this.orders, amount, this.machineId.machineId)
+  //     .subscribe((r) => {
+  //       console.log(r);
+  //       if (r.status) {
+  //         this.bills = r.data as IVendingMachineBill;
+  //         localStorage.setItem('order', JSON.stringify(this.bills));
+  //         new qrlogo({
+  //           logo: '../../assets/icon/mmoney.png',
+  //           content: this.bills.qr,
+  //         })
+  //           .getCanvas()
+  //           .then((r) => {
+  //             this.apiService.modal
+  //               .create({
+  //                 component: QrpayPage,
+  //                 componentProps: {
+  //                   encodedData: r.toDataURL(),
+  //                   amount,
+  //                   ref: this.bills.paymentref,
+  //                 },
+  //                 cssClass: 'dialog-fullscreen',
+  //               })
+  //               .then((r) => {
+  //                 r.present();
+  //                 this.otherModalAreOpening = true;
+  //                 this.checkActiveModal(r);
+  //                 this.openAnotherModal(r);
+
+  //               });
+  //           });
+  //         // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
+  //         //   res => {
+  //         //     console.log(res);
+  //         //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
+  //         //       r.present();
+  //         //     })
+  //         //   }, error => {
+  //         //     alert(error);
+  //         //   }
+  //         // );
+  //       }
+  //       this.apiService.dismissLoading();
+  //       this.getTotalSale.q = 0;
+  //       this.getTotalSale.t = 0;
+  //       // this.orders = [];
+  //       this.summarizeOrder = [];
+  //     });
+  // }
+
+
+  buyManyLaoQR() {
     if (!this.orders.length) return alert('Please add any items first');
     const amount = this.orders.reduce(
       (a, b) => a + b.stock.price * b.stock.qtty,
@@ -880,7 +1644,7 @@ export class Tab1Page implements OnDestroy {
     this.apiService.showLoading();
     console.log(this.orders, amount);
     this.apiService
-      .buyMMoney(this.orders, amount, this.machineId.machineId)
+      .buyLaoQR(this.orders, amount, this.machineId.machineId)
       .subscribe((r) => {
         console.log(r);
         if (r.status) {
@@ -951,21 +1715,27 @@ export class Tab1Page implements OnDestroy {
       this.autopilot.auto = 0;
       console.log(`allow vending`, this.WSAPIService?.setting_allowVending);
 
+      console.log('POS', x.position);
+
+      // this.testDrop(x.position);
+
+
       if (this.WSAPIService?.setting_allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
-        const alert = Swal.fire({
-          icon: 'error',
-          title: 'Vender is out of service',
-          text: `Please, try again later`,
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#EE3124',
-          heightAuto: false,
-        });
-        setTimeout(() => {
-          Swal.close();
-        }, 2000);
+        // const alert = Swal.fire({
+        //   icon: 'error',
+        //   title: 'Vender is out of service',
+        //   text: `Please, try again later`,
+        //   showConfirmButton: true,
+        //   confirmButtonText: 'OK',
+        //   confirmButtonColor: '#EE3124',
+        //   heightAuto: false,
+        // });
+        this.apiService.alertError('Please, try again later');
+        // setTimeout(() => {
+        //   Swal.close();
+        // }, 2000);
         return;
       }
 
@@ -984,7 +1754,7 @@ export class Tab1Page implements OnDestroy {
       console.log('y', y);
       this.orders.unshift(y);
       console.log(`orders`, this.orders);
-      
+
       //  console.log('sum',this.getSummarizeOrder());
       this.getSummarizeOrder();
       // setTimeout(() => {
@@ -1003,21 +1773,23 @@ export class Tab1Page implements OnDestroy {
       if (this.WSAPIService?.setting_allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
-        const alert = Swal.fire({
-          icon: 'error',
-          title: 'Vender is out of service',
-          text: `Please, try again later`,
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#EE3124',
-          heightAuto: false,
-        });
-        setTimeout(() => {
-          Swal.close();
-        }, 2000);
+        // const alert = Swal.fire({
+        //   icon: 'error',
+        //   title: 'Vender is out of service',
+        //   text: `Please, try again later`,
+        //   showConfirmButton: true,
+        //   confirmButtonText: 'OK',
+        //   confirmButtonColor: '#EE3124',
+        //   heightAuto: false,
+        // });
+        // setTimeout(() => {
+        //   Swal.close();
+        // }, 2000);
+
+        this.apiService.alertError('Please, try again later');
         return;
       }
-      
+
       this.setActive();
       if (!x) return alert('not found');
 
@@ -1036,7 +1808,7 @@ export class Tab1Page implements OnDestroy {
       console.log('y', y);
       this.orders.unshift(y);
       console.log(`orders`, this.orders);
-      
+
       //  console.log('sum',this.getSummarizeOrder());
       this.getSummarizeOrder();
       // setTimeout(() => {
@@ -1047,32 +1819,68 @@ export class Tab1Page implements OnDestroy {
       alert(JSON.stringify(error));
     }
   }
-
+  1
   showMyOrdersModal() {
-    if (this.otherModalAreOpening == true) return;
-    if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
-    clearInterval(this.autoShowMyOrderTimer);
-    this.autoShowMyOrdersCounter = 15;
+    try {
+      // timer check payment for any orders
+      clearInterval(this.countdownCheckLaoQRPaidTimer);
+      this.countdownCheckLaoQRPaidTimer = setInterval(() => {
+        console.log('*****CHECK 5 SECOND');
+        this._processLoopCheckLaoQRPaid();
+      }, 5000);
 
-    // const component = OrderCartPage;
-    const component = AutoPaymentPage;
-    const props = {
-      orders: this.orders,
-      getTotalSale: this.getTotalSale
-    }
-    this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
-      r.present();
-      this.otherModalAreOpening = true;
-      // this.apiService.allModals.push(this.apiService.modal);
-      r.onDidDismiss().then(cb => {
-        this.otherModalAreOpening = false;
-        AutoPaymentPage.message?.close();
-        AutoPaymentPage.message = undefined;
-        if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
-          this.loadAutoShowMyOrders();
-        }
+      if (this.otherModalAreOpening == true) return;
+      if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
+      clearInterval(this.autoShowMyOrderTimer);
+      this.autoShowMyOrdersCounter = 15;
+
+      // const component = OrderCartPage;
+      const component = AutoPaymentPage;
+      const props = {
+        orders: this.orders,
+        getTotalSale: this.getTotalSale
+      }
+      const that = this;
+      this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
+        r.present();
+        this.otherModalAreOpening = true;
+        // this.apiService.allModals.push(this.apiService.modal);
+        r.onDidDismiss().then(cb => {
+          this.otherModalAreOpening = false;
+          AutoPaymentPage.message?.close();
+          AutoPaymentPage.message = undefined;
+          if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
+            this.loadAutoShowMyOrders();
+          }
+          clearInterval(this.countdownCheckLaoQRPaidTimer);
+          that.countdownCheckLaoQRPaidTimer = setInterval(() => {
+            console.log('*****CHECK 30 SECOND');
+
+            that._processLoopCheckLaoQRPaid();
+
+            this.apiService.IndexedDB.getBillProcesses().then((r) => {
+              if (r.length > 0) {
+                console.log('dropStock', r);
+                this.isDropStock = true;
+
+              } else {
+                console.log('out dropStock', r);
+                this.isDropStock = false;
+              }
+            }).catch((e) => {
+              console.log('Error get dropStock from local', e);
+              this.isDropStock = false;
+            });
+          }, 30000);
+        });
+        //5s
+
+
       });
-    });
+    } catch (error) {
+
+    }
+
   }
   checkCartCount(position: number) {
     return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;
@@ -1167,38 +1975,38 @@ export class Tab1Page implements OnDestroy {
     // }
   }
 
-  refreshVendingWalletCoinBalance(): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      try {
-        // const machineId: string = localStorage.getItem('machineId');
-        const params = {};
-        const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
-        resolve(IENMessage.success);
-      } catch (error) {
-        this.apiService.simpleMessage(error.message);
-        resolve(error.message);
-      }
-    });
-  }
-  initVendingWalletCoinBalance(): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      try {
-        // const machineId: string = localStorage.getItem('machineId');
-        const params = {};
-        const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-        if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
-        if (this.apiService.cash.amount > 0)
-          this.apiService.soundMachineHasSomeChanges();
-        resolve(IENMessage.success);
-      } catch (error) {
-        this.apiService.simpleMessage(error.message);
-        resolve(error.message);
-      }
-    });
-  }
+  // refreshVendingWalletCoinBalance(): Promise<any> {
+  //   return new Promise<any>(async (resolve, reject) => {
+  //     try {
+  //       // const machineId: string = localStorage.getItem('machineId');
+  //       const params = {};
+  //       const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
+  //       if (run.message != IENMessage.success) throw new Error(run);
+  //       this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
+  //       resolve(IENMessage.success);
+  //     } catch (error) {
+  //       this.apiService.simpleMessage(error.message);
+  //       resolve(error.message);
+  //     }
+  //   });
+  // }
+  // initVendingWalletCoinBalance(): Promise<any> {
+  //   return new Promise<any>(async (resolve, reject) => {
+  //     try {
+  //       // const machineId: string = localStorage.getItem('machineId');
+  //       const params = {};
+  //       const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
+  //       if (run.message != IENMessage.success) throw new Error(run);
+  //       this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
+  //       if (this.apiService.cash.amount > 0)
+  //         this.apiService.soundMachineHasSomeChanges();
+  //       resolve(IENMessage.success);
+  //     } catch (error) {
+  //       this.apiService.simpleMessage(error.message);
+  //       resolve(error.message);
+  //     }
+  //   });
+  // }
   cashin(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
@@ -1338,7 +2146,7 @@ export class Tab1Page implements OnDestroy {
           token: cryptojs
             .SHA256(
               this.apiService.machineId.machineId +
-                this.apiService.machineId.otp
+              this.apiService.machineId.otp
             )
             .toString(cryptojs.enc.Hex),
         };
@@ -1453,11 +2261,11 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
-  checkActiveModal(rx:HTMLIonModalElement){
+  checkActiveModal(rx: HTMLIonModalElement) {
     const t = setInterval(() => {
-      this.autopilot.auto=0;
+      this.autopilot.auto = 0;
     }, 1000);
-    rx.onDidDismiss().then(rx=>{
+    rx.onDidDismiss().then(rx => {
       clearInterval(t);
       this.reloadAutoPayment();
       this.loadAutoShowMyOrders();
@@ -1478,7 +2286,7 @@ export class Tab1Page implements OnDestroy {
             this.openAnotherModal(r);
             clearInterval(this.autoShowMyOrderTimer);
             resolve(IENMessage.success);
-            
+
             this.checkActiveModal(r);
           });
       } catch (error) {
@@ -1488,16 +2296,46 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
+  // showBills() {
+  //   console.log(`here`);
+  //   this.apiService.loadDeliveryingBillsNew().subscribe((r) => {
+  //     console.log(`response showBills`, r);
+  //     if (r.status) {
+  //       // this.apiService.dismissModal();
+  //       this.apiService.pb = r.data as Array<IBillProcess>;
+  //       if (this.apiService.pb.length) {
+  //         this.apiService
+  //           .showModal(RemainingbillsPage, { r: this.apiService.pb }, true)
+  //           .then((r) => {
+  //             r.present();
+  //             this.otherModalAreOpening = true;
+  //             this.openAnotherModal(r);
+  //             clearInterval(this.autoShowMyOrderTimer);
+  //             this.checkActiveModal(r);
+  //           });
+  //       }
+
+  //     } else {
+  //       this.apiService.toast
+  //         .create({ message: r.message, duration: 5000 })
+  //         .then((r) => {
+  //           r.present();
+  //         });
+  //     }
+  //   });
+  // }
+
+
   showBills() {
     console.log(`here`);
-    this.apiService.loadDeliveryingBills().subscribe((r) => {
-      console.log(`response`, r);
-      if (r.status) {
+    this.apiService.loadDeliveryingBillsNew().then((r) => {
+      console.log(`response showBills`, r);
+      if (1 == 1) {
         // this.apiService.dismissModal();
-        this.apiService.pb = r.data as Array<IBillProcess>;
-        if (this.apiService.pb.length){
+        this.apiService.pb = r as Array<IBillProcess>;
+        if (this.apiService.pb.length) {
           this.apiService
-            .showModal(RemainingbillsPage, { r: this.apiService.pb }, false)
+            .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, true)
             .then((r) => {
               r.present();
               this.otherModalAreOpening = true;
@@ -1506,10 +2344,10 @@ export class Tab1Page implements OnDestroy {
               this.checkActiveModal(r);
             });
         }
-          
+
       } else {
         this.apiService.toast
-          .create({ message: r.message, duration: 5000 })
+          .create({ message: '', duration: 5000 })
           .then((r) => {
             r.present();
           });
@@ -1688,7 +2526,7 @@ export class Tab1Page implements OnDestroy {
     });
   }
 
-  
+
 
   vendingGO() {
     const props = {
@@ -1703,7 +2541,7 @@ export class Tab1Page implements OnDestroy {
       .then((r) => {
         r.present();
         this.otherModalAreOpening = true;
-        r.onDidDismiss().then(r=>{
+        r.onDidDismiss().then(r => {
           this.otherModalAreOpening = false;
           this.orders.length = 0;
         });
@@ -1730,19 +2568,19 @@ export class Tab1Page implements OnDestroy {
   }
   openads() {
     this.apiService.modal
-    .create({
-      component: AdsPage,
-      componentProps: {},
-      cssClass: 'dialog-fullscreen',
-    })
-    .then((r) => {
-      r.present();
-      this.otherModalAreOpening = true;
-      this.openAnotherModal(r);
+      .create({
+        component: AdsPage,
+        componentProps: {},
+        cssClass: 'dialog-fullscreen',
+      })
+      .then((r) => {
+        r.present();
+        this.otherModalAreOpening = true;
+        this.openAnotherModal(r);
 
-      // this.checkActiveModal(r);
+        // this.checkActiveModal(r);
 
-    });
+      });
   }
 
   openWebViewMenu(link: string) {
@@ -1756,7 +2594,7 @@ export class Tab1Page implements OnDestroy {
     }
 
     const props = {
-      
+
     }
     this.apiService.modal
       .create({
@@ -1781,19 +2619,19 @@ export class Tab1Page implements OnDestroy {
   }
 
   updateNewVersion() {
-    CapacitorUpdater.download({
-      // url: 'http://192.168.88.4:8989/test/public/dist.zip',
-      url: `${environment.filemanagerurl}/download/`,
-      version: '1.0.0'
-      }).then(run_download => {
-        CapacitorUpdater.set(run_download).then(async run_update => {
-          await this.runtoast(`update: success`);
-        }).catch(async error => {
-          await this.runtoast(`update: `+ error.message);
-        });
-      }).catch(async error => {
-        await this.runtoast(`download: ` + error.message);
-      });
+    // CapacitorUpdater.download({
+    //   // url: 'http://192.168.88.4:8989/test/public/dist.zip',
+    //   url: `${environment.filemanagerurl}/download/`,
+    //   version: '1.0.0'
+    // }).then(run_download => {
+    //   CapacitorUpdater.set(run_download).then(async run_update => {
+    //     await this.runtoast(`update: success`);
+    //   }).catch(async error => {
+    //     await this.runtoast(`update: ` + error.message);
+    //   });
+    // }).catch(async error => {
+    //   await this.runtoast(`download: ` + error.message);
+    // });
   }
 
   // autoCheckAppVersion() {
@@ -1801,7 +2639,7 @@ export class Tab1Page implements OnDestroy {
   //     if (!run) return;
 
   //     const response: any = run;
-      
+
   //     console.log(`checkAppUpdate`, this.checkAppUpdate);
   //     if (this.checkAppUpdate == true) return;
 
@@ -1828,7 +2666,7 @@ export class Tab1Page implements OnDestroy {
   //       CapacitorUpdater.set(run_download).then(async run_update => {
   //         console.log(`run_update`, run_update);
   //         if (run_update == undefined) throw new Error(IENMessage.repairFail + run_update +'');
- 
+
   //         this.loadingPercent = 0;
   //         this.loadingCheck = setInterval(() => {
   //           this.loadingPercent++;
@@ -1877,7 +2715,7 @@ export class Tab1Page implements OnDestroy {
   repairText: string;
   displayRepaireAppVersion: boolean = false;
   checkAppVersion: boolean = false;
-  
+
   loopPercent: any = {} as any;
   percentCount: number = 0;
   percentCountText: string = '0';
@@ -1887,7 +2725,7 @@ export class Tab1Page implements OnDestroy {
   installingCount: number = 15;
 
   APPVERSION(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         // return resolve(IENMessage.success);
@@ -1904,7 +2742,7 @@ export class Tab1Page implements OnDestroy {
           this.apiService.closeAllModal();
 
           this.repairText = IENMessage.downloadingVendingVersion + ' ' + response.versionText;
-          
+
           const downloadModel = {
             url: `${environment.filemanagerurl}download/${response.url}`,
             version: response.versionText
@@ -1916,7 +2754,7 @@ export class Tab1Page implements OnDestroy {
             this.percentCount++;
 
             if (this.percentCount < this.percentLimit) {
-              this.percentCountText = this.percentCount+'';
+              this.percentCountText = this.percentCount + '';
             } else {
               this.percentCountText = '100';
             }
@@ -1938,39 +2776,38 @@ export class Tab1Page implements OnDestroy {
               this.otherModalAreOpening = false;
               this.displayRepaireAppVersion = false;
             }
-            
+
           }, 1000);
 
 
-          const download = await CapacitorUpdater.download(downloadModel);
-          if (download.status == IENMessage.pending)
-          {
-            
-            // download complete
-            
-            this.percentCount = 100;
-            this.percentCountText = '100';
-            clearInterval(this.loopPercent);
+          // const download = await CapacitorUpdater.download(downloadModel);
+          // if (download.status == IENMessage.pending) {
 
-            this.installingPecent = setInterval(async () => {
-              this.installingCount--;
-              this.repairText = IENMessage.installVendingVersion + ' ' + response.versionText + ' in' + this.installingCount; 
+          //   // download complete
 
-              if (this.installingCount == 0) {
-                clearInterval(this.installingPecent);
-                localStorage.setItem('app_version', JSON.stringify(response));
-                this.otherModalAreOpening = false;
-                this.displayRepaireAppVersion = false;
+          //   this.percentCount = 100;
+          //   this.percentCountText = '100';
+          //   clearInterval(this.loopPercent);
 
-                const install = await CapacitorUpdater.set(download);
-                if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
-                CapacitorUpdater.removeAllListeners();
-                window.location.reload();
-                resolve(IENMessage.success);
-              }
+          //   this.installingPecent = setInterval(async () => {
+          //     this.installingCount--;
+          //     this.repairText = IENMessage.installVendingVersion + ' ' + response.versionText + ' in' + this.installingCount;
 
-            }, 1000);
-          }
+          //     if (this.installingCount == 0) {
+          //       clearInterval(this.installingPecent);
+          //       localStorage.setItem('app_version', JSON.stringify(response));
+          //       this.otherModalAreOpening = false;
+          //       this.displayRepaireAppVersion = false;
+
+          //       const install = await CapacitorUpdater.set(download);
+          //       if (install == undefined) throw new Error(IENMessage.installingNewVersionFail);
+          //       CapacitorUpdater.removeAllListeners();
+          //       window.location.reload();
+          //       resolve(IENMessage.success);
+          //     }
+
+          //   }, 1000);
+          // }
 
 
         }, error => {
@@ -1993,9 +2830,9 @@ export class Tab1Page implements OnDestroy {
   refreshBalanceFromAnotherModal(balance: number) {
     this.apiService.cash.amount = balance;
   }
-  
+
   resetCashing(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         const ownerUuid = localStorage.getItem('machineId');
         if (ownerUuid) {
@@ -2003,11 +2840,11 @@ export class Tab1Page implements OnDestroy {
           window.location.reload();
         }
 
-         resolve(IENMessage.success);
+        resolve(IENMessage.success);
       } catch (error) {
         this.apiService.alertError(error.message);
         resolve(error.message);
       }
-    }); 
+    });
   }
 }

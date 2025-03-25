@@ -1123,6 +1123,18 @@ export enum EClientCommand {
     confirmLAAB = 'confirmLAAB',
     confirmLAOQR = 'confirmLAOQR',
     findLaoQRPaid = 'findLaoQRPaid',
+    CREDIT_NOTE = "CREDIT_NOTE",
+    MACHINE_STATUS = "MACHINE_STATUS",
+    DISPENSE = "DISPENSE",
+    DISPENSED = "DISPENSED",
+    DISPENSEFAILED = "DISPENSEFAILED",
+    UNKNOWN = "UNKNOWN",
+    VMC_MACHINE_STATUS = "VMC_MACHINE_STATUS",
+    VMC_DISPENSEFAILED = "VMC_DISPENSEFAILED",
+    VMC_DISPENSED = "VMC_DISPENSED",
+    VMC_DISPENSE = "VMC_DISPENSE",
+    VMC_CREDIT_NOTE = "VMC_CREDIT_NOTE",
+    VMC_UNKNOWN = "VMC_UNKNOWN",
 
 }
 export interface IVendingMachineSale extends IBase, IBC {

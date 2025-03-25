@@ -8,7 +8,7 @@ import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel } fr
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
-import { Request,Response } from 'express';
+import { Request, Response } from 'express';
 import { logEntity } from '../entities';
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
@@ -37,25 +37,25 @@ redisClient.connect();
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
-export function returnLog(req:Request,res:Response,error=false){
-    return {superadmin:res.locals['superadmin']+'',subadmin:res.locals['subadmin']+'',ownerUuid:res.locals['ownerUuid']+'',url:req.protocol + "://" + req.get('host') + req.originalUrl,body:req.body,error}
+export function returnLog(req: Request, res: Response, error = false) {
+    return { superadmin: res.locals['superadmin'] + '', subadmin: res.locals['subadmin'] + '', ownerUuid: res.locals['ownerUuid'] + '', url: req.protocol + "://" + req.get('host') + req.originalUrl, body: req.body, error }
 }
-export function logUserActivity(data:{superadmin:string,subadmin:string,ownerUuid:string,url:string,body:any,error:boolean}) {
+export function logUserActivity(data: { superadmin: string, subadmin: string, ownerUuid: string, url: string, body: any, error: boolean }) {
     try {
-        const superadmin =data.superadmin;
-        const subadmin = data.subadmin;
-        const ownerUuid= data.ownerUuid;
-        const url = data.url;
-        const body = data.body;
-        const error = data.error;
-        logEntity.create({superadmin,subadmin,ownerUuid,url,body,error})
+        const superadmin = data?.superadmin;
+        const subadmin = data?.subadmin;
+        const ownerUuid = data?.ownerUuid;
+        const url = data?.url;
+        const body = data?.body;
+        const error = data?.error;
+        logEntity.create({ superadmin, subadmin, ownerUuid, url, body, error })
         // const url =req.protocol + "://" + req.get('host') + req.originalUrl;
         // if (data.ownerUuid) {
         //     if (data.superadmin) {
-                
+
         //     } 
         //     else if (data.subadmin) {
-                
+
         //     } 
         //     //....
         // } 
@@ -63,17 +63,17 @@ export function logUserActivity(data:{superadmin:string,subadmin:string,ownerUui
         console.log(error);
     }
 }
-export function PrintSucceeded(command: string, data: any, message: string,log:{superadmin:string,subadmin:string,ownerUuid:string,url:string,body:any,error:boolean}=null, transactionID: number = -1, code: string = '0'): IResModel {
-    if(log)
-    logUserActivity(log);
+export function PrintSucceeded(command: string, data: any, message: string, log: { superadmin: string, subadmin: string, ownerUuid: string, url: string, body: any, error: boolean } = null, transactionID: number = -1, code: string = '0'): IResModel {
+    if (log)
+        logUserActivity(log);
     return {
-        command, data, message, code, status: 1, transactionID
+        command, data, message, code, status: 1, transactionID: transactionID + ''
     } as IResModel;
 }
-export function PrintError(command: string, data: any, message: string,log:{superadmin:string,subadmin:string,ownerUuid:string,url:string,body:any,error:boolean}=null,  transactionID: number = -1, code: string = '0'): IResModel {
+export function PrintError(command: string, data: any, message: string, log: { superadmin: string, subadmin: string, ownerUuid: string, url: string, body: any, error: boolean } = null, transactionID: number = -1, code: string = '0'): IResModel {
     logUserActivity(log);
     return {
-        command, data: data, message, code, status: 0, transactionID
+        command, data: data, message, code, status: 0, transactionID: transactionID + ''
     } as IResModel;
 }
 export function broadCast(wss: WebSocketServer.WebSocketServer, comm: string, r: any, delay: boolean = false) {
@@ -92,7 +92,7 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
                         //d.data = x;
                         console.log('sending to ', uuid);
 
-                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded,null)));
+                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded, null)));
                         return;
                     }
                 }
@@ -236,7 +236,7 @@ export function validateTokenOnUserManager(token: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
         try {
 
-            
+
             const validateParams: any = {
                 object: "authorize",
                 method: "validateToken",
@@ -257,6 +257,29 @@ export function validateTokenOnUserManager(token: string): Promise<any> {
         }
     });
 }
+
+
+export function generateTokenOnUserManager(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            const url = 'https://laabx-api.laoapps.com/api/v1/admin/AdminLogin';
+            const validateParams: any = {
+                username: 'v2',
+                password: '76901806'
+            }
+            console.log('param', validateParams);
+
+            const validated = await axios.post(url, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
+            console.log('validated', validated.data);
+
+            if (validated.data.status != 1) return resolve('');
+            resolve(validated.data.data);//uuid
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 export function isTokenValidOnUserManager(token: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
         try {
@@ -288,33 +311,33 @@ export function findRealDB(token: string): Promise<string> {
         })
     })
 }
-export function writeDoorDone(key:string,v:string){
-    return redisClient.setEx(key+'_doordone_',60*1, v);
+export function writeDoorDone(key: string, v: string) {
+    return redisClient.setEx(key + '_doordone_', 60 * 1, v);
 
 }
-export function readDoorDone(key:string){
-    return redisClient.get(key+'_doordone_');
+export function readDoorDone(key: string) {
+    return redisClient.get(key + '_doordone_');
 
 }
 
-export function writeActiveMmoneyUser(key:string,v:string){
-    return redisClient.setEx(key+'_mmoneyuser_',30, v);
+export function writeActiveMmoneyUser(key: string, v: string) {
+    return redisClient.setEx(key + '_mmoneyuser_', 30, v);
 
 }
-export function readActiveMmoneyUser(key:string){
-    return redisClient.get(key+'_mmoneyuser_');
+export function readActiveMmoneyUser(key: string) {
+    return redisClient.get(key + '_mmoneyuser_');
 
 }
 export function writeMachineSetting(machineId: string, setting: any) {
     try {
         // console.log('writeMachineSetting',machineId,setting);
-        
+
         redisClient.set('_setting_' + machineId, JSON.stringify(setting));
     } catch (error) {
-        console.log('error writeMachineSetting',error);
-        
+        console.log('error writeMachineSetting', error);
+
     }
-    
+
 }
 export function readMachineSetting(machineId: string,) {
     return redisClient.get('_setting_' + machineId);
@@ -325,8 +348,8 @@ export function readMachineLimiterBalance(machineId: string,) {
     return redisClient.get('_limiter_machine_balance_' + machineId);
 
 }
-export function writeMachineLimiterBalance(machineId: string,value:string) {
-    return redisClient.set('_limiter_machine_balance_' + machineId,value+'');
+export function writeMachineLimiterBalance(machineId: string, value: string) {
+    return redisClient.set('_limiter_machine_balance_' + machineId, value + '');
 
 }
 // export function writeMachineLimiter(machineId: string, balance: string) {
@@ -336,19 +359,19 @@ export function writeMachineLimiterBalance(machineId: string,value:string) {
 //     return redisClient.get('_limiter_' + machineId);
 
 // }
-export function  writeACKConfirmCashIn(transactionID:string) {
-    return redisClient.setEx('_ack_confirm_CashIn_' + transactionID,60*24*7, 'yes');
+export function writeACKConfirmCashIn(transactionID: string) {
+    return redisClient.setEx('_ack_confirm_CashIn_' + transactionID, 60 * 24 * 7, 'yes');
 }
-export function  readACKConfirmCashIn(transactionID:string) {
+export function readACKConfirmCashIn(transactionID: string) {
     return redisClient.get('_ack_confirm_CashIn_' + transactionID);
 }
-export function  removeACKConfirmCashIn(transactionID:string) {
+export function removeACKConfirmCashIn(transactionID: string) {
     return redisClient.del('_ack_confirm_CashIn_' + transactionID);
 }
 export function writeMerchantLimiterBalance(ownerUuid: string, balance: string) {
     redisClient.set('_limiter_balance_' + ownerUuid, balance);
 }
-export function readMerchantLimiterBalance(ownerUuid:string) {
+export function readMerchantLimiterBalance(ownerUuid: string) {
     return redisClient.get('_limiter_balance_' + ownerUuid);
 
 }
@@ -359,37 +382,37 @@ export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
 
 }
-export  function readMachineSale(machineId: string) {
+export function readMachineSale(machineId: string) {
     // return redisClient.get('_machineSale_' + machineId);
     try {
         // const p =path.resolve(__dirname, '..');
         // console.log('path readMachineSale',p);
-        
+
         // return fs.readFileSync(p+'/'+machineId,{encoding:'utf-8'});
         console.log();
-        
+
         return redisClient.get('_MachineSale_' + machineId);
     } catch (error) {
-            console.log('errro readMachineSale',error);
-            
+        console.log('errro readMachineSale', error);
+
     }
     return '';
-    
+
 }
-export function writeMachineSale(machineId: string,value:string) {
+export function writeMachineSale(machineId: string, value: string) {
     // return redisClient.set('_machineSale_' + machineId,value);
     try {
-        const p =path.resolve(__dirname, '..');
-        fs.writeFileSync(p+'/'+machineId,value,{encoding:'utf-8'});
-        console.log('path writeMachineSale',p);
+        const p = path.resolve(__dirname, '..');
+        fs.writeFileSync(p + '/' + machineId, value, { encoding: 'utf-8' });
+        console.log('path writeMachineSale', p);
         redisClient.set('_MachineSale_' + machineId, value);
         // console.log(`write la der`, value);
         return machineId;
     } catch (error) {
-        console.log('errro writeMachineSale',error);
+        console.log('errro writeMachineSale', error);
     }
     return '';
-    
+
 }
 
 export function getSucceededRecordLog(da = moment().year() + '_' + moment().month() + '_' + moment().date()) {
@@ -415,7 +438,7 @@ export function writeErrorLogs(m: string, e: any) {
 
     fs.appendFileSync(logs, JSON.stringify({ m, e, time: new Date() }), { flag: 'a+' });
 }
-export function  hex2dec(hex: string) {
+export function hex2dec(hex: string) {
     try {
         return parseInt(hex, 16);
     } catch (error) {
@@ -423,43 +446,43 @@ export function  hex2dec(hex: string) {
     }
 
 }
-export interface IMachineStatus{lastUpdate:Date,machineId:string,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
+export interface IMachineStatus { lastUpdate: Date, machineId: string, billStatus: string, coinStatus: string, cardStatus: string, tempconrollerStatus: string, temp: string, doorStatus: string, billChangeValue: string, coinChangeValue: string, machineIMEI: string, allMachineTemp: string }
 
-export function  machineStatus(x:string):IMachineStatus{
-    let y:any;
+export function machineStatus(x: string): IMachineStatus {
+    let y: any;
     let b = ''
     // console.log('xxxxxx',x);
-    
+
     try {
-      y= JSON.parse(x);
-     b = y.b;
+        y = JSON.parse(x);
+        b = y.b;
     } catch (error) {
-    //   console.log('error',error);
-      return {} as IMachineStatus;
+        //   console.log('error',error);
+        return {} as IMachineStatus;
     }
     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
     // fafb52
     // 21 //len
     // 54 // series
-    const billStatus =b.substring(10,12);
+    const billStatus = b.substring(10, 12);
     // 00 // bill acceptor
-    const coinStatus=b.substring(12,14);
+    const coinStatus = b.substring(12, 14);
     // 01 // coin acceptor
-   const cardStatus= b.substring(14,16);
+    const cardStatus = b.substring(14, 16);
     // 00 // card reader status
-    const tempconrollerStatus= b.substring(16,18);
+    const tempconrollerStatus = b.substring(16, 18);
     // 00 // tem controller status
-    const temp= b.substring(18,20);
+    const temp = b.substring(18, 20);
     // 13 // temp
-    const doorStatus= b.substring(20,22);
+    const doorStatus = b.substring(20, 22);
     // 00 // door 
-    const billChangeValue= b.substring(22,30);
+    const billChangeValue = b.substring(22, 30);
     // 00000000 // bill change
-    const coinChangeValue=b.substring(30,38);
+    const coinChangeValue = b.substring(30, 38);
     // 00000000 // coin change
-    const machineIMEI= b.substring(38,58);
+    const machineIMEI = b.substring(38, 58);
     // 30303030303030303030
-    const allMachineTemp= b.substring(58,74);
+    const allMachineTemp = b.substring(58, 74);
     // 13aaaaaaaaaaaaaa8d
     // // fafb header
     // // 52 command
@@ -476,28 +499,28 @@ export function  machineStatus(x:string):IMachineStatus{
     // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
     // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
     // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-    return {lastUpdate:new Date(y.t),billStatus,coinStatus,cardStatus,tempconrollerStatus,temp,doorStatus,billChangeValue,coinChangeValue,machineIMEI,allMachineTemp} as IMachineStatus
-  }
-  export async function readMachineLockDrop(machineId:string){
-    return  await redisClient.get('_machinelockdrop_'+machineId);
+    return { lastUpdate: new Date(y.t), billStatus, coinStatus, cardStatus, tempconrollerStatus, temp, doorStatus, billChangeValue, coinChangeValue, machineIMEI, allMachineTemp } as IMachineStatus
 }
-export function writeMachineLockDrop(machineId: string,lock='false') {
-    redisClient.set('_machinelockdrop_' + machineId, lock?lock:'false');
+export async function readMachineLockDrop(machineId: string) {
+    return await redisClient.get('_machinelockdrop_' + machineId);
+}
+export function writeMachineLockDrop(machineId: string, lock = 'false') {
+    redisClient.set('_machinelockdrop_' + machineId, lock ? lock : 'false');
 }
 
-export async function readMachinePendingStock(machineId:string){
-    return  await redisClient.get('_machinependingstock_'+machineId);
+export async function readMachinePendingStock(machineId: string) {
+    return await redisClient.get('_machinependingstock_' + machineId);
 }
 export function writeMachinePendingStock(machineId: string, b: any) {
     redisClient.set('_machinependingstock_' + machineId, JSON.stringify(b));
 }
 
-export async function readMachineStatus(machineId:string){
-    const x = await redisClient.get('_machinestatus_'+machineId);
-    return machineStatus( x);
+export async function readMachineStatus(machineId: string) {
+    const x = await redisClient.get('_machinestatus_' + machineId);
+    return machineStatus(x);
 }
 export function writeMachineStatus(machineId: string, b: any) {
-    redisClient.set('_machinestatus_' + machineId, JSON.stringify({b,t:new Date()}));
+    redisClient.set('_machinestatus_' + machineId, JSON.stringify({ b, t: new Date() }));
 }
 export function getNanoSecTime() {
     var hrTime = process.hrtime();
@@ -508,10 +531,10 @@ export const USERMANAGER_URL = 'https://nocnoc-api.laoapps.com';
 export const LAAB_URL = 'http://localhost:30000';
 
 
-export function base64ToFile(data:string,filename=moment.now(),ext='.png'){
+export function base64ToFile(data: string, filename = moment.now(), ext = '.png') {
     let buff = Buffer.from(data, 'base64');
-    fs.writeFileSync(process.env._image_path+'/'+filename+ext, buff);
-    return filename+'';
+    fs.writeFileSync(process.env._image_path + '/' + filename + ext, buff);
+    return filename + '';
 }
 
 export function convertVersion(version: string) {
@@ -520,19 +543,19 @@ export function convertVersion(version: string) {
     const parses = parseInt(text);
 
     if (parses > 0 && parses < 10) {
-      return `0.0.${parses}`;
-    } 
-    if (parses >= 10 && parses < 100) {
-      text = text.substring(text.length - parses.toString().length-1, text.length);
-    } else {
-      text = text.substring(text.length - parses.toString().length, text.length);
+        return `0.0.${parses}`;
     }
-    
+    if (parses >= 10 && parses < 100) {
+        text = text.substring(text.length - parses.toString().length - 1, text.length);
+    } else {
+        text = text.substring(text.length - parses.toString().length, text.length);
+    }
+
     let s: string = '';
-    for(let i = 0; i < text.length; i++) {
-      s += `${text[i]}.`;
+    for (let i = 0; i < text.length; i++) {
+        s += `${text[i]}.`;
     }
     versionText = `${s}0`;
-    versionText = versionText.substring(0, versionText.length -2);
+    versionText = versionText.substring(0, versionText.length - 2);
     return versionText;
 } 

@@ -122,11 +122,11 @@ export class LoadStockListProcess {
     private LoadProductList(message:any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-
                 this.apiService.loadVendingSale().subscribe(r => {
                     const response: any = r;
                     if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
+                    console.log('LoadProductList response',response.data);
                     this.lists = response.data;
                     this.images = this.lists.map(item => { return { name: item.stock.image, file: item.stock.image } });
                     this.lists.find(field => field.stock.imageurl = '');

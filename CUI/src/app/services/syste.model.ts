@@ -1,4 +1,5 @@
 
+
 export const EESSP_COMMANDS = {
     RESET: {
         code: 1,
@@ -464,7 +465,202 @@ export const EESSP_COMMANDS = {
         description: 'Resets the fixed encryption key to the device default. The device may have extra security requirements before it will accept this command (e.g. The Hopper must be empty) if these requirements are not met, the device will reply with Command Cannot be Processed. If successful, the device will reply OK, then reset. When it starts up the fixed key will be the default.'
     }
 }
+export function PrintSucceeded(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
+    return {
+        command, data, message, code, status: 1, transactionID
+    } as IResModel;
+}
+export function PrintError(command: string, data: any, message: string, transactionID: number = -1, code: string = '0'): IResModel {
+    return {
+        command, data: data, message, code, status: 0, transactionID
+    } as IResModel;
+}
+export interface IlogSerial {
+    limit: number;
+    data: string;
+}
+export enum EZDM8_COMMAND {
+    hwversion = 'hwversion',
+    swversion = 'swversion',
+    status = 'status',
+    hutemp = 'hutemp',
+    statusgrid = 'statusgrid',
+    positionhoraxis = 'positionhoraxis',
+    dropdetectstatus = 'dropdetectstatus',
+    arrayoutputstatus = 'arrayoutputstatus',
+    arrayinputstatus = 'arrayinputstatus',
+    yaxiselevatorstatus = 'yaxiselevatorstatus',
+    xaxiselevatorstatus = 'xaxiselevatorstatus',
+    yaxisliftmotor = 'yaxisliftmotor',
+    xaxisliftmotor = 'xaxisliftmotor',
+    relaycommand = 'relaycommand',
+    disabled = 'disabled',
+    enable = 'enable',
+    lifterreset = 'lifterreset',
+    manualspeedmode = 'manualspeedmode',
+    motortimeout = 'motortimeout',
+    setyaxisposition = 'setyaxisposition',
+    setxaxisposition = 'setxaxisposition',
+    setyaxismotor = 'setyaxismotor',
+    setxaxismotor = 'setxaxismotor',
+    shippingcontrol = 'shippingcontrol',
+    yaxisliftmotorissue = 'yaxisliftmotorissue',
+    xaxisliftmotorissue = 'xaxisliftmotorissue',
+    arrayoutput = 'arrayoutput',
+    liftoutput = 'liftoutput',
+    positionliftmotor = "positionliftmotor",
+    disable = "disable",
+    limiter = "limiter",
+    balance = "balance",
+    logs = "logs",
+    temp = "temp",
+    restart = "restart"
+}
+export interface ICreditData { id: number, name: string, transactionID, data: ICreditDataDetails, description: string };
+export interface ICreditDataDetails { raw: string, data: string, t: number, transactionID: string, command: EMACHINE_COMMAND }
+export enum EMACHINE_COMMAND {
+    login = 'login',
+    ping = 'ping',
+    status = 'status',
+    confirm = "confirm",
+    note_credit = "note_credit",
+    CREDIT_NOTE = "CREDIT_NOTE",
+    READ_NOTE = "READ_NOTE",
+    NOTE_REJECTED = "NOTE_REJECTED",
+    JAMMED = "JAMMED",
+    start = "start",
+    stop = "stop",
+    setcounter = "setcounter",
+    restart = "restart",
+    logs = "logs",
+    confirmOrder = "confirmOrder",
+    shippingcontrol = 'shippingcontrol',
+    temp = "temp",
+    balance = "balance",
+    limiter = "limiter",
+    DISABLE = "DISABLE",
+    ENABLE = "ENABLE",
+    SYNC = 'SYNC',
+    setpoll = 'setpoll',
+    version = "version",
+    dropdetectstatus = "dropdetectstatus",
+    arrayoutputstatus = "arrayoutputstatus",
+    arrayinputstatus = "arrayinputstatus",
+    relaycommand = "relaycommand",
+    swversion = "swversion",
+    hutemp = "hutemp",
+    statusgrid = "statusgrid",
+    hwversion = "hwversion",
+    getSN = "getSN",
+    READ_EVENTS = "READ_EVENTS",
+    POLL = "POLL",
+    RESET = "RESET",
+    ACCEPT = "ACCEPT",
+    SET_POLL = "SET_POLL",
+    GET_SN = "GET_SN",
+    READ_TEMP = "READ_TEMP",
+    DISPENSE = "DISPENSE",
+    READ_SWITCH_OUTPUT = "READ_SWITCH_OUTPUT",
+    READ_SWITCH_INPUT = "READ_SWITCH_INPUT",
+    SET_ADDRESS = "SET_ADDRESS",
+    SET_PULSE_COUNT = "SET_PULSE_COUNT",
+    REJECT = "REJECT",
+    START_MOTOR = "START_MOTOR",
+    SET_TEMP = "SET_TEMP",
+    CLEAR_RESULT = "CLEAR_RESULT",
+    ERROR = "ERROR",
+    INIT = "INIT",
+    CLOSE = "CLOSE",
+    LISTPORTS = "LISTPORTS",
+    GETSERIALEVENTS = "GETSERIALEVENTS",
+    GETFIRMWAREVERSION = "GETFIRMWAREVERSION",
+    UNLOCK = "UNLOCK",
+    READALLLOCKSTATUS = "READALLLOCKSTATUS",
+    ONETOUCHUNLOCK = "ONETOUCHUNLOCK",
+    LIGHTSON = "LIGHTSON",
+    LIGHTSOFF = "LIGHTSOFF",
+    SETCHANNELINHIBITS = "SETCHANNELINHIBITS",
+    GETSERIALNUMBER = "GETSERIALNUMBER",
+    SETUPREQUEST = "SETUPREQUEST",
+    DISPENSED = "DISPENSED",
+    DISPENSEFAILED = "DISPENSEFAILED",
+    UNKNOWN = "UNKNOWN",
+    MACHINE_STATUS = "MACHINE_STATUS",
+    VMC_MACHINE_STATUS = "VMC_MACHINE_STATUS",
+    VMC_DISPENSEFAILED = "VMC_DISPENSEFAILED",
+    VMC_DISPENSED = "VMC_DISPENSED",
+    VMC_DISPENSE = "VMC_DISPENSE",
+    VMC_CREDIT_NOTE = "VMC_CREDIT_NOTE",
+    VMC_UNKNOWN = "VMC_UNKNOWN",
 
+
+}
+export enum ESerialPortType {
+    Serial = 1,
+    USB = 2
+}
+
+
+export enum EVMC_COMMAND {
+    _41 = '41',
+    _03 = '03',
+    _28 = '28',
+    _06 = "06",
+    disable = "disable",
+    ENABLE = "ENABLE",
+    _51 = "51",
+    _61 = "61",
+    _7017 = "7017",
+    _7001 = "7001",
+    _7018 = "0718",
+    _7019 = "0719",
+    _7020 = "0720",
+    _7023 = "0723",
+    sync = "sync",
+    setpoll = "setpoll",
+    acceptnote = "acceptnote",
+    _7036 = "7036",
+    _7016 = "7016",
+    _7028 = "7028",
+    _7037 = "7037",
+    temp = "temp"
+}
+export function addLogMessage(log: IlogSerial, message: string, consoleMessage?: string) {
+    if (!log) return; // Skip if no log object
+
+    const newMessage = consoleMessage !== undefined ? `${message} (${consoleMessage})` : message;
+    const lines = log.data ? log.data.split('\n').filter(line => line.trim() !== '') : [];
+    lines.unshift(newMessage); // Add new message at the start
+
+    // Enforce line limit (default to 100 if not specified)
+    const limit = log.limit || 100;
+    if (lines.length > limit) {
+        lines.splice(limit); // Remove excess lines from the end
+    }
+
+    log.data = lines.join('-- ' + new Date().toISOString() + '\n');
+}
+export function hexToUint8Array(hexString: string): Uint8Array {
+    const bytes = [];
+    for (let i = 0; i < hexString.length; i += 2) {
+        bytes.push(parseInt(hexString.slice(i, i + 2), 16));
+    }
+    return new Uint8Array(bytes);
+}
+
+import { SerialPortListResult } from 'SerialConnectionCapacitor';
+
+export interface ISerialService {
+    log: IlogSerial;
+    machinestatus: { data: string };//machine status send to server and local : fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
+    initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative: ESerialPortType): Promise<string>;
+    getSerialEvents(): any;
+    command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
+    close(): Promise<void>;
+    listPorts(): Promise<SerialPortListResult>;
+    checkSum(data?: any[]): string;
+
+}
 
 export interface IResModel {
     transactionID?: number;
@@ -474,26 +670,27 @@ export interface IResModel {
     status: number;
 }
 export interface IReqModel {
-    transactionID?:number;
+    transactionID?: number;
     command: any;
-    data:any;
+    data: any;
     time: string;
     ip: string;
     token: string;
-    limit:number;
-    skip:number;
+    limit: number;
+    skip: number;
 }
-export enum EPaymentProvider{
-    mmoney='mmoney',
-    umoney='umoney',
-    bcelone='bcelone',
-    laab = 'laab'
+export enum EPaymentProvider {
+    mmoney = 'mmoney',
+    umoney = 'umoney',
+    bcelone = 'bcelone',
+    laab = 'laab',
+    laoqr = 'laoqr'
 }
-export interface IMMoneyQRRes{
-    uuid:string;
-    qr:string;
-    ids:Array<string>;
-    value:number;
+export interface IMMoneyQRRes {
+    uuid: string;
+    qr: string;
+    ids: Array<string>;
+    value: number;
 }
 export enum EM102_COMMAND {
     release = 'release',
@@ -512,14 +709,14 @@ export enum EMODBUS_SYS_STAT {
     STAT_SALE_OK, //Sale success
     STAT_SALE_EER, //failure, shipping failure
 }
-export enum EMODBUS_ERROR_CODE{
-    '01'='Illegal function code. The slave receives a function code that cannot be executed. After issuing a query command, this code indicates that no program function is available.',
-    '02'='Illegal data address. The received data address, which is not allowed by the slave.',
-    '03' ='Illegal data. The value of the query data area is a value that is not allowed from the machine.',
+export enum EMODBUS_ERROR_CODE {
+    '01' = 'Illegal function code. The slave receives a function code that cannot be executed. After issuing a query command, this code indicates that no program function is available.',
+    '02' = 'Illegal data address. The received data address, which is not allowed by the slave.',
+    '03' = 'Illegal data. The value of the query data area is a value that is not allowed from the machine.',
     '04' = 'Calibration error. The checksum is incorrect and the host resends the data request as requested by the slave.',
-    '06' ='Slave equipment busy. The slave is busy processing a long-time program command and requests the host to send the message when the slave is idle.',
-    '07' ='Slave equipment failure. A non-recoverable error occurred when the slave executed the action requested by the host.',
-    '08' ='Confirmation. The slave has received the requested data, but it takes a long time to process it and sends this acknowledgement to avoid a timeout error on the host. The host then sends a "query completion" to determine if the slave has completed processing.'
+    '06' = 'Slave equipment busy. The slave is busy processing a long-time program command and requests the host to send the message when the slave is idle.',
+    '07' = 'Slave equipment failure. A non-recoverable error occurred when the slave executed the action requested by the host.',
+    '08' = 'Confirmation. The slave has received the requested data, but it takes a long time to process it and sends this acknowledgement to avoid a timeout error on the host. The host then sends a "query completion" to determine if the slave has completed processing.'
 }
 export enum EMODBUS_ERROR {
     ERR_NO_ERR = 0x00,//:No error
@@ -729,12 +926,12 @@ export enum EMessage {
     billnotfound = "billnotfound",
     confirmsucceeded = "confirmsucceeded"
 }
-export interface IBase{
-    id?:number;
-    uuid?:string;
-    isActive?:boolean;
-    createdAt?:Date;
-    updatedAt?:Date;
+export interface IBase {
+    id?: number;
+    uuid?: string;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
     // deletedAt?:Date;
 
     // imgUrl?: string,
@@ -742,52 +939,50 @@ export interface IBase{
 export interface IBC {
     hashP: string;
     hashM: string;
-   
+
 }
 export interface IAdsMedia {
-    name:string;
-    description:string;
-    url:string;
-    type:string//webm,png
+    name: string;
+    description: string;
+    url: string;
+    type: string//webm,png
 }
-export interface IStock extends IBase, IBC{
+export interface IStock extends IBase, IBC {
     name: string;
     image: string;
     price: number;
     qtty: number;
 }
-export interface IVendingMachineSale extends IBase,IBC{
-    stock:IStock;
-    position:number;
-    machineId:string;
-    max:number;
+export interface IVendingMachineSale extends IBase, IBC {
+    stock: IStock;
+    position: number;
+    machineId: string;
+    max: number;
 }
-export interface IVendingMachineBill extends IBase, IBC{
-    vendingsales:Array<IVendingMachineSale>;
-    totalvalue:number;
-    paymentmethod:string;
-    paymentstatus:string;
-    paymentref:string;
-    paymenttime:Date;
-    requestpaymenttime:Date;
-    machineId:string;
-    clientId:string;
-    transactionID:number;
-    qr:string;
-}
-
-export interface IMachineID extends IBase,IBC {
-    machineId:string;
-    machineIp:string;
-    machineCommands:string;
-    logintoken:string;
+export interface IVendingMachineBill extends IBase, IBC {
+    vendingsales: Array<IVendingMachineSale>;
+    totalvalue: number;
+    paymentmethod: string;
+    paymentstatus: string;
+    paymentref: string;
+    paymenttime: Date;
+    requestpaymenttime: Date;
+    machineId: string;
+    clientId: string;
+    transactionID: number;
+    qr: string;
 }
 
-export enum EMACHINE_COMMAND{
-    login='login'
+export interface IMachineID extends IBase, IBC {
+    machineId: string;
+    machineIp: string;
+    machineCommands: string;
+    logintoken: string;
 }
 
-export interface IMachineClientID{
+
+
+export interface IMachineClientID {
     otp: string;
     machineId: string;
     ownerUuid: string;
@@ -795,26 +990,28 @@ export interface IMachineClientID{
     data: Array<any>;
 }
 export enum EClientCommand {
-    list='list',
-    buyMMoney ='buyMMoney',
+    list = 'list',
+    buyMMoney = 'buyMMoney',
     confirmMMoney = 'confirmMMoney',
-    paidLAAB = 'paidLAAB'
+    paidLAAB = 'paidLAAB',
+    buyLAOQR = "buyLAOQR",
+    MACHINE_STATAUS = "MACHINE_STATAUS"
 }
-export interface IMachineId{
-    machineId:string;
-    otp:string;
-}
-
-export interface IAlive{
-    time:Date
-    isAlive:boolean;
-    test:boolean;
-    balance:number;
-    data:any;
+export interface IMachineId {
+    machineId: string;
+    otp: string;
 }
 
-export interface IClientId{
-    clientId:string;
+export interface IAlive {
+    time: Date
+    isAlive: boolean;
+    test: boolean;
+    balance: number;
+    data: any;
+}
+
+export interface IClientId {
+    clientId: string;
 }
 export interface IBillProcess {
     ownerUuid: string;
@@ -822,3 +1019,118 @@ export interface IBillProcess {
     position: number;
     bill: IVendingMachineBill;
 }
+
+
+export interface IBillProcessLocal {
+    transactionID: number;
+    machineId: string;
+    max: number;
+    position: number;
+    stock: IStock;
+}
+
+
+export interface ILockControlService extends ISerialService {
+    unlock(lockAddress: number): Promise<IResModel>;
+    readAllLockStatus(): Promise<IResModel>;
+    getFirmwareVersion(): Promise<IResModel>;
+}
+// Interface for machine status with typed fields where appropriate
+export interface IVMCMachineStatus {
+    packNo: number;                // Communication number (byte)
+    billStatus: number;            // Bill acceptor status (byte)
+    coinStatus: number;            // Coin acceptor status (byte)
+    cardStatus: number;            // Card reader status (byte)
+    tempControllerStatus: number;  // Temperature controller status (byte)
+    temperature: number;           // Temperature (byte)
+    doorStatus: number;            // Door status (byte)
+    billChange: number;            // Bill change (4 bytes as number)
+    coinChange: number;            // Coin change (4 bytes as number)
+    machineIMEI: string;           // Machine ID (10 bytes as hex string)
+    machineTemp: string;           // Machine temperature (8 bytes as hex string)
+    machineHumidity?: string;      // Machine humidity (8 bytes, optional)
+}
+
+/**
+ * Parses a hex string packet for command 0x52 into a machine status object.
+ * @param hexString Hex string representing the packet (e.g., "fafb522154...")
+ * @returns IMachineStatus object with parsed values
+ * @throws Error if packet is malformed or too short
+ */
+export function machineVMCStatus(hexString: string): IVMCMachineStatus {
+    // Remove any spaces or non-hex characters if present
+    const cleanHex = hexString.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+
+    // Minimum length check: header (4) + cmd (2) + len (2) + packNo (2) = 10 hex chars
+    if (cleanHex.length < 10) {
+        throw new Error("Packet too short");
+    }
+
+    // Verify header and command
+    if (cleanHex.substring(0, 4) !== "fafb" || cleanHex.substring(4, 6) !== "52") {
+        throw new Error("Invalid header or command");
+    }
+
+    // Extract length (1 byte, 2 hex chars)
+    const length = parseInt(cleanHex.substring(6, 8), 16);
+    const expectedDataLength = length * 2; // Length in hex chars
+    const packetEnd = 8 + expectedDataLength; // End of data before checksum
+
+    // Check if packet has enough data (including 2 chars for checksum)
+    if (cleanHex.length < packetEnd + 2) {
+        throw new Error(`Insufficient data: expected ${packetEnd + 2} chars, got ${cleanHex.length}`);
+    }
+
+    // Extract PackNO+Text (starts at offset 8)
+    const data = cleanHex.substring(8, packetEnd);
+
+    // Parse fields with bounds checking
+    const packNo = parseInt(data.substring(0, 2), 16);
+    const billStatus = parseInt(data.substring(2, 4), 16);
+    const coinStatus = parseInt(data.substring(4, 6), 16);
+    const cardStatus = parseInt(data.substring(6, 8), 16);
+    const tempControllerStatus = parseInt(data.substring(8, 10), 16);
+    const temperature = parseInt(data.substring(10, 12), 16);
+    const doorStatus = parseInt(data.substring(12, 14), 16);
+    const billChange = parseInt(data.substring(14, 22), 16) || 0; // Handle '00000000'
+    const coinChange = parseInt(data.substring(22, 30), 16) || 0; // Handle '00000000'
+    const machineIMEI = data.substring(30, 50); // 10 bytes = 20 hex chars
+
+    // Machine temperature (8 bytes = 16 hex chars)
+    let machineTemp = "";
+    let machineHumidity = undefined;
+    if (data.length >= 66) { // 50 + 16 = 66
+        machineTemp = data.substring(50, 66);
+        // Machine humidity (optional, 8 bytes = 16 hex chars)
+        if (data.length >= 82) { // 66 + 16 = 82
+            machineHumidity = data.substring(66, 82);
+        }
+    } else if (data.length >= 50) {
+        // Partial temp if truncated
+        machineTemp = data.substring(50);
+    }
+
+    return {
+        packNo,
+        billStatus,
+        coinStatus,
+        cardStatus,
+        tempControllerStatus,
+        temperature,
+        doorStatus,
+        billChange,
+        coinChange,
+        machineIMEI,
+        machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
+        machineHumidity, // Undefined if not present
+    };
+}
+export interface IBankNote {
+    value: number;
+    amount: number;
+    currency: string;
+    channel: number;
+    image: string;
+}
+
+// Example usage

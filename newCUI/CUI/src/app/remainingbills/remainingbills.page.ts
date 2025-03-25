@@ -195,6 +195,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       } else {
         console.log('serial not init');
         Toast.show({ text: 'serial not init for drop' })
+        await this.apiService.myTab1.connect();
       }
 
 

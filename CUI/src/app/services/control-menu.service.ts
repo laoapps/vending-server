@@ -27,6 +27,10 @@ export class ControlMenuService {
       status: true,
     },
     {
+      name: 'menu-showlaabtab',
+      status: true,
+    },
+    {
       name: 'menu-how-to',
       status: true,
     },
@@ -113,7 +117,7 @@ export class ControlMenuService {
     },
   ];
   CONTROL_MENU = new BehaviorSubject<Array<{ name: string, status: boolean }>>([]);
-  
+
   public static settingControlPageCheckboxs: NodeListOf<HTMLInputElement>;
   public static tab1PageLinks: NodeListOf<HTMLLinkElement>;
   public static stackCashoutPageLinks: NodeListOf<HTMLLinkElement>;
@@ -126,18 +130,16 @@ export class ControlMenuService {
       localStorage.setItem(this.localname, JSON.stringify(this.CONTROL_MENUList));
     } else {
       const list: Array<{ name: string, status: boolean }> = JSON.parse(local);
-      if (list != undefined && this.CONTROL_MENUList != undefined && list.length == this.CONTROL_MENUList.length)
-      {
+      if (list != undefined && this.CONTROL_MENUList != undefined && list.length == this.CONTROL_MENUList.length) {
         this.CONTROL_MENUList = list;
       }
-      else 
-      {
+      else {
         // when user was add new menu this function will auto update localstorage
         // old -> list
         // new -> menu list
 
         localStorage.setItem(this.localname, JSON.stringify(this.CONTROL_MENUList.filter(item => !list.includes(item))));
-        
+
       }
     }
   }
@@ -147,5 +149,5 @@ export class ControlMenuService {
     const status = list.filter(item => item.name == menu_name)[0]?.status;
     return status;
   }
-  
+
 }

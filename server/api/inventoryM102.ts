@@ -1,597 +1,385 @@
-import axios from 'axios';
-import { Router } from 'express';
-import * as WebSocketServer from 'ws';
-import { randomUUID } from 'crypto';
+import net from 'net';
+import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachineClientID, IReqModel, IResModel } from '../entities/system.model';
+import cryptojs from 'crypto-js';
+// console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
+export class SocketServerM102 {
+    server = net.createServer();
+    sclients = Array<net.Socket>();
+    ports = 31224;
 
-import { broadCast, PrintError, PrintSucceeded } from '../services/service';
-import { EClientCommand, EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID, IMachineID, IMMoneyQRRes, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale, IMMoneyLogInRes, IMMoneyGenerateQR, IMMoneyGenerateQRRes, IMMoneyConfirm, IBillProcess, IBaseClass } from '../entities/system.model';
-import moment from 'moment';
-import { v4 as uuid4 } from 'uuid';
-import { setWsHeartbeat } from 'ws-heartbeat/server';
-import { SocketServerM102 } from './socketServerM102';
-export class InventoryM102 implements IBaseClass {
-    // websocket server for vending controller only
-    wss: WebSocketServer.Server;
-    // socket server for vending controller only
-    ssocket: SocketServerM102 = {} as SocketServerM102;
+    private machineIds = new Array<IMachineClientID>();
 
-    stock = new Array<IStock>();
-    vendingOnSale = new Array<IVendingMachineSale>();
-    vendingBill = new Array<IVendingMachineBill>();
-    vendingBillPaid = new Array<IVendingMachineBill>();
-    clients = new Array<IMachineID>();
-    delayTime =7000;
-    path='/m102';
-    production=false;
-    public phonenumber =this.production? '2058623333':'2055220199'; //LTC
-    public walletId = this.production?'':'2351106808';// 
-    mmoneyusername='dbk';
-    mmoneypassword='dbk@2022';
-   
-    constructor(router: Router, wss: WebSocketServer.Server) {
-        this.ssocket = new SocketServerM102();
-        this.wss = wss;
-        this.initWs(wss);
+    constructor() {
         try {
+            //creates the server
 
-            router.get(this.path+'/', async (req, res) => {
-                console.log('TEST IS WORKING');
-                res.send({data:'test is working'})
+
+            //emitted when server closes ...not emitted until all connections closes.
+            this.server.on('close', function () {
+                console.log('Server closed !');
             });
 
-            router.post(this.path+'/', async (req, res) => {
-                const d = req.body as IReqModel;
-                try {
-                    console.log('POST Data', d);
+            // emitted when new client connects
+            const that = this;
+            this.server.on('connection', function (socket) {
+                //this property shows the number of characters currently buffered to be written. (Number of characters is approximately equal to the number of bytes to be written, but the buffer may contain strings, and the strings are lazily encoded, so the exact number of bytes is not known.)
+                //Users who experience large or growing bufferSize should attempt to "throttle" the data flows in their program with pause() and resume().
+
+                console.log('Buffer size : ' + socket.bufferSize);
+
+                console.log('---------server details -----------------');
+
+                var address = that.server.address() as net.AddressInfo;
+                var port = address?.port;
+                var family = address?.family;
+                var ipaddr = address?.address;
+                console.log('Server is listening at port' + port);
+                console.log('Server ip :' + ipaddr);
+                console.log('Server is IP4/IP6 : ' + family);
+
+                var lport = socket.localPort;
+                var laddr = socket.localAddress;
+                console.log('Server is listening at LOCAL port' + lport);
+                console.log('Server LOCAL ip :' + laddr);
+
+                console.log('------------remote client info --------------');
+
+                var rport = socket.remotePort;
+                var raddr = socket.remoteAddress;
+                var rfamily = socket.remoteFamily;
+
+                console.log('REMOTE Socket is listening at port' + rport);
+                console.log('REMOTE Socket ip :' + raddr);
+                console.log('REMOTE Socket is IP4/IP6 : ' + rfamily);
+
+                console.log('--------------------------------------------')
+                //var no_of_connections =  server.getConnections(); // sychronous version
+                that.server.getConnections(function (error, count) {
+                    console.log('Number of concurrent connections to the server : ' + count);
+                });
+
+                socket.setEncoding('utf8');
+                socket.setKeepAlive(true);
+                socket.setTimeout(30000, function () {
+                    // called after timeout -> same as socket.on('timeout')
+                    // it just tells that soket timed out => its ur job to end or destroy the socket.
+                    // socket.end() vs socket.destroy() => end allows us to send final data and allows some i/o activity to finish before destroying the socket
+                    // whereas destroy kills the socket immediately irrespective of whether any i/o operation is goin on or not...force destry takes place
+                    console.log('Socket timed out');
+                    socket.end();
+                });
 
 
+                socket.on('data', function (data) {
+                    try {
+                        var bread = socket.bytesRead;
+                        var bwrite = socket.bytesWritten;
+                        console.log('DATA Bytes read : ' + bread);
+                        console.log('DATA Bytes written : ' + bwrite);
+                        // console.log('Data sent to server : ' + data);
+                        console.log('DATA  sent to server : ' + data.toString());
+                        const l = data.toString().substring(0, data.toString().length - 1)
+                        const d = JSON.parse(l) as IReqModel;
 
-
-                    if (d.command == EClientCommand.confirmMMoney) {
-                        console.log('CB COMFIRM', d);
-                        const c = d.data as IMMoneyConfirm;
-                        // c.wallet_ids
-                        this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
-                            res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
-                        }).catch(e => {
-                            console.log('error confirmMMoney');
-                            res.send(PrintError(d.command, e, EMessage.error));
-                        })
-                    }
-                    // if (d.command == 'test') {
-                    //     console.log('CB COMFIRM test', d);
-                    //     if (!d.data.p || !d.data.machineId) throw new Error('Test cofirm failed')
-                    //     this.callBackConfirmTest(d.data.p, d.data.machineId).then(r => {
-                    //         return res.send(PrintSucceeded(d.command, { bill: r, transactionID: 'test' }, EMessage.succeeded));
-                    //     }).catch(e => {
-                    //         return res.send(PrintError(d.command, e, EMessage.error));
-                    //     })
-                    //     return;
-                    // }
-                    else {
-                        const clientId = d.data.clientId;
-                        let loggedin = false;
-                        // console.log(' WS client length', this.wss.clients);
-
-                        this.wss.clients.forEach(v => {
-                            console.log('WS CLIENT ID', v['clientId'], '==>' + clientId);
-
-                            if (v['clientId'] == clientId)
-                                loggedin = true;
-                        })
-                        if (!loggedin) throw new Error(EMessage.notloggedinyet);
-
-                        else if (d.command == EClientCommand.list) {
-                            return res.send(PrintSucceeded(d.command, this.vendingOnSale, EMessage.succeeded));
-                        } else if (d.command == EClientCommand.buyMMoney) {
-                            const sale = d.data.ids as Array<IVendingMachineSale>; // item id
-                            const machineId = this.ssocket.findMachineIdToken(d.token);
-                            // const position = d.data.position;
-                            if (!machineId) throw new Error('Invalid token');
-                            if (!Array.isArray(sale)) throw new Error('Invalid array id');
-                            // console.log('this.vendingOnSale', this.vendingOnSale);
-                            const checkIds = Array<IVendingMachineSale>();
-
-                            sale.forEach(v => {
-                                // v.stock.qtty=1;
-                                const x = this.vendingOnSale.find(vx => {
-                                    if (
-                                        // !checkIds.length &&
-                                        vx.stock.id + '' == v.stock.id + '' &&
-                                        vx.position == v.position
-                                        // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                        // && vx.stock.qtty > 0
-                                    ) {
-                                        return true;
+                        console.log('DATA  total connection', that.sclients.length);
+                        if (d.command == EMACHINE_COMMAND.login) {
+                            const token = d.token;
+                            const x = that.findMachineIdToken(token);
+                            if (x) {
+                                // console.log('DATA found machine id');
+                                socket['machineId'] = x;
+                                const mx = that.sclients.filter(v => {
+                                    const m = v['machineId'] as IMachineClientID;
+                                    if (m) {
+                                        if (m.machineId == x.machineId) return true;
                                     }
-                                    // else if (vx.stock.qtty > 0
-                                    //     && vx.stock.id + '' == v.stock.id + ''
-                                    //     && vx.position == v.position
-                                    //     // && vx.stock.qtty >= v.stock.qtty // base on machine stock
-                                    //     // && vx.stock.qtty > 0
-                                    //     // && checkIds.filter(vy => vy.stock.id + '' == v.stock.id + '').reduce((a, b) => {
-                                    //     //     return a + b.stock.qtty;
-                                    //     // }, 0) <= vx.stock.qtty
-                                    //     ) {
-                                    //     return true;
-                                    // }
+                                    return false;
+                                })
+
+                                if (!mx.length) {
+                                    that.sclients.push(socket);
+                                    console.log('DATA machine exist and accepted');
+                                } else if (mx.length) {
+                                    console.log('DATA duplicated connection', mx.length);
+                                    mx.forEach(v => v.end())
+                                    socket.end();
+                                    // allow new connection only
+                                    console.log('DATA terminate all connection and restart');
+                                    return;
+                                }
+                                return;
+                            } else {
+                                console.log('DATA  not exist machine id ');
+                                socket.end();
+                                return;
+                            }
+
+                        } else if (d.command == EMACHINE_COMMAND.ping) {
+                            console.log('DATA command ping');
+                            const token = d.token;
+                            const x = that.findMachineIdToken(token);
+                            if (!x) {
+                                console.log('DATA ping not found token');
+                                socket.end();
+
+                            } else {
+                                console.log('DATA ping found token');
+                                const mx = that.sclients.filter(v => {
+                                    const m = v['machineId'] as IMachineClientID;
+                                    if (m) {
+                                        if (m.machineId == x.machineId) return true;
+                                    }
                                     return false;
                                 });
-                                if (x) {
-                                    const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
-                                    y.stock.qtty = 1;
-                                    checkIds.push(y);
+                                if (mx.length > 1) {
+                                    mx.forEach(v => v.end());
+                                    socket.end();
+                                    console.log('DATA ping duplicated !');
+                                    return;
+                                } else if (!mx.length) {
+                                    socket.end();
+                                    console.log('DATA re-login PLEASE!');
+                                    return;
                                 }
+                                return;
+                            }
+                        } else if (d.command == EMACHINE_COMMAND.status) {
+                            // console.log('DATA show status here', d.command, d.token, d.data);
+                            const token = d.token;
+                            const x = that.findMachineIdToken(token);
+                            if (x) {
+                                console.log('DATA ping found token');
+                                const mx = that.sclients.filter(v => {
+                                    const m = v['machineId'] as IMachineClientID;
+                                    if (m) {
+                                        return m.machineId == x.machineId
+                                    }
+                                    return false;
+                                });
+                                if (mx.length > 1) {
+                                    mx.forEach(v => v.end());
+                                    socket.end();
+                                    console.log('DATA duplicated !');
+                                    return;
+                                } else if (!mx.length) {
+                                    socket.end();
+                                    console.log('DATA re-login PLEASE!');
+                                    return;
+                                }
+                                // console.log('DATA  Update status here ');
 
-                                // return false;
-                            })
-
-                            // console.log('checkIds', checkIds, 'ids', sale);
-
-                            // if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
-
-                            const value = checkIds.reduce((a, b) => {
-                                return a + (b.stock.price * b.stock.qtty);
-                            }, 0);
-                            // console.log('qtty', checkIds);
-                            // console.log('ids', sale.length);
-
-                            console.log(' value' + d.data.value + ' ' + value);
-
-                            if (Number(d.data.value) != value) throw new Error('Invalid value' + d.data.value + ' ' + value);
-
-                            const transactionID = new Date().getTime();
-                            const qr = await this.generateBillMMoney(value, transactionID + '');
-                            if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
-                            const bill = {
-                                uuid: uuid4(),
-                                clientId,
-                                qr: qr.qrCode,
-                                transactionID,
-                                machineId: machineId.machineId,
-                                hashM: '',
-                                hashP: '',
-                                paymentmethod: d.command,
-                                paymentref: qr.name,
-                                paymentstatus: 'pending',
-                                paymenttime: new Date(),
-                                requestpaymenttime: new Date(),
-                                totalvalue: value,
-                                vendingsales: sale
-                            };
-                            this.vendingBill.push(bill);
-
-                             res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
-                        } else {
-                             res.send(PrintError(d.command, [], EMessage.notsupport));
-                        }
-                    }
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError(d.command, error, EMessage.error));
-                }
-            });
-
-
-
-            /// 0. init for demo 
-
-            router.get(this.path+'/init', async (req, res) => {
-                try {
-                    const machineId = req.query['machineId'];
-                    if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline)
-                    this.init(machineId + '');
-
-                    res.send(PrintSucceeded('init', this.vendingOnSale, EMessage.succeeded));
-                } catch (error: any) {
-                    console.log(error);
-                    res.send(PrintError('init', error, error.message));
-                }
-            });
-            router.get(this.path+'/refresh', async (req, res) => {
-                try {
-                    this.wss.clients.forEach(v=>{
-                        if(v.OPEN){
-                            v.send(JSON.stringify(PrintSucceeded('refresh',true , EMessage.succeeded)));
-                        }
-                    })
-
-                    res.send(PrintSucceeded('refresh', true, EMessage.succeeded));
-                } catch (error: any) {
-                    console.log(error);
-                    res.send(PrintError('init', error, error.message));
-                }
-            });
-            router.get(this.path+'/getPaidBills', async (req, res) => {
-                try {
-                    res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError('init', error, EMessage.error));
-                }
-            });
-            router.get(this.path+'/getBills', async (req, res) => {
-                try {
-                    res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError('init', error, EMessage.error));
-                }
-            });
-            router.get(this.path+'/getOnlineMachines', async (req, res) => {
-                try {
-                    console.log(' WS getOnlineMachines');
-                    res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError('init', error, EMessage.error));
-                }
-            });
-
-
-            router.get(this.path+'/submit_command', async (req, res) => {
-                try {
-                    const machineId = req.query['machineId'] + '';
-                    const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
-                    console.log(' WS submit command', machineId, position);
-
-                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError('init', error, EMessage.error));
-                }
-            });
-        } catch (error) {
-            console.log(error);
-
-        }
-
-    }
-
-    confirmMMoneyOder(c: IMMoneyConfirm) {
-        return new Promise<any>((resolve, reject) => {
-            // c.wallet_ids
-            this.callBackConfirm(c.tranid_client,Number(c.amount)).then(r => {
-                return { bill: r, transactionID: c.tranid_client };
-            }).catch(e => {
-                console.log('error confirmMMoney');
-                return e;
-            })
-        })
-
-    }
-    init(machineId: string) {
-        this.stock = [];
-        this.vendingOnSale = [];
-        try {
-            this.stock.push(...[{
-                id: 0,
-                name: 'Coke can 330ml',
-                image: 'cokecan.jpg'
-                ,
-                price: 9000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-            }, {
-                id: 1,
-                name: 'Pepsi can 330ml',
-                image: 'pepsican.jpeg'
-                ,
-                price: 9000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-
-            }, {
-                id: 2,
-                name: 'Oishi green tea 450ml',
-                image: 'oishiteabottle.png'
-                ,
-                price: 12000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-            }
-                , {
-                id: 3,
-                name: 'Chinese tea 330ml',
-                image: 'chineseteacan.jpg',
-                price: 8000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-
-            }
-                , {
-                id: 4,
-                name: 'Water tiger head 380ml',
-                image: 'tigerheadbottle.png',
-                price: 9000,
-                qtty: 1,
-                hashP: '',
-                hashM: ''
-            }]
-            );
-            let x = 5;
-            let y = 0;
-            
-            const exception =new Array<number>();
-            new Array(60).fill(0).forEach((v, i) => {
-                const c = x > i ? i : (i - (x * y) - 1);
-                !(i % x) && i >= x ? y++ : '';
-                if(!exception.includes(i))
-                this.vendingOnSale.push({
-                    machineId,
-                    stock: this.stock[c],
-                    position: i, // for M102
-                    hashP: '',
-                    hashM: '',
-                    max:5
-                })
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    generateBillMMoney(value: number, transactionID: string) {
-        return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
-            // generate QR from MMoney
-            this.loginMmoney().then(r => {
-                if (r) {
-                    const qr = {
-                        amount: value+'',
-                        phonenumber: this.production?this.phonenumber:'2055516321',// '2055220199',
-                        transactionID
-                    } as IMMoneyGenerateQR;
-
-                    axios.post<IMMoneyGenerateQRRes>('https://qr.mmoney.la/test/generateQR',
-                        qr,
-                        { headers: { 'mmoney-token': this.mMoneyLoginRes.token } }).then(rx => {
-                            // console.log(r);
-                            if (rx.status) {
-                                resolve(rx.data as IMMoneyGenerateQRRes);
+                                return;
                             } else {
-                                reject(new Error(rx.statusText));
+                                socket.end();
+
+                                console.log('DATA  not exist machine id ');
+                                return;
                             }
+                        } else if (Object.keys(EZDM8_COMMAND).includes(d.command)) {
+                            console.log('DATA response from the machine');
+                            console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
 
-                        }).catch(e => {
-                            reject(e)
-                        });
-                } else {
-                    reject(new Error(EMessage.loginfailed))
-                }
-
-            }).catch(e => {
-                console.log(e);
-                reject(e);
-            })
-
-        })
-    }
-    mMoneyLoginRes = {} as IMMoneyLogInRes;
-    loginMmoney() {
-        const username = this.production?this.mmoneyusername:'test';
-        const password = this.production?this.mmoneypassword:'12345';
-        return new Promise<IMMoneyLogInRes>((resolve, reject) => {
-            try {
-                if (this.mMoneyLoginRes.expiresIn) {
-                    if (new Date(this.mMoneyLoginRes.expiresIn).getTime() > new Date().getTime()) {
-                        return resolve(this.mMoneyLoginRes);
-                    }
-                }
-                axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
-                    // console.log(r);
-                    if (r.status) {
-                        this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
-                        this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT' + this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(), 'milliseconds') + '';
-                        resolve(this.mMoneyLoginRes);
-                    } else {
-                        reject(new Error(EMessage.loginfailed));
-                    }
-
-                }).catch(e => {
-                    reject(e)
-                });
-            } catch (error) {
-                console.log(error);
-
-            }
-
-        })
-    }
-    // callBackConfirmTest(position: Array<number>, machineId: string) {
-    //     return new Promise<IVendingMachineBill>((resolve, reject) => {
-    //         try {
-    //             position.forEach((p, i) => {
-    //                 this.wss.clients.forEach(v => {
-    //                     setTimeout(() => {
-    //                         const position = this.ssocket.processOrder(machineId, p, -1);
-    //                         const res = {} as IResModel;
-    //                         res.command = EMACHINE_COMMAND.confirm;
-    //                         res.message = EMessage.confirmsucceeded;
-    //                         res.status = 1;
-    //                         res.data = { bill: null, position } as unknown as IBillProcess;
-    //                         v.send(JSON.stringify(res));
-    //                     }, 3000 * i);
-    //                 })
-    //             })
-    //             resolve({} as IVendingMachineBill);
-    //         } catch (error) {
-    //             console.log(error);
-    //             reject(error);
-    //         }
-    //     })
-    // }
-    callBackConfirm(transactionID: string, amount: number) {
-        return new Promise<IVendingMachineBill>((resolve, reject) => {
-            try {
-                console.log('transactionID', transactionID, 'value', amount);
-
-                const bill = this.vendingBill.find(v => v.transactionID + '' == transactionID && v.totalvalue == amount);
-                if (!bill) throw new Error(EMessage.billnotfound);
-                bill.paymentstatus = 'paid';
-                bill.paymentref = '';
-                bill.paymenttime = new Date();
-
-                const cbill = bill.vendingsales.length;
-                bill.vendingsales.forEach((p, i) => {
-                    let x ='';
-                    let y :WebSocketServer.WebSocket=null as any;
-                    this.wss.clients.forEach(v => {
-                         x = v['clientId'] as string;
-                         if (x) {
-                            if (x == bill.clientId) {
-                               y=v;
-                            }
+                            return;
                         }
-                    })
-                   if(y){
-                    this.setTask(bill,p,y,cbill,i).then(()=>{
-                        if(i==bill.vendingsales.length-1){
-                            resolve(bill);
-                        }
-                    })
-                  
-                   }
-                })
-                
-                
-            } catch (error) {
-                console.log(error);
-                reject(error);
-            }
+                        socket.end();
 
-        })
-
-    }
-    setTask(bill:IVendingMachineBill,p:IVendingMachineSale,y:WebSocketServer.WebSocket,cbill:number,i:number){
-        return new Promise<any>((resolve,reject)=>{
-            setTimeout(() => {
-                const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
-                const res = {} as IResModel;
-                res.command = EMACHINE_COMMAND.confirm;
-                res.message = EMessage.confirmsucceeded;
-                res.status = 1;
-                // const ids = bill.vendingsales.map(v => v.stock.id);
-                // bill.vendingsales.forEach(v => {
-                //     const x = this.vendingOnSale.find(vx => vx.stock.id == v.stock.id && v.position == vx.position);
-                //     if (x)
-                //         x.stock.qtty--;
-                // });
-                res.data = { bill, position } as unknown as IBillProcess;
-                y.send(JSON.stringify(res), e => {
-                    if (e) console.log(e);
-                    if (i + 1 >= cbill) {
-                        const x = this.vendingBill.findIndex(x => x.uuid == bill.uuid);
-                        if (x != -1) {
-                            const y = this.vendingBill.splice(x, 1);
-                            this.vendingBillPaid.push(...y)
-                        }
+                    } catch (e) {
+                        console.log('wrong data', data, e);
                     }
                 });
-            }, this.delayTime * i);
-            resolve(true);
-        })
-       
-    }
-    checkMachineId(machineId: string): IMachineClientID | null {
-        const x = this.ssocket.sclients.find(v => {
-            const x = v['machineId'] as IMachineClientID;
-            if (x) {
-                return x.machineId == machineId;
-            }
-            return false;
-        });
-        if (x) return x['machineId'] as IMachineClientID;
-        return null;
 
-    }
-    initWs(wss: WebSocketServer.Server) {
-        try {
-           
-            setWsHeartbeat(wss, (ws, data, binary) => {
-                console.log('WS HEART BEAT');
-
-                if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping',production:this.production }, EMessage.succeeded)));
-                }
-            }, 15000);
-
-            wss.on('connection', (ws: WebSocket) => {
-                console.log('WS M102');
-                console.log(' WS new connection ', ws.url);
-
-                console.log(' WS current connection is alive', ws['isAlive'])
-
-                ws.onopen = (ev: Event) => {
-                    console.log(' WS open', ev);
-                }
-
-                // ws['isAlive'] = true;
-                ws.onclose = (ev: CloseEvent) => {
-
-                }
-                ws.onerror = (ev: Event) => {
-                    console.log(' WS error', ev);
-                }
-
-                //connection is up, let's add a simple simple event
-                ws.onmessage = async (ev: MessageEvent) => {
-                    let d: IReqModel = {} as IReqModel;
-                    // ws['isAlive'] = true;
+                socket.on('drain', function () {
                     try {
-                        console.log(' WS comming', ev.data.toString());
+                        console.log('write buffer is empty now .. u can resume the writable stream');
+                        socket.resume();
+                    } catch (error) {
+                        console.log(error);
 
-                        d = JSON.parse(ev.data.toString()) as IReqModel;
-
-                        const res = {} as IResModel
-                        if (d.command == EMACHINE_COMMAND.login) {
-                            res.command = d.command;
-                            res.message = EMessage.loginok;
-                            res.status = 1;
-                            if (d.token) {
-                                const x = d.token as string;
-                                console.log(' WS online machine', this.ssocket.listOnlineMachine());
-                                let machineId = this.ssocket.findMachineIdToken(x)
-
-                                if (!machineId) throw new Error('machine is not exit');
-                                ws['machineId'] = machineId.machineId;
-                                ws['clientId'] = uuid4();
-                                res.data = { clientId: ws['clientId'] };
-                                return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
-
-                            } else throw new Error(EMessage.MachineIdNotFound)
-                        } else if (d.command == 'ping') {
-                            console.log('WS PING');
-                            return ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
-
-                        }
-                        console.log('WS CLOSE');
-                        ws.close();
-
-
-
-                    } catch (error: any) {
-                        console.log(' WS error', error);
-                        ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
                     }
-                }
+
+                });
+
+                socket.on('error', function (error) {
+                    try {
+                        console.log('Error : ' + error);
+                        if (!socket.closed)
+                            socket.end();
+                    } catch (error) {
+                        console.log(error);
+
+                    }
+
+                });
+
+                // socket.on('timeout', function () {
+                //     console.log('Socket timed out !');
+                //     socket.end('Timed out!');
+                //     // can call socket.destroy() here too.
+                //     if (!socket.closed)
+                //         socket.end();
+                // });
+
+                socket.on('end', function (data) {
+                    console.log('End data : ' + data);
+                });
+
+                socket.on('close', function (error) {
+                    try {
+                        var bread = socket.bytesRead;
+                        var bwrite = socket.bytesWritten;
+                        console.log('CLOSING Bytes read : ' + bread);
+                        console.log('CLOSING Bytes written : ' + bwrite);
+                        console.log(' CLOSING Socket closed!');
+                        if (error) {
+                            console.log('CLOSING Socket was closed coz of transmission error');
+                        }
+                        const x = that.sclients.findIndex(v => {
+                            if (v) {
+                                const x = v['machineId'] as IMachineClientID;
+                                console.log(' machineId', socket['machineId'], x);
+
+                                if (x.machineId + '' == socket['machineId'].machineId + '') return true;
+                            }
+                            return false;
+                        });
+                        console.log('CLOSING delete x +', x, that.sclients.length);
+                        if (x > -1) {
+                            that.sclients.splice(x, 1);
+                        }
+
+                        console.log('delete x -', x, that.sclients.length);
+                    } catch (error) {
+                        console.log('Close error', error);
+
+                    }
+
+
+                });
+
+                // setTimeout(function () {
+                //     var isdestroyed = socket.destroyed;
+                //     console.log('Socket destroyed:' + isdestroyed);
+                //     
+                // }, 1200000);
 
             });
+
+            // emits when any error occurs -> calls closed event immediately after this.
+            this.server.on('error', function (error) {
+                console.log('Error: ' + error);
+            });
+
+            //emits when server is bound with server.listen
+            this.server.on('listening', function () {
+                console.log('Server is listening!');
+            });
+
+            // this. server.maxConnections = 10;
+            // for dyanmic port allocation
+            this.server.listen(this.ports, function () {
+                var address = that.server.address() as net.AddressInfo;
+                var port = address.port;
+                var family = address.family;
+                var ipaddr = address.address;
+                console.log('Server is listening at port' + port);
+                console.log('Server ip :' + ipaddr);
+                console.log('Server is IP4/IP6 : ' + family);
+            });
+
+
+
+            var islistening = this.server.listening;
+
+            if (islistening) {
+                console.log('Server is listening');
+            } else {
+                console.log('Server is not listening');
+            }
+        } catch (error) {
+            console.log(error);
+
+        }
+
+    }
+    findMachineId(machineId: string) {
+        try {
+            return this.machineIds.find(v => v.machineId == machineId);
+        } catch (error) {
+            console.log(error);
+
+        }
+
+    }
+    findMachineIdToken(token: string) {
+        try {
+            return this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
+
         } catch (error) {
             console.log(error);
 
         }
     }
-    close(){
-        this.wss.close();
-        this.ssocket.server.close();
-        this.ssocket.sclients.forEach(v => {
-            v.destroy();
-          });
+    listOnlineMachine() {
+        try {
+            console.log('count online machine', this.sclients.length);
+
+            return this.sclients.map(v => {
+                const x = v['machineId'] as IMachineClientID;
+                return x;
+            });
+        } catch (error) {
+            console.log(error);
+
+        }
+
     }
+    findOnlneMachine(machineId: string) {
+        try {
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
+                if (x) {
+                    return x.machineId == machineId;
+                }
+                return false;
+            });
+            return x;
+        } catch (error) {
+            console.log(error);
+
+        }
+
+    }
+    processOrder(machineId: string, position: number, transactionID: string) {
+        try {
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
+                if (x) {
+                    return x.machineId == machineId;
+                }
+                return false;
+            });
+            if (position < 0 || position > 99 || Number.isNaN(position))
+                return { position, status: x };
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EZDM8_COMMAND.shippingcontrol
+                res.message = EMessage.processingorder;
+                res.transactionID = transactionID + '';
+                res.status = 1;
+                res.data = { slot: position };
+                // console.log('writing...', x['machineId']);
+                return { position, status: x.write(JSON.stringify(res) + '\n') };
+            } else {
+                console.log('client id socket not found');
+                const data = `${machineId}-${position}-${transactionID}`
+                return { position, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+            }
+        } catch (error: any) {
+            console.log('client id socket not found');
+            return { position, status: false, message: error.message };
+        }
+
+    }
+
+
 }
-
-

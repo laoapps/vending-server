@@ -7,7 +7,7 @@ export class SocketServerM102 {
     sclients = Array<net.Socket>();
     ports = 31224;
 
-    private machineIds=new  Array<IMachineClientID> ();
+    private machineIds = new Array<IMachineClientID>();
 
     constructor() {
         try {
@@ -78,7 +78,7 @@ export class SocketServerM102 {
                         console.log('DATA Bytes written : ' + bwrite);
                         // console.log('Data sent to server : ' + data);
                         console.log('DATA  sent to server : ' + data.toString());
-                        const l=data.toString().substring(0,data.toString().length-1)
+                        const l = data.toString().substring(0, data.toString().length - 1)
                         const d = JSON.parse(l) as IReqModel;
 
                         console.log('DATA  total connection', that.sclients.length);
@@ -175,11 +175,11 @@ export class SocketServerM102 {
                                 console.log('DATA  not exist machine id ');
                                 return;
                             }
-                        }else if(Object.keys(EZDM8_COMMAND).includes(d.command)){
+                        } else if (Object.keys(EZDM8_COMMAND).includes(d.command)) {
                             console.log('DATA response from the machine');
                             console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
-                            
-                                return ;
+
+                            return;
                         }
                         socket.end();
 
@@ -306,19 +306,19 @@ export class SocketServerM102 {
             return this.machineIds.find(v => v.machineId == machineId);
         } catch (error) {
             console.log(error);
-            
+
         }
-       
+
     }
     findMachineIdToken(token: string) {
         try {
             return this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
-   
+
         } catch (error) {
             console.log(error);
-            
+
         }
-   }
+    }
     listOnlineMachine() {
         try {
             console.log('count online machine', this.sclients.length);
@@ -329,9 +329,9 @@ export class SocketServerM102 {
             });
         } catch (error) {
             console.log(error);
-            
+
         }
-       
+
     }
     findOnlneMachine(machineId: string) {
         try {
@@ -345,11 +345,11 @@ export class SocketServerM102 {
             return x;
         } catch (error) {
             console.log(error);
-            
+
         }
-        
+
     }
-    processOrder(machineId: string, position: number, transactionID: number) {
+    processOrder(machineId: string, position: number, transactionID: string) {
         try {
             const x = this.sclients.find(v => {
                 const x = v['machineId'] as IMachineClientID;
@@ -359,24 +359,24 @@ export class SocketServerM102 {
                 return false;
             });
             if (position < 0 || position > 99 || Number.isNaN(position))
-                return { position, status: x};
+                return { position, status: x };
             if (x) {
                 const res = {} as IResModel;
                 res.command = EZDM8_COMMAND.shippingcontrol
                 res.message = EMessage.processingorder;
-                res.transactionID = transactionID;
+                res.transactionID = transactionID + '';
                 res.status = 1;
                 res.data = { slot: position };
                 // console.log('writing...', x['machineId']);
-                return { position, status: x.write(JSON.stringify(res)+'\n') };
+                return { position, status: x.write(JSON.stringify(res) + '\n') };
             } else {
                 console.log('client id socket not found');
                 const data = `${machineId}-${position}-${transactionID}`
-                return { position, status: x ,message:'Error machineID not found '+data+'--'+JSON.stringify(this.sclients)};
+                return { position, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
             }
-        } catch (error:any) {
+        } catch (error: any) {
             console.log('client id socket not found');
-            return { position, status: false ,message:error.message};
+            return { position, status: false, message: error.message };
         }
 
     }

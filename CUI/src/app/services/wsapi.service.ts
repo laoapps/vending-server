@@ -20,7 +20,7 @@ export class WsapiService {
   machineId: string;
   otp: string;
 
-  eventEmmiter= new EventEmitter();
+  eventEmmiter = new EventEmitter();
 
   public balanceUpdateSubscription = new BehaviorSubject<number>(0);
   public loginSubscription = new BehaviorSubject<IClientId>(null);
@@ -34,12 +34,12 @@ export class WsapiService {
   // vsales=new Array<IVendingMachineSale>();
   constructor(
     private cashingService: AppcachingserviceService,
-    
+
   ) {
   }
-  onBillProcess(cb:(data)=>void){
-    if(cb){
-      this.eventEmmiter.on('billProcess',cb);
+  onBillProcess(cb: (data: any) => void) {
+    if (cb) {
+      this.eventEmmiter.on('billProcess', cb);
     }
   }
   connect(url: string, machineId: string, otp: string) {
@@ -78,81 +78,82 @@ export class WsapiService {
     this.webSocket.onerror = (ev) => {
       console.log('ERROR', ev);
       // this.retry = setInterval(() => {
-        setTimeout(() => {
-          // clearInterval(this.retries);
-          // this.retry = null;
-          this.connect(url, machineId, otp);
+      setTimeout(() => {
 
-        }, 5000);
+        // clearInterval(this.retries);
+        // this.retry = null;
+        this.connect(url, machineId, otp);
+
+      }, 5000);
 
       // }, 5000)
     }
     this.webSocket.onmessage = async (ev) => {
       try {
         const res = JSON.parse(ev.data) as IResModel;
-      if (res) {
+        if (res) {
 
-        const data = res.data;
-        // console.log('COMMING DATA', res);
-        switch (res.command) {
-          case 'ping':
+          const data = res.data;
+          // console.log('COMMING DATA', res);
+          switch (res.command) {
+            case 'ping':
 
-            // control version
-            
+              // control version
 
 
-            console.log('Ping');
-            // { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
-            this.setting_allowCashIn = res.data.setting.allowCashIn;
-            this.setting_allowVending = res.data.setting.allowVending;
-            this.aliveSubscription.next({test:data?.test,data,balance:Number(data.balance)} as IAlive);
-            break;
-          case 'confirm':
-            data.transactionID=res.transactionID;
-            console.log('confirm', data);
-            // this.billProcessSubscription.next(data);
-            this.eventEmmiter.emit('billProcess',data);
-            break;
-            
-          case 'waitingt':
-            console.log('Start waiting');
-            this.waitingDelivery.next(data)
-            break;
-            
-          case 'login':
-            if (data.data)
-            console.log('LOGIN',data);
-            
+
+              console.log('Ping');
+              // { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
+              this.setting_allowCashIn = res.data.setting.allowCashIn;
+              this.setting_allowVending = res.data.setting.allowVending;
+              this.aliveSubscription.next({ test: data?.test, data, balance: Number(data.balance) } as IAlive);
+              break;
+            case 'confirm':
+              data.transactionID = res.transactionID;
+              console.log('confirm', data);
+              // this.billProcessSubscription.next(data);
+              this.eventEmmiter.emit('billProcess', data);
+              break;
+
+            case 'waitingt':
+              console.log('Start waiting');
+              this.waitingDelivery.next(data)
+              break;
+
+            case 'login':
+              if (data.data)
+                console.log('LOGIN', data);
+
               this.loginSubscription.next(data.data)
-            break;
+              break;
 
-          case 'CREDIT_NOTE':
-            console.log(`credit note la der`);
-            this.balanceUpdateSubscription.next(data);
+            case 'CREDIT_NOTE':
+              console.log(`credit note la der`);
+              this.balanceUpdateSubscription.next(data);
 
-            break;
-          case 'refresh':
-            console.log(`en`);
-            this.refreshSubscription.next(data);
-            break;
+              break;
+            case 'refresh':
+              console.log(`en`);
+              this.refreshSubscription.next(data);
+              break;
 
-          case 'resetCashing':
-            await this.resetCashing();
-            break;
+            case 'resetCashing':
+              await this.resetCashing();
+              break;
 
-          // query today bill
-          // query all bills
-          // query today refill
-          // query all refill
-          default:
-            break;
+            // query today bill
+            // query all bills
+            // query today refill
+            // query all refill
+            default:
+              break;
+          }
         }
-      }
       } catch (error) {
-        console.log('WS MESSAGE',error);
-        
+        console.log('WS MESSAGE', error);
+
       }
-      
+
     }
   }
   send(data: IReqModel | IResModel) {
@@ -199,7 +200,7 @@ export class WsapiService {
   }
 
   resetCashing(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         const ownerUuid = localStorage.getItem('machineId');
         if (ownerUuid) {
@@ -208,11 +209,11 @@ export class WsapiService {
           window.location.reload();
         }
 
-         resolve(IENMessage.success);
+        resolve(IENMessage.success);
       } catch (error) {
- 
+
         resolve(error.message);
       }
-    }); 
+    });
   }
 }

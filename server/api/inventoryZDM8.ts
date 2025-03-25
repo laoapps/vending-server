@@ -36,6 +36,8 @@ import {
     readMachinePendingStock,
     writeMachineLockDrop,
     readMachineLockDrop,
+    findPhoneNumberByUuidOnUserManager,
+    generateTokenOnUserManager,
 } from "../services/service";
 import {
     EClientCommand,
@@ -70,6 +72,7 @@ import {
     ILoadVendingMachineSaleBillReport,
     IMMoneyGenerateQRPro,
     ILoadVendingMachineStockReport,
+    ILaoQRGenerateQRRes,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import { stringify, v4 as uuid4 } from "uuid";
@@ -96,6 +99,7 @@ import {
 import {
     MachineClientID,
     MachineClientIDFactory,
+    MachineClientIDModel,
 } from "../entities/machineclientid.entity";
 import { StockFactory } from "../entities/stock.entity";
 import { VendingMachineSaleFactory } from "../entities/vendingmachinesale.entity";
@@ -117,6 +121,8 @@ import { CashinValidationFunc } from "../laab_service/controllers/vendingwallet_
 import { FranchiseStockFactory, FranchiseStockStatic } from "../entities/franchisestock.entity";
 import { MmoneyTransferValidationFunc } from "../laab_service/controllers/vendingwallet_client/funcs/mmoneyTransferValidation.func";
 import { IVendingWalletType } from "../laab_service/models/base.model";
+import { log } from "console";
+import { channel } from "diagnostics_channel";
 export class InventoryZDM8 implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
@@ -182,13 +188,6 @@ export class InventoryZDM8 implements IBaseClass {
     pathMMoneyConfirm = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';
     pathMMoneyInquiry = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
     pathMMoneyRequest = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/request-cash-in.service';
-
-
-
-
-
-
-
 
 
     checkMachineIdToken(req: Request, res: Response, next: NextFunction) {
@@ -379,9 +378,10 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log(error);
                             res.send(PrintError("init", error, EMessage.error, null));
                         }
-                    }
-                    else {
+                    } else {
                         const clientId = d.data.clientId + "";
+                        console.log('=====>Client ID', clientId);
+
                         let loggedin = false;
                         // console.log(' WS client length', this.wss.clients);
 
@@ -521,7 +521,146 @@ export class InventoryZDM8 implements IBaseClass {
                                 redisClient.setEx(qr.qrCode + EMessage.BillCreatedTemp, 60 * 3, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
-                        } else {
+                        } else if (d.command == EClientCommand.buyLAOQR) {
+                            console.log("=====>buyLAOQR" + JSON.stringify(d.data));
+
+                            const sale = d.data.ids as Array<IVendingMachineSale>; // item id
+                            const machineId = this.ssocket.findMachineIdToken(d.token);
+                            console.log('machineId', machineId);
+
+                            // const position = d.data.position;
+                            if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
+                            // throw new Error("Invalid token");
+                            console.log(" passed token", machineId);
+                            if (!Array.isArray(sale)) throw new Error("Invalid array id");
+                            // console.log(' sale is  id', sale);
+                            if (await this.isMachineDisabled(machineId.machineId)) return res.send(PrintError(d.command, [], EMessage.machineisdisabled, null));
+                            // throw new Error("machine was disabled");
+
+                            // console.log(' machine was enabled', sale);
+                            const checkIds = Array<IVendingMachineSale>();
+                            sale.forEach((v) => {
+                                v.stock.qtty = 1;
+                                const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
+                                y.stock.qtty = 1;
+                                y.stock.image = "";
+                                y.machineId = machineId.machineId
+                                checkIds.push(y);
+                            });
+                            // console.log(' checkids', sale);
+
+                            // console.log('checkIds', checkIds, 'ids', sale);
+
+                            // if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
+
+                            const value = checkIds.reduce((a, b) => {
+                                return a + b.stock.price * b.stock.qtty;
+                            }, 0);
+                            // console.log(' sum by ids', sale);
+                            // console.log('qtty', checkIds);
+                            // console.log('ids', sale.length);
+
+                            console.log(" value" + d.data.value + " " + value);
+
+                            if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            // throw new Error("Invalid value" + d.data.value + " " + value);
+
+                            // console.log(' value is valid', sale);
+                            let a = machineId?.data?.find(v => v.settingName == 'setting');
+                            console.log('A is', a);
+
+                            let mId = a?.imei + ''; // for MMoney need 10 digits
+                            console.log(`check emei derrrrr`, mId);
+                            if (!mId) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                            let ownerPhone = a?.ownerPhone + ''; // for MMoney need 10 digits
+                            console.log(`check ownerPhone derrrrr`, ownerPhone);
+                            if (!ownerPhone) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                            if (a.owner == null || a.owner == undefined || a.owner == "") return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                            // throw new Error('buyLAOQR need IMEI');
+
+                            // const emei: string = 
+                            // console.log(`emei -->`, emei, emei.length, `time -->`, time, time.length);
+                            // const transactionID = emei + time;
+                            const x = new Date().getTime();
+                            // const transactionID = String(mId.substring(mId.length - 10)) + (x + '').substring(2);
+                            // const transactionID = String(mId.substring(mId.length - 8)) + (x + '').substring(5);
+                            // console.log(`transactionID`, transactionID);
+                            // const transactionID = Number(
+                            //     Number(
+                            //         mId.substring(0, mId.length - 10) // 21
+                            //     ) +
+                            //     "" +
+                            //     new Date().getTime() 
+                            // );
+                            console.log('MID IS :', mId);
+
+                            // const phoneNumber = await findPhoneNumberByUuidOnUserManager(machineId.ownerUuid);
+                            // if (!phoneNumber) throw new Error(EMessage.phoneNumberNotExist);
+
+
+
+
+                            const qr = await this.generateBillLaoQRPro(
+                                value,
+                                mId + '',
+                                a.owner + '',
+                                ownerPhone
+                            );
+                            console.log('QR IS :', qr);
+
+                            if (qr.message != 'SUCCESS') throw new Error(EMessage.generateQRFailed);
+
+                            const qrData = qr.data.emv;
+
+                            const bill = {
+                                uuid: uuid4(),
+                                clientId,
+                                qr: qrData,
+                                transactionID: qr.transactionId + '',
+                                machineId: machineId.machineId,
+                                hashM: "",
+                                hashP: "",
+                                paymentmethod: d.command,
+                                paymentref: qrData,
+                                paymentstatus: EPaymentStatus.pending,
+                                paymenttime: new Date(),
+                                requestpaymenttime: new Date(),
+                                totalvalue: value,
+                                vendingsales: sale,
+                                isActive: true,
+                            } as VendingMachineBillModel;
+
+                            console.log('=====> BILL IS :', bill);
+
+
+                            const m = await machineClientIDEntity.findOne({
+                                where: {
+                                    machineId: this.ssocket.findMachineIdToken(d.token)
+                                        ?.machineId,
+                                },
+                            });
+                            const ownerUuid = m?.ownerUuid || "";
+                            const ent = VendingMachineBillFactory(
+                                EEntity.vendingmachinebill + "_" + ownerUuid,
+                                dbConnection
+                            );
+                            await ent.sync();
+
+                            ent.create(bill).then((r) => {
+                                // console.log("SET transactionID by owner", ownerUuid);
+                                redisClient.setEx(qr.transactionId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                // redisClient.setEx(`FIND_${qr.transactionId + EMessage.BillCreatedTemp}`, 60 * 15, ownerUuid);
+                                // redisClient.save();
+
+                                // console.log('BILL CREATED', r);
+
+                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
+                            });
+                        }
+                        else {
                             res.send(PrintError(d.command, [], EMessage.notsupport, null));
                         }
                     }
@@ -532,6 +671,7 @@ export class InventoryZDM8 implements IBaseClass {
                     );
                 }
             });
+
             router.post(this.path + "/updateStatus", async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
@@ -604,12 +744,12 @@ export class InventoryZDM8 implements IBaseClass {
                             )
                         );
                     }
-                    else{
+                    else {
                         res.send(
                             PrintSucceeded(
                                 d.command,
                                 d.data,
-                                'NOTHING '+EMessage.succeeded,
+                                'NOTHING ' + EMessage.succeeded,
                                 returnLog(req, res)
                             )
                         );
@@ -740,6 +880,224 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
             const allMachines = new Array<{ m: string; t: number }>();
+
+
+            router.post(
+                this.path + "/retryProcessBillNew",
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        console.log('start retryProcessBillNew');
+
+                        console.log('BODY IS :', req.body);
+
+                        const ownerUuid = req.body.ownerUuid;
+                        const transactionID = req.body.trandID;
+
+
+                        // writeMachineLockDrop(res.locals["machineId"]?.machineId, 'true');
+
+
+
+
+                        const position = Number(req.query["position"]);
+
+                        console.log('position', position);
+
+
+                        let ent = VendingMachineBillFactory(
+                            EEntity.vendingmachinebill + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        const bill = await ent.findOne({
+                            where: { transactionID: transactionID },
+                        });
+
+                        if (!bill) {
+
+                            return res.send(PrintError("retryProcessBill", "bill not found", EMessage.billnotfound));
+                        }
+
+                        // console.log('=====>BILL IS :', bill.dataValues);
+
+                        const dataStock = JSON.parse(JSON.stringify(bill.dataValues.vendingsales));
+
+                        const hasPosition = dataStock.some((item: any) => item.position === position);
+
+                        if (!hasPosition) {
+                            console.log("ไม่พบ Position นี้");
+                        } else {
+                            const items = dataStock.filter((item: any) => item.position === position && !item.dropAt);
+                            if (items.length === 0) {
+                                console.log("มีทุกตัวแล้ว");
+                            } else {
+                                // สุ่มเลือกตัวหนึ่งจากรายการที่ยังไม่มี dropAt
+                                const randomIndex = Math.floor(Math.random() * items.length);
+                                const selectedItem = items[randomIndex];
+                                selectedItem.dropAt = new Date().toISOString();
+                                console.log("อัปเดตข้อมูล:", selectedItem);
+
+                                bill.vendingsales = dataStock;
+                                bill.changed("vendingsales", true);
+                                await bill.save();
+                                ent = null;
+                            }
+                        }
+
+                        // console.log("อัปเดตข้อมูลทั้งหมด:", dataStock);
+
+
+
+
+                        // console.log('=====>dataStock IS :', dataStock);
+
+
+
+                        res.send(
+                            PrintSucceeded(
+                                "retryProcessBill",
+                                {},
+                                EMessage.succeeded, returnLog(req, res)
+                            )
+                        );
+                        // }, 1000);
+                    } catch (error) {
+                        console.log(error);
+                        writeErrorLogs(error.message, error);
+                        res.send(PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true)));
+                        // writeMachineLockDrop(res.locals["machineId"]?.machineId);
+                    }
+                }
+            );
+
+
+            router.post(
+                this.path + "/confirmPaidBill",
+                // this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        console.log('*****transactionList');
+
+                        const machineId = req.body.machineId;
+                        const transactionList: any = req.body.transactionList;
+
+
+
+                        this.getBillProcess(machineId, async (b) => {
+
+                            if (b.length == 0) {
+                                // resolve(null);
+                                return res.send(PrintError("confirmPaidBill", "bill not found", EMessage.billnotfound));
+                            }
+
+                            const withTransaction = [];
+
+                            b.forEach((item) => {
+                                if (transactionList.includes(item.transactionID)) {
+                                    withTransaction.push(item);
+                                } else {
+                                    // withoutTransaction.push(item);
+                                }
+                            });
+
+                            console.log("อันที่มี transactionID:", withTransaction);
+
+                            let billPaid = [];
+
+
+                            for (let index = 0; index < withTransaction.length; index++) {
+                                const element = withTransaction[index];
+                                // console.log('*****element', element);
+                                if (element.bill.paymentstatus == EPaymentStatus.paid) {
+                                    billPaid.push(element);
+                                } else {
+                                    // billNotPaid.push(element);
+                                }
+                            }
+
+                            setImmediate(async () => {
+                                for (let index = 0; index < billPaid.length; index++) {
+                                    const element = billPaid[index];
+                                    let ent = VendingMachineBillFactory(
+                                        EEntity.vendingmachinebill + "_" + element['ownerUuid'],
+                                        dbConnection
+                                    );
+                                    const bill = await ent.findOne({
+                                        where: { transactionID: element.bill.transactionID },
+                                    });
+
+                                    bill.paymentstatus = EPaymentStatus.delivered;
+                                    bill.changed("paymentstatus", true);
+                                    await bill.save();
+                                    ent = null;
+
+                                }
+                            })
+
+                            let billNotPaid = b.filter(
+                                (item) => !billPaid.some((a) => a.transactionID === item.transactionID)
+                            );
+
+
+                            console.log('*****billPaid', billPaid);
+
+                            console.log('*****billNotPaid', billNotPaid);
+                            this.setBillProces(machineId, billNotPaid);
+
+
+                        });
+
+                        res.send(
+                            PrintSucceeded(
+                                "confirmPaidBill",
+                                {},
+                                EMessage.succeeded, returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        writeErrorLogs(error.message, error);
+                        res.send(PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true)));
+                        // writeMachineLockDrop(res.locals["machineId"]?.machineId);
+                    }
+                }
+            );
+
+
+
+            router.post(
+                this.path + "/checkCallbackMMoney",
+                // this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        console.log('*****transactionList');
+
+                        const transactionID = req.body.transactionID;
+                        if (!transactionID) {
+                            return res.send(PrintError("checkCallbackMMoney", "bill not found", EMessage.transactionnotfound));
+                        }
+
+                        return res.send(
+                            PrintSucceeded(
+                                "confirmPaidBill",
+                                {},
+                                EMessage.succeeded, returnLog(req, res)
+                            )
+                        );
+
+                        // return PrintError("checkCallbackMMoney", "bill not found", EMessage.transactionnotfound);
+
+
+                    } catch (error) {
+                        console.log(error);
+                        writeErrorLogs(error.message, error);
+                        res.send(PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true)));
+                        // writeMachineLockDrop(res.locals["machineId"]?.machineId);
+                    }
+                }
+            );
+
+
             router.post(
                 this.path + "/retryProcessBill",
                 this.checkMachineIdToken.bind(this),
@@ -2462,6 +2820,60 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+
+            router.post(
+                this.path + "/addMachineNew",
+                this.checkSuperAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                this.authorizeSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const o = req.body.data as IMachineClientID;
+
+                        console.log(`params der`, o, ownerUuid);
+                        o.ownerUuid = ownerUuid || "";
+
+                        if (!(o.ownerUuid && o.otp && o.machineId))
+                            return res.send(
+                                PrintError("addMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
+                            );
+                        if (o.machineId.length != 8 || Number.isNaN(o.machineId) || Number.isNaN(o.otp))
+                            return res.send(
+                                PrintError("addMachine", [], EMessage.InvalidMachineIdOrOTP, returnLog(req, res, true))
+                            );
+
+                        // const findMerchant = await vendingWallet.findOne({ where: { ownerUuid: o.ownerUuid, walletType: IVendingWalletType.merchant } });
+                        // if (findMerchant == null) throw  new Error(IENMessage.notFoundShop);
+
+                        const x = await this.machineClientlist.findOne({
+                            where: { machineId: o.machineId },
+                        });
+                        if (!x) {
+                            // o.photo = base64ToFile(o.photo);
+                            this.machineClientlist
+                                .create(o)
+                                .then((r) => {
+                                    this.refreshMachines();
+                                    res.send(PrintSucceeded("addMachine", r, EMessage.succeeded, returnLog(req, res)));
+                                })
+                                .catch((e) => {
+                                    console.log(e);
+                                    res.send(PrintError("addMachine", e, EMessage.error, returnLog(req, res, true)));
+                                });
+                        } else {
+                            res.send(
+                                PrintError("addMachine", "Machine ID exist", EMessage.error, returnLog(req, res, true))
+                            );
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
             router.post(
                 this.path + "/updateMachine",
                 this.checkSuperAdmin,
@@ -2544,6 +2956,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 const u = o.data[0]?.lowTemp || 5;
                                 const l = o.data[0]?.limiter || 100000;
 
+                                const owner = o.data[0]?.owner;
+                                const ownerPhone = o.data[0]?.ownerPhone || '';
+
                                 const imgh = o.data[0]?.imgHeader;
                                 const imgf = o.data[0]?.imgFooter;
                                 const imgl = o.data[0]?.imgLogo;
@@ -2551,12 +2966,16 @@ export class InventoryZDM8 implements IBaseClass {
                                 if (t && t.length < 8) {
                                     throw new Error('Length can not be less than 8 ')
                                 }
+
+                                if (ownerPhone && ownerPhone.length < 8) {
+                                    throw new Error('Length can not be less than 8 ')
+                                }
                                 if (!a) {
                                     a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl };
                                     r.data.push(a);
                                 }
                                 else {
-                                    a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l, a.imei = t;
+                                    a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l, a.imei = t; a.owner = owner, a.ownerPhone = ownerPhone;
                                     a.imgHeader = imgh;
                                     a.imgFooter = imgf;
                                     a.imgLogo = imgl;
@@ -2668,8 +3087,18 @@ export class InventoryZDM8 implements IBaseClass {
                         const isActive = req.query['isActive'];
 
                         let actives = [];
-                        if (isActive == 'all') actives.push(...[true, false]);
-                        else actives.push(...isActive == 'yes' ? [true] : [false]);
+                        if (isActive === 'all') {
+                            actives = [true, false];
+                        } else if (isActive === 'true') {
+                            actives = [true];
+                        } else if (isActive === 'false') {
+                            actives = [false];
+                        } else {
+                            // Default case if isActive is not provided or invalid
+                            actives = [true, false];
+                        }
+                        console.log('Active der', actives);
+
                         const ownerUuid = res.locals["ownerUuid"] || "";
 
                         this.machineClientlist.findAll({
@@ -2678,6 +3107,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 isActive: { [Op.or]: actives }
                             }
                         }).then((r) => {
+                            console.log(' REST listMachine', r);
+
                             res.send(PrintSucceeded("listMachine", r, EMessage.succeeded, returnLog(req, res, true)));
                         })
                             .catch((e) => {
@@ -2954,12 +3385,18 @@ export class InventoryZDM8 implements IBaseClass {
     }
     setBillProces(machineId: string, b: IBillProcess[]) {
         const k = "clientResponse" + machineId;
+        console.log('----->setBillProces Key :', k);
+
         b.forEach((v) =>
             v.bill?.vendingsales?.forEach((v) =>
                 v.stock ? (v.stock.image = "") : ""
             )
         );
-        redisClient.set(k, JSON.stringify(b));
+        redisClient.set(k, JSON.stringify(b)).then(r => {
+            console.log('----->setBillProces Success :', r);
+        }).catch(e => {
+            console.log('----->setBillProces Error :', e);
+        });
     }
     // keepBillProces(t:Array<number>) {
 
@@ -2988,7 +3425,7 @@ export class InventoryZDM8 implements IBaseClass {
         if ([22331, 1000].includes(transactionID)) {
             resx.status = 1;
             console.log("deductStock 22231", transactionID);
-            resx.transactionID = transactionID || -1;
+            resx.transactionID = ((transactionID || -1) + '') + '';
             resx.data = { bill, position };
             //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
         } else {
@@ -2997,7 +3434,7 @@ export class InventoryZDM8 implements IBaseClass {
             idx == -1 || !idx ? "" : bill?.vendingsales?.splice(idx, 1);
             resx.status = 1;
             console.log("deductStock xxx", transactionID);
-            resx.transactionID = transactionID || -1;
+            resx.transactionID = ((transactionID || -1) + '') + '';
             resx.data = { bill, position };
         }
         const clientId = bill?.clientId + "";
@@ -3070,6 +3507,166 @@ export class InventoryZDM8 implements IBaseClass {
         // bsi.requestor = requestor;
         bsi.machineId = machineId;
         return bsi;
+    }
+    async creditMachineVMC(machineId: string, ownerUuid: string, transactionID: number, hash: string, res: Response, wsclientId: string = '') {
+
+        try {
+
+            let ack = await readACKConfirmCashIn(machineId + '' + transactionID);
+            if (ack != 'yes') {
+                // double check in database
+                const r = await this.loadBillCash(machineId, transactionID)
+                if (r?.length) {
+                    await writeACKConfirmCashIn(machineId + '' + transactionID);
+                    ack = 'yes';
+                } else
+                    await writeACKConfirmCashIn(machineId + '' + transactionID);
+            } else {
+                await writeACKConfirmCashIn(machineId + '' + transactionID);
+                // throw new Error('TOO FAST ' + d.transactionID);
+                // ack = 'yes';
+            }
+            const bsi = {} as IBillCashIn;
+            bsi.clientId = wsclientId;
+            bsi.createdAt = new Date();
+            bsi.updatedAt = bsi.createdAt;
+            bsi.transactionID = transactionID;
+            bsi.uuid = uuid4();
+            bsi.userUuid; // later
+            bsi.id; // auto
+
+            bsi.isActive = true;
+
+            bsi.badBankNotes = []; // update from machine
+            bsi.bankNotes = []; // update from machine
+
+            bsi.confirm; // update when cash has come
+            bsi.confirmTime; // update when cash has come
+
+            bsi.requestTime = new Date();
+            // bsi.requestor = requestor;
+            bsi.machineId = machineId;
+
+            if (ack == 'yes') {
+                // reconfirm
+                readMachineSetting(machineId).then(async r => {
+                    let setting = {} as any
+                    if (r) {
+                        try {
+                            setting = JSON.parse(r);
+                        } catch (error) {
+                            console.log('error parsing setting 2', error);
+                            setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
+                        }
+                    }
+                    const balance = await readMerchantLimiterBalance(ownerUuid);
+                    // const limiter = await readMachineLimiter(machineId.machineId);
+                    this.updateBillCash(bsi, machineId, transactionID);
+                    await writeACKConfirmCashIn(machineId + '' + transactionID);
+
+                    res?.send(
+                        JSON.stringify(
+                            PrintSucceeded(EMACHINE_COMMAND.CREDIT_NOTE, balance, EMessage.succeeded, null)
+                        )
+                    )
+                    // finish the process allow next queque with exist TransactionID
+                    console.log('finish the process allow next queque with exist TransactionID', transactionID);
+                })
+
+                return;
+            }
+            else {
+                // create new bill for new credit
+                if (!machineId) throw new Error("machine is not exist");
+                // that.ssocket.terminateByClientClose(machineId.machineId)
+                const hashnotes = this.initHashBankNotes(machineId);
+
+                const hn = hashnotes.find((v) => v.hash == hash + "");
+                if (hn == undefined || Object.entries(hn).length == 0) {
+                    res?.send(
+                        JSON.stringify(
+                            PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], EMessage.invalidBankNote + " 0", null)
+                        )
+                    );
+                    return;
+                }
+                // console.log("hn", hn);
+                const bn = this.notes.find((v) => v.value == hn?.value);
+                if (bn == undefined || Object.entries(bn).length == 0) {
+                    res?.send(
+                        JSON.stringify(PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], EMessage.invalidBankNote, null))
+                    );
+                    return;
+                }
+                // console.log("bn", bn);
+
+                // *** CASH IN TO OLD LAAB
+                const func = new CashinValidationFunc();
+                const params = {
+                    cash: bn?.value,
+                    description: "VENDING LAAB CASH IN",
+                    machineId: machineId,
+                };
+                console.log(`cash in validation params`, params);
+
+
+                func // OLD LAAB
+                    .Init(params) // OLD LAAB
+                    .then((run) => { // OLD LAAB
+                        console.log('RECORD THIS TRANSACTIION AS IT has been doen');
+                        // finish the process allow next queque 
+                        console.log('finish the process allow next queque ');
+                        writeACKConfirmCashIn(machineId + '' + transactionID);
+                        console.log(`response cash in validation`, run);
+                        if (run.message != IENMessage.success) throw new Error(run);
+                        bsi.bankNotes.push(bn);
+
+                        this.updateBillCash(bsi, machineId, bsi.transactionID);
+                        console.log(`sw sender`, EMACHINE_COMMAND.CREDIT_NOTE, bsi, machineId);
+                        // redisClient.set('_balance_' + ws['clientId'], bn.value);
+                        // writeMachineBalance(machineId.machineId,bn.value+'')
+                        readMachineSetting(machineId).then(async r => {
+                            let setting = {} as any
+                            if (r) {
+                                try {
+                                    setting = JSON.parse(r);
+                                } catch (error) {
+                                    console.log('error parsing setting 2', error);
+                                    setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
+                                }
+                            }
+                            const balance = await readMerchantLimiterBalance(ownerUuid);
+                            // const limiter = await readMachineLimiter(machineId.machineId);
+
+                            res?.send(
+                                JSON.stringify(
+                                    PrintSucceeded(EMACHINE_COMMAND.CREDIT_NOTE, balance, EMessage.succeeded, null)
+                                )
+                            )
+                        })
+                    }) // OLD LAAB
+                    .catch((error) => { // OLD LAAB
+                        console.log(`error cash in validation`, error.message); // OLD LAAB
+                        bsi.badBankNotes.push(bn); // OLD LAAB
+                        this.updateBadBillCash(bsi, machineId, bsi?.transactionID); // OLD LAAB
+
+                        if (error.transferFail == true) {
+                            console.log(`error`, error.message);
+                            this.updateInsuffBillCash(bsi);
+                        }
+
+                        res?.send(JSON.stringify(PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], error.message, null)));
+                    });
+                // *** CASH IN TO OLD LAAB
+                // const requestor = this.requestors.find(v => v.transID == d.data.transID);
+
+                // if (!requestor) throw new Error('Requestor is not exist');
+
+            }
+        } catch (error) {
+            console.log(error);
+            res?.send(JSON.stringify(PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], error.message, null)));
+        }
     }
     async creditMachineMMoney(d: IReqModel): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
@@ -3351,166 +3948,6 @@ export class InventoryZDM8 implements IBaseClass {
             }
         });
     }
-    async creditMachineVMC(machineId: string, ownerUuid: string, transactionID: number, hash: string, res: Response, wsclientId: string = '') {
-
-        try {
-
-            let ack = await readACKConfirmCashIn(machineId + '' + transactionID);
-            if (ack != 'yes') {
-                // double check in database
-                const r = await this.loadBillCash(machineId, transactionID)
-                if (r?.length) {
-                    await writeACKConfirmCashIn(machineId + '' + transactionID);
-                    ack = 'yes';
-                } else
-                    await writeACKConfirmCashIn(machineId + '' + transactionID);
-            } else {
-                await writeACKConfirmCashIn(machineId + '' + transactionID);
-                // throw new Error('TOO FAST ' + d.transactionID);
-                // ack = 'yes';
-            }
-            const bsi = {} as IBillCashIn;
-            bsi.clientId = wsclientId;
-            bsi.createdAt = new Date();
-            bsi.updatedAt = bsi.createdAt;
-            bsi.transactionID = transactionID;
-            bsi.uuid = uuid4();
-            bsi.userUuid; // later
-            bsi.id; // auto
-
-            bsi.isActive = true;
-
-            bsi.badBankNotes = []; // update from machine
-            bsi.bankNotes = []; // update from machine
-
-            bsi.confirm; // update when cash has come
-            bsi.confirmTime; // update when cash has come
-
-            bsi.requestTime = new Date();
-            // bsi.requestor = requestor;
-            bsi.machineId = machineId;
-
-            if (ack == 'yes') {
-                // reconfirm
-                readMachineSetting(machineId).then(async r => {
-                    let setting = {} as any
-                    if (r) {
-                        try {
-                            setting = JSON.parse(r);
-                        } catch (error) {
-                            console.log('error parsing setting 2', error);
-                            setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
-                        }
-                    }
-                    const balance = await readMerchantLimiterBalance(ownerUuid);
-                    // const limiter = await readMachineLimiter(machineId.machineId);
-                    this.updateBillCash(bsi, machineId, transactionID);
-                    await writeACKConfirmCashIn(machineId + '' + transactionID);
-
-                    res?.send(
-                        JSON.stringify(
-                            PrintSucceeded(EMACHINE_COMMAND.CREDIT_NOTE, balance, EMessage.succeeded, null)
-                        )
-                    )
-                    // finish the process allow next queque with exist TransactionID
-                    console.log('finish the process allow next queque with exist TransactionID', transactionID);
-                })
-
-                return;
-            }
-            else {
-                // create new bill for new credit
-                if (!machineId) throw new Error("machine is not exist");
-                // that.ssocket.terminateByClientClose(machineId.machineId)
-                const hashnotes = this.initHashBankNotes(machineId);
-
-                const hn = hashnotes.find((v) => v.hash == hash + "");
-                if (hn == undefined || Object.entries(hn).length == 0) {
-                    res?.send(
-                        JSON.stringify(
-                            PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], EMessage.invalidBankNote + " 0", null)
-                        )
-                    );
-                    return;
-                }
-                // console.log("hn", hn);
-                const bn = this.notes.find((v) => v.value == hn?.value);
-                if (bn == undefined || Object.entries(bn).length == 0) {
-                    res?.send(
-                        JSON.stringify(PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], EMessage.invalidBankNote, null))
-                    );
-                    return;
-                }
-                // console.log("bn", bn);
-
-                // *** CASH IN TO OLD LAAB
-                const func = new CashinValidationFunc();
-                const params = {
-                    cash: bn?.value,
-                    description: "VENDING LAAB CASH IN",
-                    machineId: machineId,
-                };
-                console.log(`cash in validation params`, params);
-
-
-                func // OLD LAAB
-                    .Init(params) // OLD LAAB
-                    .then((run) => { // OLD LAAB
-                        console.log('RECORD THIS TRANSACTIION AS IT has been doen');
-                        // finish the process allow next queque 
-                        console.log('finish the process allow next queque ');
-                        writeACKConfirmCashIn(machineId + '' + transactionID);
-                        console.log(`response cash in validation`, run);
-                        if (run.message != IENMessage.success) throw new Error(run);
-                        bsi.bankNotes.push(bn);
-
-                        this.updateBillCash(bsi, machineId, bsi.transactionID);
-                        console.log(`sw sender`, EMACHINE_COMMAND.CREDIT_NOTE, bsi, machineId);
-                        // redisClient.set('_balance_' + ws['clientId'], bn.value);
-                        // writeMachineBalance(machineId.machineId,bn.value+'')
-                        readMachineSetting(machineId).then(async r => {
-                            let setting = {} as any
-                            if (r) {
-                                try {
-                                    setting = JSON.parse(r);
-                                } catch (error) {
-                                    console.log('error parsing setting 2', error);
-                                    setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
-                                }
-                            }
-                            const balance = await readMerchantLimiterBalance(ownerUuid);
-                            // const limiter = await readMachineLimiter(machineId.machineId);
-
-                            res?.send(
-                                JSON.stringify(
-                                    PrintSucceeded(EMACHINE_COMMAND.CREDIT_NOTE, balance, EMessage.succeeded, null)
-                                )
-                            )
-                        })
-                    }) // OLD LAAB
-                    .catch((error) => { // OLD LAAB
-                        console.log(`error cash in validation`, error.message); // OLD LAAB
-                        bsi.badBankNotes.push(bn); // OLD LAAB
-                        this.updateBadBillCash(bsi, machineId, bsi?.transactionID); // OLD LAAB
-
-                        if (error.transferFail == true) {
-                            console.log(`error`, error.message);
-                            this.updateInsuffBillCash(bsi);
-                        }
-
-                        res?.send(JSON.stringify(PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], error.message, null)));
-                    });
-                // *** CASH IN TO OLD LAAB
-                // const requestor = this.requestors.find(v => v.transID == d.data.transID);
-
-                // if (!requestor) throw new Error('Requestor is not exist');
-
-            }
-        } catch (error) {
-            console.log(error);
-            res?.send(JSON.stringify(PrintError(EMACHINE_COMMAND.CREDIT_NOTE, [], error.message, null)));
-        }
-    }
 
     async creditMachine(d: IReqModel) {
         try {
@@ -3727,6 +4164,234 @@ export class InventoryZDM8 implements IBaseClass {
         }
         return hashNotes;
     }
+    init() {
+        // load machines
+        return new Promise<Array<IMachineClientID>>((resolve, reject) => {
+            this.machineClientlist.sync().then((r) => {
+                this.machineClientlist.findAll({ attributes: { exclude: ['photo'] } }).then((rx) => {
+                    this.ssocket.initMachineId(rx);
+                    this.InitBillPaid(rx);
+                });
+            });
+
+            const that = this;
+            this.ssocket.onMachineCredit((d: IReqModel) => {
+                that.creditMachine(d);
+            });
+
+
+
+            this.ssocket.onMachineResponse((re: IReqModel) => {
+                const machineId = this.ssocket.findMachineIdToken(re.token);
+
+
+                if (re.transactionID == -52) {
+
+                    writeMachineStatus(machineId.machineId, re.data);
+                    const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
+                    const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
+                    // console.log('ws', 'wsAdmin', machineId);
+
+                    // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
+                    if (ws) {
+                        const resx = {} as IResModel;
+                        resx.command = EMACHINE_COMMAND.status;
+                        resx.message = EMessage.status;
+                        resx.data = re.data;
+                        resx.transactionID = re.transactionID + '';
+                        // save to redis
+                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
+                        // console.log('writeMachineStatus', machineId.machineId, re.data);
+
+
+                        // send to machine client
+                        this.sendWSToMachine(machineId.machineId, resx);
+                        logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
+
+                        // this.sendWS(ws['clientId'], resx);
+                    }
+                    if (wsAdmins) {
+                        const resx = {} as IResModel;
+                        resx.command = EMACHINE_COMMAND.status;
+                        resx.message = EMessage.status;
+                        resx.data = re.data;
+                        resx.transactionID = re.transactionID + '';
+                        // save to redis
+                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
+                        // console.log('writeMachineStatus', machineId.machineId, re.data);
+                        // send to machine client
+                        this.sendWSMyMachine(machineId.machineId, resx);
+                        logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
+                    }
+                    // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
+                    // fafb52
+                    // 21 //len
+                    // 54 // series
+                    // 00 // bill acceptor
+                    // 01 // coin acceptor
+                    // 00 // card reader status
+                    // 00 // tem controller status
+                    // 13 // temp
+                    // 00 // door 
+                    // 00000000 // bill change
+                    // 00000000 // coin change
+                    // 30303030303030303030
+                    // 13aaaaaaaaaaaaaa8d
+                    // // fafb header
+                    // // 52 command
+                    // // 01 length
+                    // // Communication number+ 
+                    // '00'//Bill acceptor status+ 
+                    // '00'//Coin acceptor status+ 
+                    // '00'// Card reader status+
+                    // '00'// Temperature controller status+ 
+                    // '00'// Temperature+ 
+                    // '00'// Door status+ 
+                    // '00 00 00 00'// Bill change(4 byte)+ 
+                    // '00 00 00 00'// Coin change(4 byte)+ 
+                    // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
+                    // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
+                    // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
+
+                    console.log('FAFB52', re.data);
+
+                    return;
+                }
+                console.log("onMachineResponse", re);
+                console.log("onMachineResponse transactionID", re.transactionID);
+                this.getBillProcess(machineId.machineId, (b) => {
+                    console.log('*****GetBillProcess', b);
+
+                    const cres = b.find((v) => v.transactionID == re.transactionID);
+                    try {
+                        const machineId = this.ssocket.findMachineIdToken(re.token);
+                        // writeMachineStatus(machineId.machineId, re.data);
+                        const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
+                        const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
+                        const resx = {} as IResModel;
+                        resx.command = EMACHINE_COMMAND.status;
+                        resx.message = EMessage.status;
+                        resx.data = re.data;
+                        resx.transactionID = re.transactionID + '';
+                        if (wsAdmins) {
+                            this.sendWSMyMachine(machineId.machineId, resx);
+                            logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
+                        }
+                        if (ws) {
+                            logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
+                            this.sendWSToMachine(machineId.machineId, resx);
+                        }
+
+
+                        // vmc response with transactionId and buffer data
+                        // zdm8 reponse with transactionId
+
+                        // check by transactionId and command data (command=status)
+
+                        // if need to confirm with drop detect
+                        // we should use drop detect to audit
+                        // that.deductStock(re.transactionID, cres?.bill, cres?.position);
+
+                        // const resx = {} as IResModel;
+                        // resx.command = EMACHINE_COMMAND.confirm;
+                        // resx.message = EMessage.confirmsucceeded;
+                        // if (re.transactionID < 0) return console.log('onMachineResponse ignore', re);
+                        // if ([22331, 1000].includes(re.transactionID)) {
+
+                        //     resx.status = 1;
+                        //     console.log('onMachineResponse 22231', re);
+                        //     resx.transactionID = re.(transactionID || -1) + '';
+                        //     resx.data = { bill: cres?.bill, position: cres?.position };
+                        //     //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+
+                        // } else {
+                        //     const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position) || -1;
+                        //     idx == -1 || !idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
+                        //     resx.status = 1;
+                        //     console.log('onMachineResponse xxx', re);
+                        //     resx.transactionID = re.(transactionID || -1) + '';
+                        //     resx.data = { bill: cres?.bill, position: cres?.position };
+                        // }
+                        // const clientId = cres?.bill.clientId + '';
+                        // console.log('send', clientId, cres?.bill?.clientId, resx);
+                        // console.log('onMachineResponse', re.transactionID);
+                        // console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
+
+                        // ///** always retry */
+                        // const retry = -1; // set config and get config at redis and deduct the retry times;
+                        // // if retry == -1 , it always retry
+                        // /// TODO
+                        // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
+                        // // writeSucceededRecordLog(cres?.bill, cres?.position);
+                        // if(ws)
+                        // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
+                        // if(wsAdmins)
+                        // that.sendWSMyMachine(machineId.machineId, resx);
+                        // /// DEDUCT STOCK AT THE SERVER HERE
+
+                        // // No need To update delivering status
+                        // // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
+                        // // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
+                        // //     try {
+                        // //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
+                        // //         if (bill) {
+                        // //             bill.paymentstatus = EPaymentStatus.delivered;
+                        // //             bill.changed('paymentstatus', true);
+                        // //             bill.save();
+                        // //         } else throw new Error(EMessage.transactionnotfound);
+
+                        // //         // }
+                        // //     } catch (error) {
+                        // //         console.log(error);
+                        // //     }
+                        // // }).catch(e => {
+                        // //     console.log('ERROR', e);
+
+                        // // })
+                    } catch (error) {
+                        console.log("error onMachineResponse", error);
+                        logEntity.create({ body: error, url: 'onMachineResponse' });
+                        // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
+                    }
+                });
+
+            });
+
+            ////
+
+
+
+            /// ****#### NEED TO UPDATE AND CHANGE LATER USING SOCKET UPDATE FROM LAAB 06072023
+            // setInterval(() => {
+            //     const onlineId = [];
+            //     this.ssocket.machineIds.forEach((v, i) => {
+            //         if (this.ssocket.findOnlneMachine(v.machineId)) {
+            //             setTimeout(() => {
+            //                 const func = new CashValidationFunc();
+            //                 const params = {
+            //                     machineId: v.machineId
+            //                 }
+            //                 func.Init(params).then(run => {
+            //                     const response: any = run;
+            //                     console.log(`response`, response);
+            //                     if (response.message != IENMessage.success) {
+            //                         console.log(`cash validate fail`, response?.message);
+            //                         // socket.end();
+            //                     }
+            //                     writeMachineLimiterBalance(v.machineId,response?.balance);
+            //                 }).catch(error => {
+            //                     console.log(`cash validation error`, error.message);
+            //                     // socket.end();
+            //                 });
+            //             }, 100 * i);
+            //         }
+            //     });
+
+            // }, 10000)
+
+        });
+    }
+
     initMachineId(m: Array<IMachineClientID>) {
         this.machineIds.length = 0;
         const data = JSON.parse(JSON.stringify(m));
@@ -3773,221 +4438,52 @@ export class InventoryZDM8 implements IBaseClass {
 
         }
     }
-    init() {
-        // load machines
-        return new Promise<Array<IMachineClientID>>((resolve, reject) => {
-            this.machineClientlist.sync().then((r) => {
-                this.machineClientlist.findAll({ attributes: { exclude: ['photo'] } }).then((rx) => {
-                    this.ssocket.initMachineId(rx);
-                    this.initMachineId(rx);
-                });
-            });
+    async InitBillPaid(rx: MachineClientIDModel[]) {
+        try {
+            // console.log('=====>InitBillPaid');
+            for (let index = 0; index < rx.length; index++) {
+                const element = rx[index].dataValues;
+                // console.log('=====>InitBillPaid element', element);
 
-            const that = this;
-            this.ssocket.onMachineCredit((d: IReqModel) => {
-                that.creditMachine(d);
-            });
-            this.ssocket.onMachineResponse((re: IReqModel) => {
-                const machineId = this.ssocket.findMachineIdToken(re.token);
-                if (re.transactionID == -52) {
-
-                    writeMachineStatus(machineId.machineId, re.data);
-                    const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                    const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
-                    // console.log('ws', 'wsAdmin', machineId);
-
-                    // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
-                    if (ws) {
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        resx.transactionID = re.transactionID;
-                        // save to redis
-                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        // console.log('writeMachineStatus', machineId.machineId, re.data);
-
-
-                        // send to machine client
-                        this.sendWSToMachine(machineId.machineId, resx);
-                        logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
-
-                        // this.sendWS(ws['clientId'], resx);
-                    }
-                    if (wsAdmins) {
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        resx.transactionID = re.transactionID;
-                        // save to redis
-                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        // console.log('writeMachineStatus', machineId.machineId, re.data);
-                        // send to machine client
-                        this.sendWSMyMachine(machineId.machineId, resx);
-                        logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
-                    }
-                    // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
-                    // fafb52
-                    // 21 //len
-                    // 54 // series
-                    // 00 // bill acceptor
-                    // 01 // coin acceptor
-                    // 00 // card reader status
-                    // 00 // tem controller status
-                    // 13 // temp
-                    // 00 // door 
-                    // 00000000 // bill change
-                    // 00000000 // coin change
-                    // 30303030303030303030
-                    // 13aaaaaaaaaaaaaa8d
-                    // // fafb header
-                    // // 52 command
-                    // // 01 length
-                    // // Communication number+ 
-                    // '00'//Bill acceptor status+ 
-                    // '00'//Coin acceptor status+ 
-                    // '00'// Card reader status+
-                    // '00'// Temperature controller status+ 
-                    // '00'// Temperature+ 
-                    // '00'// Door status+ 
-                    // '00 00 00 00'// Bill change(4 byte)+ 
-                    // '00 00 00 00'// Coin change(4 byte)+ 
-                    // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
-                    // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
-                    // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-
-                    console.log('FAFB52', re.data);
-
-                    return;
-                }
-                console.log("onMachineResponse", re);
-                console.log("onMachineResponse transactionID", re.transactionID);
-                this.getBillProcess(machineId.machineId, (b) => {
-                    const cres = b.find((v) => v.transactionID == re.transactionID);
-                    try {
-                        const machineId = this.ssocket.findMachineIdToken(re.token);
-                        // writeMachineStatus(machineId.machineId, re.data);
-                        const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                        const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        resx.transactionID = re.transactionID;
-                        if (wsAdmins) {
-                            this.sendWSMyMachine(machineId.machineId, resx);
-                            logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
-                        }
-                        if (ws) {
-                            logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
-                            this.sendWSToMachine(machineId.machineId, resx);
+                let ent = VendingMachineBillFactory(
+                    EEntity.vendingmachinebill + "_" + element.ownerUuid,
+                    dbConnection
+                );
+                ent.findAll({
+                    where: { paymentstatus: EPaymentStatus.paid },
+                }).then(async r => {
+                    // console.log('=====>InitBillPaid bill', r);
+                    let dataForSave = [];
+                    for (let index1 = 0; index1 < r.length; index1++) {
+                        const element1 = r[index1].dataValues;
+                        // console.log('=====>InitBillPaid element1', element1);
+                        for (let index2 = 0; index2 < element1.vendingsales.length; index2++) {
+                            const element2 = element1.vendingsales[index2];
+                            const billData = {
+                                ownerUuid: element.ownerUuid,
+                                position: element2.position,
+                                bill: element1,
+                                transactionID: getNanoSecTime()
+                            };
+                            // console.log('=====>InitBillPaid element2', billData);
+                            dataForSave.push(billData);
                         }
 
+                        console.log('=====>InitBillPaid dataForSave', dataForSave);
+                        // element.machineId
+                        this.setBillProces(element.machineId, dataForSave);
 
-                        // vmc response with transactionId and buffer data
-                        // zdm8 reponse with transactionId
-
-                        // check by transactionId and command data (command=status)
-
-                        // if need to confirm with drop detect
-                        // we should use drop detect to audit
-                        // that.deductStock(re.transactionID, cres?.bill, cres?.position);
-
-                        // const resx = {} as IResModel;
-                        // resx.command = EMACHINE_COMMAND.confirm;
-                        // resx.message = EMessage.confirmsucceeded;
-                        // if (re.transactionID < 0) return console.log('onMachineResponse ignore', re);
-                        // if ([22331, 1000].includes(re.transactionID)) {
-
-                        //     resx.status = 1;
-                        //     console.log('onMachineResponse 22231', re);
-                        //     resx.transactionID = re.transactionID || -1;
-                        //     resx.data = { bill: cres?.bill, position: cres?.position };
-                        //     //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
-
-                        // } else {
-                        //     const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position) || -1;
-                        //     idx == -1 || !idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
-                        //     resx.status = 1;
-                        //     console.log('onMachineResponse xxx', re);
-                        //     resx.transactionID = re.transactionID || -1;
-                        //     resx.data = { bill: cres?.bill, position: cres?.position };
-                        // }
-                        // const clientId = cres?.bill.clientId + '';
-                        // console.log('send', clientId, cres?.bill?.clientId, resx);
-                        // console.log('onMachineResponse', re.transactionID);
-                        // console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
-
-                        // ///** always retry */
-                        // const retry = -1; // set config and get config at redis and deduct the retry times;
-                        // // if retry == -1 , it always retry
-                        // /// TODO
-                        // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
-                        // // writeSucceededRecordLog(cres?.bill, cres?.position);
-                        // if(ws)
-                        // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
-                        // if(wsAdmins)
-                        // that.sendWSMyMachine(machineId.machineId, resx);
-                        // /// DEDUCT STOCK AT THE SERVER HERE
-
-                        // // No need To update delivering status
-                        // // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
-                        // // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
-                        // //     try {
-                        // //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
-                        // //         if (bill) {
-                        // //             bill.paymentstatus = EPaymentStatus.delivered;
-                        // //             bill.changed('paymentstatus', true);
-                        // //             bill.save();
-                        // //         } else throw new Error(EMessage.transactionnotfound);
-
-                        // //         // }
-                        // //     } catch (error) {
-                        // //         console.log(error);
-                        // //     }
-                        // // }).catch(e => {
-                        // //     console.log('ERROR', e);
-
-                        // // })
-                    } catch (error) {
-                        console.log("error onMachineResponse", error);
-                        logEntity.create({ body: error, url: 'onMachineResponse' });
-                        // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
                     }
+                }).catch(e => {
+                    console.log('InitBillPaid error', e);
                 });
-            });
+            }
 
-            /// ****#### NEED TO UPDATE AND CHANGE LATER USING SOCKET UPDATE FROM LAAB 06072023
-            // setInterval(() => {
-            //     const onlineId = [];
-            //     this.ssocket.machineIds.forEach((v, i) => {
-            //         if (this.ssocket.findOnlneMachine(v.machineId)) {
-            //             setTimeout(() => {
-            //                 const func = new CashValidationFunc();
-            //                 const params = {
-            //                     machineId: v.machineId
-            //                 }
-            //                 func.Init(params).then(run => {
-            //                     const response: any = run;
-            //                     console.log(`response`, response);
-            //                     if (response.message != IENMessage.success) {
-            //                         console.log(`cash validate fail`, response?.message);
-            //                         // socket.end();
-            //                     }
-            //                     writeMachineLimiterBalance(v.machineId,response?.balance);
-            //                 }).catch(error => {
-            //                     console.log(`cash validation error`, error.message);
-            //                     // socket.end();
-            //                 });
-            //             }, 100 * i);
-            //         }
-            //     });
-
-            // }, 10000)
-
-        });
+        } catch (error) {
+            console.log('error InitBillPaid', error);
+        }
     }
+
     loadBillCash(
         machineId: string,
         transactionID: number,
@@ -4228,7 +4724,7 @@ export class InventoryZDM8 implements IBaseClass {
                     { headers: { 'lmm-key': 'va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17' } }
                 )
                 .then((rx) => {
-                    console.log("generateBillMMoneyPro", rx);
+                    console.log("generateBillMMoneyPro", rx.data);
                     if (rx.status) {
                         resolve(rx.data as IMMoneyGenerateQRRes);
                     } else {
@@ -4241,6 +4737,79 @@ export class InventoryZDM8 implements IBaseClass {
 
         });
     }
+
+    generateBillLaoQRPro(value: number, channel: string, mechantId: string, ownerPhone: string) {
+        return new Promise<ILaoQRGenerateQRRes>((resolve, reject) => {
+            // generate QR from MMoney
+
+            const qr = {
+                "requestId": "",
+                "mechantId": mechantId, //DBK :25ATP48M8RD1MKJ4W8FGLGXYC
+                "txnAmount": value,
+                "terminalId": ownerPhone, //Device Number ເບີຄົນຮັບເງິນ
+                "terminalLabel": "laabxserver", // Device Name
+                "mobileNo": ownerPhone, // CashIn to Wallet Number (Merchant)  ເບີຄົນຮັບເງິນ
+                "channel": `VENDING_` + channel, // Vending Machine 
+                "owner": "LAABX", // Merchant Name  LAABX
+                // "callbackurl": "https://tvending.khamvong.com"
+                "callbackurl": "https://vendingserviceapi.laoapps.com"
+
+            }
+            console.log("LAOQR", qr);
+
+            axios
+                .post<ILaoQRGenerateQRRes>(
+                    "https://laabx-api.laoapps.com/api/v1/laab/genmmoneyqr_vending",
+                    qr,
+                    { headers: { 'Content-Type': 'application/json' } }
+                )
+                .then((rx) => {
+                    console.log("generateBillLaoQRPro", rx.data);
+                    if (rx.status) {
+                        resolve(rx.data.data as ILaoQRGenerateQRRes);
+                    } else {
+                        reject(new Error(rx.statusText));
+                    }
+                })
+                .catch((e) => {
+                    reject(e);
+                });
+
+        });
+    }
+
+
+    registerCallbackLaoQR(callbackurl: string, owner: string, description: any) {
+        return new Promise<ILaoQRGenerateQRRes>((resolve, reject) => {
+            const url = 'https://laab-notify.laoapps.com/api/v1/callback/registerCB_Mmoney_vending';
+            const qr = {
+                "callbackurl": callbackurl,
+                "owner": owner,
+                "description": description
+            }
+            // console.log("DTA", qr);
+
+            axios
+                .post(
+                    url,
+                    qr,
+                    { headers: { 'Content-Type': 'application/json' } }
+                )
+                .then((rx) => {
+                    console.log("registerCallbackLaoQR", rx.data);
+                    if (rx.status) {
+                        resolve(rx.data.data as ILaoQRGenerateQRRes);
+                    } else {
+                        reject(new Error(rx.statusText));
+                    }
+                })
+                .catch((e) => {
+                    reject(e);
+                });
+
+        });
+    }
+
     generateBillMMoneyDemo(phonenumber: string, value: number, transactionID: string) {
         return new Promise<IMMoneyGenerateQRRes>((resolve, reject) => {
             // generate QR from MMoney
@@ -4334,8 +4903,10 @@ export class InventoryZDM8 implements IBaseClass {
                 // const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || ""; TODO LATER
                 const ownerUuid = (await redisClient.get(qr + EMessage.BillCreatedTemp)) || "";
                 console.log("GET transactionID by owner", ownerUuid);
-                if (!ownerUuid && this.production)
-                    throw new Error(EMessage.TransactionTimeOut);
+                if (!ownerUuid && this.production) {
+                    // throw new Error(EMessage.TransactionTimeOut);
+                    resolve(null);
+                }
                 const ent = VendingMachineBillFactory(
                     EEntity.vendingmachinebill + "_" + ownerUuid,
                     dbConnection
@@ -4344,8 +4915,16 @@ export class InventoryZDM8 implements IBaseClass {
                     where: { qr },
                 });
 
-                if (!bill) throw new Error(EMessage.billnotfound);
-                await redisClient.del(qr + EMessage.BillCreatedTemp);
+
+                if (!bill) {
+                    // throw new Error(EMessage.billnotfound);
+                    // await redisClient.del(qr + EMessage.BillCreatedTemp);
+                    resolve(null);
+
+                }
+
+                // console.log('=====>BILL IS :', bill);
+
 
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
@@ -4364,7 +4943,11 @@ export class InventoryZDM8 implements IBaseClass {
                 // save report here
 
                 // let yy = new Array<WebSocketServer.WebSocket>();
+                console.log('=====>bill.machineId', bill.machineId);
+
                 this.getBillProcess(bill.machineId, async (b) => {
+                    // console.log('=====>DATA Redis', b);
+
                     bill.vendingsales.forEach((v, i) => {
                         v.stock.image = "";
                         b.push({
@@ -4376,14 +4959,106 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
-                    console.log("callBackConfirmMmoney", b);
+                    console.log("=====>callBackConfirmMmoney", b);
+
+
 
                     this.setBillProces(bill.machineId, b);
+                    // res.data = b.filter((v) => v.ownerUuid == ownerUuid);
+                    // this.sendWSToMachine(bill?.machineId + "", res);
+
+                });
+
+                resolve(bill);
+
+            } catch (error) {
+                console.log('error callBackConfirmMmoney', error);
+                resolve(null);
+            }
+        });
+    }
+
+
+    callBackConfirmLaoQR(transactionID: string) {
+        return new Promise<IVendingMachineBill>(async (resolve, reject) => {
+            try {
+                console.log('QR code', transactionID);
+                const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || "";
+                console.log("GET transactionID by owner", ownerUuid);
+                if (!ownerUuid && this.production) {
+                    // throw new Error(EMessage.TransactionTimeOut);
+                    console.log(EMessage.TransactionTimeOut);
+                    resolve(null);
+                }
+                console.log('=====>ownerUuid', ownerUuid);
+
+                const ent = VendingMachineBillFactory(
+                    EEntity.vendingmachinebill + "_" + ownerUuid,
+                    dbConnection
+                );
+                const bill = await ent.findOne({
+                    where: { transactionID },
+                });
+                // console.log('=====>BILL IS :', bill);
+
+                // if (!bill) throw new Error(EMessage.billnotfound);
+                if (!bill) resolve(null);
+
+
+                if (bill.paymentstatus != EPaymentStatus.pending) {
+                    resolve(null);
+                }
+
+
+                bill.paymentstatus = EPaymentStatus.paid;
+                bill.changed("paymentstatus", true);
+                bill.paymentref = bill.transactionID + '';
+                bill.changed("paymentref", true);
+                bill.paymenttime = new Date();
+                bill.changed("paymenttime", true);
+                bill.paymentmethod = "LaoQR";
+                bill.changed("paymentmethod", true);
+
+                console.log('=====>machineId', bill.machineId);
+
+
+                // save report here
+
+                // let yy = new Array<WebSocketServer.WebSocket>();
+                this.getBillProcess(bill.machineId, async (b) => {
+
+                    bill.vendingsales.forEach((v, i) => {
+                        v.stock.image = "";
+                        b.push({
+                            ownerUuid,
+                            position: v.position,
+                            bill: bill.toJSON(),
+                            transactionID: getNanoSecTime(),
+                        });
+                    });
+
+                    await bill.save();
+
+                    console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
+
+
+
+
+                    ///WS
+                    const res = {} as IResModel;
+                    res.command = EMACHINE_COMMAND.waitingt;
+                    res.message = EMessage.waitingt;
+                    res.status = 1;
                     res.data = b.filter((v) => v.ownerUuid == ownerUuid);
-                    this.sendWSToMachine(bill?.machineId + "", res);
+                    this.setBillProces(bill.machineId, b);
+                    // console.log('*****BILL CONFIRMED RES', res.data);
+                    // this.sendWSToMachine(bill?.machineId + "", res);
+                    //////
+
 
                     resolve(bill);
                 });
+
             } catch (error) {
                 console.log(error);
                 reject(error);
@@ -4391,7 +5066,58 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    refillMMoney(msisdn: string, transID: string, amount, description, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
+
+    findCallBackConfirmLaoQR(machineId: string) {
+        return new Promise<IResModel>(async (resolve, reject) => {
+            try {
+                const res = {} as IResModel;
+                res.command = EMACHINE_COMMAND.confirm;
+                res.message = EMessage.waitingt;
+                res.status = 1;
+
+                // console.log('=====>machineId', machineId);
+
+                this.getBillProcess(machineId, async (b) => {
+
+                    if (b.length == 0) {
+                        // throw new Error(EMessage.billnotfound);
+                        resolve(null);
+                    }
+
+                    let billPaid = [];
+                    // let billNotPaid = [];
+
+
+                    for (let index = 0; index < b.length; index++) {
+                        const element = b[index];
+                        // console.log('*****element', element);
+                        if (element.bill.paymentstatus == EPaymentStatus.paid) {
+                            billPaid.push(element);
+                        } else {
+                            // billNotPaid.push(element);
+                        }
+                    }
+
+                    // this.setBillProces(machineId, billNotPaid);
+
+                    console.log('*****billPaid', billPaid);
+                    // console.log('*****billNotPaid', billNotPaid);
+
+                    res.data = billPaid
+
+                    resolve(res);
+                    // this.setBillProces(bill.machineId, filteredB);
+                });
+
+
+            } catch (error) {
+                console.log(error);
+                reject(error);
+            }
+        });
+    }
+
+    refillMMoney(msisdn: string, transID: string, amount: number, description: any, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
 
         // const transID = machineId + (new Date().getTime());
         return new Promise<any>((resolve, reject) => {
@@ -4409,7 +5135,6 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log('ERROR processRefillMmoney');
                         reject(e)
                     });
-
                 }).catch(e => {
                     console.log('ERROR loginMmoney', e);
                     reject(e)
@@ -4868,8 +5593,6 @@ export class InventoryZDM8 implements IBaseClass {
                                             mymsetting.push({ msetting, machineId: element });
 
 
-
-
                                             const mb = JSON.parse((await readMachineBalance(element)) || '0');
                                             mymmachinebalance.push({ machineId: element, balance: mb });
 
@@ -5002,10 +5725,50 @@ export class InventoryZDM8 implements IBaseClass {
             // c.wallet_ids
             this.callBackConfirmMmoney(c?.qrcode)
                 .then((r) => {
-                    resolve({ bill: r, transactionID: c.tranid_client });
+                    if (r) {
+                        resolve({ bill: r, transactionID: c.tranid_client });
+                    } else {
+                        resolve(null);
+                    }
                 })
                 .catch((e) => {
                     console.log("error confirmMMoney");
+                    reject(e);
+                });
+        });
+    }
+
+    confirmLaoQROrder(c: IMMoneyConfirm) {
+        return new Promise<any>((resolve, reject) => {
+            console.log('C is :', c);
+
+            this.callBackConfirmLaoQR(c.trandID).then((r) => {
+                if (r) {
+                    resolve({ bill: r, transactionID: c.tranid_client });
+                } else {
+                    resolve(null);
+                }
+            })
+                .catch((e) => {
+                    console.log("error confirmLaoQROrder");
+                    reject(e);
+                });
+        });
+    }
+
+    findLaoQROrderPaid(c: any) {
+        return new Promise<any>((resolve, reject) => {
+            console.log('C findLaoQROrderPaid is :', c);
+
+            this.findCallBackConfirmLaoQR(c.machineId).then((r) => {
+                if (r) {
+                    resolve({ bill: r });
+                } else {
+                    resolve(null);
+                }
+            })
+                .catch((e) => {
+                    console.log("error findLaoQROrderPaid");
                     reject(e);
                 });
         });
@@ -5032,10 +5795,34 @@ export class InventoryZDM8 implements IBaseClass {
             if (x && x == machineId) {
                 // yy.push(v);
                 console.log("WS SENDING machine id", x, v?.readyState);
+                // console.log('=====> RES CONFIRMED', JSON.stringify(resx));
+
                 v.send(JSON.stringify(resx));
             }
         });
     }
+
+
+    filterDuplicatePositions(response: IResModel): IResModel {
+        // สร้าง Map เพื่อเก็บข้อมูลล่าสุดสำหรับแต่ละ position
+        const positionMap = new Map<number, any>();
+
+        // วนลูปผ่านข้อมูลและเก็บเฉพาะรายการล่าสุดของแต่ละ position
+        response.data.forEach((item: any) => {
+            const existingItem = positionMap.get(item.position);
+
+            if (!existingItem || item.transactionID > existingItem.transactionID) {
+                positionMap.set(item.position, item);
+            }
+        });
+
+        // สร้าง response ใหม่โดยใช้ข้อมูลที่กรองแล้ว
+        return {
+            ...response,
+            data: Array.from(positionMap.values())
+        };
+    }
+
     close() {
         this.wss.close();
         this.ssocket.server.close();

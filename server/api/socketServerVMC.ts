@@ -3,12 +3,12 @@ import { EZDM8_COMMAND, EMACHINE_COMMAND, EMessage, IMachineClientID as IMachine
 import cryptojs from 'crypto-js';
 // console.log(cryptojs.SHA256('11111111111111').toString(cryptojs.enc.Hex));
 
-export class SocketServerVMC  extends SocketEmitter{
+export class SocketServerVMC extends SocketEmitter {
     server = net.createServer();
     sclients = Array<net.Socket>();
     ports = 31222;
 
-    private machineIds=new  Array<IMachineClientID>();
+    private machineIds = new Array<IMachineClientID>();
 
     constructor() {
         super();
@@ -80,7 +80,7 @@ export class SocketServerVMC  extends SocketEmitter{
                         console.log('DATA Bytes written : ' + bwrite);
                         // console.log('Data sent to server : ' + data);
                         console.log('DATA  sent to server : ' + data.toString());
-                        const l=data.toString().substring(0,data.toString().length-1)
+                        const l = data.toString().substring(0, data.toString().length - 1)
                         const d = JSON.parse(l) as IReqModel;
 
                         console.log('DATA  total connection', that.sclients.length);
@@ -88,7 +88,7 @@ export class SocketServerVMC  extends SocketEmitter{
                             const token = d.token;
                             const x = that.findMachineIdToken(token);
                             if (x) {
-                                console.log('DATA found machine id',x);
+                                console.log('DATA found machine id', x);
                                 socket['machineId'] = x;
                                 const mx = that.sclients.filter(v => {
                                     const m = v['machineId'] as IMachineClientID;
@@ -102,7 +102,7 @@ export class SocketServerVMC  extends SocketEmitter{
                                     that.sclients.push(socket);
                                     console.log('DATA machine exist and accepted');
                                     that.isAcceptMachineLogin(x.machineId);
-                                } else if (mx.length>1) {
+                                } else if (mx.length > 1) {
                                     console.log('DATA duplicated connection', mx.length);
                                     mx.forEach(v => v.end())
                                     socket.end();
@@ -118,7 +118,7 @@ export class SocketServerVMC  extends SocketEmitter{
                                 socket.end();
                                 return;
                             }
-                           
+
                         } else if (d.command == EMACHINE_COMMAND.ping) {
                             console.log('DATA command ping');
                             const token = d.token;
@@ -178,10 +178,10 @@ export class SocketServerVMC  extends SocketEmitter{
                                 }
                                 // console.log('DATA  Update status here ');
                                 // fafb 52 21 0d010100000000000000000000000030303030303030303030aaaaaaaaaaaaaaaa7f
-                                if((d.data+'').startsWith('fafb52')){
+                                if ((d.data + '').startsWith('fafb52')) {
                                     // report status here 
                                 }
-                                if((d.data+'').startsWith('fafb420043')){
+                                if ((d.data + '').startsWith('fafb420043')) {
                                     that.response(d);
                                 }
                                 // Communication number+ 
@@ -195,7 +195,7 @@ export class SocketServerVMC  extends SocketEmitter{
                                 // Machine ID number (10 byte) + 
                                 // Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) + 
                                 // Machine humidity (8 byte, start from master machine)
-                            //    that.response(d);
+                                //    that.response(d);
                                 return;
                             } else {
                                 socket.end();
@@ -203,12 +203,12 @@ export class SocketServerVMC  extends SocketEmitter{
                                 console.log('DATA  not exist machine id ');
                                 return;
                             }
-                            
-                        }else if(Object.keys(EZDM8_COMMAND).includes(d.command)){
+
+                        } else if (Object.keys(EZDM8_COMMAND).includes(d.command)) {
                             console.log('DATA response from the machine');
                             console.log('DATA need to confirm the ORDER has been completed or not, TODO LATER');
-                            
-                                return ;
+
+                            return;
                         }
                         socket.end();
 
@@ -330,26 +330,26 @@ export class SocketServerVMC  extends SocketEmitter{
         }
 
     }
-  
+
 
     findMachineId(machineId: string) {
         try {
             return this.machineIds.find(v => v.machineId == machineId);
         } catch (error) {
             console.log(error);
-            
+
         }
-       
+
     }
     findMachineIdToken(token: string) {
         try {
             return this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
-   
+
         } catch (error) {
             console.log(error);
-            
+
         }
-   }
+    }
     listOnlineMachine() {
         try {
             console.log('count online machine', this.sclients.length);
@@ -360,9 +360,9 @@ export class SocketServerVMC  extends SocketEmitter{
             });
         } catch (error) {
             console.log(error);
-            
+
         }
-       
+
     }
     findOnlneMachine(machineId: string) {
         try {
@@ -376,11 +376,11 @@ export class SocketServerVMC  extends SocketEmitter{
             return x;
         } catch (error) {
             console.log(error);
-            
+
         }
-        
+
     }
-    processOrder(machineId: string, position: number, transactionID: number) {
+    processOrder(machineId: string, position: number, transactionID: string) {
         try {
             const x = this.sclients.find(v => {
                 const x = v['machineId'] as IMachineClientID;
@@ -390,7 +390,7 @@ export class SocketServerVMC  extends SocketEmitter{
                 return false;
             });
             if (position < 0 || position > 99 || Number.isNaN(position))
-                return { position, status: x};
+                return { position, status: x };
             if (x) {
                 const res = {} as IResModel;
                 res.command = EZDM8_COMMAND.shippingcontrol
@@ -399,15 +399,15 @@ export class SocketServerVMC  extends SocketEmitter{
                 res.status = 1;
                 res.data = { slot: position };
                 // console.log('writing...', x['machineId']);
-                return { position, status: x.write(JSON.stringify(res)+'\n') };
+                return { position, status: x.write(JSON.stringify(res) + '\n') };
             } else {
                 console.log('client id socket not found');
                 const data = `${machineId}-${position}-${transactionID}`
-                return { position, status: x ,message:'Error machineID not found '+data+'--'+JSON.stringify(this.sclients)};
+                return { position, status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
             }
-        } catch (error:any) {
+        } catch (error: any) {
             console.log('client id socket not found');
-            return { position, status: false ,message:error.message};
+            return { position, status: false, message: error.message };
         }
 
     }

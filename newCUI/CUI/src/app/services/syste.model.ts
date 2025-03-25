@@ -683,7 +683,8 @@ export enum EPaymentProvider {
     mmoney = 'mmoney',
     umoney = 'umoney',
     bcelone = 'bcelone',
-    laab = 'laab'
+    laab = 'laab',
+    laoqr = 'laoqr'
 }
 export interface IMMoneyQRRes {
     uuid: string;
@@ -1018,6 +1019,17 @@ export interface IBillProcess {
     position: number;
     bill: IVendingMachineBill;
 }
+
+
+export interface IBillProcessLocal {
+    transactionID: number;
+    machineId: string;
+    max: number;
+    position: number;
+    stock: IStock;
+}
+
+
 export interface ILockControlService extends ISerialService {
     unlock(lockAddress: number): Promise<IResModel>;
     readAllLockStatus(): Promise<IResModel>;

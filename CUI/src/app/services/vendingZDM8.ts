@@ -67,7 +67,7 @@
 
 //     checkSum(buff: any) {
 //         try {
-//             let x = crc.crc16modbus(Buffer.from(buff.join(''), 'hex')).toString(16);
+//             let x = crc.crc16modbus(this.serialService.hexToUint8Array(buff.join(''), 'hex')).toString(16);
 //             x.length < 4 ? x = '0' + x : '';
 //             console.log(x);
 //             console.log(x.substring(2) + x.substring(0, 2));
@@ -322,7 +322,7 @@
 //                 const x = buff.join('') + check;
 //                 console.log('x', x);
 
-//                 this.port.write(Buffer.from(x, 'hex'), (e) => {
+//                 this.port.write(this.serialService.hexToUint8Array(x, 'hex'), (e) => {
 //                     if (e) {
 //                         reject(PrintError(command, param, e.message));
 //                         console.log('command with Error: ', e.message)

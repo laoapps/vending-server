@@ -5,8 +5,9 @@ import { OrderPaidPage } from '../order-paid/order-paid.page';
 import { ModalController } from '@ionic/angular';
 import qrlogo from 'qrcode-with-logos';
 import { IENMessage, IGenerateQR } from 'src/app/models/base.model';
+// import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as cryptojs from 'crypto-js';
@@ -22,9 +23,10 @@ export class OrderCartPage implements OnInit, OnDestroy {
   @Input() getTotalSale: any;
 
   private paidValidationProcess: PaidValidationProcess;
-  private generateMMoneyQRCodeProcess: GenerateMMoneyQRCodeProcess;
+  // private generateMMoneyQRCodeProcess: GenerateMMoneyQRCodeProcess;
+  private generateLaoQRCodeProcess: GenerateMMoneyQRCodeProcess;
 
-  sweetalert: any = Swal;
+  // sweetalert: any = Swal;
 
   autoPaymentTimer: any = {} as any;
   autoPaymentCounter: number = 15;
@@ -94,15 +96,16 @@ export class OrderCartPage implements OnInit, OnDestroy {
   elementLeft: HTMLDivElement = {} as any;
   elementRight: HTMLDivElement = {} as any;
 
-  
+
   constructor(
     public apiService: ApiService,
     public modal: ModalController,
     public vendingAPIService: VendingAPIService
-  ) { 
+  ) {
 
     this.paidValidationProcess = new PaidValidationProcess(this.apiService, this.vendingAPIService);
-    this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
+    // this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
+    this.generateLaoQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
 
 
   }
@@ -118,7 +121,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
     this.loadBilling();
   }
-  
+
   ngOnDestroy(): void {
     clearInterval(this.autoPaymentTimer);
     clearInterval(this.autoSelectPaymentMethodTimer);
@@ -137,7 +140,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
     this.currentName = current[0].name;
     this.currentValue = current[0].value;
 
-    for(let i = 0; i < 50; i++) {
+    for (let i = 0; i < 50; i++) {
       const elm = document.createElement('div');
       elm.className = 'shape';
       this.shapesObject.push(elm);
@@ -177,7 +180,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
   }
 
   loadDestroy() {
-    
+
     this.destroyTimer = setInterval(() => {
       this.destroyCounter--;
       if (this.destroyCounter == 0) {
@@ -192,7 +195,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
         clearInterval(this.destroyTimer);
         this.destroyCounter = 60;
 
-        this.apiService.myTab1.clearCart();  
+        this.apiService.myTab1.clearCart();
         this.apiService.modal.dismiss();
         this.apiService.alertWarnning(IENMessage.timeout, IENMessage.qrcodeExpired);
       }
@@ -243,7 +246,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
     input.checked = true;
     (document.querySelector('.qr-img') as HTMLImageElement).src = '';
-    
+
     this.apiService.myTab1.removeCart(index);
     this.getSummarizeOrder();
     this.loadArrowScrollSuggest();
@@ -287,39 +290,38 @@ export class OrderCartPage implements OnInit, OnDestroy {
     const paymentGroupRight = (document.querySelector('.payment-group-right') as HTMLDivElement);
     orderlist.classList.add('hidden');
     footer.classList.add('active');
-    
+
     this.autoSelectPaymentMethodTimer = setInterval(async () => {
       try {
-        
+
         this.autoSelectPaymentMethodCounter--;
         if (this.autoSelectPaymentMethodCounter == 0) {
           clearInterval(this.autoSelectPaymentMethodTimer);
           this.autoSelectPaymentMethodCounter = 1;
-  
-          if (this.apiService.cash.amount > 0 && this.apiService.cash.amount >= this.getTotalSale.t)
-          {
+
+          if (this.apiService.cash.amount > 0 && this.apiService.cash.amount >= this.getTotalSale.t) {
             this.currentLogo = this.paymentList[0].image;
             this.qrcode = 'cash';
             paymentGroupLeft.classList.add('active');
             paymentGroupRight.classList.add('active');
-            
+
             const run = await this.laabPaid();
             if (run != IENMessage.success) throw new Error(run);
             this.apiService.myTab1.clearStockAfterLAABGo();
             this.apiService.modal.dismiss();
 
           } else {
-  
-              // default mmoney
-              let run: any = await this.mmoneyQRCode();
-              if (run != IENMessage.success) throw new Error(run);
-              
-              run = await this.generateQRCode();
-              if (run != IENMessage.success) throw new Error(run);
-  
-              paymentGroupLeft.classList.add('active');
-              paymentGroupRight.classList.add('active');
-  
+
+            // default mmoney
+            let run: any = await this.laoQRCode();
+            if (run != IENMessage.success) throw new Error(run);
+
+            run = await this.generateQRCode();
+            if (run != IENMessage.success) throw new Error(run);
+
+            paymentGroupLeft.classList.add('active');
+            paymentGroupRight.classList.add('active');
+
           }
         }
 
@@ -332,11 +334,11 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
 
   clearOrders(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
+
         const alert = this.apiService.alertConfirm(`Cancel paying orders and clear all`);
-        if ((await alert).isConfirmed){
+        if ((await alert).isConnected) {
           this.orders = [];
           this.getTotalSale.q = 0;
           this.getTotalSale.t = 0;
@@ -344,7 +346,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
           clearInterval(this.autoPaymentTimer);
           this.autoPaymentCounter = 15;
 
-          this.apiService.myTab1.clearCart();  
+          this.apiService.myTab1.clearCart();
           this.apiService.modal.dismiss();
         }
 
@@ -399,7 +401,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
             },
             ip: '',
             time: new Date().toString(),
-            token: cryptojs.SHA256(this.apiService.machineId.machineId +this.apiService.machineId.otp).toString(cryptojs.enc.Hex),
+            token: cryptojs.SHA256(this.apiService.machineId.machineId + this.apiService.machineId.otp).toString(cryptojs.enc.Hex),
           }
         }
 
@@ -419,10 +421,10 @@ export class OrderCartPage implements OnInit, OnDestroy {
   }
 
   generateQRCode(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
-        const qr = await new qrlogo({ logo: this.currentLogo, content: this.qrcode}).getCanvas();
+
+        const qr = await new qrlogo({ logo: this.currentLogo, content: this.qrcode }).getCanvas();
         const qrcodeIMG = (document.querySelector('.qr-img') as HTMLImageElement);
         qrcodeIMG.src = qr.toDataURL();
         this.elementLeft.classList.add('active');
@@ -436,8 +438,36 @@ export class OrderCartPage implements OnInit, OnDestroy {
     });
   }
 
-    mmoneyQRCode(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+  // mmoneyQRCode(): Promise<any> {
+  //   return new Promise<any>(async (resolve, reject) => {
+  //     try {
+  //       const setSummarizeOrder = this.setSummarizeOrder();
+
+  //       const params = {
+  //         orders: setSummarizeOrder.summarizeOrder,
+  //         amount: setSummarizeOrder.total,
+  //         machineId: this.apiService.machineId.machineId
+  //       }
+
+  //       const run = await this.generateLaoQRCodeProcess.Init(params);
+  //       if (run.message != IENMessage.success) throw new Error(run);
+  //       // this.loadDestroy();
+
+
+  //       this.qrcode = run.data[0].mmoneyQRCode.qr;
+  //       this.currentLogo = this.paymentList[0].image;
+
+  //       resolve(IENMessage.success);
+
+  //     } catch (error) {
+  //       resolve(error.message);
+  //     }
+  //   });
+  // }
+
+
+  laoQRCode(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         const setSummarizeOrder = this.setSummarizeOrder();
 
@@ -447,7 +477,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
           machineId: this.apiService.machineId.machineId
         }
 
-        const run = await this.generateMMoneyQRCodeProcess.Init(params);
+        const run = await this.generateLaoQRCodeProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         // this.loadDestroy();
 
@@ -463,7 +493,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
     });
   }
 
-   loadPaymentMethods() {
+  loadPaymentMethods() {
 
     this.elementLeft = (document.querySelector('.payment-group-left') as HTMLDivElement);
     this.elementRight = (document.querySelector('.payment-group-right') as HTMLDivElement);
@@ -473,7 +503,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
       const inputs = (document.querySelectorAll('.input-choice') as NodeListOf<HTMLInputElement>);
       const labels = (document.querySelectorAll('.label-choice') as NodeListOf<HTMLInputElement>);
       const imgs = (document.querySelectorAll('.img-choice') as NodeListOf<HTMLInputElement>);
-      for(let i = 0; i < inputs.length; i++) {
+      for (let i = 0; i < inputs.length; i++) {
         inputs[i].setAttribute('id', `method-choice-${i}`);
         labels[i].setAttribute('for', `method-choice-${i}`);
         inputs[i].addEventListener('click', async () => await this.selectPaymentMethods(i, inputs));
@@ -484,7 +514,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
     });
   }
   selectPaymentMethods(i: number, inputs: NodeListOf<HTMLInputElement>): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         this.elementLeft.classList.remove('active');
@@ -499,7 +529,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
         let run: any = {} as any;
         if (this.currentValue == IGenerateQR.mmoney) {
-          run = await this.mmoneyQRCode();
+          run = await this.laoQRCode();
           if (run != IENMessage.success) throw new Error(run);
 
           this.billdate = new Date();
@@ -510,11 +540,11 @@ export class OrderCartPage implements OnInit, OnDestroy {
         resolve(IENMessage.success);
 
       } catch (error) {
-        this.apiService.alertError(error.message); 
+        this.apiService.alertError(error.message);
         resolve(error.message);
       }
     });
   }
 
-  
+
 }

@@ -22,12 +22,13 @@ import { LaabVendingAPI } from "./api/laab.vending";
 import { CashNV9LAAB } from "./api/cashNV9LAAB";
 import { InventoryLocker } from "./api/inventoryLocker";
 import { ControlVersionAPI } from "./api/controlVersion";
+import dotenv from "dotenv";
 
-const f = fs.readFileSync(__dirname + "/.env", "utf8");
-const env = JSON.parse(f); //../
-process.env.backendKey = env.backendKey;
-process.env.production = env.production;
-process.env.name = env.name;
+// const f = fs.readFileSync(__dirname + "/.env", "utf8");
+// const env = JSON.parse(f); //../
+process.env.backendKey = process.env.backendKey;
+process.env.production = process.env.production;
+process.env.name = process.env.name;
 process.env._image_path = path.join(__dirname, "..", "public");
 process.env._log_path = path.join(__dirname, "..", "logs");
 
@@ -116,16 +117,48 @@ CreateDatabase("")
         if (d.command == EClientCommand.confirmMMoney) {
           console.log("confirmMMoney");
           invZDM8.confirmMMoneyOder(c).then((r) => {
-            console.log(r.data);
-            res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
+            // console.log(r.data);
+            // res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
+            if (r) {
+              res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
+            } else {
+              res.send(PrintError(d.command, r, EMessage.error));
+            }
           });
         } else if (d.command == EClientCommand.confirmLAAB) {
           console.log("confirmLAAB");
           invZDM8.confirmLAABOder(c).then((r) => {
-            console.log(r.data);
+            // console.log(r.data);
             res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
           });
-        } else {
+        } else if (d.command == EClientCommand.confirmLAOQR) {
+          console.log('confirmLAOQR');
+          invZDM8.confirmLaoQROrder(c).then((r) => {
+            // console.log(r.data);
+            if (r) {
+              res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
+            } else {
+              res.send(PrintError(d.command, r, EMessage.error));
+            }
+          }).catch(e => {
+            console.log(e);
+            res.send(PrintError(d.command, e, EMessage.error));
+          });
+        } else if (d.command == EClientCommand.findLaoQRPaid) {
+          console.log('findLaoQRPaid');
+          invZDM8.findLaoQROrderPaid(c).then((r) => {
+            // console.log(r.data);
+            if (r) {
+              res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
+            } else {
+              res.send(PrintError(d.command, r, EMessage.error));
+            }
+          }).catch(e => {
+            console.log(e);
+            res.send(PrintError(d.command, e, EMessage.error));
+          });
+        }
+        else {
           return res.send(PrintError(d?.command, [], EMessage.error));
         }
       } catch (error) {

@@ -16,12 +16,13 @@
 
         <div (click)="close()" class="item-buymore">
           <div class="icon">
-            <i class="fa-solid fa-plus"></i> 
+            <!-- <i class="fa-solid fa-plus"></i> -->
+            <ion-icon style="font-size:90px;color: white;" name="add"></ion-icon>
           </div>
         </div>
-        
+
         <div *ngFor="let order of parseorders; let i = index" href="javascript:void(0)" class="item">
-        <!-- <div *ngFor="let order of lists; let i = index" href="javascript:void(0)" class="item"> -->
+          <!-- <div *ngFor="let order of lists; let i = index" href="javascript:void(0)" class="item"> -->
           <div class="content">
             <div class="icon">
               <img [src]="apiService?.imageList[order.stock.image]" alt="">
@@ -32,7 +33,8 @@
               <div class="price">{{ order?.stock?.price | number }}</div>
             </div>
             <a (click)="removeOrder(i)" href="javascript:void(0)" class="btn-epin">
-              <i class="fa-solid fa-trash-can"></i>
+              <!-- <i class="fa-solid fa-trash-can"></i> -->
+              <ion-icon style="font-size:30px;color: gray;align-items: center;" name="trash"></ion-icon>
             </a>
           </div>
         </div>
@@ -44,11 +46,38 @@
     <div class="laab-card-footer">
 
       <div class="payment-list">
-        <div class="payment-list-left">
+        <div *ngIf="true" class="payment-list-left">
 
           <div class="title">Payment Options</div>
           <div class="item-list">
-            <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)" href="javascript:void(0)" class="item active">
+            <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)"
+              href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+          </div>
+
+          <div class="title" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false"
+            style="margin-top: 20px;">
+            ທາງເລືອກເພີ່ມເຕີມ</div>
+
+          <div class="item-list" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false">
+            <a *ngFor="let list of paymentOptions; let i = index" (click)="chooseLocalPaymentMethod()"
+              href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+          </div>
+
+          <div class="title" *ngIf="isPayment == true" style="margin-top: 20px;color: red;">
+            *ກໍລະນີຈ່າຍເງິນແລ້ວບໍ່ໄດ້ເຄື່ອງ</div>
+          <div class="item-list" *ngIf="isPayment == true">
+            <a *ngFor="let list of paymentCheck; let i = index" (click)="checkCallbackMMoney()"
+              href="javascript:void(0)" class="item active">
               <div class="icon">
                 <img src="{{ list.image }}" alt="">
               </div>
@@ -57,11 +86,11 @@
           </div>
 
 
-          <div class="vending-section">
+          <!-- <div class="vending-section">
             <div class="title">LAAB Cash</div>
             <div class="sub-title">{{ apiService.cash.amount | number }}</div>
             <div class="line"></div>
-            
+
             <div class="title">LAAB Cash in</div>
             <div class="sub-title">You can cash in by using LAAB QR</div>
 
@@ -70,10 +99,10 @@
               <div class="title">GO</div>
               <div class="text">Use LAAB cash pay these orders</div>
             </a>
-          </div>
+          </div> -->
 
         </div>
-        <div class="payment-list-right">
+        <div *ngIf="true" class="payment-list-right">
 
           <div class="bill-container">
             <div *ngIf="isPayment == true" class="bill-wave-top">
@@ -83,6 +112,10 @@
               <img src="" alt="" id="qr-img" class="qr-img">
 
               <div class="total">{{ parseGetTotalSale.t | number }}</div>
+              <div *ngIf="isPayment == true"
+                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;">
+                ຫນ້ານີ້ຈະປິດພາຍໃນ {{
+                countdownDestroy }} ວິນາທີ </div>
             </div>
             <div *ngIf="isPayment == false" class="bill-body">
 
@@ -99,6 +132,9 @@
               <div class="line"></div>
               <div class="group">
                 <div class="text">{{ paymentText }}</div>
+                <!-- <div>{{ countdownDestroy }}</div> -->
+
+
                 <div class="value">{{ billDate | date: 'yyyy-MM-dd HH:MM:SS':'+7' }}</div>
               </div>
               <div class="line"></div>

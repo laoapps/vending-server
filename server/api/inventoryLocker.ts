@@ -701,7 +701,7 @@ export class InventoryLocker implements IBaseClass {
                                 const pos = this.ssocket.processOrder(
                                     machineId,
                                     position,
-                                    transactionID
+                                    transactionID + ''
                                 );
                                 // put here to be 0% to be double drop
                                 //that.setBillProces(
@@ -941,7 +941,7 @@ export class InventoryLocker implements IBaseClass {
                         if (read) {
                             // keep unlocking
                             const o = JSON.parse(read) as IDoor
-                            this.ssocket.processOrder(machineId.machineId, o.doorNumber, new Date().getTime())
+                            this.ssocket.processOrder(machineId.machineId, o.doorNumber, new Date().getTime() + '')
                         } else {
 
                             doorEntity
@@ -977,7 +977,7 @@ export class InventoryLocker implements IBaseClass {
                                         console.log('clone new door exist');
                                         writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(r));
                                         // Unlock here                            
-                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime())
+                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime() + '')
 
                                         res.send(
                                             PrintSucceeded(
@@ -1129,7 +1129,7 @@ export class InventoryLocker implements IBaseClass {
                         if (read) {
                             // keep unlocking
                             const o = JSON.parse(read) as IDoor
-                            this.ssocket.processOrder(machineId.machineId, o.doorNumber, new Date().getTime())
+                            this.ssocket.processOrder(machineId.machineId, o.doorNumber, new Date().getTime() + '')
                         } else {
 
                             doorEntity
@@ -1162,7 +1162,7 @@ export class InventoryLocker implements IBaseClass {
                                         this.doorRec(machineId.machineId, d)
                                         writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(r));
                                         // Unlock here                            
-                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime())
+                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime() + '')
 
                                         res.send(
                                             PrintSucceeded(
@@ -1207,7 +1207,7 @@ export class InventoryLocker implements IBaseClass {
                         if (read) {
                             // keep unlocking
                             const o = JSON.parse(read) as IDoor
-                            this.ssocket.processOrder(machineId.machineId, o.doorNumber, new Date().getTime())
+                            this.ssocket.processOrder(machineId.machineId, o.doorNumber, new Date().getTime() + '')
                         } else {
 
                             doorEntity
@@ -1239,7 +1239,7 @@ export class InventoryLocker implements IBaseClass {
                                         this.doorRec(machineId.machineId, d)
                                         writeDoorDone(machineId.machineId + '' + d?.data.cabinetNumber + '' + d?.data.doorNumber, JSON.stringify(r));
                                         // Unlock here                            
-                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime())
+                                        this.ssocket.processOrder(machineId.machineId, r.doorNumber, new Date().getTime() + '')
 
                                         res.send(
                                             PrintSucceeded(
@@ -1660,7 +1660,7 @@ export class InventoryLocker implements IBaseClass {
         if ([22331, 1000].includes(transactionID)) {
             resx.status = 1;
             console.log("onMachineResponse 22231", transactionID);
-            resx.transactionID = transactionID || -1;
+            resx.transactionID = ((transactionID || -1) + '') + '';
             resx.data = { bill, position };
             //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
         } else {
@@ -1669,7 +1669,7 @@ export class InventoryLocker implements IBaseClass {
             idx == -1 || !idx ? "" : bill?.vendingsales?.splice(idx, 1);
             resx.status = 1;
             console.log("onMachineResponse xxx", transactionID);
-            resx.transactionID = transactionID || -1;
+            resx.transactionID = (transactionID || -1) + '';
             resx.data = { bill, position };
         }
         const clientId = bill?.clientId + "";

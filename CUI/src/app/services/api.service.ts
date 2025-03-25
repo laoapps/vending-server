@@ -3,13 +3,16 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
   EClientCommand,
   EPaymentProvider,
+  ESerialPortType,
   IAlive,
   IBillProcess,
   IClientId,
+  IlogSerial,
   IMachineClientID,
   IMachineId,
   IReqModel,
   IResModel,
+  ISerialService,
   IStock,
   IVendingMachineBill,
   IVendingMachineSale,
@@ -25,17 +28,17 @@ import {
   ToastController,
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
-import moment from 'moment';
+import * as  moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
-import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+// import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
 import axios from 'axios';
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 import { BehaviorSubject } from 'rxjs';
 import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
 import { EpinShowCodePageModule } from '../tab1/LAAB/epin-show-code/epin-show-code.module';
@@ -77,12 +80,18 @@ import { VendingGoPage } from '../tab1/Vending/vending-go/vending-go.page';
 import { HangmiFoodSegmentPage } from '../tab1/VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
 import { HangmiStoreSegmentPage } from '../tab1/VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 import { TopupAndServiceSegmentPage } from '../tab1/VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
+import { IndexedDBService } from './indededdb.service';
+import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
+import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+import { Toast } from '@capacitor/toast';
+import { VendingIndexServiceService } from '../vending-index-service.service';
+import { IndexdblocalService } from './indexdblocal.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  
+
 
   toggleWebviewTab: boolean = false;
 
@@ -157,27 +166,27 @@ export class ApiService {
 
   public static __percent: any;
 
-  ___LaabGoPage:any
-  ___EpinCashOutPage:any
-  ___EpinShowCodePage:any
-  ___SmcListPage:any
-  ___LaabCashinShowCodePage:any
-  ___LaabCashoutPage:any
-  ___StackCashoutPage:any
-  ___MmoneyIosAndroidDownloadPage:any
-  ___TopupServicePage:any
-  ___TopupAndServicePage:any
-  ___PhonePaymentPage:any
-  ___VendingGoPage:any
-  ___HowToPage:any
-  ___MmoneyCashoutPage:any
-  ___HangmiStoreSegmentPage:any
-  ___HangmiFoodSegmentPage:any
-  ___TopupAndServiceSegmentPage:any
-  ___PlayGamesPage:any
-  ___OrderCartPage:any
-  ___OrderPaidPage:any
-  ___AutoPaymentPage:any
+  ___LaabGoPage: any
+  ___EpinCashOutPage: any
+  ___EpinShowCodePage: any
+  ___SmcListPage: any
+  ___LaabCashinShowCodePage: any
+  ___LaabCashoutPage: any
+  ___StackCashoutPage: any
+  ___MmoneyIosAndroidDownloadPage: any
+  ___TopupServicePage: any
+  ___TopupAndServicePage: any
+  ___PhonePaymentPage: any
+  ___VendingGoPage: any
+  ___HowToPage: any
+  ___MmoneyCashoutPage: any
+  ___HangmiStoreSegmentPage: any
+  ___HangmiFoodSegmentPage: any
+  ___TopupAndServiceSegmentPage: any
+  ___PlayGamesPage: any
+  ___OrderCartPage: any
+  ___OrderPaidPage: any
+  ___AutoPaymentPage: any
 
   backGroundMusicElement: HTMLAudioElement = {} as any;
   muteSound = false;
@@ -225,12 +234,17 @@ export class ApiService {
 
   imageList: any = {};
 
+
+
+  localBalance: number = Number(localStorage.getItem('balanceLocal') ?? 0);
+
   _billEvents = new EventEmitter();
   stock = new Array<IStock>();
   eventEmitter = new EventEmitter();
   pb = Array<IBillProcess>();
   machineuuid = uuid.v4();
   url = localStorage.getItem('url') || environment.url;
+  serverUrl = localStorage.getItem('serverUrl') || environment.serverUrl;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   contact = localStorage.getItem('contact') || '55516321';
   currentPaymentProvider = EPaymentProvider.mmoney;
@@ -248,11 +262,12 @@ export class ApiService {
   static __T: any;
   static waiting_T: any;
 
-  _machineStatus = { status: {} as IMachineStatus } as any;
+  // _machineStatus = { status: {} as IMachineStatus };
   _cuiSetting = {} as any;
-  musicVolume=6;
+  musicVolume = 6;
 
   countErrorPay: number = 0;
+
 
   checkAppVersion: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(
@@ -264,20 +279,23 @@ export class ApiService {
     public modal: ModalController,
     // public notifyService: NotifierService,
     public storage: IonicStorageService,
-
+    public IndexedDB: IndexedDBService,
+    public IndexeLocaldDB: IndexdblocalService,
     public load: LoadingController,
     public alert: AlertController
   ) {
+
+
     if (!localStorage.getItem('remoteProcess')) localStorage.setItem('remoteProcess', 'yes');
     const that = this;
     this.wsapi = wsapi;
-    this.muteSound = localStorage.getItem('isRobotMuted')?true:false;
-    this.backgrounSound = localStorage.getItem('isMusicMuted')?true:false;
-    this.musicVolume = localStorage.getItem('musicVolume')?Number(localStorage.getItem('musicVolume')):6;
+    this.muteSound = localStorage.getItem('isRobotMuted') ? true : false;
+    this.backgrounSound = localStorage.getItem('isMusicMuted') ? true : false;
+    this.musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
     setTimeout(() => {
       this.playBackGroundMusic();
     }, 3000);
-    
+
     // this.zone.runOutsideAngular(() => {
     this.machineId.machineId = localStorage.getItem('machineId') || '12345678';
     this.machineId.otp = localStorage.getItem('otp') || '111111';
@@ -304,16 +322,16 @@ export class ApiService {
 
 
         // reconfirm when deductstock fail
-        if(JSON.stringify(pendingstock) === JSON.stringify(response.data.pendingStock) && pendingstock.length ){
+        if (JSON.stringify(pendingstock) === JSON.stringify(response.data.pendingStock) && pendingstock.length) {
           pendingstockcount++;
-        }else {
-          pendingstockcount=0;
-          pendingstock= response.data.pendingStock;
+        } else {
+          pendingstockcount = 0;
+          pendingstock = response.data.pendingStock;
         }
-        if (response.data.pendingStock != undefined && Object.entries(response.data.pendingStock).length > 0&&pendingstockcount===3) {
+        if (response.data.pendingStock != undefined && Object.entries(response.data.pendingStock).length > 0 && pendingstockcount === 3) {
           this.reconfirmStock(response.data.pendingStock);
-          pendingstockcount=0;
-          pendingstock=[];
+          pendingstockcount = 0;
+          pendingstock = [];
         }
 
 
@@ -328,17 +346,17 @@ export class ApiService {
           that.cash.amount = r.balance;
         }
 
-        that._machineStatus.status = r.data.mstatus;
-        that._machineStatus.status.temp = hex2dec(
-          that._machineStatus.status.temp
-        );
-        const cset =r.data.setting;
-        that._cuiSetting.imgHeader != cset.imgHeader||(that._cuiSetting.imgHeader = cset.imgHeader);
-        that._cuiSetting.imgLogo != cset.imgLogo||(that._cuiSetting.imgLogo = cset.imgLogo);
-        that._cuiSetting.imgFooter != cset.imgFooter||(that._cuiSetting.imgFooter = cset.imgFooter);
+        // that._machineStatus.status = r.data.mstatus;
+        // that._machineStatus.status.temp = hex2dec(
+        //   that._machineStatus.status.temp
+        // );
+        const cset = r.data.setting;
+        that._cuiSetting.imgHeader != cset.imgHeader || (that._cuiSetting.imgHeader = cset.imgHeader);
+        that._cuiSetting.imgLogo != cset.imgLogo || (that._cuiSetting.imgLogo = cset.imgLogo);
+        that._cuiSetting.imgFooter != cset.imgFooter || (that._cuiSetting.imgFooter = cset.imgFooter);
 
-        if (!that._cuiSetting?.imgHeader) that._cuiSetting.imgHeader = {"background":"url(\'../../assets/background/1910.jpg\') rgb(255, 255, 255) no-repeat center fixed","background-size": "contain"};
-        
+        if (!that._cuiSetting?.imgHeader) that._cuiSetting.imgHeader = { "background": "url(\'../../assets/background/1910.jpg\') rgb(255, 255, 255) no-repeat center fixed", "background-size": "contain" };
+
         // if(!this._cuiSetting.imgFooter)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
         // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
 
@@ -351,8 +369,7 @@ export class ApiService {
         // const local_version = undefined;
 
 
-        if (app_version != undefined && Object.entries(app_version).length > 0)
-        { 
+        if (app_version != undefined && Object.entries(app_version).length > 0) {
 
           // * update
           if (local_version == null) {
@@ -395,10 +412,10 @@ export class ApiService {
           ?.name;
 
       // const x = this.vendingOnSale?.find(v => r?.bill?.vendingsales.find(vx => vx.stock.id == v.stock.id && r.position.position + '' == vx.position + ''));
-      
+
       const params = {
         trans: [
-          { 
+          {
             transactionID: r?.transactionID, position: r?.position
           }
         ]
@@ -406,74 +423,74 @@ export class ApiService {
       this.confirmDeductStock(params).subscribe(res_confirm => {
         try {
           console.log(`confirm deduct stock`, res_confirm);
-        if (res_confirm.status != 1) throw new Error(res_confirm.message);
+          if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
-        const vsales = ApiService.vendingOnSale; 
-        const x = vsales.find((v) => {
-          if (v.position == r.position) {
-            v.stock.qtty--;
-            return true;
-          }
-        });
-        this.eventEmitter.emit('stockdeduct', x);
-
-        // fix here
-        if (!localStorage.getItem('debug')) {
-          this.saveSale(vsales).subscribe((r) => {
-            console.log(r);
-            if (r.status) {
-              console.log(`save sale success`);
-            } else {
-              this.simpleMessage(IENMessage.saveSaleFail);
+          const vsales = ApiService.vendingOnSale;
+          const x = vsales.find((v) => {
+            if (v.position == r.position) {
+              v.stock.qtty--;
+              return true;
             }
           });
-        }
-        
-        console.log('X', x, r.position, x && r.position);
-  
-        if (x && r.position) {
-          // # save to machine
-          console.log('saveSale', vsales);
-  
-          // this.clearWaitingT();
-  
-          // PLAY SOUNDS
-          this.soundCompleted();
-          setTimeout(() => {
-            this.soundThankYou();
-          }, 2000);
-          that.toast.create({ message, duration: 2000 }).then(r => {
-            r.present();
-          });
-  
-          r.bill.updatedAt = new Date();
-          console.log(`vendingOnSale-->`, vsales);
-          this.storage.set('saleStock', vsales, 'stock').then((r) => {
-            // that.deductOrderUpdate(x.position);
-          });
-        } else if (!r.position) {
-          // PLAY SOUNDS
-          this.soundSystemError();
-          this.alert
-            .create({
-              header: 'Alert',
-              message,
-              buttons: [
-                {
-                  text: 'OK',
-                  role: 'confirm',
-                  handler: () => { },
-                },
-              ],
-            })
-            .then((v) => v.present());
-        }
+          this.eventEmitter.emit('stockdeduct', x);
+
+          // fix here
+          if (!localStorage.getItem('debug')) {
+            this.saveSale(vsales).subscribe((r) => {
+              console.log(r);
+              if (r.status) {
+                console.log(`save sale success`);
+              } else {
+                this.simpleMessage(IENMessage.saveSaleFail);
+              }
+            });
+          }
+
+          console.log('X', x, r.position, x && r.position);
+
+          if (x && r.position) {
+            // # save to machine
+            console.log('saveSale', vsales);
+
+            // this.clearWaitingT();
+
+            // PLAY SOUNDS
+            this.soundCompleted();
+            setTimeout(() => {
+              this.soundThankYou();
+            }, 2000);
+            that.toast.create({ message, duration: 2000 }).then(r => {
+              r.present();
+            });
+
+            r.bill.updatedAt = new Date();
+            console.log(`vendingOnSale-->`, vsales);
+            this.storage.set('saleStock', vsales, 'stock').then((r) => {
+              // that.deductOrderUpdate(x.position);
+            });
+          } else if (!r.position) {
+            // PLAY SOUNDS
+            this.soundSystemError();
+            this.alert
+              .create({
+                header: 'Alert',
+                message,
+                buttons: [
+                  {
+                    text: 'OK',
+                    role: 'confirm',
+                    handler: () => { },
+                  },
+                ],
+              })
+              .then((v) => v.present());
+          }
         } catch (error) {
           console.log(error.message);
           this.alertError(error.message);
         }
-        
-  
+
+
 
       });
 
@@ -484,42 +501,96 @@ export class ApiService {
 
     // fix der
     this.wsapi.waitingDelivery.subscribe((r) => {
-      console.log('WAITING FOR DELIVERY');
-      // available bills
+      // console.log('WAITING FOR DELIVERY :', r);
 
-      if (r) {
-        this.dismissModal();
-        this.dismissModal();
-        this.dismissLoading();
-        this.loadDeliveryingBills().subscribe((r) => {
-          if (r.status) {
-            this.dismissModal();
-            const pb = r.data as Array<IBillProcess>;
-            if (pb.length)
-              this.showModal(RemainingbillsPage, { r: pb }, false).then((r) => {
-                r.present();
-              });
-          } else {
-            this.toast
-              .create({ message: r.message, duration: 5000 })
-              .then((r) => {
-                r.present();
-              });
-          }
-          this.eventEmmiter.emit('delivery');
-        });
-        // this.showModal(RemainingbillsPage, { r });
-      }
+      // if (r) {
+      //   this.dismissModal();
+      //   this.dismissModal();
+      //   this.dismissLoading();
+      //   this.loadDeliveryingBillsNew().subscribe((r) => {
+      //     if (r.status) {
+      //       this.dismissModal();
+      //       const pb = r.data as Array<IBillProcess>;
+      //       console.log('=====> PB', pb);
+
+      //       if (pb.length)
+      //         this.showModal(RemainingbillsPage, { r: pb }, true).then((r) => {
+      //           r.present();
+      //         });
+      //     } else {
+      //       this.toast
+      //         .create({ message: r.message, duration: 5000 })
+      //         .then((r) => {
+      //           r.present();
+      //         });
+      //     }
+      //     this.eventEmmiter.emit('delivery');
+      //   });
+      //   // this.showModal(RemainingbillsPage, { r });
+      // }
     });
 
     // this.initLocalHowToVideoPlayList();
   }
-  public onDelivery(cb: (data) => void) {
+
+  async waitingDelivery(r: any, serial: ISerialService) {
+    console.log('WAITING DELIVERY NEW :', r);
+
+    console.log('VENDING ON SALE :', ApiService.vendingOnSale);
+
+
+    try {
+      if (r) {
+        this.dismissModal();
+        this.dismissModal();
+        this.dismissLoading();
+        const pb = r.data as Array<IBillProcess>;
+        // console.log('=====> PB', pb);
+
+        // console.log('=====> PB Length :', pb.length);
+        // const pdStock = [];
+        let transactionList = [];
+        for (let index = 0; index < pb.length; index++) {
+          const element = pb[index];
+          this.IndexedDB.addBillProcess(element);
+          console.log('=====> PB ELEMENT :', element);
+          transactionList.push(element.transactionID);
+          // pdStock.push({ transactionID: element.transactionID, position: element.position });
+          // this.reconfirmStockNew([{ transactionID: element.transactionID, position: element.position }]);
+        }
+        // console.log('transactionList :', transactionList);
+
+        this.confirmBillPaid(transactionList).subscribe((r) => {
+          console.log('=====> CONFIRM BILL PAID :', r);
+        });
+
+        // console.log('=====> PD STOCK :', pdStock);
+
+
+        if (pb.length)
+          this.showModal(RemainingbillsPage, { r: pb, serial: serial }, true).then((r) => {
+            r.present();
+          });
+        this.eventEmmiter.emit('delivery');
+
+      }
+    } catch (error) {
+      console.log('error waitingDelivery is:', error);
+    }
+
+  }
+
+
+
+
+
+
+  public onDelivery(cb: (data: any) => void) {
     if (cb) {
       this.eventEmmiter.on('delivery', cb);
     }
   }
-  public onStockDeduct(cb: (data) => void) {
+  public onStockDeduct(cb: (data: any) => void) {
     if (cb) {
       this.eventEmmiter.on('stockdeduct', cb);
     }
@@ -529,7 +600,7 @@ export class ApiService {
   //   return ApiService.vendingOnSale;
   // }
 
-  reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
+  reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>) {
     const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
     console.log(`ping pending stock`, trans);
     const params = {
@@ -537,11 +608,65 @@ export class ApiService {
     }
 
     try {
+      const vsales = ApiService.vendingOnSale;
+      // const x = vsales.find((v) => {
+      //   pendingStock.filter(item => {
+      //     if (v.position == item.position) {
+      //       if (v.stock.qtty > 0) {
+      //         v.stock.qtty--;
+      //       }
+      //       return true;
+      //     }
+      //   });
+      // });
+
+      const x = vsales.find((v) => {
+        for (let i = 0; i < pendingStock.length; i++) {
+          const item = pendingStock[i];
+          if (v.position == item.position) {
+            if (v.stock.qtty > 0) {
+              v.stock.qtty--;
+            }
+            return true;
+          }
+        }
+      });
+      this.eventEmitter.emit('stockdeduct', x);
+      if (!localStorage.getItem('debug')) {
+
+        // this.saveSale(vsales).subscribe((r) => {
+        //   console.log(r);
+        //   if (r.status) {
+        //     console.log(`save sale success`);
+        //   } else {
+        //     this.simpleMessage(IENMessage.saveSaleFail);
+        //   }
+        // });
+
+        console.log(`pending stock mode vendingOnSale-->`, vsales);
+        this.storage.set('saleStock', vsales, 'stock').then((r) => {
+          // that.deductOrderUpdate(x.position);
+        });
+      }
+    } catch (error) {
+      console.log(error.message);
+      this.alertError(error.message);
+    }
+  }
+
+  reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
+    const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
+    console.log(`ping pending stock`, trans);
+    const params = {
+
+    }
+
+    try {
       this.confirmDeductStock(params).subscribe(res_confirm => {
         console.log(`return confirm deduct stock`, res_confirm);
         if (res_confirm.status != 1) throw new Error(res_confirm.message);
-  
-        const vsales = ApiService.vendingOnSale; 
+
+        const vsales = ApiService.vendingOnSale;
         const x = vsales.find((v) => {
           pendingStock.filter(item => {
             if (v.position == item.position) {
@@ -554,7 +679,7 @@ export class ApiService {
         });
         this.eventEmitter.emit('stockdeduct', x);
         if (!localStorage.getItem('debug')) {
-  
+
           this.saveSale(vsales).subscribe((r) => {
             console.log(r);
             if (r.status) {
@@ -563,19 +688,22 @@ export class ApiService {
               this.simpleMessage(IENMessage.saveSaleFail);
             }
           });
-    
+
           console.log(`pending stock mode vendingOnSale-->`, vsales);
           this.storage.set('saleStock', vsales, 'stock').then((r) => {
             // that.deductOrderUpdate(x.position);
           });
         }
-        
+
       });
     } catch (error) {
       console.log(error.message);
       this.alertError(error.message);
     }
   }
+
+
+
   public validateDB() { }
   public onDeductOrderUpdate(cb: (position: number) => void) {
     this.eventEmitter.on('deductOrderUpdate', cb);
@@ -600,84 +728,169 @@ export class ApiService {
     });
   }
 
-  
-  public alertSuccess(text: string) {
-    Swal.fire({
-      icon: 'success',
-      title: 'Successfully',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#28B463',
-      heightAuto: false,
-      timer: 5000
-    });
 
-    // setTimeout(() => {
-    //   Swal.close();
-    // }, 5000);
+  public alertSuccess(text: string) {
+    // Swal.fire({
+    //   icon: 'success',
+    //   title: 'Successfully',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#28B463',
+    //   heightAuto: false,
+    //   timer: 5000
+    // });
+
+    this.alert.create({
+      header: 'Successfully',
+      message: text,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'confirm',
+          cssClass: 'alert-ok-button',
+        },
+      ],
+      backdropDismiss: false,
+    }).then((v) => v.present());
+
+
+    // this.alert(text);
+
+    setTimeout(() => {
+      this.alert.dismiss();
+    }, 5000);
   }
   public alertError(text: string) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Fail',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#CB4335',
-      heightAuto: false,
-      timer: 5000
+    // Swal.fire({
+    //   icon: 'error',
+    //   title: 'Fail',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#CB4335',
+    //   heightAuto: false,
+    //   timer: 5000
 
-    });
-    // setTimeout(() => {
-    //   Swal.close();
-    // }, 5000);
+    this.alert.create({
+      header: 'Fail',
+      message: text,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'confirm',
+          cssClass: 'alert-ok-button',
+        },
+      ],
+      backdropDismiss: false,
+    }).then((v) => v.present());
+
+    // });
+    setTimeout(() => {
+      this.alert.dismiss();
+    }, 5000);
   }
-  public alertWarnning(title: string,text: string) {
-    Swal.fire({
-      icon: 'warning',
-      title: title,
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#CB4335',
-      heightAuto: false,
-      timer: 5000
+  public alertWarnning(title: string, text: string) {
+    // Swal.fire({
+    //   icon: 'warning',
+    //   title: title,
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#CB4335',
+    //   heightAuto: false,
+    //   timer: 5000
 
-    });
-    // setTimeout(() => {
-    //   Swal.close();
-    // }, 5000);
+    this.alert.create({
+      header: title,
+      message: text,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'confirm',
+          cssClass: 'alert-ok-button',
+        },
+      ],
+      backdropDismiss: false,
+    }).then((v) => v.present());
+
+    // });
+    setTimeout(() => {
+      this.alert.dismiss();
+    }, 5000);
   }
   public alertErrorNoDimiss(text: string) {
-    const alert = Swal.fire({
-      icon: 'error',
-      title: 'Fail',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#CB4335',
-      heightAuto: false
+    // const alert = Swal.fire({
+    //   icon: 'error',
+    //   title: 'Fail',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'OK',
+    //   confirmButtonColor: '#CB4335',
+    //   heightAuto: false
+    // });
+
+    const alert = this.alert.create({
+      header: 'Are you sure!?',
+      message: text,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: (blah) => {
+            console.log('Confirm Cancel: blah');
+          },
+        },
+        {
+          text: 'Confirm',
+          handler: () => {
+            console.log('Confirm Okay');
+          },  // handler  end
+        },
+      ],
+
     });
     return alert;
   }
   public alertConfirm(text: string) {
-    const alert = Swal.fire({ 
-      icon: 'question',
-      title: 'Are you sure!?',
-      text: text,
-      showConfirmButton: true,
-      confirmButtonText: 'Confirm',
-      confirmButtonColor: '#CB4335',
-      showCancelButton: true,
-      cancelButtonText: 'Cancel',
-      cancelButtonColor: '#5D6D7E',
-      heightAuto: false
+    // const alert = Swal.fire({
+    //   icon: 'question',
+    //   title: 'Are you sure!?',
+    //   text: text,
+    //   showConfirmButton: true,
+    //   confirmButtonText: 'Confirm',
+    //   confirmButtonColor: '#CB4335',
+    //   showCancelButton: true,
+    //   cancelButtonText: 'Cancel',
+    //   cancelButtonColor: '#5D6D7E',
+    //   heightAuto: false
+    // });
+    const alert = this.alert.create({
+      header: 'Are you sure!?',
+      message: text,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: (blah) => {
+            console.log('Confirm Cancel: blah');
+          },
+        },
+        {
+          text: 'Confirm',
+          handler: () => {
+            console.log('Confirm Okay');
+          },  // handler  end
+        },
+      ],
+
     });
     return alert;
   }
 
-  
+
   public updateOnlineStatus() {
     this.wsAlive.isAlive = this.checkOnlineStatus();
     // console.log(this.wsAlive.time);
@@ -724,7 +937,7 @@ export class ApiService {
     this.storage.set('productItems', this.stock, 'item');
   }
 
-  async showModal(component: any, d: any = {}, closebyblackdrop: boolean = true) {
+  async showModal(component: any, d: any = {}, closebyblackdrop: boolean = true, cssClass: string = '') {
     try {
       // let x = '{';
       // const l = Object.keys(d).length;
@@ -739,7 +952,7 @@ export class ApiService {
       return await this.modal.create({
         component,
         componentProps: d,
-        cssClass: 'dialog-fullscreen',
+        cssClass: cssClass || 'dialog-fullscreen',
         backdropDismiss: closebyblackdrop
       });
     } catch (error) {
@@ -785,16 +998,33 @@ export class ApiService {
       headers: this.headerBase(),
     });
   }
-  loadDeliveryingBills() {
-    return this.http.post<IResModel>(
-      this.url + '/getDeliveryingBills',
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase() }
-    );
+  // loadDeliveryingBills() {
+  //   return this.http.post<IResModel>(
+  //     this.url + '/getDeliveryingBills',
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),x
+  //     },
+  //     { headers: this.headerBase() }
+  //   );
+  // }
+
+  loadDeliveryingBillsNew() {
+
+    return this.IndexedDB.getBillProcesses();
+  }
+  loadDeliveryingBillsLocal() {
+    // return this.http.post<IResModel>(
+    //   this.url + '/getDeliveryingBills',
+    //   {
+    //     token: cryptojs
+    //       .SHA256(this.machineId.machineId + this.machineId.otp)
+    //       .toString(cryptojs.enc.Hex),
+    //   },
+    //   { headers: this.headerBase() }
+    // );
+    return this.IndexeLocaldDB.getBillProcesses();
   }
   getMMoneyUserInfo(phonenumber: string) {
     return this.http.post<IResModel>(
@@ -853,7 +1083,7 @@ export class ApiService {
     });
   }
   // if there is a new ads then remove the old ones 
-  loadAds(existIds:Array<number>) {
+  loadAds(existIds: Array<number>) {
     return this.http.post<IResModel>(
       this.url + '/loadAds',
       {
@@ -861,6 +1091,38 @@ export class ApiService {
         token: cryptojs
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase() }
+    );
+  }
+
+
+  confirmBillPaid(transactionList: any) {
+    console.log('confirmBillPaid', transactionList);
+
+    return this.http.post<IResModel>(
+      this.url + '/confirmPaidBill',
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+        machineId: this.machineId.machineId,
+        transactionList: transactionList
+      },
+      { headers: this.headerBase() }
+    );
+  }
+
+
+  retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
+    return this.http.post<IResModel>(
+      this.url + '/retryProcessBillNew?T=' + T + '&position=' + position,
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+        ownerUuid: ownerUuid,
+        trandID: trandID
       },
       { headers: this.headerBase() }
     );
@@ -902,7 +1164,64 @@ export class ApiService {
       headers: this.headerBase(),
     });
   }
-  
+
+
+  checkPaidBill() {
+    const body = {
+      command: "findLaoQRPaid",
+      data: {
+        machineId: this.machineId.machineId
+      }
+    };
+    console.log('checkPaidBill', body.data);
+
+    return this.http.post(
+      this.serverUrl, body, {
+      headers: this.headerBase()
+    }
+    );
+  }
+
+
+  checkCallbackMmoney() {
+    return this.http.post<IResModel>(
+      this.url + '/checkCallbackMMoney',
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+        transactionID: localStorage.getItem('transactionID')
+      },
+      { headers: this.headerBase() }
+    );
+  }
+
+
+  buyLaoQR(ids: Array<IVendingMachineSale>, value: number, machineId: string) {
+    this.currentPaymentProvider = EPaymentProvider.laoqr;
+    const req = {} as IReqModel;
+    req.command = EClientCommand.buyLAOQR;
+    req.data = {
+      ids,
+      value,
+      clientId: this.clientId.clientId,
+    };
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+    // console.log('req', req);
+
+    // req.data.clientId = this.clientId.clientId;
+    return this.http.post<IResModel>(this.url, req, {
+      headers: this.headerBase(),
+    });
+  }
+
+
+
+
 
   getFreeProduct(position: number, id: number) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;
@@ -940,12 +1259,12 @@ export class ApiService {
   }
 
   audioElement: HTMLAudioElement = {} as any;
-  playBackGroundMusic(path ='../../assets/background_music.mp3'){
+  playBackGroundMusic(path = '../../assets/background_music.mp3') {
     try {
       if (this.backgrounSound) return;
       this.backGroundMusicElement.src = path;
-      this.backGroundMusicElement.loop=true;
-      this.backGroundMusicElement.volume=this.musicVolume/100;
+      this.backGroundMusicElement.loop = true;
+      this.backGroundMusicElement.volume = this.musicVolume / 100;
       this.backGroundMusicElement.play();
     } catch (error) {
       console.log(error);
@@ -993,7 +1312,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-let-us-serve-you4.mp3',
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1010,7 +1329,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-waiting-for-your-item2.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1025,7 +1344,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-f-view-video-for-more-info.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1045,7 +1364,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-thank-you.mp3',
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1063,7 +1382,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-wish-the-best-luck-always.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1078,7 +1397,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-cashout-on-the-right-hand.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1093,7 +1412,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-completed.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1108,7 +1427,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-what-is-your-payment-method.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1123,7 +1442,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-laab-payment.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1138,7 +1457,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-mmoney-payment.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1153,7 +1472,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-input-laab-phonenumber.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1168,7 +1487,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-input-mmoney-phonenumber.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1183,7 +1502,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-input-secret-password.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1198,7 +1517,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-laab-increased.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1213,7 +1532,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-other-services.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1229,7 +1548,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-please-select.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1244,7 +1563,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-please-topup-or-insert-bank-note.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1259,7 +1578,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-select-target.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1274,7 +1593,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-target-is-epin.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1289,7 +1608,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-transfer-to-mmoney.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1304,7 +1623,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-transfer-to-laab.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1319,7 +1638,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-tickets-exist.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1334,7 +1653,7 @@ export class ApiService {
         '../../assets/lao-voices/lo-la-m-we-have-some-changes.mp3'
       ]
       try {
-         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
+        this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.play();
 
         resolve(IENMessage.success);
@@ -1416,7 +1735,7 @@ export class ApiService {
     // PlayGamesPage
     // OrderCartPage
     // OrderPaidPage
-    
+
     this.___LaabGoPage?.dismiss();
     this.___EpinCashOutPage?.dismiss();
     this.___EpinShowCodePage?.dismiss();
@@ -1440,4 +1759,45 @@ export class ApiService {
     this.___OrderPaidPage?.dismiss();
     this.___AutoPaymentPage?.dismiss();
   }
+  async updateStatus(data: any) {
+    return new Promise<IResModel>((resolve, reject) => {
+      const req = {} as IReqModel;
+      req.command = data.command || EClientCommand.MACHINE_STATAUS;
+      req.data = data.data;
+      req.transactionID = data.transactionID;
+      req.ip;
+      req.time = new Date().toString();
+      req.token = cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex);
+      // req.data.clientId = this.clientId.clientId;
+      console.log(`req der`, req);
+      return this.http.post<IResModel>(this.url + '/updateStatus', req, {
+        headers: this.headerBase(),
+      });
+    });
+  }
+
+
+  updateNewLocalBalance(balance: string) {
+    const balanceLocal = localStorage.getItem('balanceLocal') ?? '0';
+    const newBalance = Number(balanceLocal) + Number(balance);
+    this.localBalance = newBalance;
+    localStorage.setItem('balanceLocal', newBalance + '');
+    console.log('balanceLocal', balanceLocal);
+    console.log('newBalance', newBalance);
+
+  }
+
+  updateSellLocalBalance(balance: string) {
+    const balanceLocal = localStorage.getItem('balanceLocal') ?? '0';
+    if (Number(balanceLocal) >= Number(balance)) {
+      const newBalance = Number(balanceLocal) - Number(balance);
+      this.localBalance = newBalance;
+      localStorage.setItem('balanceLocal', newBalance + '');
+    }
+
+  }
+
+
 }

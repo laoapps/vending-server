@@ -11,16 +11,16 @@ export class SocketServerESSPKiosk {
     ///mmoney 41225
     //laab 31225
 
-    private machineIds=new  Array<IMachineClientID> ();
+    private machineIds = new Array<IMachineClientID>();
 
 
     cashNV9: CashNV9MMoney | null = null;
 
 
-    constructor(port=31225) {
+    constructor(port = 31225) {
 
         try {
-            this.ports=port
+            this.ports = port
             //creates the server
 
 
@@ -183,11 +183,11 @@ export class SocketServerESSPKiosk {
                                     console.log('CREDIT_NOTE need to confirm the ORDER has been completed or not, TODO LATER');
 
                                     console.log(' CREDIT_NOTE', dx);
-                                    that.cashNV9?.confirmCredit(socket['machineId'].machineId,  dx.channel, dx.transactionID);
+                                    that.cashNV9?.confirmCredit(socket['machineId'].machineId, dx.channel, dx.transactionID);
                                     that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
                                     return;
                                 }
-                                
+
                                 else if (dx.command == EMACHINE_COMMAND.ENABLE) {
                                     console.log('ENABLE');
                                     that.cashNV9?.setCounter(socket['machineId'].machineId, dx.transactionID, dx.command);
@@ -419,7 +419,7 @@ export class SocketServerESSPKiosk {
                     const res = {} as IResModel;
                     res.command = EMACHINE_COMMAND.start
                     res.message = EMessage.processingorder;
-                    res.transactionID = transactionID;
+                    res.transactionID = transactionID + '';
                     res.status = 1;
                     res.data = {};
                     // console.log('writing...', x['machineId']);
@@ -437,30 +437,30 @@ export class SocketServerESSPKiosk {
         }
 
     }
-    terminateByAdmin(machineId:string, transactionID: number = -1) {
+    terminateByAdmin(machineId: string, transactionID: number = -1) {
         try {
             // setTimeout(() => {
-                const x = this.sclients.find(v => {
-                    const x = v['machineId'] as IMachineClientID;
-                    if (x) {
-                        return x.machineId == machineId;
-                    }
-                    return false;
-                });
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
                 if (x) {
-                    const res = {} as IResModel;
-                    res.command = EMACHINE_COMMAND.stop
-                    res.message = EMessage.processingorder;
-                    res.transactionID = transactionID;
-                    res.status = 1;
-                    res.data = {};
-                    console.log('terminateByAdmin...', x['machineId']);
-                    return { status: x.write(JSON.stringify(res) + '\n') };
-                } else {
-                    console.log('client id socket not found');
-                    const data = `${machineId}-${transactionID}`
-                    return { status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+                    return x.machineId == machineId;
                 }
+                return false;
+            });
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EMACHINE_COMMAND.stop
+                res.message = EMessage.processingorder;
+                res.transactionID = transactionID + '';
+                res.status = 1;
+                res.data = {};
+                console.log('terminateByAdmin...', x['machineId']);
+                return { status: x.write(JSON.stringify(res) + '\n') };
+            } else {
+                console.log('client id socket not found');
+                const data = `${machineId}-${transactionID}`
+                return { status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+            }
             // }, 300)
 
         } catch (error: any) {
@@ -469,30 +469,30 @@ export class SocketServerESSPKiosk {
         }
 
     }
-    terminateByClientClose(machineId:string, transactionID: number = -1) {
+    terminateByClientClose(machineId: string, transactionID: number = -1) {
         try {
             // setTimeout(() => {
-                const x = this.sclients.find(v => {
-                    const x = v['machineId'] as IMachineClientID;
-                    if (x) {
-                        return x.machineId == machineId;
-                    }
-                    return false;
-                });
+            const x = this.sclients.find(v => {
+                const x = v['machineId'] as IMachineClientID;
                 if (x) {
-                    const res = {} as IResModel;
-                    res.command = EMACHINE_COMMAND.stop
-                    res.message = EMessage.processingorder;
-                    res.transactionID = transactionID;
-                    res.status = 1;
-                    res.data = {};
-                    console.log('terminateByClientClose...', x['machineId']);
-                    return { status: x.write(JSON.stringify(res) + '\n') };
-                } else {
-                    console.log('client id socket not found');
-                    const data = `${machineId}-${transactionID}`
-                    return { status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+                    return x.machineId == machineId;
                 }
+                return false;
+            });
+            if (x) {
+                const res = {} as IResModel;
+                res.command = EMACHINE_COMMAND.stop
+                res.message = EMessage.processingorder;
+                res.transactionID = transactionID + '';
+                res.status = 1;
+                res.data = {};
+                console.log('terminateByClientClose...', x['machineId']);
+                return { status: x.write(JSON.stringify(res) + '\n') };
+            } else {
+                console.log('client id socket not found');
+                const data = `${machineId}-${transactionID}`
+                return { status: x, message: 'Error machineID not found ' + data + '--' + JSON.stringify(this.sclients) };
+            }
             // }, 300)
 
         } catch (error: any) {
@@ -515,7 +515,7 @@ export class SocketServerESSPKiosk {
                     const res = {} as IResModel;
                     res.command = EMACHINE_COMMAND.stop
                     res.message = EMessage.processingorder;
-                    res.transactionID = transactionID;
+                    res.transactionID = transactionID + '';
                     res.status = 1;
                     res.data = {};
                     console.log('haltOrder...', x['machineId']);
@@ -533,7 +533,7 @@ export class SocketServerESSPKiosk {
         }
 
     }
-    
+
     setMachineCounter(machineId: string, transactionID: number = -1) {
         try {
             setTimeout(() => {
@@ -548,7 +548,7 @@ export class SocketServerESSPKiosk {
                     const res = {} as IResModel;
                     res.command = EMACHINE_COMMAND.setcounter
                     res.message = EMessage.setcounter;
-                    res.transactionID = transactionID;
+                    res.transactionID = transactionID + '';
                     res.status = 1;
                     res.data = { t: 30 };
                     // console.log('writing...', x['machineId']);

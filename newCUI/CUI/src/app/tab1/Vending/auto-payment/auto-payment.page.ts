@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
-import { EClientCommand, IBillProcess, IVendingMachineSale } from 'src/app/services/syste.model';
+import { EClientCommand, IBillProcess, ISerialService, IVendingMachineSale } from 'src/app/services/syste.model';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 // import Swal from 'sweetalert2';
 import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
@@ -15,6 +15,8 @@ import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVe
 // import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
 import { clear } from 'console';
 import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
+import { RemainingbilllocalPage } from 'src/app/remainingbilllocal/remainingbilllocal.page';
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-auto-payment',
@@ -26,6 +28,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
+  // @Input() serial: ISerialService;
 
   parseorders: Array<any> = [];
   parseGetTotalSale: any = {} as any;
@@ -69,6 +72,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   countdownLAABDestroyTimer: any = {} as any;
   countdownCheckLaoQRPaid: number = 90;
   countdownCheckLaoQRPaidTimer: any = {} as any;
+
+
+  isEnableCheckCallback: boolean = true;
 
 
   // message
@@ -148,6 +154,19 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       value: 'localBalance',
       count: 5
     },
+  ]
+
+
+  ewalletCheckList: Array<any> = [
+    {
+      image: `../../../../assets/logo/check.png`,
+      name: 'ກວດເຄື່ອງ',
+      title: 'ກໍລະນີຈ່າຍເງິນແລ້ວບໍ່ໄດ້ເຄື່ອງ',
+      detail: 'Pay your orders by using Money in Machine',
+      value: 'localBalance',
+      count: 5
+    },
+
 
   ]
 
@@ -163,6 +182,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   ]
   paymentList: Array<any> = [...this.cashesList, ...this.bankList];
   paymentOptions: Array<any> = [...this.ewalletOptionList];
+
+  paymentCheck: Array<any> = [...this.ewalletCheckList];
 
 
 
@@ -966,6 +987,39 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (this.parseGetTotalSale.t <= this.apiService.localBalance) {
+          if (this.apiService.myTab1.serial) {
+            for (let index = 0; index < this.parseorders.length; index++) {
+              // const element = array[index];
+              this.parseorders[index].transactionID = new Date().getTime();
+              this.apiService.IndexeLocaldDB.addBillProcess(this.parseorders[index]);
+            }
+            this.apiService.updateSellLocalBalance(this.parseGetTotalSale.t + '');
+            console.log('=====>order for local', this.parseorders);
+            clearInterval(this.countdownDestroyTimer);
+            this.countdownDestroy = 60;
+            if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+            AutoPaymentPage.message = undefined;
+
+            // this.apiService.myTab1.clearStockAfterLAABGo();
+            this.apiService.myTab1.clearCart();
+            this.close();
+            this.apiService
+              .showModal(RemainingbilllocalPage, { r: this.apiService.pb, serial: this.apiService.myTab1.serial }, false)
+              .then((r) => {
+                r.present();
+              });
+          } else {
+            this.apiService.toast.create({
+              message: 'serial not init',
+              duration: 3000
+            }).then(r => {
+              r.present();
+            })
+
+            await this.apiService.myTab1.connect();
+          }
+
+
 
         } else {
           this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກຕົວເລືອກອື່ນແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
@@ -978,7 +1032,31 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     });
   }
 
+  checkCallbackMMoney(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if (this.isEnableCheckCallback) {
+          const run = await this.generateLaoQRCodeProcess.CheckCallbackMmoney();
+          console.log('=====>checkCallbackMMoney', run);
+          if (run.status == 1) {
+            this.apiService.myTab1._processLoopCheckLaoQRPaid();
+          }
+          this.isEnableCheckCallback = false;
 
+        } else {
+          console.log('not allow to click');
+        }
+
+        setTimeout(() => {
+          this.isEnableCheckCallback = true;
+        }, 5000);
+      } catch (error) {
+
+        this.apiService.alertError(error.message);
+        resolve(error.message);
+      }
+    });
+  }
 
 
 

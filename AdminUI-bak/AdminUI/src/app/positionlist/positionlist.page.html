@@ -1,0 +1,9 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>positionlist</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<ion-chip *ngFor="let p of pos" (click)="select(p)">{{p}}</ion-chip>
+</ion-content>

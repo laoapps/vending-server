@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { SettingPage } from '../setting/setting.page';
 import * as uuid from 'uuid';
-import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+
 import { Platform } from '@ionic/angular';
-import { ScratchingPage } from '../scratching/scratching.page';
+
 import { FortunewheelPage } from '../fortunewheel/fortunewheel.page';
 import { environment } from 'src/environments/environment';
 
@@ -16,16 +16,9 @@ import { environment } from 'src/environments/environment';
 export class TabsPage {
   version = '';
   prod=environment.production;
-  constructor(public api: ApiService, private appVersion: AppVersion,private platform:Platform) {
+  constructor(public api: ApiService,private platform:Platform) {
     this.platform.ready().then(r=>{
-      if(this.platform.is('cordova')){
-        this.appVersion.getAppName();
-        this.appVersion.getPackageName();
-        this.appVersion.getVersionCode();
-        this.appVersion.getVersionNumber().then(r => {
-          this.version = r;
-        })
-      }
+
     })
    
   }
@@ -34,11 +27,7 @@ export class TabsPage {
       r.present();
     })
   }
-  openScratch(){
-    this.api.showModal(ScratchingPage).then(r=>{
-      r.present();
-    })
-  }
+ 
   count = 6;
   machineuuid = this.api.machineuuid;
   t: any;

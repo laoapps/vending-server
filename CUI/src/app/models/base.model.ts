@@ -54,7 +54,8 @@ export enum IENMessage {
     thisSmcHaveAlreadyUsedOrThatOneWasDelete = 'this smart contract already used or that one was delete',
     notEnoughtCashBalance = 'not enought balance',
     success = 'success',
-    parametersEmpty = 'parameters empty'
+    parametersEmpty = 'parameters empty',
+    findLaoQRPaidFail = "findLaoQRPaidFail"
 }
 
 export enum ITabVendingSegement {
@@ -63,7 +64,7 @@ export enum ITabVendingSegement {
     hangmifood = 'hangmifood',
     topupandservices = 'topupandservices'
 }
-export enum IWebviewTabs  {
+export enum IWebviewTabs {
     vending = 'vending',
     hangmistore = 'hangmistore',
     hangmifood = 'hangmifood',

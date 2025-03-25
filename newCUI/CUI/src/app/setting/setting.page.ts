@@ -32,6 +32,8 @@ export class SettingPage implements OnInit, OnDestroy {
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
   productFallLimit = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
+  offlineMode = localStorage.getItem('offlineMode') ? true : false;
+
   startM: number = 1;
   endM = 60;
   testIn: any;
@@ -43,7 +45,7 @@ export class SettingPage implements OnInit, OnDestroy {
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
 
   constructor(
-    private apiService: ApiService,
+    public apiService: ApiService,
     public storage: IonicStorageService,
     private cashingService: AppcachingserviceService,
     public modal: ModalController,
@@ -74,6 +76,8 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('portName', this.portName);
     localStorage.setItem('baudRate', this.baudRate);
     localStorage.setItem('device', this.device);
+
+    localStorage.setItem('offlineMode', this.offlineMode + '');
 
     // product fall limit
     if (this.productFallLimit > 30) this.productFallLimit = 30;

@@ -1,0 +1,49 @@
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">Manage Sub-Admin Info</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="form-container">
+    <div class="item-card">
+      <div class="item-card-body">
+        <div class="form-group">
+          <label for="">Phone number</label>
+          <input readonly="true" [(ngModel)]="list.phonenumber" type="text" placeholder="Enter phone number" class="form-control">
+        </div>
+        <div class="form-group">
+          <button (click)="addProvideToSubadmin()" class="btn-add"><i class="fa-solid fa-arrow-down text-success"></i> Add Vending for provide</button>
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td>#</td>
+                <td>Machine</td>
+                <td>Imei</td>
+                <td>Action</td>
+              </tr>
+            </thead>
+            <tbody *ngFor="let provide of list.provides; let i = index">
+              <tr>
+                <td>{{ i+1 }}</td>
+                <td>{{ provide.machineId }}</td>
+                <td>{{ provide.imei }}</td>
+                <td>
+                  <button (click)="removeProvideToSubadmin(provide)" class="btn-remove"><i class="fa-solid fa-arrow-up"></i> Remove</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

@@ -1,0 +1,28 @@
+<div class="laab-transfer-container">
+  <div class="item-card">
+    <div class="item-card-header">
+      <div class="title">Coin Transfer</div>
+      <div class="text">Transfer to another coin account</div>
+    </div>
+    <div class="item-card-body">
+      <div class="form-group">
+        <label for="">Phone Number</label>
+        <input [(ngModel)]="phonenumber" type="number" placeholder="Enter phone number" class="form-control">
+      </div>
+      <div class="form-group mt-2">
+        <label for="">Amount</label>
+        <input [(ngModel)]="amount" type="number" class="form-control">
+      </div>
+      <div class="money-list">
+        <a *ngFor="let money of moneyList;let i = index" (click)="chooseMoney(money)" href="javascript:void(0)" class="item">{{ money | number }}</a>
+      </div>
+      <div class="form-group mt-2">
+        <label for="">Description</label>
+        <textarea [(ngModel)]="description" class="form-control" name="" id="" cols="30" rows="5" placeholder="Enter description"></textarea>
+      </div>
+      <div class="form-group mt-3">
+        <button (click)="transfer()" class="btn-submit">submit</button>
+      </div>
+    </div>
+  </div>
+</div>

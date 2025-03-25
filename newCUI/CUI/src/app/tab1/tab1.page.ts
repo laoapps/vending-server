@@ -12,6 +12,7 @@ import {
   EMACHINE_COMMAND,
   ESerialPortType,
   IBillProcess,
+  ICreditData,
   IlogSerial,
   IMachineClientID,
   IMachineId,
@@ -78,6 +79,8 @@ import { Toast } from '@capacitor/toast';
 import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
 import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.process';
 import * as moment from 'moment';
+import { DatabaseService } from '../database.service';
+import { IBankNote, IHashBankNote } from '../vmc.service';
 
 @Component({
   selector: 'app-tab1',
@@ -106,6 +109,8 @@ export class Tab1Page implements OnDestroy {
   connecting = false;
 
   isDropStock = false;
+
+  offlineMode: Boolean = true;
 
 
   enableCashIn: boolean = false;
@@ -160,6 +165,9 @@ export class Tab1Page implements OnDestroy {
   _howToPage: HTMLIonModalElement;
   isFirstLoad = true;
   autopilot = { auto: 0 };
+
+
+  notes = new Array<IBankNote>();
 
   segementList: Array<any> = [
     {
@@ -219,12 +227,81 @@ export class Tab1Page implements OnDestroy {
   private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
 
 
-
+  private creditPending: ICreditData[] = [];
 
   // interval
   refreshAll: any = {} as any;
   refreshAllCounter: number = 0;
   firstCredit: boolean = true;
+
+  sock = {
+    send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) => {
+      console.log('vmc service send', b, t, c);
+      // API TO SEND TO SERVER 
+      // create API TO ACCEPT THIS 
+      try {
+
+        this.apiService.updateStatus({ data: b, transactionID: t, command: c }).then(r => {
+          console.log('vmc service send response', r);
+          if (r.command === EMACHINE_COMMAND.CREDIT_NOTE) {
+            if (r.transactionID) {
+              const x = this.creditPending.find(v => v.transactionID === r.transactionID);
+              if (x) {
+                this.deleteCredit(x.id);
+                this.creditPending = this.creditPending.filter(v => v.transactionID !== r.transactionID);
+              }
+            } else {
+              console.log('vmc service send response falied and retry', r);
+              setTimeout(() => {
+                this.sock.send(b, t
+                  , c);
+              }, 5000);
+            }
+          } else {
+            console.log('update machine Status', r);
+          }
+        }).catch(e => {
+          console.log('vmc service send error', e);
+        });
+      } catch (error) {
+        console.log('vmc service send error', error);
+      }
+
+    },
+    machineId: '',
+    otp: ''
+  };
+
+  initHashBankNotes(machineId: string) {
+    const hashNotes = Array<IHashBankNote>();
+    for (let i = 0; i < this.notes.length; i++) {
+      const x = JSON.parse(JSON.stringify(this.notes[i])) as IHashBankNote;
+      x.hash = cryptojs
+        .SHA256(machineId + this.notes[i].value * 100)
+        .toString(cryptojs.enc.Hex);
+      hashNotes.push(x);
+    }
+    return hashNotes;
+  }
+
+  async deleteCredit(id: number) {
+    await this.dbService.deleteItem(id);
+    return await this.loadCredits();
+  }
+
+  async loadCredits() {
+    return await this.dbService.getItems();
+  }
+
+  async addOrUpdateCredit(data: ICreditData) {
+    if (data.id >= 0) {
+      await this.dbService.updateItem(data.id, data.name, data.data, data.transactionID, data.description);
+    } else {
+      await this.dbService.createItem(data.name, data.data, data.transactionID, data.description);
+    }
+    return await this.loadCredits();
+  }
+
 
   async showModal(component: any, d: any = {}, cssClass: string = '') {
     try {
@@ -255,6 +332,7 @@ export class Tab1Page implements OnDestroy {
     public loading: LoadingController,
     private vendingIndex: VendingIndexServiceService,
     private serialService: SerialServiceService,
+    private dbService: DatabaseService,
 
   ) {
 
@@ -296,6 +374,8 @@ export class Tab1Page implements OnDestroy {
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url;
     // this.initVendingSale();
+
+
 
     platform.ready().then(() => {
       // this.loadBrightness();
@@ -554,7 +634,7 @@ export class Tab1Page implements OnDestroy {
   }
 
 
-  private _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
+  public _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
 
       const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
@@ -635,20 +715,33 @@ export class Tab1Page implements OnDestroy {
   }
 
   async Enable() {
-    await this.vendingIndex.vmc.enableCashIn();
-    this.apiService.toast.create({
-      message: 'Enable cash in',
-      duration: 2000
-    }).then(r => r.present());
+    console.log('Enable');
+
+    if (this.serial) {
+      await this.vendingIndex.vmc.enableCashIn();
+      this.apiService.toast.create({
+        message: 'Enable cash in',
+        duration: 2000
+      }).then(r => r.present());
+    } else {
+      Toast.show({ text: 'serial not init' });
+      await this.connect();
+    }
   }
 
-  async Disble() {
+  async Disable() {
+    console.log('Disable');
 
-    await this.vendingIndex.vmc.disableCashIn();
-    this.apiService.toast.create({
-      message: 'Disable cash in',
-      duration: 2000
-    }).then(r => r.present());
+    if (this.serial) {
+      await this.vendingIndex.vmc.disableCashIn();
+      this.apiService.toast.create({
+        message: 'Disable cash in',
+        duration: 2000
+      }).then(r => r.present());
+    } else {
+      Toast.show({ text: 'serial not init' });
+      await this.connect();
+    }
   }
   async startVMC() {
     if (this.serial) {
@@ -677,9 +770,12 @@ export class Tab1Page implements OnDestroy {
     if (!this.serial) {
       Toast.show({ text: 'serial not init for start VMC' });
     } else {
-      await this.vendingIndex.vmc.enableCashIn();
+
+      // await this.vendingIndex.vmc.enableCashIn();
+
       Toast.show({ text: 'VMC Cashin', duration: 'long' });
       console.log('VMC Cashin');
+      this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
 
       // FIX FIRMWARE bugs when reconnect to VMC
       setTimeout(() => {
@@ -690,6 +786,11 @@ export class Tab1Page implements OnDestroy {
         else {
           this.vendingIndex.vmc.disableCashIn();
         }
+
+        if (this.offlineMode) {
+          this.vendingIndex.vmc.enableCashIn();
+        }
+
 
       }, 45000);
     }
@@ -788,13 +889,15 @@ export class Tab1Page implements OnDestroy {
 
 
   private processVMCResponse(hex: string): void {
-    if (hex.startsWith('fafb04')) {
+    const t = Number('-21' + moment.now());
 
+    if (hex.startsWith('fafb04')) {
+      const t = Number('-21' + moment.now());
       console.log('Dispensing status:', hex);
       //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
-      if (hex.substring(10, 12) == '01') console.log('Dispensing');
-      if (hex.substring(10, 12) == '02') console.log('Dispensed');
-      if (hex.substring(10, 12) == '03') console.log('Drop failed');
+      if (hex.substring(10, 12) == '01') { console.log('Dispensing'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSE) }
+      if (hex.substring(10, 12) == '02') { console.log('Dispensed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSED) }
+      if (hex.substring(10, 12) == '03') { console.log('Drop failed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSEFAILED) }
 
       // FA FB 04 04 A3 01 00 3C 9F ==> 3C is 60 slot sent command, 01 = status processing
       // FA FB 04 04 A4 02 00 3C 9B ==> 3C is 60 slot sent command, 02 = status dispensed
@@ -813,7 +916,36 @@ export class Tab1Page implements OnDestroy {
         //   buttons: ['OK'] //, 'Cancel'
         // }).then(r => r.present());
         if (this.firstCredit) { this.firstCredit = false; return; }
-        this.apiService.updateNewLocalBalance(value + '');
+        if (this.offlineMode) {
+
+          this.apiService.updateNewLocalBalance(value + '');
+        } else {
+          const hash = cryptojs.SHA256(this.sock.machineId + value).toString(cryptojs.enc.Hex);
+          const credit: ICreditData = {
+            id: -1,
+            name: 'credit',
+            data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.VMC_CREDIT_NOTE },
+            transactionID: t.toString(),
+            description: ''
+          };
+
+          this.creditPending.push(credit);
+          this.addOrUpdateCredit(credit);
+
+          // check Hashing 
+          const bn = this.initHashBankNotes(this.machineId.machineId);
+          const note = bn.find(v => v.hash === hash);
+          if (!note) {
+            console.log('Hash not found', hash);
+            return;
+          } else {
+            /// send to server and need to confirm from server
+            this.sock.send(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
+          }
+        }
+
+
+
         // fafb2106d501 000186a0 d5 == 100000 == 1000,00
         //               // fafb21069101 000186a0 91 == 100000 == 1000,00
         //               // fafb2106c301 00030d40 aa == 200000 == 2000,00
@@ -864,7 +996,11 @@ export class Tab1Page implements OnDestroy {
       // this._machineStatus.status = hex
       const resultStatus = machineVMCStatus(hex);
       this._machineStatus.status.temp = resultStatus.temperature + '';
-      console.log('******machine status:', resultStatus);
+      // console.log('******machine status:', resultStatus);
+
+      this.machinestatus.data = hex;
+      const m = machineVMCStatus(hex);
+      this.sock.send(JSON.stringify(m), t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
       // this.apiService.alert.create({
       //   header: 'Machine Status',
       //   message: JSON.stringify(resultStatus),
@@ -874,8 +1010,7 @@ export class Tab1Page implements OnDestroy {
       // this._machineStatus = resultStatus;
 
     } else {
-
-
+      this.sock.send(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
       console.log('Unhandled response:', hex);
     }
   }

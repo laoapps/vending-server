@@ -16,7 +16,7 @@ export class GenerateMMoneyQRCodeProcess {
 
     // props
     private mmoneyQRCode: IVendingMachineBill;
-    
+
     constructor(
         apiService: ApiService
     ) {
@@ -24,9 +24,9 @@ export class GenerateMMoneyQRCodeProcess {
     }
 
     public Init(params: IGenerateQRCode): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 this.workload = this.apiService.load.create({ message: 'loading...' });
                 (await this.workload).present();
 
@@ -37,9 +37,16 @@ export class GenerateMMoneyQRCodeProcess {
 
                 const GenerateQRCode = await this.GenerateQRCode();
                 console.log(`zzzz`, GenerateQRCode);
-                if (GenerateQRCode != IENMessage.success) throw new Error(GenerateQRCode);
-                
+                // if (GenerateQRCode != IENMessage.success) throw new Error(GenerateQRCode);
                 (await this.workload).dismiss();
+
+                if (GenerateQRCode != IENMessage.success) {
+                    // this.apiService.toast.create({ message: GenerateQRCode, duration: 3000 }).then(toast => toast.present());
+                    // this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ Lao QR ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
+                    // throw new Error(GenerateQRCode);
+                    resolve(null);
+                }
+
                 resolve(this.Commit());
 
             } catch (error) {
@@ -65,17 +72,20 @@ export class GenerateMMoneyQRCodeProcess {
     }
 
     private GenerateQRCode(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
                     const response: any = r;
                     console.log(`response generate MMoney`, response);
-                    if (response.status != 1) return resolve(IENMessage.generateMMoneyQRCodeFail);
+                    if (response.status != 1) {
+                        // return resolve(IENMessage.generateMMoneyQRCodeFail);
+                        resolve(null);
+                    }
                     this.mmoneyQRCode = response.data as IVendingMachineBill;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -83,7 +93,7 @@ export class GenerateMMoneyQRCodeProcess {
     }
 
     private Commit(): any {
-        
+
         const response = {
             data: [{
                 mmoneyQRCode: this.mmoneyQRCode

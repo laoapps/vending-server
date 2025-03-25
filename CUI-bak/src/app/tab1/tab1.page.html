@@ -1,0 +1,249 @@
+
+
+
+<div *ngIf="displayRepaireAppVersion == true" class="repair-container"></div>
+<div *ngIf="displayRepaireAppVersion == true" class="repair-box">
+  <div class="repair-box-header">
+    <div class="repair-box-header-left"><i class="fa-solid fa-gear fa-spin"></i> System Repair</div>
+    <div class="repair-box-header-right"></div>
+  </div>
+  <div class="repair-box-body">
+    <div class="loading-text">{{ repairText }}</div>
+
+    <div class="loading-container">
+      <meter id="loading-box" value="{{ percentCount }}" min="0" max="{{ percentLimit }}"></meter>{{ percentCountText }}%
+    </div>
+
+    <div class="title">Supports</div>
+    <div class="text"><i class="fa-solid fa-mobile-screen-button"></i> (+856)20 555 163 21</div>
+  </div>
+</div>
+
+<ion-header (click)="reloadAutoPayment()">
+
+  <div class="box" [ngStyle] = "apiService._cuiSetting.imgHeader">
+    <!-- <button (click)="resetCashing()">RRR</button> -->
+
+    <!-- <div class="warning-card">
+      <div class="creed"></div>
+      <div class="detail">
+        <div class="title">Vending Stuck</div>
+        <div class="text">Send your bill to <i class="fa-brands fa-whatsapp"></i> 20 55516321</div>
+        <div class="text">You can get product on counter when that verify your bill</div>
+      </div>
+    </div> -->
+    
+
+    <div>
+      <img [src]="apiService._cuiSetting.imgLogo||mmLogo" (press)="holdCount()" (touchend)="endCount()" (click)="manageStock()" />
+    </div>   
+  </div>
+
+  <div class="menu-options">
+
+    <a (click)="showBills()" href="javascript:void(0)" class="item control-menu menu-ticket active">
+      <svg class="svg-top" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#e9e9e9" fill-opacity="1" d="M0,96L0,320L36.9,320L36.9,64L73.8,64L73.8,32L110.8,32L110.8,288L147.7,288L147.7,32L184.6,32L184.6,256L221.5,256L221.5,0L258.5,0L258.5,96L295.4,96L295.4,288L332.3,288L332.3,32L369.2,32L369.2,32L406.2,32L406.2,192L443.1,192L443.1,224L480,224L480,64L516.9,64L516.9,128L553.8,128L553.8,32L590.8,32L590.8,0L627.7,0L627.7,64L664.6,64L664.6,96L701.5,96L701.5,32L738.5,32L738.5,224L775.4,224L775.4,192L812.3,192L812.3,288L849.2,288L849.2,32L886.2,32L886.2,192L923.1,192L923.1,224L960,224L960,96L996.9,96L996.9,96L1033.8,96L1033.8,224L1070.8,224L1070.8,288L1107.7,288L1107.7,288L1144.6,288L1144.6,256L1181.5,256L1181.5,288L1218.5,288L1218.5,192L1255.4,192L1255.4,192L1292.3,192L1292.3,224L1329.2,224L1329.2,96L1366.2,96L1366.2,96L1403.1,96L1403.1,128L1440,128L1440,0L1403.1,0L1403.1,0L1366.2,0L1366.2,0L1329.2,0L1329.2,0L1292.3,0L1292.3,0L1255.4,0L1255.4,0L1218.5,0L1218.5,0L1181.5,0L1181.5,0L1144.6,0L1144.6,0L1107.7,0L1107.7,0L1070.8,0L1070.8,0L1033.8,0L1033.8,0L996.9,0L996.9,0L960,0L960,0L923.1,0L923.1,0L886.2,0L886.2,0L849.2,0L849.2,0L812.3,0L812.3,0L775.4,0L775.4,0L738.5,0L738.5,0L701.5,0L701.5,0L664.6,0L664.6,0L627.7,0L627.7,0L590.8,0L590.8,0L553.8,0L553.8,0L516.9,0L516.9,0L480,0L480,0L443.1,0L443.1,0L406.2,0L406.2,0L369.2,0L369.2,0L332.3,0L332.3,0L295.4,0L295.4,0L258.5,0L258.5,0L221.5,0L221.5,0L184.6,0L184.6,0L147.7,0L147.7,0L110.8,0L110.8,0L73.8,0L73.8,0L36.9,0L36.9,0L0,0L0,0Z"></path></svg>
+      <div class="icon">
+        <i class="fa-solid fa-ticket"></i>
+      </div>
+      <div class="text">Tickets</div>
+      <svg class="svg-bottom" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#e9e9e9" fill-opacity="1" d="M0,192L0,64L110.8,64L110.8,256L221.5,256L221.5,288L332.3,288L332.3,96L443.1,96L443.1,160L553.8,160L553.8,192L664.6,192L664.6,0L775.4,0L775.4,288L886.2,288L886.2,256L996.9,256L996.9,160L1107.7,160L1107.7,192L1218.5,192L1218.5,192L1329.2,192L1329.2,96L1440,96L1440,320L1329.2,320L1329.2,320L1218.5,320L1218.5,320L1107.7,320L1107.7,320L996.9,320L996.9,320L886.2,320L886.2,320L775.4,320L775.4,320L664.6,320L664.6,320L553.8,320L553.8,320L443.1,320L443.1,320L332.3,320L332.3,320L221.5,320L221.5,320L110.8,320L110.8,320L0,320L0,320Z"></path></svg>
+    </a>
+    <div (click)="laabCashin()" class="cash-balance control-menu menu-laab-cashin active"><img src="../../assets/logo/LAAB-logo.png" alt=""> {{ apiService.cash.amount | number }}</div>
+
+    <a (click)="openStackCashOutPage()" href="javascript:void(0)" class="item control-menu menu-cashout active">
+      <svg class="svg-top" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#e9e9e9" fill-opacity="1" d="M0,96L0,320L36.9,320L36.9,64L73.8,64L73.8,32L110.8,32L110.8,288L147.7,288L147.7,32L184.6,32L184.6,256L221.5,256L221.5,0L258.5,0L258.5,96L295.4,96L295.4,288L332.3,288L332.3,32L369.2,32L369.2,32L406.2,32L406.2,192L443.1,192L443.1,224L480,224L480,64L516.9,64L516.9,128L553.8,128L553.8,32L590.8,32L590.8,0L627.7,0L627.7,64L664.6,64L664.6,96L701.5,96L701.5,32L738.5,32L738.5,224L775.4,224L775.4,192L812.3,192L812.3,288L849.2,288L849.2,32L886.2,32L886.2,192L923.1,192L923.1,224L960,224L960,96L996.9,96L996.9,96L1033.8,96L1033.8,224L1070.8,224L1070.8,288L1107.7,288L1107.7,288L1144.6,288L1144.6,256L1181.5,256L1181.5,288L1218.5,288L1218.5,192L1255.4,192L1255.4,192L1292.3,192L1292.3,224L1329.2,224L1329.2,96L1366.2,96L1366.2,96L1403.1,96L1403.1,128L1440,128L1440,0L1403.1,0L1403.1,0L1366.2,0L1366.2,0L1329.2,0L1329.2,0L1292.3,0L1292.3,0L1255.4,0L1255.4,0L1218.5,0L1218.5,0L1181.5,0L1181.5,0L1144.6,0L1144.6,0L1107.7,0L1107.7,0L1070.8,0L1070.8,0L1033.8,0L1033.8,0L996.9,0L996.9,0L960,0L960,0L923.1,0L923.1,0L886.2,0L886.2,0L849.2,0L849.2,0L812.3,0L812.3,0L775.4,0L775.4,0L738.5,0L738.5,0L701.5,0L701.5,0L664.6,0L664.6,0L627.7,0L627.7,0L590.8,0L590.8,0L553.8,0L553.8,0L516.9,0L516.9,0L480,0L480,0L443.1,0L443.1,0L406.2,0L406.2,0L369.2,0L369.2,0L332.3,0L332.3,0L295.4,0L295.4,0L258.5,0L258.5,0L221.5,0L221.5,0L184.6,0L184.6,0L147.7,0L147.7,0L110.8,0L110.8,0L73.8,0L73.8,0L36.9,0L36.9,0L0,0L0,0Z"></path></svg>      <div class="icon">
+        <i class="fa-sharp fa-solid fa-money-bill-wave"></i>
+      </div>
+      <div class="text">Cash Out</div>
+      <svg class="svg-bottom" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#e9e9e9" fill-opacity="1" d="M0,192L0,64L110.8,64L110.8,256L221.5,256L221.5,288L332.3,288L332.3,96L443.1,96L443.1,160L553.8,160L553.8,192L664.6,192L664.6,0L775.4,0L775.4,288L886.2,288L886.2,256L996.9,256L996.9,160L1107.7,160L1107.7,192L1218.5,192L1218.5,192L1329.2,192L1329.2,96L1440,96L1440,320L1329.2,320L1329.2,320L1218.5,320L1218.5,320L1107.7,320L1107.7,320L996.9,320L996.9,320L886.2,320L886.2,320L775.4,320L775.4,320L664.6,320L664.6,320L553.8,320L553.8,320L443.1,320L443.1,320L332.3,320L332.3,320L221.5,320L221.5,320L110.8,320L110.8,320L0,320L0,320Z"></path></svg>
+    </a>
+
+  </div>
+
+  <div *ngIf="isFranciseMode == true" [ngClass]="apiService.toggleWebviewTab == false ? 'webview-tab' : 'webview-tab hidden'">
+    <a *ngFor="let list of webviewList; let i = index" (click)="openWebViewMenu(list.link)" href="javascript:void(0)" class="item">
+      <div class="item-left">
+        <img src="{{ list.icon }}" alt="">
+      </div>
+      <div class="item-right">
+        <div class="name">{{ list.name }}</div>
+        <div class="description">{{ list.description }}</div>
+      </div>
+    </a>
+  </div>
+  <div *ngIf="isFranciseMode == true" [ngClass]="apiService.toggleWebviewTab == false ? 'webview-small-tab' : 'webview-small-tab active'">
+    <a *ngFor="let list of webviewList; let i = index" (click)="openWebViewMenu(list.link)" href="javascript:void(0)" class="item">
+      <div class="item-left">
+        <img src="{{ list.icon }}" alt="">
+      </div>
+      <div class="item-right">
+        <div class="name">{{ list.name }}</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- <div class="tab-services-segment">
+    <a *ngFor="let list of segementList; let i = index" (click)="gotoAnotherSegment(list.link)" href="javascript:void(0)" class="item">{{ list.name }}</a>
+  </div> -->
+
+</ion-header>
+
+<ion-content (click)="reloadAutoPayment()" [scrollEvents]="true" (ionScroll)="toggleWebviewTab($event)"  [fullscreen]="true" class="tab1-container">
+
+  <!-- <a (click)="showMyOrdersModal()" href="javascript:void(0)" class="btn-shopping-cart"><i class="fa-solid fa-cart-shopping"></i></a> -->
+
+  <span class="btn-abs-list">
+    <a (click)="showMyOrdersModal()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
+      <div class="text">My Order </div>
+      <div class="icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+    </a>
+    <a href="javascript:void(0)" class="item-green control-menu menu-whatsapp active">
+      <div class="text">WA: 55516321</div>
+      <div class="icon">
+        <i class="fa-brands fa-whatsapp icon-whatsapp"></i>
+      </div>
+    </a>
+    <a (click)="openHowToPage()" href="javascript:void(0)" class="item-blue control-menu menu-how-to active">
+      <div class="text">How To</div>
+      <div class="icon">
+        <i class="fa-solid fa-video"></i>
+      </div>
+
+    </a>
+    <!-- <a (click)="openTopupAndServicePage()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+      <div class="text">Topup & Services</div>
+      <div class="icon">
+        <i class="fa-solid fa-layer-group"></i>
+      </div>
+    </a> -->
+    <a (click)="openGameServices()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+      <div class="text">Play Games</div>
+      <div class="icon">
+        <i class="fa-solid fa-gamepad"></i>
+      </div>
+    </a>
+    <a href="javascript:void(0)" class="item-sea control-menu menu-tempurature active">
+      <div class="text" *ngIf="_machineStatus?.status?.temp">{{_machineStatus?.status?.temp}}</div>
+      <div class="text" *ngIf="!_machineStatus?.status?.temp">loading...</div>
+      <div class="icon">
+        <i class="fa-solid fa-temperature-low"></i>
+      </div>
+    </a>
+    <a (click)="ShowMMoneyAppLink()" href="javascript:void(0)" class="item-deep-red control-menu menu-mmoney-ios-android-qr-link active">
+      <div class="text">IOS & Android</div>
+      <div class="icon">
+        <i class="fa-solid fa-store"></i>
+      </div>
+    </a>
+  </span>
+
+  <!-- tab vending segment -->
+  <div class="vending-segment segements">
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+  
+  
+  
+    <div *ngFor="let sl of saleList; index as i">
+      <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
+      <!-- <div *ngIf="sl.stock.qtty>0" style="float:left"> -->
+        <ion-item-divider class="item-header">
+          <ion-label>
+            <ion-badge style="font-size: 20px;">
+              {{sl.position+compensation}}#.
+            </ion-badge> ***{{sl.machineId.substring(4)}}
+          </ion-label>
+        </ion-item-divider>
+        <ion-card>
+          <ion-item>
+            <label>{{sl.stock.name}}</label>
+          </ion-item>
+          <ion-item >
+  
+             <div *ngIf="sl.stock.price==0;else elsebuystock" id="my-product-img">
+              <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="buyMMoney(sl)">
+            </div>
+            <ng-template id="my-product-img" style="padding: 20px;" #elsebuystock>
+              <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]" (click)="addOrder(sl)">
+            </ng-template>
+  
+            
+          </ion-item>
+          <ion-item>
+            <div *ngIf="sl.stock.price==0;else elsestock">
+               <ion-label color="danger">FREE/<ion-icon name="cube-sharp" color="danger">
+              </ion-icon>: {{sl.stock.qtty}}</ion-label>
+            </div>
+            <ng-template #elsestock>
+              <label>
+                <ion-icon name="pricetags-sharp" color="danger"></ion-icon>: {{sl.stock.price}} / <ion-icon
+                  name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}
+              </label>
+            </ng-template>
+  
+          </ion-item>
+        </ion-card>
+      </div>
+    
+    </div>
+  
+    <div>
+      <img [src]="apiService._cuiSetting.imgFooter||'../../assets/background/soda.jpg'">
+    </div>
+  
+  
+  
+    <!-- <div *ngIf="getTotalSale?.t">
+      <div class="spacious-container" class="glasspanel">
+        <ion-grid>
+          <ion-row>
+            <ion-col>  
+  
+              <div class="button-wrapper" style="float: right;" (click)="vendingGO()">
+  
+                <div class="background-button xbutton" href="#" title="GO"></div>
+              </div>
+              
+              <div style="float: right;">
+                <ion-icon name="cart-sharp" color="primary" style="font-size: 30px;"></ion-icon>
+                :{{getTotalSale?.q|number}}:
+                <ion-icon name="wallet-sharp" color="primary" style="font-size: 30px;"></ion-icon>
+                :{{getTotalSale?.t|number}}
+  
+              </div>
+  
+  
+            </ion-col>
+          </ion-row>
+  
+          <ion-row>
+            <ion-col>
+  
+              <div class="scrollmenu">
+                <div class="order-item" *ngFor="let o of orders; let i=index;" color="primary">
+                  <ion-icon name="trash-bin-sharp" color="danger" (click)="removeCart(i)"></ion-icon> 
+                  <img [src]="apiService?.imageList[o.stock.image]" style="width:50px;height:120px; margin:0px">
+                  <div>
+                    <div>{{o.stock.name}}</div><div>{{o.stock.qtty|number}}({{(o.stock.qtty*o.stock.price)|number}})</div>
+                  </div>
+  
+                </div>
+              </div>
+  
+  
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+  
+  
+  
+      </div>
+    </div> -->
+
+  </div>
+
+</ion-content>

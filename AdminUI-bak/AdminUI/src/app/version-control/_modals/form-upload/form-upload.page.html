@@ -1,0 +1,86 @@
+<ion-content>
+
+  <div class="form-upload-container">
+    <div class="form-upload-left">
+
+      <div class="form-group">
+        <label for="">Commit Version</label>
+        <input [(ngModel)]="commit_version" type="text" placeholder="Enter commit_version" class="form-control input-commit_version">
+      </div>
+      <div class="form-group">
+        <label for="">Title</label>
+        <input [(ngModel)]="title" type="text" placeholder="Enter title" class="form-control input-title">
+      </div>
+      <div class="form-group">
+        <label for="">Subtitle</label>
+        <textarea [(ngModel)]="subtitle" class="form-control input-subtitle" placeholder="Enter subtitle" name="" id="" cols="30" rows="5"></textarea>
+      </div>
+
+      <div class="line"></div>
+
+      <div *ngFor="let element of elements; let i = index" class="input-container">
+        <div class="form-group">
+          <label for="">Section</label>
+          <input type="text" placeholder="Enter title" class="form-control input-section">
+        </div>
+        <div class="form-group">
+          <label for="">Description</label>
+          <textarea class="form-control input-description" placeholder="Enter description" name="" id="" cols="30" rows="5"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="">Hight light</label>
+          <textarea class="form-control input-hight-light" placeholder="Enter hight light" name="" id="" cols="30" rows="5"></textarea>
+        </div>
+
+        <div class="line"></div>
+      </div>
+      
+      <div class="btn-control">
+        <a (click)="addElement()" href="javascript:void(0)" class="btn-add-content"><i class="fa-solid fa-plus"></i> Add Content</a>
+        <a *ngIf="elements != undefined && elements?.length > 0" (click)="removeElement()" href="javascript:void(0)" class="btn-add-content"><i class="fa-solid fa-minus"></i> Remove Content</a>
+      </div>
+
+    </div>
+    <div class="form-upload-right">
+
+      <div class="group-1">
+        <div class="form-group">
+          <label for="">Commit Version</label>
+          <div *ngIf="commit_version == undefined || commit_version == ''" class="text">No Data</div>
+          <div *ngIf="commit_version != undefined && commit_version != ''" class="text">{{ commit_version }}</div>
+        </div>
+      </div>
+
+      <div class="line"></div>
+
+      <div class="form-group">
+        <label for="">File</label>
+        <label for="input-file" class="label-input-file">
+          <span *ngIf="file == undefined" class="text"><i class="fa-solid fa-angle-right"></i> Choose file</span>
+          <span *ngIf="file != undefined"  class="text"><i class="fa-solid fa-angle-right"></i> Full file</span>
+        </label>
+        <input (change)="uploadFile($event)" type="file" accept=".zip" hidden="true" class="input-file" id="input-file">
+      </div>
+
+      <div class="group-2">
+        <div class="form-group">
+          <label for="">File Name</label>
+          <div *ngIf="filename == undefined || filename == ''" class="text">No Data</div>
+          <div  *ngIf="filename != undefined && filename != ''" class="text">{{ filename }}</div>
+        </div>
+        <div class="form-group">
+          <label for="">File Size</label>
+          <div *ngIf="filesize == undefined || filesize == ''" class="text">No Data</div>
+          <div  *ngIf="filesize != undefined && filesize != ''" class="text">{{ filesize }}</div>
+        </div>
+      </div>
+
+      <div class="btn-control">
+        <a (click)="previewElement()" href="javascript:void(0)" class="btn-upload"><i class="fa-solid fa-file-lines"></i> preview</a>
+        <a (click)="close()" href="javascript:void(0)" class="btn-cancel"><i class="fa-regular fa-circle-xmark"></i> Cancel</a>
+      </div>
+
+    </div>
+  </div>
+
+</ion-content>

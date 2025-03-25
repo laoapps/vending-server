@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.laoapps.vendingmachine',
-  appName: 'cui',
+  appName: 'cui3',
   webDir: 'www',
   bundledWebRuntime: false,
   server: {
@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
     allowMixedContent: true
   },
   plugins: {
-		LiveUpdate: {
+    LiveUpdate: {
       appId: '6e351b4f-69a7-415e-a057-4567df7ffe94',
       autoDeleteBundles: undefined,
       defaultChannel: 'production',
@@ -27,7 +27,7 @@ const config: CapacitorConfig = {
       iosIsEncryption: false, // Optional: enable encryption if needed
       androidIsEncryption: false, // Optional
     }
-	}
+  }
 };
 
 export default config;

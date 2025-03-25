@@ -44,15 +44,31 @@
     </ion-item>
     <ion-item *ngIf="!isMusicMuted">
       <ion-label>Music volume</ion-label>
-      <ion-range [(ngModel)]="musicVolume" min="0" max="100" aria-label="Range with pin" [pin]="true" [pinFormatter]="pinFormatter" ></ion-range>
+      <ion-range [(ngModel)]="musicVolume" min="0" max="100" aria-label="Range with pin" [pin]="true"
+        [pinFormatter]="pinFormatter"></ion-range>
     </ion-item>
+    <ion-item>
+      <ion-label>PortName</ion-label>
+      <ion-input [(ngModel)]="portName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>BaudRate</ion-label>
+      <ion-input [(ngModel)]="baudRate"></ion-input>
+    </ion-item>
+    <ion-select [(ngModel)]="device" (ionChange)="selectDevice($event)">
+      <ion-select-option *ngFor="let device of devices" [value]="device">{{device}}</ion-select-option>
+    </ion-select>
     <ion-item>
       <ion-label>Francise Mode</ion-label>
       <ion-checkbox [(ngModel)]="francisemode"></ion-checkbox>
     </ion-item>
     <ion-item>
-     <ion-button (click)="save()">SAVE</ion-button>
-     <ion-button (click)="resetCashing()">Reset Cashing</ion-button>
+      <ion-label>Offline Mode</ion-label>
+      <ion-checkbox [(ngModel)]="offlineMode"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-button (click)="save()">SAVE</ion-button>
+      <ion-button (click)="resetCashing()">Reset Cashing</ion-button>
     </ion-item>
   </ion-list>
 
@@ -69,6 +85,19 @@
       </div>
       <div class="text">{{ testInTitle }}</div>
     </a>
+    <a (click)="this.apiService.myTab1.Enable()" href="javascript:void(0)" class="item">
+      <div class="icon">
+        <i class="fa-solid fa-display"></i>
+      </div>
+      <div class="text">Enable Cashin</div>
+    </a>
+
+    <a (click)="this.apiService.myTab1.Disable()" href="javascript:void(0)" class="item">
+      <div class="icon">
+        <i class="fa-solid fa-display"></i>
+      </div>
+      <div class="text">Disable Cashin</div>
+    </a>
   </div>
 
   <div class="test-motor-form">
@@ -84,21 +113,23 @@
       <div class="left">
         <div class="title">SUCCESS</div>
         <div class="group">
-          <a *ngFor="let item of successList; let i = index;" class="text-success" href="javascript:void(0)">Motor: {{ item }}</a>
+          <a *ngFor="let item of successList; let i = index;" class="text-success" href="javascript:void(0)">Motor: {{
+            item }}</a>
         </div>
         <div class="text">Result: {{ successList.length || 0 }}</div>
       </div>
       <div class="right">
         <div class="title">ERROR</div>
         <div class="group">
-          <a *ngFor="let item of errorList; let i = index;" class="text-danger" href="javascript:void(0)">Motor: {{ item }}</a>
+          <a *ngFor="let item of errorList; let i = index;" class="text-danger" href="javascript:void(0)">Motor: {{ item
+            }}</a>
         </div>
         <div class="text">Result: {{ errorList.length || 0 }}</div>
       </div>
     </div>
   </div>
 
-  <button (click)="testSlot()" class="btn btn-primary">Test Slot</button>
+  <button (click)="getToTestMotorPage('')" class="btn btn-primary">Test Slot</button>
 
 
 </ion-content>

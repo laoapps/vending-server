@@ -21,23 +21,23 @@ export class InventoryVMC implements IBaseClass {
     vendingBillPaid = new Array<IVendingMachineBill>();
     clients = new Array<IMachineID>();
     delayTime = 3000;
-    path='/vmc';
-    production=false;
-    public phonenumber =this.production? '2054452222':'2055220199'; //TPLUS
-    public walletId = this.production?'2443128596':'2351106808';// TPLUS
-    mmoneyusername='dbk';
-    mmoneypassword='dbk@2022';
-  
+    path = '/vmc';
+    production = false;
+    public phonenumber = this.production ? '2054452222' : '2055220199'; //TPLUS
+    public walletId = this.production ? '2443128596' : '2351106808';// TPLUS
+    mmoneyusername = 'dbk';
+    mmoneypassword = 'dbk@2022';
+
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.ssocket = new SocketServerVMC();
         this.wss = wss;
         this.initWs(wss);
         try {
-            router.get(this.path+'/', async (req, res) => {
+            router.get(this.path + '/', async (req, res) => {
                 console.log('TEST IS WORKING');
-                res.send({data:'test is working'})
+                res.send({ data: 'test is working' })
             });
-            router.post(this.path+'/', async (req, res) => {
+            router.post(this.path + '/', async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
                     console.log('POST Data', d);
@@ -45,7 +45,7 @@ export class InventoryVMC implements IBaseClass {
                         console.log('CB COMFIRM', d);
                         const c = d.data as IMMoneyConfirm;
                         // c.wallet_ids
-                        this.callBackConfirm(c.tranid_client,Number( c.amount)).then(r => {
+                        this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
                             res.send(PrintSucceeded(d.command, { bill: r, transactionID: c.tranid_client }, EMessage.succeeded));
                         }).catch(e => {
                             console.log('error confirmMMoney');
@@ -141,7 +141,7 @@ export class InventoryVMC implements IBaseClass {
                                 uuid: uuid4(),
                                 clientId,
                                 qr: qr.qrCode,
-                                transactionID,
+                                transactionID: transactionID + '',
                                 machineId: machineId.machineId,
                                 hashM: '',
                                 hashP: '',
@@ -155,9 +155,9 @@ export class InventoryVMC implements IBaseClass {
                             };
                             this.vendingBill.push(bill);
 
-                             res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
+                            res.send(PrintSucceeded(d.command, bill, EMessage.succeeded));
                         } else {
-                             res.send(PrintError(d.command, [], EMessage.notsupport));
+                            res.send(PrintError(d.command, [], EMessage.notsupport));
                         }
                     }
                 } catch (error) {
@@ -169,7 +169,7 @@ export class InventoryVMC implements IBaseClass {
 
 
             /// 0. init for demo 
-            router.get(this.path+'/init', async (req, res) => {
+            router.get(this.path + '/init', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'];
                     if (!this.ssocket.findOnlneMachine(machineId + '')) throw new Error(EMessage.MachineIsNotOnline)
@@ -181,7 +181,7 @@ export class InventoryVMC implements IBaseClass {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get(this.path+'/refresh', async (req, res) => {
+            router.get(this.path + '/refresh', async (req, res) => {
                 try {
                     this.wss.clients.forEach(v => {
                         if (v.OPEN) {
@@ -195,7 +195,7 @@ export class InventoryVMC implements IBaseClass {
                     res.send(PrintError('init', error, error.message));
                 }
             });
-            router.get(this.path+'/getPaidBills', async (req, res) => {
+            router.get(this.path + '/getPaidBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBillPaid, EMessage.succeeded));
                 } catch (error) {
@@ -203,7 +203,7 @@ export class InventoryVMC implements IBaseClass {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get(this.path+'/getBills', async (req, res) => {
+            router.get(this.path + '/getBills', async (req, res) => {
                 try {
                     res.send(PrintSucceeded('init', this.vendingBill, EMessage.succeeded));
                 } catch (error) {
@@ -211,7 +211,7 @@ export class InventoryVMC implements IBaseClass {
                     res.send(PrintError('init', error, EMessage.error));
                 }
             });
-            router.get(this.path+'/getOnlineMachines', async (req, res) => {
+            router.get(this.path + '/getOnlineMachines', async (req, res) => {
                 try {
                     console.log(' WS getOnlineMachines');
                     res.send(PrintSucceeded('init', this.ssocket.listOnlineMachine(), EMessage.succeeded));
@@ -222,13 +222,13 @@ export class InventoryVMC implements IBaseClass {
             });
 
 
-            router.get(this.path+'/submit_command', async (req, res) => {
+            router.get(this.path + '/submit_command', async (req, res) => {
                 try {
                     const machineId = req.query['machineId'] + '';
                     const position = Number(req.query['position']) ? Number(req.query['position']) : 0;
                     console.log(' WS submit command', machineId, position);
 
-                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime()), EMessage.succeeded));
+                    res.send(PrintSucceeded('submit command', this.ssocket.processOrder(machineId, position, new Date().getTime() + ''), EMessage.succeeded));
                 } catch (error) {
                     console.log(error);
                     res.send(PrintError('init', error, EMessage.error));
@@ -243,7 +243,7 @@ export class InventoryVMC implements IBaseClass {
     confirmMMoneyOder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // c.wallet_ids
-            this.callBackConfirm(c.tranid_client,Number( c.amount)).then(r => {
+            this.callBackConfirm(c.tranid_client, Number(c.amount)).then(r => {
                 return { bill: r, transactionID: c.tranid_client };
             }).catch(e => {
                 console.log('error confirmMMoney');
@@ -307,19 +307,19 @@ export class InventoryVMC implements IBaseClass {
             );
             let x = 5;
             let y = 0;
-            const exception =[6,7,8,9,10,16,17,18,19,20]
+            const exception = [6, 7, 8, 9, 10, 16, 17, 18, 19, 20]
             new Array(60).fill(0).forEach((v, i) => {
                 const c = x > i ? i : (i - (x * y) - 1);
                 !(i % x) && i >= x ? y++ : '';
-                if(!exception.includes(i))
-                this.vendingOnSale.push({
-                    machineId,
-                    stock: this.stock[c],
-                    position: i+1, // for VMC only
-                    hashP: '',
-                    hashM: '',
-                    max:5
-                })
+                if (!exception.includes(i))
+                    this.vendingOnSale.push({
+                        machineId,
+                        stock: this.stock[c],
+                        position: i + 1, // for VMC only
+                        hashP: '',
+                        hashM: '',
+                        max: 5
+                    })
             });
         } catch (error) {
             console.log(error);
@@ -332,8 +332,8 @@ export class InventoryVMC implements IBaseClass {
             this.loginMmoney().then(r => {
                 if (r) {
                     const qr = {
-                        amount: value+'',
-                        phonenumber:this.production? this.phonenumber:'2052899515',// '2055220199',
+                        amount: value + '',
+                        phonenumber: this.production ? this.phonenumber : '2052899515',// '2055220199',
                         transactionID
                     } as IMMoneyGenerateQR;
 
@@ -363,8 +363,8 @@ export class InventoryVMC implements IBaseClass {
     }
     mMoneyLoginRes = {} as IMMoneyLogInRes;
     loginMmoney() {
-        const username = this.production?this.mmoneyusername:'test';
-        const password = this.production?this.mmoneypassword:'12345';
+        const username = this.production ? this.mmoneyusername : 'test';
+        const password = this.production ? this.mmoneypassword : '12345';
         return new Promise<IMMoneyLogInRes>((resolve, reject) => {
             try {
                 if (this.mMoneyLoginRes.expiresIn) {
@@ -373,7 +373,7 @@ export class InventoryVMC implements IBaseClass {
                     }
                 }
                 axios.post('https://qr.mmoney.la/test/login', { username, password }).then(r => {
-                     console.log(r);
+                    console.log(r);
                     if (r.status) {
                         this.mMoneyLoginRes = r.data as IMMoneyLogInRes;
                         this.mMoneyLoginRes.expiresIn = moment().add(moment.duration('PT' + this.mMoneyLoginRes.expiresIn.toUpperCase()).asMilliseconds(), 'milliseconds') + '';
@@ -457,8 +457,8 @@ export class InventoryVMC implements IBaseClass {
         })
 
     }
-    setTask(bill:IVendingMachineBill,p:IVendingMachineSale,y:WebSocketServer.WebSocket,cbill:number,i:number){
-        return new Promise<any>((resolve,reject)=>{
+    setTask(bill: IVendingMachineBill, p: IVendingMachineSale, y: WebSocketServer.WebSocket, cbill: number, i: number) {
+        return new Promise<any>((resolve, reject) => {
             setTimeout(() => {
                 const position = this.ssocket.processOrder(bill.machineId, p.position, bill.transactionID);
                 const res = {} as IResModel;
@@ -485,7 +485,7 @@ export class InventoryVMC implements IBaseClass {
             }, this.delayTime * i);
             resolve(true);
         })
-       
+
     }
     checkMachineId(machineId: string): IMachineClientID | null {
         const x = this.ssocket.sclients.find(v => {
@@ -501,16 +501,16 @@ export class InventoryVMC implements IBaseClass {
     }
     initWs(wss: WebSocketServer.Server) {
         try {
-           
-            
-            this.ssocket.onResponse(data=>{
+
+
+            this.ssocket.onResponse(data => {
                 this.wss.clients
             })
             setWsHeartbeat(wss, (ws, data, binary) => {
                 console.log('WS HEART BEAT');
 
                 if (data === '{"command":"ping"}') { // send pong if recieved a ping.
-                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping',production:this.production }, EMessage.succeeded)));
+                    ws.send(JSON.stringify(PrintSucceeded('pong', { command: 'ping', production: this.production }, EMessage.succeeded)));
                 }
             }, 15000);
 
@@ -573,19 +573,19 @@ export class InventoryVMC implements IBaseClass {
                         ws.send(JSON.stringify(PrintError(d.command, [], error.message)));
                     }
                 }
-               
+
             });
         } catch (error) {
             console.log(error);
 
         }
     }
-    close(){
+    close() {
         this.wss.close();
         this.ssocket.server.close();
         this.ssocket.sclients.forEach(v => {
             v.destroy();
-          });
+        });
     }
 }
 

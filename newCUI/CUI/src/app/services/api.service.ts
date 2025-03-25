@@ -85,6 +85,7 @@ import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Toast } from '@capacitor/toast';
 import { VendingIndexServiceService } from '../vending-index-service.service';
+import { IndexdblocalService } from './indexdblocal.service';
 
 @Injectable({
   providedIn: 'root',
@@ -279,6 +280,7 @@ export class ApiService {
     // public notifyService: NotifierService,
     public storage: IonicStorageService,
     public IndexedDB: IndexedDBService,
+    public IndexeLocaldDB: IndexdblocalService,
     public load: LoadingController,
     public alert: AlertController
   ) {
@@ -577,6 +579,12 @@ export class ApiService {
     }
 
   }
+
+
+
+
+
+
   public onDelivery(cb: (data: any) => void) {
     if (cb) {
       this.eventEmmiter.on('delivery', cb);
@@ -1003,6 +1011,10 @@ export class ApiService {
   // }
 
   loadDeliveryingBillsNew() {
+
+    return this.IndexedDB.getBillProcesses();
+  }
+  loadDeliveryingBillsLocal() {
     // return this.http.post<IResModel>(
     //   this.url + '/getDeliveryingBills',
     //   {
@@ -1012,7 +1024,7 @@ export class ApiService {
     //   },
     //   { headers: this.headerBase() }
     // );
-    return this.IndexedDB.getBillProcesses();
+    return this.IndexeLocaldDB.getBillProcesses();
   }
   getMMoneyUserInfo(phonenumber: string) {
     return this.http.post<IResModel>(
@@ -1171,8 +1183,22 @@ export class ApiService {
   }
 
 
+  checkCallbackMmoney() {
+    return this.http.post<IResModel>(
+      this.url + '/checkCallbackMMoney',
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+        transactionID: localStorage.getItem('transactionID')
+      },
+      { headers: this.headerBase() }
+    );
+  }
+
+
   buyLaoQR(ids: Array<IVendingMachineSale>, value: number, machineId: string) {
-    this.currentPaymentProvider = EPaymentProvider.mmoney;
+    this.currentPaymentProvider = EPaymentProvider.laoqr;
     const req = {} as IReqModel;
     req.command = EClientCommand.buyLAOQR;
     req.data = {
@@ -1733,10 +1759,10 @@ export class ApiService {
     this.___OrderPaidPage?.dismiss();
     this.___AutoPaymentPage?.dismiss();
   }
-  async updateStatus(data:any) {
+  async updateStatus(data: any) {
     return new Promise<IResModel>((resolve, reject) => {
       const req = {} as IReqModel;
-      req.command = data.command||EClientCommand.MACHINE_STATAUS;
+      req.command = data.command || EClientCommand.MACHINE_STATAUS;
       req.data = data.data;
       req.transactionID = data.transactionID;
       req.ip;
@@ -1760,6 +1786,16 @@ export class ApiService {
     localStorage.setItem('balanceLocal', newBalance + '');
     console.log('balanceLocal', balanceLocal);
     console.log('newBalance', newBalance);
+
+  }
+
+  updateSellLocalBalance(balance: string) {
+    const balanceLocal = localStorage.getItem('balanceLocal') ?? '0';
+    if (Number(balanceLocal) >= Number(balance)) {
+      const newBalance = Number(balanceLocal) - Number(balance);
+      this.localBalance = newBalance;
+      localStorage.setItem('balanceLocal', newBalance + '');
+    }
 
   }
 

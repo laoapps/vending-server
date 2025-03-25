@@ -1,0 +1,4 @@
+
+1. live self update 
+2. VMC communication
+3. open multiple ports failed , need to synchronize open each port for each service

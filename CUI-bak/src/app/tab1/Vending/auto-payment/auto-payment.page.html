@@ -1,0 +1,133 @@
+<ion-content class="auto-payment-page">
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <!-- <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a> -->
+      </div>
+    </div>
+
+    <div class="laab-card-body">
+
+      <div class="order-list">
+
+        <div (click)="close()" class="item-buymore">
+          <div class="icon">
+            <i class="fa-solid fa-plus"></i> 
+          </div>
+        </div>
+        
+        <div *ngFor="let order of parseorders; let i = index" href="javascript:void(0)" class="item">
+        <!-- <div *ngFor="let order of lists; let i = index" href="javascript:void(0)" class="item"> -->
+          <div class="content">
+            <div class="icon">
+              <img [src]="apiService?.imageList[order.stock.image]" alt="">
+            </div>
+            <div class="detail">
+              <div class="position">Position #{{ order?.position }}</div>
+              <div class="name">{{ order?.stock?.name }}</div>
+              <div class="price">{{ order?.stock?.price | number }}</div>
+            </div>
+            <a (click)="removeOrder(i)" href="javascript:void(0)" class="btn-epin">
+              <i class="fa-solid fa-trash-can"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="laab-card-footer">
+
+      <div class="payment-list">
+        <div class="payment-list-left">
+
+          <div class="title">Payment Options</div>
+          <div class="item-list">
+            <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)" href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+          </div>
+
+
+          <div class="vending-section">
+            <div class="title">LAAB Cash</div>
+            <div class="sub-title">{{ apiService.cash.amount | number }}</div>
+            <div class="line"></div>
+            
+            <div class="title">LAAB Cash in</div>
+            <div class="sub-title">You can cash in by using LAAB QR</div>
+
+            <img src="" alt="" id="laab-qr-img" class="laab-qr-img">
+            <a (click)="laabGo()" href="javascript:void(0)" class="btn-go" id="btn-laab-go">
+              <div class="title">GO</div>
+              <div class="text">Use LAAB cash pay these orders</div>
+            </a>
+          </div>
+
+        </div>
+        <div class="payment-list-right">
+
+          <div class="bill-container">
+            <div *ngIf="isPayment == true" class="bill-wave-top">
+              <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+            </div>
+            <div class="bill-header">
+              <img src="" alt="" id="qr-img" class="qr-img">
+
+              <div class="total">{{ parseGetTotalSale.t | number }}</div>
+            </div>
+            <div *ngIf="isPayment == false" class="bill-body">
+
+              <div class="line"></div>
+
+              <div class="group">
+                <div class="text">SubQTTY</div>
+                <div class="value">{{ parseGetTotalSale.q | number }}</div>
+              </div>
+
+            </div>
+            <div *ngIf="isPayment == true" class="bill-body">
+
+              <div class="line"></div>
+              <div class="group">
+                <div class="text">{{ paymentText }}</div>
+                <div class="value">{{ billDate | date: 'yyyy-MM-dd HH:MM:SS':'+7' }}</div>
+              </div>
+              <div class="line"></div>
+
+              <div class="group">
+                <div class="text">SubQTTY</div>
+                <div class="value">{{ parseGetTotalSale.q | number }}</div>
+              </div>
+              <div class="group">
+                <div class="text">Subtotal</div>
+                <div class="value">{{ parseGetTotalSale.t | number }}</div>
+              </div>
+
+            </div>
+            <div class="bill-footer">
+              <div class="text">Found any problem call 555 163 21</div>
+              <!-- <a href="javascript:void(0)" class="btn-item">View Orders</a>
+              <a href="javascript:void(0)" class="btn-item">Close</a> -->
+            </div>
+            <div *ngIf="isPayment == true" class="bill-wave-bottom">
+              <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

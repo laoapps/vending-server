@@ -1,0 +1,205 @@
+<!-- <ion-header>
+  <ion-toolbar>
+    <ion-icon name="close-circle-sharp" (click)="close()"></ion-icon>
+
+    <ion-title>machine</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-button (click)="new()">New</ion-button>
+<ion-grid>
+  <ion-row>
+    <ion-col><ion-label>Image</ion-label></ion-col>
+    <ion-col><ion-label>Machine Id</ion-label></ion-col>
+    <ion-col><ion-label>OTP</ion-label></ion-col>
+    <ion-col></ion-col>
+    <ion-col></ion-col>
+  </ion-row>
+
+  <ion-row *ngFor="let p of _l">
+    <ion-col><ion-img class="product_image"[src]="showImage(p.photo)"></ion-img></ion-col>
+    <ion-col><ion-label>{{p.machineId}}<ion-button (click)="sale(p.machineId)">Sale</ion-button></ion-label></ion-col>
+    <ion-col><ion-label>{{p.otp}}</ion-label></ion-col>
+    <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
+    <ion-col> <ion-toggle  [(ngModel)]="p.isActive" (click)="disable(p.id)" ></ion-toggle></ion-col>
+    <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>
+
+  </ion-row>
+</ion-grid>
+</ion-content> -->
+
+
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">My Machine</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <ion-grid class="ion-no-padding">
+    <ion-row>
+      <ion-col size="12">
+
+        <div class="item-card">
+
+          <div class="item-card-header">
+            <div class="left">
+              <!-- <a  *ngIf="readonly == false" (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i> Create new machine</a>
+              <a  *ngIf="readonly == false" (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-file"></i> All sale report</a> -->
+              <!-- <a (click)="epinManagement()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-qrcode"></i> EPIN Management</a> -->
+
+              <a (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i>
+                Create new machine</a>
+              <a (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new"><i
+                  class="fa-solid fa-file"></i> All sale report</a>
+            </div>
+            <div class="right">
+              <a (click)="loadMachine()" href="javascript:void(0)" class="btn-item-reload"><i
+                  class="fa-solid fa-arrows-rotate"></i> Reload</a>
+            </div>
+          </div>
+
+
+          <div class="item-card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <td>No</td>
+                    <td>Image</td>
+                    <td>Machince ID</td>
+                    <td>OTP</td>
+                    <td>Time</td>
+                    <td>Active</td>
+                    <td>Action</td>
+                  </tr>
+                </thead>
+                <tbody *ngFor="let p of _l; let i = index">
+                  <tr>
+                    <td>{{ i+1 }}</td>
+                    <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
+                    <td>{{p.machineId}}</td>
+                    <td>{{p.otp}}</td>
+                    <td>{{p.updatedAt|date:dateformat:'offsettz||420'}}</td>
+                    <td><ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p.id)"></ion-toggle></td>
+                    <td>
+                      <button (click)="machineWallet(p.id)" class="btn btn-light border border-1 "><i
+                          class="fa-solid fa-wallet"></i> Machine Wallet</button>
+                      <button (click)="edit(p.id)" class="btn btn-light border border-1"><i
+                          class="fa-solid fa-pencil"></i> Edit</button>
+                      <button (click)="sale(p.machineId, p.otp)" class="btn btn-light border border-1"><i
+                          class="fa-solid fa-pencil"></i> Sale</button>
+                      <button (click)="refreshMachine(p.machineId)" class="btn btn-light border border-1"><i
+                          class="fa-solid fa-rotate"></i> Refresh</button>
+                      <button (click)="resetCashing(p.machineId)" class="btn btn-light border border-1"><i
+                          class="fa-solid fa-rotate"></i> Reset Cashing</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="settings[p.machineId]">
+                    <td colspan="6">
+                      <div>Setting </div>
+                      <div style="float: left;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
+                          class="custominput" type="number" label="imei" placeholder="enter imei"
+                          [(ngModel)]="settings[p.machineId].imei"></ion-input> </div>
+
+                      <div style="float: left;"> <ion-icon name="arrow-redo-circle-outline"></ion-icon> <ion-input
+                          class="custominput" type="number" label="limit value" placeholder="100000"
+                          [(ngModel)]="settings[p.machineId].limiter"></ion-input> </div>
+                      <div style="float: left;"> <ion-icon name="storefront-sharp"></ion-icon> <ion-checkbox
+                          [(ngModel)]="settings[p.machineId].allowVending"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="cash-sharp"></ion-icon><ion-checkbox
+                          [(ngModel)]="settings[p.machineId].allowCashIn"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="bulb-sharp"></ion-icon><ion-checkbox
+                          [(ngModel)]="settings[p.machineId].light"></ion-checkbox> </div>
+
+                      <div style="float: left;"> <ion-icon name="snow-outline"></ion-icon> <ion-input type="number"
+                          [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> </div>
+                      <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input
+                          type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input> </div>
+                      <hr />
+                      <div style="float: left;"> <ion-icon name="image-outline"></ion-icon>Photo header<ion-input
+                          type="text" [(ngModel)]="settings[p.machineId].imgHeader"></ion-input> </div>
+                      <div style="float: left;"> <ion-icon name="images-outline"></ion-icon>Photo Footer<ion-input
+                          type="text" [(ngModel)]="settings[p.machineId].imgFooter"></ion-input></div>
+                      <div style="float: left;"> <ion-icon name="camera-outline"></ion-icon>Logo<ion-input type="text"
+                          [(ngModel)]="settings[p.machineId].imgLogo"></ion-input></div>
+
+                      <!-- <div style="float: left;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
+                          class="custominput" type="text" label="imei" placeholder="enter imei"
+                          [(ngModel)]="settings[p.machineId].imei"></ion-input> </div> -->
+
+                      <div style="float: left;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
+                          class="custominput" type="text" label="owner" placeholder="enter owner"
+                          [(ngModel)]="settings[p.machineId].owner"></ion-input> </div>
+                      <div style="float: right;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
+                          class="custominput" type="number" label="owner phone" placeholder="enter owner phone"
+                          [(ngModel)]="settings[p.machineId].ownerPhone"></ion-input>> </div>
+
+                    </td>
+                    <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
+                    <td>
+
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="7">
+                      <div>Status </div>
+                      <p>temp:{{findMachine(p?.machineId)?.temp}}</p>
+                      <p>last Update:{{findMachine(p?.machineId)?.lastUpdate|date:dateformat:'offsettz||420'}}</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
+
+
+          <!-- <div *ngIf="readonly == true" class="item-card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <td>No</td>
+                    <td>Image</td>
+                    <td>Machince ID</td>
+                    <td>OTP</td>
+                  </tr>
+                </thead>
+                <tbody *ngFor="let p of _l; let i = index">
+                  <tr>
+                    <td>{{ i+1 }}</td>
+                    <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
+                    <td>{{p.machineId}}</td>
+                    <td>{{p.otp}}</td>
+                    <td>
+                      <button (click)="sale(p.machineId, p.otp)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Sale</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div> -->
+
+        </div>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
+
+<!-- <ion-content>
+
+  <button *ngFor="let list of fakeList; let i = index;" class="btn btn-primary">{{ list.uuid }}</button>
+
+</ion-content> -->

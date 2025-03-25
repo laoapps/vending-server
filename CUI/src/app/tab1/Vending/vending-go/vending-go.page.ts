@@ -27,13 +27,13 @@ export class VendingGoPage implements OnInit {
   constructor(
     private modal: ModalController,
     public apiService: ApiService,
-  ) { 
+  ) {
     this.apiService.___VendingGoPage = this.modal;
 
   }
 
   ngOnInit() {
-    this.apiService.autopilot.auto=0;
+    this.apiService.autopilot.auto = 0;
     this.summarizeOrder = JSON.parse(JSON.stringify(this.orders));
     this.summarizeOrder.forEach((item) => (item.stock.image = ''));
 
@@ -43,7 +43,7 @@ export class VendingGoPage implements OnInit {
         this.summarizeOrder[i].stock.qtty *
         this.summarizeOrder[i].stock.price;
     }
-    
+
     console.log(`sum total`, this.total);
     console.log(`summarizeOrder`, this.summarizeOrder);
 
@@ -51,6 +51,63 @@ export class VendingGoPage implements OnInit {
   }
 
   buyManyMMoney() {
+    // if (!this.orders.length) return alert('Please add any items first');
+    // const amount = this.orders.reduce(
+    //   (a, b) => a + b.stock.price * b.stock.qtty,
+    //   0
+    // );
+    // this.apiService.showLoading();
+    // console.log(this.orders, amount);
+    // this.apiService
+    //   .buyMMoney(this.orders, amount, this.machineId.machineId)
+    //   .subscribe((r) => {
+    //     console.log(r);
+    //     if (r.status) {
+    //       this.bills = r.data as IVendingMachineBill;
+    //       localStorage.setItem('order', JSON.stringify(this.bills));
+    //       new qrlogo({
+    //         logo: '../../assets/icon/mmoney.png',
+    //         content: this.bills.qr,
+    //       })
+    //         .getCanvas()
+    //         .then((r) => {
+    //           this.apiService.modal
+    //             .create({
+    //               component: QrpayPage,
+    //               componentProps: {
+    //                 encodedData: r.toDataURL(),
+    //                 amount,
+    //                 ref: this.bills.paymentref,
+    //               },
+    //               cssClass: 'dialog-fullscreen',
+    //             })
+    //             .then((r) => {
+    //               r.present();
+
+    //               this.apiService.soundMmoneyPaymentMethod();
+    //             });
+    //         });
+    //       // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
+    //       //   res => {
+    //       //     console.log(res);
+    //       //     this.modal.create({ component: QrpayPage, componentProps: { encodedData: res } }).then(r => {
+    //       //       r.present();
+    //       //     })
+    //       //   }, error => {
+    //       //     alert(error);
+    //       //   }
+    //       // );
+    //     }
+    //     this.apiService.dismissLoading();
+    //     this.getTotalSale.q = 0;
+    //     this.getTotalSale.t = 0;
+    //     this.orders = [];
+    //     this.summarizeOrder = [];
+    //   });
+  }
+
+
+  buyManyLaoQR() {
     if (!this.orders.length) return alert('Please add any items first');
     const amount = this.orders.reduce(
       (a, b) => a + b.stock.price * b.stock.qtty,
@@ -59,7 +116,7 @@ export class VendingGoPage implements OnInit {
     this.apiService.showLoading();
     console.log(this.orders, amount);
     this.apiService
-      .buyMMoney(this.orders, amount, this.machineId.machineId)
+      .buyLaoQR(this.orders, amount, this.machineId.machineId)
       .subscribe((r) => {
         console.log(r);
         if (r.status) {
@@ -84,7 +141,7 @@ export class VendingGoPage implements OnInit {
                 .then((r) => {
                   r.present();
 
-            this.apiService.soundMmoneyPaymentMethod();
+                  this.apiService.soundMmoneyPaymentMethod();
                 });
             });
           // this.scanner.encode(this.scanner.Encode.TEXT_TYPE, this.bills.qr).then(
@@ -127,7 +184,7 @@ export class VendingGoPage implements OnInit {
           token: cryptojs
             .SHA256(
               this.apiService.machineId.machineId +
-                this.apiService.machineId.otp
+              this.apiService.machineId.otp
             )
             .toString(cryptojs.enc.Hex),
         };

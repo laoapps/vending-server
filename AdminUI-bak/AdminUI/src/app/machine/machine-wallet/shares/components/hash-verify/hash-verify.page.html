@@ -1,0 +1,162 @@
+<ion-content>
+
+  <div class="header">
+    <div class="left">
+      <div class="section-1">
+        <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+      </div>
+      <div class="section-2">
+        <div class="main">Detail</div>
+        <div class="sub-main">About {{type}}</div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="section-1">
+        <!-- <a (click)="openNFTSaleSMCCenterModal()" href="javascript:void(0)" class="btn-options"><i class="fa-regular fa-bell"></i></a> -->
+      </div>
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div *ngIf="balanceType=='coin_income' || balanceTypeFromQR == 'coin_income'; then thenBlock else elseBlock"></div>
+  <ng-template #thenBlock>
+    <div class="about">
+      <div class="title">Info</div>
+      <div class="data my-2" *ngIf="sender_uuid != undefined && receiver_uuid != undefined">
+        <div class="text">sender</div>
+        <div class="value">
+          <div class="left">{{sender_uuid}}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+      <div class="data" *ngIf="sender_uuid != undefined && receiver_uuid != undefined">
+        <div class="text">receiver</div>
+        <div class="value">
+          <div class="left">{{receiver_uuid}}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+      <div class="data my-2">
+        <div class="text">Income</div>
+        <div class="value">
+          <div class="left">+{{income_expend_amount | number}}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+      <div class="data my-2">
+        <div class="text">Description</div>
+        <div class="value">
+          <div class="left">{{ description }}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #elseBlock>
+    <div class="about">
+      <div class="title">Info</div>
+      <div class="data my-2" *ngIf="sender_uuid != undefined && receiver_uuid != undefined">
+        <div class="text">sender</div>
+        <div class="value">
+          <div class="left">{{sender_uuid}}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+      <div class="data" *ngIf="sender_uuid != undefined && receiver_uuid != undefined">
+        <div class="text">receiver</div>
+        <div class="value">
+          <div class="left">{{receiver_uuid}}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+      <div class="data my-2">
+        <div class="text">Expend</div>
+        <div class="value">
+          <div class="left">-{{income_expend_amount | number}}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+      <div class="data my-2" *ngIf="description != undefined">
+        <div class="text">Description</div>
+        <div class="value">
+          <div class="left">{{ description }}</div>
+          <div class="right"></div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="balance" *ngIf="sender_uuid != undefined && receiver_uuid != undefined">
+    <div class="title">Balance</div>
+
+    <div class="group">
+      <div class="item">
+        <div class="text">Last</div>
+        <div class="value">{{ last_amount | number }}</div>
+      </div>
+      <div class="item">
+        <div class="text">Current</div>
+        <div class="value">{{current_amount | number}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chains">
+    <div class="title">Chains</div>
+
+    <div class="group">
+      <div (click)="ShowFullHash('H: ', lists[0].h0)" class="item">
+        <div class="text">Block 1</div>
+        <div class="value">
+          {{ chains.block1 }}
+        </div>
+      </div>
+
+      <div (click)="ShowFullHash('H: ', lists[1].h1)" class="item">
+        <div class="text">Block 2</div>
+        <div class="value">
+          {{ chains.block2 }}
+        </div>
+      </div>
+
+      <div (click)="ShowMergeFullHash('H: ', lists[2].h1, lists[2].h2)" class="item">
+        <div class="text">Block 3</div>
+        <div class="value">
+          {{ chains.block3 }}
+        </div>
+      </div>
+
+      <div (click)="ShowFullHash('H: ', lists[3].h0)" class="item">
+        <div class="text">Block 4</div>
+        <div class="value">
+          {{ chains.block4 }}
+        </div>
+      </div>
+
+      <div (click)="ShowMergeFullHash('H: ', lists[4].h1, lists[4].h2)" class="item">
+        <div class="text">Block 5</div>
+        <div class="value">
+          {{ chains.block5 }}
+        </div>
+      </div>
+
+      <div (click)="ShowFullHash('H: ', lists[5].h1)" class="item">
+        <div class="text">Block 6</div>
+        <div class="value">
+          {{ chains.block6 }}
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="genQRcode()" color="danger"> 
+      <ion-icon name="qr-code-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+
+</ion-content>

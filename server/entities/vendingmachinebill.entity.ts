@@ -13,7 +13,7 @@ export type VendingMachineBillStatic = typeof Model & {
     new(values?: object, options?: BuildOptions): VendingMachineBillModel;
 };
 
-export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):VendingMachineBillStatic => {
+export const VendingMachineBillFactory = (name: string, sequelize: Sequelize): VendingMachineBillStatic => {
     const attributes: ModelAttributes<VendingMachineBillModel> = {
         id: {
             type: DataTypes.INTEGER,
@@ -46,32 +46,32 @@ export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):Ve
         totalvalue: {
             type: DataTypes.FLOAT,
         },
-        paymentmethod:  {
+        paymentmethod: {
             type: DataTypes.STRING,
         },
-        paymentstatus:  {
+        paymentstatus: {
             type: DataTypes.STRING,
         },
-        paymentref:  {
-            type: DataTypes.STRING,
+        paymentref: {
+            type: DataTypes.TEXT,
         },
-        paymenttime:  {
+        paymenttime: {
             type: DataTypes.DATE,
         },
         requestpaymenttime: {
             type: DataTypes.DATE,
         },
-        machineId:  {
+        machineId: {
             type: DataTypes.STRING,
         },
-        clientId:  {
+        clientId: {
             type: DataTypes.STRING,
         },
-        transactionID:  {
-            type: DataTypes.FLOAT,
-        },
-        qr:  {
+        transactionID: {
             type: DataTypes.STRING,
+        },
+        qr: {
+            type: DataTypes.TEXT,
         },
         hasM: {
             type: DataTypes.TEXT,
@@ -94,8 +94,8 @@ export const VendingMachineBillFactory = (name: string, sequelize: Sequelize):Ve
         o.updatedAt = new Date();
     });
     x.beforeCreate(async (o) => {
-        if(!o.uuid)
-        o.uuid = uuid.v4();
+        if (!o.uuid)
+            o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
     return x as unknown as VendingMachineBillStatic;

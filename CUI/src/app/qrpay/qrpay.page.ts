@@ -10,46 +10,60 @@ import { IENMessage } from '../models/base.model';
   templateUrl: './qrpay.page.html',
   styleUrls: ['./qrpay.page.scss'],
 })
-export class QrpayPage implements OnInit,OnDestroy {
-  @Input() encodedData:string;
-  @Input() amount:number;
-  @Input() ref:string;
+export class QrpayPage implements OnInit, OnDestroy {
+  @Input() encodedData: string;
+  @Input() amount: number;
+  @Input() ref: string;
   contact = localStorage.getItem('contact') || '55516321';
-  _T:any
-  constructor(public apiService:ApiService,public modal:ModalController) { }
+  _T: any
+  constructor(public apiService: ApiService, public modal: ModalController) { }
   ngOnDestroy(): void {
-    if(this._T)clearTimeout(this._T)
-    this._T=null;
+    if (this._T) clearTimeout(this._T)
+    this._T = null;
   }
 
   ngOnInit() {
     const that = this;
-    if(this._T)clearTimeout(this._T)
+    if (this._T) clearTimeout(this._T)
     this._T = setTimeout(() => {
       this.modal.dismiss();
-    },1000*60*15);
-   this.apiService.onStockDeduct((data)=>{
-    console.log('onStockDeduct',data);
-    that.modal.dismiss();
-   })
-  }
-  refresh(){
-    this.apiService.loadDeliveryingBills().subscribe(r => {
-      if (r.status) {
-        this.apiService.dismissModal();
-        const pb = r.data as Array<IBillProcess>;
-        if(pb.length)
-        this.apiService.showModal(RemainingbillsPage, { r:pb }, false);
-        this.modal.dismiss();
-      }
-      else {
-        this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
-          r.present();
-        })
-      }
+    }, 1000 * 60 * 15);
+    this.apiService.onStockDeduct((data) => {
+      console.log('onStockDeduct', data);
+      that.modal.dismiss();
     })
   }
-  close(){
+  // refresh() {
+  //   this.apiService.loadDeliveryingBillsNew().subscribe(r => {
+  //     if (r.status) {
+  //       this.apiService.dismissModal();
+  //       const pb = r.data as Array<IBillProcess>;
+  //       if (pb.length)
+  //         this.apiService.showModal(RemainingbillsPage, { r: pb }, true);
+  //       this.modal.dismiss();
+  //     }
+  //     else {
+  //       this.apiService.toast.create({ message: r.message, duration: 5000 }).then(r => {
+  //         r.present();
+  //       })
+  //     }
+  //   })
+  // }
+
+  refresh() {
+    this.apiService.loadDeliveryingBillsNew().then(r => {
+      this.apiService.dismissModal();
+      const pb = r as Array<IBillProcess>;
+      if (pb.length)
+        this.apiService.showModal(RemainingbillsPage, { r: pb }, true);
+      this.modal.dismiss();
+    }).catch(e => {
+      this.apiService.toast.create({ message: e, duration: 5000 }).then(r => {
+        r.present();
+      })
+    })
+  }
+  close() {
     this.modal.dismiss();
   }
 

@@ -1,0 +1,6 @@
+{
+  "extends": ["eslint:recommended"],
+  "rules": {
+    "comma-dangle": ["error", "never"]
+  }
+}

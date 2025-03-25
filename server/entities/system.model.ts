@@ -483,7 +483,7 @@ export enum EPaymentProvider {
     laab = 'laab'
 }
 export interface IResModel {
-    transactionID: number;
+    transactionID: string;
     command: any;
     data: any;
     message: string;
@@ -844,7 +844,11 @@ export enum EZDM8_COMMAND {
 export enum EPaymentStatus {
     paid = 'paid',
     pending = 'pending',
-    delivered = 'delivered'
+    delivered = 'delivered',
+    succeeded = 'succeeded',
+    failed = 'failed',
+    error = 'error',
+    timeout = 'timeout'
 }
 export enum EMessage {
     resetCashingSuccess = 'reset cashing success',
@@ -1031,7 +1035,9 @@ export enum EMessage {
     InvalidMachineIdOrOTP = "InvalidMachineIdOrOTP",
     refreshsucceeded = "refreshsucceeded",
     doorExist = "doorExist",
-    BillCreatedTemp = "--_"
+    BillCreatedTemp = "--_",
+    LaoQRNotPaid = "LaoQRNotPaid",
+    machineisdisabled = "machineisdisabled"
 }
 export interface IBase {
     id?: number;
@@ -1112,8 +1118,11 @@ export interface IMMoneyQRRes {
 export enum EClientCommand {
     list = 'list',
     buyMMoney = 'buyMMoney',
+    buyLAOQR = "buyLAOQR",
     confirmMMoney = 'confirmMMoney',
     confirmLAAB = 'confirmLAAB',
+    confirmLAOQR = 'confirmLAOQR',
+    findLaoQRPaid = 'findLaoQRPaid',
     CREDIT_NOTE = "CREDIT_NOTE",
     MACHINE_STATUS = "MACHINE_STATUS",
     DISPENSE = "DISPENSE",
@@ -1126,6 +1135,7 @@ export enum EClientCommand {
     VMC_DISPENSE = "VMC_DISPENSE",
     VMC_CREDIT_NOTE = "VMC_CREDIT_NOTE",
     VMC_UNKNOWN = "VMC_UNKNOWN",
+
 }
 export interface IVendingMachineSale extends IBase, IBC {
     machineId: string;
@@ -1147,7 +1157,7 @@ export interface IVendingMachineBill extends IBase, IBC {
     requestpaymenttime: Date;
     machineId: string;
     clientId: string;
-    transactionID: number;
+    transactionID: string;
     qr: string;
 }
 export interface IEPINShort extends IBase {
@@ -1309,6 +1319,15 @@ export interface IMMoneyGenerateQRRes {
     qrCode: string
 
 }
+
+export interface ILaoQRGenerateQRRes {
+    timestamp: Date,
+    success: boolean,
+    message: string,
+    transactionId: string,
+    data: any
+}
+
 export interface IMMoneyConfirm {
     // amount: string,
     // wallet_ids: string,
@@ -2369,4 +2388,4 @@ export interface ILoadVendingMachineSaleBillReport {
     machineId: string
 }
 
-export interface ILoadVendingMachineStockReport extends ILoadVendingMachineSaleBillReport {}
+export interface ILoadVendingMachineStockReport extends ILoadVendingMachineSaleBillReport { }

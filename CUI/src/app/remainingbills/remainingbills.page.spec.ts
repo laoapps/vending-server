@@ -9,7 +9,7 @@ describe('RemainingbillsPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ RemainingbillsPage ],
+      declarations: [RemainingbillsPage],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
