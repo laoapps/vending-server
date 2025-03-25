@@ -2585,7 +2585,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkSubAdmin,
                 this.checkAdmin,
 
-                (req, res) => {
+                async (req, res) => {
                     try {
 
                         const data = req.body;
@@ -2605,6 +2605,19 @@ export class InventoryZDM8 implements IBaseClass {
                         }).catch(error => {
                             res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
                         });
+
+
+                        const ownerUuid = res.locals["ownerUuid"];
+                        const machineId = data.machineId;
+                        const fromDate = data.fromDate;
+                        const toDate = data.toDate;
+                        const run = await this.getReportSale(machineId, fromDate, toDate, ownerUuid);
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
@@ -5837,6 +5850,34 @@ export class InventoryZDM8 implements IBaseClass {
             v.destroy();
         });
     }
+    private async getReportSale(machineId: string, fromDate: string, toDate: string, ownerUuid: string) {
+        let condition: any = {};
+        if (machineId == 'all') {
+
+            condition = {
+                where: {
+                    // paymentstatus: 'paid',              
+                    paymentstatus: { [Op.or]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
+
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        else {
+            condition = {
+                where: {
+                    paymentstatus: { [Op.or]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
+                    machineId: machineId,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+        const res = await ent.findAndCountAll(condition);
+        return res;
+    }
 
     // SaveMachineSaleReport(params: ISaveMachineSaleReport): Promise<any> {
     //     return new Promise<any> (async (resolve, reject) => {
@@ -6199,6 +6240,7 @@ export class LoadVendingMachineStockReport {
             }
         });
     }
+
 
 
 }
