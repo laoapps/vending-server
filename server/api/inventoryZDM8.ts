@@ -2998,7 +2998,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 r.changed('data', true);
                                 console.log('updating machine setting', r.data);
                                 const a2 = JSON.parse(JSON.stringify(r.data));
-                                if (o.data[0].refresh) a2.refresh = o.data[0].refresh;
+                                if (o.data[0].refresh) a2.find(v => v.settingName == 'setting').refresh = o.data[0].refresh;
                                 console.log('write machine setting', a2);
                                 writeMachineSetting(r.machineId, a2);
                                 res.send(
