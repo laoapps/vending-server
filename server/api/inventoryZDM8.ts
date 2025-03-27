@@ -5657,6 +5657,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     let ax = JSON.parse(a) as Array<any>;
                                     if (!ax || !Array.isArray(ax)) ax = [];
                                     const pendingStock = ax.map(v => { return { transactionID: v?.transactionID, position: v?.position } })
+                                    console.log('FIND SETTING FOR REFRESH COMMAND', setting);
                                     if (setting?.refresh) {
                                         const s = JSON.parse(JSON.stringify(setting));
                                         delete s.refresh;
