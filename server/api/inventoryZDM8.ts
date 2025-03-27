@@ -2999,6 +2999,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.log('updating machine setting', r.data);
                                 const a2 = JSON.parse(JSON.stringify(r.data));
                                 if (o.data[0].refresh) a2.refresh = o.data[0].refresh;
+                                console.log('write machine setting', a2);
                                 writeMachineSetting(r.machineId, a2);
                                 res.send(
                                     PrintSucceeded(
@@ -5586,8 +5587,8 @@ export class InventoryZDM8 implements IBaseClass {
                                     let x = await readMachineSetting(ws['machineId']);
                                     let mstatus = await readMachineStatus(ws['machineId']);
 
-                                    console.log('clientid  setting', x);
-                                    console.log('clientid  status', mstatus);
+                                    console.log('clientid  setting', ws['machineId'], x);
+                                    console.log('clientid  status', ws['machineId'], mstatus);
                                     const mArray = ws['myMachineId'] as Array<string>;
                                     // console.log('myMachineId', mArray);
                                     let mymstatus = [];
@@ -5659,6 +5660,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     if (setting?.refresh) {
                                         const s = JSON.parse(JSON.stringify(setting));
                                         delete s.refresh;
+                                        console.log('DELETE REFRESH writeMachineSetting', ws['machineId'], s);
                                         writeMachineSetting(ws['machineId'], JSON.stringify([s]));
                                     }
                                     ws.send(
