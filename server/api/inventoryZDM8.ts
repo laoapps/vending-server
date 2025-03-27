@@ -3008,7 +3008,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         , returnLog(req, res)
                                     )
                                 );
-                                const s = JSON.parse(JSON.stringify(r.data));
+                                const s = JSON.parse(JSON.stringify(a));
                                 let a2 = s.find(v => v.settingName == 'setting');
                                 if (o.data[0].refresh) {
                                     a2.refresh = o.data[0].refresh ?? false;
