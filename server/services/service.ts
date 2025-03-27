@@ -332,7 +332,7 @@ export function writeMachineSetting(machineId: string, setting: any) {
     try {
         // console.log('writeMachineSetting',machineId,setting);
 
-        redisClient.set('_setting_' + machineId, JSON.stringify(setting));
+        return redisClient.set('_setting_' + machineId, JSON.stringify(setting));
     } catch (error) {
         console.log('error writeMachineSetting', error);
 
@@ -369,14 +369,14 @@ export function removeACKConfirmCashIn(transactionID: string) {
     return redisClient.del('_ack_confirm_CashIn_' + transactionID);
 }
 export function writeMerchantLimiterBalance(ownerUuid: string, balance: string) {
-    redisClient.set('_limiter_balance_' + ownerUuid, balance);
+    return redisClient.set('_limiter_balance_' + ownerUuid, balance);
 }
 export function readMerchantLimiterBalance(ownerUuid: string) {
     return redisClient.get('_limiter_balance_' + ownerUuid);
 
 }
 export function writeMachineBalance(machineId: string, balance: string) {
-    redisClient.set('_balance_' + machineId, balance);
+    return redisClient.set('_balance_' + machineId, balance);
 }
 export function readMachineBalance(machineId: string,) {
     return redisClient.get('_balance_' + machineId);
