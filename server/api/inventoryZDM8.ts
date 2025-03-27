@@ -2815,7 +2815,7 @@ export class InventoryZDM8 implements IBaseClass {
                             this.machineClientlist
                                 .create(o)
                                 .then((r) => {
-                                    this.refreshMachines();
+                                    this.reinitMachines();
                                     res.send(PrintSucceeded("addMachine", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
@@ -2869,7 +2869,7 @@ export class InventoryZDM8 implements IBaseClass {
                             this.machineClientlist
                                 .create(o)
                                 .then((r) => {
-                                    this.refreshMachines();
+                                    this.reinitMachines();
                                     res.send(PrintSucceeded("addMachine", r, EMessage.succeeded, returnLog(req, res)));
                                 })
                                 .catch((e) => {
@@ -2918,7 +2918,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         , returnLog(req, res)
                                     )
                                 );
-                                this.refreshMachines();
+                                this.reinitMachines();
                             })
                             .catch((e) => {
                                 console.log("Error updateMachine", e);
@@ -2960,7 +2960,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.data[0].allowCashIn = !o.data[0]?.allowCashIn ? false : true;
                                 o.data[0].light = o.data[0]?.light ?? { start: 3, end: 2 };
                                 if (!Array.isArray(r.data)) r.data = [r.data];
-                                let a = r.data;
+                                let a = r.data.find(v => v.settingName == 'setting');
 
                                 const x = o.data[0]?.allowVending;
                                 const y = o.data[0]?.allowCashIn;
@@ -2985,7 +2985,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 }
                                 if (!a) {
                                     a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl };
-                                    r.data = a;
+                                    r.data.push(a);
                                 }
                                 else {
                                     a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l, a.imei = t; a.owner = owner, a.ownerPhone = ownerPhone;
@@ -2997,9 +2997,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 // r.data = [a];
                                 r.changed('data', true);
                                 console.log('updating machine setting', r.data);
-
-
-
+                                const a2 = JSON.parse(JSON.stringify(r.data));
+                                if (o.data[0].refresh) a2.refresh = o.data[0].refresh;
+                                writeMachineSetting(r.machineId, a2);
                                 res.send(
                                     PrintSucceeded(
                                         "updateMachineSetting",
@@ -3008,13 +3008,8 @@ export class InventoryZDM8 implements IBaseClass {
                                         , returnLog(req, res)
                                     )
                                 );
-                                const a2 = JSON.parse(JSON.stringify(a));
 
-                                if (o.data[0].refresh) {
-                                    a2.refresh = o.data[0].refresh ?? false;
-                                }
-                                writeMachineSetting(r.machineId, a2);
-                                this.refreshMachines();
+                                this.reinitMachines();
 
                             })
                             .catch((e) => {
@@ -3049,7 +3044,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     );
                                 r.isActive = isActive;
                                 // r.changed('isActive',true);
-                                this.refreshMachines();
+                                this.reinitMachines();
                                 res.send(
                                     PrintSucceeded(
                                         "disableMachine",
@@ -3573,7 +3568,7 @@ export class InventoryZDM8 implements IBaseClass {
                     let setting = {} as any
                     if (r) {
                         try {
-                            setting = JSON.parse(r);
+                            setting = (JSON.parse(r))?.find(v => v.settingName == 'setting');
                         } catch (error) {
                             console.log('error parsing setting 2', error);
                             setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = { start: 3, end: 2 }; setting.limiter = 100000; setting.imei = '';
@@ -3649,7 +3644,7 @@ export class InventoryZDM8 implements IBaseClass {
                             let setting = {} as any
                             if (r) {
                                 try {
-                                    setting = JSON.parse(r);
+                                    setting = JSON.parse(r)?.find(v => v.settingName == 'setting');
                                 } catch (error) {
                                     console.log('error parsing setting 2', error);
                                     setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = { start: 3, end: 2 }; setting.limiter = 100000; setting.imei = '';
@@ -4038,7 +4033,7 @@ export class InventoryZDM8 implements IBaseClass {
                     let setting = {} as any
                     if (r) {
                         try {
-                            setting = JSON.parse(r);
+                            setting = JSON.parse(r)?.find(v => v.settingName == 'setting');
                         } catch (error) {
                             console.log('error parsing setting 2', error);
                             setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = { start: 3, end: 2 }; setting.limiter = 100000; setting.imei = '';
@@ -4124,7 +4119,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 let setting = {} as any
                                 if (r) {
                                     try {
-                                        setting = JSON.parse(r);
+                                        setting = JSON.parse(r)?.find(v => v.settingName == 'setting');
                                     } catch (error) {
                                         console.log('error parsing setting 2', error);
                                         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = { start: 3, end: 2 }; setting.limiter = 100000; setting.imei = '';
@@ -4669,9 +4664,9 @@ export class InventoryZDM8 implements IBaseClass {
             console.log("Error updateBillCash");
         }
     }
-    refreshMachines() {
+    reinitMachines() {
         this.machineClientlist.findAll({ attributes: { exclude: ['photo'] } }).then((rx) => {
-            this.ssocket.initMachineId(rx);
+            this.initMachineId(rx);
         });
     }
     getMyMmoney(PhoneUser: string, myqr: string, transID: string, type: string = 'PRO') {
@@ -5616,7 +5611,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                             mymstatus.push({ machineId: element, mstatus: await readMachineStatus(element) });
 
-                                            const msetting = JSON.parse(await readMachineSetting(element));
+                                            const msetting = JSON.parse(await readMachineSetting(element))?.find(v => v.settingName == 'setting');
                                             mymsetting.push({ msetting, machineId: element });
 
 

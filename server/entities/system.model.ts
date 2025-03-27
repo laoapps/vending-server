@@ -1282,7 +1282,7 @@ export interface IMachineClientID extends IBase {
     machineId: string;
     ownerUuid: string;
     photo: string;
-    data: any;
+    data: Array<any>;
 }
 
 export interface IMMoneyLogInRes {
