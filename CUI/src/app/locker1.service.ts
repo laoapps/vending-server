@@ -22,8 +22,8 @@ export class Locker1Service implements ILockControlService {
   log: IlogSerial;
   boardAddress = '01';
 
-  machinestatus = {data:''};
-  constructor(private serialService: SerialServiceService) {}
+  machinestatus = { data: '' };
+  constructor(private serialService: SerialServiceService) { }
 
   initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
@@ -58,13 +58,13 @@ export class Locker1Service implements ILockControlService {
     const x = data.join('') + this.serialService.checkSumCRC(data);
     return x;
   }
-initLocker1(){
-  return new Promise<IResModel>(async (resolve, reject) => {
+  initLocker1() {
+    return new Promise<IResModel>(async (resolve, reject) => {
 
-    resolve(await this.getFirmwareVersion());
-  });
-}
-  private async commandLocker1(command: string[], commandType: EProtocol1Command,transactionID=-1): Promise<IResModel> {
+      resolve(await this.getFirmwareVersion());
+    });
+  }
+  private async commandLocker1(command: string[], commandType: EProtocol1Command, transactionID = -1): Promise<IResModel> {
     // const frame = command.join('');
     const bcc = this.checkSum(command);
     const fullCommand = command + bcc;
@@ -72,7 +72,7 @@ initLocker1(){
 
     try {
       await this.serialService.write(fullCommand);
-      return { command: commandType, data: fullCommand, message: 'Command sent successfully' ,status:1,transactionID};
+      return { command: commandType, data: fullCommand, message: 'Command sent successfully', status: 1, transactionID };
     } catch (e) {
       throw { command: commandType, data: fullCommand, result: e.message };
     }
@@ -96,7 +96,7 @@ initLocker1(){
           return this.readAllLockStatus();
         case EMACHINE_COMMAND.ONETOUCHUNLOCK:
           return this.oneTouchUnlock();
-        case EMACHINE_COMMAND.LIGHTSON:
+        case EMACHINE_COMMAND.LIGHTS:
           return this.lightsOn();
         case EMACHINE_COMMAND.LIGHTSOFF:
           return this.lightsOff();

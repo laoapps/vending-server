@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { VendingIndexServiceService } from '../vending-index-service.service'
 import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ICreditData } from '../services/syste.model'
 import { Toast } from '@capacitor/toast';
@@ -12,8 +12,11 @@ import cryptojs, { mode } from 'crypto-js';
   templateUrl: './testmotor.page.html',
   styleUrls: ['./testmotor.page.scss'],
 })
+
 export class TestmotorPage implements OnInit, OnDestroy {
   vlog = { log: { data: '', limit: 50 } as IlogSerial };
+  @Input() serial: ISerialService;
+
   slot = 1;
   //val='011020010002040A010000';//011000010002040A010094F8'
   val = '0110200100020410010000'; //with checksum 0110200100020410010100ff32
@@ -22,7 +25,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   datachecksum = ''
   machineId = '11111111';
   otp = '111111';
-  serial: ISerialService;
+  // serial: ISerialService;
   open = false;
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
   selectedDevice = 'VMC';
@@ -259,7 +262,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initPulseTop77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
-    if(!this.serial){
+    if (!this.serial) {
       Toast.show({ text: 'serial not init' });
     }
     this.vlog.log = this.serial.log;

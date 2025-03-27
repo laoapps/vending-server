@@ -32,6 +32,8 @@ export class SettingPage implements OnInit, OnDestroy {
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
   productFallLimit = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
+  dropSensor = localStorage.getItem('dropSensor') ? Number(localStorage.getItem('dropSensor')) : 0;
+
   offlineMode = localStorage.getItem('offlineMode') ? true : false;
 
   startM: number = 1;
@@ -78,6 +80,7 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('device', this.device);
 
     localStorage.setItem('offlineMode', this.offlineMode + '');
+    localStorage.setItem('dropSensor', this.dropSensor + '');
 
     // product fall limit
     if (this.productFallLimit > 30) this.productFallLimit = 30;

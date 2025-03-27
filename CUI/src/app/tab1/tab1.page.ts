@@ -136,7 +136,7 @@ export class Tab1Page implements OnDestroy {
 
   production = environment.production;
 
-  mmLogo = 'assets/icon/mmoney.png';
+  hmLogo = 'assets/icon/logo.png';
 
   vendingOnSale = new Array<IVendingMachineSale>();
   vendingBill = new Array<IVendingMachineBill>();
@@ -222,6 +222,9 @@ export class Tab1Page implements OnDestroy {
 
   otherModalAreOpening: boolean = false;
 
+  t: any;
+  count = 6;
+
 
   countdownCheckLaoQRPaidTimer: any = {} as any;
   // countdownCheckLaoQRPaid: number = 90;
@@ -274,7 +277,7 @@ export class Tab1Page implements OnDestroy {
   };
 
   allowCashIn = false;
-  light = true;;
+  light = { start: 3, end: 2 };;
   ;
   allowVending = true;
   tempStatus: { lowTemp: number, highTemp: number } = { lowTemp: 5, highTemp: 10 };
@@ -380,6 +383,8 @@ export class Tab1Page implements OnDestroy {
     // this.zone.runOutsideAngular(()=>{
     this.machineId = this.apiService.machineId;
     this.url = this.apiService.url;
+
+
     // this.initVendingSale();
 
 
@@ -662,17 +667,20 @@ export class Tab1Page implements OnDestroy {
           if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
             this.tempStatus.lowTemp = r.lowTemp;
             this.tempStatus.highTemp = r.highTemp;
-            this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
+            // this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
+            this.vendingIndex.vmc.setTemperature(this.tempStatus.lowTemp, this.tempStatus.highTemp);
           }
 
           // set light
-          // if (this.light !== r.light) {
-          //   this.light = r.light;
-          //   if (this.light)
-          //     this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSON, {}, -1);
-          //   else
-          //     this.vendingIndex.vmc.command(EMACHINE_COMMAND.LIGHTSOFF, {}, -1);
-          // }
+          if (this.light.start !== r.start || this.light.end !== r.end) {
+            this.light = r.light;
+            this.vendingIndex.vmc.setLights(this.light.start, this.light.end);
+          }
+          // refresh
+
+          if (r.refresh) {
+            this.refresh();
+          }
 
         }
       } catch (error) {
@@ -868,7 +876,7 @@ export class Tab1Page implements OnDestroy {
 
     if (this.serial) {
       const param = { slot: slot, dropSensor: 0 };
-      this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+      this.vendingIndex.vmc.shipItem(param.slot, param.dropSensor).then(async (r) => {
         console.log('shippingcontrol', r);
         // this.val = r?.data?.x;
         await Toast.show({ text: 'shippingcontrol' + JSON.stringify(r) })
@@ -2632,6 +2640,72 @@ export class Tab1Page implements OnDestroy {
         this.checkActiveModal(r);
 
       });
+  }
+
+  openTestMotor() {
+    if (!this.t) {
+      this.t = setTimeout(() => {
+        this.count = 10;
+        console.log('re count');
+        if (this.t) {
+          // clearTimeout(this.t);
+          this.t = null;
+        }
+      }, 1500);
+    }
+    if (--this.count <= 0) {
+      this.count = 10;
+      const x = prompt('password');
+      console.log(x, this.getPassword());
+
+      if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+
+      const xp = prompt('password1');
+      if (xp + '' == '1234567890_5martH67_laoapps') {
+        console.log('xp', xp);
+        this.serial.close();
+        this.apiService.modal.create({
+          component: TestmotorPage,
+          componentProps: { serial: this.serial }
+        }).then(r => {
+          r.present();
+          r.onDidDismiss().then(r => {
+            this.serial.close();
+            setTimeout(() => {
+              this.startVMC();
+            }, 10000);
+
+          })
+        })
+
+        if (this.t) {
+          clearTimeout(this.t);
+          this.t = null;
+        }
+      } else {
+        this.apiService.alertError('ບໍ່ໄດ້ແດກກູດອກ ຮາຮາ ມັນບໍ່ໄດ້ມີຫຍັງ ເຮັດມາຫຼອກເດັກຊື່ໆ');
+      }
+
+    }
+    // else {
+    //   if (!this.t) {
+    //     this.t = setTimeout(() => {
+    //       this.count = 6;
+    //       console.log('re count');
+    //       if (this.t) {
+    //         clearTimeout(this.t);
+    //         this.t = null;
+    //       }
+    //     }, 1500);
+    //   }
+    // }
+
+
+
+
+
+
+
   }
   openads() {
     this.apiService.modal

@@ -1,7 +1,7 @@
 import { IENMessage } from "src/app/models/base.model";
 import { IGenerateLAOQRCode } from "src/app/models/laoqr.model";
 import { ApiService } from "src/app/services/api.service";
-import { IVendingMachineBill } from "src/app/services/syste.model";
+import { EMessage, IVendingMachineBill } from "src/app/services/syste.model";
 
 export class GenerateLaoQRCodeProcess {
     private workload: any = {} as any;
@@ -24,25 +24,29 @@ export class GenerateLaoQRCodeProcess {
 
     public Init(params: IGenerateLAOQRCode): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
-            this.workload = this.apiService.load.create({ message: 'loading...' });
-            (await this.workload).present();
+            try {
+                this.workload = this.apiService.load.create({ message: 'loading...' });
+                (await this.workload).present();
 
-            this.InitParams(params);
+                this.InitParams(params);
 
-            const ValidateParams = this.ValidateParams();
-            if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
+                const ValidateParams = this.ValidateParams();
+                if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
-            const GenerateQRCode = await this.GenerateQRCode();
-            (await this.workload).dismiss();
+                const GenerateQRCode = await this.GenerateQRCode();
+                (await this.workload).dismiss();
 
-            console.log(`zzzz LaoQR`, GenerateQRCode);
-            if (GenerateQRCode != IENMessage.success) {
-                // this.apiService.toast.create({ message: GenerateQRCode, duration: 3000 }).then(toast => toast.present());
-                // throw new Error(GenerateQRCode);
-                resolve(null);
+                console.log(`zzzz LaoQR`, GenerateQRCode);
+                if (GenerateQRCode != IENMessage.success) {
+                    // this.apiService.toast.create({ message: GenerateQRCode, duration: 3000 }).then(toast => toast.present());
+                    // throw new Error(GenerateQRCode);
+                    resolve(EMessage.error);
+                }
+
+                resolve(this.Commit());
+            } catch (error) {
+                resolve(error.message);
             }
-
-            resolve(this.Commit());
 
         });
     }
@@ -66,11 +70,15 @@ export class GenerateLaoQRCodeProcess {
     private GenerateQRCode(): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             try {
+                console.log('=====>Order2 :', this.orders);
+                console.log('=====>Amout2 :', this.amount);
+
+
                 this.apiService.buyLaoQR(this.orders, this.amount, this.machineId).subscribe(r => {
                     const response: any = r;
                     console.log(`response generate LaoQR`, response);
                     if (response.status != 1) {
-                        resolve(null);
+                        resolve(EMessage.error);
                     }
                     this.laoQRCode = response.data as IVendingMachineBill;
                     resolve(IENMessage.success);

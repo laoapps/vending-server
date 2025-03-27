@@ -33,7 +33,7 @@
 
 
     <div>
-      <img [src]="apiService._cuiSetting.imgLogo||mmLogo" (press)="holdCount()" (touchend)="endCount()"
+      <img [src]="apiService._cuiSetting.imgLogo||hmLogo" (press)="holdCount()" (touchend)="endCount()"
         (click)="manageStock()" />
     </div>
   </div>
@@ -176,7 +176,7 @@
         <i class="fa-solid fa-gamepad"></i>
       </div>
     </a>
-    <a href="javascript:void(0)" class="item-sea control-menu menu-tempurature active">
+    <a href="javascript:void(0)" class="item-sea control-menu menu-tempurature active" (click)="openTestMotor()">
       <div class="text" *ngIf="_machineStatus?.status?.temp">{{_machineStatus?.status?.temp}}</div>
       <div class="text" *ngIf="!_machineStatus?.status?.temp">loading...</div>
       <div class="icon">
@@ -210,7 +210,7 @@
           <ion-label>
             <ion-badge style="font-size: 20px;">
               {{sl.position+compensation}}#.
-            </ion-badge> ***{{sl.machineId.substring(4)}}
+            </ion-badge> ***{{sl.machineId.substring(4)}} f
           </ion-label>
         </ion-item-divider>
         <ion-card>

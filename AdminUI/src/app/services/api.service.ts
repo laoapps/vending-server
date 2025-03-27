@@ -50,8 +50,8 @@ export class ApiService {
     stock = new Array<IStock>();
     eventEmitter = new EventEmitter();
     machineuuid = uuid.v4()
-    url = localStorage.getItem('url') || environment.url;
-    wsurl = localStorage.getItem('wsurl') || environment.wsurl;
+    url = environment.url;
+    wsurl = environment.wsurl;
     currentPaymentProvider = EPaymentProvider.mmoney;
     machineId = {} as IMachineClientID;
 

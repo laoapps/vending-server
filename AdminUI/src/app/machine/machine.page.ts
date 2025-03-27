@@ -26,7 +26,7 @@ import { ResetCashingProcess } from './processes/resetCashing.process';
 })
 export class MachinePage implements OnInit {
   offsettz = 420;
-  dateformat='yy-MM-dd HH:mm:ss'
+  dateformat = 'yy-MM-dd HH:mm:ss'
   private loadMachineListProcess: LoadMachineListProcess;
   private refreshMachineProcess: RefreshMachineProcess;
   private resetCashingProcess: ResetCashingProcess;
@@ -47,23 +47,23 @@ export class MachinePage implements OnInit {
   _l = new Array<IMachineClientID>();
   showImage: (p: string) => string;
   settings = {} as any;
-  myMachineStatus=new Array<{machineId:string,mstatus:IMachineStatus}>();
+  myMachineStatus = new Array<{ machineId: string, mstatus: IMachineStatus }>();
   readonly: boolean;
 
   constructor(
-    public apiService: ApiService, 
+    public apiService: ApiService,
     private laabAPIService: LaabApiService,
     private filemanagerAPIService: FilemanagerApiService,
     private cashingService: AppcachingserviceService,
   ) {
-   this.offsettz= this.apiService.offsettz;
-   this.dateformat=this.apiService.dateformat;
+    this.offsettz = this.apiService.offsettz;
+    this.dateformat = this.apiService.dateformat;
     this.loadMachineListProcess = new LoadMachineListProcess(this.apiService, this.cashingService);
     this.refreshMachineProcess = new RefreshMachineProcess(this.apiService);
     this.resetCashingProcess = new ResetCashingProcess(this.apiService);
-    
+
     this.showImage = this.apiService.showImage;
-    this.myMachineStatus=apiService.myMachineStatus;
+    this.myMachineStatus = apiService.myMachineStatus;
 
   }
 
@@ -71,13 +71,13 @@ export class MachinePage implements OnInit {
   ngOnInit() {
     // this.initDOM();
     this.loadMachine();
-   
+
   }
-  Refresh(m:string){
-    this.apiService.refreshMachine(m).subscribe(r=>{
-      console.log('refreshMachine',r);
-      if(r.status){
-        alert('Machine '+m+' has been refresh')
+  Refresh(m: string) {
+    this.apiService.refreshMachine(m).subscribe(r => {
+      console.log('refreshMachine', r);
+      if (r.status) {
+        alert('Machine ' + m + ' has been refresh')
       }
     });
   }
@@ -95,7 +95,7 @@ export class MachinePage implements OnInit {
         }
         const storageValues: any = JSON.parse(JSON.parse(storage)?.v);
         console.log(`storageValues`, storageValues, storageValues.length);
-        
+
 
 
         // 1 first time when you have open this page every image will get from server
@@ -104,12 +104,12 @@ export class MachinePage implements OnInit {
 
           let i = setInterval(async () => {
             clearInterval(i);
-            let lists: Array<{ name: string, file: string}> = [];
+            let lists: Array<{ name: string, file: string }> = [];
             const imgs = (document.querySelectorAll('.display_machine_image') as NodeListOf<HTMLImageElement>);
             imgs.forEach(async (elm, index) => {
               const name = elm.getAttribute('src');
               if (name != '') {
-              
+
                 const url = `${this.filemanagerURL}${name}`;
                 const run = await fetch(url, { method: 'GET' });
                 let file = await this.apiService.convertBlobToBase64(await run.blob());
@@ -126,35 +126,33 @@ export class MachinePage implements OnInit {
                 }
                 elm.src = file;
               }
-              if (index == imgs.length-1) {
+              if (index == imgs.length - 1) {
                 await this.cashingService.set(this.apiService.ownerUuid, JSON.stringify(lists));
               }
             });
           });
-          
-        }
-        else 
-        {
-          let lists: Array<{ name: string, file: string}> = [];
 
-          for(let i = 0; i < setList.length; i++) {
-            for(let j = 0; j < storageValues.length; j++) {
-              
+        }
+        else {
+          let lists: Array<{ name: string, file: string }> = [];
+
+          for (let i = 0; i < setList.length; i++) {
+            for (let j = 0; j < storageValues.length; j++) {
+
               if (setList[i].photo == storageValues[j].name) {
                 setList[i].photo = storageValues[j].file;
-              } 
-              else 
-              {
+              }
+              else {
                 if (setList[i].photo != '') {
                   const url = `${this.filemanagerURL}${setList[i].photo}`;
                   const run = await fetch(url, { method: 'GET' });
                   const file = await this.apiService.convertBlobToBase64(await run.blob());
-  
+
                   const obj = {
                     name: setList[i].photo,
                     file: file
                   }
-  
+
                   lists.push(obj);
                   setList[i].photo = file;
                   console.log();
@@ -166,33 +164,33 @@ export class MachinePage implements OnInit {
           storageValues.push(...lists);
           await this.cashingService.set(this.apiService.ownerUuid, JSON.stringify(storageValues));
         }
-      
+
 
         this._l.push(...setList);
-        this._l.forEach(v=>{
+        this._l.forEach(v => {
 
           // init cashing
 
-          console.log('....',v);
-          if(!Array.isArray(v.data))v.data=[v.data]
-          let setting =v.data?.find(vx=>vx?.settingName=='setting');
-          console.log('setting',setting);
-          
-          if(!setting){
-            setting={};
-            setting.allowVending=true;
-            setting.allowCashIn=true;
-            setting.lowTemp=5;
-            setting.highTemp=15;
-            setting.light=true;
-            setting.imei='';
-            setting.imgHeader='';
-            setting.imgFooter='';
-            setting.imgLogo='';
+          console.log('....', v);
+          if (!Array.isArray(v.data)) v.data = [v.data]
+          let setting = v.data?.find(vx => vx?.settingName == 'setting');
+          console.log('setting', setting);
+
+          if (!setting) {
+            setting = {};
+            setting.allowVending = true;
+            setting.allowCashIn = true;
+            setting.lowTemp = 5;
+            setting.highTemp = 15;
+            setting.light = true;
+            setting.imei = '';
+            setting.imgHeader = '';
+            setting.imgFooter = '';
+            setting.imgLogo = '';
           }
-          this.settings[v.machineId]=setting;
+          this.settings[v.machineId] = setting;
         })
-       
+
       }
       // this.apiService.toast.create({message:r.message,duration:5000}).then(ry=>{
       //   ry.present();
@@ -201,7 +199,7 @@ export class MachinePage implements OnInit {
   }
 
   loadMachine(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         // await this.cashingService.clear();
         // return resolve(IENMessage.success);
@@ -216,21 +214,25 @@ export class MachinePage implements OnInit {
         this.readonly = run.data[0]?.readonly;
         if (this.readonly == true) return resolve(IENMessage.success);
 
-        this._l.forEach(v=>{
-          if(!Array.isArray(v.data))v.data=[v.data]
-          let setting =v.data?.find(vx=>vx?.settingName=='setting');
-          // console.log('setting',setting);
-          
-          if(!setting){
-            setting={};
-            setting.allowVending=true;
-            setting.allowCashIn=true;
-            setting.lowTemp=5;
-            setting.highTemp=15;
-            setting.light=true;
-            setting.imei='';
+        this._l.forEach(v => {
+          if (!Array.isArray(v.data)) v.data = [v.data]
+          let setting = v.data?.find(vx => vx?.settingName == 'setting');
+          console.log('setting', setting);
+
+          if (!setting) {
+            setting = {};
+            setting.allowVending = true;
+            setting.allowCashIn = true;
+            setting.lowTemp = 5;
+            setting.highTemp = 15;
+            setting.light = { start: 3, end: 2 };
+
+            setting.imei = '';
           }
-          this.settings[v.machineId]=setting;
+          if (typeof setting.light == 'boolean') {
+            setting.light = { start: 3, end: 2 };
+          }
+          this.settings[v.machineId] = setting;
         });
 
         resolve(IENMessage.success);
@@ -242,28 +244,54 @@ export class MachinePage implements OnInit {
     });
   }
 
-  findMachine(m:string){
-    return this.myMachineStatus.find(v=>v['machineId']==m)?.mstatus;
+  findMachine(m: string) {
+    return this.myMachineStatus.find(v => v['machineId'] == m)?.mstatus;
   }
-  updateSetting(m:string){
+  updateSetting(m: string) {
     const setting = this.settings[m];
-    const o = this._l.find(v=>v.machineId==m);
+    const o = this._l.find(v => v.machineId == m);
     const oldData = JSON.stringify(o.data);
-    o.data=[setting];
-    console.log('setting',o);
-    console.log('setting',o.data);
-    console.log('this.setting',this.settings);
-    
-    
-    this.apiService.updateMachineSetting(o,o.id).subscribe(rx=>{
+    o.data = [setting];
+    console.log('setting', o);
+    console.log('setting', o.data);
+    console.log('this.setting', this.settings);
+
+
+    this.apiService.updateMachineSetting(o, o.id).subscribe(rx => {
       console.log(rx);
       if (!rx.status) {
-        o.data=JSON.parse(oldData);
+        o.data = JSON.parse(oldData);
         console.log('Update setting failed restore old data');
-        
-      }else{
+
+      } else {
         console.log('update setting success !');
-        
+
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+        ry.present();
+      })
+    })
+  }
+  refreshMachine(m: string) {
+    const setting = this.settings[m];
+    setting.refresh = true;
+    const o = this._l.find(v => v.machineId == m);
+    const oldData = JSON.stringify(o.data);
+    o.data = [setting];
+    console.log('setting', o);
+    console.log('setting', o.data);
+    console.log('this.setting', this.settings);
+
+
+    this.apiService.updateMachineSetting(o, o.id).subscribe(rx => {
+      console.log(rx);
+      if (!rx.status) {
+        o.data = JSON.parse(oldData);
+        console.log('Update setting failed restore old data');
+
+      } else {
+        console.log('update setting success !');
+
       }
       this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
         ry.present();
@@ -275,7 +303,7 @@ export class MachinePage implements OnInit {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         if (r.data.s) {
-          
+
           const base64 = r.data.s.photo;
           const formfile = new FormData();
           const fileuuid = r.data.s.fileuuid;
@@ -286,7 +314,7 @@ export class MachinePage implements OnInit {
             console.log(`write file fail`, r_writeFile);
             console.log(`write file fail`, r_writeFile.data[0].info.fileUrl);
             if (r_writeFile.status != 1) {
-              this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid}).subscribe(r_cancelWriteFile => {
+              this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid }).subscribe(r_cancelWriteFile => {
                 if (r_cancelWriteFile.status != 1) {
                   this.apiService.simpleMessage(IENMessage.cancelAndWriteFileFail);
                   return;
@@ -305,7 +333,7 @@ export class MachinePage implements OnInit {
               console.log(`add machine response`, rx);
               console.log(`status`, rx.status);
               if (rx.status != 1) {
-                this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid}).subscribe(r_cancelWriteFile => {
+                this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid }).subscribe(r_cancelWriteFile => {
                   if (r_cancelWriteFile.status != 1) {
                     this.apiService.simpleMessage(IENMessage.cancelAndWriteFileFail);
                     return;
@@ -414,41 +442,41 @@ export class MachinePage implements OnInit {
   //   });
   // }
 
-  refreshMachine(machineId: string): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
-      try {
+  // refreshMachine(machineId: string): Promise<any> {
+  //   return new Promise<any>(async (resolve, reject) => {
+  //     try {
 
-        const confirm = this.apiService.alert.create({
-          header: 'Are you sure !?',
-          subHeader: `Do you want to refresh this ${machineId} machine`,
-          buttons: [
-            {
-              text: 'Confirm',
-              handler: async () => {
-                const params = {
-                  machineId: machineId
-                }
-                const run = await this.refreshMachineProcess.Init(params);
-                if (run.message != IENMessage.success) {
+  //       const confirm = this.apiService.alert.create({
+  //         header: 'Are you sure !?',
+  //         subHeader: `Do you want to refresh this ${machineId} machine`,
+  //         buttons: [
+  //           {
+  //             text: 'Confirm',
+  //             handler: async () => {
+  //               const params = {
+  //                 machineId: machineId
+  //               }
+  //               const run = await this.refreshMachineProcess.Init(params);
+  //               if (run.message != IENMessage.success) {
 
-                  this.apiService.simpleMessage(run);
-                  return resolve(run);
-                }
-                this.apiService.simpleMessage(IENMessage.refreshMachineSuccess);
-              }
-            },
-            'Cancel'
-          ]
-        });
+  //                 this.apiService.simpleMessage(run);
+  //                 return resolve(run);
+  //               }
+  //               this.apiService.simpleMessage(IENMessage.refreshMachineSuccess);
+  //             }
+  //           },
+  //           'Cancel'
+  //         ]
+  //       });
 
-        (await confirm).present();
-        
-      } catch (error) {
-        this.apiService.simpleMessage(error.message);
-        resolve(error.message); 
-      }
-    });
-  }
+  //       (await confirm).present();
+
+  //     } catch (error) {
+  //       this.apiService.simpleMessage(error.message);
+  //       resolve(error.message);
+  //     }
+  //   });
+  // }
 
   allSaleReport() {
     const props = {
@@ -459,7 +487,7 @@ export class MachinePage implements OnInit {
     });
   }
   resetCashing(machineId: string): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
         const confirm = this.apiService.alert.create({
@@ -486,10 +514,10 @@ export class MachinePage implements OnInit {
         });
 
         (await confirm).present();
-        
+
       } catch (error) {
         this.apiService.simpleMessage(error.message);
-        resolve(error.message); 
+        resolve(error.message);
       }
     });
   }

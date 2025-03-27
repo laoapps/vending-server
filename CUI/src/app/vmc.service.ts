@@ -141,12 +141,10 @@ export class VmcService implements ISerialService {
             console.log('set temp result', result);
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
-          case EMACHINE_COMMAND.LIGHTSON:
-            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start: params.start||8, end: params.end||3});
+          case EMACHINE_COMMAND.LIGHTS:
+            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start: params.start || 3, end: params.end || 2 });
             break;
-          case EMACHINE_COMMAND.LIGHTSOFF:
-            await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start: params.start||3, end: params.end||8 });
-            break;
+
           case EMACHINE_COMMAND.balance:
             this.balance = params?.balance || 0;
             this.limiter = params?.limiter || 100000;
@@ -262,20 +260,35 @@ export class VmcService implements ISerialService {
       // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
       // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
       { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
-      { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } } // Temp mode
+      { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
       // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
+      { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 } }
     ];
-         // set value slection , but the cash acceptor is flashing need to solve later
-         // TODO: check if remove ENABLE_SELECTION will work for old VMC
-      // commands.push(
-      //   { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 }} as any
-      // )
+    // set value slection , but the cash acceptor is flashing need to solve later
+    // TODO: check if remove ENABLE_SELECTION will work for old VMC
+    // commands.push(
+    //   { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 }} as any
+    // )
     for (const x of commands) {
       if (!x) continue
       await this.serialService.writeVMC(x.cmd, x.params);
       this.addLogMessage(`INIT ${JSON.stringify(x)}`);
     }
 
+  }
+  public setTemperature(lowTemp: number = 5, highTemp: number = 10) {
+    return new Promise<void>(async (resolve, reject) => {
+      this.setting.lowTemp = lowTemp;
+      this.setting.highTemp = highTemp;
+      await this.serialService.writeVMC(EVMC_COMMAND.TEMP_CONTROLLER, { lowTemp, highTemp });
+      resolve();
+    });
+  }
+  public setLights(start: number = 3, end: number = 2) {
+    return new Promise<void>(async (resolve, reject) => {
+      await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start, end });
+      resolve();
+    });
   }
   public shipItem(slot = 1, dropSensor = 0) {
     return new Promise<void>(async (resolve, reject) => {
@@ -437,7 +450,7 @@ export class VmcService implements ISerialService {
           return;
         } else {
           /// send to server and need to confirm from server
-          this.sock.send(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
+          // this.sock.send(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
         }
 
 
@@ -451,9 +464,9 @@ export class VmcService implements ISerialService {
       //fafb5221b5000000000000000000000000000030303030303030303030aaaaaaaaaaaaaaaac7
       this.machinestatus.data = hex;
       const m = machineVMCStatus(hex);
-      this.sock.send(JSON.stringify(m), t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
+      // this.sock.send(JSON.stringify(m), t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
     } else {
-      this.sock.send(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
+      // this.sock.send(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
       console.log('Unhandled response:', hex);
     }
   }

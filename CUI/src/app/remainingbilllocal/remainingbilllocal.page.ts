@@ -111,6 +111,7 @@ export class RemainingbilllocalPage implements OnInit {
 
   async retryProcessBillNew(transactionID: string, position: number, human?: boolean) {
     console.log('transactionID', transactionID, 'position', position);
+    this.apiService.showLoading('waiting...', 5000);
 
     console.log(`rrrrr`, this.r);
     console.log(`-->`, this.canclick);
@@ -121,7 +122,10 @@ export class RemainingbilllocalPage implements OnInit {
 
     try {
       if (this.serial) {
-        const param = { slot: position };
+        const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '0') || 0;
+
+        const param = { slot: position, dropSensor: dropSensor };
+
         this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
           console.log('shippingcontrol', r);
 

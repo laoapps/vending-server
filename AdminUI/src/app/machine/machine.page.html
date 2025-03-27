@@ -125,6 +125,12 @@
                       <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input
                           type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input> </div>
                       <hr />
+                      <div style="float: left;"> <ion-icon name="flash-outline"></ion-icon> <ion-input type="number"
+                          [(ngModel)]="settings[p.machineId].light.start"></ion-input> </div>
+                      <hr />
+                      <div style="float: left;"> <ion-icon name="flash-off-outline"></ion-icon> <ion-input type="number"
+                          [(ngModel)]="settings[p.machineId].light.end"></ion-input> </div>
+                      <hr />
                       <div style="float: left;"> <ion-icon name="image-outline"></ion-icon>Photo header<ion-input
                           type="text" [(ngModel)]="settings[p.machineId].imgHeader"></ion-input> </div>
                       <div style="float: left;"> <ion-icon name="images-outline"></ion-icon>Photo Footer<ion-input
@@ -141,10 +147,12 @@
                           [(ngModel)]="settings[p.machineId].owner"></ion-input> </div>
                       <div style="float: right;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
                           class="custominput" type="number" label="owner phone" placeholder="enter owner phone"
-                          [(ngModel)]="settings[p.machineId].ownerPhone"></ion-input>> </div>
+                          [(ngModel)]="settings[p.machineId].ownerPhone"></ion-input> </div>
 
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
+
+                    <ion-button (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
                     <td>
 
                     </td>

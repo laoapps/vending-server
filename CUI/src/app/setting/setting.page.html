@@ -55,6 +55,10 @@
       <ion-label>BaudRate</ion-label>
       <ion-input [(ngModel)]="baudRate"></ion-input>
     </ion-item>
+    <ion-item>
+      <ion-label>DropSensor</ion-label>
+      <ion-input [(ngModel)]="dropSensor"></ion-input>
+    </ion-item>
     <ion-select [(ngModel)]="device" (ionChange)="selectDevice($event)">
       <ion-select-option *ngFor="let device of devices" [value]="device">{{device}}</ion-select-option>
     </ion-select>

@@ -355,7 +355,20 @@ export class ApiService {
         that._cuiSetting.imgLogo != cset.imgLogo || (that._cuiSetting.imgLogo = cset.imgLogo);
         that._cuiSetting.imgFooter != cset.imgFooter || (that._cuiSetting.imgFooter = cset.imgFooter);
 
-        if (!that._cuiSetting?.imgHeader) that._cuiSetting.imgHeader = { "background": "url(\'../../assets/background/1910.jpg\') rgb(255, 255, 255) no-repeat center fixed", "background-size": "contain" };
+        if (that._cuiSetting.imgHeader) {
+
+        }
+        if (that._cuiSetting.imgLogo) {
+
+        }
+        if (that._cuiSetting.imgFooter) {
+
+        }
+
+        if (!that._cuiSetting?.imgHeader) that._cuiSetting.imgHeader = { "background": `url(\'${that._cuiSetting.imgHeader ?? '../../assets/background/1910.jpg'}\') rgb(255, 255, 255) no-repeat center fixed`, "background-size": "contain" };
+        if (!that._cuiSetting?.imgLogo) that._cuiSetting.imgLogo = '../../assets/icon/logo.png';
+
+        if (!that._cuiSetting?.imgFooter) that._cuiSetting.imgFooter = '../../assets/background/soda.jpg';
 
         // if(!this._cuiSetting.imgFooter)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
         // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";

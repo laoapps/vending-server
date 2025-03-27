@@ -120,6 +120,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
     console.log(`rrrrr`, this.r);
     console.log(`-->`, this.canclick);
+    this.apiService.showLoading('waiting...', 5000);
 
     if (human == true) {
       this.clearTimer();
@@ -127,7 +128,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
     try {
       if (this.serial) {
-        const param = { slot: position, dropSensor: 0 };
+        const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '0') || 0;
+        const param = { slot: position, dropSensor };
         this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
           console.log('shippingcontrol', r);
           this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
