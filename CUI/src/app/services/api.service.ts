@@ -351,9 +351,10 @@ export class ApiService {
         //   that._machineStatus.status.temp
         // );
         const cset = r.data.setting;
-        that._cuiSetting.imgHeader != cset.imgHeader || (that._cuiSetting.imgHeader = cset.imgHeader);
-        that._cuiSetting.imgLogo != cset.imgLogo || (that._cuiSetting.imgLogo = cset.imgLogo);
-        that._cuiSetting.imgFooter != cset.imgFooter || (that._cuiSetting.imgFooter = cset.imgFooter);
+        console.log('cset', cset);
+        that._cuiSetting.imgHeader != cset.imgHeader&&!cset.imgHeader || (that._cuiSetting.imgHeader = cset.imgHeader);
+        that._cuiSetting.imgLogo != cset.imgLogo&&!cset.imgLogo || (that._cuiSetting.imgLogo = cset.imgLogo);
+        that._cuiSetting.imgFooter != cset.imgFooter&&!cset.imgFooter || (that._cuiSetting.imgFooter = cset.imgFooter);
 
         if (that._cuiSetting.imgHeader) {
 
@@ -364,12 +365,12 @@ export class ApiService {
         if (that._cuiSetting.imgFooter) {
 
         }
-
+        console.log('_cuiSetting 2', that._cuiSetting);
         if (!that._cuiSetting?.imgHeader) that._cuiSetting.imgHeader = { "background": `url(\'${that._cuiSetting.imgHeader ?? '../../assets/background/1910.jpg'}\') rgb(255, 255, 255) no-repeat center fixed`, "background-size": "contain" };
         if (!that._cuiSetting?.imgLogo) that._cuiSetting.imgLogo = '../../assets/icon/logo.png';
 
         if (!that._cuiSetting?.imgFooter) that._cuiSetting.imgFooter = '../../assets/background/soda.jpg';
-
+        console.log('_cuiSetting', that._cuiSetting);
         // if(!this._cuiSetting.imgFooter)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
         // if(!this._cuiSetting.imgLogo)this._cuiSetting.imgHeader="url('../../assets/background/1910.jpg')";
 
