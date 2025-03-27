@@ -2960,7 +2960,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 o.data[0].allowCashIn = !o.data[0]?.allowCashIn ? false : true;
                                 o.data[0].light = o.data[0]?.light ?? { start: 3, end: 2 };
                                 if (!Array.isArray(r.data)) r.data = [r.data];
-                                let a = r.data.find(v => v.settingName == 'setting');
+                                let a = r.data;
 
                                 const x = o.data[0]?.allowVending;
                                 const y = o.data[0]?.allowCashIn;
@@ -2985,7 +2985,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 }
                                 if (!a) {
                                     a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl };
-                                    r.data.push(a);
+                                    r.data = a;
                                 }
                                 else {
                                     a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l, a.imei = t; a.owner = owner, a.ownerPhone = ownerPhone;
@@ -3008,12 +3008,12 @@ export class InventoryZDM8 implements IBaseClass {
                                         , returnLog(req, res)
                                     )
                                 );
-                                const s = JSON.parse(JSON.stringify(a));
-                                let a2 = s.find(v => v.settingName == 'setting');
+                                const a2 = JSON.parse(JSON.stringify(a));
+
                                 if (o.data[0].refresh) {
                                     a2.refresh = o.data[0].refresh ?? false;
                                 }
-                                writeMachineSetting(r.machineId, s);
+                                writeMachineSetting(r.machineId, a2);
                                 this.refreshMachines();
 
                             })
