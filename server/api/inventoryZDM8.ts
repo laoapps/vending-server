@@ -4423,9 +4423,9 @@ export class InventoryZDM8 implements IBaseClass {
         m.forEach(v => {
             if (!Array.isArray(v.data)) v.data = [];
 
-            const x = v.data[0]?.allowVending;
-            const y = v.data[0]?.allowCashIn;
-            const w = v.data[0]?.light;
+            const x = v.data[0]?.allowVending || true;
+            const y = v.data[0]?.allowCashIn || false;
+            const w = v.data[0]?.light || { start: 4, end: 3 };
             const z = v.data[0]?.highTemp || 10;
             const u = v.data[0]?.lowTemp || 5;
             const l = v.data[0]?.limiter || 100000;
@@ -5656,7 +5656,9 @@ export class InventoryZDM8 implements IBaseClass {
                                     const a = await readMachinePendingStock(ws['machineId'] + '');
                                     let ax = JSON.parse(a) as Array<any>;
                                     if (!ax || !Array.isArray(ax)) ax = [];
-                                    const pendingStock = ax.map(v => { return { transactionID: v?.transactionID, position: v?.position } })
+                                    const pendingStock = ax.map(v => { return { transactionID: v?.transactionID, position: v?.position } });
+
+
                                     console.log('FIND SETTING FOR REFRESH COMMAND', setting);
                                     if (setting?.refresh) {
                                         const s = JSON.parse(JSON.stringify(setting));
