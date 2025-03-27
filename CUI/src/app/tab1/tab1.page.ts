@@ -646,6 +646,12 @@ export class Tab1Page implements OnDestroy {
       try {
         const r = res?.data?.setting;
         if (r && this.readyState) {
+           // refresh
+
+           if (r.refresh) {
+            Toast.show({text:'Refresh '+r.refresh,duration:'long'});
+            this.refresh();
+          }
           // set allow cashIn
           if (this.allowCashIn != r.allowCashIn) {
             this.allowCashIn = r.allowCashIn;
@@ -676,11 +682,7 @@ export class Tab1Page implements OnDestroy {
             this.light = r.light;
             this.vendingIndex.vmc.setLights(this.light.start, this.light.end);
           }
-          // refresh
-
-          if (r.refresh) {
-            this.refresh();
-          }
+         
 
         }
       } catch (error) {

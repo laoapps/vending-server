@@ -3000,7 +3000,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 await writeMachineSetting(r.machineId, r.data);
                                 if (o.data[0].refresh) {
                                     const a2 = JSON.parse(JSON.stringify(r.data));
-                                    a2.find(v => v.settingName == 'setting').refresh = o.data[0].refresh;
+                                    const s = a2.find(v => v.settingName == 'setting');
+                                    s.refresh = o.data[0].refresh;
                                     const ws =this.wsClient.find(v => v['machineId'] == r.machineId);
                                     ws.send(
                                         JSON.stringify(
@@ -3010,7 +3011,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     command: "ping",
                                                     production: this.production,
                                                     balance: r,
-                                                    setting:a2
+                                                    setting:s
                                                 },
                                                 EMessage.succeeded
                                                 ,
@@ -3018,8 +3019,6 @@ export class InventoryZDM8 implements IBaseClass {
                                             )
                                         )
                                     );
-         
-                                  
                                 }
                              
                                 res.send(
