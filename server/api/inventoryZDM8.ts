@@ -4787,7 +4787,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             const qr = {
                 "requestId": "",
-                "mechantId": mechantId, //DBK :25ATP48M8RD1MKJ4W8FGLGXYC
+                "merchantId": mechantId, //DBK :25ATP48M8RD1MKJ4W8FGLGXYC
                 "txnAmount": value,
                 "terminalId": ownerPhone, //Device Number ເບີຄົນຮັບເງິນ
                 "terminalLabel": "laabxserver", // Device Name
