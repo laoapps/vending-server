@@ -619,7 +619,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 uuid: uuid4(),
                                 clientId,
                                 qr: qrData,
-                                transactionID: qr.transactionId + '',
+                                transactionID: qr.data.requestId ?? '' + '',
                                 machineId: machineId.machineId,
                                 hashM: "",
                                 hashP: "",
