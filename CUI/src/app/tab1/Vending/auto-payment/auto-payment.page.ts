@@ -708,7 +708,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           // this.apiService.myTab1.clearStockAfterLAABGo();
           this.close();
-          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
+          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
           return resolve(IENMessage.success);
         }, 60000);
 
@@ -727,7 +727,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
             // this.apiService.myTab1.clearStockAfterLAABGo();
             this.close();
-            this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
+            this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
             return resolve(IENMessage.success);
 
           }
@@ -736,10 +736,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           // this.qrcode = run.data[0].mmoneyQRCode.qr;
 
-          const transactionID = run.data[0].transactionID;
+          const transactionID = run.transactionID;
           localStorage.setItem('transactionID', transactionID);
 
-          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
+          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qrcode }).getCanvas();
           AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
           this.isPayment = true;
           this.billDate = new Date();
@@ -783,7 +783,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           // this.apiService.myTab1.clearStockAfterLAABGo();
           this.close();
-          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
+          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
           return resolve(IENMessage.success);
         });
 
