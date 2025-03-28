@@ -4789,6 +4789,7 @@ export class InventoryZDM8 implements IBaseClass {
                 "requestId": "",
                 "merchantId": mechantId, //DBK :25ATP48M8RD1MKJ4W8FGLGXYC
                 "txnAmount": value,
+                "billNumber": "LQR123213131280004925277",
                 "terminalId": ownerPhone, //Device Number ເບີຄົນຮັບເງິນ
                 "terminalLabel": "laabxserver", // Device Name
                 "mobileNo": ownerPhone, // CashIn to Wallet Number (Merchant)  ເບີຄົນຮັບເງິນ
