@@ -1324,6 +1324,7 @@ export interface ILaoQRGenerateQRRes {
     timestamp: Date,
     success: boolean,
     message: string,
+    status: string;
     transactionId: string,
     data: any
 }
