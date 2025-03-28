@@ -606,7 +606,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const qr = await this.generateBillLaoQRPro(
                                 value,
                                 mId + '',
-                                a.owner + '',
+                                (a.owner + '').trim(),
                                 ownerPhone
                             );
                             console.log('QR IS :', qr);
@@ -2996,13 +2996,13 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 // r.data = [a];
                                 r.changed('data', true);
-                                console.log('updating machine setting', r.data);  
+                                console.log('updating machine setting', r.data);
                                 await writeMachineSetting(r.machineId, r.data);
                                 if (o.data[0].refresh) {
                                     const a2 = JSON.parse(JSON.stringify(r.data));
                                     const s = a2.find(v => v.settingName == 'setting');
                                     s.refresh = o.data[0].refresh;
-                                    const ws =this.wsClient.find(v => v['machineId'] == r.machineId);
+                                    const ws = this.wsClient.find(v => v['machineId'] == r.machineId);
                                     ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
@@ -3011,7 +3011,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     command: "ping",
                                                     production: this.production,
                                                     balance: r,
-                                                    setting:s
+                                                    setting: s
                                                 },
                                                 EMessage.succeeded
                                                 ,
@@ -3020,7 +3020,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         )
                                     );
                                 }
-                             
+
                                 res.send(
                                     PrintSucceeded(
                                         "updateMachineSetting",
