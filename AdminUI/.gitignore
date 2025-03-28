@@ -8,7 +8,11 @@
 *.tmp.*
 UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
-
+.vscode
+.angular
+.DS_Store
+.history
+www
 *.log
 log.txt
 

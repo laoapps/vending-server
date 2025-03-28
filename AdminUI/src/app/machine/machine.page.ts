@@ -273,7 +273,7 @@ export class MachinePage implements OnInit {
     })
   }
   refreshMachine(m: string) {
-    const setting = this.settings[m];
+    const setting = JSON.parse(JSON.stringify(this.settings[m]));
     setting.refresh = true;
     const o = this._l.find(v => v.machineId == m);
     const oldData = JSON.stringify(o.data);
