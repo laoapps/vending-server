@@ -28,6 +28,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
+  contact = localStorage.getItem('contact') || '55516321';
+
   // @Input() serial: ISerialService;
 
   parseorders: Array<any> = [];
@@ -734,7 +736,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           // this.qrcode = run.data[0].mmoneyQRCode.qr;
 
-          // const transactionID = run.data[0].mmoneyQRCode.transactionID;
+          const transactionID = run.data[0].transactionID;
+          localStorage.setItem('transactionID', transactionID);
 
           const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
           AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
@@ -742,7 +745,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           this.billDate = new Date();
           console.log('END GENERATE LAOQR AND SUCCESS');
           // console.log('=====>RUN', run);
-          const transactionID = localStorage.getItem('transactionID');
+          // const transactionID = localStorage.getItem('transactionID');
           console.log('QR CODE :');
 
           this.countdownDestroyTimer = setInterval(async () => {

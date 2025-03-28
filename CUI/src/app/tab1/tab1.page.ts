@@ -89,6 +89,8 @@ import { IBankNote, IHashBankNote } from '../vmc.service';
 })
 export class Tab1Page implements OnDestroy {
   readyState = false;
+  contact = localStorage.getItem('contact') || '55516321';
+
 
 
 
@@ -646,10 +648,10 @@ export class Tab1Page implements OnDestroy {
       try {
         const r = res?.data?.setting;
         if (r && this.readyState) {
-           // refresh
+          // refresh
 
-           if (r.refresh) {
-            Toast.show({text:'Refresh '+r.refresh,duration:'long'});
+          if (r.refresh) {
+            Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
             this.refresh();
           }
           // set allow cashIn
@@ -682,7 +684,7 @@ export class Tab1Page implements OnDestroy {
             this.light = r.light;
             this.vendingIndex.vmc.setLights(this.light.start, this.light.end);
           }
-         
+
 
         }
       } catch (error) {
@@ -1113,7 +1115,10 @@ export class Tab1Page implements OnDestroy {
         this.autoShowMyOrdersCounter--;
         if (this.autoShowMyOrdersCounter <= 0) {
           clearInterval(this.autoShowMyOrderTimer);
-          this.showMyOrdersModal();
+          // this.showMyOrdersModal();
+          this.clearCart();
+          console.log('CLEAR STOCK');
+
         }
       }, 1000);
     }
@@ -1927,7 +1932,7 @@ export class Tab1Page implements OnDestroy {
           AutoPaymentPage.message?.close();
           AutoPaymentPage.message = undefined;
           if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
-            this.loadAutoShowMyOrders();
+            // this.loadAutoShowMyOrders();
           }
           clearInterval(this.countdownCheckLaoQRPaidTimer);
           that.countdownCheckLaoQRPaidTimer = setInterval(() => {
@@ -2345,7 +2350,7 @@ export class Tab1Page implements OnDestroy {
     rx.onDidDismiss().then(rx => {
       clearInterval(t);
       this.reloadAutoPayment();
-      this.loadAutoShowMyOrders();
+      // this.loadAutoShowMyOrders();
     });
   }
   laabCashout(): Promise<any> {

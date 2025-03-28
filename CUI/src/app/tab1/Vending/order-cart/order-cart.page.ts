@@ -21,6 +21,8 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
+  contact = localStorage.getItem('contact') || '55516321';
+
 
   private paidValidationProcess: PaidValidationProcess;
   // private generateMMoneyQRCodeProcess: GenerateMMoneyQRCodeProcess;

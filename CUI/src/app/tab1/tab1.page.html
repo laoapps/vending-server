@@ -142,25 +142,29 @@
       class="item-deep-blue menu-shopping-cart">
       <div class="text">ເຄື່ອງບໍ່ທັນຕົກ</div>
       <div class="icon">
-        <i class="fa-solid fa-cart-shopping"></i>
+        <ion-icon style="color: white;" name="cart-outline"></ion-icon>
       </div>
     </a>
-    <a (click)="showMyOrdersModal()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
-      <div class="text">My Order </div>
-      <div class="icon">
-        <i class="fa-solid fa-cart-shopping"></i>
-      </div>
+    <a *ngIf="getTotalSale?.q > 0 == true" (click)="showMyOrdersModal()" href="javascript:void(0)"
+      class="item-deep-blue menu-shopping-cart">
+      <div class="text">ກະຕ່າຂອງຂ້ອຍ </div>
+      <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">
+        {{getTotalSale?.q}}
+      </ion-badge>
+      <ion-icon style="color: white; font-size: 24px;" name="cart-outline"></ion-icon>
+
     </a>
     <a href="javascript:void(0)" class="item-green control-menu menu-whatsapp active">
-      <div class="text">WA: 55516321</div>
+      <div class="text">WA: {{contact}}</div>
       <div class="icon">
-        <i class="fa-brands fa-whatsapp icon-whatsapp"></i>
+        <ion-icon style="color: white;" name="logo-whatsapp"></ion-icon>
       </div>
     </a>
     <a (click)="openHowToPage()" href="javascript:void(0)" class="item-blue control-menu menu-how-to active">
-      <div class="text">How To</div>
+      <div class="text">ວິທີໃຊ້ງານ</div>
       <div class="icon">
-        <i class="fa-solid fa-video"></i>
+        <ion-icon style="color: white;" name="videocam-outline"></ion-icon>
+
       </div>
 
     </a>
@@ -171,9 +175,9 @@
       </div>
     </a> -->
     <a (click)="openGameServices()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
-      <div class="text">Play Games</div>
+      <div class="text">ຫຼີ້ນເກມ</div>
       <div class="icon">
-        <i class="fa-solid fa-gamepad"></i>
+        <ion-icon style="color: white;" name="game-controller-outline"></ion-icon>
       </div>
     </a>
     <a href="javascript:void(0)" class="item-sea control-menu menu-tempurature active" (click)="openTestMotor()">
@@ -182,7 +186,7 @@
       <div class="icon">
         <!-- <i class="fa-solid fa-temperature-low"></i>
           -->
-        <ion-icon name="thermometer-outline"></ion-icon>
+        <ion-icon style="color: white;" name="thermometer-outline"></ion-icon>
 
       </div>
     </a>
@@ -190,7 +194,7 @@
       class="item-deep-red control-menu menu-mmoney-ios-android-qr-link active">
       <div class="text">IOS & Android</div>
       <div class="icon">
-        <i class="fa-solid fa-store"></i>
+        <ion-icon style="color: white;" name="storefront-outline"></ion-icon>
       </div>
     </a>
   </span>
@@ -220,10 +224,9 @@
           <ion-item>
 
             <div *ngIf="sl.stock.price==0;else elsebuystock" id="my-product-img">
-              <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]"
-                (click)="buyLaoQR(sl)">
+              <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]">
             </div>
-            <ng-template id="my-product-img" style="padding: 20px;" #elsebuystock>
+            <ng-template id=" my-product-img" style="padding: 20px;" #elsebuystock>
               <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]"
                 (click)="addOrder(sl)">
             </ng-template>

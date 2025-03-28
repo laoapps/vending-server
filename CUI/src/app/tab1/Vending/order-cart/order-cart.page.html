@@ -49,7 +49,7 @@
 
 
 
-    </div>  
+    </div>
     <div class="laab-card-footer">
 
       <div class="payment-group">
@@ -69,7 +69,7 @@
             </a>
           </div>
         </div>
-        
+
         <div class="payment-group-right">
 
           <div class="billing-container">
@@ -84,22 +84,22 @@
             <div class="title">{{ currentTitle }}</div>
             <div class="total">{{ getTotalSale.t | number }}</div>
 
-             <div class="head">
+            <div class="head">
               <div class="left">#{{ currentName }}</div>
               <div class="right">{{ billdate | date: 'yyyy-MM-dd':'+7' }}</div>
-             </div>
+            </div>
 
-             <div class="body">
+            <div class="body">
               <div class="left">Total Quantity</div>
               <div class="right">{{ getTotalSale.q | number }}</div>
-             </div>
+            </div>
 
-             <div class="footer">
+            <div class="footer">
               <div class="left">Total</div>
               <div class="right">{{ getTotalSale.t | number }}</div>
-             </div>
-             
-             <div class="contact">Call (+856)20-555-163-21</div>
+            </div>
+
+            <div class="contact">Call (+856)20{{contact}}</div>
 
             <div class="shape-footer-list">
               <span *ngFor="let item of shapesObject; let i = index" class="shape"></span>
