@@ -733,13 +733,19 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           }
 
           const run = response.data;
+          console.log('-----> SUCCESS GENERATE:', run);
+
 
           // this.qrcode = run.data[0].mmoneyQRCode.qr;
 
           const transactionID = run.transactionID;
+          // console.log('transactionID', transactionID);
+          // console.log('QR CODE :', run.qr);
+
+
           localStorage.setItem('transactionID', transactionID);
 
-          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qrcode }).getCanvas();
+          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
           AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
           this.isPayment = true;
           this.billDate = new Date();
