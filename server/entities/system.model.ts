@@ -1326,6 +1326,7 @@ export interface ILaoQRGenerateQRRes {
     message: string,
     status: string;
     transactionId: string,
+    requestId: string,
     data: any
 }
 
