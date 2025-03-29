@@ -651,7 +651,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             ent.create(bill).then((r) => {
                                 // console.log("SET transactionID by owner", ownerUuid);
-                                redisClient.setEx(qr.transactionId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                redisClient.setEx(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
                                 // redisClient.setEx(`FIND_${qr.transactionId + EMessage.BillCreatedTemp}`, 60 * 15, ownerUuid);
                                 // redisClient.save();
 
@@ -5026,7 +5026,7 @@ export class InventoryZDM8 implements IBaseClass {
     callBackConfirmLaoQR(transactionID: string) {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
-                console.log('QR code', transactionID);
+                console.log('TransactionID', transactionID);
                 const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || "";
                 console.log("GET transactionID by owner", ownerUuid);
                 if (!ownerUuid && this.production) {
@@ -5043,7 +5043,7 @@ export class InventoryZDM8 implements IBaseClass {
                 const bill = await ent.findOne({
                     where: { transactionID },
                 });
-                // console.log('=====>BILL IS :', bill);
+                console.log('=====>BILL IS :', bill);
 
                 // if (!bill) throw new Error(EMessage.billnotfound);
                 if (!bill) resolve(null);
