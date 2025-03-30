@@ -2833,6 +2833,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 // r.data = [a];
                                 r.changed('data', true);
                                 console.log('updating machine setting', r.data);
+                                const s = JSON.parse(JSON.stringify(r.data));
+                                s[0].owner='';
+                                s[0].ownerPhone = '';
+                                s[0].imei = '';
                                 await writeMachineSetting(r.machineId, r.data);
                                 res.send(
                                     PrintSucceeded(
