@@ -2842,7 +2842,6 @@ export class InventoryZDM8 implements IBaseClass {
                                         , returnLog(req, res)
                                     )
                                 );
-                                this.reinitMachines();
                             })
                             .catch((e) => {
                                 console.log("Error updateMachineSetting", e);
