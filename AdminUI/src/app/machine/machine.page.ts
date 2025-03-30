@@ -273,15 +273,8 @@ export class MachinePage implements OnInit {
     })
   }
   refreshMachine(m: string,refresh: boolean = false) {
-    const setting = JSON.parse(JSON.stringify(this.settings[m]));
-    if(refresh) setting.refresh = true;
-    const o = this._l.find(v => v.machineId == m);
-    const oldData = JSON.parse(JSON.stringify(o.data)) as IMachineClientID;
-    oldData.data = [setting];
-    console.log('setting', o);
-    console.log('setting', o.data);
 
-    this.apiService.updateMachineSetting(o, o.id).subscribe(rx => {
+    this.apiService.refreshMachine({machineId:m}).subscribe(rx => {
       console.log(rx);
       if (!rx.status) {
         console.log('Update setting failed restore old data');
