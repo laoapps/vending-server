@@ -770,7 +770,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkAdmin,
                 async (req, res) => {
                     try {
-                        const m = req.body.machineId;
+                        const m = req?.body?.data?.machineId;
 
                         // const w = ws.find(v=>v['clientId']);
                         console.log(`----------->`, m);
