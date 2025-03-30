@@ -272,7 +272,7 @@ export class MachinePage implements OnInit {
       })
     })
   }
-  refreshMachine(m: string,refresh: boolean = false) {
+  refreshMachine(m: string) {
 
     this.apiService.refreshMachine({machineId:m}).subscribe(rx => {
       console.log(rx);

@@ -269,7 +269,9 @@ export class ApiService {
         return this.http.post<IResModel>(this.url + '/super_listMachine', { token }, { headers: this.headerBase() });
     }
     refreshMachine(data: any) {
-        return this.http.post<IResModel>(this.url + '/refreshMachine', data, { headers: this.headerBase() });
+        const token = localStorage.getItem('lva_token');
+
+        return this.http.post<IResModel>(this.url + '/refreshMachine', {token,data}, { headers: this.headerBase() });
     }
     resetCashing(data: any) {
         return this.http.post<IResModel>(this.url + '/resetCashing', data, { headers: this.headerBase() });
