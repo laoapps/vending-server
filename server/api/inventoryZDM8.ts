@@ -2833,17 +2833,45 @@ export class InventoryZDM8 implements IBaseClass {
                                 // r.data = [a];
                                 r.changed('data', true);
                                 console.log('updating machine setting', r.data);
-                                const s = JSON.parse(JSON.stringify(r.data));
-                                s[0].owner='';
-                                s[0].ownerPhone = '';
-                                s[0].imei = '';
-                                await writeMachineSetting(r.machineId, r.data);
+                                const a2 = JSON.parse(JSON.stringify(r.data));
+                                const s = a2.filter(v => v.settingName == 'setting');
+                                s.owner = '';
+                                s.ownerPhone = '';
+                                s.imei = '';
+                                await writeMachineSetting(r.machineId, a2);
                                 res.send(
                                     PrintSucceeded(
                                         "updateMachineSetting",
                                         await r.save(),
                                         EMessage.succeeded
                                         , returnLog(req, res)
+                                    )
+                                );
+                                const ws = this.wsClient.find(v => v['machineId'] === r?.machineId);
+
+                                /// WS send to client directly
+
+                                ws.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: r,
+                                                // limiter, merchant,
+                                                // mymmachinebalance, mymlimiterbalance,
+                                                setting: s,
+                                                //  mstatus, mymstatus,
+                                                // mymsetting,
+                                                // mymlimiter,
+                                                // app_version,
+                                                // pendingStock
+                                            },
+                                            EMessage.succeeded
+                                            ,
+                                            null
+                                        )
                                     )
                                 );
                             })
