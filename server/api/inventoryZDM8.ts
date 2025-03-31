@@ -812,11 +812,11 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log("getDeliveryingBills", m, ownerUuid);
 
                         this.getBillProcess(m.machineId, (b) => {
-                            console.log(
-                                "getDeliveryingBills",
-                                b,
-                                b.filter((v) => v.ownerUuid == ownerUuid)
-                            );
+                            // console.log(
+                            //     "getDeliveryingBills",
+                            //     b,
+                            //     b.filter((v) => v.ownerUuid == ownerUuid)
+                            // );
                             res.send(
                                 PrintSucceeded(
                                     "getDeliveryingBills",
@@ -2834,7 +2834,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 r.changed('data', true);
                                 console.log('updating machine setting', r.data);
                                 const a2 = JSON.parse(JSON.stringify(r.data));
-                                const s = a2.filter(v => v.settingName == 'setting');
+                                const s = a2.find(v => v.settingName == 'setting');
                                 s.owner = '';
                                 s.ownerPhone = '';
                                 s.imei = '';
