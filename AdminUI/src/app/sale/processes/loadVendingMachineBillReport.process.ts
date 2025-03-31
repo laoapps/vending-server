@@ -9,7 +9,7 @@ export class LoadVendingMachineSaleBillReportProcess {
 
     // services
     private apiService: ApiService;
-    
+
     // parameters
     private machineId: string;
     private fromDate: string;
@@ -34,9 +34,9 @@ export class LoadVendingMachineSaleBillReportProcess {
     }
 
     public Init(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
 
 
                 console.log(`load vending machine bill report`, 1);
@@ -47,7 +47,7 @@ export class LoadVendingMachineSaleBillReportProcess {
                 console.log(`load vending machine bill report`, 2);
 
                 this.InitParams(params);
-  
+
                 console.log(`load vending machine bill report`, 3);
 
                 const ValidateParams = this.ValidateParams();
@@ -61,7 +61,7 @@ export class LoadVendingMachineSaleBillReportProcess {
                 console.log(`load vending machine bill report`, 5);
 
                 this.FetchOrder();
-                
+
                 (await this.workload).dismiss();
                 resolve(this.Commit());
 
@@ -69,7 +69,7 @@ export class LoadVendingMachineSaleBillReportProcess {
             } catch (error) {
                 console.log(`error`, error.message);
                 (await this.workload).dismiss();
-                resolve(error.message);     
+                resolve(error.message);
             }
         });
     }
@@ -91,9 +91,9 @@ export class LoadVendingMachineSaleBillReportProcess {
 
     private ValidateParams(): string {
         if (!(this.fromDate && this.toDate && this.token && this.machineId)) return IENMessage.parametersEmpty;
-        
+
         const year = new Date().getFullYear();
-        const month =  Number(new Date().getMonth() + 1) < 10 ? '0' + Number(new Date().getMonth() + 1) : Number(new Date().getMonth() + 1);
+        const month = Number(new Date().getMonth() + 1) < 10 ? '0' + Number(new Date().getMonth() + 1) : Number(new Date().getMonth() + 1);
         const day = Number(new Date().getDate()) < 10 ? '0' + new Date().getDate() : new Date().getDate();
         const time = year + '-' + month + '-' + day;
 
@@ -113,7 +113,7 @@ export class LoadVendingMachineSaleBillReportProcess {
 
 
     private LoadList(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 const params = {
@@ -131,7 +131,7 @@ export class LoadVendingMachineSaleBillReportProcess {
                     this.count = response.data.count;
 
                     const list = JSON.parse(JSON.stringify(this.lists));
-                    const stock = list.map(obj => obj.vendingsales.map(item => { return { machineId: obj.machineId, time: obj.updatedAt, stock: item.stock } }));
+                    const stock = list.map(obj => obj.vendingsales.map(item => { return { machineId: obj.machineId, time: obj.updatedAt, stock: item.stock, paymentstatus: obj.paymentstatus, dropAt: item.dropAt } }));
                     console.log(`stock`, stock);
                     stock.find(item => {
                         this.saleDetailList.push(...item);
@@ -140,7 +140,7 @@ export class LoadVendingMachineSaleBillReportProcess {
 
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -150,21 +150,25 @@ export class LoadVendingMachineSaleBillReportProcess {
     private FetchOrder(): void {
         let allsale: Array<any> = [];
         let cloneSaleDetailList: Array<any> = JSON.parse(JSON.stringify(this.saleDetailList));
-        allsale = cloneSaleDetailList.map(item => { return { stock: item.stock, machineId: item.machineId } });
+        console.log('=====>cloneSaleDetailList', cloneSaleDetailList);
+        // console.log('=====> List :', this.lists);
+
+
+        allsale = cloneSaleDetailList.map(item => { return { stock: item.stock, machineId: item.machineId, paymentstatus: item.paymentstatus, dropAt: item.dropAt } });
         console.log(`allsale`, allsale);
 
-        this.uniqueorder = allsale.filter((obj, index) => 
+        this.uniqueorder = allsale.filter((obj, index) =>
             allsale.findIndex(item => item.stock.id == obj.stock.id) == index
         );
-        this.duplicateorder = allsale.filter((obj, index) => 
+        this.duplicateorder = allsale.filter((obj, index) =>
             allsale.findIndex(item => item.stock.id == obj.stock.id) != index
         );
 
         if (this.duplicateorder != undefined && Object.entries(this.duplicateorder).length > 0) {
-            for(let i = 0; i < this.uniqueorder.length; i++) {
+            for (let i = 0; i < this.uniqueorder.length; i++) {
                 this.uniqueorder[i].stock.total = 0;
 
-                for(let j = 0; j < this.duplicateorder.length; j++) {
+                for (let j = 0; j < this.duplicateorder.length; j++) {
                     if (this.uniqueorder[i].stock.id == this.duplicateorder[j].stock.id) {
                         this.uniqueorder[i].stock.qtty += this.duplicateorder[j].stock.qtty;
                     }
@@ -172,9 +176,8 @@ export class LoadVendingMachineSaleBillReportProcess {
                 this.uniqueorder[i].stock.total = this.uniqueorder[i].stock.qtty * this.uniqueorder[i].stock.price;
             }
         }
-        else 
-        {
-            for(let i = 0; i < this.uniqueorder.length; i++) {
+        else {
+            for (let i = 0; i < this.uniqueorder.length; i++) {
                 this.uniqueorder[i].stock.total = 0;
                 this.uniqueorder[i].stock.total = this.uniqueorder[i].stock.qtty * this.uniqueorder[i].stock.price;
             }

@@ -47,25 +47,27 @@
             <td>Price</td>
             <td>Quantity</td>
             <td>Total</td>
+            <td>ວັນທີເຄື່ອງຕົກ</td>
           </tr>
         </thead>
         <tbody *ngFor="let filter of filterListShow; let i = index">
           <tr>
             <td>{{ i+1 }}</td>
             <!-- <td>{{ filter?.time | date:'yyyy-MM-dd HH:mm:ss': 420 }}</td> -->
-            <td>{{ filter?.time | date: 'yyyy-MM-dd HH:mm:ss':'+7'  }}</td>
+            <td>{{ filter?.time | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
             <td>{{ filter?.stock?.name }}</td>
             <td>{{ filter?.stock?.price | number }}</td>
             <td>{{ filter?.stock?.qtty | number }}</td>
             <td>{{ filter?.stock?.total | number }}</td>
+            <td>{{ filter?.dropAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <ul class="pagination">
-      <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'" >
-          <button (click)="managePage(btn.page)" class="page-link" >{{btn.name}}</button>
+      <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'">
+        <button (click)="managePage(btn.page)" class="page-link">{{btn.name}}</button>
       </li>
     </ul>
   </div>

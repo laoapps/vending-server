@@ -12,7 +12,7 @@ import { SaleReportViewPage } from 'src/app/sale-report-view/sale-report-view.pa
 export class SaleReportPage implements OnInit {
 
   private loadVendingMachineSaleBillReportProcess: LoadVendingMachineSaleBillReportProcess;
-  
+
   @Input() machineId: string;
   @Input() otp: string;
 
@@ -31,6 +31,7 @@ export class SaleReportPage implements OnInit {
   currentdate: string = '';
   sum_qtty: number = 0;
   sum_total: number = 0;
+  paymentstatus: string = '';
 
   exportOptions: Array<any> = [
     {
@@ -42,10 +43,10 @@ export class SaleReportPage implements OnInit {
       text: 'Export Excel'
     }
   ];
-  
+
   constructor(
     public apiService: ApiService
-  ) { 
+  ) {
     this.loadVendingMachineSaleBillReportProcess = new LoadVendingMachineSaleBillReportProcess(this.apiService);
   }
 
@@ -91,7 +92,7 @@ export class SaleReportPage implements OnInit {
   }
 
   process(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         this.lists = [];
         this.display = false;
@@ -117,22 +118,28 @@ export class SaleReportPage implements OnInit {
 
         const run = await this.loadVendingMachineSaleBillReportProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        
+
+        // console.log('=====> run', run);
+
+
         this.lists = run.data[0].lists;
         this.count = run.data[0].count;
         this.saleDetailList = run.data[0].saleDetailList;
         this.saleSumerizeList = run.data[0].saleSumerizeList;
         if (this.count > 0) this.display = true;
+        console.log('=====> LIST :', this.lists.length, '=====>', this.lists);
 
-        console.log(`saleSumerizeList der`, this.saleSumerizeList);
+
+        console.log(`saleSumerizeList der`, this.saleSumerizeList.length, '=====>', this.saleSumerizeList);
         this.sum_qtty = this.saleSumerizeList.reduce((a, b) => a + b.stock.qtty, 0);
         this.sum_total = this.saleSumerizeList.reduce((a, b) => a + b.stock.total, 0);
+
 
         resolve(IENMessage.success);
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
-        resolve(error.message); 
+        resolve(error.message);
       }
     });
   }

@@ -581,102 +581,102 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   // }
 
 
-  private _processLoopDestroyNew(): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      try {
+  // private _processLoopDestroyNew(): Promise<any> {
+  //   return new Promise<any>(async (resolve, reject) => {
+  //     try {
 
-        let title: string = 'Destroy all orders';
-        let text: string = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
-        let cls: string = `countdownDestroy`;
+  //       let title: string = 'Destroy all orders';
+  //       let text: string = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+  //       let cls: string = `countdownDestroy`;
 
-        const params: IPaymentStation = {
-          orders: this.parseorders,
-          getTotalSale: this.parseGetTotalSale,
-          paymentmethod: this.paymentmethod
-        }
-        console.log('START GENERATE LAOQR');
+  //       const params: IPaymentStation = {
+  //         orders: this.parseorders,
+  //         getTotalSale: this.parseGetTotalSale,
+  //         paymentmethod: this.paymentmethod
+  //       }
+  //       console.log('START GENERATE LAOQR');
 
-        const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
-        console.log('=====>RUN', run);
+  //       const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
+  //       console.log('=====>RUN', run);
 
-        // if (run.message != IENMessage.success) throw new Error(run);
-        if (run != EMessage.succeeded) {
-          // this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
-          clearInterval(this.countdownDestroyTimer);
-          this.countdownDestroy = 60;
-          if (AutoPaymentPage.message) AutoPaymentPage.message.close();
-          AutoPaymentPage.message = undefined;
+  //       // if (run.message != IENMessage.success) throw new Error(run);
+  //       if (run != EMessage.succeeded) {
+  //         // this.apiService.alert.create({ message: 'ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ', buttons: ['OK'] }).then(alert => alert.present());
+  //         clearInterval(this.countdownDestroyTimer);
+  //         this.countdownDestroy = 60;
+  //         if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+  //         AutoPaymentPage.message = undefined;
 
-          // this.apiService.myTab1.clearStockAfterLAABGo();
-          this.close();
-          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
-          resolve(IENMessage.success);
-        }
-
-
-
-        const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
-        AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
-        this.isPayment = true;
-        this.billDate = new Date();
-        console.log('END GENERATE LAOQR AND SUCCESS');
-        // console.log('=====>RUN', run);
-        const transactionID = localStorage.getItem('transactionID');
-        console.log('QR CODE :');
-
-        // this._processLoopCheckLaoQRPaid(transactionID);
+  //         // this.apiService.myTab1.clearStockAfterLAABGo();
+  //         this.close();
+  //         this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກ MMoney ແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
+  //         resolve(IENMessage.success);
+  //       }
 
 
 
+  //       const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
+  //       AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
+  //       this.isPayment = true;
+  //       this.billDate = new Date();
+  //       console.log('END GENERATE LAOQR AND SUCCESS');
+  //       // console.log('=====>RUN', run);
+  //       const transactionID = localStorage.getItem('transactionID');
+  //       console.log('QR CODE :');
 
-        // AutoPaymentPage.message = Swal.fire({
-        //   position: 'top-end',
-        //   html: this.messagetextModel(title, text, cls),
-        //   showConfirmButton: false,
-        //   heightAuto: false,
-        //   backdrop: false
-        // });
-
-        // let checkLAAB: number = 55;
-        // const previousAmount: number = this.apiService.cash.amount;
-
-        // loop destroy
-        this.countdownDestroyTimer = setInterval(async () => {
-          this.countdownDestroy--;
+  //       // this._processLoopCheckLaoQRPaid(transactionID);
 
 
-          // console.log(`ERROR SHOULD NOT HERE`);
 
-          if (this.countdownDestroy <= 0) {
-            clearInterval(this.countdownDestroyTimer);
-            this.countdownDestroy = 60;
-            if (AutoPaymentPage.message) AutoPaymentPage.message.close();
-            AutoPaymentPage.message = undefined;
 
-            this.apiService.myTab1.clearStockAfterLAABGo();
-            this.close();
-            this.apiService.alertError(IENMessage.timeout);
-            resolve(IENMessage.success);
-          } else {
-            AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
-            if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
-            // if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `Test`;
-          }
+  //       // AutoPaymentPage.message = Swal.fire({
+  //       //   position: 'top-end',
+  //       //   html: this.messagetextModel(title, text, cls),
+  //       //   showConfirmButton: false,
+  //       //   heightAuto: false,
+  //       //   backdrop: false
+  //       // });
 
-        }, 1000);
+  //       // let checkLAAB: number = 55;
+  //       // const previousAmount: number = this.apiService.cash.amount;
 
-      } catch (error) {
-        // this.apiService.alertError(error.message);
+  //       // loop destroy
+  //       this.countdownDestroyTimer = setInterval(async () => {
+  //         this.countdownDestroy--;
 
-        // when choose payment method and it does not work this process will auto loop check laab balance
-        const transactionID = localStorage.getItem('transactionID');
-        // this._processLoopCheckLaoQRPaid(transactionID ?? '');;
-        // this._processLoopPayment();
 
-        resolve(error.message);
-      }
-    });
-  }
+  //         // console.log(`ERROR SHOULD NOT HERE`);
+
+  //         if (this.countdownDestroy <= 0) {
+  //           clearInterval(this.countdownDestroyTimer);
+  //           this.countdownDestroy = 60;
+  //           if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+  //           AutoPaymentPage.message = undefined;
+
+  //           this.apiService.myTab1.clearStockAfterLAABGo();
+  //           this.close();
+  //           this.apiService.alertError(IENMessage.timeout);
+  //           resolve(IENMessage.success);
+  //         } else {
+  //           AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
+  //           if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+  //           // if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `Test`;
+  //         }
+
+  //       }, 1000);
+
+  //     } catch (error) {
+  //       // this.apiService.alertError(error.message);
+
+  //       // when choose payment method and it does not work this process will auto loop check laab balance
+  //       const transactionID = localStorage.getItem('transactionID');
+  //       // this._processLoopCheckLaoQRPaid(transactionID ?? '');;
+  //       // this._processLoopPayment();
+
+  //       resolve(error.message);
+  //     }
+  //   });
+  // }
 
 
   private _processLoopDestroyLastest(): Promise<any> {

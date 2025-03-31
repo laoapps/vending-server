@@ -38,6 +38,8 @@ export class SaleReportViewPage implements OnInit {
 
   ngOnInit() {
     this.loadFilter();
+    console.log('LIST IS :', this.list);
+
   }
 
   loadFilter(): void {
@@ -45,8 +47,8 @@ export class SaleReportViewPage implements OnInit {
       const parseList = JSON.parse(JSON.stringify(this.saleDetailList));
       this.filterList = parseList.filter(item => item.stock.id == this.list.stock.id);
       console.log(`ff`, this.filterList);
-      
-      for(let i = 0; i < this.filterList.length; i++) {
+
+      for (let i = 0; i < this.filterList.length; i++) {
         this.filterList[i].stock.total = 0;
         this.filterList[i].stock.total = this.filterList[i].stock.qtty * this.filterList[i].stock.price;
       }
@@ -55,15 +57,15 @@ export class SaleReportViewPage implements OnInit {
       this.btnList = this.apiService.paginations(this.page, totalPage);
 
       if (this.filterList != undefined && this.filterList.length > this.limit) {
-        for(let i = 0; i < this.limit; i++) {
+        for (let i = 0; i < this.limit; i++) {
           this.filterListShow.push(this.filterList[i]);
         }
       } else {
-        for(let i = 0; i < this.filterList.length; i++) {
+        for (let i = 0; i < this.filterList.length; i++) {
           this.filterListShow.push(this.filterList[i]);
         }
       }
-      for(let i = 0; i < this.filterList.length; i+=this.limit) {
+      for (let i = 0; i < this.filterList.length; i += this.limit) {
         const data = this.filterList.slice(i, i + this.limit);
         this.filterListGroup.push(data);
       }

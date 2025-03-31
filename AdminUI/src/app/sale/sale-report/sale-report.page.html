@@ -9,10 +9,10 @@
 
   <div class="section-filter">
     <div *ngIf="datetimeCustom == true" class="single-group">
-        <div class="form-group">
-          <label for="">Date (Special)</label>
-          <input [(ngModel)]="fromDate" type="date" class="form-control full">
-        </div>
+      <div class="form-group">
+        <label for="">Date (Special)</label>
+        <input [(ngModel)]="fromDate" type="date" class="form-control full">
+      </div>
     </div>
 
     <div *ngIf="moredatetimeCustom == true" class="single-group">
@@ -29,13 +29,14 @@
   </div>
 
   <div class="section-buttons">
-    <a (click)="process()" href="javascript:void(0)" class="item-process"><i class="fa-solid fa-arrows-rotate"></i> Process</a>
+    <a (click)="process()" href="javascript:void(0)" class="item-process"><i class="fa-solid fa-arrows-rotate"></i>
+      Process</a>
     <a (click)="displayDateTimeCustom()" href="javascript:void(0)" class="item active">Date/Time Custom</a>
     <a (click)="displayMoreDateTimeCustom()" href="javascript:void(0)" class="item">More Date/Time Custom</a>
   </div>
 
   <div *ngIf="display == true" class="section-table">
-    
+
     <div class="btn-list">
       <a *ngFor="let export of exportOptions; let i = index" href="javascript:void(0)" class="item">
         <div class="icon">
@@ -74,6 +75,7 @@
             <td>Price</td>
             <td>Total Quantity</td>
             <td>Total Sale</td>
+            <td>Status</td>
             <td>Action</td>
           </tr>
         </thead>
@@ -85,6 +87,7 @@
             <td>{{ sale.stock.price | number }}</td>
             <td>{{ sale.stock.qtty | number }}</td>
             <td>{{ sale.stock.total | number }}</td>
+            <td>{{ sale.paymentstatus == 'paid' ? 'ຈ່າຍແລ້ວ' : 'ເຄື່ອງຕົກແລ້ວ' }}</td>
             <td>
               <button (click)="view(sale)" class="btn btn-view">View</button>
             </td>
@@ -92,7 +95,7 @@
         </tbody>
       </table>
     </div>
-    
+
   </div>
 
 </ion-content>
