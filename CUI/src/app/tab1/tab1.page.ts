@@ -233,6 +233,9 @@ export class Tab1Page implements OnDestroy {
   private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
 
 
+  processedQRPaid: any;
+
+
   private creditPending: ICreditData[] = [];
 
   // interval
@@ -617,14 +620,22 @@ export class Tab1Page implements OnDestroy {
         label: key,  // Display name
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
+
     setTimeout(() => {
       this.connect();
-    }, 10000);
+    }, 5000);
 
-    // this._processLoopCheckLaoQRPaid();
     clearInterval(this.countdownCheckLaoQRPaidTimer);
-    this.countdownCheckLaoQRPaidTimer = setInterval(() => {
-      this._processLoopCheckLaoQRPaid();
+    this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+      console.log('*****CHECK 30 SECOND');
+
+      // that._processLoopCheckLaoQRPaid();
+
+      if (this.processedQRPaid) return;
+      this.processedQRPaid = true;
+      await this._processLoopCheckLaoQRPaid();
+      this.processedQRPaid = false;
+
       this.apiService.IndexedDB.getBillProcesses().then((r) => {
         if (r.length > 0) {
           console.log('dropStock', r);
@@ -638,9 +649,12 @@ export class Tab1Page implements OnDestroy {
         console.log('Error get dropStock from local', e);
         this.isDropStock = false;
       });
-
-      console.log('*****CHECK 30 SECOND');
     }, 30000);
+
+
+
+    // this._processLoopCheckLaoQRPaid();
+
 
 
     this.WSAPIService.aliveSubscription.subscribe(async res => {
@@ -715,40 +729,25 @@ export class Tab1Page implements OnDestroy {
 
   public _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
+      try {
+        console.log('CHECK LAOQR SERVER');
 
-      const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
+        const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
 
-      if (run.status == 1) {
-        console.log('=====> LAOQR CHECK :', run.message['data']['bill']);
+        if (run.status == 1) {
+          console.log('=====> LAOQR CHECK :', run.message['data']['bill']);
 
-        this.apiService.waitingDelivery(run.message['data']['bill'], this.serial);
+          await this.apiService.waitingDelivery(run.message['data']['bill'], this.serial);
+          resolve(IENMessage.success);
+
+        } else {
+          resolve(IENMessage.success);
+        }
+      } catch (error) {
+        console.log('Error _processLoopCheckLaoQRPaid', error);
+        resolve(error);
       }
 
-      // clearInterval(this.countdownCheckLaoQRPaidTimer);
-
-      // this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
-      //   console.log('transactionID', transactionID);
-      //   // console.log('CHECK');
-
-      //   // this.countdownCheckLaoQRPaid -= 5;
-      //   const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
-      //   console.log('=====> LAOQR CHECK :', run);
-
-      //   if (run.status == 1) {
-      //     this.apiService.waitingDelivery(run.message['data']['bill']);
-      //   }
-
-      //   // console.log('=====> LAOQR RUN :', run);
-
-      //   // console.log(`=====>LAOQR LOOP`, this.countdownCheckLaoQRPaid);
-      //   // if (this.countdownCheckLaoQRPaid <= 0) {
-      //   //   clearInterval(this.countdownCheckLaoQRPaidTimer);
-      //   //   this.countdownCheckLaoQRPaid = 90;
-      //   //   console.log('=====>LAOQR LOOP END');
-
-      //   //   resolve(IENMessage.success);
-      //   // }
-      // }, 30000);
     });
   }
 
@@ -1228,9 +1227,7 @@ export class Tab1Page implements OnDestroy {
                 if (a.position < b.position) return -1;
               });
               console.log(`sale list der ni`, this.saleList);
-              setTimeout(() => {
-                this.showBills();
-              }, 1000);
+
 
               console.log(`sale list der 2`, this.saleList.length);
             } catch (error) {
@@ -1906,9 +1903,14 @@ export class Tab1Page implements OnDestroy {
     try {
       // timer check payment for any orders
       clearInterval(this.countdownCheckLaoQRPaidTimer);
-      this.countdownCheckLaoQRPaidTimer = setInterval(() => {
+      this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
         console.log('*****CHECK 5 SECOND');
-        this._processLoopCheckLaoQRPaid();
+        // await this._processLoopCheckLaoQRPaid();
+
+        if (this.processedQRPaid) return;
+        this.processedQRPaid = true;
+        await this._processLoopCheckLaoQRPaid();
+        this.processedQRPaid = false;
       }, 5000);
 
       if (this.otherModalAreOpening == true) return;
@@ -1935,10 +1937,15 @@ export class Tab1Page implements OnDestroy {
             // this.loadAutoShowMyOrders();
           }
           clearInterval(this.countdownCheckLaoQRPaidTimer);
-          that.countdownCheckLaoQRPaidTimer = setInterval(() => {
+          that.countdownCheckLaoQRPaidTimer = setInterval(async () => {
             console.log('*****CHECK 30 SECOND');
 
-            that._processLoopCheckLaoQRPaid();
+            // that._processLoopCheckLaoQRPaid();
+
+            if (this.processedQRPaid) return;
+            this.processedQRPaid = true;
+            await this._processLoopCheckLaoQRPaid();
+            this.processedQRPaid = false;
 
             this.apiService.IndexedDB.getBillProcesses().then((r) => {
               if (r.length > 0) {
@@ -2378,41 +2385,14 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
-  // showBills() {
-  //   console.log(`here`);
-  //   this.apiService.loadDeliveryingBillsNew().subscribe((r) => {
-  //     console.log(`response showBills`, r);
-  //     if (r.status) {
-  //       // this.apiService.dismissModal();
-  //       this.apiService.pb = r.data as Array<IBillProcess>;
-  //       if (this.apiService.pb.length) {
-  //         this.apiService
-  //           .showModal(RemainingbillsPage, { r: this.apiService.pb }, true)
-  //           .then((r) => {
-  //             r.present();
-  //             this.otherModalAreOpening = true;
-  //             this.openAnotherModal(r);
-  //             clearInterval(this.autoShowMyOrderTimer);
-  //             this.checkActiveModal(r);
-  //           });
-  //       }
 
-  //     } else {
-  //       this.apiService.toast
-  //         .create({ message: r.message, duration: 5000 })
-  //         .then((r) => {
-  //           r.present();
-  //         });
-  //     }
-  //   });
-  // }
 
 
   showBills() {
     console.log(`here`);
     this.apiService.loadDeliveryingBillsNew().then((r) => {
       console.log(`response showBills`, r);
-      if (1 == 1) {
+      if (r.length > 0) {
         // this.apiService.dismissModal();
         this.apiService.pb = r as Array<IBillProcess>;
         if (this.apiService.pb.length) {
@@ -2436,28 +2416,7 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
-  public reshowBills(count: number): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      try {
-        let loading = this.apiService.load.create({
-          message: 'Please wait...',
-        });
 
-        if (count > 0) {
-          (await loading).present();
-          let i = setTimeout(async () => {
-            (await loading).dismiss();
-            this.showBills();
-          }, 1000);
-        }
-
-        resolve(IENMessage.success);
-      } catch (error) {
-        this.apiService.simpleMessage(error.message);
-        resolve(error.message);
-      }
-    });
-  }
   public openStackCashOutPage(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {

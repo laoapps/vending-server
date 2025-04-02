@@ -22,7 +22,7 @@ export class CuiSalePage implements OnInit {
 
   constructor(
     public apiService: ApiService
-  ) { 
+  ) {
     this.cuisaleProcess = new CUISaleProcess(this.apiService);
   }
 
@@ -36,9 +36,9 @@ export class CuiSalePage implements OnInit {
   }
 
   loadCUISaleList(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-      //  await this.cashingService.clear();
+        //  await this.cashingService.clear();
         const params = {
           machineId: this.machineId
         }
@@ -47,19 +47,21 @@ export class CuiSalePage implements OnInit {
         if (run.message != IENMessage.success) throw new Error(run);
         this.lists = run.data[0].lists.data;
         console.log(`list`, this.lists);
-        
-        if (this.lists != undefined && this.lists.length > 0) {
-          const instock = this.lists.filter(item => item.stock.id != -1);
-          console.log(`instock`, instock);
-          for(let i = 0; i < instock.length; i++) {
-            for(let j = 0; j < this._l.length; j++) {
-              if (instock[i].stock != '' && instock[i].stock.image == this._l[j].stock.imageUrl) {
-                instock[i].stock.image = this._l[j].stock.image;
-              }
-            }
-          }
-          this.lists = instock;
-        }
+
+        // if (this.lists != undefined && this.lists.length > 0) {
+        //   // const instock = this.lists.filter(item => item.stock.id != -1);
+        //   const instock = this.lists;
+
+        //   // console.log(`instock`, instock);
+        //   // for(let i = 0; i < instock.length; i++) {
+        //   //   for(let j = 0; j < this._l.length; j++) {
+        //   //     if (instock[i].stock != '' && instock[i].stock.image == this._l[j].stock.imageUrl) {
+        //   //       instock[i].stock.image = this._l[j].stock.image;
+        //   //     }
+        //   //   }
+        //   // }
+        //   this.lists = instock;
+        // }
         console.log('test here', this.lists);
         resolve(IENMessage.success);
 

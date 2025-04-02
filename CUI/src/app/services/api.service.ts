@@ -2,6 +2,7 @@ import { Component, ComponentRef, Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
   EClientCommand,
+  EMessage,
   EPaymentProvider,
   ESerialPortType,
   IAlive,
@@ -550,49 +551,53 @@ export class ApiService {
   }
 
   async waitingDelivery(r: any, serial: ISerialService) {
-    console.log('WAITING DELIVERY NEW :', r);
+    return new Promise<string>((resolve, reject) => {
+      console.log('WAITING DELIVERY NEW :', r);
 
-    console.log('VENDING ON SALE :', ApiService.vendingOnSale);
-
-
-    try {
-      if (r) {
-        this.dismissModal();
-        this.dismissModal();
-        this.dismissLoading();
-        const pb = r.data as Array<IBillProcess>;
-        // console.log('=====> PB', pb);
-
-        // console.log('=====> PB Length :', pb.length);
-        // const pdStock = [];
-        let transactionList = [];
-        for (let index = 0; index < pb.length; index++) {
-          const element = pb[index];
-          this.IndexedDB.addBillProcess(element);
-          console.log('=====> PB ELEMENT :', element);
-          transactionList.push(element.transactionID);
-          // pdStock.push({ transactionID: element.transactionID, position: element.position });
-          // this.reconfirmStockNew([{ transactionID: element.transactionID, position: element.position }]);
-        }
-        // console.log('transactionList :', transactionList);
-
-        this.confirmBillPaid(transactionList).subscribe((r) => {
-          console.log('=====> CONFIRM BILL PAID :', r);
-        });
-
-        // console.log('=====> PD STOCK :', pdStock);
+      console.log('VENDING ON SALE :', ApiService.vendingOnSale);
 
 
-        if (pb.length)
-          this.showModal(RemainingbillsPage, { r: pb, serial: serial }, true).then((r) => {
-            r.present();
+      try {
+        if (r) {
+          this.dismissModal();
+          this.dismissModal();
+          this.dismissLoading();
+          const pb = r.data as Array<IBillProcess>;
+          // console.log('=====> PB', pb);
+
+          // console.log('=====> PB Length :', pb.length);
+          // const pdStock = [];
+          let transactionList = [];
+          for (let index = 0; index < pb.length; index++) {
+            const element = pb[index];
+            this.IndexedDB.addBillProcess(element);
+            console.log('=====> PB ELEMENT :', element);
+            transactionList.push(element.transactionID);
+            // pdStock.push({ transactionID: element.transactionID, position: element.position });
+            // this.reconfirmStockNew([{ transactionID: element.transactionID, position: element.position }]);
+          }
+          // console.log('transactionList :', transactionList);
+
+          this.confirmBillPaid(transactionList).subscribe((r) => {
+            console.log('=====> CONFIRM BILL PAID :', r);
+            if (pb.length)
+              this.showModal(RemainingbillsPage, { r: pb, serial: serial }, true).then((r) => {
+                r.present();
+              });
+            this.eventEmmiter.emit('delivery');
+            resolve(EMessage.succeeded);
           });
-        this.eventEmmiter.emit('delivery');
 
+          // console.log('=====> PD STOCK :', pdStock);
+        } else {
+          resolve(EMessage.error);
+        }
+      } catch (error) {
+        console.log('error waitingDelivery is:', error);
+        resolve(EMessage.error)
       }
-    } catch (error) {
-      console.log('error waitingDelivery is:', error);
-    }
+    })
+
 
   }
 

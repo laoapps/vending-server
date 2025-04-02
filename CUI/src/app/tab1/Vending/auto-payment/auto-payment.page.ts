@@ -1174,7 +1174,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           const run = await this.generateLaoQRCodeProcess.CheckCallbackMmoney();
           console.log('=====>checkCallbackMMoney', run);
           if (run.status == 1) {
-            this.apiService.myTab1._processLoopCheckLaoQRPaid();
+            await this.apiService.myTab1._processLoopCheckLaoQRPaid();
           }
           this.isEnableCheckCallback = false;
 

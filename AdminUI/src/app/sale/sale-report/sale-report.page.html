@@ -76,6 +76,7 @@
             <td>Total Quantity</td>
             <td>Total Sale</td>
             <td>Status</td>
+            <td>CreatedAt</td>
             <td>Action</td>
           </tr>
         </thead>
@@ -88,6 +89,7 @@
             <td>{{ sale.stock.qtty | number }}</td>
             <td>{{ sale.stock.total | number }}</td>
             <td>{{ sale.paymentstatus == 'paid' ? 'ຈ່າຍແລ້ວ' : 'ເຄື່ອງຕົກແລ້ວ' }}</td>
+            <td>{{ sale.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
             <td>
               <button (click)="view(sale)" class="btn btn-view">View</button>
             </td>
