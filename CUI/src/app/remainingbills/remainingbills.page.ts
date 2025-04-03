@@ -130,44 +130,44 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       if (this.serial) {
         const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '0') || 0;
         const param = { slot: position, dropSensor };
-        this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
-          console.log('shippingcontrol', r);
-          this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
-          this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-          this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
-            // this.apiService.dismissLoading();
-            console.log(`vending on sale`, ApiService.vendingOnSale);
-            console.log('retryProcessBill', r);
+        const device = localStorage.getItem('device') || 'VMC';
+        if (device == 'VMC' || device == 'ZDM8' || device == 'MT102') {
+          this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+            console.log('shippingcontrol', r);
+            this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+            this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
+              // this.apiService.dismissLoading();
+              console.log(`vending on sale`, ApiService.vendingOnSale);
+              console.log('retryProcessBill', r);
 
+            });
+
+            this.apiService.soundThankYou();
+
+            this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
+              console.log('reload_ticket', reload_ticket);
+
+              this.r = reload_ticket;
+              console.log(`=====>here der`, this.r);
+
+              if (this.r != undefined && Object.entries(this.r).length == 0) {
+                localStorage.setItem('product_fall', '0');
+                this.clearTimer();
+                this.apiService, this.modal.dismiss();
+                return;
+              }
+
+              if (human == true) {
+                this.loadAutoFall();
+              }
+            });
+          }).catch(async (error) => {
+            console.log('error shippingcontrol', error);
           });
-
-          this.apiService.soundThankYou();
-
-          this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-            console.log('reload_ticket', reload_ticket);
-
-            this.r = reload_ticket;
-            console.log(`=====>here der`, this.r);
-
-            if (this.r != undefined && Object.entries(this.r).length == 0) {
-              localStorage.setItem('product_fall', '0');
-              this.clearTimer();
-              this.apiService, this.modal.dismiss();
-              return;
-            }
-
-            if (human == true) {
-              this.loadAutoFall();
-            }
-
-          });
-
-
-
-        }).catch(async (error) => {
-          console.log('error shippingcontrol', error);
-        });
-
+        } else {
+          Toast.show({ text: 'Protocol has not been implemented yet!!!!', duration: 'long' });
+        }
       } else {
         console.log('serial not init');
         Toast.show({ text: 'serial not init for drop' })

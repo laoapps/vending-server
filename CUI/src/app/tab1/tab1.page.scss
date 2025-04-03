@@ -827,3 +827,20 @@ div.scrollmenu {
         height: 500px;
     }
 }
+
+.attention-grabber {
+    animation: glowBlink 1.2s infinite;
+    font-size: 32px;
+    color: #ffffff;
+    background: #ff00ff;
+    padding: 10px;
+    border-radius: 8px;
+    display: inline-block;
+    text-shadow: 0 0 10px #ff00ff;
+  }
+  
+  @keyframes glowBlink {
+    0% { transform: scale(1); box-shadow: 0 0 15px #ff00ff; opacity: 1; }
+    50% { transform: scale(1.1); box-shadow: 0 0 25px #00ff00; opacity: 0.7; }
+    100% { transform: scale(1); box-shadow: 0 0 15px #ff00ff; opacity: 1; }
+  }

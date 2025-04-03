@@ -320,6 +320,14 @@ export class Zdm8Service implements ISerialService {
       }
     });
   }
+    public shipItem(slot = 1, dropSensor = 0) {
+      return new Promise<void>(async (resolve, reject) => {
+        await this.serialService.writeVMC(EZDM8_COMMAND.shippingcontrol, { slot, dropSensor });
+        // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
+        resolve();
+      });
+    }
+    
   checkSum(buff: string[]): string {
     const x = buff.join('') + this.serialService.checkSumCRC(buff);
     return x;
