@@ -40,7 +40,7 @@ export class Zdm8Service implements ISerialService {
   }
 
   // Process incoming Modbus RTU response
-  private processModbusResponse(rawData: string): any {
+  public processModbusResponse(rawData: string): any {
     try {
       // Ensure rawData is a valid hex string without spaces
       const hexData = rawData.replace(/\s/g, '').toLowerCase();

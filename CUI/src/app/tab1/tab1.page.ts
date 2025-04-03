@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import {
+  addLogMessage,
   EClientCommand,
   EMACHINE_COMMAND,
   ESerialPortType,
@@ -81,6 +82,7 @@ import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.pr
 import * as moment from 'moment';
 import { DatabaseService } from '../database.service';
 import { IBankNote, IHashBankNote } from '../vmc.service';
+import { Zdm8Service } from '../zdm8.service';
 
 @Component({
   selector: 'app-tab1',
@@ -102,7 +104,7 @@ export class Tab1Page implements OnDestroy {
 
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
 
-  selectedDevice = localStorage.getItem('device') || 'VMC';
+  selectedDevice = localStorage.getItem('device')||'';
 
   portName = localStorage.getItem('portName') || '/dev/ttyS0';
   baudRate = localStorage.getItem('baudRate') || 9600;
@@ -347,8 +349,7 @@ export class Tab1Page implements OnDestroy {
     public loading: LoadingController,
     private vendingIndex: VendingIndexServiceService,
     private serialService: SerialServiceService,
-    private dbService: DatabaseService,
-
+    private dbService: DatabaseService
   ) {
 
     // this.refreshAllEveryHour();
@@ -607,10 +608,7 @@ export class Tab1Page implements OnDestroy {
     //   await this.serial.close();
 
     // });
-    setTimeout(() => {
-      this.readyState = true;
-      Toast.show({ text: 'READY', duration: 'long' })
-    }, 30000);
+
 
     this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
 
@@ -621,9 +619,11 @@ export class Tab1Page implements OnDestroy {
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
 
-    setTimeout(() => {
-      this.connect();
-    }, 5000);
+    setTimeout(async () => {
+      await this.connect();
+      this.readyState = true;
+      Toast.show({ text: 'READY', duration: 'long' })
+    }, 1000);
 
     clearInterval(this.countdownCheckLaoQRPaidTimer);
     this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
@@ -668,36 +668,42 @@ export class Tab1Page implements OnDestroy {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
             this.refresh();
           }
-          // set allow cashIn
-          if (this.allowCashIn != r.allowCashIn) {
-            this.allowCashIn = r.allowCashIn;
-            if (this.allowCashIn) {
 
-              await this.vendingIndex.vmc.enableCashIn();
-              Toast.show({ text: 'CashIn enabled', duration: 'long' });
-            } else {
-              await this.vendingIndex.vmc.disableCashIn();
-              Toast.show({ text: 'CashIn disabled', duration: 'long' });
-            }
-          }
           // set allow vending
           if (this.allowVending != r.allowVending) {
             this.allowVending = r.allowVending;
           }
 
-          // set Temperature
-          if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
-            this.tempStatus.lowTemp = r.lowTemp;
-            this.tempStatus.highTemp = r.highTemp;
-            // this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
-            this.vendingIndex.vmc.setTemperature(this.tempStatus.lowTemp, this.tempStatus.highTemp);
+          if (this.selectedDevice == 'VMC') {
+            // set allow cashIn
+            if (this.allowCashIn != r.allowCashIn) {
+              this.allowCashIn = r.allowCashIn;
+              if (this.allowCashIn) {
+
+                await this.vendingIndex.vmc.enableCashIn();
+                Toast.show({ text: 'CashIn enabled', duration: 'long' });
+              } else {
+                await this.vendingIndex.vmc.disableCashIn();
+                Toast.show({ text: 'CashIn disabled', duration: 'long' });
+              }
+            }
+            // set Temperature
+            if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
+              this.tempStatus.lowTemp = r.lowTemp;
+              this.tempStatus.highTemp = r.highTemp;
+              // this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
+              this.vendingIndex.vmc.setTemperature(this.tempStatus.lowTemp, this.tempStatus.highTemp);
+            }
+
+            // set light
+            if (this.light.start !== r.start || this.light.end !== r.end) {
+              this.light = r.light;
+              this.vendingIndex.vmc.setLights(this.light.start, this.light.end);
+            }
+          } else {
+            console.log('Nothing to do for other devices');
           }
 
-          // set light
-          if (this.light.start !== r.start || this.light.end !== r.end) {
-            this.light = r.light;
-            this.vendingIndex.vmc.setLights(this.light.start, this.light.end);
-          }
 
 
         }
@@ -753,10 +759,12 @@ export class Tab1Page implements OnDestroy {
 
 
   async connect() {
-
+    if(!this.selectedDevice) return Toast.show({text:'Please select setting',duration:'long'});
+    Toast.show({ text: 'Prepare a connection to '+this.selectedDevice });
     if (this.connecting) {
       return Toast.show({ text: 'Connecting' });
     }
+    this.connecting = true;
     if (this.selectedDevice == 'VMC') {
       // this.baudRate = 57600;
       await this.startVMC();
@@ -790,8 +798,10 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: 'Please select device' })
     }
     this.connecting = false;
+    if(this.serial)
+    this.apiService.serialPort = this.serial;
   }
-
+  // VMC only
   async Enable() {
     console.log('Enable');
 
@@ -806,7 +816,7 @@ export class Tab1Page implements OnDestroy {
 
     }
   }
-
+  // VMC only
   async Disable() {
     console.log('Disable');
 
@@ -827,35 +837,35 @@ export class Tab1Page implements OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initVMC(this.portName, Number(this.baudRate), '', '', this.isSerial);
-    this.serial.getSerialEvents().subscribe(event => {
-      try {
-        console.log('vmc service event received: ' + JSON.stringify(event));
-        if (event.event === 'dataReceived') {
-          // this.addLogMessage(`Received: ${event.data}`);
-          // this.processVMCResponse(event.data);
-          this.processVMCResponse(event.data);
-        } else if (event.event === 'commandAcknowledged') {
-          console.log('Command acknowledged by VMC:', event.data);
-        } else if (event.event === 'error') {
-          console.error('Serial error:', event);
-          // this.addLogMessage(`Serial error: ${JSON.stringify(event)}`);
-        }
-      } catch (error: any) {
-        console.error('Error processing event:', error);
-        // this.addLogMessage(`Error processing event: ${error.message}`);
-      }
-    });
+
     if (!this.serial) {
       Toast.show({ text: 'serial not init for start VMC' });
     } else {
-      this.apiService.serialPort = this.serial;
-      // await this.vendingIndex.vmc.enableCashIn();
+      this.serial.getSerialEvents().subscribe(event => {
+        try {
+          console.log('vmc service event received: ' + JSON.stringify(event));
+          if (event.event === 'dataReceived') {
+            // this.addLogMessage(`Received: ${event.data}`);
+            // this.processVMCResponse(event.data);
+            this.processVMCResponse(event.data);
+          } else if (event.event === 'commandAcknowledged') {
+            console.log('Command acknowledged by VMC:', event.data);
+          } else if (event.event === 'error') {
+            console.error('Serial error:', event);
+            // this.addLogMessage(`Serial error: ${JSON.stringify(event)}`);
+          }
+        } catch (error: any) {
+          console.error('Error processing event:', error);
+          // this.addLogMessage(`Error processing event: ${error.message}`);
+        }
+      });
+    
 
       Toast.show({ text: 'VMC Cashin', duration: 'long' });
       console.log('VMC Cashin');
       this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
 
-      // FIX FIRMWARE bugs when reconnect to VMC
+      // // FIX FIRMWARE bugs when reconnect to VMC
       setTimeout(async () => {
         this.isFirstLoad = false;
         if (!this.offlineMode) {
@@ -866,8 +876,6 @@ export class Tab1Page implements OnDestroy {
           await this.vendingIndex.vmc.disableCashIn();
           Toast.show({ text: 'CashIn disabled', duration: 'long' });
         }
-
-
       }, 20000);
     }
     this.vlog.log = this.serial.log;
@@ -892,16 +900,48 @@ export class Tab1Page implements OnDestroy {
   }
 
   async startZDM8() {
-    if (this.serial) {
-      await this.serial.close();
-      this.serial = null;
+    try {
+      if (this.serial) {
+        await this.serial.close();
+        this.serial = null;
+        Toast.show({ text: 'serial closed' });
+      }
+      console.log('starting ZDM8');
+      this.serial = await this.vendingIndex.initZDM8(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+      if (!this.serial) {
+        Toast.show({ text: 'serial not init '+this.selectedDevice });
+      } else {
+        this.serial.getSerialEvents().subscribe(event => {
+          try {
+            console.log('zdm8 service event received: ' + JSON.stringify(event));
+            if (event.event === 'dataReceived') {
+              const rawData = event.data; // Assuming event.data contains the raw hex string
+  
+              console.log('zdm service Received from device:', rawData);
+              const d = typeof rawData ==='object'?JSON.stringify(rawData):rawData;
+              Toast.show({ text: 'zdm service Received from device: ' + rawData, duration: 'long' });
+              // Process the Modbus response
+              // const response = this.zdm8Service.processModbusResponse(rawData);
+              // if (response) {
+              //   console.log('Processed Modbus response:', response);
+              // }
+              // Toast.show({ text: 'Processed Modbus response: ' + JSON.stringify(response), duration: 'long' });
+            }
+          } catch (error: any) {
+            console.error('Error processing event:', error);
+            Toast.show({ text: 'Error processing event: ' + error.message });
+            // this.addLogMessage(`Error processing event: ${error.message}`);
+          }
+        });
+        Toast.show({ text: 'serial initialized succeeded '+this.selectedDevice });
+      }
+      this.vlog.log = this.serial.log;
+    } catch (error) {
+      Toast.show({ text: 'Error initializing serial: ' + error.message });
     }
-    this.serial = await this.vendingIndex.initZDM8(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
-    if (!this.serial) {
-      Toast.show({ text: 'serial not init' });
-    }
-    this.vlog.log = this.serial.log;
+
   }
+
   async satrtTp77p() {
     if (this.serial) {
       await this.serial.close();
@@ -1311,7 +1351,7 @@ export class Tab1Page implements OnDestroy {
           });
           setTimeout(() => {
             this.showBills();
-          }, 1000);
+          }, 10000);
 
           resolve(IENMessage.success);
         } else {
@@ -1329,7 +1369,7 @@ export class Tab1Page implements OnDestroy {
               });
               setTimeout(() => {
                 this.showBills();
-              }, 1000);
+              }, 10000);
 
               this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
 
@@ -2627,7 +2667,7 @@ export class Tab1Page implements OnDestroy {
       if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
 
       const xp = prompt('password1');
-      if (xp + '' == '1234567890_5martH67_laoapps') {
+      if (xp + '' == '1234567890_5martH67_laoapps'||true) {
         console.log('xp', xp);
         this.serial.close();
         this.apiService.modal.create({
@@ -2637,10 +2677,6 @@ export class Tab1Page implements OnDestroy {
           r.present();
           r.onDidDismiss().then(r => {
             this.serial.close();
-            setTimeout(() => {
-              this.startVMC();
-            }, 10000);
-
           })
         })
 
@@ -2954,5 +2990,8 @@ export class Tab1Page implements OnDestroy {
         resolve(error.message);
       }
     });
+  }
+  private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
+    addLogMessage(log, message, consoleMessage);
   }
 }

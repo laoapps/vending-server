@@ -682,7 +682,7 @@ export class ApiService {
       await this.serialPort?.close();
     } catch (error) {
       console.log('CLOSE FAILED', error);
-
+      Toast.show({ text: 'Close failed', duration: 'long' });
     }
 
     setTimeout(async () => {
