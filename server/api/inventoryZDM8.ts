@@ -38,6 +38,7 @@ import {
     readMachineLockDrop,
     findPhoneNumberByUuidOnUserManager,
     generateTokenOnUserManager,
+    parseMachineVMCStatus as parseMachineVMCStatus,
 } from "../services/service";
 import {
     EClientCommand,
@@ -73,8 +74,10 @@ import {
     IMMoneyGenerateQRPro,
     ILoadVendingMachineStockReport,
     ILaoQRGenerateQRRes,
+    IMachineStatus,
 } from "../entities/system.model";
 import moment, { now } from "moment";
+import momenttz from "moment-timezone";
 import { stringify, v4 as uuid4 } from "uuid";
 import { setWsHeartbeat } from "ws-heartbeat/server";
 import { SocketServerZDM8 } from "./socketServerZDM8";
@@ -85,6 +88,7 @@ import {
 import {
     adsEntity,
     dbConnection,
+    dropLogEntity,
     laabHashService,
     logEntity,
     machineCashoutMMoneyEntity,
@@ -123,7 +127,12 @@ import { MmoneyTransferValidationFunc } from "../laab_service/controllers/vendin
 import { IVendingWalletType } from "../laab_service/models/base.model";
 import { log } from "console";
 import { channel } from "diagnostics_channel";
+
+export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+
 export class InventoryZDM8 implements IBaseClass {
+
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -700,6 +709,14 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                     else if (d.command == EClientCommand.VMC_MACHINE_STATUS) { // fafb52
                         // UPDATE machine status here 
+                        const hex = data + '';
+                        const mstatus = parseMachineVMCStatus(hex);
+                        if (mstatus)
+                            mstatus.lastUpdate = new Date();
+
+                        writeMachineStatus(machineId, mstatus);
+                        console.log('VMC_MACHINE_STATUS', data);
+
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -712,6 +729,12 @@ export class InventoryZDM8 implements IBaseClass {
                     else if (d.command == EClientCommand.VMC_DISPENSE || EClientCommand.VMC_DISPENSED || EClientCommand.VMC_DISPENSEFAILED) {
 
                         // update order status after deliverying here 
+                        //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
+                        const hex = data + '';
+                        const slot = parseInt(hex.substring(hex.length - 4, hex.length - 2), 16);
+                        if (data.substring(10, 12) == '01') { console.log('Dispensing'); await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensing`, status: EClientCommand.VMC_DISPENSE }) }
+                        if (data.substring(10, 12) == '02') { console.log('Dispensed'); await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensed`, status: EClientCommand.VMC_DISPENSED }) }
+                        if (data.substring(10, 12) == '03') { console.log('Drop failed'); await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensefailed`, status: EClientCommand.VMC_DISPENSEFAILED }) }
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -723,6 +746,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                     else if (d.command == EClientCommand.VMC_UNKNOWN) {
                         // handle unknown command here
+                        console.log('VMC_UNKNOWN', data);
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -734,7 +758,13 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                     else if (d.command == EClientCommand.MACHINE_STATUS) {
                         // handle unknown command here
-
+                        // console.log('MACHINE_STATUS', data);
+                        // writeMachineStatus(machineId, mstatus);
+                        // console.log('VMC_MACHINE_STATUS', data);
+                        let mstatus = {} as IMachineStatus;
+                        if (!data)
+                            mstatus.lastUpdate = new Date();
+                        writeMachineStatus(machineId, data);
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -1499,7 +1529,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives } } })
+                            .findAll({ where: { isActive: { [Op.in]: actives } } })
                             .then((r) => {
                                 res.send(PrintSucceeded("listProduct", r, EMessage.succeeded, returnLog(req, res)));
                             })
@@ -1822,7 +1852,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives } } })
+                            .findAll({ where: { isActive: { [Op.in]: actives } } })
                             .then((r) => {
                                 res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
                             })
@@ -1860,7 +1890,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // );
                         // await sEnt.sync();
                         // sEnt
-                        //     .findAll({ where: { isActive: { [Op.or]: actives } } })
+                        //     .findAll({ where: { isActive: { [Op.in]: actives } } })
                         //     .then((r) => {
                         //         res.send(PrintSucceeded("listProduct", r, EMessage.succeeded));
                         //     })
@@ -2440,12 +2470,14 @@ export class InventoryZDM8 implements IBaseClass {
                         //     res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
                         // });
 
-
+                        // const serverFromDate = moment.tz(fromDate, serverTimezone).startOf('day').toDate();
+                        // const serverEndDate = moment.tz(endDate, serverTimezone).endOf('day').toDate();
                         const ownerUuid = res.locals["ownerUuid"];
                         const machineId = data.machineId;
-                        const fromDate = data.fromDate;
-                        const toDate = data.toDate;
-                        const run = await this.getReportSale(machineId, fromDate, toDate, ownerUuid);
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        console.log(' GET REPORT SALE ', machineId, fromDate.toString(), toDate.toString(), ownerUuid)
+                        const run = await this.getReportSale(machineId, fromDate.toString(), toDate.toString(), ownerUuid);
                         const response = {
                             rows: run.rows,
                             count: run.count,
@@ -2522,7 +2554,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         await sEnt.sync();
                         sEnt
-                            .findAll({ where: { isActive: { [Op.or]: actives }, machineId: machineId.machineId } })
+                            .findAll({ where: { isActive: { [Op.in]: actives }, machineId: machineId.machineId } })
                             .then((r) => {
                                 res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
                             })
@@ -2561,7 +2593,7 @@ export class InventoryZDM8 implements IBaseClass {
                         await sEnt.sync();
 
                         sEnt
-                            .findAll({ where: { machineId, isActive: { [Op.or]: actives } } })
+                            .findAll({ where: { machineId, isActive: { [Op.in]: actives } } })
                             .then((r) => {
                                 res.send(
                                     PrintSucceeded("listSaleByMachine" + 'owneruuidder' + ownerUuid, r, EMessage.succeeded, returnLog(req, res))
@@ -2983,7 +3015,7 @@ export class InventoryZDM8 implements IBaseClass {
                         this.machineClientlist.findAll({
                             where: {
                                 ownerUuid,
-                                isActive: { [Op.or]: actives }
+                                isActive: { [Op.in]: actives }
                             }
                         }).then((r) => {
                             console.log(' REST listMachine', r);
@@ -5449,7 +5481,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     console.log('machine balance', r);
 
                                     let x = await readMachineSetting(ws['machineId']);
-                                    let mstatus = await readMachineStatus(ws['machineId']);
+                                    let mstatus = (await readMachineStatus(ws['machineId']))?.b;
 
                                     console.log('clientid  setting', ws['machineId'], x);
                                     console.log('clientid  status', ws['machineId'], mstatus);
@@ -5473,8 +5505,10 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         for (let index = 0; index < mArray?.length; index++) {
                                             const element = mArray[index];
-
-                                            mymstatus.push({ machineId: element, mstatus: await readMachineStatus(element) });
+                                            const st = await readMachineStatus(element);
+                                            if (!st?.b?.lastUpdate)
+                                                st.b.lastUpdate = new Date();
+                                            mymstatus.push({ machineId: element, mstatus: st });
 
                                             const msetting = JSON.parse(await readMachineSetting(element))?.find(v => v.settingName == 'setting');
                                             mymsetting.push({ msetting, machineId: element });
@@ -5733,7 +5767,7 @@ export class InventoryZDM8 implements IBaseClass {
             condition = {
                 where: {
                     // paymentstatus: 'paid',              
-                    paymentstatus: { [Op.or]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
+                    paymentstatus: { [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
 
                     createdAt: { [Op.between]: [fromDate, toDate] }
                 },
@@ -5743,7 +5777,7 @@ export class InventoryZDM8 implements IBaseClass {
         else {
             condition = {
                 where: {
-                    paymentstatus: { [Op.or]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
+                    paymentstatus: { [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
                     machineId: machineId,
                     createdAt: { [Op.between]: [fromDate, toDate] }
                 },

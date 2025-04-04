@@ -1103,6 +1103,11 @@ export interface ILogActivity extends IBase {
     body: any;
     error: boolean
 }
+export interface IDropLogActivity extends IBase {
+    machineId: string;
+    body: string;
+    status: string;
+}
 export interface IStock extends IBase, IBC {
     name: string;
     image: string;
@@ -1318,6 +1323,22 @@ export interface IMMoneyGenerateQRRes {
     resultDesc: string,
     qrCode: string
 
+}
+
+export interface IMachineStatus {
+    packNo: number;                // Communication number (byte)
+    billStatus: number;            // Bill acceptor status (byte)
+    coinStatus: number;            // Coin acceptor status (byte)
+    cardStatus: number;            // Card reader status (byte)
+    tempControllerStatus: number;  // Temperature controller status (byte)
+    temperature: number;           // Temperature (byte)
+    doorStatus: number;            // Door status (byte)
+    billChange: number;            // Bill change (4 bytes as number)
+    coinChange: number;            // Coin change (4 bytes as number)
+    machineIMEI: string;           // Machine ID (10 bytes as hex string)
+    machineTemp: string;           // Machine temperature (8 bytes as hex string)
+    machineHumidity?: string;      // Machine humidity (8 bytes, optional)
+    lastUpdate?: Date
 }
 
 export interface ILaoQRGenerateQRRes {
@@ -2351,7 +2372,8 @@ export enum EEntity {
     logactivity = 'logactivity',
     Door = "Door",
     DoorPayment = "DoorPayment",
-    vendingVersion = 'vendingversion'
+    vendingVersion = 'vendingversion',
+    droplogactivity = "droplogactivity"
 }
 
 export interface ISaveMachineSaleReport {

@@ -4,7 +4,7 @@ import { v4 as uuid4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel } from '../entities/system.model';
+import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel, IMachineStatus } from '../entities/system.model';
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
@@ -446,61 +446,60 @@ export function hex2dec(hex: string) {
     }
 
 }
-export interface IMachineStatus { lastUpdate: Date, machineId: string, billStatus: string, coinStatus: string, cardStatus: string, tempconrollerStatus: string, temp: string, doorStatus: string, billChangeValue: string, coinChangeValue: string, machineIMEI: string, allMachineTemp: string }
 
-export function machineStatus(x: string): IMachineStatus {
-    let y: any;
-    let b = ''
-    // console.log('xxxxxx',x);
+// export function machineStatus(x: string): IMachineStatus {
+//     let y: any;
+//     let b = ''
+//     // console.log('xxxxxx',x);
 
-    try {
-        y = JSON.parse(x);
-        b = y.b;
-    } catch (error) {
-        //   console.log('error',error);
-        return {} as IMachineStatus;
-    }
-    // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
-    // fafb52
-    // 21 //len
-    // 54 // series
-    const billStatus = b.substring(10, 12);
-    // 00 // bill acceptor
-    const coinStatus = b.substring(12, 14);
-    // 01 // coin acceptor
-    const cardStatus = b.substring(14, 16);
-    // 00 // card reader status
-    const tempconrollerStatus = b.substring(16, 18);
-    // 00 // tem controller status
-    const temp = b.substring(18, 20);
-    // 13 // temp
-    const doorStatus = b.substring(20, 22);
-    // 00 // door 
-    const billChangeValue = b.substring(22, 30);
-    // 00000000 // bill change
-    const coinChangeValue = b.substring(30, 38);
-    // 00000000 // coin change
-    const machineIMEI = b.substring(38, 58);
-    // 30303030303030303030
-    const allMachineTemp = b.substring(58, 74);
-    // 13aaaaaaaaaaaaaa8d
-    // // fafb header
-    // // 52 command
-    // // 01 length
-    // // Communication number+ 
-    // '00'//Bill acceptor status+ 
-    // '00'//Coin acceptor status+ 
-    // '00'// Card reader status+
-    // '00'// Temperature controller status+ 
-    // '00'// Temperature+ 
-    // '00'// Door status+ 
-    // '00 00 00 00'// Bill change(4 byte)+ 
-    // '00 00 00 00'// Coin change(4 byte)+ 
-    // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
-    // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
-    // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-    return { lastUpdate: new Date(y.t), billStatus, coinStatus, cardStatus, tempconrollerStatus, temp, doorStatus, billChangeValue, coinChangeValue, machineIMEI, allMachineTemp } as IMachineStatus
-}
+//     try {
+//         y = JSON.parse(x);
+//         b = y.b;
+//     } catch (error) {
+//         //   console.log('error',error);
+//         return {} as IMachineStatus;
+//     }
+//     // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
+//     // fafb52
+//     // 21 //len
+//     // 54 // series
+//     const billStatus = b.substring(10, 12);
+//     // 00 // bill acceptor
+//     const coinStatus = b.substring(12, 14);
+//     // 01 // coin acceptor
+//     const cardStatus = b.substring(14, 16);
+//     // 00 // card reader status
+//     const tempconrollerStatus = b.substring(16, 18);
+//     // 00 // tem controller status
+//     const temp = b.substring(18, 20);
+//     // 13 // temp
+//     const doorStatus = b.substring(20, 22);
+//     // 00 // door 
+//     const billChangeValue = b.substring(22, 30);
+//     // 00000000 // bill change
+//     const coinChangeValue = b.substring(30, 38);
+//     // 00000000 // coin change
+//     const machineIMEI = b.substring(38, 58);
+//     // 30303030303030303030
+//     const allMachineTemp = b.substring(58, 74);
+//     // 13aaaaaaaaaaaaaa8d
+//     // // fafb header
+//     // // 52 command
+//     // // 01 length
+//     // // Communication number+ 
+//     // '00'//Bill acceptor status+ 
+//     // '00'//Coin acceptor status+ 
+//     // '00'// Card reader status+
+//     // '00'// Temperature controller status+ 
+//     // '00'// Temperature+ 
+//     // '00'// Door status+ 
+//     // '00 00 00 00'// Bill change(4 byte)+ 
+//     // '00 00 00 00'// Coin change(4 byte)+ 
+//     // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
+//     // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
+//     // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
+//     return { lastUpdate: new Date(y.t), billStatus, coinStatus, cardStatus, tempconrollerStatus, temp, doorStatus, billChangeValue, coinChangeValue, machineIMEI, allMachineTemp } as IMachineStatus
+// }
 export async function readMachineLockDrop(machineId: string) {
     return await redisClient.get('_machinelockdrop_' + machineId);
 }
@@ -517,7 +516,7 @@ export function writeMachinePendingStock(machineId: string, b: any) {
 
 export async function readMachineStatus(machineId: string) {
     const x = await redisClient.get('_machinestatus_' + machineId);
-    return machineStatus(x);
+    return JSON.parse(x) as { b: any, t: Date };
 }
 export function writeMachineStatus(machineId: string, b: any) {
     redisClient.set('_machinestatus_' + machineId, JSON.stringify({ b, t: new Date() }));
@@ -558,4 +557,73 @@ export function convertVersion(version: string) {
     versionText = `${s}0`;
     versionText = versionText.substring(0, versionText.length - 2);
     return versionText;
-} 
+}
+
+export function parseMachineVMCStatus(hexString: string): IMachineStatus {
+    // Remove any spaces or non-hex characters if present
+    const cleanHex = hexString.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+
+    // Minimum length check: header (4) + cmd (2) + len (2) + packNo (2) = 10 hex chars
+    if (cleanHex.length < 10) {
+        throw new Error("Packet too short");
+    }
+
+    // Verify header and command
+    if (cleanHex.substring(0, 4) !== "fafb" || cleanHex.substring(4, 6) !== "52") {
+        throw new Error("Invalid header or command");
+    }
+
+    // Extract length (1 byte, 2 hex chars)
+    const length = parseInt(cleanHex.substring(6, 8), 16);
+    const expectedDataLength = length * 2; // Length in hex chars
+    const packetEnd = 8 + expectedDataLength; // End of data before checksum
+
+    // Check if packet has enough data (including 2 chars for checksum)
+    if (cleanHex.length < packetEnd + 2) {
+        throw new Error(`Insufficient data: expected ${packetEnd + 2} chars, got ${cleanHex.length}`);
+    }
+
+    // Extract PackNO+Text (starts at offset 8)
+    const data = cleanHex.substring(8, packetEnd);
+
+    // Parse fields with bounds checking
+    const packNo = parseInt(data.substring(0, 2), 16);
+    const billStatus = parseInt(data.substring(2, 4), 16);
+    const coinStatus = parseInt(data.substring(4, 6), 16);
+    const cardStatus = parseInt(data.substring(6, 8), 16);
+    const tempControllerStatus = parseInt(data.substring(8, 10), 16);
+    const temperature = parseInt(data.substring(10, 12), 16);
+    const doorStatus = parseInt(data.substring(12, 14), 16);
+    const billChange = parseInt(data.substring(14, 22), 16) || 0; // Handle '00000000'
+    const coinChange = parseInt(data.substring(22, 30), 16) || 0; // Handle '00000000'
+    const machineIMEI = data.substring(30, 50); // 10 bytes = 20 hex chars
+
+    // Machine temperature (8 bytes = 16 hex chars)
+    let machineTemp = "";
+    let machineHumidity = undefined;
+    if (data.length >= 66) { // 50 + 16 = 66
+        machineTemp = data.substring(50, 66);
+        // Machine humidity (optional, 8 bytes = 16 hex chars)
+        if (data.length >= 82) { // 66 + 16 = 82
+            machineHumidity = data.substring(66, 82);
+        }
+    } else if (data.length >= 50) {
+        // Partial temp if truncated
+        machineTemp = data.substring(50);
+    }
+
+    return {
+        packNo,
+        billStatus,
+        coinStatus,
+        cardStatus,
+        tempControllerStatus,
+        temperature,
+        doorStatus,
+        billChange,
+        coinChange,
+        machineIMEI,
+        machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
+        machineHumidity, // Undefined if not present
+    };
+}

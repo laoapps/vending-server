@@ -21,19 +21,21 @@ import { LogActivityFactory, LogActivityStatic } from "./logactivity.entity";
 import { DoorFactory, DoorStatic } from "./doors.entity";
 import { DoorPaymentFactory, DoorPaymentStatic } from "./doorpayment.entity";
 import { VendingVersionFactory, VendingVersionStatic } from "./vendingversion.entity";
+import { DropLogActivityFactory, DropLogActivityStatic } from "./droplogactivity.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
 export let laabHashService: LAABHashService;
-export let logEntity:LogActivityStatic;
-export let bankNoteEntity:BankNoteStatic;
-export let billCashEntity:BillCashInStatic;
-export let vendingMachineSaleEntity:VendingMachineSaleStatic;
-export let stockEntity:StockStatic;
-export let vendingMachineBillEntity:VendingMachineBillStatic;
-export let machineIDEntity:MachineIDStatic;
-export let machineClientIDEntity:MachineClientIDStatic;
-export let machineIDHistoryEntity:MachineIDStatic;
+export let dropLogEntity: DropLogActivityStatic;
+export let logEntity: LogActivityStatic;
+export let bankNoteEntity: BankNoteStatic;
+export let billCashEntity: BillCashInStatic;
+export let vendingMachineSaleEntity: VendingMachineSaleStatic;
+export let stockEntity: StockStatic;
+export let vendingMachineBillEntity: VendingMachineBillStatic;
+export let machineIDEntity: MachineIDStatic;
+export let machineClientIDEntity: MachineClientIDStatic;
+export let machineIDHistoryEntity: MachineIDStatic;
 export let machineCashoutMMoneyEntity: VendingCashoutMMoneyStatic;
 export let vendingMachineSaleReportEntity: VendingMachineSaleReportStatic;
 export let adsEntity: AdsStatic;
@@ -47,7 +49,7 @@ export let epinshortcodeEntity: EPINShortCodeStatic;
 export let subadminEntity: SubadminStatic;
 
 
-export const initDB =()=>{
+export const initDB = () => {
     laabHashService = new LAABHashService();
     DoorPaymentFactory(EEntity.DoorPayment, dbConnection).sync().then(() => {
         console.log(`DoorPayment sync`);
@@ -60,6 +62,10 @@ export const initDB =()=>{
     LogActivityFactory(EEntity.logactivity, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);
         logEntity = LogActivityFactory(EEntity.logactivity, dbConnection);
+    });
+    DropLogActivityFactory(EEntity.droplogactivity, dbConnection).sync().then(() => {
+        console.log(`vending wallet sync`);
+        dropLogEntity = DropLogActivityFactory(EEntity.droplogactivity, dbConnection);
     });
     VendingVersionFactory(EEntity.vendingVersion, dbConnection).sync().then(() => {
         console.log(`vending version sync`);
@@ -90,90 +96,90 @@ export const initDB =()=>{
         vendingMachineSaleReportEntity = VendingMachineSaleReportFactory(EEntity.vendingmachinesalereport, dbConnection);
     });
 
-    bankNoteEntity = BankNoteFactory(EEntity.banknote,dbConnection); // public 
-    bankNoteEntity.sync().then(r=>{
-        console.log('bankNoteEntity synced',r);
+    bankNoteEntity = BankNoteFactory(EEntity.banknote, dbConnection); // public 
+    bankNoteEntity.sync().then(r => {
+        console.log('bankNoteEntity synced', r);
     });
 
-    billCashEntity = BillCashInFactory(EEntity.billcash+'_',dbConnection); // private for user
+    billCashEntity = BillCashInFactory(EEntity.billcash + '_', dbConnection); // private for user
 
-    vendingMachineSaleEntity = VendingMachineSaleFactory(EEntity.vendingmachinesale+'_',dbConnection);// private for shop
-    stockEntity = StockFactory(EEntity.product+'_',dbConnection);// private for shop
-    vendingMachineBillEntity = VendingMachineBillFactory(EEntity.vendingmachinebill+'_',dbConnection);// private for user
+    vendingMachineSaleEntity = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_', dbConnection);// private for shop
+    stockEntity = StockFactory(EEntity.product + '_', dbConnection);// private for shop
+    vendingMachineBillEntity = VendingMachineBillFactory(EEntity.vendingmachinebill + '_', dbConnection);// private for user
 
 
-    machineIDEntity = MachineIDFactory(EEntity.machineID,dbConnection); // public
-    machineIDEntity.sync().then(r=>{
-        console.log('machineIDEntity synced',r);
-        
+    machineIDEntity = MachineIDFactory(EEntity.machineID, dbConnection); // public
+    machineIDEntity.sync().then(r => {
+        console.log('machineIDEntity synced', r);
+
     });
 
-    machineClientIDEntity = MachineClientIDFactory(EEntity.machineclientid,dbConnection); // public
-    machineClientIDEntity.sync().then(r=>{
-        console.log('machineClientIDEntity synced',r);
-        
+    machineClientIDEntity = MachineClientIDFactory(EEntity.machineclientid, dbConnection); // public
+    machineClientIDEntity.sync().then(r => {
+        console.log('machineClientIDEntity synced', r);
+
     });
 
-    machineIDHistoryEntity = MachineIDFactory(EEntity.machineIDHistory+'_',dbConnection); // private for machine
+    machineIDHistoryEntity = MachineIDFactory(EEntity.machineIDHistory + '_', dbConnection); // private for machine
 
 
 }
 
 export const CreateDatabase = (prefix: string) => {
-    return new Promise<boolean>((resolve,reject)=>{
-       try {
-        let user = process.env.DATABASE_USER|| 'postgres',
-            password = process.env.DATABASE_PASSWORD|| '5martH67',
-            host = process.env.DATABASE_HOST ||'localhost', //0.0.0.0
-            dbname = process.env.DATABASE_DB||'dbvending',
-            port = '5432';
-        // host = process.env.DATABASE_HOST || host;
-        // port = process.env.DATABASE_PORT || port;
-        // dbname = process.env.DATABASE_DB || dbname;
-        // user = process.env.DATABASE_USER || user;
-        // password = process.env.DATABASE_PASSWORD || password;
-        console.log(host,port,dbname,user,password);
-        
-        const p = new pg.Pool({ host, user, password, database: 'postgres' });
-        p.query(`SELECT 1 FROM pg_database WHERE datname = '${dbname}'`).then(async r => {
-            // console.log("createdab;: ",r,' ::dbname:: ',dbname);
-            
-            if (r.rowCount === 0) {
-                console.log('creating db', dbname, r);
+    return new Promise<boolean>((resolve, reject) => {
+        try {
+            let user = process.env.DATABASE_USER || 'postgres',
+                password = process.env.DATABASE_PASSWORD || '5martH67',
+                host = process.env.DATABASE_HOST || 'localhost', //0.0.0.0
+                dbname = process.env.DATABASE_DB || 'dbvending',
+                port = '5432';
+            // host = process.env.DATABASE_HOST || host;
+            // port = process.env.DATABASE_PORT || port;
+            // dbname = process.env.DATABASE_DB || dbname;
+            // user = process.env.DATABASE_USER || user;
+            // password = process.env.DATABASE_PASSWORD || password;
+            console.log(host, port, dbname, user, password);
 
-                await p.query(`CREATE DATABASE ${dbname}`);
-                await p.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
-            }
-            if (!dbConnection) {
-                dbConnection = new sequelize.Sequelize(
-                    {
-                        port: Number(port),
-                        host,
-                        database: dbname,
-                        password,
-                        username: user,
-                        dialect: "postgres",
-                        pool: {
-                            min: 0,
-                            max: 5,
-                            acquire: 30000,
-                            idle: 10000,
+            const p = new pg.Pool({ host, user, password, database: 'postgres' });
+            p.query(`SELECT 1 FROM pg_database WHERE datname = '${dbname}'`).then(async r => {
+                // console.log("createdab;: ",r,' ::dbname:: ',dbname);
+
+                if (r.rowCount === 0) {
+                    console.log('creating db', dbname, r);
+
+                    await p.query(`CREATE DATABASE ${dbname}`);
+                    await p.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+                }
+                if (!dbConnection) {
+                    dbConnection = new sequelize.Sequelize(
+                        {
+                            port: Number(port),
+                            host,
+                            database: dbname,
+                            password,
+                            username: user,
+                            dialect: "postgres",
+                            pool: {
+                                min: 0,
+                                max: 5,
+                                acquire: 30000,
+                                idle: 10000,
+                            }
                         }
-                    }
-                );
-                // dbConnection.sync();
-                initDB();
-                resolve(true);
-            }
+                    );
+                    // dbConnection.sync();
+                    initDB();
+                    resolve(true);
+                }
                 else resolve(true);
-        }).catch(e => {
-            reject(e)
-        });
-    } catch (error) {
-        console.error(error);
-        reject(error)
-    } 
+            }).catch(e => {
+                reject(e)
+            });
+        } catch (error) {
+            console.error(error);
+            reject(error)
+        }
     })
-    
+
 
 }

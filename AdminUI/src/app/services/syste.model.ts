@@ -778,7 +778,7 @@ export interface IVendingMachineSale extends IBase, IBC {
     machineId: string;
     stock: IStock;
     position: number;
-    max:number;
+    max: number;
 
 }
 export interface IVendingMachineBill extends IBase, IBC {
@@ -800,7 +800,7 @@ export interface IMachineID extends IBase, IBC {
     machineIp: string;
     machineCommands: string;
     logintoken: string;
-    bill:any;
+    bill: any;
 }
 
 
@@ -815,24 +815,24 @@ export class SocketEmitter {
             cb(data);
         })
     };
-    response(data:IReqModel){
-        this.ev.emit('response',data)
+    response(data: IReqModel) {
+        this.ev.emit('response', data)
     }
     onMachineExist(cb: (data: boolean) => void) {
         this.ev.on('machineexist', (data) => {
             cb(data);
         })
     };
-    isMachineExist(b:boolean){
-        this.ev.emit('machineexist',b);
+    isMachineExist(b: boolean) {
+        this.ev.emit('machineexist', b);
     }
     onDuplicatedMachine(cb: (data: any) => void) {
         this.ev.on('dupcatedmachine', (data) => {
             cb(data);
         })
     };
-    isDuplicatedMachine(b:boolean){
-        this.ev.emit('dupcatedmachine',b);
+    isDuplicatedMachine(b: boolean) {
+        this.ev.emit('dupcatedmachine', b);
     }
 
     onAcceptMachineLogin(cb: (data: string) => void) {
@@ -840,8 +840,8 @@ export class SocketEmitter {
             cb(data);
         })
     };
-    isAcceptMachineLogin(machineId:string){
-        this.ev.emit('acceptMachineLogin',machineId);
+    isAcceptMachineLogin(machineId: string) {
+        this.ev.emit('acceptMachineLogin', machineId);
     }
 
     onMachinePing(cb: (data: string) => void) {
@@ -849,8 +849,8 @@ export class SocketEmitter {
             cb(data);
         })
     };
-    isMachinePing(machineId:string){
-        this.ev.emit('machineping',machineId);
+    isMachinePing(machineId: string) {
+        this.ev.emit('machineping', machineId);
     }
 
     onConnectionExist(cb: (data: string) => void) {
@@ -858,38 +858,51 @@ export class SocketEmitter {
             cb(data);
         })
     };
-    isConnectionExist(machineId:string){
-        this.ev.emit('connectionexist',machineId);
+    isConnectionExist(machineId: string) {
+        this.ev.emit('connectionexist', machineId);
     }
 }
 export interface IBaseClass {
 
-    close:()=>void;
+    close: () => void;
 }
 
 
 
 
 export enum EMACHINE_COMMAND {
-  login = 'login',
-  ping = 'ping',
-  status = 'status',
-  confirm = "confirm",
-  note_credit = "note_credit",
-  CREDIT_NOTE = "CREDIT_NOTE",
-  READ_NOTE = "READ_NOTE",
-  REJECT_BANKNOTE = "REJECT_BANKNOTE",
-  JAMMED = "JAMMED",
-  start = "start",
-  ENABLE = "ENABLE",
-  DISABLE = "DISABLE",
-  stop = "stop",
-  setcounter = "setcounter",
-  NOTE_REJECTED = "NOTE_REJECTED",
-  adminlogin = "adminlogin"
+    login = 'login',
+    ping = 'ping',
+    status = 'status',
+    confirm = "confirm",
+    note_credit = "note_credit",
+    CREDIT_NOTE = "CREDIT_NOTE",
+    READ_NOTE = "READ_NOTE",
+    REJECT_BANKNOTE = "REJECT_BANKNOTE",
+    JAMMED = "JAMMED",
+    start = "start",
+    ENABLE = "ENABLE",
+    DISABLE = "DISABLE",
+    stop = "stop",
+    setcounter = "setcounter",
+    NOTE_REJECTED = "NOTE_REJECTED",
+    adminlogin = "adminlogin"
 }
-export interface IMachineStatus{lastUpdate:Date,billStatus:string,coinStatus:string,cardStatus:string,tempconrollerStatus:string,temp:string,doorStatus:string,billChangeValue:string,coinChangeValue:string,machineIMEI:string,allMachineTemp:string}
-
+export interface IMachineStatus {
+    packNo: number;                // Communication number (byte)
+    billStatus: number;            // Bill acceptor status (byte)
+    coinStatus: number;            // Coin acceptor status (byte)
+    cardStatus: number;            // Card reader status (byte)
+    tempControllerStatus: number;  // Temperature controller status (byte)
+    temperature: number;           // Temperature (byte)
+    doorStatus: number;            // Door status (byte)
+    billChange: number;            // Bill change (4 bytes as number)
+    coinChange: number;            // Coin change (4 bytes as number)
+    machineIMEI: string;           // Machine ID (10 bytes as hex string)
+    machineTemp: string;           // Machine temperature (8 bytes as hex string)
+    machineHumidity?: string;      // Machine humidity (8 bytes, optional)
+    lastUpdate?: Date
+}
 export interface IMachineClientID extends IBase {
     otp: string;
     machineId: string;
@@ -992,39 +1005,39 @@ export interface IMMoneyRequestRes {
 
 
 
-export interface IMachineID extends IBase,IBC {
-    machineId:string;
-    machineIp:string;
-    machineCommands:string;
-    logintoken:string;
-  }
+export interface IMachineID extends IBase, IBC {
+    machineId: string;
+    machineIp: string;
+    machineCommands: string;
+    logintoken: string;
+}
 
-  
+
 //   export interface IMachineClientID{
 //     otp:string;
 //     machineId:string;
 //   }
 
-  export interface IMachineId{
-    machineId:string;
-    otp:string;
-  }
-  
-  export interface IAlive{
-    time:Date
-    isAlive:boolean;
-    test:boolean;
-    balance:number;
-    data:any;
-  }
-  
-  export interface IClientId{
-    clientId:string;
-  }
-  export interface IBillProcess{
-    bill:IVendingMachineBill,
-    position:any
-  }
+export interface IMachineId {
+    machineId: string;
+    otp: string;
+}
+
+export interface IAlive {
+    time: Date
+    isAlive: boolean;
+    test: boolean;
+    balance: number;
+    data: any;
+}
+
+export interface IClientId {
+    clientId: string;
+}
+export interface IBillProcess {
+    bill: IVendingMachineBill,
+    position: any
+}
 
 
 

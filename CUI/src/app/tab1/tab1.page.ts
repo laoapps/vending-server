@@ -104,7 +104,7 @@ export class Tab1Page implements OnDestroy {
 
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
 
-  selectedDevice = localStorage.getItem('device')||'';
+  selectedDevice = localStorage.getItem('device') || '';
 
   portName = localStorage.getItem('portName') || '/dev/ttyS0';
   baudRate = localStorage.getItem('baudRate') || 9600;
@@ -759,8 +759,8 @@ export class Tab1Page implements OnDestroy {
 
 
   async connect() {
-    if(!this.selectedDevice) return Toast.show({text:'Please select setting',duration:'long'});
-    Toast.show({ text: 'Prepare a connection to '+this.selectedDevice });
+    if (!this.selectedDevice) return Toast.show({ text: 'Please select setting', duration: 'long' });
+    Toast.show({ text: 'Prepare a connection to ' + this.selectedDevice });
     if (this.connecting) {
       return Toast.show({ text: 'Connecting' });
     }
@@ -798,8 +798,8 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: 'Please select device' })
     }
     this.connecting = false;
-    if(this.serial)
-    this.apiService.serialPort = this.serial;
+    if (this.serial)
+      this.apiService.serialPort = this.serial;
   }
   // VMC only
   async Enable() {
@@ -859,7 +859,7 @@ export class Tab1Page implements OnDestroy {
           // this.addLogMessage(`Error processing event: ${error.message}`);
         }
       });
-    
+
 
       Toast.show({ text: 'VMC Cashin', duration: 'long' });
       console.log('VMC Cashin');
@@ -909,16 +909,16 @@ export class Tab1Page implements OnDestroy {
       console.log('starting ZDM8');
       this.serial = await this.vendingIndex.initZDM8(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
       if (!this.serial) {
-        Toast.show({ text: 'serial not init '+this.selectedDevice });
+        Toast.show({ text: 'serial not init ' + this.selectedDevice });
       } else {
         this.serial.getSerialEvents().subscribe(event => {
           try {
             console.log('zdm8 service event received: ' + JSON.stringify(event));
             if (event.event === 'dataReceived') {
               const rawData = event.data; // Assuming event.data contains the raw hex string
-  
+
               console.log('zdm service Received from device:', rawData);
-              const d = typeof rawData ==='object'?JSON.stringify(rawData):rawData;
+              const d = typeof rawData === 'object' ? JSON.stringify(rawData) : rawData;
               Toast.show({ text: 'zdm service Received from device: ' + rawData, duration: 'long' });
               // Process the Modbus response
               // const response = this.zdm8Service.processModbusResponse(rawData);
@@ -933,7 +933,7 @@ export class Tab1Page implements OnDestroy {
             // this.addLogMessage(`Error processing event: ${error.message}`);
           }
         });
-        Toast.show({ text: 'serial initialized succeeded '+this.selectedDevice });
+        Toast.show({ text: 'serial initialized succeeded ' + this.selectedDevice });
       }
       this.vlog.log = this.serial.log;
     } catch (error) {
@@ -1115,8 +1115,8 @@ export class Tab1Page implements OnDestroy {
       // console.log('******machine status:', resultStatus);
 
       this.machinestatus.data = hex;
-      const m = machineVMCStatus(hex);
-      this.sock.send(JSON.stringify(m), t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
+      // const m = machineVMCStatus(hex);
+      this.sock.send(hex, t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
       // this.apiService.alert.create({
       //   header: 'Machine Status',
       //   message: JSON.stringify(resultStatus),
@@ -2667,7 +2667,7 @@ export class Tab1Page implements OnDestroy {
       if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
 
       const xp = prompt('password1');
-      if (xp + '' == '1234567890_5martH67_laoapps'||true) {
+      if (xp + '' == '1234567890_5martH67_laoapps') {
         console.log('xp', xp);
         this.serial.close();
         this.apiService.modal.create({
