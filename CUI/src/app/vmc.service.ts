@@ -73,7 +73,7 @@ export class VmcService implements ISerialService {
       // create API TO ACCEPT THIS 
       try {
 
-        this.apiservice.updateStatus({ data: b, transactionID: t, command: c }).then(r => {
+        this.apiservice.updateStatus({ data: b, transactionID: t, command: c }).subscribe(r => {
           console.log('vmc service send response', r);
           if (r.command === EMACHINE_COMMAND.CREDIT_NOTE) {
             if (r.transactionID) {
@@ -92,9 +92,7 @@ export class VmcService implements ISerialService {
           } else {
             console.log('update machine Status', r);
           }
-        }).catch(e => {
-          console.log('vmc service send error', e);
-        });
+        })
       } catch (error) {
         console.log('vmc service send error', error);
       }
@@ -121,7 +119,7 @@ export class VmcService implements ISerialService {
       try {
         switch (command) {
           case EMACHINE_COMMAND.shippingcontrol:
-            await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot: params?.slot || 1, dropSensor: params.dropSensor || 0 });
+            await this.serialService.writeVMC(EVMC_COMMAND.SHIPPING_CONTROL, { slot: params?.slot || 1, dropSensor: params.dropSensor || 1 });
             resolve({ command, data: params, message: 'Command queued', status: 1, transactionID });
             break;
           case EMACHINE_COMMAND.SYNC:
@@ -290,7 +288,7 @@ export class VmcService implements ISerialService {
       resolve();
     });
   }
-  public shipItem(slot = 1, dropSensor = 0) {
+  public shipItem(slot = 1, dropSensor = 1) {
     return new Promise<void>(async (resolve, reject) => {
       this.setting.allowCashIn = false;
       this.enable = false;

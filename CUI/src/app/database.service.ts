@@ -12,11 +12,14 @@ export class DatabaseService {
   constructor() {
     this.initializeDatabase();
   }
-
+  public getReady() {
+    return this.db;
+  }
   // Initialize the database and create the table
-  private async initializeDatabase() {
+  public async initializeDatabase() {
+
     try {
-      this.db = await this.sqlite.createConnection(this.dbName, false, 'no-encryption', 1,false);
+      this.db = await this.sqlite.createConnection(this.dbName, false, 'no-encryption', 1, false);
       await this.db.open();
 
       // Create the items table with id as auto-incrementing primary key
@@ -37,7 +40,7 @@ export class DatabaseService {
   }
 
   // Create a new item (no need to provide id)
-  async createItem(name: string, data: object,transactionID:string, description: string): Promise<number> {
+  async createItem(name: string, data: object, transactionID: string, description: string): Promise<number> {
     try {
       const jsonData = JSON.stringify(data); // Convert object to JSON string
       const query = `INSERT INTO items (name, data,transactionID, description) VALUES (?, ?, ?);`;
@@ -47,7 +50,7 @@ export class DatabaseService {
       });
     } catch (e) {
       console.error('Error creating item:', e);
-     return new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         reject(e);
       }
       );
@@ -58,6 +61,7 @@ export class DatabaseService {
   async getItems(): Promise<any[]> {
     try {
       const query = `SELECT * FROM items;`;
+      console.log('Executing query:', this.db);
       const result = await this.db!.query(query);
       return new Promise((resolve, reject) => {
         resolve((result.values || []).map(item => ({
@@ -75,7 +79,7 @@ export class DatabaseService {
       });
     }
   }
-      
+
 
   // Read a single item by ID
   async getItemById(id: number): Promise<any> {
@@ -107,11 +111,11 @@ export class DatabaseService {
   }
 
   // Update an item by ID
-  async updateItem(id: number, name: string, data: object,transactionID, description: string): Promise<boolean> {
+  async updateItem(id: number, name: string, data: object, transactionID, description: string): Promise<boolean> {
     try {
       const jsonData = JSON.stringify(data); // Convert object to JSON string
       const query = `UPDATE items SET name = ?, data = ?,transactionID = ?, description = ? WHERE id = ?;`;
-      const result = await this.db!.run(query, [name, jsonData,transactionID, description, id]);
+      const result = await this.db!.run(query, [name, jsonData, transactionID, description, id]);
       return new Promise((resolve, reject) => {
         resolve(result.changes?.changes! > 0);
       });
@@ -143,7 +147,7 @@ export class DatabaseService {
   async closeDatabase() {
     if (this.db) {
       await this.db.close();
-      await this.sqlite.closeConnection(this.dbName,false);
+      await this.sqlite.closeConnection(this.dbName, false);
       this.db = null;
       console.log('Database closed');
     }

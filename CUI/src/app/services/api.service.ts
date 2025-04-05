@@ -251,6 +251,7 @@ export class ApiService {
   currentPaymentProvider = EPaymentProvider.mmoney;
 
 
+
   machineId = {} as IMachineId;
 
   clientId = {} as IClientId;
@@ -1795,22 +1796,22 @@ export class ApiService {
     this.___OrderPaidPage?.dismiss();
     this.___AutoPaymentPage?.dismiss();
   }
-  async updateStatus(data: any) {
-    return new Promise<IResModel>((resolve, reject) => {
-      const req = {} as IReqModel;
-      req.command = data.command || EClientCommand.MACHINE_STATAUS;
-      req.data = data.data;
-      req.transactionID = data.transactionID;
-      req.ip;
-      req.time = new Date().toString();
-      req.token = cryptojs
-        .SHA256(this.machineId.machineId + this.machineId.otp)
-        .toString(cryptojs.enc.Hex);
-      // req.data.clientId = this.clientId.clientId;
-      console.log(`req der`, req);
-      return this.http.post<IResModel>(this.url + '/updateStatus', req, {
-        headers: this.headerBase(),
-      });
+  updateStatus(data: any) {
+    const req = {} as IReqModel;
+    req.command = data.command || EClientCommand.MACHINE_STATAUS;
+    req.data = data.data;
+    req.transactionID = data.transactionID;
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+    console.log('machine id token', this.machineId, req.token)
+    // req.data.clientId = this.clientId.clientId;
+    const url = this.url + '/updateStatus';
+    console.log(url + ` req der ` + JSON.stringify(req));
+    return this.http.post<IResModel>(url, req, {
+      headers: this.headerBase(),
     });
   }
 

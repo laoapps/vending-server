@@ -128,7 +128,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
     try {
       if (this.serial) {
-        const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '0') || 0;
+        const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '1') || 1;
         const param = { slot: position, dropSensor };
         const device = localStorage.getItem('device') || 'VMC';
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102') {

@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   url: 'https://tvending.khamvong.com/zdm8',
-  serverUrl: 'https://vendingserviceapi.laoapps.com',
+  serverUrl: 'https://tvending.khamvong.com',
   wsurl: 'ws://tvending.khamvong.com/zdm8',
   testVending: 'http://localhost:30777/vending/api/',
   vending: 'http://localhost:9006',

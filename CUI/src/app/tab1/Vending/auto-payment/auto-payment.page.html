@@ -74,7 +74,7 @@
           </div>
 
           <div class="title" *ngIf="isPayment == true" style="margin-top: 20px;color: red;">
-            *ກໍລະນີຈ່າຍເງິນແລ້ວບໍ່ໄດ້ເຄື່ອງ</div>
+            *ກໍລະນີຈ່າຍເງິນແລ້ວບໍ່ໄດ້ເຄື່ອງ (ຫຼືລໍຖ້າ 30 ວິນາທີ)</div>
           <div class="item-list" *ngIf="isPayment == true">
             <a *ngFor="let list of paymentCheck; let i = index" (click)="checkCallbackMMoney()"
               href="javascript:void(0)" class="item active">
@@ -109,7 +109,9 @@
               <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
             </div>
             <div class="bill-header">
-              <img src="" alt="" id="qr-img" class="qr-img">
+              <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
+                class="qr-img">
+              <div *ngIf="isPayment == false" class="loader"></div>
 
               <div class="total">{{ parseGetTotalSale.t | number }}</div>
               <div *ngIf="isPayment == true"

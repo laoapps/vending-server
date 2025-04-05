@@ -1037,7 +1037,8 @@ export enum EMessage {
     doorExist = "doorExist",
     BillCreatedTemp = "--_",
     LaoQRNotPaid = "LaoQRNotPaid",
-    machineisdisabled = "machineisdisabled"
+    machineisdisabled = "machineisdisabled",
+    machineNotExist = "machineNotExist"
 }
 export interface IBase {
     id?: number;

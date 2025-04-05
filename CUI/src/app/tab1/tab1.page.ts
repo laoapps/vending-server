@@ -245,43 +245,56 @@ export class Tab1Page implements OnDestroy {
   refreshAllCounter: number = 0;
   firstCredit: boolean = true;
 
-  sock = {
-    send: (b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) => {
-      console.log('vmc service send', b, t, c);
-      // API TO SEND TO SERVER 
-      // create API TO ACCEPT THIS 
-      try {
+  queues = new Array<{ data: any, command: string }>();
 
-        this.apiService.updateStatus({ data: b, transactionID: t, command: c }).then(r => {
+  sendStatus(b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) {
+    console.log('machine send', b, t, c);
+    // Toast.show({ text: 'machine send' + b + ' ' + t + ' ' + c, duration: 'long' });
+    // API TO SEND TO SERVER 
+    // create API TO ACCEPT THIS 
+    if (this.queues.find(v => v.command == c && v.data == b)) {
+      console.log('Already in queue');
+      return;
+    }
+    this.queues.push({ data: b, command: c });
+    try {
+      const timeOut = this.queues.length;
+      const that = this;
+      setTimeout(() => {
+        that.apiService.updateStatus({ data: b, transactionID: t, command: c }).subscribe(r => {
+          that.queues.shift();
+          console.log('QUEUES', that.queues);
           console.log('vmc service send response', r);
+          // Toast.show({ text: 'Machine send response' + JSON.stringify(r), duration: 'long' });
           if (r.command === EMACHINE_COMMAND.CREDIT_NOTE) {
             if (r.transactionID) {
-              const x = this.creditPending.find(v => v.transactionID === r.transactionID);
+              const x = that.creditPending.find(v => v.transactionID === r.transactionID);
               if (x) {
-                this.deleteCredit(x.id);
-                this.creditPending = this.creditPending.filter(v => v.transactionID !== r.transactionID);
+                that.deleteCredit(x.id);
+                that.creditPending = that.creditPending.filter(v => v.transactionID !== r.transactionID);
+                // Toast.show({ text: 'Delete credit' + JSON.stringify(x), duration: 'long' });
               }
+              // Toast.show({ text: 'Machine send response su' + JSON.stringify(r), duration: 'long' });
             } else {
               console.log('vmc service send response falied and retry', r);
               setTimeout(() => {
-                this.sock.send(b, t
+                that.sendStatus(b, t
                   , c);
               }, 5000);
+              // Toast.show({ text: 'Machine send response falied and retry' + JSON.stringify(r), duration: 'long' });
             }
           } else {
             console.log('update machine Status', r);
           }
-        }).catch(e => {
-          console.log('vmc service send error', e);
-        });
-      } catch (error) {
-        console.log('vmc service send error', error);
-      }
+        })
+      }, 1000 * timeOut);
 
-    },
-    machineId: '',
-    otp: ''
-  };
+    } catch (error) {
+      console.log('vmc service send error', error);
+    }
+
+  }
+
 
   allowCashIn = false;
   light = { start: 3, end: 2 };;
@@ -318,7 +331,9 @@ export class Tab1Page implements OnDestroy {
     }
     return await this.loadCredits();
   }
-
+  sendStatusTest() {
+    this.sendStatus('fafb522123000000000f000000000000000000303030303030303030300faaaaaaaaaaaaaafb', 1, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
+  }
 
   async showModal(component: any, d: any = {}, cssClass: string = '') {
     try {
@@ -714,6 +729,43 @@ export class Tab1Page implements OnDestroy {
 
 
     });
+    if (this.dbService.getReady()) {
+      this.loadCredits().then(r => {
+        this.creditPending.push(...r);
+        this.creditPending.forEach((v, index) => {
+          if (v.transactionID) {
+            setTimeout(() => {
+              this.sendStatus(v.data.data, Number(v.data.transactionID), v.data.command);
+            }, 1000 * index);
+          }
+        });
+        console.log('CREDIT PENDING', this.creditPending);
+      });
+    } else {
+      this.dbService.initializeDatabase().then(r => {
+        console.log('Database initialized', r);
+        // id: item.id,
+        // name: item.name,
+        // data: JSON.parse(item.data), // Parse JSON back to object
+        // transactionID: item.transactionID,
+        // description: item.description,
+        this.loadCredits().then(r => {
+          this.creditPending.push(...r);
+          this.creditPending.forEach((v, index) => {
+            if (v.transactionID) {
+              setTimeout(() => {
+                this.sendStatus(v.data.data, Number(v.data.transactionID), v.data.command);
+              }, 1000 * index);
+            }
+          });
+          console.log('CREDIT PENDING', this.creditPending);
+        });
+      }).catch(e => {
+        console.log('Error init database', e);
+      })
+    }
+
+
   }
 
   ngOnDestroy(): void {
@@ -886,7 +938,7 @@ export class Tab1Page implements OnDestroy {
     // console.log('=====> testDrop', slot);
 
     if (this.serial) {
-      const param = { slot: slot, dropSensor: 0 };
+      const param = { slot: slot, dropSensor: 1 };
       this.vendingIndex.vmc.shipItem(param.slot, param.dropSensor).then(async (r) => {
         console.log('shippingcontrol', r);
         // this.val = r?.data?.x;
@@ -1011,9 +1063,9 @@ export class Tab1Page implements OnDestroy {
       const t = Number('-21' + moment.now());
       console.log('Dispensing status:', hex);
       //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
-      if (hex.substring(10, 12) == '01') { console.log('Dispensing'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSE) }
-      if (hex.substring(10, 12) == '02') { console.log('Dispensed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSED) }
-      if (hex.substring(10, 12) == '03') { console.log('Drop failed'); this.sock.send(hex, t, EMACHINE_COMMAND.VMC_DISPENSEFAILED) }
+      if (hex.substring(10, 12) == '01') { console.log('Dispensing'); this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_DISPENSE); Toast.show({ text: 'Dispensing' }); }
+      if (hex.substring(10, 12) == '02') { console.log('Dispensed'); this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_DISPENSED); Toast.show({ text: 'Dispensed' }); }
+      if (hex.substring(10, 12) == '03') { console.log('Drop failed'); this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_DISPENSEFAILED); Toast.show({ text: 'Drop failed' }); }
 
       // FA FB 04 04 A3 01 00 3C 9F ==> 3C is 60 slot sent command, 01 = status processing
       // FA FB 04 04 A4 02 00 3C 9B ==> 3C is 60 slot sent command, 02 = status dispensed
@@ -1036,7 +1088,7 @@ export class Tab1Page implements OnDestroy {
 
           this.apiService.updateNewLocalBalance(value + '');
         } else {
-          const hash = cryptojs.SHA256(this.sock.machineId + value).toString(cryptojs.enc.Hex);
+          const hash = cryptojs.SHA256(this.machineId.machineId + value).toString(cryptojs.enc.Hex);
           const credit: ICreditData = {
             id: -1,
             name: 'credit',
@@ -1056,7 +1108,7 @@ export class Tab1Page implements OnDestroy {
             return;
           } else {
             /// send to server and need to confirm from server
-            this.sock.send(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
+            this.sendStatus(hash, t, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
           }
         }
 
@@ -1087,6 +1139,8 @@ export class Tab1Page implements OnDestroy {
         // this.sock.send(hash, t, EMACHINE_COMMAND.CREDIT_NOTE);
       } else if (mode == '08') {//fafb21068308000186a08a
         //bank note swollen
+        Toast.show({ text: 'Banknote swollen' });
+        this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_BANK_SWALLOWED);
       }
     } else if (hex.startsWith('fafb23')) {
       console.log('receive banknotes 23-----------------------------------------------------------------------------', hex);
@@ -1116,7 +1170,7 @@ export class Tab1Page implements OnDestroy {
 
       this.machinestatus.data = hex;
       // const m = machineVMCStatus(hex);
-      this.sock.send(hex, t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
+      this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
       // this.apiService.alert.create({
       //   header: 'Machine Status',
       //   message: JSON.stringify(resultStatus),
@@ -1126,7 +1180,7 @@ export class Tab1Page implements OnDestroy {
       // this._machineStatus = resultStatus;
 
     } else {
-      this.sock.send(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
+      this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
       console.log('Unhandled response:', hex);
     }
   }

@@ -122,7 +122,7 @@ export class RemainingbilllocalPage implements OnInit {
 
     try {
       if (this.serial) {
-        const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '0') || 0;
+        const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '1') || 1;
 
         const param = { slot: position, dropSensor: dropSensor };
 

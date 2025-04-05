@@ -127,6 +127,7 @@ import { MmoneyTransferValidationFunc } from "../laab_service/controllers/vendin
 import { IVendingWalletType } from "../laab_service/models/base.model";
 import { log } from "console";
 import { channel } from "diagnostics_channel";
+import { LogActivity } from "../entities/logactivity.entity";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -201,7 +202,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     checkMachineIdToken(req: Request, res: Response, next: NextFunction) {
         const { token } = req.body;
-        res.locals["machineId"] = this.ssocket.findMachineIdToken(token);
+        res.locals["machineId"] = this.findMachineIdToken(token);
         if (!res.locals["machineId"]) {
             return res.send(PrintError("MachineNotFound", [], EMessage.error, null));
         } else next();
@@ -354,7 +355,7 @@ export class InventoryZDM8 implements IBaseClass {
                         try {
                             const { token, transactionID } = d.data;
                             const machineId =
-                                this.ssocket.findMachineIdToken(token)?.machineId;
+                                this.findMachineIdToken(token)?.machineId;
                             if (!machineId) throw new Error("machine is not exit");
                             this.getBillProcess(machineId, (b) => {
                                 const position = b.find(
@@ -408,7 +409,7 @@ export class InventoryZDM8 implements IBaseClass {
                         else if (d.command == EClientCommand.list) {
                             const m = await machineClientIDEntity.findOne({
                                 where: {
-                                    machineId: this.ssocket.findMachineIdToken(d.token)
+                                    machineId: this.findMachineIdToken(d.token)
                                         ?.machineId,
                                 },
                             });
@@ -430,7 +431,7 @@ export class InventoryZDM8 implements IBaseClass {
                         } else if (d.command == EClientCommand.buyMMoney) {
                             console.log(" buyMMoney" + d.data.value);
                             const sale = d.data.ids as Array<IVendingMachineSale>; // item id
-                            const machineId = this.ssocket.findMachineIdToken(d.token);
+                            const machineId = this.findMachineIdToken(d.token);
                             // const position = d.data.position;
                             if (!machineId) throw new Error("Invalid token");
                             console.log(" passed token", machineId);
@@ -514,7 +515,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             const m = await machineClientIDEntity.findOne({
                                 where: {
-                                    machineId: this.ssocket.findMachineIdToken(d.token)
+                                    machineId: this.findMachineIdToken(d.token)
                                         ?.machineId,
                                 },
                             });
@@ -534,7 +535,7 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log("=====>buyLAOQR" + JSON.stringify(d.data));
 
                             const sale = d.data.ids as Array<IVendingMachineSale>; // item id
-                            const machineId = this.ssocket.findMachineIdToken(d.token);
+                            const machineId = this.findMachineIdToken(d.token);
                             console.log('machineId', machineId);
 
                             // const position = d.data.position;
@@ -647,7 +648,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             const m = await machineClientIDEntity.findOne({
                                 where: {
-                                    machineId: this.ssocket.findMachineIdToken(d.token)
+                                    machineId: this.findMachineIdToken(d.token)
                                         ?.machineId,
                                 },
                             });
@@ -682,19 +683,29 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
             router.post(this.path + "/updateStatus", async (req, res) => {
+                console.log('updateStatus', req.body);
                 const d = req.body as IReqModel;
+                console.log(d.command, EClientCommand.VMC_MACHINE_STATUS, d.command == EClientCommand.VMC_MACHINE_STATUS)
+
                 try {
-                    const { token, transactionID, data } = d.data;
+                    const { token, transactionID, data } = d;
+
                     const machineId =
                         this.findMachineIdToken(token)?.machineId;
+                    console.log('token', token, 'machineId', machineId, machineId);
+                    if (!machineId) throw new Error("Invalid token");
                     const m = await machineClientIDEntity.findOne({
                         where: {
                             machineId: this.findMachineIdToken(d.token)
                                 ?.machineId,
                         },
                     });
+                    if (!m) throw new Error(EMessage.machineNotExist);
+
+
                     if (d.command == EClientCommand.VMC_CREDIT_NOTE) {
                         this.creditMachineVMC(machineId, m.ownerUuid, transactionID, data, res).then(r => {
+                            console.log('CREDIT NOTE', r);
                             res.send(
                                 PrintSucceeded(
                                     d.command,
@@ -715,7 +726,7 @@ export class InventoryZDM8 implements IBaseClass {
                             mstatus.lastUpdate = new Date();
 
                         writeMachineStatus(machineId, mstatus);
-                        console.log('VMC_MACHINE_STATUS', data);
+                        console.log('VMC_MACHINE_STATUS', mstatus);
 
                         res.send(
                             PrintSucceeded(
@@ -732,9 +743,9 @@ export class InventoryZDM8 implements IBaseClass {
                         //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
                         const hex = data + '';
                         const slot = parseInt(hex.substring(hex.length - 4, hex.length - 2), 16);
-                        if (data.substring(10, 12) == '01') { console.log('Dispensing'); await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensing`, status: EClientCommand.VMC_DISPENSE }) }
-                        if (data.substring(10, 12) == '02') { console.log('Dispensed'); await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensed`, status: EClientCommand.VMC_DISPENSED }) }
-                        if (data.substring(10, 12) == '03') { console.log('Drop failed'); await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensefailed`, status: EClientCommand.VMC_DISPENSEFAILED }) }
+                        if (data.substring(10, 12) == '01') { console.log('Dispensing', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensing`, status: EClientCommand.VMC_DISPENSE })) }
+                        if (data.substring(10, 12) == '02') { console.log('Dispensed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensed`, status: EClientCommand.VMC_DISPENSED })) }
+                        if (data.substring(10, 12) == '03') { console.log('Drop failed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensefailed`, status: EClientCommand.VMC_DISPENSEFAILED })) }
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -764,7 +775,8 @@ export class InventoryZDM8 implements IBaseClass {
                         let mstatus = {} as IMachineStatus;
                         if (!data)
                             mstatus.lastUpdate = new Date();
-                        writeMachineStatus(machineId, data);
+                        mstatus.temperature = data?.temperature;
+                        writeMachineStatus(machineId, mstatus);
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -775,6 +787,11 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                     }
                     else {
+                        await LogActivity.create({
+                            url: machineId,
+                            body: `updateStatus ${d.command} ${data}`,
+                            error: data
+                        })
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -785,6 +802,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                     }
                 } catch (error) {
+                    console.log('updateStatus error', error);
                     res.send(PrintError("updateStatus", error, EMessage.error, returnLog(req, res, true)));
                 }
 
@@ -1320,7 +1338,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(
                         PrintSucceeded(
                             "init",
-                            this.ssocket.listOnlineMachines(),
+                            this.listOnlineMachines(),
                             EMessage.succeeded
                             , returnLog(req, res)
                         )
@@ -3120,6 +3138,18 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
+    listOnlineMachines(): any {
+        return this.wsClient.map((v) => {
+            return this.findMachineId(v['machineId']);  // v['machineId']
+        })
+    }
+    findOnlneMachine(machineId: string): any {
+        return this.wsClient.find((v) => {
+            if (machineId == v['machineId']) {
+                return this.findMachineId(v['machineId']);
+            } // v['machineId']
+        })
+    }
     authorizeSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             console.log('authorizeSuperAdmin');
@@ -3607,7 +3637,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                 console.log(`TEST DER -->`, 5);
 
-                let machineId = this.ssocket.findMachineIdToken(d.token);
+                let machineId = this.findMachineIdToken(d.token);
                 if (!machineId) throw new Error("machine is not exit");
 
                 console.log(`TEST DER -->`, 6);
@@ -3625,7 +3655,7 @@ export class InventoryZDM8 implements IBaseClass {
                 res.status = 1;
                 console.log(
                     "creditMachine WS online machine",
-                    that.ssocket.listOnlineMachines()
+                    that.listOnlineMachines()
                 );
 
                 console.log(`TEST DER -->`, 8);
@@ -3636,7 +3666,7 @@ export class InventoryZDM8 implements IBaseClass {
                 console.log(`TEST DER -->`, 9);
 
 
-                const sock = that.ssocket.findOnlneMachine(machineId.machineId);
+                const sock = that.findOnlneMachine(machineId.machineId);
                 if (!sock) throw new Error("machine is not online");
 
                 console.log(`TEST DER -->`, 10);
@@ -3654,7 +3684,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     // start Cash In MMoney
                     // ##here
-                    const machineId = this.ssocket.findMachineIdToken(d.token);
+                    const machineId = this.findMachineIdToken(d.token);
                     if (!machineId) throw new Error("Invalid token");
 
                     console.log(`TEST DER -->`, 13);
@@ -3866,7 +3896,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             const that = this;
             // find in redis
-            let machineId = this.ssocket.findMachineIdToken(d.token);
+            let machineId = this.findMachineIdToken(d.token);
             let ack = await readACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
 
             if (ack != 'yes') {
@@ -3897,7 +3927,7 @@ export class InventoryZDM8 implements IBaseClass {
             res.status = 1;
             console.log(
                 "creditMachine WS online machine",
-                that.ssocket.listOnlineMachines()
+                that.listOnlineMachines()
             );
 
             console.log('FOUND ACK EXIST TRANSACTIONID', ack, d.transactionID);
@@ -3939,7 +3969,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // const limiter = await readMachineLimiter(machineId.machineId);
                     this.updateBillCash(bsi, machineId.machineId, d.transactionID);
                     await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
-                    that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
+                    // that.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
                     ws?.send(
                         JSON.stringify(
                             PrintSucceeded(d.command, res, EMessage.succeeded, null)
@@ -3953,7 +3983,7 @@ export class InventoryZDM8 implements IBaseClass {
             } else {
                 // create new bill for new credit
                 if (!machineId) throw new Error("machine is not exist");
-                const sock = that.ssocket.findOnlneMachine(machineId.machineId);
+                const sock = that.findOnlneMachine(machineId.machineId);
                 if (!sock) throw new Error("machine is not online");
                 // that.ssocket.terminateByClientClose(machineId.machineId)
                 const hashnotes = this.initHashBankNotes(machineId.machineId);
@@ -4024,7 +4054,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const balance = await readMerchantLimiterBalance(machineId.ownerUuid);
                                 // const limiter = await readMachineLimiter(machineId.machineId);
 
-                                that.ssocket.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
+                                // that.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
                                 ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
@@ -4080,193 +4110,193 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<Array<IMachineClientID>>((resolve, reject) => {
             this.machineClientlist.sync().then((r) => {
                 this.machineClientlist.findAll({ attributes: { exclude: ['photo'] } }).then((rx) => {
-                    this.ssocket.initMachineId(rx);
+                    this.initMachineId(rx);
                     this.InitBillPaid(rx);
                 });
             });
 
             const that = this;
-            this.ssocket.onMachineCredit((d: IReqModel) => {
-                that.creditMachine(d);
-            });
+            // this.onMachineCredit((d: IReqModel) => {
+            //     that.creditMachine(d);
+            // });
 
 
 
-            this.ssocket.onMachineResponse((re: IReqModel) => {
-                const machineId = this.ssocket.findMachineIdToken(re.token);
+            // this.ssocket.onMachineResponse((re: IReqModel) => {
+            //     const machineId = this.ssocket.findMachineIdToken(re.token);
 
 
-                if (re.transactionID == -52) {
+            //     if (re.transactionID == -52) {
 
-                    writeMachineStatus(machineId.machineId, re.data);
-                    const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                    const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
-                    // console.log('ws', 'wsAdmin', machineId);
+            //         writeMachineStatus(machineId.machineId, re.data);
+            //         const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
+            //         const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
+            //         // console.log('ws', 'wsAdmin', machineId);
 
-                    // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
-                    if (ws) {
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        resx.transactionID = re.transactionID + '';
-                        // save to redis
-                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        // console.log('writeMachineStatus', machineId.machineId, re.data);
-
-
-                        // send to machine client
-                        this.sendWSToMachine(machineId.machineId, resx);
-                        logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
-
-                        // this.sendWS(ws['clientId'], resx);
-                    }
-                    if (wsAdmins) {
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        resx.transactionID = re.transactionID + '';
-                        // save to redis
-                        // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
-                        // console.log('writeMachineStatus', machineId.machineId, re.data);
-                        // send to machine client
-                        this.sendWSMyMachine(machineId.machineId, resx);
-                        logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
-                    }
-                    // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
-                    // fafb52
-                    // 21 //len
-                    // 54 // series
-                    // 00 // bill acceptor
-                    // 01 // coin acceptor
-                    // 00 // card reader status
-                    // 00 // tem controller status
-                    // 13 // temp
-                    // 00 // door 
-                    // 00000000 // bill change
-                    // 00000000 // coin change
-                    // 30303030303030303030
-                    // 13aaaaaaaaaaaaaa8d
-                    // // fafb header
-                    // // 52 command
-                    // // 01 length
-                    // // Communication number+ 
-                    // '00'//Bill acceptor status+ 
-                    // '00'//Coin acceptor status+ 
-                    // '00'// Card reader status+
-                    // '00'// Temperature controller status+ 
-                    // '00'// Temperature+ 
-                    // '00'// Door status+ 
-                    // '00 00 00 00'// Bill change(4 byte)+ 
-                    // '00 00 00 00'// Coin change(4 byte)+ 
-                    // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
-                    // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
-                    // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
-
-                    console.log('FAFB52', re.data);
-
-                    return;
-                }
-                console.log("onMachineResponse", re);
-                console.log("onMachineResponse transactionID", re.transactionID);
-                this.getBillProcess(machineId.machineId, (b) => {
-                    console.log('*****GetBillProcess', b);
-
-                    const cres = b.find((v) => v.transactionID == re.transactionID);
-                    try {
-                        const machineId = this.ssocket.findMachineIdToken(re.token);
-                        // writeMachineStatus(machineId.machineId, re.data);
-                        const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
-                        const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
-                        const resx = {} as IResModel;
-                        resx.command = EMACHINE_COMMAND.status;
-                        resx.message = EMessage.status;
-                        resx.data = re.data;
-                        resx.transactionID = re.transactionID + '';
-                        if (wsAdmins) {
-                            this.sendWSMyMachine(machineId.machineId, resx);
-                            logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
-                        }
-                        if (ws) {
-                            logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
-                            this.sendWSToMachine(machineId.machineId, resx);
-                        }
+            //         // const wsAdmin = this.wsClient.filter(v=>v['myMachineId'].includes(machineId.machineId));
+            //         if (ws) {
+            //             const resx = {} as IResModel;
+            //             resx.command = EMACHINE_COMMAND.status;
+            //             resx.message = EMessage.status;
+            //             resx.data = re.data;
+            //             resx.transactionID = re.transactionID + '';
+            //             // save to redis
+            //             // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
+            //             // console.log('writeMachineStatus', machineId.machineId, re.data);
 
 
-                        // vmc response with transactionId and buffer data
-                        // zdm8 reponse with transactionId
+            //             // send to machine client
+            //             this.sendWSToMachine(machineId.machineId, resx);
+            //             logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
 
-                        // check by transactionId and command data (command=status)
+            //             // this.sendWS(ws['clientId'], resx);
+            //         }
+            //         if (wsAdmins) {
+            //             const resx = {} as IResModel;
+            //             resx.command = EMACHINE_COMMAND.status;
+            //             resx.message = EMessage.status;
+            //             resx.data = re.data;
+            //             resx.transactionID = re.transactionID + '';
+            //             // save to redis
+            //             // redisClient.set('_machinestatus_' + machineId.machineId, re.data);
+            //             // console.log('writeMachineStatus', machineId.machineId, re.data);
+            //             // send to machine client
+            //             this.sendWSMyMachine(machineId.machineId, resx);
+            //             logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
+            //         }
+            //         // fafb52215400010000130000000000000000003030303030303030303013aaaaaaaaaaaaaa8d
+            //         // fafb52
+            //         // 21 //len
+            //         // 54 // series
+            //         // 00 // bill acceptor
+            //         // 01 // coin acceptor
+            //         // 00 // card reader status
+            //         // 00 // tem controller status
+            //         // 13 // temp
+            //         // 00 // door 
+            //         // 00000000 // bill change
+            //         // 00000000 // coin change
+            //         // 30303030303030303030
+            //         // 13aaaaaaaaaaaaaa8d
+            //         // // fafb header
+            //         // // 52 command
+            //         // // 01 length
+            //         // // Communication number+ 
+            //         // '00'//Bill acceptor status+ 
+            //         // '00'//Coin acceptor status+ 
+            //         // '00'// Card reader status+
+            //         // '00'// Temperature controller status+ 
+            //         // '00'// Temperature+ 
+            //         // '00'// Door status+ 
+            //         // '00 00 00 00'// Bill change(4 byte)+ 
+            //         // '00 00 00 00'// Coin change(4 byte)+ 
+            //         // '00 00 00 00 00 00 00 00 00 00'//Machine ID number (10 byte) + 
+            //         // '00 00 00 00 00 00 00 00'// Machine temperature (8 byte, starts from the master machine. 0xaa Temperature has not been read yet) +
+            //         // '00 00 00 00 00 00 00 00'//  Machine humidity (8 byte, start from master machine)
 
-                        // if need to confirm with drop detect
-                        // we should use drop detect to audit
-                        // that.deductStock(re.transactionID, cres?.bill, cres?.position);
+            //         console.log('FAFB52', re.data);
 
-                        // const resx = {} as IResModel;
-                        // resx.command = EMACHINE_COMMAND.confirm;
-                        // resx.message = EMessage.confirmsucceeded;
-                        // if (re.transactionID < 0) return console.log('onMachineResponse ignore', re);
-                        // if ([22331, 1000].includes(re.transactionID)) {
+            //         return;
+            //     }
+            //     console.log("onMachineResponse", re);
+            //     console.log("onMachineResponse transactionID", re.transactionID);
+            //     this.getBillProcess(machineId.machineId, (b) => {
+            //         console.log('*****GetBillProcess', b);
 
-                        //     resx.status = 1;
-                        //     console.log('onMachineResponse 22231', re);
-                        //     resx.transactionID = re.(transactionID || -1) + '';
-                        //     resx.data = { bill: cres?.bill, position: cres?.position };
-                        //     //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+            //         const cres = b.find((v) => v.transactionID == re.transactionID);
+            //         try {
+            //             const machineId = this.ssocket.findMachineIdToken(re.token);
+            //             // writeMachineStatus(machineId.machineId, re.data);
+            //             const ws = this.wsClient.find(v => v['machineId'] == machineId.machineId);
+            //             const wsAdmins = this.wsClient.find(v => v['myMachineId']?.includes(machineId.machineId));
+            //             const resx = {} as IResModel;
+            //             resx.command = EMACHINE_COMMAND.status;
+            //             resx.message = EMessage.status;
+            //             resx.data = re.data;
+            //             resx.transactionID = re.transactionID + '';
+            //             if (wsAdmins) {
+            //                 this.sendWSMyMachine(machineId.machineId, resx);
+            //                 logEntity.create({ body: resx, superadmin: wsAdmins['ownerUuid'], subadmin: wsAdmins['ownerUuid'], ownerUuid: wsAdmins['ownerUuid'], url: 'onMachineResponse' })
+            //             }
+            //             if (ws) {
+            //                 logEntity.create({ body: resx, superadmin: ws['ownerUuid'], subadmin: ws['ownerUuid'], ownerUuid: ws['ownerUuid'], url: 'onMachineResponse' })
+            //                 this.sendWSToMachine(machineId.machineId, resx);
+            //             }
 
-                        // } else {
-                        //     const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position) || -1;
-                        //     idx == -1 || !idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
-                        //     resx.status = 1;
-                        //     console.log('onMachineResponse xxx', re);
-                        //     resx.transactionID = re.(transactionID || -1) + '';
-                        //     resx.data = { bill: cres?.bill, position: cres?.position };
-                        // }
-                        // const clientId = cres?.bill.clientId + '';
-                        // console.log('send', clientId, cres?.bill?.clientId, resx);
-                        // console.log('onMachineResponse', re.transactionID);
-                        // console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
 
-                        // ///** always retry */
-                        // const retry = -1; // set config and get config at redis and deduct the retry times;
-                        // // if retry == -1 , it always retry
-                        // /// TODO
-                        // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
-                        // // writeSucceededRecordLog(cres?.bill, cres?.position);
-                        // if(ws)
-                        // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
-                        // if(wsAdmins)
-                        // that.sendWSMyMachine(machineId.machineId, resx);
-                        // /// DEDUCT STOCK AT THE SERVER HERE
+            //             // vmc response with transactionId and buffer data
+            //             // zdm8 reponse with transactionId
 
-                        // // No need To update delivering status
-                        // // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
-                        // // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
-                        // //     try {
-                        // //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
-                        // //         if (bill) {
-                        // //             bill.paymentstatus = EPaymentStatus.delivered;
-                        // //             bill.changed('paymentstatus', true);
-                        // //             bill.save();
-                        // //         } else throw new Error(EMessage.transactionnotfound);
+            //             // check by transactionId and command data (command=status)
 
-                        // //         // }
-                        // //     } catch (error) {
-                        // //         console.log(error);
-                        // //     }
-                        // // }).catch(e => {
-                        // //     console.log('ERROR', e);
+            //             // if need to confirm with drop detect
+            //             // we should use drop detect to audit
+            //             // that.deductStock(re.transactionID, cres?.bill, cres?.position);
 
-                        // // })
-                    } catch (error) {
-                        console.log("error onMachineResponse", error);
-                        logEntity.create({ body: error, url: 'onMachineResponse' });
-                        // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
-                    }
-                });
+            //             // const resx = {} as IResModel;
+            //             // resx.command = EMACHINE_COMMAND.confirm;
+            //             // resx.message = EMessage.confirmsucceeded;
+            //             // if (re.transactionID < 0) return console.log('onMachineResponse ignore', re);
+            //             // if ([22331, 1000].includes(re.transactionID)) {
 
-            });
+            //             //     resx.status = 1;
+            //             //     console.log('onMachineResponse 22231', re);
+            //             //     resx.transactionID = re.(transactionID || -1) + '';
+            //             //     resx.data = { bill: cres?.bill, position: cres?.position };
+            //             //     //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+
+            //             // } else {
+            //             //     const idx = cres?.bill?.vendingsales?.findIndex(v => v.position == cres?.position) || -1;
+            //             //     idx == -1 || !idx ? cres?.bill.vendingsales?.splice(idx, 1) : '';
+            //             //     resx.status = 1;
+            //             //     console.log('onMachineResponse xxx', re);
+            //             //     resx.transactionID = re.(transactionID || -1) + '';
+            //             //     resx.data = { bill: cres?.bill, position: cres?.position };
+            //             // }
+            //             // const clientId = cres?.bill.clientId + '';
+            //             // console.log('send', clientId, cres?.bill?.clientId, resx);
+            //             // console.log('onMachineResponse', re.transactionID);
+            //             // console.log('keep', b.filter(v => v.transactionID != re.transactionID).map(v => v.transactionID));
+
+            //             // ///** always retry */
+            //             // const retry = -1; // set config and get config at redis and deduct the retry times;
+            //             // // if retry == -1 , it always retry
+            //             // /// TODO
+            //             // // that.setBillProces(b.filter(v => v.transactionID != re.transactionID));
+            //             // // writeSucceededRecordLog(cres?.bill, cres?.position);
+            //             // if(ws)
+            //             // that.sendWSToMachine(cres?.bill?.machineId + '', resx);
+            //             // if(wsAdmins)
+            //             // that.sendWSMyMachine(machineId.machineId, resx);
+            //             // /// DEDUCT STOCK AT THE SERVER HERE
+
+            //             // // No need To update delivering status
+            //             // // const entx = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + cres?.ownerUuid, dbConnection);
+            //             // // entx.findAll({ where: { machineId: cres?.bill.machineId, paymentstatus: EPaymentStatus.paid } }).then(async rx => {
+            //             // //     try {
+            //             // //         const bill = rx.find(v => v.transactionID ==cres?.transactionID);
+            //             // //         if (bill) {
+            //             // //             bill.paymentstatus = EPaymentStatus.delivered;
+            //             // //             bill.changed('paymentstatus', true);
+            //             // //             bill.save();
+            //             // //         } else throw new Error(EMessage.transactionnotfound);
+
+            //             // //         // }
+            //             // //     } catch (error) {
+            //             // //         console.log(error);
+            //             // //     }
+            //             // // }).catch(e => {
+            //             // //     console.log('ERROR', e);
+
+            //             // // })
+            //         } catch (error) {
+            //             console.log("error onMachineResponse", error);
+            //             logEntity.create({ body: error, url: 'onMachineResponse' });
+            //             // cres?.res.send(PrintError('onMachineResponse', error, EMessage.error));
+            //         }
+            //     });
+
+            // });
 
             ////
 
@@ -4340,8 +4370,11 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log(`compare hash`, token == hash, token, hash);
             // const a = this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
             // console.log(`a`, a);
+
             const result = this.machineIds.find(v => cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) == token);
-            // console.log(`result der xxx`, this.machineIds);
+            console.log(`result der xxx`, this.machineIds);
+            console.log('filter ---->', this.machineIds.map(v => { m: cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) }));
+
             return result;
 
         } catch (error) {
@@ -4461,7 +4494,7 @@ export class InventoryZDM8 implements IBaseClass {
                     billCash?.requestor?.transData[0]?.accountRef
                 );
             });
-            const mId = this.ssocket.findMachineId(machineId);
+            const mId = this.findMachineId(machineId);
             const mEnt: MachineIDStatic = MachineIDFactory(
                 EEntity.machineIDHistory + "_" + this.production + "_" + machineId,
                 dbConnection
@@ -4493,6 +4526,15 @@ export class InventoryZDM8 implements IBaseClass {
             console.log("Error updateBillCash");
         }
     }
+    findMachineId(machineId: string) {
+        try {
+            return this.machineIds.find(v => v.machineId == machineId);
+        } catch (error) {
+            console.log(error);
+
+        }
+
+    }
     updateBadBillCash(
         billCash: IBillCashIn,
         machineId: string,
@@ -4507,7 +4549,7 @@ export class InventoryZDM8 implements IBaseClass {
                 );
             });
 
-            const mId = this.ssocket.findMachineId(machineId);
+            const mId = this.findMachineId(machineId);
             const mEnt: MachineIDStatic = MachineIDFactory(
                 EEntity.machineIDHistory + "_" + this.production + "_" + machineId,
                 dbConnection
@@ -4670,8 +4712,8 @@ export class InventoryZDM8 implements IBaseClass {
                 "mobileNo": ownerPhone, // CashIn to Wallet Number (Merchant)  ເບີຄົນຮັບເງິນ
                 "channel": `VENDING_` + channel, // Vending Machine 
                 "owner": "LAABX", // Merchant Name  LAABX
-                // "callbackurl": "https://tvending.khamvong.com"
-                "callbackurl": "https://vendingserviceapi.laoapps.com"
+                "callbackurl": "https://tvending.khamvong.com"
+                // "callbackurl": "https://vendingserviceapi.laoapps.com"
 
             }
             console.log("LAOQR", qr);
@@ -5312,15 +5354,12 @@ export class InventoryZDM8 implements IBaseClass {
 
 
     checkMachineId(machineId: string): IMachineClientID | null {
-        const x = this.ssocket.sclients.find((v) => {
-            const x = v["machineId"] as IMachineClientID;
-            if (x) {
-                return x.machineId == machineId;
+        return this.machineIds.find((v) => {
+            if (v.machineId == machineId) {
+                return v;
             }
-            return false;
         });
-        if (x) return x["machineId"] as IMachineClientID;
-        return null;
+
     }
     initWs(wss: WebSocketServer.Server) {
         try {
@@ -5377,9 +5416,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 const x = d.token as string;
                                 console.log(
                                     " WS online machine",
-                                    this.ssocket.listOnlineMachines()
+                                    this.listOnlineMachines()
                                 );
-                                let machineId = this.ssocket.findMachineIdToken(x);
+                                let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exit");
                                 ws["machineId"] = machineId.machineId;
@@ -5505,10 +5544,16 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         for (let index = 0; index < mArray?.length; index++) {
                                             const element = mArray[index];
-                                            const st = await readMachineStatus(element);
-                                            if (!st?.b?.lastUpdate)
+                                            let st = await readMachineStatus(element);
+                                            if (!st) {
+                                                st = { b: {} } as any;
+
+                                            }
+                                            else {
                                                 st.b.lastUpdate = new Date();
-                                            mymstatus.push({ machineId: element, mstatus: st });
+                                            }
+
+                                            mymstatus.push({ machineId: element, mstatus: st.b });
 
                                             const msetting = JSON.parse(await readMachineSetting(element))?.find(v => v.settingName == 'setting');
                                             mymsetting.push({ msetting, machineId: element });
@@ -5625,6 +5670,7 @@ export class InventoryZDM8 implements IBaseClass {
         //     }
         // });
     }
+
     sendWS(clientId: string, resx: IResModel) {
         this.wsClient.find((v) => {
             const x = v["clientId"] as string;

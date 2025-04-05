@@ -32,7 +32,7 @@ export class SettingPage implements OnInit, OnDestroy {
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
   productFallLimit = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
-  dropSensor = localStorage.getItem('dropSensor') ? Number(localStorage.getItem('dropSensor')) : 0;
+  dropSensor = localStorage.getItem('dropSensor') ? Number(localStorage.getItem('dropSensor')) : 1;
 
   offlineMode = localStorage.getItem('offlineMode') ? true : false;
 

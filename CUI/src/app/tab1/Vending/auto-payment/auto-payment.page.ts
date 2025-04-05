@@ -42,6 +42,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   paymentText: string;
   paymentLogo: string;
   isPayment: boolean = false;
+  // isLoading: boolean = false;
 
 
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
@@ -339,20 +340,20 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
               // AutoPaymentPage.laabqrimgElement.classList.add('active');
               // AutoPaymentPage.btnLAABGo.classList.remove('active');
 
-              let qrModel = {
-                type: 'CQR',
-                mode: 'COIN',
-                destination: this.apiService.laabuuid,
-                amount: Number(this.getTotalSale.t) - Number(this.apiService.cash.amount),
-                // amount: 100,
-                expire: '',
-                options: {
-                  coinname: this.apiService.coinName,
-                  name: this.apiService.name,
-                },
-              };
-              const qrcode = await new qrlogo({ logo: this.laabIcon, content: JSON.stringify(qrModel) }).getCanvas();
-              if (AutoPaymentPage.laabqrimgElement) AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();
+              // let qrModel = {
+              //   type: 'CQR',
+              //   mode: 'COIN',
+              //   destination: this.apiService.laabuuid,
+              //   amount: Number(this.getTotalSale.t) - Number(this.apiService.cash.amount),
+              //   // amount: 100,
+              //   expire: '',
+              //   options: {
+              //     coinname: this.apiService.coinName,
+              //     name: this.apiService.name,
+              //   },
+              // };
+              // const qrcode = await new qrlogo({ logo: this.laabIcon, content: JSON.stringify(qrModel) }).getCanvas();
+              // if (AutoPaymentPage.laabqrimgElement) AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();
 
             } else {
               // AutoPaymentPage.laabqrimgElement.classList.remove('active');
@@ -488,6 +489,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
           AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
           this.isPayment = true;
+          // this.isLoading = false;
           this.billDate = new Date();
           console.log('END GENERATE LAOQR AND SUCCESS');
           // console.log('=====>RUN', run);
@@ -582,6 +584,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.data[0].qrcode }).getCanvas();
         AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
         this.isPayment = true;
+        // this.isLoading = false;
         this.billDate = new Date();
         console.log('END GENERATE Mmoney AND SUCCESS');
         console.log('=====>RUN', run);
@@ -730,6 +733,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       try {
 
         this.isPayment = false;
+        // this.isLoading = true;
         this.paymentmethod = undefined;
 
         this.countdownLAABDestroyTimer = setInterval(async () => {
@@ -799,6 +803,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       AutoPaymentPage.laabCardFooter.classList.remove('active');
       AutoPaymentPage.qrimgElement.src = '';
       this.isPayment = false;
+      // this.isLoading = true;
       this.paymentText = '';
       this.paymentmethod = undefined;
 
@@ -820,6 +825,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         this.paymentmethod = list.value;
         this.isPayment = false;
+        // this.isLoading = true;
 
         if (AutoPaymentPage.message) AutoPaymentPage.message.close();
         AutoPaymentPage.message = undefined;
