@@ -5597,11 +5597,12 @@ export class InventoryZDM8 implements IBaseClass {
                                             let st = await readMachineStatus(element);
                                             if (!st) {
                                                 st = { b: {} } as any;
-
                                             }
-                                            else {
-                                                st.b.lastUpdate = new Date();
-                                            }
+                                            if (!st.b) {
+                                                st.b = {};
+                                            }   
+                                            st.b.lastUpdate = new Date();
+                                            
 
                                             mymstatus.push({ machineId: element, mstatus: st.b });
 

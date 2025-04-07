@@ -104,9 +104,10 @@ export class ApiService {
                 //   }, 3000);
                 //   this.validateDB();
                 // }
-                r.data.mymstatus.forEach(e => {
-                    e.mstatus.temp = this.hex2dec(e.mstatus.temp);
-                });
+                // r.data.mymstatus.forEach(e => {
+                //     console.log('mymstatus', e);
+                //     e.mstatus.temp = e.mstatus.temp;
+                // });
             } catch (error) {
                 console.log('error', error);
 
