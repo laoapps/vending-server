@@ -92,7 +92,7 @@ export class LoadStockListProcess {
 
             } catch (error) {
                 message.message='Init params....'+error.message;
-                this.apiService.alertError(`error cash ${this.text}`);
+                this.apiService.alertError(`error cash ${this.text} ${message.message}`);
                 setTimeout(() => {
                     this.apiService.dismissModal();
                     console.log(`error`, error.message);
