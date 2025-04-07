@@ -514,6 +514,12 @@ export function writeMachinePendingStock(machineId: string, b: any) {
     redisClient.set('_machinependingstock_' + machineId, JSON.stringify(b));
 }
 
+export function readAminControl(){
+    return redisClient.get('_amincontrol_');
+}
+export function setAdminControl(data=''){
+    redisClient.set('_amincontrol_',data);
+}
 export async function readMachineStatus(machineId: string) {
     const x = await redisClient.get('_machinestatus_' + machineId);
     return JSON.parse(x) as { b: any, t: Date };

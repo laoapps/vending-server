@@ -39,6 +39,8 @@ import {
     findPhoneNumberByUuidOnUserManager,
     generateTokenOnUserManager,
     parseMachineVMCStatus as parseMachineVMCStatus,
+    readAminControl,
+    setAdminControl,
 } from "../services/service";
 import {
     EClientCommand,
@@ -2936,6 +2938,54 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
             router.post(
+                this.path + "/setAdminControl",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const isActive = req.query["isActive"] + '' == 'yes'
+                            ? 'yes'
+                            : '';
+                        setAdminControl(isActive);
+                        res.send(
+                            PrintSucceeded(
+                                "setAdminControl",
+                                isActive,
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("disableMachine", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            router.post(
+                this.path + "/readAdminControl",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        res.send(
+                            PrintSucceeded(
+                                "setAdminControl",
+                                await readAminControl(),
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("disableMachine", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+            router.post(
                 this.path + "/disableMachine",
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
@@ -5601,6 +5651,12 @@ export class InventoryZDM8 implements IBaseClass {
                                     if (!ax || !Array.isArray(ax)) ax = [];
                                     const pendingStock = ax.map(v => { return { transactionID: v?.transactionID, position: v?.position } });
 
+                                    /// FOR ADMIN 
+                                    if(readAminControl()){
+                                        setting.allowVending = false;
+                                        setting.allowCashIn = false;
+                                    }
+                                    // 
 
                                     console.log('FIND SETTING FOR REFRESH COMMAND', setting);
                                     ws.send(
