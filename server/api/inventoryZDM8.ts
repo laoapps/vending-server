@@ -5653,7 +5653,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     const pendingStock = ax.map(v => { return { transactionID: v?.transactionID, position: v?.position } });
 
                                     /// FOR ADMIN 
-                                    if(readAminControl()){
+                                    if(await readAminControl()){
                                         setting.allowVending = false;
                                         setting.allowCashIn = false;
                                     }
