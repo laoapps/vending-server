@@ -240,7 +240,9 @@ export class Zdm8Service implements ISerialService {
           case EZDM8_COMMAND.shippingcontrol:
             const slot = this.serialService.int2hex(params.slot - 1); // 0-99
             const isspring = params.isspring || '01'; // Default spring motor
-            const dropdetect = params.dropdetect || '00'; // Default off  bug and nothing happen
+            // const dropdetect = params.dropdetect || '00'; // Default off  bug and nothing happen
+            const dropdetect = '00'; // Default off  bug and nothing happen
+
             const liftsystem = params.liftsystem || '00'; // Default off
             buff = [slaveAddress, '10', '20', '01', '00', '02', '04', slot, isspring, dropdetect, liftsystem];
             check = this.serialService.checkSumCRC(buff);

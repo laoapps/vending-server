@@ -971,7 +971,7 @@ export class Tab1Page implements OnDestroy {
 
               console.log('zdm service Received from device:', rawData);
               const d = typeof rawData === 'object' ? JSON.stringify(rawData) : rawData;
-              Toast.show({ text: 'zdm service Received from device: ' + rawData, duration: 'long' });
+              Toast.show({ text: 'zdm service Received from device: ' + d, duration: 'long' });
               // Process the Modbus response
               // const response = this.zdm8Service.processModbusResponse(rawData);
               // if (response) {

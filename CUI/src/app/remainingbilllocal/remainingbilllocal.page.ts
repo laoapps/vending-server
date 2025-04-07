@@ -135,9 +135,9 @@ export class RemainingbilllocalPage implements OnInit {
           //   r.present();
           // });
           try {
-            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
             this.apiService.IndexeLocaldDB.deleteBillProcess(Number(transactionID));
-
+            await this.loadBillLocal();
+            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
             this.apiService.loadDeliveryingBillsLocal().then(async reload_ticket => {
               console.log('reload_ticket', reload_ticket);
 
