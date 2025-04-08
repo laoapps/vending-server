@@ -297,8 +297,8 @@ export class Tab1Page implements OnDestroy {
 
 
   allowCashIn = false;
-  light = { start: 3, end: 2 };;
-  ;
+  light = { start: 3, end: 2 };
+
   allowVending = true;
   tempStatus: { lowTemp: number, highTemp: number } = { lowTemp: 5, highTemp: 10 };
 
@@ -673,7 +673,7 @@ export class Tab1Page implements OnDestroy {
 
 
     this.WSAPIService.aliveSubscription.subscribe(async res => {
-      console.log('ALIVE', res);
+      console.log('ALIVE TAB1', res);
       try {
         const r = res?.data?.setting;
         if (r && this.readyState) {
@@ -685,8 +685,13 @@ export class Tab1Page implements OnDestroy {
           }
 
           // set allow vending
+          console.log('ALLOW VENDING', r.allowVending);
+
           if (this.allowVending != r.allowVending) {
+
             this.allowVending = r.allowVending;
+            console.log('Update Allow vending to', this.allowVending);
+
           }
 
           if (this.selectedDevice == 'VMC') {
@@ -721,6 +726,8 @@ export class Tab1Page implements OnDestroy {
 
 
 
+        } else {
+          console.log('No data from alive');
         }
       } catch (error) {
         Toast.show({ text: 'Error alive ' + JSON.stringify(error || '{}'), duration: 'long' })
@@ -1905,7 +1912,7 @@ export class Tab1Page implements OnDestroy {
         //   confirmButtonColor: '#EE3124',
         //   heightAuto: false,
         // });
-        this.apiService.alertError('Please, try again later');
+        this.apiService.alertError('ປິດໃຊ້ງານຊົ່ວຄາວ, ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
         // setTimeout(() => {
         //   Swal.close();
         // }, 2000);

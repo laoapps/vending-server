@@ -247,6 +247,8 @@ export class ApiService {
   url = localStorage.getItem('url') || environment.url;
   // serverUrl = localStorage.getItem('serverUrl') || environment.serverUrl;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
+
+  vending_server = localStorage.getItem('vending_server') || environment.vending_server;
   contact = localStorage.getItem('contact') || '55516321';
   currentPaymentProvider = EPaymentProvider.mmoney;
 
@@ -799,15 +801,6 @@ export class ApiService {
     }, 5000);
   }
   public alertError(text: string) {
-    // Swal.fire({
-    //   icon: 'error',
-    //   title: 'Fail',
-    //   text: text,
-    //   showConfirmButton: true,
-    //   confirmButtonText: 'OK',
-    //   confirmButtonColor: '#CB4335',
-    //   heightAuto: false,
-    //   timer: 5000
 
     this.alert.create({
       header: 'Fail',
@@ -820,6 +813,7 @@ export class ApiService {
         },
       ],
       backdropDismiss: false,
+      // cssClass: 'custom-alert-error',
     }).then((v) => v.present());
 
     // });
@@ -827,6 +821,30 @@ export class ApiService {
       this.alert.dismiss();
     }, 5000);
   }
+
+
+  public alertTimeout(text: string) {
+
+    this.alert.create({
+      header: 'Fail',
+      message: text,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'confirm',
+          cssClass: 'alert-ok-button',
+        },
+      ],
+      backdropDismiss: false,
+      // cssClass: 'custom-alert-error',
+    }).then((v) => v.present());
+
+    // });
+    setTimeout(() => {
+      this.alert.dismiss();
+    }, 10000);
+  }
+
   public alertWarnning(title: string, text: string) {
     // Swal.fire({
     //   icon: 'warning',
@@ -1213,7 +1231,7 @@ export class ApiService {
     console.log('checkPaidBill', body.data);
 
     return this.http.post(
-      this.url, body, {
+      this.vending_server, body, {
       headers: this.headerBase()
     }
     );

@@ -219,3 +219,55 @@ ion-item {
 {
 	display: flex;
 }
+
+.custom-alert {
+	// ปรับขนาดให้ใหญ่ขึ้น
+	--width: 500px; // ความกว้างใหญ่ขึ้น
+	--height: 400px; // ความสูงใหญ่ขึ้น
+  
+	.alert-wrapper {
+	  background: #ffffff; // พื้นหลังสีขาว
+	  border-radius: 15px; // มุมโค้งมน
+	  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); // เพิ่มเงาให้ดูสวย
+	  padding: 20px; // เพิ่มระยะห่างภายใน
+	}
+  
+	// ปรับแต่ง Header
+	.alert-head {
+	  font-size: 52px; // ขนาดตัวอักษรใหญ่ขึ้น
+	  color: #d32f2f; // สีแดงเข้มให้ดูเด่น
+	  font-weight: bold; // ตัวหนา
+	  padding-bottom: 10px; // ระยะห่างด้านล่าง
+	}
+  
+	// ปรับแต่ง Message
+	.alert-message {
+	  font-size: 24px; // ขนาดข้อความใหญ่ขึ้น
+	  color: #333333; // สีเทาเข้มดูสะอาดตา
+	  line-height: 1.5; // ระยะห่างบรรทัด
+	}
+  
+	// ปรับแต่งปุ่ม
+	.alert-button-group {
+	  display: flex;
+	  justify-content: center; // จัดปุ่มให้อยู่ตรงกลาง
+	  padding-top: 20px; // ระยะห่างจากข้อความ
+	}
+  
+	.alert-ok-button {
+	  font-size: 22px; // ขนาดตัวอักษรปุ่ม
+	  color: #ffffff; // สีตัวอักษรขาว
+	  background: linear-gradient(135deg, #ff5722, #d81b60); // ไล่สีส้ม-แดง
+	  border-radius: 10px; // มุมโค้งมน
+	  padding: 10px 30px; // ขนาดปุ่มใหญ่ขึ้น
+	  text-transform: uppercase; // ตัวพิมพ์ใหญ่
+	  transition: transform 0.2s; // เอฟเฟกต์ตอนกด
+	}
+  
+	.alert-ok-button:active {
+	  transform: scale(0.95); // ย่อลงนิดหน่อยตอนกด
+	}
+  
+	// ปรับแต่ง backdrop ให้ดูสวย
+	--backdrop-opacity: 0.5; // ความโปร่งใสของพื้นหลัง
+  }

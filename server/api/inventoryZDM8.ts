@@ -809,6 +809,27 @@ export class InventoryZDM8 implements IBaseClass {
                 }
 
             });
+
+
+            router.post(this.path + "/reportDrop", async (req, res) => {
+                console.log('reportDrop', req.body);
+                const d = req.body as IReqModel;
+
+                try {
+                    const { token } = d;
+
+                    const machineId =
+                        this.findMachineIdToken(token)?.machineId;
+                    console.log('token', token, 'machineId', machineId, machineId);
+                    if (!machineId) throw new Error("Invalid token");
+
+                } catch (error) {
+                    console.log('reportDrop error', error);
+                    res.send(PrintError("reportDrop", error, EMessage.error, returnLog(req, res, true)));
+                }
+            }
+            );
+
             // router.post(this.path + "/creditMMoney", (req, res) => {
             //     const d = req.body as IReqModel;
             //     // this.creditMachineMMoney(d);
@@ -5600,9 +5621,9 @@ export class InventoryZDM8 implements IBaseClass {
                                             }
                                             if (!st.b) {
                                                 st.b = {};
-                                            }   
+                                            }
                                             st.b.lastUpdate = new Date();
-                                            
+
 
                                             mymstatus.push({ machineId: element, mstatus: st.b });
 
@@ -5653,7 +5674,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     const pendingStock = ax.map(v => { return { transactionID: v?.transactionID, position: v?.position } });
 
                                     /// FOR ADMIN 
-                                    if(await readAminControl()){
+                                    if (await readAminControl()) {
                                         setting.allowVending = false;
                                         setting.allowCashIn = false;
                                     }
