@@ -17,6 +17,7 @@ import { ModalController } from '@ionic/angular';
 export class SettingPage implements OnInit, OnDestroy {
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   url = localStorage.getItem('url') || environment.url;
+  vending_server = localStorage.getItem('vending_server') || environment.vending_server;
   machineId = localStorage.getItem('machineId') || '12345678';
   otp = localStorage.getItem('otp') || '111111';
 
@@ -66,6 +67,7 @@ export class SettingPage implements OnInit, OnDestroy {
   save() {
     localStorage.setItem('wsurl', this.wsurl)
     localStorage.setItem('url', this.url)
+    localStorage.setItem('vending_server', this.vending_server)
     localStorage.setItem('machineId', this.machineId)
     localStorage.setItem('otp', this.otp)
     localStorage.setItem('contact', this.contact)

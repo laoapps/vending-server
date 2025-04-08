@@ -5,20 +5,14 @@
 export const environment = {
   production: false,
   url: 'https://tvending.khamvong.com/zdm8',
-  serverUrl: 'https://tvending.khamvong.com',
   wsurl: 'ws://tvending.khamvong.com/zdm8',
-  testVending: 'http://localhost:30777/vending/api/',
-  vending: 'http://localhost:9006',
-  vending_server: 'http://localhost:9006',
+  vending_server: 'https://tvending.khamvong.com',
   filemanagerurl: 'http://filemanager-api.laoapps.com/api/v1/file/'
 
 
 
-  // serverUrl: 'https://vendingserviceapi.laoapps.com',
   // url: 'https://vendingserviceapi.laoapps.com/zdm8',
   // wsurl: 'wss://vendingserviceapi.laoapps.com/zdm8',
-  // testVending: 'http://localhost:30777/vending/api/',
-  // vending: 'https://vendingserviceapi.laoapps.com',
   // vending_server: 'https://vendingserviceapi.laoapps.com',
   // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
 

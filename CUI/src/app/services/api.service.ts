@@ -245,7 +245,7 @@ export class ApiService {
   pb = Array<IBillProcess>();
   machineuuid = uuid.v4();
   url = localStorage.getItem('url') || environment.url;
-  serverUrl = localStorage.getItem('serverUrl') || environment.serverUrl;
+  // serverUrl = localStorage.getItem('serverUrl') || environment.serverUrl;
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   contact = localStorage.getItem('contact') || '55516321';
   currentPaymentProvider = EPaymentProvider.mmoney;
@@ -1213,7 +1213,7 @@ export class ApiService {
     console.log('checkPaidBill', body.data);
 
     return this.http.post(
-      this.serverUrl, body, {
+      this.url, body, {
       headers: this.headerBase()
     }
     );
