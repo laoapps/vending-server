@@ -811,24 +811,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
 
-            router.post(this.path + "/reportDrop", async (req, res) => {
-                console.log('reportDrop', req.body);
-                const d = req.body as IReqModel;
 
-                try {
-                    const { token } = d;
-
-                    const machineId =
-                        this.findMachineIdToken(token)?.machineId;
-                    console.log('token', token, 'machineId', machineId, machineId);
-                    if (!machineId) throw new Error("Invalid token");
-
-                } catch (error) {
-                    console.log('reportDrop error', error);
-                    res.send(PrintError("reportDrop", error, EMessage.error, returnLog(req, res, true)));
-                }
-            }
-            );
 
             // router.post(this.path + "/creditMMoney", (req, res) => {
             //     const d = req.body as IReqModel;
@@ -2531,6 +2514,35 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+            router.post(
+                this.path + "/loadVendingMachineDropPositionReport",
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+
+                async (req, res) => {
+                    try {
+
+                        const data = req.body;
+                        const machineId = data.machineId;
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        console.log(' GET DROP SALE ', machineId, fromDate.toString(), toDate.toString())
+                        const run = await this.getReportDrop(machineId, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/loadVendingMachineStockReport",
                 this.checkSuperAdmin,
@@ -5910,6 +5922,33 @@ export class InventoryZDM8 implements IBaseClass {
         }
         const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
         const res = await ent.findAndCountAll(condition);
+        return res;
+    }
+
+
+    private async getReportDrop(machineId: string, fromDate: string, toDate: string) {
+        let condition: any = {};
+        if (machineId == 'all') {
+
+            condition = {
+                where: {
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        else {
+            condition = {
+                where: {
+                    machineId: machineId,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        // const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+        // const res = await ent.findAndCountAll(condition);
+        const res = await dropLogEntity.findAndCountAll(condition);
         return res;
     }
 

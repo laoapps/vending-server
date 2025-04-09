@@ -132,7 +132,7 @@ export class LoadVendingMachineSaleBillReportProcess {
 
                     const list = JSON.parse(JSON.stringify(this.lists));
 
-                    const stock = list.map(obj => obj.vendingsales.map(item => { return { machineId: obj.machineId, time: obj.updatedAt, stock: item.stock, paymentstatus: obj.paymentstatus, dropAt: item.dropAt, createdAt: obj.createdAt } }));
+                    const stock = list.map(obj => obj.vendingsales.map(item => { return { machineId: obj.machineId, time: obj.updatedAt, stock: item.stock, paymentstatus: obj.paymentstatus, dropAt: item.dropAt, createdAt: obj.createdAt, position: item.position } }));
                     console.log(`stock`, stock);
                     stock.find(item => {
                         this.saleDetailList.push(...item);
@@ -155,7 +155,7 @@ export class LoadVendingMachineSaleBillReportProcess {
         // console.log('=====> List :', this.lists);
 
 
-        allsale = cloneSaleDetailList.map(item => { return { stock: item.stock, machineId: item.machineId, paymentstatus: item.paymentstatus, dropAt: item.dropAt, createdAt: item.createdAt } });
+        allsale = cloneSaleDetailList.map(item => { return { stock: item.stock, machineId: item.machineId, paymentstatus: item.paymentstatus, dropAt: item.dropAt, createdAt: item.createdAt, position: item.position } });
         console.log(`allsale`, allsale);
 
         this.uniqueorder = allsale.filter((obj, index) =>

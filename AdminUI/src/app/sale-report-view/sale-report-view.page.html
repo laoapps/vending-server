@@ -47,6 +47,7 @@
             <td>Price</td>
             <td>Quantity</td>
             <td>Total</td>
+            <td>Position</td>
             <td>ວັນທີເຄື່ອງຕົກ</td>
           </tr>
         </thead>
@@ -59,6 +60,7 @@
             <td>{{ filter?.stock?.price | number }}</td>
             <td>{{ filter?.stock?.qtty | number }}</td>
             <td>{{ filter?.stock?.total | number }}</td>
+            <td>{{ filter?.position | number }}</td>
             <td>{{ filter?.dropAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
           </tr>
         </tbody>
