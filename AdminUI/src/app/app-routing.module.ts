@@ -216,6 +216,10 @@ const routes: Routes = [
     path: 'stock-report',
     loadChildren: () => import('./sale/stock-report/stock-report.module').then( m => m.StockReportPageModule)
   },
+  {
+    path: 'reportdrop',
+    loadChildren: () => import('./reportdrop/reportdrop.module').then( m => m.ReportdropPageModule)
+  },
 ];
 @NgModule({
   imports: [

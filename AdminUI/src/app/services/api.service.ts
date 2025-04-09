@@ -363,6 +363,11 @@ export class ApiService {
     loadVendingMachineSaleBillReport(data: any) {
         return this.http.post(this.url + '/loadVendingMachineSaleBillReport', data, { headers: this.headerBase() });
     }
+
+    loadVendingMachineDropReport(data: any) {
+        return this.http.post(this.url + '/loadVendingMachineDropPositionReport', data, { headers: this.headerBase() });
+    }
+
     loadVendingMachineStockReport(data: any) {
         return this.http.post(this.url + '/loadVendingMachineStockReport', data, { headers: this.headerBase() });
     }

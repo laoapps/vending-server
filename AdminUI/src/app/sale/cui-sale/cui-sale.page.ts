@@ -4,6 +4,7 @@ import { CUISaleProcess } from '../processes/cuiSale.process';
 import { IENMessage } from 'src/app/models/base.model';
 import { SaleReportPage } from '../sale-report/sale-report.page';
 import { StockReportPage } from '../stock-report/stock-report.page';
+import { ReportdropPage } from 'src/app/reportdrop/reportdrop.page';
 
 @Component({
   selector: 'app-cui-sale',
@@ -82,12 +83,24 @@ export class CuiSalePage implements OnInit {
       r.present();
     });
   }
+
+
   stockRport() {
     const props = {
       machineId: this.machineId,
       otp: this.otp
     }
     this.apiService.showModal(StockReportPage, props).then(r => {
+      r.present();
+    });
+  }
+
+  dropRport() {
+    const props = {
+      machineId: this.machineId,
+      otp: this.otp
+    }
+    this.apiService.showModal(ReportdropPage, props).then(r => {
       r.present();
     });
   }
