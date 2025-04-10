@@ -2231,7 +2231,7 @@ export class InventoryZDM8 implements IBaseClass {
                             console.log(`load from databasee ----->`, list);
                             list = list.data;
                         }
-                        writeMachineSale(machineId, list),
+                        writeMachineSale(machineId, JSON.stringify(list)),
                         res.send(
                             PrintSucceeded(
                                 "cloneMachineCUI",
