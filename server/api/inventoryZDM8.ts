@@ -2936,7 +2936,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 /// WS send to client directly
 
-                                ws.send(
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
