@@ -2213,17 +2213,17 @@ export class InventoryZDM8 implements IBaseClass {
                         const d = req.body as IReqModel;
                         // const isActive = req.query['isActive'];
                         const machineId = d.data.machineId;
-                        const targetMachineId = d.data.targetMachineId;
+                        const cloneMachineId = d.data.cloneMachineId;
                         if (!machineId) throw new Error("machine is not exist");
 
                         let list: any = {} as any;
-                        const run = await readMachineSale(targetMachineId);
+                        const run = await readMachineSale(cloneMachineId);
                         if (run != undefined && Object.entries(run).length > 0 || run != null) {
                             list = JSON.parse(run);
                             console.log(`load from redis ----->`, list);
 
                         } else {
-                            const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + targetMachineId, dbConnection);
+                            const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + cloneMachineId, dbConnection);
                             await sEnt.sync();
 
                             list = await sEnt.findOne({ order: [['id', 'desc']] });

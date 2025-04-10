@@ -127,6 +127,32 @@ export class CloneSaleProcess {
             }
         });
     }
+    private cloneMahinceCUI(): Promise<any> {
+        return new Promise<any> (async (resolve, reject) => {
+            try {
+
+                const params = {
+                    machineId: this.machineId,
+                    cloneMachineId: this.cloneMachineId
+                }
+
+                this.apiService.cloneMahinceCUI(params).subscribe(r => {
+                    const response: any = r;
+                    console.log(`response status`, response.status);
+                    console.log(`response data`, response.data);
+                    console.log(`response`, response);
+                    if (response.status != 1) return resolve(response.message);
+                    this.lists = response.data; 
+                    console.log(`lists`, this.lists);
+                    resolve(IENMessage.success);
+                }, error => resolve(error.message));
+
+                
+            } catch (error) {
+                resolve(error.message);
+            }
+        });
+    }
 
     private FindCashingServiceList(): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {

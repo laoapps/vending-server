@@ -318,6 +318,11 @@ export class ApiService {
         const token = localStorage.getItem('lva_token');
         return this.http.post<IResModel>(this.url + `/cloneSale`, { machineId: data.machineId, cloneMachineId: data.cloneMachineId, token: token }, { headers: this.headerBase() });
     }
+    // cloneMachineCUI
+    cloneMahinceCUI(data: any) {
+        const token = localStorage.getItem('lva_token');
+        return this.http.post<IResModel>(this.url + `/cloneMachineCUI`, { machineId: data.machineId, cloneMachineId: data.cloneMachineId, token: token }, { headers: this.headerBase() });
+    }
     listSale(isActive = 'all') {
         const token = localStorage.getItem('lva_token');
         return this.http.post<IResModel>(this.url + '/listSale?isActive=' + isActive, { token }, { headers: this.headerBase() });

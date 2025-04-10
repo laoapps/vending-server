@@ -253,6 +253,56 @@ export class SalePage implements OnInit {
       }
     });
   }
+  cloneSaleCUI(): Promise<any> {
+    return new Promise<any> (async (resolve, reject) => {
+      try {
+        
+        const msg = this.apiService.alert.create({
+          header: 'Are you sure !?',
+          subHeader: 'Enter clone machine id',
+          inputs: [
+            {
+              type: 'text',
+              name: 'inputMachineId'
+            }
+          ],
+          buttons: [
+            {
+              text: 'Confirm',
+              handler: async (data) => {
+                console.log(data.inputMachineId);
+                const params = {
+                  ownerUuid: this.apiService.ownerUuid,
+                  filemanagerURL: this.filemanagerURL,
+                  machineId: this.machineId,
+                  cloneMachineId: data.inputMachineId
+                }
+                this.apiService.cloneMahinceCUI(params).subscribe(r => {
+                  console.log(r);
+                  if (r) {
+                    this.apiService.toast.create({ message: r?.message, duration: 2000 }).then(ry => {
+                      ry.present();
+                    })
+                  } else {
+                    this.apiService.simpleMessage(r.message);
+                  } 
+                });
+
+              }
+            },
+            {
+              text: 'Cancel'
+            }
+          ]
+        });
+        (await msg).present();
+
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
   cuisale() {
     const props = {
       machineId: this.machineId,
