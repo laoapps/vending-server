@@ -2209,14 +2209,15 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
+                    let list: any = {} as any;
                     try {
-                        const d = req.body as IReqModel;
+                        const d = req.body as IVendingCloneMachineSale;
                         // const isActive = req.query['isActive'];
-                        const machineId = d.data.machineId;
-                        const cloneMachineId = d.data.cloneMachineId;
+                        const machineId = d.machineId;
+                        const cloneMachineId = d.cloneMachineId;
                         if (!machineId) throw new Error("machine is not exist");
 
-                        let list: any = {} as any;
+                       
                         const run = await readMachineSale(cloneMachineId);
                         if (run != undefined && Object.entries(run).length > 0 || run != null) {
                             list = JSON.parse(run);
@@ -2233,7 +2234,7 @@ export class InventoryZDM8 implements IBaseClass {
                         writeMachineSale(machineId, list),
                         res.send(
                             PrintSucceeded(
-                                "readMachineSale",
+                                "cloneMachineCUI",
                                 list,
                                 EMessage.succeeded
                                 , returnLog(req, res)
@@ -2241,7 +2242,7 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("cloneMachineCUI", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
