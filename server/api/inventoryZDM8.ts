@@ -2202,7 +2202,49 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+            router.post(
+                this.path + "/cloneMachineCUI",
+                this.checkSuperAdmin,
+                this.authorizeSuperAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        // const isActive = req.query['isActive'];
+                        const machineId = d.data.machineId;
+                        const targetMachineId = d.data.targetMachineId;
+                        if (!machineId) throw new Error("machine is not exist");
 
+                        let list: any = {} as any;
+                        const run = await readMachineSale(targetMachineId);
+                        if (run != undefined && Object.entries(run).length > 0 || run != null) {
+                            list = JSON.parse(run);
+                            console.log(`load from redis ----->`, list);
+
+                        } else {
+                            const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + targetMachineId, dbConnection);
+                            await sEnt.sync();
+
+                            list = await sEnt.findOne({ order: [['id', 'desc']] });
+                            console.log(`load from databasee ----->`, list);
+                            list = list.data;
+                        }
+                        writeMachineSale(machineId, list),
+                        res.send(
+                            PrintSucceeded(
+                                "readMachineSale",
+                                list,
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
             router.post(
                 this.path + "/readMachineSale",
                 // this.checkToken,
