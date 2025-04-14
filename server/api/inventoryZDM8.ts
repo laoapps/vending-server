@@ -5677,6 +5677,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             if (!st.b) {
                                                 st.b = {};
                                             }
+                                            if(ws['machineId']===element+'')
                                             st.b.lastUpdate = new Date();
 
 
