@@ -13,7 +13,9 @@ import { EventEmitter } from 'events';
 import { Router } from '@angular/router';
 import Swal from "sweetalert2";
 import { BehaviorSubject } from 'rxjs';
-
+// import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 @Injectable({
     providedIn: 'root'
 })
@@ -552,5 +554,77 @@ export class ApiService {
             }
         });
     }
+    // Export to Excel method
+  async  exportIVendingMachineSaleToExcel(lists:IVendingMachineSale[]) {
+   // Create a new workbook and worksheet
+   const workbook = new ExcelJS.Workbook();
+   const worksheet = workbook.addWorksheet('VendingMachineSales');
+
+   // Define columns
+   worksheet.columns = [
+     { header: 'Machine ID', key: 'machineId', width: 15 },
+     { header: 'Position', key: 'position', width: 10 },
+     { header: 'Max', key: 'max', width: 10 },
+     { header: 'Stock Name', key: 'stockName', width: 20 },
+     { header: 'Stock Price', key: 'stockPrice', width: 12 },
+     { header: 'Stock Quantity', key: 'stockQuantity', width: 15 },
+     { header: 'Stock Image', key: 'stockImage', width: 15 } // Column for images
+   ];
+
+   // Add header row styling (optional)
+   worksheet.getRow(1).font = { bold: true };
+   worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+   // Add data and images
+   for (const [index, item] of lists.entries()) {
+     // Prepare row data
+     const row = {
+       machineId: item.machineId || '',
+       position: item.position,
+       max: item.max,
+       stockName: item.stock?.name || '',
+       stockPrice: item.stock?.price ?? 0,
+       stockQuantity: item.stock?.qtty ?? 0,
+       stockImage: '' // Placeholder (images are embedded, not stored as text)
+     };
+
+     // Add row to worksheet
+     const excelRow = worksheet.addRow(row);
+
+     // Embed image if base64 is valid
+     if (item.stock?.image?.startsWith('data:image/')) {
+       try {
+         const imageId = workbook.addImage({
+           base64: item.stock.image,
+           extension: item.stock.image.includes('jpeg') ? 'jpeg' : 'png' // Adjust based on MIME type
+         });
+
+         // Place image in the 'Stock Image' column (G, index 7)
+         worksheet.addImage(imageId, {
+           tl: { col: 6, row: index + 1 }, // Column G, current row (skip header)
+           ext: { width: 100, height: 100 } // Fixed size (adjust as needed)
+         });
+
+         // Adjust row height to fit image (optional)
+         excelRow.height = 100; // Match image height
+       } catch (e) {
+         console.error(`Failed to embed image for ${item.stock?.name}:`, e);
+         excelRow.getCell('stockImage').value = 'Image Error';
+       }
+     } else {
+       excelRow.getCell('stockImage').value = 'No Image';
+     }
+   }
+
+   // Adjust column alignment (optional)
+   worksheet.columns.forEach(column => {
+     column.alignment = { vertical: 'middle', horizontal: 'left' };
+   });
+
+   // Generate and save file
+   const buffer = await workbook.xlsx.writeBuffer();
+   const dataBlob = new Blob([buffer], { type: 'application/octet-stream' });
+   saveAs(dataBlob, 'VendingMachineSales.xlsx');
+  }
 }
 

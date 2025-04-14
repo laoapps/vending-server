@@ -28,11 +28,14 @@
     "@ionic/storage": "^3.0.6",
     "@ionic/storage-angular": "^3.0.6",
     "@types/crypto-js": "^4.1.1",
+    "@types/file-saver": "^2.0.7",
     "@types/moment-timezone": "^0.5.30",
     "angular-notifier": "^12.0.0",
     "axios": "^1.4.0",
     "crypto-js": "^4.1.1",
     "cryptojs": "^2.5.3",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "ionicons": "^6.0.3",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
@@ -43,6 +46,7 @@
     "tslib": "^2.3.0",
     "uuid": "^9.0.0",
     "ws-heartbeat": "^1.2.0",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {

@@ -21,7 +21,8 @@ export class CuiSalePage implements OnInit {
   private cuisaleProcess: CUISaleProcess;
 
   lists: Array<IVendingMachineSale> = [];
-
+  isShowSaleOnly=false;
+  isListedByQtty = false;
   constructor(
     public apiService: ApiService
   ) {
@@ -66,7 +67,43 @@ export class CuiSalePage implements OnInit {
       }
     });
   }
+  sortByQuantityAndPrice(): void {
+    this.lists.sort((a, b) => {
+      const aPriceValid = a.stock?.price > 0;
+      const bPriceValid = b.stock?.price > 0;
+  
+      // Prioritize items with price > 0
+      if (aPriceValid && !bPriceValid) return -1;
+      if (!aPriceValid && bPriceValid) return 1;
+  
+      // If both have price > 0 or both don't, sort by qtty
+      return a.stock.qtty - b.stock.qtty;
+    });
+  }
+  sortByPosition(): void {
+    this.lists.sort((a, b) => a.position - b.position);
+  }
+  exportToExcel(){
+    this.apiService.exportIVendingMachineSaleToExcel(this.lists);
+  }
+  showSaleSlot(){
+    if(this.isListedByQtty)this.sortByPosition();
+    this.isShowSaleOnly=true;
+    this.isListedByQtty=false;
 
+  }
+  showAllSlots(){
+    if(this.isListedByQtty)this.sortByPosition();
+    this.isShowSaleOnly=false;
+    this.isListedByQtty=false;
+
+  }
+  listByQtty(){
+    this.isListedByQtty=true;
+    this.isShowSaleOnly=true;
+
+    this.sortByQuantityAndPrice();
+  }
   saleRport() {
     const props = {
       machineId: this.machineId,
