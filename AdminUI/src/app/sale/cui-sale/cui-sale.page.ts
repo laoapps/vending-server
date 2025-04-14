@@ -5,6 +5,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { SaleReportPage } from '../sale-report/sale-report.page';
 import { StockReportPage } from '../stock-report/stock-report.page';
 import { ReportdropPage } from 'src/app/reportdrop/reportdrop.page';
+import { IVendingMachineSale } from '../../services/syste.model';
 
 @Component({
   selector: 'app-cui-sale',
@@ -36,7 +37,7 @@ export class CuiSalePage implements OnInit {
     this.apiService.modal.dismiss();
   }
 
-  loadCUISaleList(): Promise<any> {
+  loadCUISaleList(): Promise<IVendingMachineSale[]> {
     return new Promise<any>(async (resolve, reject) => {
       try {
         //  await this.cashingService.clear();
@@ -49,21 +50,12 @@ export class CuiSalePage implements OnInit {
         this.lists = run.data[0].lists.data;
         console.log(`list`, this.lists);
 
-        // if (this.lists != undefined && this.lists.length > 0) {
-        //   // const instock = this.lists.filter(item => item.stock.id != -1);
-        //   const instock = this.lists;
-
-        //   // console.log(`instock`, instock);
-        //   // for(let i = 0; i < instock.length; i++) {
-        //   //   for(let j = 0; j < this._l.length; j++) {
-        //   //     if (instock[i].stock != '' && instock[i].stock.image == this._l[j].stock.imageUrl) {
-        //   //       instock[i].stock.image = this._l[j].stock.image;
-        //   //     }
-        //   //   }
-        //   // }
-        //   this.lists = instock;
-        // }
-        console.log('test here', this.lists);
+        if (this.lists != undefined && this.lists.length > 0) {
+          // const instock = this.lists.filter(item => item.stock.id != -1);
+          this.lists.forEach(v=>{
+            
+          })
+        }
         resolve(IENMessage.success);
 
 

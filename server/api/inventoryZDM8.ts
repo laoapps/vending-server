@@ -2164,10 +2164,13 @@ export class InventoryZDM8 implements IBaseClass {
                         const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
                         console.log(`sign der`, sign);
                         console.log(`d data der`, d.data);
+                        const list = new Array< IVendingMachineSale>();
+                        list.push(...d.data);
+                        list.forEach(v=>v.machineId= machineId.machineId);
                         if (run == null) {
 
                             sEnt.create({
-                                data: d.data,
+                                data: list,
                                 hashM: sign,
                                 hashP: 'null'
                             }).then(r => {
@@ -2177,7 +2180,7 @@ export class InventoryZDM8 implements IBaseClass {
                         } else {
 
                             sEnt.create({
-                                data: d.data,
+                                data: list,
                                 hashM: sign,
                                 hashP: run.hashM
                             }).then(r => {
@@ -2191,7 +2194,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintSucceeded(
                                 "saveMachineSale",
-                                writeMachineSale(machineId.machineId, JSON.stringify(d.data)),
+                                writeMachineSale(machineId.machineId, JSON.stringify(list)),
                                 EMessage.succeeded
                                 , returnLog(req, res)
                             )
@@ -2209,7 +2212,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
-                    let list: any = {} as any;
+                    let list = new Array< IVendingMachineSale>();
                     try {
                         const d = req.body as IVendingCloneMachineSale;
                         // const isActive = req.query['isActive'];
@@ -2227,10 +2230,13 @@ export class InventoryZDM8 implements IBaseClass {
                             const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + cloneMachineId, dbConnection);
                             await sEnt.sync();
 
-                            list = await sEnt.findOne({ order: [['id', 'desc']] });
+                            const x  = await sEnt.findOne({ order: [['id', 'desc']] });
                             console.log(`load from databasee ----->`, list);
-                            list = list.data;
+                            list.push(...x.data);
                         }
+                        list.forEach(v=>{
+                            v.machineId=machineId
+                        })
                         writeMachineSale(machineId, JSON.stringify(list)),
                         res.send(
                             PrintSucceeded(
