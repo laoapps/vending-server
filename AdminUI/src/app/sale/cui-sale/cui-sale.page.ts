@@ -16,11 +16,11 @@ export class CuiSalePage implements OnInit {
 
   @Input() machineId: string;
   @Input() otp: string;
-  @Input() _l: Array<any>;
+  @Input() _l: Array<IVendingMachineSale>;
 
   private cuisaleProcess: CUISaleProcess;
 
-  lists: Array<any> = [];
+  lists: Array<IVendingMachineSale> = [];
 
   constructor(
     public apiService: ApiService
@@ -53,7 +53,8 @@ export class CuiSalePage implements OnInit {
         if (this.lists != undefined && this.lists.length > 0) {
           // const instock = this.lists.filter(item => item.stock.id != -1);
           this.lists.forEach(v=>{
-            
+            const x = this._l?.find(x=>x.stock?.name===v.stock?.name);
+            if(x) {v.stock.image = x.stock.image;v.stock.imageurl=x.stock.imageurl}
           })
         }
         resolve(IENMessage.success);
