@@ -220,6 +220,10 @@ const routes: Routes = [
     path: 'reportdrop',
     loadChildren: () => import('./reportdrop/reportdrop.module').then( m => m.ReportdropPageModule)
   },
+  {
+    path: 'summary',
+    loadChildren: () => import('./summary/summary.module').then( m => m.SummaryPageModule)
+  },
 ];
 @NgModule({
   imports: [
