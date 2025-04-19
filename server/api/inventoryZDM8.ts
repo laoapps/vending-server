@@ -2164,9 +2164,9 @@ export class InventoryZDM8 implements IBaseClass {
                         const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
                         console.log(`sign der`, sign);
                         console.log(`d data der`, d.data);
-                        const list = new Array< IVendingMachineSale>();
+                        const list = new Array<IVendingMachineSale>();
                         list.push(...d.data);
-                        list.forEach(v=>v.machineId= machineId.machineId);
+                        list.forEach(v => v.machineId = machineId.machineId);
                         if (run == null) {
 
                             sEnt.create({
@@ -2212,7 +2212,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
-                    let list = new Array< IVendingMachineSale>();
+                    let list = new Array<IVendingMachineSale>();
                     try {
                         const d = req.body as IVendingCloneMachineSale;
                         // const isActive = req.query['isActive'];
@@ -2220,7 +2220,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const cloneMachineId = d.cloneMachineId;
                         if (!machineId) throw new Error("machine is not exist");
 
-                       
+
                         const run = await readMachineSale(cloneMachineId);
                         if (run != undefined && Object.entries(run).length > 0 || run != null) {
                             list = JSON.parse(run);
@@ -2230,22 +2230,22 @@ export class InventoryZDM8 implements IBaseClass {
                             const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + cloneMachineId, dbConnection);
                             await sEnt.sync();
 
-                            const x  = await sEnt.findOne({ order: [['id', 'desc']] });
+                            const x = await sEnt.findOne({ order: [['id', 'desc']] });
                             console.log(`load from databasee ----->`, list);
                             list.push(...x.data);
                         }
-                        list.forEach(v=>{
-                            v.machineId=machineId
+                        list.forEach(v => {
+                            v.machineId = machineId
                         })
                         writeMachineSale(machineId, JSON.stringify(list)),
-                        res.send(
-                            PrintSucceeded(
-                                "cloneMachineCUI",
-                                list,
-                                EMessage.succeeded
-                                , returnLog(req, res)
-                            )
-                        );
+                            res.send(
+                                PrintSucceeded(
+                                    "cloneMachineCUI",
+                                    list,
+                                    EMessage.succeeded
+                                    , returnLog(req, res)
+                                )
+                            );
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("cloneMachineCUI", error, EMessage.error, returnLog(req, res, true)));
@@ -5656,7 +5656,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                     console.log('clientid  setting', ws['machineId'], x);
                                     console.log('clientid  status', ws['machineId'], mstatus);
-                                    const mArray = ws['myMachineId']?ws['myMachineId'] as Array<string>:[] as Array<string>;
+                                    const mArray = ws['myMachineId'] ? ws['myMachineId'] as Array<string> : [] as Array<string>;
                                     // console.log('myMachineId', mArray);
                                     let mymstatus = [];
                                     let mymsetting = [];
@@ -5674,7 +5674,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         mymlimiterbalance = (await readMerchantLimiterBalance(ws['ownerUuid'])) || '0';
 
-                                        if(mArray.length){
+                                        if (mArray.length) {
                                             for (let index = 0; index < mArray?.length; index++) {
                                                 const element = mArray[index];
                                                 let st = await readMachineStatus(element);
@@ -5684,31 +5684,49 @@ export class InventoryZDM8 implements IBaseClass {
                                                 if (!st.b) {
                                                     st.b = {};
                                                 }
-                                                if(ws['machineId']===element+''){
-                                                    mstatus.lastUpdate = new Date();
-                                                    st.b = mstatus;
-                                                    writeMachineStatus(ws['machineId'],mstatus);
+                                                if (ws['machineId'] === element + '') {
+                                                    if (mstatus){
+                                                        mstatus.lastUpdate = new Date();
+                                                        st.b = mstatus;
+                                                    }
+                                                    else{
+                                                        st.b.lastUpdate = new Date();
+                                                    }
+                                                    writeMachineStatus(ws['machineId'], mstatus);
                                                 }
-                                              
-    
-    
+
+
+
                                                 mymstatus.push({ machineId: element, mstatus: st.b });
-    
+
                                                 const msetting = JSON.parse(await readMachineSetting(element))?.find(v => v.settingName == 'setting');
                                                 mymsetting.push({ msetting, machineId: element });
-    
-    
+
+
                                                 const mb = JSON.parse((await readMachineBalance(element)) || '0');
                                                 mymmachinebalance.push({ machineId: element, balance: mb });
-    
+
                                                 // const ml = JSON.parse((await readMachineLimiter(element)) || '100000');
                                                 mymlimiter.push({ machineId: element, limiter: setting.limiter });
                                             }
-                                        }else{
-                                            mstatus.lastUpdate = new Date();
-                                            writeMachineStatus(ws['machineId'],mstatus);
+                                        } else {
+                                            let st = await readMachineStatus(ws['machineId']);
+                                            if (!st) {
+                                                st = { b: {} } as any;
+                                            }
+                                            if (!st.b) {
+                                                st.b = {};
+                                            }
+                                            if (mstatus){
+                                                mstatus.lastUpdate = new Date();
+                                                st.b = mstatus;
+                                            }
+                                            else{
+                                                st.b.lastUpdate = new Date();
+                                            }
+                                            writeMachineStatus(ws['machineId'], mstatus);
                                         }
-                                       
+
                                         // console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
                                     } catch (error) {
                                         console.log('parsing error setting', error);
