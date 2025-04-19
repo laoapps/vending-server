@@ -5692,7 +5692,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     else{
                                                         st.b.lastUpdate = new Date();
                                                     }
-                                                    writeMachineStatus(ws['machineId'], mstatus);
+                                                    writeMachineStatus(ws['machineId'], st.b);
                                                 }
 
 
@@ -5724,7 +5724,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             else{
                                                 st.b.lastUpdate = new Date();
                                             }
-                                            writeMachineStatus(ws['machineId'], mstatus);
+                                            writeMachineStatus(ws['machineId'], st.b);
                                         }
 
                                         // console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
