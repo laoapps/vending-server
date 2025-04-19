@@ -5705,7 +5705,8 @@ export class InventoryZDM8 implements IBaseClass {
                                                 mymlimiter.push({ machineId: element, limiter: setting.limiter });
                                             }
                                         }else{
-                                            
+                                            mstatus.lastUpdate = new Date();
+                                            writeMachineStatus(ws['machineId'],mstatus);
                                         }
                                        
                                         // console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
