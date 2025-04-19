@@ -5688,8 +5688,6 @@ export class InventoryZDM8 implements IBaseClass {
                                                     mstatus.lastUpdate = new Date();
                                                     st.b = mstatus;
                                                     writeMachineStatus(ws['machineId'],mstatus);
-                                                }else{
-                                                    st.b.lastUpdate = new Date();
                                                 }
                                               
     
