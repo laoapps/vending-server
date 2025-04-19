@@ -5656,7 +5656,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                     console.log('clientid  setting', ws['machineId'], x);
                                     console.log('clientid  status', ws['machineId'], mstatus);
-                                    const mArray = ws['myMachineId'] as Array<string>;
+                                    const mArray = ws['myMachineId']?ws['myMachineId'] as Array<string>:[] as Array<string>;
                                     // console.log('myMachineId', mArray);
                                     let mymstatus = [];
                                     let mymsetting = [];
@@ -5674,31 +5674,42 @@ export class InventoryZDM8 implements IBaseClass {
 
                                         mymlimiterbalance = (await readMerchantLimiterBalance(ws['ownerUuid'])) || '0';
 
-                                        for (let index = 0; index < mArray?.length; index++) {
-                                            const element = mArray[index];
-                                            let st = await readMachineStatus(element);
-                                            if (!st) {
-                                                st = { b: {} } as any;
+                                        if(mArray.length){
+                                            for (let index = 0; index < mArray?.length; index++) {
+                                                const element = mArray[index];
+                                                let st = await readMachineStatus(element);
+                                                if (!st) {
+                                                    st = { b: {} } as any;
+                                                }
+                                                if (!st.b) {
+                                                    st.b = {};
+                                                }
+                                                if(ws['machineId']===element+''){
+                                                    mstatus.lastUpdate = new Date();
+                                                    st.b = mstatus;
+                                                    writeMachineStatus(ws['machineId'],mstatus);
+                                                }else{
+                                                    st.b.lastUpdate = new Date();
+                                                }
+                                              
+    
+    
+                                                mymstatus.push({ machineId: element, mstatus: st.b });
+    
+                                                const msetting = JSON.parse(await readMachineSetting(element))?.find(v => v.settingName == 'setting');
+                                                mymsetting.push({ msetting, machineId: element });
+    
+    
+                                                const mb = JSON.parse((await readMachineBalance(element)) || '0');
+                                                mymmachinebalance.push({ machineId: element, balance: mb });
+    
+                                                // const ml = JSON.parse((await readMachineLimiter(element)) || '100000');
+                                                mymlimiter.push({ machineId: element, limiter: setting.limiter });
                                             }
-                                            if (!st.b) {
-                                                st.b = {};
-                                            }
-                                            if(ws['machineId']===element+'')
-                                            st.b.lastUpdate = new Date();
-
-
-                                            mymstatus.push({ machineId: element, mstatus: st.b });
-
-                                            const msetting = JSON.parse(await readMachineSetting(element))?.find(v => v.settingName == 'setting');
-                                            mymsetting.push({ msetting, machineId: element });
-
-
-                                            const mb = JSON.parse((await readMachineBalance(element)) || '0');
-                                            mymmachinebalance.push({ machineId: element, balance: mb });
-
-                                            // const ml = JSON.parse((await readMachineLimiter(element)) || '100000');
-                                            mymlimiter.push({ machineId: element, limiter: setting.limiter });
+                                        }else{
+                                            
                                         }
+                                       
                                         // console.log('clientid  my machinestatus', mymstatus, mymsetting, mymlimiterbalance);
                                     } catch (error) {
                                         console.log('parsing error setting', error);
