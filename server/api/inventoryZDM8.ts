@@ -1,13 +1,13 @@
 import axios from "axios";
-import e, { NextFunction, Request, Response, Router, query } from "express";
+import e, { NextFunction, Request, Response, Router } from "express";
 import * as WebSocketServer from "ws";
-import { randomUUID } from "crypto";
+
 import crypto from 'crypto';
 import cryptojs from "crypto-js";
-import * as uuid from "uuid";
+
 
 import {
-    broadCast,
+
     findRealDB,
     PrintError,
     PrintSucceeded,
@@ -44,11 +44,8 @@ import {
 } from "../services/service";
 import {
     EClientCommand,
-    EZDM8_COMMAND,
     EMACHINE_COMMAND,
     EMessage,
-    IMachineID,
-    IMMoneyQRRes,
     IReqModel,
     IResModel,
     IStock,
@@ -62,7 +59,6 @@ import {
     IBaseClass,
     EEntity,
     IMachineClientID,
-    ERedisCommand,
     EPaymentStatus,
     IBillCashIn,
     IBankNote,
@@ -70,7 +66,6 @@ import {
     IMMoneyLoginCashin,
     IMMoneyRequestRes,
     IVendingCloneMachineSale,
-    ISaveMachineSaleReport,
     IAds,
     ILoadVendingMachineSaleBillReport,
     IMMoneyGenerateQRPro,
@@ -328,7 +323,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(this.path + "/", async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
-                    console.log("POST Data", d);
+                    // console.log("POST Data", d);
 
                     if (d.command == EClientCommand.confirmMMoney) {
                         console.log("CB COMFIRM", d);
