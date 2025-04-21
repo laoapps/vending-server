@@ -33,7 +33,13 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     try {
       const data = await this.apiService.IndexedDB.getBillProcesses();
       console.log('data loadBillLocal', data);
+      if (data.length > 0) {
+        this.apiService.isDropStock = true;
+      } else {
+        this.apiService.isDropStock = false;
+      }
       this.r = data;
+
 
 
     } catch (error) {
@@ -132,11 +138,13 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         const param = { slot: position, dropSensor };
         const device = localStorage.getItem('device') || 'VMC';
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102') {
-          this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
-          await this.loadBillLocal();
+
           this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+
             console.log('shippingcontrol', r);
             try {
+              this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+              await this.loadBillLocal();
               this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
               this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
                 // this.apiService.dismissLoading();
@@ -172,6 +180,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
           }).catch(async (error) => {
             console.log('error shippingcontrol', error);
+            this.apiService.reloadPage();
           });
         } else {
           Toast.show({ text: 'Protocol has not been implemented yet!!!!', duration: 'long' });
@@ -179,7 +188,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       } else {
         console.log('serial not init');
         Toast.show({ text: 'serial not init for drop' })
-        await this.apiService.myTab1.connect();
+        // await this.apiService.myTab1.connect();
+        this.apiService.reloadPage();
       }
 
 

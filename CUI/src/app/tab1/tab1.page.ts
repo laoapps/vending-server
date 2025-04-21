@@ -113,7 +113,7 @@ export class Tab1Page implements OnDestroy {
 
   connecting = false;
 
-  isDropStock = false;
+  // isDropStock = false;
 
   offlineMode: Boolean = true;
 
@@ -654,15 +654,15 @@ export class Tab1Page implements OnDestroy {
       this.apiService.IndexedDB.getBillProcesses().then((r) => {
         if (r.length > 0) {
           console.log('dropStock', r);
-          this.isDropStock = true;
+          this.apiService.isDropStock = true;
 
         } else {
           console.log('out dropStock', r);
-          this.isDropStock = false;
+          this.apiService.isDropStock = false;
         }
       }).catch((e) => {
         console.log('Error get dropStock from local', e);
-        this.isDropStock = false;
+        this.apiService.isDropStock = false;
       });
     }, 30000);
 
@@ -2051,15 +2051,15 @@ export class Tab1Page implements OnDestroy {
             this.apiService.IndexedDB.getBillProcesses().then((r) => {
               if (r.length > 0) {
                 console.log('dropStock', r);
-                this.isDropStock = true;
+                this.apiService.isDropStock = true;
 
               } else {
                 console.log('out dropStock', r);
-                this.isDropStock = false;
+                this.apiService.isDropStock = false;
               }
             }).catch((e) => {
               console.log('Error get dropStock from local', e);
-              this.isDropStock = false;
+              this.apiService.isDropStock = false;
             });
           }, 30000);
         });
@@ -2497,6 +2497,7 @@ export class Tab1Page implements OnDestroy {
         // this.apiService.dismissModal();
         this.apiService.pb = r as Array<IBillProcess>;
         if (this.apiService.pb.length) {
+          this.apiService.isDropStock = true;
           this.apiService
             .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, true)
             .then((r) => {
@@ -2509,6 +2510,7 @@ export class Tab1Page implements OnDestroy {
         }
 
       } else {
+        this.apiService.isDropStock = false;
         this.apiService.toast
           .create({ message: '', duration: 5000 })
           .then((r) => {

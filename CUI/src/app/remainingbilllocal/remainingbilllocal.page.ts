@@ -165,13 +165,14 @@ export class RemainingbilllocalPage implements OnInit {
 
 
         }).catch(async (error) => {
+          this.apiService.reloadPage();
           console.log('error shippingcontrol', error);
         });
 
       } else {
         console.log('serial not init');
         Toast.show({ text: 'serial not init for drop' })
-        await this.apiService.myTab1.connect();
+        this.apiService.reloadPage();
       }
 
     } catch (error) {

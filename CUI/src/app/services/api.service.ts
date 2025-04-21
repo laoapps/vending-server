@@ -235,6 +235,8 @@ export class ApiService {
 
   imageList: any = {};
 
+  isDropStock: boolean = false;
+
 
 
   localBalance: number = Number(localStorage.getItem('balanceLocal') ?? 0);
@@ -583,8 +585,9 @@ export class ApiService {
 
           this.confirmBillPaid(transactionList).subscribe((r) => {
             console.log('=====> CONFIRM BILL PAID :', r);
+            this.isDropStock = true;
             if (pb.length)
-              this.showModal(RemainingbillsPage, { r: pb, serial: serial }, true).then((r) => {
+              this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
                 r.present();
               });
             this.eventEmmiter.emit('delivery');
