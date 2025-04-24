@@ -5,6 +5,7 @@ import * as WebSocketServer from "ws";
 import crypto from 'crypto';
 import cryptojs from "crypto-js";
 import * as uuid from "uuid";
+import https from 'https';
 
 import {
 
