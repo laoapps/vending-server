@@ -1036,6 +1036,7 @@ export enum EMessage {
     refreshsucceeded = "refreshsucceeded",
     doorExist = "doorExist",
     BillCreatedTemp = "--_",
+    ListTransaction = "ListTransaction",
     LaoQRNotPaid = "LaoQRNotPaid",
     machineisdisabled = "machineisdisabled",
     machineNotExist = "machineNotExist"

@@ -4,7 +4,7 @@ import * as WebSocketServer from "ws";
 
 import crypto from 'crypto';
 import cryptojs from "crypto-js";
-
+import * as uuid from "uuid";
 
 import {
 
@@ -656,9 +656,27 @@ export class InventoryZDM8 implements IBaseClass {
                             );
                             await ent.sync();
 
-                            ent.create(bill).then((r) => {
+                            ent.create(bill).then(async (r) => {
                                 // console.log("SET transactionID by owner", ownerUuid);
                                 redisClient.setEx(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                redisClient.save();
+
+                                let resule = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
+                                let trandList: Array<any> = JSON.parse(resule);
+                                // console.log('=====>trandList', trandList);
+                                if (trandList.length >= 1) {
+                                    console.log('REMOVE FIRST TRAND');
+                                    trandList.splice(0, 1);
+                                }
+                                trandList.push({
+                                    transactionID: bill.transactionID,
+                                    createdAt: new Date()
+                                })
+                                console.log('=====>trandList2', trandList);
+                                redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+
+
+
                                 // redisClient.setEx(`FIND_${qr.transactionId + EMessage.BillCreatedTemp}`, 60 * 15, ownerUuid);
                                 // redisClient.save();
 
@@ -4839,8 +4857,8 @@ export class InventoryZDM8 implements IBaseClass {
                 "mobileNo": ownerPhone, // CashIn to Wallet Number (Merchant)  ເບີຄົນຮັບເງິນ
                 "channel": `VENDING_` + channel, // Vending Machine 
                 "owner": "LAABX", // Merchant Name  LAABX
-                // "callbackurl": "https://tvending.khamvong.com"
-                "callbackurl": "https://vendingserviceapi.laoapps.com"
+                "callbackurl": "https://tvending.khamvong.com"
+                // "callbackurl": "https://vendingserviceapi.laoapps.com"
 
             }
             console.log("LAOQR", qr);
@@ -4993,7 +5011,7 @@ export class InventoryZDM8 implements IBaseClass {
                 console.log("GET transactionID by owner", ownerUuid);
                 if (!ownerUuid && this.production) {
                     // throw new Error(EMessage.TransactionTimeOut);
-                    resolve(null);
+                    return resolve(null);
                 }
                 const ent = VendingMachineBillFactory(
                     EEntity.vendingmachinebill + "_" + ownerUuid,
@@ -5007,7 +5025,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (!bill) {
                     // throw new Error(EMessage.billnotfound);
                     // await redisClient.del(qr + EMessage.BillCreatedTemp);
-                    resolve(null);
+                    return resolve(null);
 
                 }
 
@@ -5061,22 +5079,114 @@ export class InventoryZDM8 implements IBaseClass {
 
             } catch (error) {
                 console.log('error callBackConfirmMmoney', error);
-                resolve(null);
+                return resolve(null);
             }
         });
     }
 
 
+    // callBackConfirmLaoQR(transactionID: string) {
+    //     return new Promise<IVendingMachineBill>(async (resolve, reject) => {
+    //         try {
+    //             console.log('TransactionID', transactionID);
+    //             const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || "";
+    //             console.log("GET transactionID by owner", ownerUuid);
+    //             if (!ownerUuid && this.production) {
+    //                 // throw new Error(EMessage.TransactionTimeOut);
+    //                 console.log(EMessage.TransactionTimeOut);
+    //                 resolve(null);
+    //             }
+    //             console.log('=====>ownerUuid', ownerUuid);
+
+    //             const ent = VendingMachineBillFactory(
+    //                 EEntity.vendingmachinebill + "_" + ownerUuid,
+    //                 dbConnection
+    //             );
+    //             const bill = await ent.findOne({
+    //                 where: { transactionID },
+    //             });
+    //             console.log('=====>BILL IS :', bill);
+
+    //             // if (!bill) throw new Error(EMessage.billnotfound);
+    //             if (!bill) {
+    //                 resolve(null);
+    //             }
+
+
+    //             if (bill.paymentstatus != EPaymentStatus.pending) {
+    //                 resolve(null);
+    //             }
+
+
+    //             bill.paymentstatus = EPaymentStatus.paid;
+    //             bill.changed("paymentstatus", true);
+    //             bill.paymentref = bill.transactionID + '';
+    //             bill.changed("paymentref", true);
+    //             bill.paymenttime = new Date();
+    //             bill.changed("paymenttime", true);
+    //             bill.paymentmethod = "LaoQR";
+    //             bill.changed("paymentmethod", true);
+
+    //             console.log('=====>machineId', bill.machineId);
+
+
+    //             // save report here
+
+    //             // let yy = new Array<WebSocketServer.WebSocket>();
+    //             this.getBillProcess(bill.machineId, async (b) => {
+
+    //                 bill.vendingsales.forEach((v, i) => {
+    //                     v.stock.image = "";
+    //                     b.push({
+    //                         ownerUuid,
+    //                         position: v.position,
+    //                         bill: bill.toJSON(),
+    //                         transactionID: getNanoSecTime(),
+    //                     });
+    //                 });
+
+    //                 await bill.save();
+
+    //                 console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
+
+
+
+
+    //                 ///WS
+    //                 const res = {} as IResModel;
+    //                 res.command = EMACHINE_COMMAND.waitingt;
+    //                 res.message = EMessage.waitingt;
+    //                 res.status = 1;
+    //                 res.data = b.filter((v) => v.ownerUuid == ownerUuid);
+    //                 this.setBillProces(bill.machineId, b);
+    //                 await redisClient.del(transactionID + EMessage.BillCreatedTemp);
+
+
+    //                 // console.log('*****BILL CONFIRMED RES', res.data);
+    //                 // this.sendWSToMachine(bill?.machineId + "", res);
+    //                 //////
+
+
+    //                 resolve(bill);
+    //             });
+
+    //         } catch (error) {
+    //             console.log(error);
+    //             reject(error);
+    //         }
+    //     });
+    // }
     callBackConfirmLaoQR(transactionID: string) {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
                 console.log('TransactionID', transactionID);
                 const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || "";
                 console.log("GET transactionID by owner", ownerUuid);
+
+                // Early exit if ownerUuid is not found in production mode
                 if (!ownerUuid && this.production) {
-                    // throw new Error(EMessage.TransactionTimeOut);
                     console.log(EMessage.TransactionTimeOut);
-                    resolve(null);
+                    return resolve(null); // Add return to stop execution
                 }
                 console.log('=====>ownerUuid', ownerUuid);
 
@@ -5089,15 +5199,17 @@ export class InventoryZDM8 implements IBaseClass {
                 });
                 console.log('=====>BILL IS :', bill);
 
-                // if (!bill) throw new Error(EMessage.billnotfound);
-                if (!bill) resolve(null);
-
-
-                if (bill.paymentstatus != EPaymentStatus.pending) {
-                    resolve(null);
+                // Early exit if bill is not found
+                if (!bill) {
+                    return resolve(null); // Add return to stop execution
                 }
 
+                // Early exit if payment status is not pending
+                if (bill.paymentstatus !== EPaymentStatus.pending) {
+                    return resolve(null); // Add return to stop execution
+                }
 
+                // Update bill properties
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
                 bill.paymentref = bill.transactionID + '';
@@ -5109,12 +5221,8 @@ export class InventoryZDM8 implements IBaseClass {
 
                 console.log('=====>machineId', bill.machineId);
 
-
-                // save report here
-
-                // let yy = new Array<WebSocketServer.WebSocket>();
+                // Process bill and save
                 this.getBillProcess(bill.machineId, async (b) => {
-
                     bill.vendingsales.forEach((v, i) => {
                         v.stock.image = "";
                         b.push({
@@ -5126,25 +5234,23 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
-
                     console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
 
-
-
-
-                    ///WS
+                    // WebSocket response
                     const res = {} as IResModel;
                     res.command = EMACHINE_COMMAND.waitingt;
                     res.message = EMessage.waitingt;
                     res.status = 1;
-                    res.data = b.filter((v) => v.ownerUuid == ownerUuid);
+                    res.data = b.filter((v) => v.ownerUuid === ownerUuid);
                     this.setBillProces(bill.machineId, b);
-                    // console.log('*****BILL CONFIRMED RES', res.data);
-                    // this.sendWSToMachine(bill?.machineId + "", res);
-                    //////
+                    await redisClient.del(transactionID + EMessage.BillCreatedTemp);
+                    let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
+                    let trandList: Array<any> = JSON.parse(resule);
+                    const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+                    redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
 
-                    resolve(bill);
+                    return resolve(bill); // Add return to stop callback execution
                 });
 
             } catch (error) {
@@ -5153,7 +5259,6 @@ export class InventoryZDM8 implements IBaseClass {
             }
         });
     }
-
 
     findCallBackConfirmLaoQR(machineId: string) {
         return new Promise<IResModel>(async (resolve, reject) => {
@@ -5169,7 +5274,24 @@ export class InventoryZDM8 implements IBaseClass {
 
                     if (b.length == 0) {
                         // throw new Error(EMessage.billnotfound);
-                        resolve(null);
+                        // console.log('bill not found');
+                        let resule = (await redisClient.get(machineId + EMessage.ListTransaction)) ?? '[]';
+                        let trandList: Array<any> = JSON.parse(resule);
+                        if (trandList.length > 0) {
+                            // res.message = EMessage.billnotfound;
+
+                            const result = isMoreThan50SecondsAgo(trandList[0].createdAt, new Date().toISOString());
+
+                            if (result) {
+                                console.log('More than 50 seconds have passed.');
+                                this.checkQRPaidMmoney(trandList[0].transactionID, machineId);
+                            } else {
+                                console.log('Less than or equal to 50 seconds.');
+
+                            }
+                        }
+
+                        return resolve(null);
                     }
 
                     let billPaid = [];
@@ -5193,6 +5315,33 @@ export class InventoryZDM8 implements IBaseClass {
 
                     res.data = billPaid
 
+                    if (billPaid.length == 0) {
+                        let resule = (await redisClient.get(machineId + EMessage.ListTransaction)) ?? '[]';
+                        let trandList: Array<any> = JSON.parse(resule);
+                        if (trandList.length > 0) {
+                            // res.message = EMessage.billnotfound;
+
+                            const result = isMoreThan50SecondsAgo(trandList[0].createdAt, new Date().toISOString());
+
+                            if (result) {
+                                this.checkQRPaidMmoney(trandList[0].transactionID, machineId);
+                                console.log('More than 50 seconds have passed.');
+                            } else {
+                                console.log('Less than or equal to 50 seconds.');
+                            }
+                        }
+
+                    }
+
+                    ///
+                    // 1. paid  , dont driect check
+                    // 2. not paid, check in redis
+                    // 2.1 if time of redis > 50s
+                    // 2.2 if transaction paid delete from redis 
+                    // 2.3 if transaction paid in redis and confirmed in redis like callback
+
+                    ////
+
                     resolve(res);
                     // this.setBillProces(bill.machineId, filteredB);
                 });
@@ -5204,6 +5353,8 @@ export class InventoryZDM8 implements IBaseClass {
             }
         });
     }
+
+
 
     refillMMoney(msisdn: string, transID: string, amount: number, description: any, remark1 = '', remark2 = '', remark3 = '', remark4 = '') {
 
@@ -5243,6 +5394,63 @@ export class InventoryZDM8 implements IBaseClass {
 
         })
 
+    }
+
+
+    checkQRPaidMmoney(transactionID: string, machineId: string): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            // console.log('=====> CHECK MMONEY PAID', transactionID);
+
+            const agent = new https.Agent({
+                rejectUnauthorized: false, // Skip SSL validation
+            });
+
+            const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
+
+            const authUsername = 'lmm'
+            const authPassword = 'Lmm@2024qaz2wsx'
+
+            const authToken = Buffer.from(`${authUsername}:${authPassword}`).toString('base64');
+
+            const headers = {
+                "Authorization": `Basic ${authToken}`,
+                "username": 'Vendeex',
+                "password": 'vendeex@2025qaz2wsx',
+                "apikey": 'eb718666-b20e-4091-b964-67a61e06fffe',
+                "Content-Type": 'application/json'
+            }
+
+            const res = await axios.post(API_BASE_URL, {
+                tranid: transactionID
+            },
+                { headers, httpsAgent: agent });
+
+            // console.log('=====> CHECK MMONEY PAID', res.data);
+            if (res.data.success) {
+                console.log('=====> CHECK MMONEY PAID', res.data);
+                axios.post('https://vendingserviceapi.laoapps.com', {
+                    "command": "confirmLAOQR",
+                    "data": {
+                        "trandID": transactionID
+                    }
+                }, {
+                    headers: {
+                        "Content-Type": 'application/json'
+                    }
+                }).then(async r => {
+                    console.log('=====>CONFIRM', r.data);
+                    let resule = (await redisClient.get(machineId + EMessage.ListTransaction)) ?? '[]';
+                    let trandList: Array<any> = JSON.parse(resule);
+                    const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+                    redisClient.setEx(machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                }).catch(e => {
+                    console.log('=====>CONFIRM ERROR', e);
+                })
+            } else {
+                console.log('=====> CHECK MMONEY NOT PAID', res.data);
+            }
+            resolve(null);
+        });
     }
 
     processRefillMmoney(msisdn: string, transID: string, value: number, remark: string, accessToken) {
@@ -5680,11 +5888,11 @@ export class InventoryZDM8 implements IBaseClass {
                                                     st.b = {};
                                                 }
                                                 if (ws['machineId'] === element + '') {
-                                                    if (mstatus){
+                                                    if (mstatus) {
                                                         mstatus.lastUpdate = new Date();
                                                         st.b = mstatus;
                                                     }
-                                                    else{
+                                                    else {
                                                         st.b.lastUpdate = new Date();
                                                     }
                                                     writeMachineStatus(ws['machineId'], st.b);
@@ -5712,11 +5920,11 @@ export class InventoryZDM8 implements IBaseClass {
                                             if (!st.b) {
                                                 st.b = {};
                                             }
-                                            if (mstatus){
+                                            if (mstatus) {
                                                 mstatus.lastUpdate = new Date();
                                                 st.b = mstatus;
                                             }
-                                            else{
+                                            else {
                                                 st.b.lastUpdate = new Date();
                                             }
                                             writeMachineStatus(ws['machineId'], st.b);
@@ -6389,4 +6597,12 @@ export class LoadVendingMachineStockReport {
 
 
 
+}
+
+
+function isMoreThan50SecondsAgo(fromTimeStr, toTimeStr) {
+    const from = new Date(fromTimeStr);
+    const to = new Date(toTimeStr);
+    const diffInSeconds = (to.getTime() - from.getTime()) / 1000;
+    return diffInSeconds > 50;
 }
