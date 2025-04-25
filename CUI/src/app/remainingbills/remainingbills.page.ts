@@ -138,50 +138,48 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         const param = { slot: position, dropSensor };
         const device = localStorage.getItem('device') || 'VMC';
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102') {
+          this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
+            await this.loadBillLocal();
 
-          this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+            this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+              console.log('shippingcontrol');
 
-            console.log('shippingcontrol', r);
-            try {
-              this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
-              await this.loadBillLocal();
-              this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-              this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
-                // this.apiService.dismissLoading();
-                console.log(`vending on sale`, ApiService.vendingOnSale);
-                console.log('retryProcessBill', r);
+            }).catch(async (error) => {
+              console.log('error shippingcontrol', error);
+            });
 
-              });
+            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+            this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
+              // this.apiService.dismissLoading();
+              console.log(`vending on sale`, ApiService.vendingOnSale);
+              console.log('retryProcessBill', r);
 
-              this.apiService.soundThankYou();
+            });
 
-              this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-                console.log('reload_ticket', reload_ticket);
+            this.apiService.soundThankYou();
 
-                this.r = reload_ticket;
-                console.log(`=====>here der`, this.r);
+            this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
+              console.log('reload_ticket', reload_ticket);
 
-                if (this.r != undefined && Object.entries(this.r).length == 0) {
-                  localStorage.setItem('product_fall', '0');
-                  this.clearTimer();
-                  this.apiService, this.modal.dismiss();
-                  return;
-                }
+              this.r = reload_ticket;
+              console.log(`=====>here der`, this.r);
 
-                if (human == true) {
-                  this.loadAutoFall();
-                }
-              })
-            } catch (error) {
-              console.log(`error eiei`, error.message);
-              // this.cancelTimer();
-              await this.apiService.soundSystemError();
-            }
+              if (this.r != undefined && Object.entries(this.r).length == 0) {
+                localStorage.setItem('product_fall', '0');
+                this.clearTimer();
+                this.apiService, this.modal.dismiss();
+                return;
+              }
 
-          }).catch(async (error) => {
-            console.log('error shippingcontrol', error);
+              if (human == true) {
+                this.loadAutoFall();
+              }
+            })
+          }).catch((error) => {
+            console.log('Error deleteBillProcess', error);
             this.apiService.reloadPage();
           });
+
         } else {
           Toast.show({ text: 'Protocol has not been implemented yet!!!!', duration: 'long' });
         }

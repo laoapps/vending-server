@@ -2498,15 +2498,21 @@ export class Tab1Page implements OnDestroy {
         this.apiService.pb = r as Array<IBillProcess>;
         if (this.apiService.pb.length) {
           this.apiService.isDropStock = true;
-          this.apiService
-            .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, true)
-            .then((r) => {
-              r.present();
-              this.otherModalAreOpening = true;
-              this.openAnotherModal(r);
-              clearInterval(this.autoShowMyOrderTimer);
-              this.checkActiveModal(r);
-            });
+          if (!this.apiService.isRemainingBillsModalOpen) {
+            this.apiService
+              .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, true)
+              .then((r) => {
+                this.apiService.isRemainingBillsModalOpen = true;
+                r.present();
+                r.onDidDismiss().then(() => {
+                  this.apiService.isRemainingBillsModalOpen = false;
+                })
+                this.otherModalAreOpening = true;
+                this.openAnotherModal(r);
+                clearInterval(this.autoShowMyOrderTimer);
+                this.checkActiveModal(r);
+              });
+          }
         }
 
       } else {

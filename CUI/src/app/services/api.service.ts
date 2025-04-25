@@ -237,6 +237,8 @@ export class ApiService {
 
   isDropStock: boolean = false;
 
+  isRemainingBillsModalOpen: boolean = false;
+
 
 
   localBalance: number = Number(localStorage.getItem('balanceLocal') ?? 0);
@@ -586,10 +588,20 @@ export class ApiService {
           this.confirmBillPaid(transactionList).subscribe((r) => {
             console.log('=====> CONFIRM BILL PAID :', r);
             this.isDropStock = true;
-            if (pb.length)
-              this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-                r.present();
-              });
+            if (pb.length) {
+              if (!this.isRemainingBillsModalOpen) {
+                this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+                  this.isRemainingBillsModalOpen = true;
+                  r.present();
+                  r.onDidDismiss().then(() => {
+                    this.isRemainingBillsModalOpen = false;
+                  }
+                  );
+                });
+              }
+
+            }
+
             this.eventEmmiter.emit('delivery');
             resolve(EMessage.succeeded);
           });

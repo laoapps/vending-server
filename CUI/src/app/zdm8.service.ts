@@ -270,11 +270,6 @@ export class Zdm8Service implements ISerialService {
           console.log('zdm service  Command failed:', e);
           reject({ command, params, result: e.message });
         });
-
-        // Timeout mechanism (2s as per protocol)
-        setTimeout(() => {
-          reject({ command, params, result: 'Timeout: No response within 2s' });
-        }, 2000);
       } catch (error: any) {
         reject({ command, params, result: error.message });
       }
@@ -324,7 +319,7 @@ export class Zdm8Service implements ISerialService {
   }
     public shipItem(slot = 1, dropSensor = 1) {
       return new Promise<void>(async (resolve, reject) => {
-        await this.serialService.writeVMC(EZDM8_COMMAND.shippingcontrol, { slot, dropSensor });
+        await this.command(EMACHINE_COMMAND.shippingcontrol, { slot, dropSensor },-1);
         // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
         resolve();
       });
