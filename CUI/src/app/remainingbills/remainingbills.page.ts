@@ -177,7 +177,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             })
           }).catch((error) => {
             console.log('Error deleteBillProcess', error);
-            this.apiService.reloadPage();
+            this.loadBillLocal();
           });
 
         } else {
@@ -187,7 +187,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         console.log('serial not init');
         Toast.show({ text: 'serial not init for drop' })
         // await this.apiService.myTab1.connect();
-        this.apiService.reloadPage();
+        // this.apiService.reloadPage();
       }
 
 

@@ -566,8 +566,10 @@ export class ApiService {
 
       try {
         if (r) {
-          this.dismissModal();
-          this.dismissModal();
+          if (!this.isRemainingBillsModalOpen) {
+            this.dismissModal();
+            this.dismissModal();
+          }
           this.dismissLoading();
           const pb = r.data as Array<IBillProcess>;
           // console.log('=====> PB', pb);
@@ -857,7 +859,7 @@ export class ApiService {
     // });
     setTimeout(() => {
       this.alert.dismiss();
-    }, 10000);
+    }, 15000);
   }
 
   public alertWarnning(title: string, text: string) {
