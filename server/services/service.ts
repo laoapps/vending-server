@@ -10,6 +10,7 @@ import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { Request, Response } from 'express';
 import { logEntity } from '../entities';
+import { MachineSaleFactory } from '../entities/machinesale.entity';
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
 
@@ -399,12 +400,18 @@ export function readMachineSale(machineId: string) {
     return '';
 
 }
+export function listMachineSaleLog(machineId: string,offset = 0, limit = 100) {
+    const ent = MachineSaleFactory('MachineSale_'+machineId, logEntity.sequelize);
+    return ent.findAndCountAll({ where: { machineId }, order: [['createdAt', 'DESC']], limit,offset });
+}
+export function logMachineSale(machineId: string, value: string) {
+    const ent = MachineSaleFactory('MachineSale_'+machineId, logEntity.sequelize);
+    return ent.create({ machineId, sale: value });
+}
 export function writeMachineSale(machineId: string, value: string) {
     // return redisClient.set('_machineSale_' + machineId,value);
     try {
-        const p = path.resolve(__dirname, '..');
-        fs.writeFileSync(p + '/' + machineId, value, { encoding: 'utf-8' });
-        console.log('path writeMachineSale', p);
+        logMachineSale(machineId, value);
         redisClient.set('_MachineSale_' + machineId, value);
         // console.log(`write la der`, value);
         return machineId;

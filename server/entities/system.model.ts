@@ -1095,7 +1095,10 @@ export interface IDoorPayment extends IBase {
 
 }
 
-
+export interface IMachineSale extends IBase {
+    machineId: string;
+    sale: string;
+}
 
 export interface ILogActivity extends IBase {
     ownerUuid: string;

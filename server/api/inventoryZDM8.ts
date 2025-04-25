@@ -42,6 +42,7 @@ import {
     parseMachineVMCStatus as parseMachineVMCStatus,
     readAminControl,
     setAdminControl,
+    listMachineSaleLog,
 } from "../services/service";
 import {
     EClientCommand,
@@ -2148,7 +2149,40 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+            // list log machinesale timeline
 
+            router.post(
+                this.path + "/listMachineSaleLog",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        console.log('listMachineSaleLog', d.data);
+
+                        const machineId = res.locals["machineId"];
+                        if (!machineId) throw new Error("machine is not exit");
+                        let limit = Number(req.query['limit']);
+                        let skip = Number(req.query['skip'])||0;
+                        limit = limit > 0 ? limit : 100;
+                        const offset = limit * skip;
+                        const sales = await listMachineSaleLog(machineId,offset,limit)
+                        res.send(
+                            PrintSucceeded(
+                                "listMachineSaleLog",
+                                sales,
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
             // Save Sale
             // redis
             // need to save to database as blockchain
