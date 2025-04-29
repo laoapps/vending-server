@@ -1,0 +1,18 @@
+Version 0.5.0 20221014
+beta
+todo:
+1. refill with new interface
+2. deprecated product and current product list with new interface
+3. sale interface 6 rows and 10 slots each 
+4. sale interface for available sale only with no slots
+5. show by slot 
+6. payment by multiple order
+7. payment by single order
+8. payment method list 
+9. complain box
+19. changable logo , background 
+20. changable cart panel
+21. offline mode only 
+22. online mode only
+23. hybrid mode
+24. add stock , add product, show bill , show sale, report , cash , online paymennt reports

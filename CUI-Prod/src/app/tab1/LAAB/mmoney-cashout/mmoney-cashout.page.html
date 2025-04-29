@@ -1,0 +1,110 @@
+<ion-content>
+
+  <div *ngIf="showPhonenumberPage == true" class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="">
+        <div class="title">M-Money Cash out</div>
+        <div class="sub-title">Transfer to your M-Money account</div>
+      </div>
+    </div>
+    <div class="laab-card-body">
+      <div class="cash-balance">{{ apiService.cash.amount| number }}</div>
+     <div class="balance-text">{{ phonenumber }}</div>
+     <div class="number-list">
+      <div class="left">
+        <a *ngFor="let list of numberList; let i = index" (click)="processDigits(list)" href="javascript:void(0)" class="item">{{ list }}</a>
+        <div class=""></div>
+        <a (click)="processDigits('0')" href="javascript:void(0)" class="item">0</a>
+        <div class=""></div>
+      </div>
+      <div class="right">
+        <a (click)="deleteDigits()" href="javascript:void(0)" class="item"><i class="fa-solid fa-trash-can"></i> Delete</a>
+        <a (click)="next()" href="javascript:void(0)" class="item"><i class="fa-solid fa-right-left"></i> Transfer</a>
+
+      </div>
+    </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="showMMoneyProfile == true" class="mmoney-confirm-payment-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="customePhonenumber()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">MMoney Cash Out</div>
+      <div class="sub-title">{{ subtitle }}</div>
+
+
+      <div class="list-display">
+        <div class="left">
+          <div class="logo">
+            <img src="../../../../assets/topup/LTC.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="form-group">
+            <div class="item">
+              <div class="text">Account</div>
+              <div class="value"><i class="fa-solid fa-wallet"></i> {{ fullname }}</div>
+            </div>
+            <div class="item">
+              <div class="text">Phone Number</div>
+              <div class="value"><i class="fa-solid fa-mobile-screen-button"></i> {{ phonenumber }}</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="item">
+              <div class="text">Amount</div>
+              <div class="value"><i class="fa-solid fa-money-bill-transfer"></i> {{ apiService.cash.amount | number }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="laab-card-body">
+
+    </div>
+
+    <div class="laab-card-footer">
+      <div class="btn-options">
+        <div class=""></div>
+        <div class=""></div>
+        <a (click)="customePhonenumber()" href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-keyboard" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">Back</div>
+            <div class="sub-text">custome phone number </div>
+          </div>
+        </a>
+        <a (click)="transfer()" href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Confirm</div>
+            <div class="sub-text">confirm cashout</div>
+          </div>
+          <div class="right">
+            <i class="fa-solid fa-circle-check" style="color: #fff;"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>
