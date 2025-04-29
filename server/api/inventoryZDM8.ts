@@ -2165,10 +2165,10 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = res.locals["machineId"];
                         if (!machineId) throw new Error("machine is not exit");
                         let limit = Number(req.query['limit']);
-                        let skip = Number(req.query['skip'])||0;
+                        let skip = Number(req.query['skip']) || 0;
                         limit = limit > 0 ? limit : 100;
                         const offset = limit * skip;
-                        const sales = await listMachineSaleLog(machineId,offset,limit)
+                        const sales = await listMachineSaleLog(machineId, offset, limit)
                         res.send(
                             PrintSucceeded(
                                 "listMachineSaleLog",
@@ -2990,6 +2990,12 @@ export class InventoryZDM8 implements IBaseClass {
                                 const owner = o.data[0]?.owner;
                                 const ownerPhone = o.data[0]?.ownerPhone || '';
 
+                                const isAds = o.data[0]?.isAds || false;
+                                const isMusicMuted = o.data[0]?.isMusicMuted || false;
+                                const isRobotMuted = o.data[0]?.isRobotMuted || false;
+                                const musicVolume = o.data[0]?.musicVolume || 0;
+
+
                                 const imgh = o.data[0]?.imgHeader;
                                 const imgf = o.data[0]?.imgFooter;
                                 const imgl = o.data[0]?.imgLogo;
@@ -3002,7 +3008,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume };
                                     r.data.push(a);
                                 }
                                 else {
@@ -3010,6 +3016,10 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.imgHeader = imgh;
                                     a.imgFooter = imgf;
                                     a.imgLogo = imgl;
+                                    a.isAds = isAds;
+                                    a.isMusicMuted = isMusicMuted;
+                                    a.isRobotMuted = isRobotMuted;
+                                    a.musicVolume = musicVolume;
                                 }
 
                                 // r.data = [a];

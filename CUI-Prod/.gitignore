@@ -38,3 +38,4 @@ npm-debug.log*
 /platforms
 /plugins
 /www
+.DS_Store

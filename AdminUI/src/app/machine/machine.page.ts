@@ -47,6 +47,9 @@ export class MachinePage implements OnInit {
   _l = new Array<IMachineClientID>();
   showImage: (p: string) => string;
   settings = {} as any;
+  pinFormatter(value: number) {
+    return `${value}%`;
+  }
   myMachineStatus = new Array<{ machineId: string, mstatus: IMachineStatus }>();
   readonly: boolean;
 
@@ -274,7 +277,7 @@ export class MachinePage implements OnInit {
   }
   refreshMachine(m: string) {
 
-    this.apiService.refreshMachine({machineId:m}).subscribe(rx => {
+    this.apiService.refreshMachine({ machineId: m }).subscribe(rx => {
       console.log(rx);
       if (!rx.status) {
         console.log('Update setting failed restore old data');

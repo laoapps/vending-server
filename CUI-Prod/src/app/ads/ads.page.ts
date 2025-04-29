@@ -10,18 +10,18 @@ import { IENMessage } from '../models/base.model';
   styleUrls: ['./ads.page.scss'],
 })
 export class AdsPage implements OnInit, OnDestroy {
-  playList =new Array<IAdsMedia>();
-  constructor(public apiService:ApiService,public modal:ModalController) { }
-  introductionMedia ={name:'Introduction',description:'Introduction how to use and change',type:'video',url:''};
+  playList = new Array<IAdsMedia>();
+  constructor(public apiService: ApiService, public modal: ModalController) { }
+  introductionMedia = { name: 'Introduction', description: 'Introduction how to use and change', type: 'video', url: '' };
 
   videoPlayer: HTMLVideoElement = {} as any;
 
   activeAdsList: any = {} as any;
   adsList: Array<any> = [
-    { id: 1, name:'test',description:'test',type:'video',url:'../../assets/ads/howtouseepin.webm' },
-    { id: 2, name:'test',description:'test',type:'video',url:'../../assets/ads/howto1.webm' },
-    { id: 3, name:'test',description:'test',type:'video',url:'../../assets/ads/howto2.webm' },
-    { id: 4, name:'test',description:'test',type:'video',url:'../../assets/ads/howto3.webm' },
+    { id: 1, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howtouseepin.webm' },
+    { id: 2, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto1.webm' },
+    { id: 3, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto2.webm' },
+    { id: 4, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto3.webm' },
   ];
 
   loop: any = {} as any;
@@ -37,20 +37,21 @@ export class AdsPage implements OnInit, OnDestroy {
     this.loadAds();
   }
   ngOnDestroy(): void {
-      if (this.loop) {
-        clearInterval(this.loop);
-      }
+    if (this.loop) {
+      clearInterval(this.loop);
+    }
   }
 
   loadAds(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
+
         this.currentType = this.adsList[0].type;
         this.currentUrl = this.adsList[0].url;
         if (this.currentType == 'video') {
           let reload = setInterval(() => {
             clearInterval(reload);
+            (document.querySelector('.ads-video') as HTMLVideoElement).volume = this.apiService.musicVolume / 100;
             (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
           });
         }
@@ -72,12 +73,13 @@ export class AdsPage implements OnInit, OnDestroy {
 
             if (count == -1) count = 0;
             else count++;
-            
+
             this.currentType = this.adsList[count].type;
             this.currentUrl = this.adsList[count].url;
             if (this.currentType == 'video') {
               let reload = setInterval(() => {
                 clearInterval(reload);
+                (document.querySelector('.ads-video') as HTMLVideoElement).volume = this.apiService.musicVolume / 100;
                 (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
               });
             }
@@ -85,17 +87,17 @@ export class AdsPage implements OnInit, OnDestroy {
 
 
         }, 30000);
-      
+
         resolve(IENMessage.success);
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
-        resolve(error.message); 
+        resolve(error.message);
       }
     });
   }
 
-  exit(){
+  exit() {
     if (this.loop) {
       clearInterval(this.loop);
     }

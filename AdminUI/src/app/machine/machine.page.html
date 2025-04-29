@@ -147,6 +147,13 @@
                           class="custominput" type="number" label="owner phone" placeholder="enter owner phone"
                           [(ngModel)]="settings[p.machineId].ownerPhone"></ion-input> </div>
 
+                      <div style="float: left;"> <ion-icon name="megaphone-sharp"></ion-icon> <ion-checkbox
+                          [(ngModel)]="settings[p.machineId].isAds"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="volume-mute-sharp"></ion-icon> <ion-checkbox
+                          [(ngModel)]="settings[p.machineId].isMusicMuted"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="hardware-chip-sharp"></ion-icon> <ion-checkbox
+                          [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox> </div>
+
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 
@@ -157,6 +164,11 @@
                   </tr>
                   <tr>
                     <td colspan="7">
+                      <!-- <tr *ngIf="settings[p.machineId]"> -->
+                      <ion-range [(ngModel)]="settings[p.machineId].musicVolume" min="0" max="100"
+                        aria-label="Range with pin" [pin]="true" [pinFormatter]="pinFormatter"></ion-range>
+                      <!-- </tr> -->
+
                       <div>Status </div>
                       <p>temp:{{findMachine(p?.machineId)?.temperature}}</p>
                       <p>last Update:{{findMachine(p?.machineId)?.lastUpdate|date:dateformat:'offsettz||420'}}</p>

@@ -1347,6 +1347,7 @@ export class ApiService {
     try {
       if (this.muteSound) return;
       this.audioElement.src = path;
+      this.audioElement.volume = this.musicVolume / 100;
       this.audioElement.play();
     } catch (error) {
       console.log(error);

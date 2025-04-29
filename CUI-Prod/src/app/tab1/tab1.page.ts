@@ -172,6 +172,14 @@ export class Tab1Page implements OnDestroy {
   autopilot = { auto: 0 };
 
 
+  isRobotMuted = localStorage.getItem('isRobotMuted') ? true : false;
+  isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
+  isAds = localStorage.getItem('isAds') ? true : false;
+  musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
+
+  adsOn: Boolean = false;
+
+
   notes = new Array<IBankNote>();
 
   segementList: Array<any> = [
@@ -451,17 +459,38 @@ export class Tab1Page implements OnDestroy {
                 // if(!adsOn)
                 const adsSlide = localStorage.getItem('isAds');
                 if (adsSlide != undefined && adsSlide == 'yes') {
-                  this.apiService.showModal(AdsPage).then(r => {
-                    r.present();
-                    this.otherModalAreOpening = true;
-                    this.checkActiveModal(r);
-                    this.openAnotherModal(r);
+                  if (!this.adsOn) {
+                    this.apiService.showModal(AdsPage).then(r => {
+                      r.present();
+                      this.otherModalAreOpening = true;
+                      this.checkActiveModal(r);
+                      this.openAnotherModal(r);
 
-                    // adsOn=true;
-                    // r.onDidDismiss().then(rx=>{
-                    //   adsOn=false;
-                    // })
-                  })
+                      this.adsOn = true;
+                      r.onDidDismiss().then(rx => {
+                        this.adsOn = false;
+                      })
+                    })
+                  } else {
+                    this.adsOn = false;
+                    this.apiService.dismissModal();
+                    this.apiService.showModal(AdsPage).then(r => {
+                      r.present();
+                      this.otherModalAreOpening = true;
+                      this.checkActiveModal(r);
+                      this.openAnotherModal(r);
+
+                      this.adsOn = true;
+                      r.onDidDismiss().then(rx => {
+                        this.adsOn = false;
+                      })
+                    })
+                  }
+                } else {
+                  if (this.adsOn) {
+                    this.adsOn = false;
+                    this.apiService.dismissModal();
+                  }
                 }
 
 
@@ -676,8 +705,9 @@ export class Tab1Page implements OnDestroy {
       console.log('ALIVE TAB1', res);
       try {
         const r = res?.data?.setting;
-        if (r && this.readyState) {
-          // refresh
+        // if (r && this.readyState) {
+        if (r) {
+
 
           if (r.refresh) {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
@@ -692,6 +722,88 @@ export class Tab1Page implements OnDestroy {
             this.allowVending = r.allowVending;
             console.log('Update Allow vending to', this.allowVending);
 
+          }
+
+
+          if (this.isAds != r.isAds) {
+            this.isAds = r.isAds;
+            // console.log('Update isAds to', this.isAds);
+            localStorage.setItem('isAds', this.isAds ? 'yes' : '');
+
+            const adsSlide = localStorage.getItem('isAds');
+            if (adsSlide != undefined && adsSlide == 'yes') {
+              if (!this.adsOn) {
+                this.apiService.showModal(AdsPage).then(r => {
+                  r.present();
+                  this.otherModalAreOpening = true;
+                  this.checkActiveModal(r);
+                  this.openAnotherModal(r);
+
+                  this.adsOn = true;
+                  r.onDidDismiss().then(rx => {
+                    this.adsOn = false;
+                  })
+                })
+              } else {
+                this.adsOn = false;
+                this.apiService.dismissModal();
+                this.apiService.showModal(AdsPage).then(r => {
+                  r.present();
+                  this.otherModalAreOpening = true;
+                  this.checkActiveModal(r);
+                  this.openAnotherModal(r);
+
+                  this.adsOn = true;
+                  r.onDidDismiss().then(rx => {
+                    this.adsOn = false;
+                  })
+                })
+              }
+            } else {
+              if (this.adsOn) {
+                this.adsOn = false;
+                this.apiService.dismissModal();
+              }
+            }
+
+
+            this.apiService.soundGreeting();
+          }
+
+          if (this.isMusicMuted != r.isMusicMuted) {
+            this.isMusicMuted = r.isMusicMuted;
+            console.log('Update isMusicMuted to', this.isMusicMuted);
+
+            localStorage.setItem('isMusicMuted', this.isMusicMuted ? 'yes' : '');
+            this.apiService.backgrounSound = this.isMusicMuted;
+            // console.log('this.apiService.backgrounSound', this.apiService.backgrounSound);
+            if (this.isMusicMuted) {
+              this.apiService.backGroundMusicElement.pause();
+            } else {
+              this.apiService.playBackGroundMusic();
+            }
+          }
+
+          if (this.isRobotMuted != r.isRobotMuted) {
+            this.isRobotMuted = r.isRobotMuted;
+            console.log('Update isRobotMuted to', this.isRobotMuted);
+
+            localStorage.setItem('isRobotMuted', this.isRobotMuted ? 'yes' : '');
+            this.apiService.muteSound = this.isRobotMuted;
+            if (!this.isRobotMuted) {
+              this.apiService.audioElement.pause();
+            } else {
+              // this.apiService.playSound();
+            }
+            // console.log('this.apiService.backgrounSound', this.apiService.backgrounSound);
+          }
+
+          if (this.musicVolume != r.musicVolume) {
+            this.musicVolume = r.musicVolume;
+            console.log('Update musicVolume to', this.musicVolume);
+            localStorage.setItem('musicVolume', this.musicVolume.toString());
+            this.apiService.musicVolume = this.musicVolume;
+            this.apiService.reloadPage();
           }
 
           if (this.selectedDevice == 'VMC') {
@@ -723,6 +835,7 @@ export class Tab1Page implements OnDestroy {
           } else {
             console.log('Nothing to do for other devices');
           }
+
 
 
 
@@ -2778,22 +2891,22 @@ export class Tab1Page implements OnDestroy {
 
 
   }
-  openads() {
-    this.apiService.modal
-      .create({
-        component: AdsPage,
-        componentProps: {},
-        cssClass: 'dialog-fullscreen',
-      })
-      .then((r) => {
-        r.present();
-        this.otherModalAreOpening = true;
-        this.openAnotherModal(r);
+  // openads() {
+  //   this.apiService.modal
+  //     .create({
+  //       component: AdsPage,
+  //       componentProps: {},
+  //       cssClass: 'dialog-fullscreen',
+  //     })
+  //     .then((r) => {
+  //       r.present();
+  //       this.otherModalAreOpening = true;
+  //       this.openAnotherModal(r);
 
-        // this.checkActiveModal(r);
+  //       // this.checkActiveModal(r);
 
-      });
-  }
+  //     });
+  // }
 
   openWebViewMenu(link: string) {
     let component: any = {} as any;
