@@ -790,6 +790,8 @@ export class Tab1Page implements OnDestroy {
 
             localStorage.setItem('isRobotMuted', this.isRobotMuted ? 'yes' : '');
             this.apiService.muteSound = this.isRobotMuted;
+            // console.log('this.apiService.muteSound', this.apiService.muteSound);
+
             if (!this.isRobotMuted) {
               this.apiService.audioElement.pause();
             } else {

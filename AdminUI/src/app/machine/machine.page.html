@@ -151,8 +151,14 @@
                           [(ngModel)]="settings[p.machineId].isAds"></ion-checkbox> </div>
                       <div style="float: left;"> <ion-icon name="volume-mute-sharp"></ion-icon> <ion-checkbox
                           [(ngModel)]="settings[p.machineId].isMusicMuted"></ion-checkbox> </div>
-                      <div style="float: left;"> <ion-icon name="hardware-chip-sharp"></ion-icon> <ion-checkbox
-                          [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox> </div>
+                      <div style="float: left;">
+                        <div style="position: relative; display: inline-block;">
+                          <ion-icon name="logo-electron" style="font-size: 24px;"></ion-icon>
+                          <ion-icon name="volume-mute-sharp"
+                            style="position: absolute; top: 0; right: 0; font-size: 15px; color: black;"></ion-icon>
+                        </div>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox>
+                      </div>
 
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
