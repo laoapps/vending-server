@@ -149,8 +149,11 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             });
 
             this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+            console.log(new Date().getTime());
 
             setTimeout(() => {
+              console.log(new Date().getTime());
+
               this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
                 // this.apiService.dismissLoading();
                 console.log(`vending on sale`, ApiService.vendingOnSale);
@@ -159,6 +162,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
               }, (error) => {
                 console.log('error retryProcessBill', error);
               });
+
             }, 2000);
 
 

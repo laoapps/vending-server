@@ -400,18 +400,23 @@ export function readMachineSale(machineId: string) {
     return '';
 
 }
-export function listMachineSaleLog(machineId: string,offset = 0, limit = 100) {
-    const ent = MachineSaleFactory('MachineSale_'+machineId, logEntity.sequelize);
-    return ent.findAndCountAll({ where: { machineId }, order: [['createdAt', 'DESC']], limit,offset });
+export function listMachineSaleLog(machineId: string, offset = 0, limit = 100) {
+    const ent = MachineSaleFactory('MachineSale_' + machineId, logEntity.sequelize);
+    return ent.findAndCountAll({ where: { machineId }, order: [['createdAt', 'DESC']], limit, offset });
 }
-export function logMachineSale(machineId: string, value: string) {
-    const ent = MachineSaleFactory('MachineSale_'+machineId, logEntity.sequelize);
+export async function logMachineSale(machineId: string, value: string) {
+    const ent = MachineSaleFactory('MachineSale_' + machineId, logEntity.sequelize);
+    await ent.sync();
     return ent.create({ machineId, sale: value });
 }
 export function writeMachineSale(machineId: string, value: string) {
     // return redisClient.set('_machineSale_' + machineId,value);
     try {
-        logMachineSale(machineId, value);
+        logMachineSale(machineId, value).then(r => {
+            console.log('logMachineSale', r);
+        }).catch(e => {
+            console.log('error logMachineSale', e);
+        });
         redisClient.set('_MachineSale_' + machineId, value);
         // console.log(`write la der`, value);
         return machineId;
@@ -521,11 +526,11 @@ export function writeMachinePendingStock(machineId: string, b: any) {
     redisClient.set('_machinependingstock_' + machineId, JSON.stringify(b));
 }
 
-export function readAminControl(){
+export function readAminControl() {
     return redisClient.get('_amincontrol_');
 }
-export function setAdminControl(data=''){
-    redisClient.set('_amincontrol_',data);
+export function setAdminControl(data = '') {
+    redisClient.set('_amincontrol_', data);
 }
 export async function readMachineStatus(machineId: string) {
     const x = await redisClient.get('_machinestatus_' + machineId);
