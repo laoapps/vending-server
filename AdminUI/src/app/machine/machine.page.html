@@ -173,6 +173,13 @@
                       <!-- <tr *ngIf="settings[p.machineId]"> -->
                       <ion-range [(ngModel)]="settings[p.machineId].musicVolume" min="0" max="100"
                         aria-label="Range with pin" [pin]="true" [pinFormatter]="pinFormatter"></ion-range>
+
+                      <div>
+                        <ion-icon name="barcode-outline"></ion-icon>
+                        <ion-textarea class="custominput" rows="2" auto-grow="true" placeholder="enter Ads List"
+                          [(ngModel)]="settings[p.machineId].adsList">
+                        </ion-textarea>
+                      </div>
                       <!-- </tr> -->
 
                       <div>Status </div>

@@ -177,7 +177,9 @@ export class MachinePage implements OnInit {
           console.log('....', v);
           if (!Array.isArray(v.data)) v.data = [v.data]
           let setting = v.data?.find(vx => vx?.settingName == 'setting');
+
           console.log('setting', setting);
+
 
           if (!setting) {
             setting = {};
@@ -191,6 +193,7 @@ export class MachinePage implements OnInit {
             setting.imgFooter = '';
             setting.imgLogo = '';
           }
+
           this.settings[v.machineId] = setting;
         })
 
@@ -229,12 +232,21 @@ export class MachinePage implements OnInit {
             setting.lowTemp = 5;
             setting.highTemp = 15;
             setting.light = { start: 3, end: 2 };
+            setting.adsList = [];
 
             setting.imei = '';
           }
           if (typeof setting.light == 'boolean') {
             setting.light = { start: 3, end: 2 };
           }
+          if (setting.adsList == undefined || setting.adsList == null) {
+            setting.adsList = [];
+          }
+          setting.adsList = setting.adsList?.join(',')
+
+
+          console.log('setting.adsList', setting.adsList);
+
           this.settings[v.machineId] = setting;
         });
 
@@ -252,6 +264,11 @@ export class MachinePage implements OnInit {
   }
   updateSetting(m: string) {
     const setting = this.settings[m];
+    setting.adsList = setting.adsList?.split(',')
+      .map(item => item.trim())
+      .filter(item => item);
+    console.log('setting0', setting);
+
     const o = this._l.find(v => v.machineId == m);
     const oldData = JSON.stringify(o.data);
     o.data = [setting];

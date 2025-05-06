@@ -679,7 +679,7 @@ export class ApiService {
       // }
 
       this.saveSale(vsales).subscribe((r) => {
-        console.log(r);
+        console.log('saveSale', r);
         if (r.status) {
           console.log(`save sale success`);
         } else {
@@ -1353,6 +1353,16 @@ export class ApiService {
 
     }
   }
+
+  playSoundWarning(path: string) {
+    try {
+      this.audioElement.src = path;
+      this.audioElement.play();
+    } catch (error) {
+      console.log(error);
+
+    }
+  }
   simpleMessage(text: string, time: number = 2000) {
     this.toast
       .create({ message: text, duration: time })
@@ -1445,6 +1455,28 @@ export class ApiService {
       }
     });
   }
+
+  soundQRTimeout(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const arr = [
+        '../../assets/lao-voices/soundtimeoutman.mp3',
+        '../../assets/lao-voices/soundtimeoutwomen.mp3',
+      ];
+      try {
+        const audio = new Audio();
+        audio.src = arr[Math.floor(Math.random() * arr.length)];
+        audio.loop = false;
+        audio.volume = 1.0;
+        audio.play();
+        resolve(IENMessage.success);
+      } catch (error) {
+        console.log('error soundQRTimeout', error);
+
+        resolve(error.message);
+      }
+    })
+  };
+
   soundGreeting(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       const arr = [

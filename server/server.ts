@@ -53,7 +53,28 @@ CreateDatabase("")
       })
     );
     // app.use(express.json());
-    app.use(cors());
+    // app.use(cors());
+    // Allow all origins, methods, and headers
+    app.use(cors({
+      origin: "*", // Allow all origins
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all common HTTP methods
+      allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
+      credentials: true // Allow cookies and credentials if needed
+    }));
+
+    // app.use(cors({
+    //   origin: (origin, callback) => {
+    //     // Allow requests with no origin (e.g., same-origin or mobile apps)
+    //     if (!origin) return callback(null, true);
+    //     // Allow specific origins
+    //     const allowedOrigins = ["https://yourdomain.com", "http://localhost:3000"];
+    //     if (allowedOrigins.includes(origin)) {
+    //       return callback(null, true);
+    //     }
+    //     return callback(new Error("Not allowed by CORS"));
+    //   },
+    //   credentials: true
+    // }));
     app.use(cookieParser());
     app.disable("x-powered-by");
     app.use(helmet.hidePoweredBy());

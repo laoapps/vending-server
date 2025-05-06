@@ -509,6 +509,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
               this.apiService.myTab1.clearStockAfterLAABGo();
               this.close();
+              this.apiService.soundQRTimeout();
               this.apiService.alertTimeout('ໝົດເວລາແລ້ວ, ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ. \nຫ້າມສ້າງບິນໃໝ່ໂດຍເດັດຂາດ!');
               return resolve(IENMessage.success);
             } else {
