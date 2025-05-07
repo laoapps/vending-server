@@ -26,7 +26,7 @@ export class LiveupdateService {
           url: latestBundle.url,
           bundleId: latestBundle.bundleId,
         });
-        await LiveUpdate.setNextBundle({ bundleId: latestBundle.bundleId });
+        await LiveUpdate.setBundle({ bundleId: latestBundle.bundleId });
         await LiveUpdate.reload();
         console.log('Bundle downloaded and set as next bundle.');
       } else {
@@ -40,7 +40,7 @@ export class LiveupdateService {
 
   async isNewBundleAvailable(latestBundleId: string): Promise<boolean> {
     try {
-      const { bundleId: currentBundleId } = await LiveUpdate.getCurrentBundle();
+      const { bundleId: currentBundleId } = await LiveUpdate.getBundle();
       return latestBundleId !== currentBundleId;
     } catch (error) {
       console.error('Error checking bundle availability:', error);
