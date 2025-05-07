@@ -2378,7 +2378,8 @@ export enum EEntity {
     Door = "Door",
     DoorPayment = "DoorPayment",
     vendingVersion = 'vendingversion',
-    droplogactivity = "droplogactivity"
+    droplogactivity = "droplogactivity",
+    bundle = "bundle"
 }
 
 export interface ISaveMachineSaleReport {

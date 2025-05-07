@@ -133,7 +133,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     }
 
     try {
-      if (!this.serial) {
+      if (this.serial) {
         const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '1') || 1;
         const param = { slot: position, dropSensor };
         const device = localStorage.getItem('device') || 'VMC';
@@ -149,10 +149,10 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             });
 
             this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-            console.log(new Date().getTime());
+            // console.log(new Date().getTime());
 
             setTimeout(() => {
-              console.log(new Date().getTime());
+              // console.log(new Date().getTime());
 
               this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
                 // this.apiService.dismissLoading();

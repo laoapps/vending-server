@@ -22,6 +22,7 @@ import { DoorFactory, DoorStatic } from "./doors.entity";
 import { DoorPaymentFactory, DoorPaymentStatic } from "./doorpayment.entity";
 import { VendingVersionFactory, VendingVersionStatic } from "./vendingversion.entity";
 import { DropLogActivityFactory, DropLogActivityStatic } from "./droplogactivity.entity";
+import { BundleFactory, BundleStatic } from "./appupdate.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -49,7 +50,21 @@ export let epinshortcodeEntity: EPINShortCodeStatic;
 export let subadminEntity: SubadminStatic;
 
 
+//
+
+export let BundleEntity: BundleStatic;
+
 export const initDB = () => {
+
+
+    console.log(`BundleEntity sync`);
+    BundleEntity = BundleFactory(EEntity.bundle, dbConnection);
+    BundleEntity.sync().then(r => {
+        console.log('BundleEntity synced', r);
+    });
+
+
+
     laabHashService = new LAABHashService();
     DoorPaymentFactory(EEntity.DoorPayment, dbConnection).sync().then(() => {
         console.log(`DoorPayment sync`);
@@ -71,6 +86,9 @@ export const initDB = () => {
         console.log(`vending version sync`);
         vendingVersionEntity = VendingVersionFactory(EEntity.vendingVersion, dbConnection);
     });
+
+
+
     adsEntity = AdsFactory(EEntity.ads, dbConnection).sync().then(() => {
         console.log(`vending wallet sync`);
         adsEntity = AdsFactory(EEntity.ads, dbConnection);

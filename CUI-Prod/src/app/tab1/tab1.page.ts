@@ -83,6 +83,7 @@ import * as moment from 'moment';
 import { DatabaseService } from '../database.service';
 import { IBankNote, IHashBankNote } from '../vmc.service';
 import { Zdm8Service } from '../zdm8.service';
+import { LiveupdateService } from '../liveupdate.service';
 
 @Component({
   selector: 'app-tab1',
@@ -361,6 +362,7 @@ export class Tab1Page implements OnDestroy {
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
+    private liveUpdateService: LiveupdateService,
     public platform: Platform,
     public modal: ModalController,
     // private scanner: @ionic-native/serial,
@@ -903,6 +905,19 @@ export class Tab1Page implements OnDestroy {
     if (this.serial) {
       this.serial.close();
       console.log('serial closed');
+    }
+  }
+
+
+  checkLiveUpdate() {
+    try {
+      this.liveUpdateService.checkForUpdates().then((res) => {
+        console.log('checkForUpdates', res);
+      }).catch((e) => {
+        console.log('Error checkLiveUpdate', e);
+      });
+    } catch (error) {
+      console.log('Error checkLiveUpdate', error);
     }
   }
 

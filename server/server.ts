@@ -23,6 +23,7 @@ import { CashNV9LAAB } from "./api/cashNV9LAAB";
 import { InventoryLocker } from "./api/inventoryLocker";
 import { ControlVersionAPI } from "./api/controlVersion";
 import dotenv from "dotenv";
+import { initBundle } from "./services/appupdate";
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
@@ -82,6 +83,8 @@ CreateDatabase("")
 
 
 
+
+
     // const wss = new WebSocket.Server({ server });
 
     // console.log('F',f);
@@ -121,9 +124,15 @@ CreateDatabase("")
     fs.existsSync(process.env._image_path) ||
       fs.mkdirSync(process.env._image_path);
 
+    initBundle(app);
+
+
     // app.use("/vmc/public", express.static(process.env._image_path));
     app.use("/zdm8/public", express.static(process.env._image_path));
     // app.use("/m102/public", express.static(process.env._image_path));
+
+
+
 
     app.post("/", (req, res) => {
       const http = req.protocol; // http
