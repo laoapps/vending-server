@@ -84,6 +84,7 @@ import { DatabaseService } from '../database.service';
 import { IBankNote, IHashBankNote } from '../vmc.service';
 import { Zdm8Service } from '../zdm8.service';
 import { LiveupdateService } from '../liveupdate.service';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-tab1',
@@ -919,8 +920,9 @@ export class Tab1Page implements OnDestroy {
 
   checkLiveUpdate(version: string) {
     try {
-      this.liveUpdateService.checkForUpdates(version).then((res) => {
+      this.liveUpdateService.checkForUpdates(version).then(async (res) => {
         console.log('checkForUpdates', res);
+        await App.exitApp();
       }).catch((e) => {
         console.log('Error checkLiveUpdate', e);
       });

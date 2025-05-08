@@ -42,7 +42,6 @@ export class LiveupdateService {
         await LiveUpdate.setBundle({ bundleId: latestBundle.bundleId });
         await LiveUpdate.reload().then(() => {
           console.log('App reloaded with the new update');
-          this.apiService.reloadPage();
 
         }).catch((error) => {
           console.log('Error reloading app:', error);
