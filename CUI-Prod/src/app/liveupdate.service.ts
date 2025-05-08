@@ -2,24 +2,35 @@ import { Injectable } from '@angular/core';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { ApiService } from './services/api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LiveupdateService {
-  private serverUrl = 'http://localhost:9016';
+  private serverUrl = 'https://tvending.khamvong.com';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,
+    private apiService: ApiService
+
+  ) { }
 
   async checkForUpdates(): Promise<any> {
     try {
+      const url = 'https://tvending.khamvong.com/latest-bundle?bundleId=1.0.104';
+      console.log('Checking for updates at:', url);
+
       const latestBundle = await firstValueFrom(
         this.http.get<{ bundleId: string; url: string; channel: string }>(
-          `${this.serverUrl}/latest-bundle?bundleId=1.0.103`
+          url
         )
       );
 
+      console.log('Latest bundle:', JSON.stringify(latestBundle));
+
+
       const isNewBundleAvailable = await this.isNewBundleAvailable(latestBundle.bundleId);
+      console.log('Is new bundle available:', isNewBundleAvailable);
       if (isNewBundleAvailable) {
         console.log('New bundle available, downloading...', latestBundle.url);
         await LiveUpdate.downloadBundle({
@@ -27,8 +38,16 @@ export class LiveupdateService {
           bundleId: latestBundle.bundleId,
         });
         await LiveUpdate.setBundle({ bundleId: latestBundle.bundleId });
-        await LiveUpdate.reload();
+        await LiveUpdate.reload().then(() => {
+          console.log('App reloaded with the new update');
+          this.apiService.reloadPage();
+
+        }).catch((error) => {
+          console.log('Error reloading app:', error);
+        });
+
         console.log('Bundle downloaded and set as next bundle.');
+        return latestBundle;
       } else {
         console.log('No new bundle available.');
       }
