@@ -2995,6 +2995,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const isRobotMuted = o.data[0]?.isRobotMuted || false;
                                 const musicVolume = o.data[0]?.musicVolume || 0;
                                 const adsList = o.data[0]?.adsList || [];
+                                const versionId = o.data[0]?.versionId || '';
 
 
                                 const imgh = o.data[0]?.imgHeader;
@@ -3009,7 +3010,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId };
                                     r.data.push(a);
                                 }
                                 else {
@@ -3022,6 +3023,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.isRobotMuted = isRobotMuted;
                                     a.musicVolume = musicVolume;
                                     a.adsList = adsList;
+                                    a.versionId = versionId;
                                 }
 
                                 // r.data = [a];

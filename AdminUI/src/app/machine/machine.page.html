@@ -160,6 +160,9 @@
                         <ion-checkbox [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox>
                       </div>
 
+                      <div style="float: right;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
+                          class="custominput" type="text" label="version" placeholder="enter version"
+                          [(ngModel)]="settings[p.machineId].versionId"></ion-input> </div>
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 

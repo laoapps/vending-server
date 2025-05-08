@@ -177,6 +177,7 @@ export class Tab1Page implements OnDestroy {
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
+  versionId = localStorage.getItem('versionId') || '0.0.0';
 
   adsOn: Boolean = false;
 
@@ -810,6 +811,13 @@ export class Tab1Page implements OnDestroy {
             this.apiService.reloadPage();
           }
 
+          if (this.versionId != r.versionId) {
+            this.versionId = r.versionId;
+            localStorage.setItem('versionId', this.versionId);
+            console.log('Update versionId to', this.versionId);
+            this.checkLiveUpdate(this.versionId);
+          }
+
           if (this.selectedDevice == 'VMC') {
             // set allow cashIn
             if (this.allowCashIn != r.allowCashIn) {
@@ -909,9 +917,9 @@ export class Tab1Page implements OnDestroy {
   }
 
 
-  checkLiveUpdate() {
+  checkLiveUpdate(version: string) {
     try {
-      this.liveUpdateService.checkForUpdates().then((res) => {
+      this.liveUpdateService.checkForUpdates(version).then((res) => {
         console.log('checkForUpdates', res);
       }).catch((e) => {
         console.log('Error checkLiveUpdate', e);

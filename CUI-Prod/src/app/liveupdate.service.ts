@@ -3,6 +3,7 @@ import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from './services/api.service';
+import { environment } from 'src/environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +16,10 @@ export class LiveupdateService {
 
   ) { }
 
-  async checkForUpdates(): Promise<any> {
+  async checkForUpdates(version: string): Promise<any> {
     try {
-      const url = 'https://tvending.khamvong.com/latest-bundle?bundleId=1.0.104';
+      const vending_server = localStorage.getItem('vending_server') || environment.vending_server;
+      const url = `${vending_server}/latest-bundle?bundleId=${version}`;
       console.log('Checking for updates at:', url);
 
       const latestBundle = await firstValueFrom(
