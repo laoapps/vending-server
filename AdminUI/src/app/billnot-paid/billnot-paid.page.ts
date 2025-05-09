@@ -187,7 +187,7 @@ export class BillnotPaidPage implements OnInit {
         this.apiService.CheckBillPaidFromMmoney(paramsData).subscribe(async r => {
           const response: any = r;
           console.log('response', response.status);
-          if (response.status != 1) {
+          if (response.status == 1) {
             this.apiService?.alert.create({
               header: 'Paid',
               message: 'ຈ່າຍເງິນແລ້ວ',
