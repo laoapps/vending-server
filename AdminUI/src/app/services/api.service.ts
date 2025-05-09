@@ -383,6 +383,10 @@ export class ApiService {
         return this.http.post(this.url + '/checkPaidMmoney', data, { headers: this.headerBase() });
     }
 
+    sendDropBill(data: any) {
+        return this.http.post(this.url + '/sendDropAdmin', data, { headers: this.headerBase() });
+    }
+
     loadVendingMachineStockReport(data: any) {
         return this.http.post(this.url + '/loadVendingMachineStockReport', data, { headers: this.headerBase() });
     }

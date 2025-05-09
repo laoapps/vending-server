@@ -88,7 +88,7 @@
             <td>{{ sale.paymentstatus == 'pending' ? 'ຍັງບໍ່ທັນຈ່າຍ' : '' }}</td>
             <td>{{ sale.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
             <td>
-              <button class="btn btn-view">ກວດ Mmoney</button>
+              <button (click)="CheckPaid(sale.transactionID)" class="btn btn-view">ກວດ Mmoney</button>
             </td>
           </tr>
         </tbody>

@@ -3169,6 +3169,85 @@ export class InventoryZDM8 implements IBaseClass {
 
             )
 
+
+            router.post(this.path + '/sendDropAdmin',
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const transactionID = req.body.transactionID;
+                        const ownerUuid = req.body.ownerUuid;
+
+                        if (!transactionID || !ownerUuid) {
+                            res.send(PrintError("reportBillNotPaid", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+                        const ent = VendingMachineBillFactory(
+                            EEntity.vendingmachinebill + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        const bill = await ent.findOne({
+                            where: { transactionID },
+                        });
+                        console.log('=====>BILL IS :', bill);
+
+                        if (!bill) {
+                            return res.send(PrintError("reportBillNotPaid", [], EMessage.notfound, returnLog(req, res, true)));
+                        }
+
+                        if (bill.paymentstatus !== EPaymentStatus.pending) {
+                            return res.send(PrintError("reportBillNotPaid", [], EMessage.exist, returnLog(req, res, true)));
+                        }
+
+                        bill.paymentstatus = EPaymentStatus.paid;
+                        bill.changed("paymentstatus", true);
+                        bill.paymentref = bill.transactionID + '';
+                        bill.changed("paymentref", true);
+                        bill.paymenttime = new Date();
+                        bill.changed("paymenttime", true);
+                        bill.paymentmethod = "LaoQR";
+                        bill.changed("paymentmethod", true);
+
+                        console.log('=====>machineId', bill.machineId);
+
+                        this.getBillProcess(bill.machineId, async (b) => {
+                            bill.vendingsales.forEach((v, i) => {
+                                v.stock.image = "";
+                                b.push({
+                                    ownerUuid,
+                                    position: v.position,
+                                    bill: bill.toJSON(),
+                                    transactionID: getNanoSecTime(),
+                                });
+                            });
+
+                            await bill.save();
+                            console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
+
+                            // WebSocket response
+                            const resD = {} as IResModel;
+                            resD.command = EMACHINE_COMMAND.waitingt;
+                            resD.message = EMessage.waitingt;
+                            resD.status = 1;
+                            resD.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                            this.setBillProces(bill.machineId, b);
+                            await redisClient.del(transactionID + EMessage.BillCreatedTemp);
+                            let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
+                            let trandList: Array<any> = JSON.parse(resule);
+                            const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+                            redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                            return res.send(PrintSucceeded("reportBillNotPaid", resD, EMessage.succeeded, returnLog(req, res)));
+                        });
+                    } catch (error) {
+                        console.log('reportBillNotPaid :', error);
+                        res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
             router.post(
                 this.path + "/readAdminControl",
                 this.checkSuperAdmin,

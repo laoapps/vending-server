@@ -157,4 +157,80 @@ export class BillnotPaidPage implements OnInit {
       }
     });
   }
+
+  SendDrop(transactionID: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        const paramsData = {
+          transactionID: transactionID,
+          ownerUuid: this.ownerUuid,
+          token: this.token
+        }
+        this.apiService.sendDropBill(paramsData).subscribe(async r => {
+          console.log('response SendDrop', r);
+        })
+      } catch (error) {
+        console.log('error', error);
+
+      }
+    });
+
+  }
+
+  CheckPaid(transactionID: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        const paramsData = {
+          transactionID: transactionID,
+          token: this.token
+        }
+        this.apiService.CheckBillPaidFromMmoney(paramsData).subscribe(async r => {
+          const response: any = r;
+          console.log('response', response.status);
+          if (response.status != 1) {
+            this.apiService?.alert.create({
+              header: 'Paid',
+              message: 'ຈ່າຍເງິນແລ້ວ',
+              buttons: [
+                {
+                  text: 'OK',
+                  handler: () => {
+                    console.log('Confirm Okay');
+                  }
+                },
+                {
+                  text: 'ສັ່ງເຄື່ອງຕົກ',
+                  handler: () => {
+                    // console.log('Confirm Okay');
+                    this.SendDrop(transactionID);
+                  }
+                },
+              ]
+            }).then(alert => {
+              alert.present();
+            });
+          } else {
+            this.apiService?.alert.create({
+              header: 'Unpaid',
+              message: 'ຍັງບໍ່ທັນໄດ້ຈ່າຍເງິນ',
+              buttons: [
+                {
+                  text: 'OK',
+                  handler: () => {
+                    console.log('Confirm Okay');
+                  }
+                }
+              ]
+            }).then(alert => {
+              alert.present();
+            });
+          }
+        });
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
 }
