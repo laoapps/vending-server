@@ -224,6 +224,10 @@ const routes: Routes = [
     path: 'summary',
     loadChildren: () => import('./summary/summary.module').then( m => m.SummaryPageModule)
   },
+  {
+    path: 'billnot-paid',
+    loadChildren: () => import('./billnot-paid/billnot-paid.module').then( m => m.BillnotPaidPageModule)
+  },
 ];
 @NgModule({
   imports: [

@@ -99,6 +99,8 @@
                           class="fa-solid fa-pencil"></i> Sale</button>
                       <button (click)="refreshMachine(p.machineId)" class="btn btn-light border border-1"><i
                           class="fa-solid fa-rotate"></i> Refresh</button>
+                      <button (click)="billNotPaid(p.machineId,p.otp,p.ownerUuid)"
+                        class="btn btn-light border border-1"><i class="fa-solid fa-qrcode"></i> ບິນບໍ່ທັນຈ່າຍ </button>
                       <button (click)="resetCashing(p.machineId)" class="btn btn-light border border-1"><i
                           class="fa-solid fa-rotate"></i> Reset Cashing</button>
                     </td>

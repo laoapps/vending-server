@@ -43,6 +43,7 @@ import {
     readAminControl,
     setAdminControl,
     listMachineSaleLog,
+    CheckMmoneyPaid,
 } from "../services/service";
 import {
     EClientCommand,
@@ -3107,6 +3108,67 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+
+            router.post(this.path + '/reportBillNotPaid',
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = req.body.ownerUuid;
+                        const machineId = req.body.machineId;
+                        const data = req.body;
+
+                        if (!ownerUuid || !machineId) {
+                            res.send(PrintError("reportBillNotPaid", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const run = await this.getReportBillNotPaid(machineId, ownerUuid, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportBillNotPaid :', error);
+                        res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
+            router.post(this.path + '/checkPaidMmoney',
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const transactionID = req.body.transactionID;
+                        if (!transactionID) {
+                            res.send(PrintError("checkPaidMmoney", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+                        const result = await CheckMmoneyPaid(transactionID);
+                        if (result.status == 0) {
+                            res.send(PrintError("checkPaidMmoney", result.message, EMessage.error, returnLog(req, res, true)));
+                            return;
+                        }
+                        return res.send(PrintSucceeded("report", result.message, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportBillNotPaid :', error);
+                        res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
             router.post(
                 this.path + "/readAdminControl",
                 this.checkSuperAdmin,
@@ -5451,7 +5513,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('=====> CHECK MMONEY PAID', transactionID);
 
             const agent = new https.Agent({
-                rejectUnauthorized: false, // Skip SSL validation
+                rejectUnauthorized: false,
             });
 
             const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
@@ -6280,6 +6342,38 @@ export class InventoryZDM8 implements IBaseClass {
         // const res = await ent.findAndCountAll(condition);
         const res = await dropLogEntity.findAndCountAll(condition);
         return res;
+    }
+
+    private async getReportBillNotPaid(machineId: string, ownerUuid: string, fromDate: string, toDate: string) {
+        let condition: any = {};
+        if (machineId == 'all') {
+
+            condition = {
+                where: {
+                    paymentstatus: EPaymentStatus.pending,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        else {
+            condition = {
+                where: {
+                    machineId: machineId,
+                    paymentstatus: EPaymentStatus.pending,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+
+        const ent = VendingMachineBillFactory(
+            EEntity.vendingmachinebill + "_" + ownerUuid,
+            dbConnection
+        );
+        await ent.sync();
+        const bill = await ent.findAndCountAll(condition);
+        return bill;
     }
 
     // SaveMachineSaleReport(params: ISaveMachineSaleReport): Promise<any> {

@@ -17,6 +17,7 @@ import { LoadMachineListProcess } from './processes/loadMachineList.process';
 import { RefreshMachineProcess } from './processes/refreshMachine.process';
 import { SaleReportPage } from '../sale/sale-report/sale-report.page';
 import { ResetCashingProcess } from './processes/resetCashing.process';
+import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
 
 
 @Component({
@@ -426,6 +427,16 @@ export class MachinePage implements OnInit {
       })
     });
   }
+
+  billNotPaid(machineId: string, otp: string, ownerUuid: string) {
+    this.apiService.showModal(BillnotPaidPage, { machineId: machineId, otp: otp, ownerUuid: ownerUuid }).then(r => {
+      r.present();
+      r.onDidDismiss().then(() => {
+
+      });
+    })
+  }
+
   close() {
     this.apiService.closeModal()
   }

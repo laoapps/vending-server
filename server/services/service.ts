@@ -11,6 +11,8 @@ import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { Request, Response } from 'express';
 import { logEntity } from '../entities';
 import { MachineSaleFactory } from '../entities/machinesale.entity';
+import https from 'https';
+
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
 
@@ -644,4 +646,46 @@ export function parseMachineVMCStatus(hexString: string): IMachineStatus {
         machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
         machineHumidity, // Undefined if not present
     };
+}
+
+export function CheckMmoneyPaid(transactionID: string): Promise<{ status: number, message: any }> {
+    return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
+        try {
+            const agent = new https.Agent({
+                rejectUnauthorized: false,
+            });
+
+            const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
+
+            const authUsername = 'lmm'
+            const authPassword = 'Lmm@2024qaz2wsx'
+
+            const authToken = Buffer.from(`${authUsername}:${authPassword}`).toString('base64');
+
+            const headers = {
+                "Authorization": `Basic ${authToken}`,
+                "username": 'Vendeex',
+                "password": 'vendeex@2025qaz2wsx',
+                "apikey": 'eb718666-b20e-4091-b964-67a61e06fffe',
+                "Content-Type": 'application/json'
+            }
+
+            const res = await axios.post(API_BASE_URL, {
+                tranid: transactionID
+            },
+                { headers, httpsAgent: agent }).then(res => {
+                    if (res.data.success) {
+                        resolve({ status: 1, message: res.data });
+                    } else {
+                        resolve({ status: 0, message: res.data });
+                    }
+                }).catch(e => {
+                    resolve({ status: 0, message: e });
+                });
+
+        } catch (error) {
+            console.log('==========>  Error save log is :', error);
+            resolve({ status: 0, message: error })
+        }
+    })
 }

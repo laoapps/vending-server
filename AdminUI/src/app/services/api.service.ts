@@ -375,6 +375,14 @@ export class ApiService {
         return this.http.post(this.url + '/loadVendingMachineDropPositionReport', data, { headers: this.headerBase() });
     }
 
+    loadVendingMachineBillNotPaid(data: any) {
+        return this.http.post(this.url + '/reportBillNotPaid', data, { headers: this.headerBase() });
+    }
+
+    CheckBillPaidFromMmoney(data: any) {
+        return this.http.post(this.url + '/checkPaidMmoney', data, { headers: this.headerBase() });
+    }
+
     loadVendingMachineStockReport(data: any) {
         return this.http.post(this.url + '/loadVendingMachineStockReport', data, { headers: this.headerBase() });
     }
