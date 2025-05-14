@@ -59,7 +59,7 @@ CreateDatabase("")
     app.use(cors({
       origin: "*", // Allow all origins
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all common HTTP methods
-      allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-capawesome-app-id'], // Allow common headers
       credentials: true // Allow cookies and credentials if needed
     }));
 

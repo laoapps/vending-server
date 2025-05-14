@@ -113,6 +113,8 @@ export class Tab1Page implements OnDestroy {
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial;
 
+  adsList: any = localStorage.getItem('adsList') || [];
+
   connecting = false;
 
   // isDropStock = false;
@@ -819,6 +821,21 @@ export class Tab1Page implements OnDestroy {
             this.checkLiveUpdate(this.versionId);
           }
 
+          if (this.areArraysDifferentUnordered(this.adsList, r.adsList)) {
+            try {
+              const result = this.getReplacements(this.adsList, r.adsList);
+              this.adsList = r.adsList;
+              localStorage.setItem('adsList', JSON.stringify(this.adsList));
+              console.log('Update adsList to', this.adsList);
+
+              console.log('result', result);
+            } catch (error) {
+              console.log('Error getReplacements', error);
+
+            }
+
+          }
+
           if (this.selectedDevice == 'VMC') {
             // set allow cashIn
             if (this.allowCashIn != r.allowCashIn) {
@@ -901,6 +918,27 @@ export class Tab1Page implements OnDestroy {
 
   }
 
+
+  areArraysDifferentUnordered(arr1: string[], arr2: string[]): boolean {
+    if (arr1.length !== arr2.length) return true;
+
+    const sorted1 = [...arr1].sort();
+    const sorted2 = [...arr2].sort();
+
+    return !sorted1.every((val, idx) => val === sorted2[idx]);
+  }
+
+  getReplacements(a1: string[], a2: string[]) {
+    a1 = Array.isArray(a1) ? a1 : [];
+    a2 = Array.isArray(a2) ? a2 : [];
+
+    const removed = a1.filter(value => !a2.includes(value));
+    const added = a2.filter(value => !a1.includes(value));
+
+    return { remove: removed, add: added };
+  }
+
+
   ngOnDestroy(): void {
     clearInterval(this.autoShowMyOrderTimer);
     clearInterval(this.autoDismissCheckAppUpdate);
@@ -922,7 +960,6 @@ export class Tab1Page implements OnDestroy {
     try {
       this.liveUpdateService.checkForUpdates(version).then(async (res) => {
         console.log('checkForUpdates', res);
-        await App.exitApp();
       }).catch((e) => {
         console.log('Error checkLiveUpdate', e);
       });

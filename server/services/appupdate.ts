@@ -116,7 +116,7 @@ export function initBundle(app: express.Application) {
                 return res.status(404).json({ error: 'No bundle found' });
             }
 
-            const serverUrl = `${req.protocol}://${req.get('host')}/bundles`;
+            const serverUrl = `https://${req.get('host')}/bundles`;
             res.json({
                 bundleId: bundle.bundleId,
                 url: `${serverUrl}/${bundle.filePath}`,
