@@ -326,7 +326,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(this.path + "/", async (req, res) => {
                 const d = req.body as IReqModel;
                 try {
-                    // console.log("POST Data", d);
+                    console.log("POST Data", JSON.stringify(d.data));
 
                     if (d.command == EClientCommand.confirmMMoney) {
                         console.log("CB COMFIRM", d);
@@ -3036,6 +3036,11 @@ export class InventoryZDM8 implements IBaseClass {
                                 // s.ownerPhone = '';
                                 // s.imei = '';
                                 await writeMachineSetting(r.machineId, a2);
+                                this.machineIds.find(v => {
+                                    if (v.machineId == r.machineId) {
+                                        Object.assign(v, r);
+                                    }
+                                });
                                 res.send(
                                     PrintSucceeded(
                                         "updateMachineSetting",
@@ -4672,13 +4677,15 @@ export class InventoryZDM8 implements IBaseClass {
         this.machineIds.length = 0;
         const data = JSON.parse(JSON.stringify(m));
         // console.log(`initMachineId`, data);
-        this.machineIds.push(...data)
+        this.machineIds.push(...m)
         // this.machineIds.forEach(v=>v.photo='');
         this.initMachineSetting(m);
         // init machine balance
         // init merchant limiter
         // init merchant balance
     }
+
+
     initMachineSetting(m: Array<IMachineClientID>) {
         m.forEach(async v => {
             if (!Array.isArray(v.data)) v.data = [];

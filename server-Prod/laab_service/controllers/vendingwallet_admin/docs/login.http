@@ -1,0 +1,17 @@
+POST http://localhost:30000/vending/api/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "phonenumber": "+8562056381009",
+    "password": "123456"
+}
+
+###
+
+POST http://laoapps.com:9006/laab/admin/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "phonenumber": "+8562056381009",
+    "password": "123456"
+}

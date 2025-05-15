@@ -85,6 +85,7 @@ import { IBankNote, IHashBankNote } from '../vmc.service';
 import { Zdm8Service } from '../zdm8.service';
 import { LiveupdateService } from '../liveupdate.service';
 import { App } from '@capacitor/app';
+import { VideoCacheService } from '../video-cache.service';
 
 @Component({
   selector: 'app-tab1',
@@ -378,7 +379,8 @@ export class Tab1Page implements OnDestroy {
     public loading: LoadingController,
     private vendingIndex: VendingIndexServiceService,
     private serialService: SerialServiceService,
-    private dbService: DatabaseService
+    private dbService: DatabaseService,
+    private videoCacheService: VideoCacheService
   ) {
 
     // this.refreshAllEveryHour();
@@ -829,6 +831,24 @@ export class Tab1Page implements OnDestroy {
               console.log('Update adsList to', this.adsList);
 
               console.log('result', result);
+              if (result.remove.length > 0) {
+                // this.apiService.removeAds(result.remove);
+                for (let index = 0; index < result.remove.length; index++) {
+                  const element = result.remove[index];
+                  await this.videoCacheService.deleteCachedVideo(element);
+                  console.log('remove ads', element);
+
+                }
+              }
+              if (result.add.length > 0) {
+                // this.apiService.addAds(result.add);
+                for (let index = 0; index < result.add.length; index++) {
+                  const element = result.add[index];
+                  await this.videoCacheService.getCachedVideoBase64(element);
+                  console.log('add ads', element);
+                }
+              }
+
             } catch (error) {
               console.log('Error getReplacements', error);
 
