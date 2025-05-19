@@ -154,6 +154,10 @@ const routes: Routes = [
   {
     path: 'testmotor',
     loadChildren: () => TestmotorPageModule
+  },
+  {
+    path: 'space-invaders',
+    loadChildren: () => import('./games/space-invaders/space-invaders.module').then( m => m.SpaceInvadersPageModule)
   }
 ];
 @NgModule({
