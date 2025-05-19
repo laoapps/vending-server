@@ -6053,8 +6053,12 @@ export class InventoryZDM8 implements IBaseClass {
                         else if (d.command == "ping") {
                             try {
 
-                                let settingVersion = d.settingVersion;
-                                let adsVersion = d.adsVersion;
+                                let settingVersion = d?.data?.settingVersion;
+                                let adsVersion = d?.data?.adsVersion;
+                                console.log('=====>pingData', d.data);
+
+                                console.log('=====>adsVersion', adsVersion, 'settingVersion', settingVersion);
+
                                 const serverAdsVersion = await readMachineAdsVersion(ws['machineId']);
                                 const serverSettingVersion = await readMachineSettingVersion(ws['machineId']);
                                 const adsSetting = adsVersion != serverAdsVersion ? await readMachineAds(ws['machineId']) : null;

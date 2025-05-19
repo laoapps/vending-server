@@ -713,6 +713,7 @@ export class Tab1Page implements OnDestroy {
       console.log('ALIVE TAB1', res);
       try {
         const r = res?.data?.setting;
+        localStorage.setItem('settingVersion', res?.data?.settingVersion);
         // if (r && this.readyState) {
         if (r) {
 

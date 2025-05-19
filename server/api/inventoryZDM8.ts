@@ -2626,7 +2626,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = data.machineId;
                         const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
                         const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
-                        console.log(' GET DROP SALE ', machineId, fromDate.toString(), toDate.toString())
+                        // console.log(' GET DROP SALE ', machineId, fromDate.toString(), toDate.toString())
                         const run = await this.getReportDrop(machineId, fromDate.toString(), toDate.toString());
                         const response = {
                             rows: run.rows,
@@ -6057,6 +6057,11 @@ export class InventoryZDM8 implements IBaseClass {
                                     console.log('clientid  setting', ws['machineId'], x);
                                     console.log('clientid  status', ws['machineId'], mstatus);
                                     const mArray = ws['myMachineId'] ? ws['myMachineId'] as Array<string> : [] as Array<string>;
+                                    const errorLog = d?.data?.errorLog ?? [];
+                                    if (errorLog.length > 0) {
+                                        console.log('=====>errorLog', ws['machineId'], '==', errorLog);
+                                    }
+
                                     // console.log('myMachineId', mArray);
                                     let mymstatus = [];
                                     let mymsetting = [];

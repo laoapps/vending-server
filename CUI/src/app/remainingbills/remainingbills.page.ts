@@ -146,6 +146,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
             }).catch(async (error) => {
               console.log('error shippingcontrol', error);
+              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error shippingcontrol :${JSON.stringify(error)}` });
+
             });
 
             this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
@@ -161,6 +163,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
               }, (error) => {
                 console.log('error retryProcessBill', error);
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
+
               });
 
             }, 2000);
@@ -188,20 +192,25 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             })
           }).catch((error) => {
             console.log('Error deleteBillProcess', error);
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error deleteBillProcess :${JSON.stringify(error)}` });
             this.loadBillLocal();
           });
 
         } else {
+          this.apiService.IndexedLogDB.addBillProcess({ errorData: 'Protocol has not been implemented yet!!!!' });
           Toast.show({ text: 'Protocol has not been implemented yet!!!!', duration: 'long' });
         }
       } else {
         console.log('serial not init');
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `serial not init` });
+
         Toast.show({ text: 'serial not init for drop' })
         // await this.apiService.myTab1.connect();
         // this.apiService.reloadPage();
       }
 
     } catch (error) {
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error retryProcessBillNew :${JSON.stringify(error)}` });
       setTimeout(() => {
         this.apiService.dismissLoading();
       }, 3000)

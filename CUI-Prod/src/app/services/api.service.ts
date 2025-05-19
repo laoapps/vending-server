@@ -362,9 +362,11 @@ export class ApiService {
         // );
         const cset = r.data.setting;
         console.log('cset', cset);
-        that._cuiSetting.imgHeader != cset.imgHeader && !cset.imgHeader || (that._cuiSetting.imgHeader = cset.imgHeader);
-        that._cuiSetting.imgLogo != cset.imgLogo && !cset.imgLogo || (that._cuiSetting.imgLogo = cset.imgLogo);
-        that._cuiSetting.imgFooter != cset.imgFooter && !cset.imgFooter || (that._cuiSetting.imgFooter = cset.imgFooter);
+        if (cset) {
+          that._cuiSetting.imgHeader != cset.imgHeader && !cset.imgHeader || (that._cuiSetting.imgHeader = cset.imgHeader);
+          that._cuiSetting.imgLogo != cset.imgLogo && !cset.imgLogo || (that._cuiSetting.imgLogo = cset.imgLogo);
+          that._cuiSetting.imgFooter != cset.imgFooter && !cset.imgFooter || (that._cuiSetting.imgFooter = cset.imgFooter);
+        }
 
         if (that._cuiSetting.imgHeader) {
 

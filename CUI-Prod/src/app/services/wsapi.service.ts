@@ -41,6 +41,8 @@ export class WsapiService {
       this.eventEmmiter.on('billProcess', cb);
     }
   }
+
+  int = null;
   connect(url: string, machineId: string, otp: string) {
     console.log(`connnn`, machineId, url);
     this.wsurl = url;
@@ -48,7 +50,23 @@ export class WsapiService {
 
     clearInterval(this.retries);
     this.retry = null;
-    setWsHeartbeat(this.webSocket, '{"command":"ping"}', { pingInterval: 10000, pingTimeout: 15000 });
+    // setWsHeartbeat(this.webSocket, '{"command":"ping"}', { pingInterval: 10000, pingTimeout: 15000 });
+    if (this.int) {
+      clearInterval(this.int);
+      this.int = null;
+    }
+    this.int = setInterval(() => {
+      if (this.webSocket.readyState !== 1) {
+        console.log('websocket not ready');
+        return;
+      }
+      console.log('ping');
+      this.send({
+        command: EMACHINE_COMMAND.ping, data: {
+          settingVersion: localStorage.getItem('settingVersion'),
+        }, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
+      });
+    }, 10000);
     this.webSocket.onopen = (ev) => {
       this.retries = 0;
       console.log('connection has been opened', ev);

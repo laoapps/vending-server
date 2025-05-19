@@ -730,6 +730,7 @@ export class Tab1Page implements OnDestroy {
           console.log('No data from alive');
         }
       } catch (error) {
+
         Toast.show({ text: 'Error alive ' + JSON.stringify(error || '{}'), duration: 'long' })
       }
 
@@ -806,10 +807,13 @@ export class Tab1Page implements OnDestroy {
           resolve(IENMessage.success);
 
         } else {
+          // this.apiService.IndexedLogDB.addBillProcess({ errorData: `error _processLoopCheckLaoQRPaid :${JSON.stringify(run.message)}` });
           resolve(IENMessage.success);
         }
       } catch (error) {
         console.log('Error _processLoopCheckLaoQRPaid', error);
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error _processLoopCheckLaoQRPaid :${JSON.stringify(error)}` });
+
         resolve(error);
       }
 

@@ -101,8 +101,14 @@ export class GenerateLaoQRCodeProcess {
                     if (response.status != 1) return resolve({ status: 0, message: IENMessage.findLaoQRPaidFail });
                     this.laoQRCode = response.data as IVendingMachineBill;
                     resolve({ status: 1, message: response });
-                }, error => resolve({ status: 0, message: error.message }));
+                }, error => {
+                    this.apiService.IndexedLogDB.addBillProcess({ errorData: `error CheckLaoQRPaid :${JSON.stringify(error)}` });
+
+                    resolve({ status: 0, message: error.message })
+                });
             } catch (error) {
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error CheckLaoQRPaid :${JSON.stringify(error)}` });
+
                 resolve({ status: 0, message: error.message });
             }
         });

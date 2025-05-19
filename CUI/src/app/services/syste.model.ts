@@ -1021,6 +1021,10 @@ export interface IBillProcess {
     bill: IVendingMachineBill;
 }
 
+export interface ILocalLog {
+    errorData: any; // เก็บข้อมูล JSON หรือ object ใดๆ
+}
+
 
 export interface IBillProcessLocal {
     transactionID: number;
