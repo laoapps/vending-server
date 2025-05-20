@@ -23,6 +23,7 @@ import { DoorPaymentFactory, DoorPaymentStatic } from "./doorpayment.entity";
 import { VendingVersionFactory, VendingVersionStatic } from "./vendingversion.entity";
 import { DropLogActivityFactory, DropLogActivityStatic } from "./droplogactivity.entity";
 import { BundleFactory, BundleStatic } from "./appupdate.entity";
+import { ClientlogFactory, ClientlogStatic } from "./clientlog.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -43,6 +44,7 @@ export let adsEntity: AdsStatic;
 export let doorEntity: DoorStatic;
 export let doorPaymentEntity: DoorPaymentStatic;
 export let vendingVersionEntity: VendingVersionStatic;
+export let ClientlogEntity: ClientlogStatic;
 
 // LAAB
 export let vendingWallet: VendingWalletStatic;
@@ -54,7 +56,7 @@ export let subadminEntity: SubadminStatic;
 
 export let BundleEntity: BundleStatic;
 
-export const initDB = () => {
+export const initDB = async () => {
 
 
     console.log(`BundleEntity sync`);
@@ -139,6 +141,10 @@ export const initDB = () => {
     });
 
     machineIDHistoryEntity = MachineIDFactory(EEntity.machineIDHistory + '_', dbConnection); // private for machine
+
+
+    ClientlogEntity = ClientlogFactory(EEntity.Clientlog, dbConnection);
+    ClientlogEntity ? await ClientlogEntity.sync() : console.log('==========> ClientlogFactory is not initialized');
 
 
 }
