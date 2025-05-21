@@ -3150,6 +3150,39 @@ export class InventoryZDM8 implements IBaseClass {
 
             )
 
+            router.post(this.path + '/reportClientLog',
+                this.checkSuperAdmin,
+                this.checkSubAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId;
+                        const data = req.body;
+
+                        if (!machineId) {
+                            res.send(PrintError("reportClientLog", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        // console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const run = await this.getReportClientLog(machineId, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportClientLog :', error);
+                        res.send(PrintError("reportClientLog", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
             router.post(this.path + '/checkPaidMmoney',
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
@@ -6476,6 +6509,37 @@ export class InventoryZDM8 implements IBaseClass {
         );
         await ent.sync();
         const bill = await ent.findAndCountAll(condition);
+        return bill;
+    }
+
+
+    private async getReportClientLog(machineId: string, fromDate: string, toDate: string) {
+        let condition: any = {};
+        if (machineId == 'all') {
+
+            condition = {
+                where: {
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        else {
+            condition = {
+                where: {
+                    machineId: machineId,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+
+        // const ent = VendingMachineBillFactory(
+        //     EEntity.vendingmachinebill + "_" + ownerUuid,
+        //     dbConnection
+        // );
+        // await ent.sync();
+        const bill = await ClientlogEntity.findAndCountAll(condition);
         return bill;
     }
 
