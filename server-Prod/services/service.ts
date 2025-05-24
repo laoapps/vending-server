@@ -124,6 +124,13 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
 //     return Number(checksum.toString(16))
 //   }
 
+export function generateChecksum(str: string, algorithm = '', encoding = null) {
+    return crypto
+        .createHash(algorithm || 'md5')
+        .update(str, 'utf8')
+        .digest(encoding || 'hex');
+}
+
 export function signinOnUserManager(data: { phonenumber: string, password: string }): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
         try {

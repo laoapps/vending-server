@@ -87,6 +87,7 @@ import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Toast } from '@capacitor/toast';
 import { VendingIndexServiceService } from '../vending-index-service.service';
 import { IndexdblocalService } from './indexdblocal.service';
+import { IndexerrorService } from '../indexerror.service';
 
 @Injectable({
   providedIn: 'root',
@@ -291,6 +292,7 @@ export class ApiService {
     public storage: IonicStorageService,
     public IndexedDB: IndexedDBService,
     public IndexeLocaldDB: IndexdblocalService,
+    public IndexedLogDB: IndexerrorService,
     public load: LoadingController,
     public alert: AlertController
   ) {
@@ -318,6 +320,8 @@ export class ApiService {
     let pendingstock = [];
     let pendingstockcount = 0;
     this.wsapi.aliveSubscription.subscribe(r => {
+      console.log('PING2');
+      IndexedLogDB.clearAllBillProcesses();
       console.log('ALIVE', r);
       const response: any = r;
 
@@ -616,6 +620,7 @@ export class ApiService {
         }
       } catch (error) {
         console.log('error waitingDelivery is:', error);
+        this.IndexedLogDB.addBillProcess({ errorData: `Error waitingDelivery :${JSON.stringify(error)}` });
         resolve(EMessage.error)
       }
     })
@@ -685,6 +690,7 @@ export class ApiService {
         if (r.status) {
           console.log(`save sale success`);
         } else {
+          this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
           this.simpleMessage(IENMessage.saveSaleFail);
         }
       });
@@ -694,6 +700,7 @@ export class ApiService {
         // that.deductOrderUpdate(x.position);
       });
     } catch (error) {
+      this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
       console.log(error.message);
       this.alertError(error.message);
     }

@@ -1,0 +1,86 @@
+<ion-content>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <a href="javascript:void(0)" class="logo-text">Control Version</a>
+    </div>
+    <div class="page-header-center">
+      <div class="input-group box-search">
+        <span class="input-group-text icon-search-start"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input (keyup.enter)="searchVersion($event)" type="text" class="form-control" placeholder="Search Version">
+        <span class="input-group-text icon-search-end">Search</span>
+      </div>
+    </div>
+    <div class="page-header-right">
+      <a (click)="openFormUpload()" href="javascript:void(0)" class="item">Upload</a>
+      <a (click)="openFormMachine()" href="javascript:void(0)" class="item">Machines</a>
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div *ngIf="count == 0" class="page-body-empty">
+
+    <div class="suggest">
+      <div class="icon">
+        <i class="fa-solid fa-box-open fa-bounce"></i>
+      </div>
+      <div class="text">Version avialable now!</div>
+    </div>
+
+  </div>
+
+  <div *ngIf="count > 0" class="page-body">
+    <div *ngIf="header?.title != ''" class="title">
+      <div class="title-left"><i class="fa-solid fa-pen-to-square"></i>  {{ header?.title }}</div>
+      <div class="title-right">
+        <a (click)="openFormUploadWithCopyContent()" href="javascript:void(0)" class="item"><i class="fa-solid fa-upload"></i> Upload with this content</a>
+      </div>
+    </div>
+    <div class="sub-title">
+      <div class="text">* {{ versionText }}</div>
+      <div class="text">* Last Update {{ lastUpdatedAt | date:'yyyy-MM-dd hh:mm:ss':'+7' }}</div>
+    </div>
+
+    <div class="content-container">
+      <div class="content-left">
+
+        <div *ngIf="header?.subtitle != ''" class="subtitle">{{ header?.subtitle }}</div>
+  
+        <div *ngFor="let content of readme; let content_index;" class="cotent-container">
+        
+          <div *ngIf="content.section != undefined && content.section.length > 0" class="section-container">
+            <div class="section">{{ content.section }}</div>
+          </div>
+  
+          <div *ngIf="content.description != ''" class="description-container">
+            <div *ngFor="let description of content.description; let description_index;" class="description">{{ description }}</div>
+          </div>
+  
+          <div *ngIf="content.hightlight != ''" class="hight-light-container">
+            <div *ngFor="let hightlight of content.hightlight; let hightlight_index;" class="hightlight">{{ hightlight }}</div>
+          </div>
+  
+        </div>
+
+      </div>
+      <div class="content-right">
+
+        <div class="version-title">
+          <div class="version-title-left">Version</div>
+          <div class="version-title-right">Published</div>
+        </div>
+        <div class="version-list">
+          <div *ngFor="let list of lists; let i = index" class="group">
+            <a (click)="switchVersion(i)" href="javascript:void(0)" class="value">{{ list.versionText }}</a>
+            <div class="line"></div>
+            <div class="datetime">{{ list.updatedAt | date:'yyyy-MM-dd hh:mm:ss':'+7' }}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>

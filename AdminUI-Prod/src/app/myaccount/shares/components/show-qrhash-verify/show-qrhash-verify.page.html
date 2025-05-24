@@ -1,0 +1,41 @@
+<ion-content>
+
+  <div class="header">
+    <div class="left">
+    </div>
+    <div class="center">
+      <div class="section-1">
+        <div class="main">Verify QR Code</div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="section-1">
+
+      </div>
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+
+        <div class="qr-container">
+          <img id="qr-img" class="qr-img" src="" alt="">
+        </div>
+
+      </ion-col>
+      <ion-col size="12">
+
+        <div class="code-text">{{ type }}</div>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <div class="footer">
+    <button (click)="close()" class="my-btn col-12">Close</button>
+  </div>
+
+</ion-content>

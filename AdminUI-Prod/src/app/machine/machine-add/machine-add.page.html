@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-icon name="close-circle-sharp" (click)="close()"></ion-icon>
+    <ion-title>machine-add</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <!-- <ion-img class="machine_image"[src]="showImage(s.photo)"></ion-img> -->
+      <!-- <ion-img class="machine_image" src="{{ imageSrc }}"></ion-img> -->
+      <img class="machine_image" src="{{ imageSrc }}">
+
+      <input type="file" name="file" accept="image/*" (change)="handleInputChange($event)" >
+        <button 
+      (click)="cancel()">Clear</button>
+    </ion-item>
+    <ion-item>
+      <ion-label>Shop Phonenumber</ion-label>
+      <ion-input  slot="end" [(ngModel)]="s.shopPhonenumber"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Name:</ion-label>
+      <ion-input  slot="end" [(ngModel)]="s.machineId"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>OTP</ion-label>
+      <ion-input  slot="end" [(ngModel)]="s.otp"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Active</ion-label>
+      <ion-toggle slot="end" [(ngModel)]="s.isActive" ></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-button  (click)="save()">Save</ion-button> <ion-button (click)="close()">Close</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

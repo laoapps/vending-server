@@ -44,6 +44,7 @@ import {
     setAdminControl,
     listMachineSaleLog,
     CheckMmoneyPaid,
+    generateChecksum,
 } from "../services/service";
 import {
     EClientCommand,
@@ -129,6 +130,7 @@ import { IVendingWalletType } from "../laab_service/models/base.model";
 import { log } from "console";
 import { channel } from "diagnostics_channel";
 import { LogActivity } from "../entities/logactivity.entity";
+
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -3154,6 +3156,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkSuperAdmin,
                 this.checkSubAdmin,
                 this.checkAdmin,
+
                 async (req, res) => {
                     try {
                         const machineId = req.body.machineId;
@@ -3168,12 +3171,18 @@ export class InventoryZDM8 implements IBaseClass {
                         const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
                         const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
                         // console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const cksum = generateChecksum(machineId + fromDate.toString() + toDate.toString());
+                        const resp = await redisClient.get(cksum);
+                        if (resp) {
+                            return res.send(PrintSucceeded("report", JSON.parse(resp), EMessage.succeeded, returnLog(req, res)));
+                        }
                         const run = await this.getReportClientLog(machineId, fromDate.toString(), toDate.toString());
                         const response = {
                             rows: run.rows,
                             count: run.count,
                             message: IENMessage.success
                         }
+                        redisClient.setEx(cksum, 60 * 1, JSON.stringify(response));
                         return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log('reportClientLog :', error);
@@ -3554,27 +3563,27 @@ export class InventoryZDM8 implements IBaseClass {
             const token = req.body.token;
             let phoneNumber = req.body.shopPhonenumber;
             if (!token) throw new Error(EMessage.tokenNotFound);
-
-            findRealDB(token).then((r) => {
-                const uuid = r;
-                if (!uuid) throw new Error(EMessage.notfound);
-                // req['gamerUuid'] = gamerUuid;
-                res.locals["superadmin"] = uuid;
-                if (phoneNumber) {
-                    phoneNumber = `+85620${phoneNumber}`;
-                    findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
-                        res.locals["ownerUuid"] = r_owneruuid.uuid;
+            if (redisClient.get)
+                findRealDB(token).then((r) => {
+                    const uuid = r;
+                    if (!uuid) throw new Error(EMessage.notfound);
+                    // req['gamerUuid'] = gamerUuid;
+                    res.locals["superadmin"] = uuid;
+                    if (phoneNumber) {
+                        phoneNumber = `+85620${phoneNumber}`;
+                        findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
+                            res.locals["ownerUuid"] = r_owneruuid.uuid;
+                            next();
+                        });
+                    } else {
+                        res.locals["ownerUuid"] = uuid;
                         next();
+                    }
+                })
+                    .catch((e) => {
+                        console.log(e);
+                        res.status(400).end();
                     });
-                } else {
-                    res.locals["ownerUuid"] = uuid;
-                    next();
-                }
-            })
-                .catch((e) => {
-                    console.log(e);
-                    res.status(400).end();
-                });
 
         } catch (error) {
             console.log(error);

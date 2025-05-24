@@ -713,10 +713,11 @@ export class Tab1Page implements OnDestroy {
       console.log('ALIVE TAB1', res);
       try {
         const r = res?.data?.setting;
-        localStorage.setItem('settingVersion', res?.data?.settingVersion);
+        if (res?.data?.settingVersion) {
+          localStorage.setItem('settingVersion', res?.data?.settingVersion);
+        }
         // if (r && this.readyState) {
         if (r) {
-
 
           if (r.refresh) {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
@@ -1007,6 +1008,8 @@ export class Tab1Page implements OnDestroy {
           resolve(IENMessage.success);
         }
       } catch (error) {
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error _processLoopCheckLaoQRPaid :${JSON.stringify(error)}` });
+
         console.log('Error _processLoopCheckLaoQRPaid', error);
         resolve(error);
       }

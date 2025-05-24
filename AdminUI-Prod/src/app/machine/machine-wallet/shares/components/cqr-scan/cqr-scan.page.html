@@ -1,0 +1,54 @@
+<ion-content>
+
+  <div class="header">
+    <div class="left">
+      <div class="section-1">
+        <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+      </div>
+      <div class="section-2">
+        <div class="main">CQR Scan</div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="section-1">
+        <a href="javascript:void(0)" class="btn-item">
+          <label for="file">
+            <i class="fa-solid fa-image"></i> Select Image
+          </label>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="container">
+
+    <div class=" container d-flex flex-column justify-content-center align-items-center">
+
+
+      <div id="video-container" class="example-style-1" class="">
+        <video id='videoQr'></video>
+        
+        
+        <div class="scan-region-highlight" >
+          <svg class="scan-region-highlight-svg" viewBox="0 0 238 238" preserveAspectRatio="none" style="position:absolute;width:100%;height:100%;left:0;top:0;fill:none;stroke:#e9b213;stroke-width:4;stroke-linecap:round;stroke-linejoin:round">
+            <path d="M31 2H10a8 8 0 0 0-8 8v21M207 2h21a8 8 0 0 1 8 8v21m0 176v21a8 8 0 0 1-8 8h-21m-176 0H10a8 8 0 0 1-8-8v-21"></path>
+          </svg>
+        </div>
+
+      
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <input type="file" id="file" (change)="scanQRFromImage($event.target['files'])" hidden="true">
+
+
+
+</ion-content>
+
+

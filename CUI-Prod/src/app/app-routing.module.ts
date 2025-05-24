@@ -149,15 +149,11 @@ const routes: Routes = [
   },
   {
     path: 'fortunewheel',
-    loadChildren: () =>FortunewheelPageModule
+    loadChildren: () => FortunewheelPageModule
   },
   {
     path: 'testmotor',
     loadChildren: () => TestmotorPageModule
-  },
-  {
-    path: 'space-invaders',
-    loadChildren: () => import('./games/space-invaders/space-invaders.module').then( m => m.SpaceInvadersPageModule)
   }
 ];
 @NgModule({
@@ -166,4 +162,4 @@ const routes: Routes = [
   ],
   exports: [RouterModule]
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

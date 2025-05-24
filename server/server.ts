@@ -119,6 +119,7 @@ CreateDatabase("")
 
 
 
+    console.log('=====> Log Path', process.env._log_path);
 
     fs.existsSync(process.env._log_path) || fs.mkdirSync(process.env._log_path);
     fs.existsSync(process.env._image_path) ||

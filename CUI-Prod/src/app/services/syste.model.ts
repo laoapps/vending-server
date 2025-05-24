@@ -680,6 +680,10 @@ export interface IReqModel {
     limit: number;
     skip: number;
 }
+
+export interface ILocalLog {
+    errorData: any; // เก็บข้อมูล JSON หรือ object ใดๆ
+}
 export enum EPaymentProvider {
     mmoney = 'mmoney',
     umoney = 'umoney',

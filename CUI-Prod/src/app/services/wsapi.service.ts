@@ -6,6 +6,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EventEmitter } from 'events';
 import { AppcachingserviceService } from './appcachingservice.service';
 import { IENMessage } from '../models/base.model';
+import { IndexerrorService } from '../indexerror.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -33,6 +34,7 @@ export class WsapiService {
   // vsales=new Array<IVendingMachineSale>();
   constructor(
     private cashingService: AppcachingserviceService,
+    public IndexedLogDB: IndexerrorService,
 
   ) {
   }
@@ -55,15 +57,19 @@ export class WsapiService {
       clearInterval(this.int);
       this.int = null;
     }
-    this.int = setInterval(() => {
+    this.int = setInterval(async () => {
       if (this.webSocket.readyState !== 1) {
         console.log('websocket not ready');
         return;
       }
       console.log('ping');
+      const allLogs = await this.IndexedLogDB.getAllErrorData();
+      const settingVersion = localStorage.getItem('settingVersion') ?? 'NO';
+
       this.send({
         command: EMACHINE_COMMAND.ping, data: {
-          settingVersion: localStorage.getItem('settingVersion'),
+          settingVersion: settingVersion,
+          errorLog: allLogs,
         }, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
       });
     }, 10000);

@@ -1,0 +1,61 @@
+<ion-content>
+
+  <div class="form-preview-container">
+    <div class="form-preview-left">
+
+      <div *ngIf="dataPack.title != ''" class="title">{{ dataPack.title }}</div>
+      <div *ngIf="dataPack.subtitle != ''" class="subtitle">{{ dataPack.subtitle }}</div>
+
+      <div *ngFor="let content of readme; let content_index;" class="cotent-container">
+        
+        <div *ngIf="content.section != undefined && content.section.length > 0" class="section-container">
+          <div class="section">{{ content.section }}</div>
+        </div>
+
+        <div *ngIf="content.description != ''" class="description-container">
+          <div *ngFor="let description of content.description; let description_index;" class="description">{{ description }}</div>
+        </div>
+
+        <div *ngIf="content.hightlight != ''" class="hight-light-container">
+          <div *ngFor="let hightlight of content.hightlight; let hightlight_index;" class="hightlight">{{ hightlight }}</div>
+        </div>
+
+      </div>
+
+
+    </div>
+    <div class="form-preview-right">
+
+      <div *ngIf="isEdit == false" class="group-1">
+        <div class="form-group">
+          <label for="">Commit Version</label>
+          <div *ngIf="dataPack.commit_version == undefined || dataPack.commit_version == ''" class="text">No Data</div>
+          <div *ngIf="dataPack.commit_version != undefined && dataPack.commit_version != ''" class="text">{{ dataPack.commit_version }}</div>
+        </div>
+      </div>
+
+      <div *ngIf="isEdit == false" class="line"></div>
+
+      <div class="group-2">
+        <div class="form-group">
+          <label for="">File Name</label>
+          <div *ngIf="dataPack.filename == undefined || dataPack.filename == ''" class="text">No Data</div>
+          <div  *ngIf="dataPack.filename != undefined && dataPack.filename != ''" class="text">{{ dataPack.filename }}</div>
+        </div>
+        <div class="form-group">
+          <label for="">File Size</label>
+          <div *ngIf="dataPack.filesize == undefined || dataPack.filesize == ''" class="text">No Data</div>
+          <div  *ngIf="dataPack.filesize != undefined && dataPack.filesize != ''" class="text">{{ dataPack.filesize }}</div>
+        </div>
+      </div>
+
+      <div class="btn-control">
+        <a *ngIf="isEdit == false" (click)="upload()" href="javascript:void(0)" class="btn-upload"><i class="fa-solid fa-terminal"></i> Upload version</a>
+        <a *ngIf="isEdit == true" (click)="editContent()" href="javascript:void(0)" class="btn-upload"><i class="fa-solid fa-terminal"></i> Edit content</a>
+        <a (click)="close()" href="javascript:void(0)" class="btn-cancel"><i class="fa-regular fa-circle-xmark"></i> Cancel</a>
+      </div>
+
+    </div>
+  </div>
+
+</ion-content>

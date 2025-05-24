@@ -146,6 +146,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
             }).catch(async (error) => {
               console.log('error shippingcontrol', error);
+              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error shippingcontrol :${JSON.stringify(error)}` });
             });
 
             this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
@@ -156,6 +157,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
                 console.log(`vending on sale`, ApiService.vendingOnSale);
                 console.log('retryProcessBill', r);
 
+              }, (error) => {
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
               });
             }, 2000);
 
@@ -180,77 +183,24 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             })
           }).catch((error) => {
             console.log('Error deleteBillProcess', error);
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error deleteBillProcess :${JSON.stringify(error)}` });
             this.loadBillLocal();
           });
 
         } else {
+          this.apiService.IndexedLogDB.addBillProcess({ errorData: 'Protocol has not been implemented yet!!!!' });
           Toast.show({ text: 'Protocol has not been implemented yet!!!!', duration: 'long' });
         }
       } else {
         console.log('serial not init');
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `serial not init` });
         Toast.show({ text: 'serial not init for drop' })
         // await this.apiService.myTab1.connect();
         // this.apiService.reloadPage();
       }
 
-
-
-      // this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
-      //   // this.apiService.dismissLoading();
-      //   console.log(`vending on sale`, ApiService.vendingOnSale);
-      //   console.log('retryProcessBill', r);
-      //   if (r.status) {
-      //     this.apiService.soundThankYou()
-      //     this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
-      //       r.present();
-      //     });
-      //     try {
-      //       this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-      //       this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
-
-      //       this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-      //         console.log('reload_ticket', reload_ticket);
-
-      //         this.r = reload_ticket;
-      //         console.log(`=====>here der`, this.r);
-
-      //         if (this.r != undefined && Object.entries(this.r).length == 0) {
-      //           localStorage.setItem('product_fall', '0');
-      //           this.clearTimer();
-      //           this.apiService, this.modal.dismiss();
-      //           return;
-      //         }
-
-      //         if (human == true) {
-      //           this.loadAutoFall();
-      //         }
-
-      //       });
-      //     } catch (error) {
-      //       console.log(`error eiei`, error.message);
-      //       this.cancelTimer();
-      //       await this.apiService.soundSystemError();
-      //     }
-
-      //   } else {
-      //     this.counter = 0;
-      //     this.canclick = true;
-      //     localStorage.setItem('product_fall', '0');
-      //     this.clearTimer();
-      //     this.r = [];
-      //     this.reloadDelivery(true);
-      //     await this.apiService.soundSystemError();
-      //   }
-
-
-      //   this.apiService.simpleMessage(r.message);
-
-      //   setTimeout(() => {
-      //     this.apiService.dismissLoading();
-      //   }, 3000)
-
-      // });
     } catch (error) {
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error retryProcessBillNew :${JSON.stringify(error)}` });
       setTimeout(() => {
         this.apiService.dismissLoading();
       }, 3000)

@@ -1,0 +1,21 @@
+<div class="laab-transfer-container">
+  <div class="item-card">
+    <div class="item-card-header">
+      <div class="title">CQR</div>
+      <div class="text">Generate your coin QR code</div>
+    </div>
+    <div class="item-card-body">
+      <div class="form-group mt-2">
+        <label for="">Amount</label>
+        <input [(ngModel)]="amount" type="number" class="form-control">
+      </div>
+      <div class="money-list">
+        <a *ngFor="let money of moneyList;let i = index" (click)="chooseMoney(money)" href="javascript:void(0)" class="item">{{ money | number }}</a>
+      </div>
+
+      <div class="form-group mt-3">
+        <button (click)="generate()" class="btn-submit">generate</button>
+      </div>
+    </div>
+  </div>
+</div>
