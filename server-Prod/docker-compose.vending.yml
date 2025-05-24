@@ -23,7 +23,7 @@ services:
       - POSTGRES_USER=dbvenderserveradmin
       - POSTGRES_PASSWORD=2Grg7Dith14P
     ports:
-      -  37432:5432
+      -  37435:5432
     networks:
       - venderserverservice5
   # vender-server-service:
