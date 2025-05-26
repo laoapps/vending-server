@@ -134,6 +134,7 @@ import { IVendingWalletType } from "../laab_service/models/base.model";
 import { log } from "console";
 import { channel } from "diagnostics_channel";
 import { LogActivity } from "../entities/logactivity.entity";
+import { checkGenerateCount } from "../services/laoqr.service";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -546,6 +547,25 @@ export class InventoryZDM8 implements IBaseClass {
                             const sale = d.data.ids as Array<IVendingMachineSale>; // item id
                             const machineId = this.findMachineIdToken(d.token);
                             // console.log('machineId', machineId);
+                            const checkCountGen = await checkGenerateCount(machineId?.machineId);
+                            if (checkCountGen.status == 1) {
+                                const ws = this.wsClient.find(v => v['machineId'] === machineId.machineId);
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                setting: { refresh: true }
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
+                                    )
+                                );
+                                return res.send(PrintError(d.command, [], EMessage.LaoQRCount, null));
+                            }
 
                             // const position = d.data.position;
                             if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));

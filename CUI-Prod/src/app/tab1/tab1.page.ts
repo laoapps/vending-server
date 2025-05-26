@@ -461,38 +461,45 @@ export class Tab1Page implements OnDestroy {
           this.initStock();
           if (this.isFirstLoad) {
             // let adsOn =false
-            setInterval(() => {
+            setInterval(async () => {
               if (this.autopilot.auto >= 6) {
                 // load ads when no active
                 // if(!adsOn)
                 const adsSlide = localStorage.getItem('isAds');
                 if (adsSlide != undefined && adsSlide == 'yes') {
                   if (!this.adsOn) {
-                    this.apiService.showModal(AdsPage).then(r => {
-                      r.present();
-                      this.otherModalAreOpening = true;
-                      this.checkActiveModal(r);
-                      this.openAnotherModal(r);
+                    const currentRoute = await this.apiService.modal.getTop();
+                    if (!currentRoute) {
+                      this.apiService.showModal(AdsPage).then(r => {
+                        r.present();
+                        this.otherModalAreOpening = true;
+                        this.checkActiveModal(r);
+                        this.openAnotherModal(r);
 
-                      this.adsOn = true;
-                      r.onDidDismiss().then(rx => {
-                        this.adsOn = false;
+                        this.adsOn = true;
+                        r.onDidDismiss().then(rx => {
+                          this.adsOn = false;
+                        })
                       })
-                    })
+                    }
                   } else {
                     this.adsOn = false;
                     this.apiService.dismissModal();
-                    this.apiService.showModal(AdsPage).then(r => {
-                      r.present();
-                      this.otherModalAreOpening = true;
-                      this.checkActiveModal(r);
-                      this.openAnotherModal(r);
+                    const currentRoute = await this.apiService.modal.getTop();
+                    if (!currentRoute) {
+                      this.apiService.showModal(AdsPage).then(r => {
+                        r.present();
+                        this.otherModalAreOpening = true;
+                        this.checkActiveModal(r);
+                        this.openAnotherModal(r);
 
-                      this.adsOn = true;
-                      r.onDidDismiss().then(rx => {
-                        this.adsOn = false;
+                        this.adsOn = true;
+                        r.onDidDismiss().then(rx => {
+                          this.adsOn = false;
+                        })
                       })
-                    })
+                    }
+
                   }
                 } else {
                   if (this.adsOn) {
@@ -661,7 +668,6 @@ export class Tab1Page implements OnDestroy {
 
     // });
 
-
     this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
 
     this.platforms = Object.keys(ESerialPortType)
@@ -716,8 +722,8 @@ export class Tab1Page implements OnDestroy {
         if (res?.data?.settingVersion) {
           localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
-        if (r && this.readyState) {
-          // if (r) {
+        // if (r && this.readyState) {
+        if (r) {
 
           if (r.refresh) {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
@@ -743,31 +749,37 @@ export class Tab1Page implements OnDestroy {
             const adsSlide = localStorage.getItem('isAds');
             if (adsSlide != undefined && adsSlide == 'yes') {
               if (!this.adsOn) {
-                this.apiService.showModal(AdsPage).then(r => {
-                  r.present();
-                  this.otherModalAreOpening = true;
-                  this.checkActiveModal(r);
-                  this.openAnotherModal(r);
+                const currentRoute = await this.apiService.modal.getTop();
+                if (!currentRoute) {
+                  this.apiService.showModal(AdsPage).then(r => {
+                    r.present();
+                    this.otherModalAreOpening = true;
+                    this.checkActiveModal(r);
+                    this.openAnotherModal(r);
 
-                  this.adsOn = true;
-                  r.onDidDismiss().then(rx => {
-                    this.adsOn = false;
+                    this.adsOn = true;
+                    r.onDidDismiss().then(rx => {
+                      this.adsOn = false;
+                    })
                   })
-                })
+                }
               } else {
                 this.adsOn = false;
                 this.apiService.dismissModal();
-                this.apiService.showModal(AdsPage).then(r => {
-                  r.present();
-                  this.otherModalAreOpening = true;
-                  this.checkActiveModal(r);
-                  this.openAnotherModal(r);
+                const currentRoute = await this.apiService.modal.getTop();
+                if (!currentRoute) {
+                  this.apiService.showModal(AdsPage).then(r => {
+                    r.present();
+                    this.otherModalAreOpening = true;
+                    this.checkActiveModal(r);
+                    this.openAnotherModal(r);
 
-                  this.adsOn = true;
-                  r.onDidDismiss().then(rx => {
-                    this.adsOn = false;
+                    this.adsOn = true;
+                    r.onDidDismiss().then(rx => {
+                      this.adsOn = false;
+                    })
                   })
-                })
+                }
               }
             } else {
               if (this.adsOn) {
@@ -825,9 +837,9 @@ export class Tab1Page implements OnDestroy {
             this.checkLiveUpdate(this.versionId);
           }
 
-          if (this.areArraysDifferentUnordered(this.adsList, r.adsList)) {
+          if (this.areArraysDifferentUnordered(this.adsList ?? [], r.adsList ?? [])) {
             try {
-              const result = this.getReplacements(this.adsList, r.adsList);
+              const result = this.getReplacements(this.adsList ?? [], r.adsList ?? []);
               this.adsList = r.adsList;
               localStorage.setItem('adsList', JSON.stringify(this.adsList));
               console.log('Update adsList to', this.adsList);
@@ -989,6 +1001,14 @@ export class Tab1Page implements OnDestroy {
       console.log('Error checkLiveUpdate', error);
     }
   }
+
+  // checkCurrentRoute() {
+  //   setInterval(async () => {
+  //     const currentRoute = await this.apiService.modal.getTop();
+  //     console.log('=====>Current Route:', currentRoute);
+
+  //   }, 5000);
+  // }
 
 
   public _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
