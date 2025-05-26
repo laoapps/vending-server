@@ -540,6 +540,34 @@ export class InventoryZDM8 implements IBaseClass {
                             const sale = d.data.ids as Array<IVendingMachineSale>; // item id
                             const machineId = this.findMachineIdToken(d.token);
                             // console.log('machineId', machineId);
+                            const LaoQRCount = await redisClient.get(machineId.machineId + EMessage.ListTransaction)
+                            if (LaoQRCount) {
+                                if (Number(LaoQRCount) >= 10) {
+                                    // restartmavhine
+                                    const ws = this.wsClient.find(v => v['machineId'] === machineId.machineId);
+                                    ws?.send(
+                                        JSON.stringify(
+                                            PrintSucceeded(
+                                                "ping",
+                                                {
+                                                    command: "ping",
+                                                    production: this.production,
+                                                    setting: { refresh: true }
+                                                },
+                                                EMessage.succeeded,
+                                                null
+                                            )
+                                        )
+                                    );
+                                    return res.send(PrintError(d.command, [], EMessage.LaoQRCount, null));
+                                }
+                                redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 20, (Number(LaoQRCount) + 1) + '');
+                            } else {
+                                redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 20, '1');
+                            }
+
+
+
 
                             // const position = d.data.position;
                             if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
