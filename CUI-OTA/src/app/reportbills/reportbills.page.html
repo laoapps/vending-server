@@ -1,0 +1,80 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>reportbills</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+   <ion-chip (click)="close()"> CLOSE</ion-chip>
+    <ion-chip (click)="clear()">CLEAR</ion-chip> 
+    <ion-chip (click)="show=0">SHOW TODAY BILLS</ion-chip> 
+    <ion-chip (click)="show=1">SHOW ALL BILLS</ion-chip> 
+    <ion-chip (click)="show=2">SHOW Summarize</ion-chip> 
+    <div *ngIf="show==0">
+      <ion-chip (click)="saveTodayBillToExcel()">SAVE TO EXCEL</ion-chip> 
+      <ion-grid >
+        <ion-row>
+          <!-- <ion-col><ion-chip *ngFor="let t of byTimes" (click)="setFilter(t)">{{t}}</ion-chip></ion-col> -->
+        </ion-row>
+        <ion-row>
+          <ion-col>update </ion-col>
+          <ion-col>payment method</ion-col>
+          <ion-col>payment time</ion-col>
+          <ion-col>total value</ion-col>
+          <ion-col>position</ion-col>
+        </ion-row>
+        <ion-row *ngFor="let s of today_bills">
+          <ion-col>{{s.bill.updatedAt}}</ion-col>
+          <ion-col>{{s.bill.paymentmethod}}</ion-col>
+          <ion-col>{{s.bill.paymenttime}}</ion-col>
+          <ion-col>{{s.bill.totalvalue}}</ion-col>
+          <ion-col>{{(s.position)}}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+    <div *ngIf="show==1">
+      <ion-chip (click)="saveBillToExcel()">SAVE TO EXCEL</ion-chip> 
+      <ion-grid >
+        <ion-row>
+          <!-- <ion-col><ion-chip *ngFor="let t of byTimes" (click)="setFilter(t)">{{t}}</ion-chip></ion-col> -->
+        </ion-row>
+        <ion-row>
+          <ion-col>update </ion-col>
+          <ion-col>payment method</ion-col>
+          <ion-col>payment time</ion-col>
+          <ion-col>total value</ion-col>
+          <ion-col>position</ion-col>
+        </ion-row>
+        <ion-row *ngFor="let s of bills">
+          <ion-col>{{s.bill.updatedAt}}</ion-col>
+          <ion-col>{{s.bill.paymentmethod}}</ion-col>
+          <ion-col>{{s.bill.paymenttime}}</ion-col>
+          <ion-col>{{s.bill.totalvalue}}</ion-col>
+          <ion-col>{{(s.position)}}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+<div *ngIf="show==2">
+  <ion-chip (click)="saveSumBillsToExcel()">SAVE TO EXCEL</ion-chip> 
+  <ion-grid >
+    <ion-row>
+      <!-- <ion-col><ion-chip *ngFor="let t of byTimes" (click)="setFilter(t)">{{t}}</ion-chip></ion-col> -->
+    </ion-row>
+    <ion-row>
+      <ion-col>name </ion-col>
+      <ion-col>price</ion-col>
+      <ion-col>qtty</ion-col>
+      <ion-col>total</ion-col>
+      <ion-col>photo</ion-col>
+    </ion-row>
+    <ion-row *ngFor="let s of sumSale">
+      <ion-col>{{s.name}}</ion-col>
+      <ion-col>{{s.price}}</ion-col>
+      <ion-col>{{s.qtty}}</ion-col>
+      <ion-col>{{s.total}}</ion-col>
+      <ion-col><img src="{{url+'/public/'+s.image}}"  style="width:50px;height:120px"/></ion-col>
+    </ion-row>
+  </ion-grid>
+</div>
+
+</ion-content>

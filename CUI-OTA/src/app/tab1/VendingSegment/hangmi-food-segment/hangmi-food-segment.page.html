@@ -1,0 +1,43 @@
+<ion-content class="page-container">
+
+  <header class="section-header">
+    <div class="section-header-left">
+      <a href="javascript:void(0)" class="logo-text"><i class="fa-solid fa-burger"></i> Hangmi Food</a>
+    </div>
+    <div class="section-header-center">
+      <div class="input-group box-search">
+        <input type="text" class="form-control" placeholder="Search" >
+        <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+      </div>
+    </div>
+    <div class="section-header-right">
+      <a href="javascript:void(0)" class="item"><i class="fa-solid fa-cart-shopping"></i></a>
+      <a (click)="close()" href="javascript:void(0)" class="item"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+    </div>
+  </header>
+
+  <main class="section-main">
+
+    <div class="section-main-left">
+      <a *ngFor="let list of categoryList; let i = index" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="{{ list.icon }}"></i>
+        </div>
+        <div class="text">{{ list.name }}</div>
+      </a>
+    </div>
+    <div class="section-main-right">
+      <a *ngFor="let list of productList; let i = index" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="{{ list.icon }}"></i>
+        </div>
+        <div class="text">{{ list.name }}</div>
+        <div class="price">₭{{ list.price | number }}</div>
+      </a>
+    </div>
+
+
+
+  </main>
+
+</ion-content>

@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>MMoney QR Pay</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <ion-item >
+      <img class="img-center " [src]="encodedData" style="width:400px ;height:400px">
+    </ion-item>
+    <ion-item style="text-align:center">
+      <ion-icon name="home-outline"></ion-icon><ion-label>{{ref}}</ion-label>
+
+      <ion-icon name="wallet-outline"></ion-icon> <ion-label>{{amount|number}}</ion-label>
+    </ion-item>
+    <ion-item>
+      ມີບັນຫາສິນຄ້າບໍ່ຕົກໂທWA: {{contact}}
+    </ion-item>
+    <ion-item >
+      <button role="button" class="center-button" (click)="close()">
+        CLOSE
+      </button>
+      <button role="button" class="center-button" (click)="refresh()">
+        REFRESH
+      </button>
+    </ion-item>
+    
+</ion-card>
+
+</ion-content>
