@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-prizelist',
-  templateUrl: './prizelist.page.html',
-  styleUrls: ['./prizelist.page.scss'],
+    selector: 'app-prizelist',
+    templateUrl: './prizelist.page.html',
+    styleUrls: ['./prizelist.page.scss'],
+    standalone: false
 })
 export class PrizelistPage implements OnInit {
 

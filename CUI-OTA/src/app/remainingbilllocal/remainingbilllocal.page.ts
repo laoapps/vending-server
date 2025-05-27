@@ -5,9 +5,10 @@ import { ModalController } from '@ionic/angular';
 import { Toast } from '@capacitor/toast';
 
 @Component({
-  selector: 'app-remainingbilllocal',
-  templateUrl: './remainingbilllocal.page.html',
-  styleUrls: ['./remainingbilllocal.page.scss'],
+    selector: 'app-remainingbilllocal',
+    templateUrl: './remainingbilllocal.page.html',
+    styleUrls: ['./remainingbilllocal.page.scss'],
+    standalone: false
 })
 export class RemainingbilllocalPage implements OnInit {
 

@@ -6,9 +6,10 @@ import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { IENMessage } from '../models/base.model';
 
 @Component({
-  selector: 'app-qrpay',
-  templateUrl: './qrpay.page.html',
-  styleUrls: ['./qrpay.page.scss'],
+    selector: 'app-qrpay',
+    templateUrl: './qrpay.page.html',
+    styleUrls: ['./qrpay.page.scss'],
+    standalone: false
 })
 export class QrpayPage implements OnInit, OnDestroy {
   @Input() encodedData: string;

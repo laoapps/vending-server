@@ -2,9 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-customloading',
-  templateUrl: './customloading.page.html',
-  styleUrls: ['./customloading.page.scss'],
+    selector: 'app-customloading',
+    templateUrl: './customloading.page.html',
+    styleUrls: ['./customloading.page.scss'],
+    standalone: false
 })
 export class CustomloadingPage implements OnInit {
   @Input()message:any;

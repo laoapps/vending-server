@@ -4,9 +4,10 @@ import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
-  selector: 'app-phone-payment',
-  templateUrl: './phone-payment.page.html',
-  styleUrls: ['./phone-payment.page.scss'],
+    selector: 'app-phone-payment',
+    templateUrl: './phone-payment.page.html',
+    styleUrls: ['./phone-payment.page.scss'],
+    standalone: false
 })
 export class PhonePaymentPage implements OnInit {
 

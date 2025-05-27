@@ -4,9 +4,10 @@ import * as  moment from 'moment';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
-  selector: 'app-epin-show-code',
-  templateUrl: './epin-show-code.page.html',
-  styleUrls: ['./epin-show-code.page.scss'],
+    selector: 'app-epin-show-code',
+    templateUrl: './epin-show-code.page.html',
+    styleUrls: ['./epin-show-code.page.scss'],
+    standalone: false
 })
 export class EpinShowCodePage implements OnInit {
 

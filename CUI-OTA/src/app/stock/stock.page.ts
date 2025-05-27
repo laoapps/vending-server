@@ -4,9 +4,10 @@ import { ApiService } from '../services/api.service';
 import { IStock, IVendingMachineSale } from '../services/syste.model';
 
 @Component({
-  selector: 'app-stock',
-  templateUrl: './stock.page.html',
-  styleUrls: ['./stock.page.scss'],
+    selector: 'app-stock',
+    templateUrl: './stock.page.html',
+    styleUrls: ['./stock.page.scss'],
+    standalone: false
 })
 export class StockPage implements OnInit {
 

@@ -9,9 +9,10 @@ import { GetMMoneyUserInfoProccess } from '../../LAAB_processes/getMMoneyUserInf
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-mmoney-cashout',
-  templateUrl: './mmoney-cashout.page.html',
-  styleUrls: ['./mmoney-cashout.page.scss'],
+    selector: 'app-mmoney-cashout',
+    templateUrl: './mmoney-cashout.page.html',
+    styleUrls: ['./mmoney-cashout.page.scss'],
+    standalone: false
 })
 export class MmoneyCashoutPage implements OnInit {
 

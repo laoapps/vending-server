@@ -10,9 +10,10 @@ import { SettingPage } from './setting/setting.page';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { VendingIndexServiceService } from './vending-index-service.service';
 @Component({
-  selector: 'app-root',
-  templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
+    selector: 'app-root',
+    templateUrl: 'app.component.html',
+    styleUrls: ['app.component.scss'],
+    standalone: false
 })
 export class AppComponent {
   checkOnlineStatus: IAlive;

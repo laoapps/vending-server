@@ -10,9 +10,10 @@ import { TestmotorPage } from '../testmotor/testmotor.page';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-setting',
-  templateUrl: './setting.page.html',
-  styleUrls: ['./setting.page.scss'],
+    selector: 'app-setting',
+    templateUrl: './setting.page.html',
+    styleUrls: ['./setting.page.scss'],
+    standalone: false
 })
 export class SettingPage implements OnInit, OnDestroy {
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;

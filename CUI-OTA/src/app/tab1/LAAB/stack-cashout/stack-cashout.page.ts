@@ -10,9 +10,10 @@ import { MmoneyCashoutPage } from '../mmoney-cashout/mmoney-cashout.page';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-stack-cashout',
-  templateUrl: './stack-cashout.page.html',
-  styleUrls: ['./stack-cashout.page.scss'],
+    selector: 'app-stack-cashout',
+    templateUrl: './stack-cashout.page.html',
+    styleUrls: ['./stack-cashout.page.scss'],
+    standalone: false
 })
 export class StackCashoutPage implements OnInit {
 

@@ -7,9 +7,10 @@ import { topupServiceMenuJSON } from '../../Vending/topup-and-service/menu';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-topup-and-service-segment',
-  templateUrl: './topup-and-service-segment.page.html',
-  styleUrls: ['./topup-and-service-segment.page.scss'],
+    selector: 'app-topup-and-service-segment',
+    templateUrl: './topup-and-service-segment.page.html',
+    styleUrls: ['./topup-and-service-segment.page.scss'],
+    standalone: false
 })
 export class TopupAndServiceSegmentPage implements OnInit {
 

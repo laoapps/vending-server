@@ -13,9 +13,10 @@ import { VendingAPIService } from 'src/app/services/vending-api.service';
 import * as cryptojs from 'crypto-js';
 
 @Component({
-  selector: 'app-order-cart',
-  templateUrl: './order-cart.page.html',
-  styleUrls: ['./order-cart.page.scss'],
+    selector: 'app-order-cart',
+    templateUrl: './order-cart.page.html',
+    styleUrls: ['./order-cart.page.scss'],
+    standalone: false
 })
 export class OrderCartPage implements OnInit, OnDestroy {
 

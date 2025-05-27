@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-fortunewheel',
-  templateUrl: './fortunewheel.page.html',
-  styleUrls: ['./fortunewheel.page.scss'],
+    selector: 'app-fortunewheel',
+    templateUrl: './fortunewheel.page.html',
+    styleUrls: ['./fortunewheel.page.scss'],
+    standalone: false
 })
 export class FortunewheelPage implements OnInit {
 

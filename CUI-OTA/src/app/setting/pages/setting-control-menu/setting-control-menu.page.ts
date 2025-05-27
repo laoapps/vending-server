@@ -4,9 +4,10 @@ import { ApiService } from 'src/app/services/api.service';
 import { ControlMenuService } from 'src/app/services/control-menu.service';
 
 @Component({
-  selector: 'app-setting-control-menu',
-  templateUrl: './setting-control-menu.page.html',
-  styleUrls: ['./setting-control-menu.page.scss'],
+    selector: 'app-setting-control-menu',
+    templateUrl: './setting-control-menu.page.html',
+    styleUrls: ['./setting-control-menu.page.scss'],
+    standalone: false
 })
 export class SettingControlMenuPage implements OnInit {
 

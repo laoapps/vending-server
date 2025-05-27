@@ -3,9 +3,10 @@ import { ApiService } from '../services/api.service';
 import { IVendingMachineSale } from '../services/syste.model';
 
 @Component({
-  selector: 'app-showcart',
-  templateUrl: './showcart.page.html',
-  styleUrls: ['./showcart.page.scss'],
+    selector: 'app-showcart',
+    templateUrl: './showcart.page.html',
+    styleUrls: ['./showcart.page.scss'],
+    standalone: false
 })
 export class ShowcartPage implements OnInit {
   @Input() orders = new Array<IVendingMachineSale>();

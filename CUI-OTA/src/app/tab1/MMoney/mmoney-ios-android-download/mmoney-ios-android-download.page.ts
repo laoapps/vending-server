@@ -4,9 +4,10 @@ import * as QRCode from 'qrcode';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
-  selector: 'app-mmoney-ios-android-download',
-  templateUrl: './mmoney-ios-android-download.page.html',
-  styleUrls: ['./mmoney-ios-android-download.page.scss'],
+    selector: 'app-mmoney-ios-android-download',
+    templateUrl: './mmoney-ios-android-download.page.html',
+    styleUrls: ['./mmoney-ios-android-download.page.scss'],
+    standalone: false
 })
 export class MmoneyIosAndroidDownloadPage implements OnInit {
 

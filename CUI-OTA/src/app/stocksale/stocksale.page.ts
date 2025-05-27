@@ -8,9 +8,10 @@ import { ReportbillsPage } from '../reportbills/reportbills.page';
 import { ReportrefillsalePage } from '../reportrefillsale/reportrefillsale.page';
 import { AlertController } from '@ionic/angular';
 @Component({
-  selector: 'app-stocksale',
-  templateUrl: './stocksale.page.html',
-  styleUrls: ['./stocksale.page.scss'],
+    selector: 'app-stocksale',
+    templateUrl: './stocksale.page.html',
+    styleUrls: ['./stocksale.page.scss'],
+    standalone: false
 })
 export class StocksalePage implements OnInit, OnDestroy {
   prod = environment.production

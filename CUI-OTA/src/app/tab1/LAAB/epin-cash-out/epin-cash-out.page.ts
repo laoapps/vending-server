@@ -11,9 +11,10 @@ import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCasho
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-epin-cash-out',
-  templateUrl: './epin-cash-out.page.html',
-  styleUrls: ['./epin-cash-out.page.scss'],
+    selector: 'app-epin-cash-out',
+    templateUrl: './epin-cash-out.page.html',
+    styleUrls: ['./epin-cash-out.page.scss'],
+    standalone: false
 })
 export class EpinCashOutPage implements OnInit {
 

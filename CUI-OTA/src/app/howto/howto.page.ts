@@ -7,9 +7,10 @@ import { ModalController } from '@ionic/angular';
 // import { VideoPlayer } from '@awesome-cordova-plugins/video-player/ngx';
 
 @Component({
-  selector: 'app-howto',
-  templateUrl: './howto.page.html',
-  styleUrls: ['./howto.page.scss'],
+    selector: 'app-howto',
+    templateUrl: './howto.page.html',
+    styleUrls: ['./howto.page.scss'],
+    standalone: false
 })
 export class HowtoPage implements OnInit {
   // trustedVideoUrl: SafeResourceUrl;

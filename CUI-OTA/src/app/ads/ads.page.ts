@@ -6,9 +6,10 @@ import { IENMessage } from '../models/base.model';
 import { VideoCacheService } from '../video-cache.service';
 
 @Component({
-  selector: 'app-ads',
-  templateUrl: './ads.page.html',
-  styleUrls: ['./ads.page.scss'],
+    selector: 'app-ads',
+    templateUrl: './ads.page.html',
+    styleUrls: ['./ads.page.scss'],
+    standalone: false
 })
 export class AdsPage implements OnInit, OnDestroy {
   playList = new Array<IAdsMedia>();

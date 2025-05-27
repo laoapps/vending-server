@@ -9,9 +9,10 @@ import { environment } from 'src/environments/environment';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-play-games',
-  templateUrl: './play-games.page.html',
-  styleUrls: ['./play-games.page.scss'],
+    selector: 'app-play-games',
+    templateUrl: './play-games.page.html',
+    styleUrls: ['./play-games.page.scss'],
+    standalone: false
 })
 export class PlayGamesPage implements OnInit {
 

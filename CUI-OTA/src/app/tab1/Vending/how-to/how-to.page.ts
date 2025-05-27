@@ -7,9 +7,10 @@ import { IENMessage } from 'src/app/models/base.model';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
  
 @Component({
-  selector: 'app-how-to',
-  templateUrl: './how-to.page.html',
-  styleUrls: ['./how-to.page.scss'],
+    selector: 'app-how-to',
+    templateUrl: './how-to.page.html',
+    styleUrls: ['./how-to.page.scss'],
+    standalone: false
 })
 export class HowToPage implements OnInit {
 

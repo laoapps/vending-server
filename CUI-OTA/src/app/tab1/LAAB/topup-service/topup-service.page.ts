@@ -3,9 +3,10 @@ import { ModalController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
-  selector: 'app-topup-service',
-  templateUrl: './topup-service.page.html',
-  styleUrls: ['./topup-service.page.scss'],
+    selector: 'app-topup-service',
+    templateUrl: './topup-service.page.html',
+    styleUrls: ['./topup-service.page.scss'],
+    standalone: false
 })
 export class TopupServicePage implements OnInit {
 

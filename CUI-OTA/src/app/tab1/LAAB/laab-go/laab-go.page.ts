@@ -6,9 +6,10 @@ import { IENMessage } from 'src/app/models/base.model';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-laab-go',
-  templateUrl: './laab-go.page.html',
-  styleUrls: ['./laab-go.page.scss'],
+    selector: 'app-laab-go',
+    templateUrl: './laab-go.page.html',
+    styleUrls: ['./laab-go.page.scss'],
+    standalone: false
 })
 export class LaabGoPage implements OnInit {
 

@@ -9,9 +9,10 @@ import qrlogo from 'qrcode-with-logos';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-vending-go',
-  templateUrl: './vending-go.page.html',
-  styleUrls: ['./vending-go.page.scss'],
+    selector: 'app-vending-go',
+    templateUrl: './vending-go.page.html',
+    styleUrls: ['./vending-go.page.scss'],
+    standalone: false
 })
 export class VendingGoPage implements OnInit {
 

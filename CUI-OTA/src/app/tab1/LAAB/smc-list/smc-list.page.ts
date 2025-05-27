@@ -10,9 +10,10 @@ import * as  moment from 'moment';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-smc-list',
-  templateUrl: './smc-list.page.html',
-  styleUrls: ['./smc-list.page.scss'],
+    selector: 'app-smc-list',
+    templateUrl: './smc-list.page.html',
+    styleUrls: ['./smc-list.page.scss'],
+    standalone: false
 })
 export class SmcListPage implements OnInit {
 

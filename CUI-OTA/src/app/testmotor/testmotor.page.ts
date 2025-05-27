@@ -8,9 +8,10 @@ import * as moment from 'moment-timezone';
 import cryptojs, { mode } from 'crypto-js';
 
 @Component({
-  selector: 'app-testmotor',
-  templateUrl: './testmotor.page.html',
-  styleUrls: ['./testmotor.page.scss'],
+    selector: 'app-testmotor',
+    templateUrl: './testmotor.page.html',
+    styleUrls: ['./testmotor.page.scss'],
+    standalone: false
 })
 
 export class TestmotorPage implements OnInit, OnDestroy {

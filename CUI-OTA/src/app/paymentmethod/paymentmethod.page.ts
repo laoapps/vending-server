@@ -3,9 +3,10 @@ import { ModalController } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 
 @Component({
-  selector: 'app-paymentmethod',
-  templateUrl: './paymentmethod.page.html',
-  styleUrls: ['./paymentmethod.page.scss'],
+    selector: 'app-paymentmethod',
+    templateUrl: './paymentmethod.page.html',
+    styleUrls: ['./paymentmethod.page.scss'],
+    standalone: false
 })
 export class PaymentmethodPage implements OnInit {
 

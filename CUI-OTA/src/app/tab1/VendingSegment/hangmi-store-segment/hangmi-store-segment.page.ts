@@ -3,9 +3,10 @@ import { ModalController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
-  selector: 'app-hangmi-store-segment',
-  templateUrl: './hangmi-store-segment.page.html',
-  styleUrls: ['./hangmi-store-segment.page.scss'],
+    selector: 'app-hangmi-store-segment',
+    templateUrl: './hangmi-store-segment.page.html',
+    styleUrls: ['./hangmi-store-segment.page.scss'],
+    standalone: false
 })
 export class HangmiStoreSegmentPage implements OnInit {
 

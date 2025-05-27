@@ -5,9 +5,10 @@ import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVe
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { ModalController } from '@ionic/angular';
 @Component({
-  selector: 'app-laab-cashin-show-code',
-  templateUrl: './laab-cashin-show-code.page.html',
-  styleUrls: ['./laab-cashin-show-code.page.scss'],
+    selector: 'app-laab-cashin-show-code',
+    templateUrl: './laab-cashin-show-code.page.html',
+    styleUrls: ['./laab-cashin-show-code.page.scss'],
+    standalone: false
 })
 export class LaabCashinShowCodePage implements OnInit,OnDestroy {
 

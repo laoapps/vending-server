@@ -8,9 +8,10 @@ import { IBillProcess } from 'src/app/services/syste.model';
 import { GenerateLaoQRCodeProcess } from '../../LaoQR_processes/generateLaoQRCode.process';
 
 @Component({
-  selector: 'app-order-paid',
-  templateUrl: './order-paid.page.html',
-  styleUrls: ['./order-paid.page.scss'],
+    selector: 'app-order-paid',
+    templateUrl: './order-paid.page.html',
+    styleUrls: ['./order-paid.page.scss'],
+    standalone: false
 })
 export class OrderPaidPage implements OnInit, OnDestroy {
 

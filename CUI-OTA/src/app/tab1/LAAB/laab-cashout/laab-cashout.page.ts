@@ -8,9 +8,10 @@ import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCasho
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-laab-cashout',
-  templateUrl: './laab-cashout.page.html',
-  styleUrls: ['./laab-cashout.page.scss'],
+    selector: 'app-laab-cashout',
+    templateUrl: './laab-cashout.page.html',
+    styleUrls: ['./laab-cashout.page.scss'],
+    standalone: false
 })
 export class LaabCashoutPage implements OnInit {
 

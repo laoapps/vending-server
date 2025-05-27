@@ -7,9 +7,10 @@ import { IENMessage } from '../models/base.model';
 import { Toast } from '@capacitor/toast';
 
 @Component({
-  selector: 'app-remainingbills',
-  templateUrl: './remainingbills.page.html',
-  styleUrls: ['./remainingbills.page.scss'],
+    selector: 'app-remainingbills',
+    templateUrl: './remainingbills.page.html',
+    styleUrls: ['./remainingbills.page.scss'],
+    standalone: false
 })
 export class RemainingbillsPage implements OnInit, OnDestroy {
 

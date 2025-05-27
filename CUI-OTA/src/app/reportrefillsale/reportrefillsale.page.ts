@@ -6,9 +6,10 @@ import { ApiService } from '../services/api.service';
 import { ExcelService } from '../services/excel.service';
 import * as  moment from 'moment';
 @Component({
-  selector: 'app-reportrefillsale',
-  templateUrl: './reportrefillsale.page.html',
-  styleUrls: ['./reportrefillsale.page.scss'],
+    selector: 'app-reportrefillsale',
+    templateUrl: './reportrefillsale.page.html',
+    styleUrls: ['./reportrefillsale.page.scss'],
+    standalone: false
 })
 export class ReportrefillsalePage implements OnInit {
   sells = new Array<IVendingMachineSale>();

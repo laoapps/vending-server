@@ -7,9 +7,10 @@ import { PhonePaymentPage } from '../phone-payment/phone-payment.page';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-topup-and-service',
-  templateUrl: './topup-and-service.page.html',
-  styleUrls: ['./topup-and-service.page.scss'],
+    selector: 'app-topup-and-service',
+    templateUrl: './topup-and-service.page.html',
+    styleUrls: ['./topup-and-service.page.scss'],
+    standalone: false
 })
 export class TopupAndServicePage implements OnInit {
 

@@ -6,9 +6,10 @@ import { ApiService } from '../services/api.service';
 import { ExcelService } from '../services/excel.service';
 import * as  moment from 'moment';
 @Component({
-  selector: 'app-reportbills',
-  templateUrl: './reportbills.page.html',
-  styleUrls: ['./reportbills.page.scss'],
+    selector: 'app-reportbills',
+    templateUrl: './reportbills.page.html',
+    styleUrls: ['./reportbills.page.scss'],
+    standalone: false
 })
 export class ReportbillsPage implements OnInit {
   bills = new Array<IBillProcess>();

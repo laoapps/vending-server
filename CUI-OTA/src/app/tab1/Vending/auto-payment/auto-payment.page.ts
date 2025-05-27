@@ -19,9 +19,10 @@ import { RemainingbilllocalPage } from 'src/app/remainingbilllocal/remainingbill
 import { Toast } from '@capacitor/toast';
 
 @Component({
-  selector: 'app-auto-payment',
-  templateUrl: './auto-payment.page.html',
-  styleUrls: ['./auto-payment.page.scss'],
+    selector: 'app-auto-payment',
+    templateUrl: './auto-payment.page.html',
+    styleUrls: ['./auto-payment.page.scss'],
+    standalone: false
 })
 export class AutoPaymentPage implements OnInit, OnDestroy {
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
