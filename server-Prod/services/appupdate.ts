@@ -106,6 +106,7 @@ export function initBundle(app: express.Application) {
     app.get('/latest-bundle', async (req: Request, res: Response) => {
         try {
             const { bundleId } = req.query;
+            console.log('Fetching latest bundle for bundleId:', bundleId);
 
             const bundle = await BundleEntity.findOne({
                 where: { bundleId: bundleId + '' },
@@ -116,7 +117,10 @@ export function initBundle(app: express.Application) {
                 return res.status(404).json({ error: 'No bundle found' });
             }
 
-            const serverUrl = `https://${req.get('host')}/bundles`;
+            const serverUrl = `http://192.168.88.186:9046/bundles`;
+            // const serverUrl = `https://${req.get('host')}/bundles`;
+            console.log('Latest bundle:', serverUrl);
+
             res.json({
                 bundleId: bundle.bundleId,
                 url: `${serverUrl}/${bundle.filePath}`,

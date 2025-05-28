@@ -650,7 +650,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 (a.owner + '').trim(),
                                 ownerPhone
                             );
-                            console.log('QR IS :', qr);
+                            console.log('=====>MACHINE :', machineId.machineId, 'QR IS :', qr);
 
                             if (qr.status != 'OK') throw new Error(EMessage.generateQRFailed);
 
