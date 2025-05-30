@@ -9,6 +9,7 @@ import { SettingPage } from './setting/setting.page';
 // import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { VendingIndexServiceService } from './vending-index-service.service';
+import { LiveupdateService } from './liveupdate.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -18,7 +19,7 @@ export class AppComponent {
   checkOnlineStatus: IAlive;
   uT = new Date();
   now = new Date();
-  version = '7';
+  version = '27';
   count = 6;
   machineuuid = this.apiService.machineuuid;
   t: any;
@@ -42,7 +43,8 @@ export class AppComponent {
   constructor(
     public apiService: ApiService,
     private platform: Platform,
-    public vendingIndex: VendingIndexServiceService
+    public vendingIndex: VendingIndexServiceService,
+    private liveUpdateService: LiveupdateService
   ) {
     this.platform.ready().then(() => {
       this.initializeApp();
@@ -59,7 +61,7 @@ export class AppComponent {
 
   async initializeApp() {
     await this.checkForLiveUpdate(); // Check for updates on app start
-
+    await this.ready(); // Ensure the app is ready with the current bundle
   }
 
   async checkForLiveUpdate() {
@@ -80,6 +82,19 @@ export class AppComponent {
       console.error('Error during live update sync:', error);
     }
   }
+
+  ready = async () => {
+    const result = await LiveUpdate.ready();
+    if (result.currentBundleId) {
+      console.log(`The app is now using the bundle with the identifier ${result.currentBundleId}.`);
+    }
+    if (result.previousBundleId) {
+      console.log(`The app was using the bundle with the identifier ${result.previousBundleId}.`);
+    }
+    if (result.rollback) {
+      console.log('The app was reset to the default bundle.');
+    }
+  };
 
   showSetting() {
 

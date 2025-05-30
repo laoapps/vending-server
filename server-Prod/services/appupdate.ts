@@ -63,7 +63,7 @@ export function initBundle(app: express.Application) {
             if (!req.file) {
                 return res.status(400).json({ error: 'No file uploaded' });
             }
-            console.log('File uploaded:', req.file);
+            console.log('File uploaded DATA:', req.file);
             // console.log('File path:', req.file.path);
             // console.log('File name:', req.file.filename);
 
@@ -105,8 +105,9 @@ export function initBundle(app: express.Application) {
     // Get latest bundle
     app.get('/latest-bundle', async (req: Request, res: Response) => {
         try {
+            console.log('Fetching latest bundle for query:', req.query);
+
             const { bundleId } = req.query;
-            console.log('Fetching latest bundle for bundleId:', bundleId);
 
             const bundle = await BundleEntity.findOne({
                 where: { bundleId: bundleId + '' },
@@ -117,8 +118,8 @@ export function initBundle(app: express.Application) {
                 return res.status(404).json({ error: 'No bundle found' });
             }
 
-            const serverUrl = `http://192.168.88.186:9046/bundles`;
-            // const serverUrl = `https://${req.get('host')}/bundles`;
+            // const serverUrl = `http://192.168.88.186:9046/bundles`;
+            const serverUrl = `https://${req.get('host')}/bundles`;
             console.log('Latest bundle:', serverUrl);
 
             res.json({

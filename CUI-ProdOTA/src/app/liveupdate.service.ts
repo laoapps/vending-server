@@ -31,7 +31,8 @@ export class LiveupdateService {
       );
 
       if ('error' in latestBundle) {
-        console.error('Server returned error:', latestBundle.error);
+        console.error('=====>Server returned error:', latestBundle.error);
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Server returned error:: ${latestBundle.error}` });
         await this.updateAppData();
         return undefined;
       }
@@ -41,7 +42,8 @@ export class LiveupdateService {
 
       // Check if the bundle is new
       if (!(await this.isNewBundleAvailable(bundleId))) {
-        console.log('No new bundle available.');
+        console.log('=====>No new bundle available.');
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: 'No new bundle available.' });
         await this.updateAppData();
         return undefined;
       }
@@ -52,22 +54,31 @@ export class LiveupdateService {
         bundleId: bundleId,
       });
 
+      await new Promise(resolve => setTimeout(resolve, 10000));
+
       // Verify bundle
       const bundles = await LiveUpdate.getBundles();
       if (!bundles.bundleIds.includes(bundleId)) {
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Bundle ${bundleId} not found in available bundles` });
         throw new Error(`Bundle ${bundleId} not found in available bundles`);
       }
 
       // Set next bundle and reload
       await LiveUpdate.setNextBundle({ bundleId: bundleId });
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
       await LiveUpdate.ready();
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
       await LiveUpdate.reload();
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       await this.updateAppData();
-      await this.showToast(`App updated to version ${bundleId}`);
+      await this.showToast(`=====>App updated to version ${bundleId}`);
       return latestBundle;
     } catch (error) {
-      console.error('Update process failed:', error);
+      console.error('=====>Update process failed:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update process failed: ${JSON.stringify(error)}` });
       await this.updateAppData();
       return undefined;
     }
@@ -82,9 +93,10 @@ export class LiveupdateService {
         key: 'appData',
         value: JSON.stringify({ data, bundleId }),
       });
-      console.log('App data updated for bundle:', bundleId);
+      console.log('=====>App data updated for bundle:', bundleId);
     } catch (error) {
-      console.error('Error updating app data:', error);
+      console.error('=====>Error updating app data:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error updating app data: ${JSON.stringify(error)}` });
     }
   }
 
@@ -96,9 +108,10 @@ export class LiveupdateService {
   async clearAppData() {
     try {
       await Preferences.remove({ key: 'appData' });
-      console.log('App data cleared');
+      console.log('=====>App data cleared');
     } catch (error) {
-      console.error('Error clearing app data:', error);
+      console.error('=====>Error clearing app data:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error clearing app data: ${JSON.stringify(error)}` });
     }
   }
 
@@ -107,7 +120,8 @@ export class LiveupdateService {
       const { bundleIds } = await LiveUpdate.getBundles();
       return bundleIds.length > 0 ? latestBundleId !== bundleIds[0] : true;
     } catch (error) {
-      console.error('Error checking bundle availability:', error);
+      console.error('=====>Error checking bundle availability:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checking bundle availability: ${JSON.stringify(error)}` });
       return false;
     }
   }
@@ -117,7 +131,8 @@ export class LiveupdateService {
       const { bundleIds } = await LiveUpdate.getBundles();
       return bundleIds.length > 0 ? bundleIds[0] : null;
     } catch (error) {
-      console.error('Error getting current bundle:', error);
+      console.error('=====>Error getting current bundle:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error getting current bundle: ${JSON.stringify(error)}` });
       return null;
     }
   }
@@ -125,10 +140,11 @@ export class LiveupdateService {
   async verifyBundle() {
     try {
       const { bundleIds } = await LiveUpdate.getBundles();
-      console.log('Current bundle ID:', bundleIds);
+      console.log('=====>Current bundle ID:', bundleIds);
       return bundleIds.length > 0 ? bundleIds[0] : null;
     } catch (error) {
-      console.error('Error verifying bundle:', error);
+      console.error('=====>Error verifying bundle:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error verifying bundle: ${JSON.stringify(error)}` });
       return null;
     }
   }
@@ -137,9 +153,10 @@ export class LiveupdateService {
     try {
       await LiveUpdate.reset();
       await LiveUpdate.reload();
-      console.log('Reset to default bundle');
+      console.log('=====>Reset to default bundle');
     } catch (error) {
-      console.error('Error resetting to default bundle:', error);
+      console.error('=====>Error resetting to default bundle:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error resetting to default bundle: ${JSON.stringify(error)}` });
     }
   }
 
@@ -151,7 +168,8 @@ export class LiveupdateService {
       });
       await toast.present();
     } catch (error) {
-      console.error('Error showing toast:', error);
+      console.error('=====>Error showing toast:', JSON.stringify(error));
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error showing toast: ${JSON.stringify(error)}` });
     }
   }
 }

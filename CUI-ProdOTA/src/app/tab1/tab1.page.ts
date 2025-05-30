@@ -181,7 +181,8 @@ export class Tab1Page implements OnDestroy {
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
-  versionId = localStorage.getItem('versionId') || '0.0.0';
+  versionId = environment.versionId ?? '0.0.0';
+
 
   adsOn: Boolean = false;
 
@@ -829,12 +830,20 @@ export class Tab1Page implements OnDestroy {
             this.apiService.musicVolume = this.musicVolume;
             this.apiService.reloadPage();
           }
+          // const versionId = environment.versionId ?? '0.0.0';
+          // if (r.versionId) {
+          //   if (versionId != r.versionId) {
+          //     console.log('Update versionId to', r.versionId);
+          //     this.checkLiveUpdate(r.versionId);
+          //   }
+          // }
 
-          if (this.versionId != r.versionId) {
+
+          if (r.versionId && this.versionId !== r.versionId) {
             this.versionId = r.versionId;
-            localStorage.setItem('versionId', this.versionId);
-            console.log('Update versionId to', this.versionId);
-            this.checkLiveUpdate(this.versionId);
+            console.log('Update versionId to', r.versionId);
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
+            this.checkLiveUpdate(r.versionId);
           }
 
           if (this.areArraysDifferentUnordered(this.adsList ?? [], r.adsList ?? [])) {
@@ -995,10 +1004,13 @@ export class Tab1Page implements OnDestroy {
       this.liveUpdateService.checkForUpdates(version).then(async (res) => {
         console.log('checkForUpdates', res);
       }).catch((e) => {
+
         console.log('Error checkLiveUpdate', e);
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checkLiveUpdate :${JSON.stringify(e)}` });
       });
     } catch (error) {
       console.log('Error checkLiveUpdate', error);
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checkLiveUpdate :${JSON.stringify(error)}` });
     }
   }
 

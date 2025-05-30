@@ -93,14 +93,13 @@ export class LoadStockListProcess {
             } catch (error) {
                 message.message='Init params....'+error.message;
                 this.apiService.alertError(`error cash ${this.text} ${message.message}`);
+                this.apiService.IndexedLogDB.addBillProcess({errorData:`Error cash :${JSON.stringify(error)}`});
                 setTimeout(() => {
                     this.apiService.dismissModal();
                     console.log(`error`, error.message);
                     // (await this.workload).dismiss();
-                    resolve(error.message);  
+                    resolve(error.message);
                 }, 3000);
-                
-                  
             }
         });
     }
