@@ -17,8 +17,8 @@ export class MT102Service implements ISerialService {
   private dataBits: 8 = 8;
   private stopBits: 1 = 1;
   private totalValue = 0; // Optional: for tracking if MT102 reports values
-  machinestatus = {data:''};
-  constructor(private serialService: SerialServiceService) {}
+  machinestatus = { data: '' };
+  constructor(private serialService: SerialServiceService) { }
 
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
@@ -34,16 +34,17 @@ export class MT102Service implements ISerialService {
     this.m102.on('MOTOR_RUN', ({ details }) => {
       const result = details?.[0] === 0 ? 'Success' : `Error ${details?.[0]}`;
       this.addLogMessage(this.log, `Motor Run Result: ${result}`);
+      if (details?.[0] === 0) this.totalValue++; // Increment for successful motor run
     });
     this.m102.on('TEMPERATURE', ({ details }) => {
-      const temp = (details![1] << 8) | details![0];
+      const temp = (details![0] << 8) | details![1];
       this.addLogMessage(this.log, `Temperature: ${temp / 10} °C`);
     });
     this.m102.on('SWITCH_OUTPUT', ({ details }) => {
       this.addLogMessage(this.log, `Switch Output: Index ${details![0]}, Result ${details![1]}`);
     });
     this.m102.on('SWITCH_INPUT', ({ details }) => {
-      this.addLogMessage(this.log, `Switch Input: ${this.formatHexArray(details)}`);
+      this.addLogMessage(this.log, `Switch Input (0-7): ${this.formatHexArray(details.slice(0, 8))}`);
     });
     this.m102.on('ADDRESS_SET', ({ details }) => {
       this.addLogMessage(this.log, `Address Set: ${details![0]}`);
@@ -118,56 +119,71 @@ export class MT102Service implements ISerialService {
     });
   }
 
-  command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+  async command(command: EMACHINE_COMMAND, params: any, transactionID: number, retries = 3): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
       if (!this.m102) {
         reject(new Error('MT102 protocol not initialized'));
         return;
       }
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          let m102Command: string;
+          switch (command) {
+            case EMACHINE_COMMAND.POLL:
+              m102Command = this.m102.motorPoll();
+              break;
+            case EMACHINE_COMMAND.START_MOTOR: // Renamed for clarity
+              const { motorIndex = 0, motorType = 3, lightCurtainMode = 0, overcurrent = 100, undercurrent = 50, timeout = 70 } = params || {};
+              m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
+              break;
+            case EMACHINE_COMMAND.READ_TEMP:
+              m102Command = this.m102.readTemp();
+              break;
+            case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
+              const { switchIndex = 0 } = params || {};
+              m102Command = this.m102.writeDO(switchIndex, 0); // Read by setting operation to 0
+              break;
+            case EMACHINE_COMMAND.READ_SWITCH_INPUT:
+              m102Command = this.m102.readDI();
+              break;
+            case EMACHINE_COMMAND.SET_ADDRESS:
+              const { newAddress = 1 } = params || {};
+              m102Command = this.m102.setAddress(newAddress);
+              break;
+            case EMACHINE_COMMAND.RESET:
+              resolve(PrintSucceeded(command, {}, 'reset'));
+              return;
+            case EMACHINE_COMMAND.READ_EVENTS:
+              resolve(PrintSucceeded(command, {}, 'no events tracked'));
+              return;
+            case EMACHINE_COMMAND.MOTOR_SCAN:
+              const { motorIndex = 0 } = params || {};
+              m102Command = this.m102.motorScan(motorIndex);
+              break;
+            default:
+              resolve(PrintSucceeded(command, params, 'unknown command'));
+              return;
+          }
 
-      try {
-        let m102Command: string;
-        switch (command) {
-          case EMACHINE_COMMAND.POLL:
-            m102Command = this.m102.motorPoll();
-            break;
-          case EMACHINE_COMMAND.START_MOTOR: // Renamed for clarity
-            const { motorIndex = 0, motorType = 3, lightCurtainMode = 0, overcurrent = 100, undercurrent = 50, timeout = 70 } = params || {};
-            m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
-            break;
-          case EMACHINE_COMMAND.READ_TEMP:
-            m102Command = this.m102.readTemp();
-            break;
-          case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
-            const { switchIndex = 0 } = params || {};
-            m102Command = this.m102.writeDO(switchIndex, 0); // Read by setting operation to 0
-            break;
-          case EMACHINE_COMMAND.READ_SWITCH_INPUT:
-            m102Command = this.m102.readDI();
-            break;
-          case EMACHINE_COMMAND.SET_ADDRESS:
-            const { newAddress = 1 } = params || {};
-            m102Command = this.m102.setAddress(newAddress);
-            break;
-          case EMACHINE_COMMAND.RESET:
-            this.totalValue = 0;
-            resolve(PrintSucceeded(command, {}, 'reset'));
-            return;
-          case EMACHINE_COMMAND.READ_EVENTS:
-            resolve(PrintSucceeded(command, { totalValue: this.totalValue }, 'read events'));
-            return;
-          default:
-            resolve(PrintSucceeded(command, params, 'unknown command'));
-            return;
+          this.addLogMessage(this.log, `Sending (Attempt ${attempt}): ${m102Command}`);
+          await this.serialService.write(m102Command);
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Response timeout')), 1000);
+            this.getSerialEvents().subscribe((event) => {
+              if (event.event === 'dataReceived') {
+                clearTimeout(timeout);
+                resolve(event.data);
+              }
+            });
+          });
+          return PrintSucceeded(command, params, 'Command sent, response received');
+        } catch (error) {
+          this.addLogMessage(this.log, `Attempt ${attempt} failed: ${error.message}`);
+          if (attempt === retries) reject(new Error(`Command failed after ${retries} attempts: ${error.message}`));
+          else this.addLogMessage(this.log, `Retrying... (${attempt}/${retries})`);
         }
-
-        this.addLogMessage(this.log, `Sending: ${m102Command}`);
-        await this.serialService.write(m102Command);
-        resolve(PrintSucceeded(command, params, 'Command sent, awaiting response'));
-      } catch (error) {
-        this.addLogMessage(this.log, `Error sending: ${error.message}`);
-        reject(error);
       }
+      reject(new Error('Command failed after all retries'));
     });
   }
 
@@ -180,11 +196,12 @@ export class MT102Service implements ISerialService {
   }
 
   close(): Promise<void> {
+    this.m102.listeners.clear();
     return this.serialService.close();
   }
 
   public async listPorts(): Promise<SerialPortListResult> {
-    return  this.serialService.listPorts();
+    return this.serialService.listPorts();
   }
 }
 
@@ -204,7 +221,7 @@ type ListenerCallback = (data: { event: M102Event; details?: number[] }) => void
 class M102Protocol {
   private hostAddress: number = 0x00;
   private slaveAddress: number;
-  private listeners: Map<M102Event, ListenerCallback[]> = new Map();
+  public listeners: Map<M102Event, ListenerCallback[]> = new Map();
 
   constructor(slaveAddress: number = 1) {
     if (slaveAddress < 1 || slaveAddress > 8) {
@@ -234,9 +251,9 @@ class M102Protocol {
       .join('');
   }
 
-  private buildPacket(instruction: number, data: number[] = []): string {
+  private buildPacket(instruction: number, data: number[] = [], address: number = this.slaveAddress): string {
     const packet = new Uint8Array(20);
-    packet[0] = this.slaveAddress;
+    packet[0] = address;
     packet[1] = instruction;
     packet.fill(0, 2, 18);
     packet.set(data.slice(0, 16), 2);
@@ -252,22 +269,22 @@ class M102Protocol {
   public parseResponse(hexString: string): { instruction: number; data: number[] } {
     const matches = hexString.match(/.{1,2}/g);
     if (!matches || matches.length !== 20) {
-      this.emit('ERROR', [0x01]); // Invalid length
+      this.emit('ERROR', [ERROR_CODES.INVALID_LENGTH]);
       throw new Error('Response must be 20 bytes');
     }
     const packet = new Uint8Array(matches.map(byte => parseInt(byte, 16)));
     if (packet[0] !== this.hostAddress) {
-      this.emit('ERROR', [0x02]); // Invalid host address
+      this.emit('ERROR', [ERROR_CODES.INVALID_HOST_ADDRESS]);
       throw new Error('Invalid host address');
     }
 
     const crcData = packet.slice(0, 18);
     const crc = (packet[19] << 8) | packet[18];
     if (this.calculateCrc16(crcData) !== crc) {
-      this.emit('ERROR', [0x03]); // CRC mismatch
+      this.emit('ERROR', [ERROR_CODES.CRC_MISMATCH]);
       throw new Error('CRC mismatch');
     }
-
+    this.emit('ERROR', [ERROR_CODES.INVALID_DATA_LENGTH]);
     const instruction = packet[1];
     const data = Array.from(packet.slice(2, 18));
     this.processResponse(instruction, data);
@@ -277,28 +294,36 @@ class M102Protocol {
   private processResponse(instruction: number, data: number[]) {
     switch (instruction) {
       case 0x01:
-        this.emit('SERIAL_NUMBER', data.slice(0, 12));
+        if (data.length >= 12) this.emit('SERIAL_NUMBER', data.slice(0, 12));
+        else this.emit('ERROR', [0x04]); // Invalid data length
         break;
       case 0x03:
-        this.emit('MOTOR_POLL', data.slice(0, 10));
+        if (data.length >= 10) this.emit('MOTOR_POLL', data.slice(0, 10));
+        else this.emit('ERROR', [0x04]);
         break;
       case 0x04:
-        this.emit('MOTOR_SCAN', [data[0]]);
+        if (data.length >= 1) this.emit('MOTOR_SCAN', [data[0]]);
+        else this.emit('ERROR', [0x04]);
         break;
       case 0x05:
-        this.emit('MOTOR_RUN', [data[0]]);
+        if (data.length >= 1) this.emit('MOTOR_RUN', [data[0]]);
+        else this.emit('ERROR', [0x04]);
         break;
       case 0x07:
-        this.emit('TEMPERATURE', data.slice(0, 2));
+        if (data.length >= 2) this.emit('TEMPERATURE', data.slice(0, 2));
+        else this.emit('ERROR', [0x04]);
         break;
       case 0x08:
-        this.emit('SWITCH_OUTPUT', data.slice(0, 2));
+        if (data.length >= 2) this.emit('SWITCH_OUTPUT', data.slice(0, 2));
+        else this.emit('ERROR', [0x04]);
         break;
       case 0x09:
-        this.emit('SWITCH_INPUT', data.slice(0, 4));
+        if (data.length >= 8) this.emit('SWITCH_INPUT', data.slice(0, 8));
+        else this.emit('ERROR', [0x04]);
         break;
       case 0xFF:
-        this.emit('ADDRESS_SET', [data[0]]);
+        if (data.length >= 1) this.emit('ADDRESS_SET', [data[0]]);
+        else this.emit('ERROR', [0x04]);
         break;
       default:
         this.emit('ERROR', [instruction]); // Unknown instruction
@@ -323,6 +348,7 @@ class M102Protocol {
   public getSerialNumber(): string { return this.buildPacket(0x01); }
   public motorPoll(): string { return this.buildPacket(0x03); }
   public motorScan(motorIndex: number): string {
+    // Note: Document specifies 0-99, but motorRun uses 0-59. Confirm range with hardware.
     if (motorIndex < 0 || motorIndex > 99) throw new Error('Motor index must be 0-99');
     return this.buildPacket(0x04, [motorIndex]);
   }
@@ -337,14 +363,19 @@ class M102Protocol {
   }
   public readTemp(): string { return this.buildPacket(0x07); }
   public writeDO(doIndex: number, operation: number): string {
-    if (doIndex < 0 || doIndex > 6) throw new Error('DO index must be 0-6');
+    if (doIndex < 0 || doIndex > 7) throw new Error('DO index must be 0-7');
     if (operation !== 0 && operation !== 1) throw new Error('Operation must be 0 or 1');
     return this.buildPacket(0x08, [doIndex, operation]);
   }
   public readDI(): string { return this.buildPacket(0x09, [0]); }
   public setAddress(newAddress: number): string {
     if (newAddress < 1 || newAddress > 8) throw new Error('New address must be 1-8');
-    const packet = this.buildPacket(0xFF, [newAddress]);
-    return 'FF' + packet.slice(2); // Special case for broadcast address
+    return this.buildPacket(0xFF, [newAddress], 255);
   }
 }
+const ERROR_CODES = {
+  INVALID_LENGTH: 0x01,
+  INVALID_HOST_ADDRESS: 0x02,
+  CRC_MISMATCH: 0x03,
+  INVALID_DATA_LENGTH: 0x04,
+};

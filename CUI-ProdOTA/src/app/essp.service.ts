@@ -165,7 +165,7 @@ export class EsspService implements ISerialService {
 
     return high; // Return the floor of the square root
   }
-  generatePrime(bits: number): BigInt.BigInteger {
+  generatePrime(bits: number=64): BigInt.BigInteger {
     const min = BigInt(1).shiftLeft(bits - 1); // 2^(bits-1)
     const max = BigInt(1).shiftLeft(bits).minus(1); // 2^bits - 1
 
@@ -868,6 +868,7 @@ export class EsspService implements ISerialService {
         if (retryCount >= maxRetries) {
           this.stopPolling();
           console.log(`Polling failed after ${maxRetries} retries: ${error.message}`);
+          this.eventSubject.error(new Error(`Polling failed after ${maxRetries} retries: ${error.message}`));
           // throw new Error(`Polling failed after ${maxRetries} retries: ${error.message}`);
         }
         if (Date.now() - lastResponseTime > 10000) { // 10s silence
