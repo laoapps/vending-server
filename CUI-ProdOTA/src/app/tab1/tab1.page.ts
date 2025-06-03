@@ -831,17 +831,17 @@ export class Tab1Page implements OnDestroy {
             this.apiService.musicVolume = this.musicVolume;
             this.apiService.reloadPage();
           }
-
-          if (r.versionId) {
-            if (this.versionId != r.versionId) {
-              this.versionId = r.versionId;
-              console.log('Update versionId to', r.versionId);
-              this.apiService.toast.create({ message: `Update versionId to ${r.versionId}`, duration: 3000 }).then(r => r.present());
-              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
-              this.checkLiveUpdate(r.versionId);
+          if (this.platform.is('android')) {
+            if (r.versionId) {
+              if (this.versionId != r.versionId) {
+                this.versionId = r.versionId;
+                console.log('Update versionId to', r.versionId);
+                this.apiService.toast.create({ message: `Update versionId to ${r.versionId}`, duration: 3000 }).then(r => r.present());
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
+                this.checkLiveUpdate(r.versionId);
+              }
             }
           }
-
 
           // if (r.versionId && this.versionId !== r.versionId) {
           //   this.versionId = r.versionId;
@@ -2258,12 +2258,13 @@ export class Tab1Page implements OnDestroy {
 
       // const component = OrderCartPage;
       const component = AutoPaymentPage;
-      const props = {
+      const props_data = {
         orders: this.orders,
         getTotalSale: this.getTotalSale
       }
+      console.log('props_data', props_data);
       const that = this;
-      this.apiService.modal.create({ component: component, componentProps: props, cssClass: 'dialog-fullscreen' }).then(r => {
+      this.apiService.modal.create({ component: AutoPaymentPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
         r.present();
         this.otherModalAreOpening = true;
         // this.apiService.allModals.push(this.apiService.modal);

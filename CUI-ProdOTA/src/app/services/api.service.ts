@@ -288,6 +288,7 @@ export class ApiService {
     public wsapi: WsapiService,
     public toast: ToastController,
     public modal: ModalController,
+    public modals: ModalController,
     // public notifyService: NotifierService,
     public storage: IonicStorageService,
     public IndexedDB: IndexedDBService,
