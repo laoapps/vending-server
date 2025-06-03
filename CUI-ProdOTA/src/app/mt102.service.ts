@@ -128,12 +128,13 @@ export class MT102Service implements ISerialService {
       for (let attempt = 1; attempt <= retries; attempt++) {
         try {
           let m102Command: string;
+          const { motorIndex = 0, motorType = 3, lightCurtainMode = 0, overcurrent = 100, undercurrent = 50, timeout = 70 } = params || {};
           switch (command) {
             case EMACHINE_COMMAND.POLL:
               m102Command = this.m102.motorPoll();
               break;
             case EMACHINE_COMMAND.START_MOTOR: // Renamed for clarity
-              const { motorIndex = 0, motorType = 3, lightCurtainMode = 0, overcurrent = 100, undercurrent = 50, timeout = 70 } = params || {};
+              
               m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
               break;
             case EMACHINE_COMMAND.READ_TEMP:
@@ -157,7 +158,6 @@ export class MT102Service implements ISerialService {
               resolve(PrintSucceeded(command, {}, 'no events tracked'));
               return;
             case EMACHINE_COMMAND.MOTOR_SCAN:
-              const { motorIndex = 0 } = params || {};
               m102Command = this.m102.motorScan(motorIndex);
               break;
             default:
