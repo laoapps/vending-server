@@ -1,93 +1,99 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar>
-    <ion-icon name="close-circle-sharp" (click)="close()"></ion-icon>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close-circle-sharp"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Sale</ion-title>
+  </ion-toolbar>
+</ion-header> -->
 
-    <ion-title>sale</ion-title>
+<ion-header>
+  <ion-toolbar style="--background: #e53935; --color: white;">
+    <ion-buttons slot="start">
+      <ion-button (click)="apiService.dismissModal()" fill="clear">
+        <ion-icon name="arrow-back" slot="icon-only" style="color: white;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title style="color: white;">Sale</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <!-- <ion-button *ngIf="readonly == false" (click)="new()">New</ion-button>
-  <ion-button *ngIf="readonly == false" (click)="cloneSale()">Clone Sale</ion-button> -->
 
-  <ion-button (click)="new()">New</ion-button>
-  <ion-button (click)="cloneSale()">Clone Sale</ion-button>
-  <ion-button (click)="cloneSaleCUI()">Clone Sale CUI</ion-button>
-  <ion-button (click)="cuisale()">CUI Sale</ion-button>
-  <ion-item-divider>MachineId:{{machineId}}</ion-item-divider>
-
-  <!-- <ion-grid *ngIf="readonly == true">
-    <ion-row>
-      <ion-col></ion-col>
-      <ion-col><ion-label>id</ion-label></ion-col>
-      <ion-col><ion-label>max</ion-label></ion-col>
-      <ion-col><ion-label>position</ion-label></ion-col>
-      <ion-col><ion-label>updated</ion-label></ion-col>
-      <ion-col></ion-col>
-      <ion-col></ion-col>
-    </ion-row>
-    
-    
-    <ion-row *ngFor="let p of _l">
-      <ion-img class="product_image"[src]="showImage(p.stock.image)" (click)="showProductList(p)"></ion-img>
-      <ion-col><ion-label>{{p.id}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.max}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.position}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.stock.name}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.stock.price|number}}</ion-label></ion-col>
-    </ion-row>
-  </ion-grid>
-
-  <ion-grid *ngIf="readonly == false">
-    <ion-row>
-      <ion-col></ion-col>
-      <ion-col><ion-label>id</ion-label></ion-col>
-      <ion-col><ion-label>max</ion-label></ion-col>
-      <ion-col><ion-label>position</ion-label></ion-col>
-      <ion-col><ion-label>updated</ion-label></ion-col>
-      <ion-col></ion-col>
-      <ion-col></ion-col>
-    </ion-row>
-    
-    
-    <ion-row *ngFor="let p of _l">
-      <ion-img class="product_image"[src]="showImage(p.stock.image)" (click)="showProductList(p)"></ion-img>
-      <ion-col><ion-label>{{p.id}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.max}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.position}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
-      <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="save(p)" ></ion-toggle></ion-col>
-      <ion-col><ion-label>{{p.stock.name}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.stock.price|number}}</ion-label></ion-col>
-      <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>
-      <ion-col><ion-button (click)="deletesale(p)">delete</ion-button></ion-col>
-    </ion-row>
-  </ion-grid> -->
-
+<ion-content class="ion-padding">
   <ion-grid>
     <ion-row>
-      <ion-col></ion-col>
-      <ion-col><ion-label>id</ion-label></ion-col>
-      <ion-col><ion-label>max</ion-label></ion-col>
-      <ion-col><ion-label>position</ion-label></ion-col>
-      <ion-col><ion-label>updated</ion-label></ion-col>
-      <ion-col></ion-col>
-      <ion-col></ion-col>
+      <ion-col size="6">
+        <ion-button expand="block" color="primary" (click)="new()">New</ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button expand="block" color="tertiary" (click)="cuisale()">CUI Sale</ion-button>
+      </ion-col>
     </ion-row>
-    
-    
-    <ion-row *ngFor="let p of _l">
-      <ion-img class="product_image"[src]="showImage(p.stock.image)" (click)="showProductList(p)"></ion-img>
-      <ion-col><ion-label>{{p.id}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.max}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.position}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
-      <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="save(p)" ></ion-toggle></ion-col>
-      <ion-col><ion-label>{{p.stock.name}}</ion-label></ion-col>
-      <ion-col><ion-label>{{p.stock.price|number}}</ion-label></ion-col>
-      <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>
-      <ion-col><ion-button (click)="deletesale(p)">delete</ion-button></ion-col>
-    </ion-row>
+
   </ion-grid>
+
+
+  <ion-item lines="none">
+    <ion-label><strong>Machine ID:</strong> {{ machineId }}</ion-label>
+  </ion-item>
+
+  <ion-list>
+    <ion-card *ngFor="let p of _l">
+      <ion-item lines="none">
+        <ion-thumbnail slot="start">
+          <img [src]="showImage(p.stock.image)" (click)="showProductList(p)" class="product-image">
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{ p.stock.name }}</h2>
+          <p>Position: {{ p.position }} | Max: {{ p.max }}</p>
+          <p>ID: {{ p.id }} | Updated: {{ p.updatedAt | date }}</p>
+          <p>Price: {{ p.stock.price | number }}</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-label>Active</ion-label>
+        <ion-toggle slot="end" [(ngModel)]="p.isActive" (ngModelChange)="save(p)"
+          [color]="p.isActive ? 'success' : 'dark'">
+        </ion-toggle>
+      </ion-item>
+
+
+      <ion-row class="ion-padding">
+        <ion-col>
+          <ion-button expand="block" size="small" fill="outline" (click)="edit(p.id)">Edit</ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button expand="block" size="small" color="danger" fill="outline"
+            (click)="deletesale(p)">Delete</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-card>
+  </ion-list>
 </ion-content>
+
+<style>
+  .product-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  ion-card {
+    margin-bottom: 12px;
+  }
+
+  ion-item h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  ion-item p {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 2px 0;
+  }
+</style>

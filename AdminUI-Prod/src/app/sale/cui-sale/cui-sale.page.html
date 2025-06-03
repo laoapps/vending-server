@@ -1,103 +1,80 @@
-<!-- <ion-content>
+<ion-content fullscreen class="content-padding">
 
   <div class="section-navbar">
     <div class="left">
-      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <a (click)="close()" href="javascript:void(0)" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
       <div class="item-text">CUI Sale - Machine ID {{ machineId }}</div>
-    </div>
-    <div class="right">
-      <a (click)="stockRport()" href="javascript:void(0)" class="item">Reports Stock</a>
-      <a (click)="saleRport()" href="javascript:void(0)" class="item">Reports Sale</a>
     </div>
   </div>
 
   <div class="space"></div>
 
+  <!-- ✅ Button Section: 2 Rows -->
+  <div class="button-group-2rows">
+    <ion-row>
+      <ion-col size="4">
+        <ion-button expand="block" (click)="stockRport()" color="medium">Reports Stock</ion-button>
+      </ion-col>
+      <ion-col size="4">
+        <ion-button expand="block" (click)="saleRport()" color="medium">Reports Sale</ion-button>
+      </ion-col>
+      <ion-col size="4">
+        <ion-button expand="block" (click)="dropRport()" color="medium">Reports Drop</ion-button>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="6">
+        <ion-button expand="block" (click)="showSaleSlot()" [color]="isShowSaleOnly ? 'danger' : 'primary'">
+          Show Sale Slot Only
+        </ion-button>
+      </ion-col>
+      <ion-col size="6">
+
+        <ion-button expand="block" (click)="showAllSlots()" [color]="!isShowSaleOnly ? 'danger' : 'primary'">
+          Show All Slots
+        </ion-button> </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="6">
+        <ion-button expand="block" (click)="listByQtty()" color="medium">List by Quantity</ion-button>
+      </ion-col>
+      <ion-col size="6">
+
+        <ion-button expand="block" color="success" (click)="exportToExcel()">
+          <ion-icon slot="start" name="document-text-outline"></ion-icon> Export to Excel
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+
+
+
+  </div>
+
+  <!-- ✅ แสดงรายการสินค้า -->
   <div class="cuisale-container">
-
-
-
-    <div class="list-container">
+    <div class="list-container" *ngIf="!isShowSaleOnly">
       <a *ngFor="let list of lists; let i = index" href="javascript:void(0)" class="item">
         <div class="object">
           <div class="text"><i class="fa-solid fa-check-to-slot"></i> {{ list?.position }}</div>
         </div>
         <div class="item-header">
-          <img src="{{ list?.stock?.image }}" alt="">
+          <img [src]="list?.stock?.image" alt="">
         </div>
         <div class="item-body">
-
-          <div class="name">{{ list.stock.name }}</div>
+          <div class="name">{{ list?.stock?.name }}</div>
           <div class="detail">
             <div class="left"><i class="fa-solid fa-money-bill-wave"></i> {{ list?.stock?.price | number }}</div>
             <div class="right"><i class="fa-solid fa-box"></i> {{ list?.stock?.qtty | number }}</div>
           </div>
-
-        </div>
-        <div class="item-footer">
         </div>
       </a>
     </div>
 
-  </div>
-
-</ion-content> -->
-
-
-
-
-
-
-<ion-content>
-
-  <div class="section-navbar">
-    <div class="left">
-      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-      <div class="item-text">CUI Sale - Machine ID {{ machineId }}</div>
-    </div>
-    <div class="right">
-      <a (click)="stockRport()" href="javascript:void(0)" class="item">Reports Stock</a>
-      <a (click)="saleRport()" href="javascript:void(0)" class="item">Reports Sale</a>
-      <a (click)="dropRport()" href="javascript:void(0)" class="item">Reports Drop</a>
-    </div>
-  </div>
-  <div class="space"></div>
-
-  <div class="cuisale-container">
-    <ion-button (click)="showSaleSlot()" [color]="isShowSaleOnly?'danger':'primary'">Show sale slot Only</ion-button> 
-   <ion-button (click)="showAllSlots()" [color]="!isShowSaleOnly?'danger':'primary'">Show all slots</ion-button>  
-   <ion-button (click)="listByQtty()" [color]="">list by qtty</ion-button>
-   <!-- <ion-icon name="document-text-outline" (click)="exportToExcel()" ></ion-icon>
-     -->
-     <ion-button color="success" (click)="exportToExcel()">
-      <i class="fa-solid fa-file-excel" slot="start"></i> Export to Excel
-    </ion-button>
-
-
-    <div class="list-container" *ngIf="!isShowSaleOnly">
-      <a *ngFor="let list of lists; let i = index" href="javascript:void(0)" class="item">
-
-          <div class="object">
-            <div class="text"><i class="fa-solid fa-check-to-slot"></i> {{ list?.position }}</div>
-          </div>
-          <div class="item-header">
-            <img src="{{ list?.stock?.image }}" alt="">
-          </div>
-          <div class="item-body">
-  
-            <div class="name">{{ list.stock.name }}</div>
-            <div class="detail">
-              <div class="left"><i class="fa-solid fa-money-bill-wave"></i> {{ list?.stock?.price | number }}</div>
-              <div class="right"><i class="fa-solid fa-box"></i> {{ list?.stock?.qtty | number }}</div>
-            </div>
-  
-          </div>
-          <div class="item-footer">
-          </div>
-
-       
-      </a>
-    </div>
     <div class="list-container" *ngIf="isShowSaleOnly">
       <ng-container *ngFor="let list of lists; let i = index">
         <a href="javascript:void(0)" class="item" *ngIf="list?.stock?.price > 0">
@@ -105,7 +82,7 @@
             <div class="text"><i class="fa-solid fa-check-to-slot"></i> {{ list?.position }}</div>
           </div>
           <div class="item-header">
-            <img src="{{ list?.stock?.image }}" alt="">
+            <img [src]="list?.stock?.image" alt="">
           </div>
           <div class="item-body">
             <div class="name">{{ list?.stock?.name }}</div>
@@ -114,12 +91,9 @@
               <div class="right"><i class="fa-solid fa-box"></i> {{ list?.stock?.qtty | number }}</div>
             </div>
           </div>
-          <div class="item-footer">
-          </div>
         </a>
       </ng-container>
     </div>
-
   </div>
 
 </ion-content>

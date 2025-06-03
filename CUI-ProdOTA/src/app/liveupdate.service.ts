@@ -172,4 +172,34 @@ export class LiveupdateService {
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error showing toast: ${JSON.stringify(error)}` });
     }
   }
+
+
+  async cleanupOldBundles() {
+    try {
+      // 1. ดึงข้อมูล Bundle ปัจจุบันที่กำลังทำงานอยู่ (สมมติว่าเรามีวิธีหามาได้)
+      // วิธีที่น่าเชื่อถือที่สุดคือการอ่านจากไฟล์ version.json ใน assets
+      const activeBundleId = await this.getCurrentActiveBundleId(); // คุณต้องสร้างฟังก์ชันนี้เอง
+
+      // 2. ดึงรายการ Bundle ทั้งหมดที่ดาวน์โหลดไว้
+      const { bundleIds } = await LiveUpdate.getBundles();
+
+      console.log(`Active bundle is ${activeBundleId}. All bundles:`, bundleIds);
+
+      // 3. วนลูปเพื่อลบ Bundle ที่ไม่ใช่ตัวที่กำลังใช้งานอยู่
+      for (const bundleId of bundleIds) {
+        if (bundleId !== activeBundleId) {
+          console.log(`Deleting old bundle: ${bundleId}`);
+          await LiveUpdate.deleteBundle({ bundleId });
+        }
+      }
+    } catch (error) {
+      console.error('Error cleaning up old bundles:', error);
+    }
+  }
+
+  // ตัวอย่างฟังก์ชันอ่านเวอร์ชันปัจจุบัน (ต้องมีไฟล์ src/assets/version.json)
+  async getCurrentActiveBundleId(): Promise<string> {
+    const result = await this.http.get<{ version: string }>('/assets/version.json').toPromise();
+    return result.version;
+  }
 }

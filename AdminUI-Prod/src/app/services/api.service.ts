@@ -186,6 +186,8 @@ export class ApiService {
             r ? this.modal.dismiss({ data }) : null
         })
     }
+
+
     public updateOnlineStatus() {
         this.wsAlive.isAlive = this.checkOnlineStatus();
         console.log(this.wsAlive.time);

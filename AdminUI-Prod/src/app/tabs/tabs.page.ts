@@ -9,6 +9,7 @@ import { EpinSubadminPage } from '../epin-subadmin/epin-subadmin.page';
 import { AdvertisementPage } from '../superadmin/advertisement/advertisement.page';
 import { FindMyEpinPage } from '../find-my-epin/find-my-epin.page';
 import { VersionControlPage } from '../version-control/version-control.page';
+import { MymachinePage } from '../machine/mymachine/mymachine.page';
 
 @Component({
   selector: 'app-tabs',
@@ -18,59 +19,59 @@ import { VersionControlPage } from '../version-control/version-control.page';
 export class TabsPage implements OnInit {
   // defendClick: boolean = true;
 
-  constructor(public apiService:ApiService) {
+  constructor(public apiService: ApiService) {
     this.apiService.ownerUuid = localStorage.getItem('lva_ownerUuid');
     this.apiService.passkeys = localStorage.getItem('lva_passkeys');
     this.apiService.name = localStorage.getItem('lva_name');
   }
 
   async ngOnInit() {
-      // let loading = await this.apiService.load.create({ message: 'initialize system' });
-      // loading.present();
-      // setTimeout(async () => {
-      //   await loading.dismiss();
-      //   this.defendClick = false;
-      // }, 100);
+    // let loading = await this.apiService.load.create({ message: 'initialize system' });
+    // loading.present();
+    // setTimeout(async () => {
+    //   await loading.dismiss();
+    //   this.defendClick = false;
+    // }, 100);
   }
 
-  show(i:number){
+  show(i: number) {
     // if (this.defendClick == true) return;
     // if (this.defendClick == false) {
     //   this.defendClick = true;
-      
+
     // }
     switch (i) {
       case 1:
-        this.apiService.showModal(MyaccountPage,{}).then(r=>{
+        this.apiService.showModal(MyaccountPage, {}).then(r => {
           r?.present();
-          r.onDidDismiss().then(() => {});
+          r.onDidDismiss().then(() => { });
         });
         break;
       case 2:
-        this.apiService.showModal(MachinePage,{}).then(r=>{r?.present()});
+        this.apiService.showModal(MymachinePage, {}).then(r => { r?.present() });
         break;
       case 3:
-        this.apiService.showModal(ProductsPage,{}).then(r=>{r?.present()});
+        this.apiService.showModal(ProductsPage, {}).then(r => { r?.present() });
         break;
       case 4:
-        this.apiService.showModal(SalePage,{}).then(r=>{r?.present()});
+        this.apiService.showModal(SalePage, {}).then(r => { r?.present() });
         break;
       case 5:
-        this.apiService.showModal(EpinAdminPage,{}).then(r=>{r?.present()});
+        this.apiService.showModal(EpinAdminPage, {}).then(r => { r?.present() });
         break;
       // case 6:
       //   this.apiService.showModal(EpinSubadminPage,{}).then(r=>{r?.present()});
       //   break;
       case 6:
-        this.apiService.showModal(FindMyEpinPage,{}).then(r=>{r?.present()});
+        this.apiService.showModal(FindMyEpinPage, {}).then(r => { r?.present() });
         break;
       case 7:
-        this.apiService.showModal(AdvertisementPage,{}).then(r=>{r?.present()});
+        this.apiService.showModal(AdvertisementPage, {}).then(r => { r?.present() });
         break;
       case 8:
-        this.apiService.showModal(VersionControlPage,{}).then(r=>{r?.present()});
+        this.apiService.showModal(VersionControlPage, {}).then(r => { r?.present() });
         break;
-    
+
       default:
         break;
     }

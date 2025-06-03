@@ -86,6 +86,7 @@ import { Zdm8Service } from '../zdm8.service';
 import { LiveupdateService } from '../liveupdate.service';
 import { App } from '@capacitor/app';
 import { VideoCacheService } from '../video-cache.service';
+import { SettingPage } from '../setting/setting.page';
 
 @Component({
   selector: 'app-tab1',
@@ -830,21 +831,24 @@ export class Tab1Page implements OnDestroy {
             this.apiService.musicVolume = this.musicVolume;
             this.apiService.reloadPage();
           }
-          // const versionId = environment.versionId ?? '0.0.0';
-          // if (r.versionId) {
-          //   if (versionId != r.versionId) {
-          //     console.log('Update versionId to', r.versionId);
-          //     this.checkLiveUpdate(r.versionId);
-          //   }
-          // }
 
-
-          if (r.versionId && this.versionId !== r.versionId) {
-            this.versionId = r.versionId;
-            console.log('Update versionId to', r.versionId);
-            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
-            this.checkLiveUpdate(r.versionId);
+          if (r.versionId) {
+            if (this.versionId != r.versionId) {
+              this.versionId = r.versionId;
+              console.log('Update versionId to', r.versionId);
+              this.apiService.toast.create({ message: `Update versionId to ${r.versionId}`, duration: 3000 }).then(r => r.present());
+              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
+              this.checkLiveUpdate(r.versionId);
+            }
           }
+
+
+          // if (r.versionId && this.versionId !== r.versionId) {
+          //   this.versionId = r.versionId;
+          //   console.log('Update versionId to', r.versionId);
+          //   this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
+          //   this.checkLiveUpdate(r.versionId);
+          // }
 
           if (this.areArraysDifferentUnordered(this.adsList ?? [], r.adsList ?? [])) {
             try {
@@ -2953,7 +2957,7 @@ export class Tab1Page implements OnDestroy {
   openTestMotor() {
     if (!this.t) {
       this.t = setTimeout(() => {
-        this.count = 10;
+        this.count = 7;
         console.log('re count');
         if (this.t) {
           // clearTimeout(this.t);
@@ -2962,14 +2966,14 @@ export class Tab1Page implements OnDestroy {
       }, 1500);
     }
     if (--this.count <= 0) {
-      this.count = 10;
+      this.count = 7;
       const x = prompt('password');
       console.log(x, this.getPassword());
 
       if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
 
       const xp = prompt('password1');
-      if (xp + '' == '1234567890_5martH67_laoapps') {
+      if (xp + '' == '123@5martH67') {
         console.log('xp', xp);
         this.serial.close();
         this.apiService.modal.create({
@@ -3295,5 +3299,46 @@ export class Tab1Page implements OnDestroy {
   }
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
+  }
+
+  showSetting() {
+
+    if (!this.t) {
+      this.t = setTimeout(() => {
+        this.count = 6;
+        console.log('re count');
+        if (this.t) {
+          // clearTimeout(this.t);
+          this.t = null;
+        }
+      }, 1500);
+    }
+    if (--this.count <= 0) {
+      this.count = 6;
+      const x = prompt('password');
+      console.log(x, this.getPassword());
+
+      if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+      this.apiService.showModal(SettingPage).then(r => {
+        r.present();
+      })
+
+      if (this.t) {
+        clearTimeout(this.t);
+        this.t = null;
+      }
+    }
+    // else {
+    //   if (!this.t) {
+    //     this.t = setTimeout(() => {
+    //       this.count = 6;
+    //       console.log('re count');
+    //       if (this.t) {
+    //         clearTimeout(this.t);
+    //         this.t = null;
+    //       }
+    //     }, 1500);
+    //   }
+    // }
   }
 }

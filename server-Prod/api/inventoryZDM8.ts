@@ -694,17 +694,39 @@ export class InventoryZDM8 implements IBaseClass {
                                 redisClient.save();
 
                                 let resule = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
-                                let trandList: Array<any> = JSON.parse(resule);
-                                // console.log('=====>trandList', trandList);
+                                // let trandList: Array<any> = JSON.parse(resule);
+                                // // console.log('=====>trandList', trandList);
+                                // if (trandList.length >= 1) {
+                                //     // console.log('REMOVE FIRST TRAND');
+                                //     trandList.splice(0, 1);
+                                // }
+                                // trandList.push({
+                                //     transactionID: bill.transactionID,
+                                //     createdAt: new Date()
+                                // })
+                                // console.log('=====>trandList2', trandList);
+
+                                let trandList: Array<any>;
+                                try {
+                                    trandList = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                                    if (!Array.isArray(trandList)) {
+                                        console.warn('trandList is not an array, initializing as empty array');
+                                        trandList = [];
+                                    }
+                                } catch (error) {
+                                    console.error('JSON parse error:', error.message);
+                                    trandList = [];
+                                }
+
                                 if (trandList.length >= 1) {
-                                    // console.log('REMOVE FIRST TRAND');
+                                    console.log('REMOVE FIRST TRAND');
                                     trandList.splice(0, 1);
                                 }
                                 trandList.push({
                                     transactionID: bill.transactionID,
                                     createdAt: new Date()
-                                })
-                                // console.log('=====>trandList2', trandList);
+                                });
+
                                 redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
 
 
@@ -3311,7 +3333,23 @@ export class InventoryZDM8 implements IBaseClass {
                             this.setBillProces(bill.machineId, b);
                             await redisClient.del(transactionID + EMessage.BillCreatedTemp);
                             let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
-                            let trandList: Array<any> = JSON.parse(resule);
+                            // let trandList: Array<any> = JSON.parse(resule);
+                            // const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+
+                            let trandList: Array<any> = [];
+                            try {
+                                const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                                if (!Array.isArray(parsedData)) {
+                                    console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                                    trandList = [];
+                                } else {
+                                    trandList = parsedData;
+                                }
+                            } catch (error) {
+                                console.error('JSON parse error:', error.message);
+                                trandList = [];
+                            }
+
                             const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
                             redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
                             return res.send(PrintSucceeded("reportBillNotPaid", resD, EMessage.succeeded, returnLog(req, res)));
@@ -5514,7 +5552,24 @@ export class InventoryZDM8 implements IBaseClass {
                     this.setBillProces(bill.machineId, b);
                     await redisClient.del(transactionID + EMessage.BillCreatedTemp);
                     let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
-                    let trandList: Array<any> = JSON.parse(resule);
+                    // let trandList: Array<any> = JSON.parse(resule);
+                    // const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+
+                    let trandList: Array<any> = [];
+                    try {
+                        const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                        if (!Array.isArray(parsedData)) {
+                            console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                            trandList = [];
+                        } else {
+                            trandList = parsedData;
+                        }
+                    } catch (error) {
+                        console.error('JSON parse error:', error.message);
+                        trandList = []; // กำหนดเป็นอาร์เรย์ว่างถ้า parse ล้มเหลว
+                    }
+
+                    // ใช้ filter หลังจากยืนยันว่า trandList เป็นอาร์เรย์
                     const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
                     redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
@@ -5545,19 +5600,52 @@ export class InventoryZDM8 implements IBaseClass {
                         // throw new Error(EMessage.billnotfound);
                         // console.log('bill not found');
                         let resule = (await redisClient.get(machineId + EMessage.ListTransaction)) ?? '[]';
-                        let trandList: Array<any> = JSON.parse(resule);
-                        if (trandList.length > 0) {
-                            // res.message = EMessage.billnotfound;
+                        // let trandList: Array<any> = JSON.parse(resule);
+                        // if (trandList.length > 0) {
+                        //     // res.message = EMessage.billnotfound;
 
-                            const result = isMoreThan50SecondsAgo(trandList[0].createdAt, new Date().toISOString());
+                        //     const result = isMoreThan50SecondsAgo(trandList[0].createdAt, new Date().toISOString());
 
-                            if (result) {
-                                console.log('More than 50 seconds have passed.');
-                                this.checkQRPaidMmoney(trandList[0].transactionID, machineId);
+                        //     if (result) {
+                        //         console.log('More than 50 seconds have passed.');
+                        //         this.checkQRPaidMmoney(trandList[0].transactionID, machineId);
+                        //     } else {
+                        //         console.log('Less than or equal to 50 seconds.');
+
+                        //     }
+                        // }
+
+                        let trandList: Array<any> = [];
+                        try {
+                            const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                            if (!Array.isArray(parsedData)) {
+                                console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                                trandList = [];
                             } else {
-                                console.log('Less than or equal to 50 seconds.');
-
+                                trandList = parsedData;
                             }
+                        } catch (error) {
+                            console.error('JSON parse error:', error.message);
+                            trandList = [];
+                        }
+
+                        if (trandList.length > 0) {
+                            const firstItem = trandList[0];
+                            if (firstItem && firstItem.createdAt) {
+                                const result = isMoreThan50SecondsAgo(firstItem.createdAt, new Date().toISOString());
+                                if (result) {
+                                    console.log('More than 50 seconds have passed.');
+                                    this.checkQRPaidMmoney(firstItem.transactionID, machineId);
+                                } else {
+                                    console.log('Less than or equal to 50 seconds.');
+                                }
+                            } else {
+                                console.warn('First item or createdAt is missing:', firstItem);
+                                // res.message = EMessage.billnotfound; // ถ้าต้องการตั้งค่า message
+                            }
+                        } else {
+                            console.warn('trandList is empty');
+                            // res.message = EMessage.billnotfound; // ถ้าต้องการตั้งค่า message
                         }
 
                         return resolve(null);
@@ -5586,18 +5674,51 @@ export class InventoryZDM8 implements IBaseClass {
 
                     if (billPaid.length == 0) {
                         let resule = (await redisClient.get(machineId + EMessage.ListTransaction)) ?? '[]';
-                        let trandList: Array<any> = JSON.parse(resule);
-                        if (trandList.length > 0) {
-                            // res.message = EMessage.billnotfound;
+                        // let trandList: Array<any> = JSON.parse(resule);
+                        // if (trandList.length > 0) {
+                        //     // res.message = EMessage.billnotfound;
 
-                            const result = isMoreThan50SecondsAgo(trandList[0].createdAt, new Date().toISOString());
+                        //     const result = isMoreThan50SecondsAgo(trandList[0].createdAt, new Date().toISOString());
 
-                            if (result) {
-                                this.checkQRPaidMmoney(trandList[0].transactionID, machineId);
-                                console.log('More than 50 seconds have passed.');
+                        //     if (result) {
+                        //         this.checkQRPaidMmoney(trandList[0].transactionID, machineId);
+                        //         console.log('More than 50 seconds have passed.');
+                        //     } else {
+                        //         console.log('Less than or equal to 50 seconds.');
+                        //     }
+                        // }
+
+                        let trandList: Array<any> = [];
+                        try {
+                            const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                            if (!Array.isArray(parsedData)) {
+                                console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                                trandList = [];
                             } else {
-                                console.log('Less than or equal to 50 seconds.');
+                                trandList = parsedData;
                             }
+                        } catch (error) {
+                            console.error('JSON parse error:', error.message);
+                            trandList = [];
+                        }
+
+                        if (trandList.length > 0) {
+                            const firstItem = trandList[0];
+                            if (firstItem && firstItem.createdAt) {
+                                const result = isMoreThan50SecondsAgo(firstItem.createdAt, new Date().toISOString());
+                                if (result) {
+                                    this.checkQRPaidMmoney(firstItem.transactionID, machineId);
+                                    console.log('More than 50 seconds have passed.');
+                                } else {
+                                    console.log('Less than or equal to 50 seconds.');
+                                }
+                            } else {
+                                console.warn('First item or createdAt is missing:', firstItem);
+                                // res.message = EMessage.billnotfound;
+                            }
+                        } else {
+                            console.warn('trandList is empty');
+                            // res.message = EMessage.billnotfound;
                         }
 
                     }
@@ -5709,7 +5830,23 @@ export class InventoryZDM8 implements IBaseClass {
                 }).then(async r => {
                     console.log('=====>CONFIRM', r.data);
                     let resule = (await redisClient.get(machineId + EMessage.ListTransaction)) ?? '[]';
-                    let trandList: Array<any> = JSON.parse(resule);
+                    // let trandList: Array<any> = JSON.parse(resule);
+                    // const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+
+                    let trandList: Array<any> = [];
+                    try {
+                        const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                        if (!Array.isArray(parsedData)) {
+                            console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                            trandList = [];
+                        } else {
+                            trandList = parsedData;
+                        }
+                    } catch (error) {
+                        console.error('JSON parse error:', error.message);
+                        trandList = [];
+                    }
+
                     const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
                     redisClient.setEx(machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
                 }).catch(e => {

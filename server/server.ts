@@ -119,7 +119,7 @@ CreateDatabase("")
 
 
 
-    console.log('=====> Log Path', process.env._log_path);
+    // console.log('=====> Log Path', process.env._log_path);
 
     fs.existsSync(process.env._log_path) || fs.mkdirSync(process.env._log_path);
     fs.existsSync(process.env._image_path) ||
@@ -140,10 +140,10 @@ CreateDatabase("")
       const host = req.get("Host"); // localhost:4000
       const server = http + host;
       const d = req.body as IReqModel;
-      console.log("debug HOST", server, d);
+      // console.log("debug HOST", server, d);
 
       try {
-        console.log("POST Data", d);
+        // console.log("POST Data", d);
         const c = d.data as IMMoneyConfirm;
         if (d.command == EClientCommand.confirmMMoney) {
           console.log("confirmMMoney");
@@ -163,7 +163,7 @@ CreateDatabase("")
             res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
           });
         } else if (d.command == EClientCommand.confirmLAOQR) {
-          console.log('confirmLAOQR');
+          // console.log('confirmLAOQR');
           invZDM8.confirmLaoQROrder(c).then((r) => {
             // console.log(r.data);
             if (r) {
@@ -176,7 +176,7 @@ CreateDatabase("")
             res.send(PrintError(d.command, e, EMessage.error));
           });
         } else if (d.command == EClientCommand.findLaoQRPaid) {
-          console.log('findLaoQRPaid');
+          // console.log('findLaoQRPaid');
           invZDM8.findLaoQROrderPaid(c).then((r) => {
             // console.log(r.data);
             if (r) {

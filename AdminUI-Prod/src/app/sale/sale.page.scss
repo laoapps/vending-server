@@ -1,0 +1,159 @@
+/* Define CSS variables for theming */
+:root {
+  --primary-color: #3880ff;
+  --secondary-color: #3dc2ff;
+  --danger-color: #eb445a;
+  --background-color: #f4f5f8;
+  --text-color: #333;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbar styling */
+.custom-toolbar {
+  --background: #e53935;
+  --color: white;
+}
+
+.close-icon {
+  font-size: 28px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.close-icon:hover {
+  transform: scale(1.2);
+}
+
+ion-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Content padding */
+ion-content {
+  --background: var(--background-color);
+}
+
+/* Button group styling */
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: center;
+}
+
+.action-button {
+  --border-radius: var(--border-radius);
+  --box-shadow: var(--box-shadow);
+  font-size: 1rem;
+  text-transform: capitalize;
+  transition: transform 0.2s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Machine ID divider */
+.machine-divider {
+  --background: #fff;
+  --color: var(--text-color);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 10px 0;
+}
+
+/* Grid styling */
+.sale-grid {
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 10px;
+}
+
+.header-row ion-col {
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.data-row ion-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Product image styling */
+.product-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+}
+
+/* Toggle styling */
+ion-toggle {
+  --handle-background: #fff;
+  --handle-background-checked: var(--primary-color);
+  --background-checked: var(--secondary-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sale-grid {
+    font-size: 0.9rem;
+  }
+
+  .header-row ion-col,
+  .data-row ion-col {
+    padding: 5px;
+  }
+
+  .product-image {
+    width: 40px;
+    height: 40px;
+  }
+
+  .action-button {
+    font-size: 0.9rem;
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-row ion-col,
+  .data-row ion-col {
+    font-size: 0.8rem;
+  }
+
+  .product-image {
+    width: 30px;
+    height: 30px;
+  }
+
+  ion-title {
+    font-size: 1.2rem;
+  }
+
+  .close-icon {
+    font-size: 24px;
+  }
+}

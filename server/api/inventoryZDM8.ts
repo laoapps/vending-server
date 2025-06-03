@@ -6512,7 +6512,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     confirmLaoQROrder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
-            console.log('C is :', c);
+            console.log('=====>ConfirmLAOQR  is :', c);
 
             this.callBackConfirmLaoQR(c.trandID).then((r) => {
                 if (r) {
@@ -6530,7 +6530,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     findLaoQROrderPaid(c: any) {
         return new Promise<any>((resolve, reject) => {
-            console.log('C findLaoQROrderPaid is :', c);
+            console.log('findLaoQRPaid  is :', c);
 
             this.findCallBackConfirmLaoQR(c.machineId).then((r) => {
                 if (r) {

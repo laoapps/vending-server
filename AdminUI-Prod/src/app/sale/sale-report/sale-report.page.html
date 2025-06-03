@@ -1,103 +1,84 @@
 <ion-content>
-
-
   <div class="section-header">
     <div class="title">Reports</div>
-    <div class="sub-title">There are your generated sale reports of vending machine on your own of the platform.</div>
-
+    <div class="sub-title">Your generated sale reports from vending machines on the platform.</div>
   </div>
 
   <div class="section-filter">
-    <div *ngIf="datetimeCustom == true" class="single-group">
-      <div class="form-group">
-        <label for="">Date (Special)</label>
-        <input [(ngModel)]="fromDate" type="date" class="form-control full">
-      </div>
+    <div *ngIf="datetimeCustom == true" class="form-group">
+      <label>Date (Special)</label>
+      <input [(ngModel)]="fromDate" type="date" class="form-control full">
     </div>
 
-    <div *ngIf="moredatetimeCustom == true" class="single-group">
+    <div *ngIf="moredatetimeCustom == true" class="multi-group">
       <div class="form-group">
-        <label for="">Date (From)</label>
+        <label>Date (From)</label>
         <input [(ngModel)]="fromDate" type="date" class="form-control">
       </div>
       <div class="form-group">
-        <label for="">Date (To)</label>
+        <label>Date (To)</label>
         <input [(ngModel)]="toDate" type="date" class="form-control">
       </div>
     </div>
-
   </div>
 
   <div class="section-buttons">
-    <a (click)="process()" href="javascript:void(0)" class="item-process"><i class="fa-solid fa-arrows-rotate"></i>
-      Process</a>
-    <a (click)="displayDateTimeCustom()" href="javascript:void(0)" class="item active">Date/Time Custom</a>
-    <a (click)="displayMoreDateTimeCustom()" href="javascript:void(0)" class="item">More Date/Time Custom</a>
+    <button (click)="process()" class="btn-action primary">
+      <i class="fa-solid fa-arrows-rotate"></i> Process
+    </button>
+    <button (click)="displayDateTimeCustom()" class="btn-action" [class.active]="datetimeCustom">Date/Time
+      Custom</button>
+    <button (click)="displayMoreDateTimeCustom()" class="btn-action" [class.active]="moredatetimeCustom">More
+      Date/Time</button>
   </div>
 
   <div *ngIf="display == true" class="section-table">
-
     <div class="btn-list">
-      <a *ngFor="let export of exportOptions; let i = index" href="javascript:void(0)" class="item">
-        <div class="icon">
-          <i class="{{ export.icon }}"></i>
-        </div>
-        <div class="text">{{ export.text }}</div>
-      </a>
+      <button *ngFor="let export of exportOptions" class="export-btn">
+        <i class="{{ export.icon }}"></i>
+        <span>{{ export.text }}</span>
+      </button>
     </div>
 
     <div class="sum-data">
-      <div class="group">
-        <div class="text">Machine</div>
-        <div class="value">{{ machineId }}</div>
-      </div>
-      <div class="group">
-        <div class="text">Date</div>
-        <div class="value">{{ currentdate }}</div>
-      </div>
-      <div class="group">
-        <div class="text">SubQTY</div>
-        <div class="value">{{ sum_qtty | number }}</div>
-      </div>
-      <div class="group">
-        <div class="text">Subtotal</div>
-        <div class="value">{{ sum_total | number }}</div>
+      <div class="group" *ngFor="let d of [
+        {text: 'Machine', value: machineId},
+        {text: 'Date', value: currentdate},
+        {text: 'SubQTY', value: sum_qtty | number},
+        {text: 'Subtotal', value: sum_total | number}
+      ]">
+        <div class="text">{{ d.text }}</div>
+        <div class="value">{{ d.value }}</div>
       </div>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover">
-        <thead class="fw-bold">
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
           <tr>
-            <td>#</td>
-            <td>Machine</td>
-            <td>Product</td>
-            <td>Price</td>
-            <td>Total Quantity</td>
-            <td>Total Sale</td>
-            <td>Status</td>
-            <td>CreatedAt</td>
-            <td>Action</td>
+            <th>#</th>
+            <th>Product</th>
+            <th>Price</th>
+            <th>QTY</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
           </tr>
         </thead>
-        <tbody *ngFor="let sale of saleSumerizeList; let i = index">
-          <tr>
+        <tbody>
+          <tr *ngFor="let sale of saleSumerizeList; let i = index">
             <td>{{ i+1 }}</td>
-            <td>{{ sale.machineId }}</td>
             <td>{{ sale.stock.name }}</td>
             <td>{{ sale.stock.price | number }}</td>
             <td>{{ sale.stock.qtty | number }}</td>
             <td>{{ sale.stock.total | number }}</td>
             <td>{{ sale.paymentstatus == 'paid' ? 'ຈ່າຍແລ້ວ' : 'ເຄື່ອງຕົກແລ້ວ' }}</td>
             <td>{{ sale.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
-            <td>
-              <button (click)="view(sale)" class="btn btn-view">View</button>
-            </td>
+            <td><button (click)="view(sale)" class="btn-view">View</button></td>
           </tr>
         </tbody>
       </table>
     </div>
-
   </div>
-
 </ion-content>
