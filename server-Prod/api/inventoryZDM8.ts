@@ -5166,7 +5166,6 @@ export class InventoryZDM8 implements IBaseClass {
                 "owner": "LAABX", // Merchant Name  LAABX
                 // "callbackurl": "https://tvending.khamvong.com"
                 "callbackurl": "https://vending-service-api5.laoapps.com"
-
             }
             // console.log("LAOQR", qr);
 

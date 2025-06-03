@@ -4,10 +4,10 @@
 
 export const environment = {
   production: false,
-  url: 'https://tvending.khamvong.com/zdm8',
-  wsurl: 'wss://tvending.khamvong.com/zdm8',
-  vending_server: 'https://tvending.khamvong.com',
-  filemanagerurl: 'http://filemanager-api.laoapps.com/api/v1/file/',
+  // url: 'https://tvending.khamvong.com/zdm8',
+  // wsurl: 'wss://tvending.khamvong.com/zdm8',
+  // vending_server: 'https://tvending.khamvong.com',
+  // filemanagerurl: 'http://filemanager-api.laoapps.com/api/v1/file/',
 
 
 
@@ -16,12 +16,12 @@ export const environment = {
   // vending_server: 'https://vendingserviceapi.laoapps.com',
   // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
-  // url: 'https://vending-service-api5.laoapps.com/zdm8',
-  // wsurl: 'wss://vending-service-api5.laoapps.com/zdm8',
-  // vending_server: 'https://vending-service-api5.laoapps.com',
-  // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
+  url: 'https://vending-service-api5.laoapps.com/zdm8',
+  wsurl: 'wss://vending-service-api5.laoapps.com/zdm8',
+  vending_server: 'https://vending-service-api5.laoapps.com',
+  filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
-  versionId: '1.0.129'
+  versionId: '1.0.001'
 };
 
 /*
