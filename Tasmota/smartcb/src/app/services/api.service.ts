@@ -19,6 +19,10 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/auth/register-owner`, { phoneNumber }, this.getAuthHeaders());
   }
 
+  getUserRole(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/auth/role`, this.getAuthHeaders());
+  }
+
   createDevice(name: string, tasmotaId: string, zone?: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices`, { name, tasmotaId, zone }, this.getAuthHeaders());
   }
@@ -77,6 +81,26 @@ export class ApiService {
 
   deleteSchedule(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/schedules/${id}`, this.getAuthHeaders());
+  }
+
+  applySchedulePackage(deviceId: number, packageId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedules/apply-package`, { deviceId, packageId }, this.getAuthHeaders());
+  }
+
+  createSchedulePackage(name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedule-packages`, { name, durationMinutes, powerConsumptionWatts, price }, this.getAuthHeaders());
+  }
+
+  getSchedulePackages(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/schedule-packages`, this.getAuthHeaders());
+  }
+
+  updateSchedulePackage(id: number, name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/schedule-packages/${id}`, { name, durationMinutes, powerConsumptionWatts, price }, this.getAuthHeaders());
+  }
+
+  deleteSchedulePackage(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/schedule-packages/${id}`, this.getAuthHeaders());
   }
 
   getAllData(): Observable<any> {

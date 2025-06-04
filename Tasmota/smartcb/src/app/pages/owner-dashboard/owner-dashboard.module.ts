@@ -15,6 +15,6 @@ import { OwnerDashboardPage } from './owner-dashboard.page';
     IonicModule,
     OwnerDashboardPageRoutingModule
   ],
-  declarations: [OwnerDashboardPage]
+  // declarations: [OwnerDashboardPage]
 })
 export class OwnerDashboardPageModule {}

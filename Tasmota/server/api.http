@@ -1,0 +1,192 @@
+# Tasmota API Test File
+# Base URL: https://smartcb-api.laoapps.com:31884
+# Replace <phone_number>, <jwt_token>, <device_id>, <group_id>, <schedule_id>, <package_id> with actual values
+
+### Login
+POST https://smartcb-api.laoapps.com:31884/api/auth/login
+Content-Type: application/json
+
+{
+  "phoneNumber": "<phone_number>"
+}
+
+> {% client.global.set("jwt_token", response.body.token); %}
+
+### Register Owner
+POST https://smartcb-api.laoapps.com:31884/api/auth/register-owner
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "phoneNumber": "<phone_number>"
+}
+
+### List Devices (Admin/Owner/User)
+GET https://smartcb-api.laoapps.com:31884/api/devices
+Authorization: Bearer {{jwt_token}}
+
+### Create Device (Owner)
+POST https://smartcb-api.laoapps.com:31884/api/devices
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Test Device",
+  "tasmotaId": "test_123456",
+  "zone": "Living Room"
+}
+
+### Update Device (Owner)
+PUT https://smartcb-api.laoapps.com:31884/api/devices/<device_id>
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Updated Device",
+  "tasmotaId": "test_123456",
+  "zone": "Kitchen"
+}
+
+### Delete Device (Owner)
+DELETE https://smartcb-api.laoapps.com:31884/api/devices/<device_id>
+Authorization: Bearer {{jwt_token}}
+
+### Control Device (Admin/Owner/User)
+POST https://smartcb-api.laoapps.com:31884/api/devices/control
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "deviceId": <device_id>,
+  "command": "POWER TOGGLE"
+}
+
+### Assign Device to User (Owner)
+POST https://smartcb-api.laoapps.com:31884/api/devices/assign
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "deviceId": <device_id>,
+  "userPhoneNumber": "<phone_number>"
+}
+
+### List Groups (Admin/Owner)
+GET https://smartcb-api.laoapps.com:31884/api/groups
+Authorization: Bearer {{jwt_token}}
+
+### Create Group (Owner)
+POST https://smartcb-api.laoapps.com:31884/api/groups
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Test Group"
+}
+
+### Update Group (Owner)
+PUT https://smartcb-api.laoapps.com:31884/api/groups/<group_id>
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Updated Group"
+}
+
+### Delete Group (Owner)
+DELETE https://smartcb-api.laoapps.com:31884/api/groups/<group_id>
+Authorization: Bearer {{jwt_token}}
+
+### Assign Device to Group (Owner)
+POST https://smartcb-api.laoapps.com:31884/api/groups/assign
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "groupId": <group_id>,
+  "deviceId": <device_id>
+}
+
+### List Schedules (Admin/Owner)
+GET https://smartcb-api.laoapps.com:31884/api/schedules
+Authorization: Bearer {{jwt_token}}
+
+### Create Schedule (Owner)
+POST https://smartcb-api.laoapps.com:31884/api/schedules
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "deviceId": <device_id>,
+  "type": "timer",
+  "cron": "0 7 * * *",
+  "command": "POWER ON"
+}
+
+### Update Schedule (Owner)
+PUT https://smartcb-api.laoapps.com:31884/api/schedules/<schedule_id>
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "deviceId": <device_id>,
+  "type": "conditional",
+  "command": "POWER OFF",
+  "conditionType": "power_overload",
+  "conditionValue": 1000,
+  "active": true
+}
+
+### Delete Schedule (Owner)
+DELETE https://smartcb-api.laoapps.com:31884/api/schedules/<schedule_id>
+Authorization: Bearer {{jwt_token}}
+
+### Apply Schedule Package (Owner/User)
+POST https://smartcb-api.laoapps.com:31884/api/schedules/apply-package
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "deviceId": <device_id>,
+  "packageId": <package_id>
+}
+
+### List Schedule Packages (Admin/Owner)
+GET https://smartcb-api.laoapps.com:31884/api/schedule-packages
+Authorization: Bearer {{jwt_token}}
+
+### Create Schedule Package (Owner)
+POST https://smartcb-api.laoapps.com:31884/api/schedule-packages
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Test Package",
+  "durationMinutes": 30,
+  "powerConsumptionWatts": 1000,
+  "price": 10
+}
+
+### Update Schedule Package (Owner)
+PUT https://smartcb-api.laoapps.com:31884/api/schedule-packages/<package_id>
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Updated Package",
+  "durationMinutes": 60,
+  "powerConsumptionWatts": 1500,
+  "price": 15
+}
+
+### Delete Schedule Package (Owner)
+DELETE https://smartcb-api.laoapps.com:31884/api/schedule-packages/<package_id>
+Authorization: Bearer {{jwt_token}}
+
+### View All Data (Admin)
+GET https://smartcb-api.laoapps.com:31884/api/admin
+Authorization: Bearer {{jwt_token}}
+
+### List Owners (Admin)
+GET https://smartcb-api.laoapps.com:31884/api/owners
+Authorization: Bearer {{jwt_token}}

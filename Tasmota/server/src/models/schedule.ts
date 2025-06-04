@@ -10,6 +10,7 @@ export interface ScheduleAttributes {
   conditionType?: string;
   conditionValue?: number;
   active: boolean;
+  createdBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ export class Schedule extends Model<ScheduleAttributes> {
   public conditionType?: string;
   public conditionValue?: number;
   public active!: boolean;
+  public createdBy?: string;
   public createdAt!: Date;
   public updatedAt!: Date;
 
@@ -66,6 +68,10 @@ export function initScheduleModel(sequelize: Sequelize) {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true,
+      },
+      createdBy: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

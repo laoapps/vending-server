@@ -15,6 +15,6 @@ import { AdminDashboardPage } from './admin-dashboard.page';
     IonicModule,
     AdminDashboardPageRoutingModule
   ],
-  declarations: [AdminDashboardPage]
+  // declarations: [AdminDashboardPage]
 })
 export class AdminDashboardPageModule {}

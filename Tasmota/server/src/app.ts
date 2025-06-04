@@ -5,6 +5,8 @@ import deviceRoutes from './routes/deviceRoutes';
 import groupRoutes from './routes/groupRoutes';
 import scheduleRoutes from './routes/scheduleRoutes';
 import adminRoutes from './routes/adminRoutes';
+import ownerRoutes from './routes/ownerRoutes';
+import schedulePackageRoutes from './routes/schedulePackageRoutes';
 import { errorHandler } from './middleware/errorMiddleware';
 
 const app = express();
@@ -21,6 +23,8 @@ app.use('/api/devices', deviceRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/owners', ownerRoutes);
+app.use('/api/schedule-packages', schedulePackageRoutes);
 
 app.use(errorHandler);
 

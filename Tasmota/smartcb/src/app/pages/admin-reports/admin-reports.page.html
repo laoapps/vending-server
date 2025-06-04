@@ -1,0 +1,19 @@
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Admin Reports</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let report of reports">
+          <ion-label>
+            <h2>{{ report.name }}</h2>
+            <p>Status: {{ report.status | json }}</p>
+            <p>Power: {{ report.power }} W</p>
+            <p>Energy: {{ report.energy }} kWh</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

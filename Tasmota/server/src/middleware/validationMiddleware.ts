@@ -53,3 +53,10 @@ export const createScheduleSchema = z.object({
   conditionType: z.enum(['power_overload', 'energy_limit']).optional(),
   conditionValue: z.number().optional(),
 });
+
+export const createSchedulePackageSchema = z.object({
+  name: z.string().min(1),
+  durationMinutes: z.number().optional(),
+  powerConsumptionWatts: z.number().optional(),
+  price: z.number().optional(),
+});

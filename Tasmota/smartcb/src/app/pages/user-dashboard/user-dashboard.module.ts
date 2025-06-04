@@ -15,6 +15,6 @@ import { UserDashboardPage } from './user-dashboard.page';
     IonicModule,
     UserDashboardPageRoutingModule
   ],
-  declarations: [UserDashboardPage]
+  // declarations: [UserDashboardPage]
 })
 export class UserDashboardPageModule {}

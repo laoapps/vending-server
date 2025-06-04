@@ -5,6 +5,8 @@ import { initDeviceGroupModel, DeviceGroup } from './deviceGroup';
 import { initScheduleModel, Schedule } from './schedule';
 import { initUserDeviceModel, UserDevice } from './userDevice';
 import { initAdminModel, Admin } from './admin';
+import { initSchedulePackageModel, SchedulePackage } from './schedulePackage';
+import {initScheduleHistoryModel,ScheduleHistory} from './scheduleHistory';
 
 const models = {
   Owner: initOwnerModel(sequelize),
@@ -13,6 +15,8 @@ const models = {
   Schedule: initScheduleModel(sequelize),
   UserDevice: initUserDeviceModel(sequelize),
   Admin: initAdminModel(sequelize),
+  SchedulePackage: initSchedulePackageModel(sequelize),
+  ScheduleHistory: initScheduleHistoryModel(sequelize),
 };
 
 // Define relationships
@@ -30,6 +34,10 @@ models.Schedule.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' 
 
 models.Device.hasMany(models.UserDevice, { foreignKey: 'deviceId', as: 'userDevices' });
 models.UserDevice.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+
+models.Owner.hasMany(models.SchedulePackage, { foreignKey: 'ownerId', as: 'schedulePackages' });
+models.SchedulePackage.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+models.ScheduleHistory.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
 
 export default models;
 export { sequelize };

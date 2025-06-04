@@ -16,9 +16,17 @@ export const scheduleJob = async (schedule: {
       async () => {
         if (!schedule.active) return;
         const device = await models.Device.findByPk(schedule.deviceId);
-        if (device) {
-          await publishMqttMessage(`cmnd/${device.tasmotaId}/${schedule.command}`, '');
-        }
+        if (!device) return;
+
+        await publishMqttMessage(`cmnd/${device.tasmotaId}/${schedule.command}`, '');
+
+        await models.ScheduleHistory.create({
+          scheduleId: schedule.id,
+          deviceId: schedule.deviceId,
+          userUuid: 'system', // System-triggered
+          action: schedule.command,
+          executedAt: new Date(),
+        } as any);
       },
       null,
       true,
@@ -43,10 +51,22 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
   });
 
   for (const schedule of schedules) {
+    let shouldExecute = false;
     if (schedule.conditionType === 'power_overload' && power > (schedule.conditionValue || 0)) {
-      await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
+      shouldExecute = true;
     } else if (schedule.conditionType === 'energy_limit' && energy > (schedule.conditionValue || 0)) {
+      shouldExecute = true;
+    }
+
+    if (shouldExecute) {
       await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
+      await models.ScheduleHistory.create({
+        scheduleId: schedule.id,
+        deviceId: schedule.deviceId,
+        userUuid: 'system',
+        action: schedule.command,
+        executedAt: new Date(),
+      } as any);
     }
   }
 };
