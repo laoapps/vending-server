@@ -162,7 +162,7 @@ CreateDatabase("")
             res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
           });
         } else if (d.command == EClientCommand.confirmLAOQR) {
-          console.log('confirmLAOQR');
+          // console.log('confirmLAOQR');
           invZDM8.confirmLaoQROrder(c).then((r) => {
             // console.log(r.data);
             if (r) {
@@ -175,7 +175,7 @@ CreateDatabase("")
             res.send(PrintError(d.command, e, EMessage.error));
           });
         } else if (d.command == EClientCommand.findLaoQRPaid) {
-          console.log('findLaoQRPaid');
+          // console.log('findLaoQRPaid');
           invZDM8.findLaoQROrderPaid(c).then((r) => {
             // console.log(r.data);
             if (r) {

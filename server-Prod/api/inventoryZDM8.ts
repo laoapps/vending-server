@@ -135,6 +135,7 @@ import { log } from "console";
 import { channel } from "diagnostics_channel";
 import { LogActivity } from "../entities/logactivity.entity";
 import { checkGenerateCount } from "../services/laoqr.service";
+import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -5572,6 +5573,7 @@ export class InventoryZDM8 implements IBaseClass {
                     const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
                     redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
+                    await DeleteTransactionToCheck(bill.machineId)
 
                     return resolve(bill); // Add return to stop callback execution
                 });
@@ -5591,8 +5593,28 @@ export class InventoryZDM8 implements IBaseClass {
                 res.message = EMessage.waitingt;
                 res.status = 1;
 
-                // console.log('=====>machineId', machineId);
-
+                setImmediate(async () => {
+                    try {
+                        const resultList = await GetTransactionToCheck(machineId);
+                        if (resultList.status === 1) {
+                            // console.log('Get transaction list:', resultList.message);
+                            for (let index = 0; index < resultList.message.length; index++) {
+                                const transactionID = resultList.message[index].transactionID;
+                                // console.log('=====>transactionID', transactionID);
+                                const responseCheck = await this.checkQRPaidMmoneyResponse(transactionID);
+                                if (responseCheck.status === 1) {
+                                    await DeleteTransactionToCheck(machineId);
+                                } else {
+                                    console.log('=====>Error checking QR payment:', responseCheck.message, 'Transaction ID:', transactionID);
+                                }
+                            }
+                        } else {
+                            console.log('=====>Error fetching transactions:', resultList.message);
+                        }
+                    } catch (error) {
+                        console.log('=====>Error in findCallBackConfirmLaoQR:', error);
+                    }
+                });
                 this.getBillProcess(machineId, async (b) => {
 
                     if (b.length == 0) {
@@ -5783,6 +5805,62 @@ export class InventoryZDM8 implements IBaseClass {
 
         })
 
+    }
+
+
+    checkQRPaidMmoneyResponse(transactionID: string): Promise<{ status: number, message: any }> {
+        return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
+
+            try {
+                const agent = new https.Agent({
+                    rejectUnauthorized: false,
+                });
+
+                const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
+
+                const authUsername = 'lmm'
+                const authPassword = 'Lmm@2024qaz2wsx'
+
+                const authToken = Buffer.from(`${authUsername}:${authPassword}`).toString('base64');
+
+                const headers = {
+                    "Authorization": `Basic ${authToken}`,
+                    "username": 'Vendeex',
+                    "password": 'vendeex@2025qaz2wsx',
+                    "apikey": 'eb718666-b20e-4091-b964-67a61e06fffe',
+                    "Content-Type": 'application/json'
+                }
+
+                const res = await axios.post(API_BASE_URL, {
+                    tranid: transactionID
+                },
+                    { headers, httpsAgent: agent });
+
+                if (res.data.success) {
+                    axios.post('https://vending-service-api5.laoapps.com', {
+                        "command": "confirmLAOQR",
+                        "data": {
+                            "trandID": transactionID
+                        }
+                    }, {
+                        headers: {
+                            "Content-Type": 'application/json'
+                        }
+                    }).then(async r => {
+                        return resolve({ status: 1, message: r.data });
+                    }).catch(e => {
+                        console.log('=====>CONFIRM ERROR', e);
+                        return resolve({ status: 0, message: e });
+                    })
+                } else {
+                    // console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                    return resolve({ status: 0, message: EMessage.LaoQRNotPaid });
+                }
+            } catch (error) {
+                console.log('=====> CHECK MMONEY PAID ERROR', error);
+                return resolve({ status: 0, message: error });
+            }
+        });
     }
 
 
@@ -6538,7 +6616,9 @@ export class InventoryZDM8 implements IBaseClass {
 
     confirmLaoQROrder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
-            console.log('C is :', c);
+            // console.log('C is :', c);
+            console.log('=====>ConfirmLAOQR  is :', c);
+
 
             this.callBackConfirmLaoQR(c.trandID).then((r) => {
                 if (r) {
@@ -6556,7 +6636,8 @@ export class InventoryZDM8 implements IBaseClass {
 
     findLaoQROrderPaid(c: any) {
         return new Promise<any>((resolve, reject) => {
-            console.log('C findLaoQROrderPaid is :', c);
+            // console.log('C findLaoQROrderPaid is :', c);
+            console.log('findLaoQRPaid  is :', c);
 
             this.findCallBackConfirmLaoQR(c.machineId).then((r) => {
                 if (r) {
