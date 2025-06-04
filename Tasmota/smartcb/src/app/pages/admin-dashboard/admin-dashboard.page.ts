@@ -4,6 +4,8 @@ import { ApiService } from '../../services/api.service';
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.page.html',
+  styleUrls: ['./admin-dashboard.page.scss'],
+  standalone: false
 })
 export class AdminDashboardPage implements OnInit {
   data: any = { owners: [], devices: [], groups: [], schedules: [], userDevices: [] };

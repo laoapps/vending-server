@@ -1,35 +1,38 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import models from '../models';
 import { scheduleJob } from '../services/scheduleService';
-
-const prisma = new PrismaClient();
 
 export const createSchedule = async (req: Request, res: Response) => {
   const { deviceId, type, cron, command, conditionType, conditionValue } = req.body;
   const user = res.locals.user;
 
   try {
-    const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(403).json({ error: 'Only owners can create schedules' });
     }
 
-    const device = await prisma.device.findUnique({ where: { id: deviceId, ownerId: owner.id } });
+    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } });
     if (!device) {
-      return res.status(403).json({ error: 'Device not found or not owned' });
+      return res.status(404).json({ error: 'Device not found or not owned' });
     }
 
-    const schedule = await prisma.schedule.create({
-      data: { deviceId, type, cron, command, conditionType, conditionValue },
-    });
+    const schedule = await models.Schedule.create({
+      deviceId,
+      type,
+      cron,
+      command,
+      conditionType,
+      conditionValue,
+    } as any);
 
     if (type === 'timer' && cron) {
-      scheduleJob(schedule);
+      await scheduleJob(schedule);
     }
 
     res.json(schedule);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create schedule' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to create schedule' });
   }
 };
 
@@ -39,17 +42,28 @@ export const getSchedules = async (req: Request, res: Response) => {
   try {
     let schedules;
     if (user.role === 'admin') {
-      schedules = await prisma.schedule.findMany({ include: { device: true } });
+      schedules = await models.Schedule.findAll({
+        include: [{ model: models.Device, as: 'device', include: [{ model: models.Owner, as: 'owner' }] }],
+      });
     } else {
-      const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
-      schedules = await prisma.schedule.findMany({
-        where: { device: { ownerId: owner!.id } },
-        include: { device: true },
+      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+      if (!owner) {
+        return res.status(403).json({ error: 'Owner not found' });
+      }
+      schedules = await models.Schedule.findAll({
+        include: [
+          {
+            model: models.Device,
+            as: 'device',
+            where: { ownerId: owner.id },
+            include: [{ model: models.Owner, as: 'owner' }],
+          },
+        ],
       });
     }
     res.json(schedules);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch schedules' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedules' });
   }
 };
 
@@ -59,31 +73,27 @@ export const updateSchedule = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(403).json({ error: 'Only owners can update schedules' });
     }
 
-    const schedule = await prisma.schedule.findUnique({
-      where: { id: parseInt(id) },
-      include: { device: true },
+    const schedule = await models.Schedule.findByPk(parseInt(id), {
+      include: [{ model: models.Device, as: 'device', include: [{ model: models.Owner, as: 'owner' }] }],
     });
-    if (!schedule || schedule.device.ownerId !== owner.id) {
-      return res.status(403).json({ error: 'Schedule not found or not owned' });
+
+    if (!schedule || schedule.device?.ownerId !== owner.id) {
+      return res.status(404).json({ error: 'Schedule not found or not owned' });
     }
 
-    const updatedSchedule = await prisma.schedule.update({
-      where: { id: parseInt(id) },
-      data: { type, cron, command, conditionType, conditionValue, active },
-    });
-
+    await schedule.update({ type, cron, command, conditionType, conditionValue, active });
     if (type === 'timer' && cron && active) {
-      scheduleJob(updatedSchedule);
+      await scheduleJob(schedule);
     }
 
-    res.json(updatedSchedule);
+    res.json(schedule);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update schedule' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to update schedule' });
   }
 };
 
@@ -92,25 +102,22 @@ export const deleteSchedule = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(403).json({ error: 'Only owners can delete schedules' });
     }
 
-    const schedule = await prisma.schedule.findUnique({
-      where: { id: parseInt(id) },
-      include: { device: true },
+    const schedule = await models.Schedule.findByPk(parseInt(id), {
+      include: [{ model: models.Device, as: 'device', include: [{ model: models.Owner, as: 'owner' }] }],
     });
-    if (!schedule || schedule.device.ownerId !== owner.id) {
-      return res.status(403).json({ error: 'Schedule not found or not owned' });
+
+    if (!schedule || schedule.device?.ownerId !== owner.id) {
+      return res.status(404).json({ error: 'Schedule not found or not owned' });
     }
 
-    await prisma.schedule.delete({
-      where: { id: parseInt(id) },
-    });
-
+    await schedule.destroy();
     res.json({ message: 'Schedule deleted' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete schedule' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to delete schedule' });
   }
 };

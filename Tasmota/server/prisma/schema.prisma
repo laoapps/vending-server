@@ -1,0 +1,77 @@
+datasource db {
+     provider = "postgresql"
+     url      = env("DATABASE_URL")
+   }
+
+   generator client {
+     provider = "prisma-client-js"
+   }
+
+   model Owner {
+     id        Int          @id @default(autoincrement())
+     uuid      String       @unique
+     phoneNumber String     @unique
+     createdAt DateTime     @default(now())
+     updatedAt DateTime     @updatedAt
+     devices   Device[]
+     groups    DeviceGroup[]
+   }
+
+   model Device {
+     id          Int          @id @default(autoincrement())
+     name        String
+     tasmotaId   String       @unique
+     zone        String?      // e.g., "Living Room"
+     ownerId     Int
+     owner       Owner        @relation(fields: [ownerId], references: [id])
+     status      Json         // e.g., { "POWER": "ON", "Pwm1": 37 }
+     power       Float?       // Current power in watts
+     energy      Float?       // Cumulative energy in kWh
+     groupId     Int?
+     group       DeviceGroup? @relation(fields: [groupId], references: [id])
+     createdAt   DateTime     @default(now())
+     updatedAt   DateTime     @updatedAt
+     userDevices UserDevice[]
+     schedules   Schedule[]
+   }
+
+   model DeviceGroup {
+     id        Int      @id @default(autoincrement())
+     name      String
+     ownerId   Int
+     owner     Owner    @relation(fields: [ownerId], references: [id])
+     devices   Device[]
+     createdAt DateTime @default(now())
+     updatedAt DateTime @updatedAt
+   }
+
+   model Schedule {
+     id            Int       @id @default(autoincrement())
+     deviceId      Int
+     device        Device    @relation(fields: [deviceId], references: [id])
+     type          String    // "timer" or "conditional"
+     cron          String?   // e.g., "0 7 * * *" for 7:00 AM daily
+     command       String    // e.g., "POWER ON"
+     conditionType String?   // "power_overload" or "energy_limit"
+     conditionValue Float?   // e.g., 1000 (watts) or 10 (kWh)
+     active        Boolean   @default(true)
+     createdAt     DateTime  @default(now())
+     updatedAt     DateTime  @updatedAt
+   }
+
+   model UserDevice {
+     id        Int      @id @default(autoincrement())
+     userUuid  String
+     deviceId  Int
+     device    Device   @relation(fields: [deviceId], references: [id])
+     createdAt DateTime @default(now())
+     updatedAt DateTime @updatedAt
+   }
+
+   model Admin {
+     id        Int      @id @default(autoincrement())
+     uuid      String   @unique
+     phoneNumber String @unique
+     createdAt DateTime @default(now())
+     updatedAt DateTime @updatedAt
+   }

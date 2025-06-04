@@ -5,6 +5,8 @@ import { MqttClientService } from '../../services/mqtt.service';
 @Component({
   selector: 'app-user-dashboard',
   templateUrl: './user-dashboard.page.html',
+  styleUrls: ['./user-dashboard.page.scss'],
+  standalone: false
 })
 export class UserDashboardPage implements OnInit {
   devices: any[] = [];

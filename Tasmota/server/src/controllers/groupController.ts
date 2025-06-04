@@ -1,25 +1,24 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import models from '../models';
 
 export const createGroup = async (req: Request, res: Response) => {
   const { name } = req.body;
   const user = res.locals.user;
 
   try {
-    const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(403).json({ error: 'Only owners can create groups' });
     }
 
-    const group = await prisma.deviceGroup.create({
-      data: { name, ownerId: owner.id },
+    const group = await models.DeviceGroup.create({
+      name,
+      ownerId: owner.id,
     });
 
     res.json(group);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create group' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to create group' });
   }
 };
 
@@ -29,14 +28,25 @@ export const getGroups = async (req: Request, res: Response) => {
   try {
     let groups;
     if (user.role === 'admin') {
-      groups = await prisma.deviceGroup.findMany({ include: { devices: true, owner: true } });
+      groups = await models.DeviceGroup.findAll({
+        include: [
+          { model: models.Device, as: 'devices' },
+          { model: models.Owner, as: 'owner' },
+        ],
+      });
     } else {
-      const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
-      groups = await prisma.deviceGroup.findMany({ where: { ownerId: owner!.id }, include: { devices: true } });
+      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+      if (!owner) {
+        return res.status(403).json({ error: 'Owner not found' });
+      }
+      groups = await models.DeviceGroup.findAll({
+        where: { ownerId: owner.id },
+        include: [{ model: models.Device, as: 'devices' }],
+      });
     }
     res.json(groups);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch groups' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch groups' });
   }
 };
 
@@ -46,19 +56,20 @@ export const updateGroup = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(403).json({ error: 'Only owners can update groups' });
     }
 
-    const group = await prisma.deviceGroup.update({
-      where: { id: parseInt(id), ownerId: owner.id },
-      data: { name },
-    });
+    const group = await models.DeviceGroup.findOne({ where: { id: parseInt(id), ownerId: owner.id } });
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found or not owned' });
+    }
 
+    await group.update({ name });
     res.json(group);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update group' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to update group' });
   }
 };
 
@@ -67,18 +78,20 @@ export const deleteGroup = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(403).json({ error: 'Only owners can delete groups' });
     }
 
-    await prisma.deviceGroup.delete({
-      where: { id: parseInt(id), ownerId: owner.id },
-    });
+    const group = await models.DeviceGroup.findOne({ where: { id: parseInt(id), ownerId: owner.id } });
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found or not owned' });
+    }
 
+    await group.destroy();
     res.json({ message: 'Group deleted' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete group' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to delete group' });
   }
 };
 
@@ -87,28 +100,24 @@ export const assignDeviceToGroup = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const owner = await prisma.owner.findUnique({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(403).json({ error: 'Only owners can assign devices' });
     }
 
-    const group = await prisma.deviceGroup.findUnique({ where: { id: groupId, ownerId: owner.id } });
+    const group = await models.DeviceGroup.findOne({ where: { id: groupId, ownerId: owner.id } });
     if (!group) {
-      return res.status(403).json({ error: 'Group not found or not owned' });
+      return res.status(404).json({ error: 'Group not found or not owned' });
     }
 
-    const device = await prisma.device.findUnique({ where: { id: deviceId, ownerId: owner.id } });
+    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } });
     if (!device) {
-      return res.status(403).json({ error: 'Device not found or not owned' });
+      return res.status(404).json({ error: 'Device not found or not owned' });
     }
 
-    const updatedDevice = await prisma.device.update({
-      where: { id: deviceId },
-      data: { groupId },
-    });
-
-    res.json(updatedDevice);
+    await device.update({ groupId });
+    res.json(device);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to assign device to group' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to assign device to group' });
   }
 };

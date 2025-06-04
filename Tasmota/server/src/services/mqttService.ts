@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import { PrismaClient } from '@prisma/client';
+import models from '../models';
 import { env } from '../config/env';
 import { monitorConditions } from './scheduleService';
 
@@ -16,17 +16,20 @@ client.on('connect', () => {
 });
 
 client.on('message', async (topic, message) => {
-  if (topic.startsWith('stat/')) {
-    const tasmotaId = topic.split('/')[1];
-    const status = JSON.parse(message.toString());
+  try {
+    if (topic.startsWith('stat/')) {
+      const tasmotaId = topic.split('/')[1];
+      const status = JSON.parse(message.toString());
 
-    const prisma = new PrismaClient();
-    await prisma.device.update({
-      where: { tasmotaId },
-      data: { status },
-    });
-  } else if (topic.startsWith('tele/')) {
-    await monitorConditions(topic, message);
+      await models.Device.update(
+        { status },
+        { where: { tasmotaId } }
+      );
+    } else if (topic.startsWith('tele/')) {
+      await monitorConditions(topic, message);
+    }
+  } catch (error) {
+    console.error('Error processing MQTT message:', error);
   }
 });
 

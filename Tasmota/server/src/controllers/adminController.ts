@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import models from '../models';
 
 export const getAllData = async (req: Request, res: Response) => {
   const user = res.locals.user;
@@ -10,14 +8,34 @@ export const getAllData = async (req: Request, res: Response) => {
   }
 
   try {
-    const owners = await prisma.owner.findMany({ include: { devices: true, groups: true } });
-    const devices = await prisma.device.findMany({ include: { owner: true, userDevices: true, group: true } });
-    const groups = await prisma.deviceGroup.findMany({ include: { devices: true, owner: true } });
-    const schedules = await prisma.schedule.findMany({ include: { device: true } });
-    const userDevices = await prisma.userDevice.findMany({ include: { device: true } });
+    const owners = await models.Owner.findAll({
+      include: [
+        { model: models.Device, as: 'devices' },
+        { model: models.DeviceGroup, as: 'groups' },
+      ],
+    });
+    const devices = await models.Device.findAll({
+      include: [
+        { model: models.Owner, as: 'owner' },
+        { model: models.UserDevice, as: 'userDevices' },
+        { model: models.DeviceGroup, as: 'deviceGroup' },
+      ],
+    });
+    const groups = await models.DeviceGroup.findAll({
+      include: [
+        { model: models.Device, as: 'devices' },
+        { model: models.Owner, as: 'owner' },
+      ],
+    });
+    const schedules = await models.Schedule.findAll({
+      include: [{ model: models.Device, as: 'device' }],
+    });
+    const userDevices = await models.UserDevice.findAll({
+      include: [{ model: models.Device, as: 'device' }],
+    });
 
     res.json({ owners, devices, groups, schedules, userDevices });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch data' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch data' });
   }
 };
