@@ -14,19 +14,19 @@ export class HomePage implements OnInit {
   constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit() {
-    const token = localStorage.getItem('token');
-    if (token) {
-      this.apiService.getUserRole().subscribe(
-        (response) => {
-          this.role = response.role;
-        },
-        () => {
-          this.router.navigate(['/login']);
-        }
-      );
-    } else {
-      this.router.navigate(['/login']);
-    }
+    // const token = localStorage.getItem('token');
+    // if (token) {
+    //   this.apiService.getUserRole().subscribe(
+    //     (response) => {
+    //       this.role = response.role;
+    //     },
+    //     () => {
+    //       this.router.navigate(['/login']);
+    //     }
+    //   );
+    // } else {
+    //   this.router.navigate(['/login']);
+    // }
   }
 
   navigateTo(path: string) {

@@ -4,7 +4,7 @@
       <ion-card-title>Welcome to Tasmota Control</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-list *ngIf="role === 'admin'">
+      <ion-list *ngIf="role === 'admin' ||'1'">
         <ion-item button (click)="navigateTo('/admin-dashboard')">
           <ion-label>View All Devices</ion-label>
         </ion-item>
@@ -13,7 +13,7 @@
         </ion-item>
       </ion-list>
 
-      <ion-list *ngIf="role === 'owner'">
+      <ion-list *ngIf="role === 'owner' ||'1'">
         <ion-item button (click)="navigateTo('/owner-dashboard')">
           <ion-label>Add Device</ion-label>
         </ion-item>
@@ -25,7 +25,7 @@
         </ion-item>
       </ion-list>
 
-      <ion-list *ngIf="role === 'user'">
+      <ion-list *ngIf="role === 'user' ||'1'">
         <ion-item button (click)="navigateTo('/user-dashboard')">
           <ion-label>List Devices</ion-label>
         </ion-item>
