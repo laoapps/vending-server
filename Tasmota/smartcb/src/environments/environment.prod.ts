@@ -6,6 +6,6 @@ export const environment = {
     port: 443,
     protocol: 'wss',
     username: 'admin',
-    password: '$7$101$NFaQ/E8SgrOY9Wxo$pJxQfTdvwG0T19Izt88gugNVBe8DdMxz2WxftmDzDxHqqJwfkGAxkwLt9lsgEmpwh+XXiZx8d3spsamIydU2Lw==',
+    password: 'f15c58a3-0d3e-495d-91ca-54b18c13037f',
   },
 };
