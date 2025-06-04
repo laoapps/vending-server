@@ -11,10 +11,11 @@ services:
       - JWT_SECRET=your_jwt_secret
       - MQTT_BROKER=mqtt://mqtt:1883
       - MQTT_WS_URL=wss://mqtt.laoapps.com
-      - MQTT_USERNAME=smartcb
+      - MQTT_USERNAME=smartcbZ
       - MQTT_PASSWORD=7d020571-7e39-41ae-a9b9-4cd772894e44
       - USERMANAGER_URL=https://nocnoc-api.laoapps.com
-      - backendKey=aa65972e-e215-4b12-bd53-aacce0f72050
+      - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
+      - SERVICE_NAME=smartcb
     depends_on:
       - db
       - mqtt
