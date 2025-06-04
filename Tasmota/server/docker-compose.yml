@@ -40,8 +40,8 @@ services:
       context: ./mqtt
       dockerfile: Dockerfile
     ports:
-      - '31883:1883'
-      - '31884:9001'
+      - '1883:1883'
+      - '31883:9001'
     volumes:
       - mqtt_data:/mosquitto/data
     networks:
