@@ -1,0 +1,11 @@
+import { cleanEnv, str } from 'envalid';
+
+export const env = cleanEnv(process.env, {
+  DATABASE_URL: str(),
+  JWT_SECRET: str(),
+  MQTT_BROKER: str(),
+  MQTT_WS_URL: str(),
+  USERMANAGER_URL: str(),
+  BACKEND_KEY: str(),
+  SERVICE_NAME: str(),
+});

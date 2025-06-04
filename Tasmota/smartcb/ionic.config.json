@@ -1,0 +1,7 @@
+{
+  "name": "smartcb",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

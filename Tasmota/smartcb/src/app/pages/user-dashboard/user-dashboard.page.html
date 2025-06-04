@@ -1,0 +1,22 @@
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>User Dashboard</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let device of devices">
+          <ion-label>
+            <h2>{{ device.name }}</h2>
+            <p>Tasmota ID: {{ device.tasmotaId }}</p>
+            <p>Zone: {{ device.zone || 'N/A' }}</p>
+            <p>Power: {{ device.power }} W</p>
+            <p>Energy: {{ device.energy }} kWh</p>
+            <p>Status: {{ device.status | json }}</p>
+          </ion-label>
+          <ion-button slot="end" (click)="togglePower(device.id)">Toggle</ion-button>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
