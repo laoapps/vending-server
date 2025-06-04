@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
-import { MqttClientService } from '../../services/mqtt.service';
+import { MqttClientService } from '../../services/mqttClient.service';
 
 @Component({
   selector: 'app-owner-dashboard',

@@ -5,7 +5,7 @@ export const environment = {
     hostname: 'mqtt.laoapps.com',
     port: 443,
     protocol: 'wss',
-    username: 'your_mqtt_username',
-    password: 'your_mqtt_password',
+    username: 'smartcb',
+    password: '7d020571-7e39-41ae-a9b9-4cd772894e44',
   },
 };

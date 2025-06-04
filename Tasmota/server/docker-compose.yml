@@ -11,6 +11,8 @@ services:
       - JWT_SECRET=your_jwt_secret
       - MQTT_BROKER=mqtt://mqtt:1883
       - MQTT_WS_URL=wss://mqtt.laoapps.com
+      - MQTT_USERNAME=smartcb
+      - MQTT_PASSWORD=7d020571-7e39-41ae-a9b9-4cd772894e44
       - USERMANAGER_URL=https://nocnoc-api.laoapps.com
       - backendKey=aa65972e-e215-4b12-bd53-aacce0f72050
     depends_on:
@@ -33,18 +35,20 @@ services:
       - tasmota-net
 
   mqtt:
-    image: eclipse-mosquitto:2
+    build:
+      context: ./mqtt
+      dockerfile: Dockerfile
     ports:
-      - '1883:1883'
-      - '31883:9001' # WebSocket port
+      - '31883:1883'
+      - '31884:9001'
     volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ./mosquitto.passwd:/mosquitto/config/passwd
+      - mqtt_data:/mosquitto/data
     networks:
       - tasmota-net
 
 volumes:
   pgdata:
+  mqtt_data:
 
 networks:
   tasmota-net:
