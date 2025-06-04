@@ -60,6 +60,8 @@ export function initBundle(app: express.Application) {
     // Upload new bundle
     app.post('/upload-bundle', upload.single('bundle'), async (req: MulterRequest, res: Response) => {
         try {
+            console.log('=====> upload-bundle');
+
             if (!req.file) {
                 return res.status(400).json({ error: 'No file uploaded' });
             }
