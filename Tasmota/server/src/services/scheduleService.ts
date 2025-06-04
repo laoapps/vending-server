@@ -34,9 +34,26 @@ export const scheduleJob = async (schedule: {
 };
 
 export const monitorConditions = async (topic: string, message: Buffer) => {
-  const tasmotaId = topic.split('/')[1];
+  const parts = topic.split('/');
+  const tasmotaId = parts[1];
+  const messageStr = message.toString();
+
   try {
-    const data = JSON.parse(message.toString());
+    // Handle LWT messages (e.g., tele/tongou_3B0444/LWT)
+    if (parts.length === 3 && parts[2] === 'LWT') {
+      if (messageStr === 'Online' || messageStr === 'Offline') {
+        const device = await models.Device.findOne({ where: { tasmotaId } });
+        if (!device) {
+          console.error(`Device not found for tasmotaId: ${tasmotaId}`);
+          return;
+        }
+        await device.update({ status: { ...device.status, online: messageStr === 'Online' } });
+        return;
+      }
+    }
+
+    // Handle telemetry messages (e.g., tele/tongou_3B0444/SENSOR)
+    const data = JSON.parse(messageStr);
 
     const device = await models.Device.findOne({ where: { tasmotaId } });
     if (!device) {
