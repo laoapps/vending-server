@@ -12,7 +12,6 @@ services:
       - MQTT_BROKER=mqtt://mqtt:1883
       - MQTT_WS_URL=wss://mqtt.laoapps.com
       - USERMANAGER_URL=https://nocnoc-api.laoapps.com
-      - USERMANAGER_URL=https://nocnoc-api.laoapps.com
       - backendKey=aa65972e-e215-4b12-bd53-aacce0f72050
     depends_on:
       - db
