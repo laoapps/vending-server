@@ -7074,6 +7074,7 @@ export class LoadVendingMachineSaleBillReport {
                 resolve(IENMessage.success);
             }
             catch (error) {
+                console.log('=====> error Report', error);
                 resolve(error.message);
             }
         });
