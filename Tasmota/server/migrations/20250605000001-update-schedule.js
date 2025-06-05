@@ -1,12 +1,18 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.addColumn('Schedules', 'createdBy', {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
+    const tableInfo = await queryInterface.describeTable('Schedules');
+    if (!tableInfo.createdBy) {
+      await queryInterface.addColumn('Schedules', 'createdBy', {
+        type: Sequelize.STRING,
+        allowNull: true,
+      });
+    }
   },
 
   down: async (queryInterface) => {
-    await queryInterface.removeColumn('Schedules', 'createdBy');
+    const tableInfo = await queryInterface.describeTable('Schedules');
+    if (tableInfo.createdBy) {
+      await queryInterface.removeColumn('Schedules', 'createdBy');
+    }
   },
 };
