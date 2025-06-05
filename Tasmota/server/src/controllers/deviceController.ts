@@ -12,6 +12,8 @@ export const createDevice = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }
     const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone);
+    // Remove from UnregisteredDevices if exists
+    await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to create device' });
@@ -39,6 +41,8 @@ export const updateDevice = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can update devices' });
     }
     const device = await DeviceService.updateDevice(user.uuid, parseInt(id), { name, tasmotaId, zone, groupId });
+    // Remove from UnregisteredDevices if tasmotaId changes
+    await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to update device' });

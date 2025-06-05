@@ -45,16 +45,23 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
         const device = await models.Device.findOne({ where: { tasmotaId } });
         if (device) {
           await device.update({ status: { ...device.status, online: messageStr === 'Online' } });
+          // Remove from UnregisteredDevices if registered
+          await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
         } else {
           // Handle unregistered device
           let unregisteredDevice = await models.UnregisteredDevice.findOne({ where: { tasmotaId } });
           if (!unregisteredDevice) {
-            unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] }as any);
+            unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] });
+          }
+
+          if (unregisteredDevice.isBanned) {
+            console.log(`Ignoring message from banned device ${tasmotaId}`);
+            return;
           }
 
           const lastConnections = [...unregisteredDevice.lastConnections, new Date()].slice(-5);
-          let connectionAttempts = unregisteredDevice.connectionAttempts + 1;
-          let isBanned = unregisteredDevice.isBanned || connectionAttempts >= 5;
+          const connectionAttempts = unregisteredDevice.connectionAttempts + 1;
+          const isBanned = connectionAttempts >= 5;
 
           await unregisteredDevice.update({
             connectionAttempts,
@@ -64,7 +71,6 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
 
           if (isBanned) {
             console.log(`Device ${tasmotaId} banned after ${connectionAttempts} attempts`);
-            return;
           }
         }
         return;
