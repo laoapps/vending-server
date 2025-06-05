@@ -19,7 +19,24 @@ module.exports = {
       createdAt: Sequelize.DATE,
       updatedAt: Sequelize.DATE,
     });
-
+    await queryInterface.createTable('DeviceGroups', {
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      ownerId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: { model: 'Owners', key: 'id' },
+      },
+      createdAt: Sequelize.DATE,
+      updatedAt: Sequelize.DATE,
+    });
     await queryInterface.createTable('Devices', {
       id: {
         type: Sequelize.INTEGER,
@@ -66,24 +83,7 @@ module.exports = {
       updatedAt: Sequelize.DATE,
     });
 
-    await queryInterface.createTable('DeviceGroups', {
-      id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-      },
-      name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      ownerId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'Owners', key: 'id' },
-      },
-      createdAt: Sequelize.DATE,
-      updatedAt: Sequelize.DATE,
-    });
+
 
     await queryInterface.createTable('Schedules', {
       id: {
