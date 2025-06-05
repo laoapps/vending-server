@@ -51,7 +51,7 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
           // Handle unregistered device
           let unregisteredDevice = await models.UnregisteredDevice.findOne({ where: { tasmotaId } });
           if (!unregisteredDevice) {
-            unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] });
+            unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] }as any);
           }
 
           if (unregisteredDevice.isBanned) {
