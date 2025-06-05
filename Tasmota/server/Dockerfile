@@ -7,6 +7,7 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install
+RUN npm install typescript --save-dev
 RUN tsc
 
 # Copy the rest of the application code
