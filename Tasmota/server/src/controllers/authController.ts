@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import models from '../models';
-import { findRealDB } from '../services/userManagerService';
+import { findPhoneNumberByUuid, findRealDB } from '../services/userManagerService';
 import { env } from '../config/env';
 
 export const registerOwner = async (req: Request, res: Response) => {
@@ -17,8 +17,11 @@ export const registerOwner = async (req: Request, res: Response) => {
     if (existingOwner) {
       return res.status(400).json({ error: 'Owner already registered' });
     }
-
-    const owner = await models.Owner.create({ uuid });
+    const phoneNumber = await findPhoneNumberByUuid(uuid);
+    if (!phoneNumber) {
+      return res.status(400).json({ error: 'Phone number not found for this user' });
+    }
+    const owner = await models.Owner.create({ uuid,phoneNumber });
     const jwtToken = jwt.sign({ uuid, role: 'owner' }, env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({ token: jwtToken, role: 'owner', owner });
