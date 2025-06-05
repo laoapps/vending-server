@@ -3,13 +3,17 @@ import models from '../models';
 import { scheduleJob } from '../services/scheduleService';
 
 export const createSchedule = async (req: Request, res: Response) => {
-  const { deviceId, type, cron, command, conditionType, conditionValue } = req.body;
+  const { deviceId, type, cron, command, conditionType, conditionValue, active } = req.body;
   const user = res.locals.user;
 
   try {
+    if (user.role !== 'owner') {
+      return res.status(403).json({ error: 'Only owners can create schedules' });
+    }
+
     const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
-      return res.status(403).json({ error: 'Only owners can create schedules' });
+      return res.status(404).json({ error: 'Owner not found' });
     }
 
     const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } });
@@ -24,6 +28,7 @@ export const createSchedule = async (req: Request, res: Response) => {
       command,
       conditionType,
       conditionValue,
+      active: active !== undefined ? active : true,
       createdBy: user.uuid,
     } as any);
 
@@ -44,12 +49,15 @@ export const getSchedules = async (req: Request, res: Response) => {
     let schedules;
     if (user.role === 'admin') {
       schedules = await models.Schedule.findAll({
-        include: [{ model: models.Device, as: 'device', include: [{ model: models.Owner, as: 'owner' }] }],
+        include: [
+          { model: models.Device, as: 'device' },
+          { model: models.SchedulePackage, as: 'package' },
+        ],
       });
     } else if (user.role === 'owner') {
       const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) {
-        return res.status(403).json({ error: 'Owner not found' });
+        return res.status(404).json({ error: 'Owner not found' });
       }
       schedules = await models.Schedule.findAll({
         include: [
@@ -57,8 +65,8 @@ export const getSchedules = async (req: Request, res: Response) => {
             model: models.Device,
             as: 'device',
             where: { ownerId: owner.id },
-            include: [{ model: models.Owner, as: 'owner' }],
           },
+          { model: models.SchedulePackage, as: 'package' },
         ],
       });
     } else {
@@ -67,14 +75,9 @@ export const getSchedules = async (req: Request, res: Response) => {
           {
             model: models.Device,
             as: 'device',
-            include: [
-              {
-                model: models.UserDevice,
-                as: 'userDevices',
-                where: { userUuid: user.uuid },
-              },
-            ],
+            include: [{ model: models.UserDevice, as: 'userDevices', where: { userUuid: user.uuid } }],
           },
+          { model: models.SchedulePackage, as: 'package' },
         ],
       });
     }
@@ -86,25 +89,39 @@ export const getSchedules = async (req: Request, res: Response) => {
 
 export const updateSchedule = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { type, cron, command, conditionType, conditionValue, active } = req.body;
+  const { deviceId, type, cron, command, conditionType, conditionValue, active } = req.body;
   const user = res.locals.user;
 
   try {
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
-    if (!owner) {
+    if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can update schedules' });
     }
 
-    const schedule = await models.Schedule.findByPk(parseInt(id), {
-      include: [{ model: models.Device, as: 'device', include: [{ model: models.Owner, as: 'owner' }] }],
-    });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    if (!owner) {
+      return res.status(404).json({ error: 'Owner not found' });
+    }
 
+    const schedule = await models.Schedule.findOne({
+      where: { id: parseInt(id) },
+      include: [{ model: models.Device, as: 'device' }],
+    });
     if (!schedule || schedule.device?.ownerId !== owner.id) {
       return res.status(404).json({ error: 'Schedule not found or not owned' });
     }
 
-    await schedule.update({ type, cron, command, conditionType, conditionValue, active });
-    if (type === 'timer' && cron && active) {
+    await schedule.update({
+      deviceId,
+      type,
+      cron,
+      command,
+      conditionType,
+      conditionValue,
+      active,
+      createdBy: user.uuid,
+    });
+
+    if (type === 'timer' && cron) {
       await scheduleJob(schedule);
     }
 
@@ -119,17 +136,26 @@ export const deleteSchedule = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
-    if (!owner) {
+    if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can delete schedules' });
     }
 
-    const schedule = await models.Schedule.findByPk(parseInt(id), {
-      include: [{ model: models.Device, as: 'device', include: [{ model: models.Owner, as: 'owner' }] }],
-    });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    if (!owner) {
+      return res.status(404).json({ error: 'Owner not found' });
+    }
 
+    const schedule = await models.Schedule.findOne({
+      where: { id: parseInt(id) },
+      include: [{ model: models.Device, as: 'device' }],
+    });
     if (!schedule || schedule.device?.ownerId !== owner.id) {
       return res.status(404).json({ error: 'Schedule not found or not owned' });
+    }
+
+    // Prevent deletion if linked to a schedule package
+    if (schedule.packageId) {
+      return res.status(400).json({ error: 'Cannot delete schedule linked to a schedule package' });
     }
 
     await schedule.destroy();

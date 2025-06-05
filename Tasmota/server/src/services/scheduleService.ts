@@ -39,19 +39,17 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
   const messageStr = message.toString();
 
   try {
-    // Handle LWT messages (e.g., tele/tongou_3B0444/LWT)
+    // Handle LWT messages
     if (parts.length === 3 && parts[2] === 'LWT') {
       if (messageStr === 'Online' || messageStr === 'Offline') {
         const device = await models.Device.findOne({ where: { tasmotaId } });
         if (device) {
           await device.update({ status: { ...device.status, online: messageStr === 'Online' } });
-          // Remove from UnregisteredDevices if registered
           await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
         } else {
-          // Handle unregistered device
           let unregisteredDevice = await models.UnregisteredDevice.findOne({ where: { tasmotaId } });
           if (!unregisteredDevice) {
-            unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] }as any);
+            unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] } as any);
           }
 
           if (unregisteredDevice.isBanned) {
@@ -84,9 +82,8 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
       return;
     }
 
-    // Handle telemetry messages (e.g., tele/tongou_3B0444/SENSOR)
+    // Handle telemetry messages
     const data = JSON.parse(messageStr);
-
     const device = await models.Device.findOne({ where: { tasmotaId } });
     if (!device) {
       console.error(`Device not found for tasmotaId: ${tasmotaId}`);
@@ -99,13 +96,19 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
 
     const schedules = await models.Schedule.findAll({
       where: { deviceId: device.id, type: 'conditional', active: true },
+      include: [{ model: models.SchedulePackage, as: 'package' }],
     });
 
     for (const schedule of schedules) {
       if (schedule.conditionType === 'power_overload' && power > (schedule.conditionValue || 0)) {
         await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
-      } else if (schedule.conditionType === 'energy_limit' && energy > (schedule.conditionValue || 0)) {
-        await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
+      } else if (schedule.conditionType === 'energy_limit' && schedule.package && schedule.startEnergy !== undefined) {
+        const packageEnergyLimit = schedule.package.conditionValue;
+        const currentEnergyUsage = energy - schedule.startEnergy;
+        if (currentEnergyUsage >= packageEnergyLimit) {
+          await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
+          await schedule.update({ active: false });
+        }
       }
     }
   } catch (error) {

@@ -1,5 +1,7 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
+import { DeviceAttributes } from './device';
+import { SchedulePackageAttributes } from './schedulePackage';
 
 export interface ScheduleAttributes {
   id: number;
@@ -12,11 +14,17 @@ export interface ScheduleAttributes {
   conditionValue?: number;
   active: boolean;
   createdBy?: string;
+  startEnergy?: number; // New field for initial energy reading
   createdAt: Date;
   updatedAt: Date;
 }
 
-export class Schedule extends Model<ScheduleAttributes> {
+export interface ScheduleInstance extends Model<ScheduleAttributes>, ScheduleAttributes {
+  device?: DeviceAttributes;
+  package?: SchedulePackageAttributes;
+}
+
+export class Schedule extends Model<ScheduleAttributes, ScheduleInstance> {
   public id!: number;
   public deviceId!: number;
   public packageId!: number | null;
@@ -27,8 +35,11 @@ export class Schedule extends Model<ScheduleAttributes> {
   public conditionValue?: number;
   public active!: boolean;
   public createdBy?: string;
+  public startEnergy?: number;
   public createdAt!: Date;
   public updatedAt!: Date;
+  public device?: DeviceAttributes;
+  public package?: SchedulePackageAttributes;
 }
 
 export function initScheduleModel(sequelize: Sequelize) {
@@ -76,6 +87,10 @@ export function initScheduleModel(sequelize: Sequelize) {
       },
       createdBy: {
         type: DataTypes.STRING,
+        allowNull: true,
+      },
+      startEnergy: {
+        type: DataTypes.FLOAT,
         allowNull: true,
       },
       createdAt: DataTypes.DATE,

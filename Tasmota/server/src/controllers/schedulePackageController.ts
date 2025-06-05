@@ -130,7 +130,6 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    // Allow owners or assigned users to apply packages
     const device = await models.Device.findByPk(deviceId, {
       include: [
         { model: models.Owner, as: 'owner' },
@@ -153,7 +152,6 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Schedule package not found' });
     }
 
-    // Check for existing active schedule for this device and package
     const existingSchedule = await models.Schedule.findOne({
       where: { deviceId, packageId, active: true },
     });
@@ -161,7 +159,6 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Active schedule already exists for this device and package' });
     }
 
-    // Create schedule based on package
     let scheduleData: any = {
       deviceId,
       packageId,
@@ -172,13 +169,13 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
     };
 
     if (schedulePackage.conditionType === 'time_duration') {
-      // Convert duration (hours) to cron
       const durationHours = schedulePackage.conditionValue;
       scheduleData.cron = `0 0 */${Math.round(durationHours)} * * *`;
     } else if (schedulePackage.conditionType === 'energy_consumption') {
       scheduleData.conditionType = 'energy_limit';
       scheduleData.conditionValue = schedulePackage.conditionValue;
       scheduleData.command = 'POWER OFF';
+      scheduleData.startEnergy = device.energy ?? 0; // Capture initial energy
     }
 
     const schedule = await models.Schedule.create(scheduleData);
