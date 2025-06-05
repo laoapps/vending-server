@@ -24,9 +24,9 @@ export const registerOwner = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Phone number not found for this user' });
     }
     const owner = await models.Owner.create({ uuid,phoneNumber });
-    const jwtToken = jwt.sign({ uuid, role: 'owner' }, env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({ token: jwtToken, role: 'owner', owner });
+
+    res.json({ token, role: 'owner', owner });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Registration failed' });
   }
