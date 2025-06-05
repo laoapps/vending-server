@@ -17,14 +17,10 @@ services:
       - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
       - SERVICE_NAME=SMARTCB
       - REDIS_URL=redis://tasmota-redis:6379
-
     depends_on:
-      tasmota-db:
-        condition: service_healthy
-      tasmota-redis:
-        condition: service_healthy
-      mqtt:
-        condition: service_started
+      - tasmota-db
+      - tasmota-redis
+      - mqtt
     volumes:
       - .:/app
     networks:
