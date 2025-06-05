@@ -4,7 +4,12 @@
       <ion-card-title>Welcome to Tasmota Control</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-list *ngIf="role === 'admin' ||'1'">
+
+
+      <ion-button *ngIf="role !== 'owner'" expand="block" (click)="registerOwner()">Register as Owner</ion-button>
+
+      <ion-list >
+        <ion-label>Admin Actions</ion-label>
         <ion-item button (click)="navigateTo('/admin-dashboard')">
           <ion-label>View All Devices</ion-label>
         </ion-item>
@@ -13,27 +18,23 @@
         </ion-item>
       </ion-list>
 
-      <ion-list *ngIf="role === 'owner' ||'1'">
+      <ion-list >
+        <ion-label>Owner Actions</ion-label>
         <ion-item button (click)="navigateTo('/owner-dashboard')">
-          <ion-label>Add Device</ion-label>
+          <ion-label>Manage Devices</ion-label>
         </ion-item>
         <ion-item button (click)="navigateTo('/owner-reports')">
           <ion-label>View Reports</ion-label>
         </ion-item>
-        <ion-item button (click)="navigateTo('/owner-schedules')">
-          <ion-label>View Schedules</ion-label>
-        </ion-item>
       </ion-list>
 
-      <ion-list *ngIf="role === 'user' ||'1'">
+      <ion-list >
+        <ion-label>User Actions</ion-label>
         <ion-item button (click)="navigateTo('/user-dashboard')">
           <ion-label>List Devices</ion-label>
         </ion-item>
         <ion-item button (click)="navigateTo('/user-schedules')">
-          <ion-label>Set Schedules</ion-label>
-        </ion-item>
-        <ion-item button (click)="navigateTo('/user-reports')">
-          <ion-label>View Reports</ion-label>
+          <ion-label>Subscribe to Schedules</ion-label>
         </ion-item>
       </ion-list>
     </ion-card-content>

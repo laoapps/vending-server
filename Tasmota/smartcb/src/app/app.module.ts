@@ -5,7 +5,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { LoginPage } from './pages/login/login.page';
 import { AdminDashboardPage } from './pages/admin-dashboard/admin-dashboard.page';
 import { OwnerDashboardPage } from './pages/owner-dashboard/owner-dashboard.page';
 import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
@@ -15,7 +14,6 @@ import {AdminReportsPage} from './pages/admin-reports/admin-reports.page';
 @NgModule({
   declarations: [
     AppComponent,
-    LoginPage,
     AdminDashboardPage,
     OwnerDashboardPage,
     UserDashboardPage,

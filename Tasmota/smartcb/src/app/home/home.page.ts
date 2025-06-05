@@ -10,23 +10,29 @@ import { ApiService } from '../services/api.service';
 })
 export class HomePage implements OnInit {
   role: string | null = null;
+  token: string = '';
 
   constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit() {
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   this.apiService.getUserRole().subscribe(
-    //     (response) => {
-    //       this.role = response.role;
-    //     },
-    //     () => {
-    //       this.router.navigate(['/login']);
-    //     }
-    //   );
-    // } else {
-    //   this.router.navigate(['/login']);
-    // }
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      this.token = storedToken;
+    }
+  }
+
+ 
+
+  registerOwner() {
+    this.apiService.registerOwner(this.token).subscribe(
+      (response) => {
+        localStorage.setItem('token', response.token);
+        this.role = 'owner';
+      },
+      (error) => {
+        console.error('Registration failed:', error);
+      }
+    );
   }
 
   navigateTo(path: string) {

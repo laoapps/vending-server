@@ -11,17 +11,11 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  login(phoneNumber: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/login`, { phoneNumber });
+  registerOwner(token: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/register-owner`, { token });
   }
 
-  registerOwner(phoneNumber: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/register-owner`, { phoneNumber }, this.getAuthHeaders());
-  }
 
-  getUserRole(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/auth/role`, this.getAuthHeaders());
-  }
 
   createDevice(name: string, tasmotaId: string, zone?: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices`, { name, tasmotaId, zone }, this.getAuthHeaders());
@@ -43,8 +37,8 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/devices/control`, { deviceId, command }, this.getAuthHeaders());
   }
 
-  assignDevice(deviceId: number, userPhoneNumber: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/devices/assign`, { deviceId, userPhoneNumber }, this.getAuthHeaders());
+  assignDevice(deviceId: number, token: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices/assign`, { deviceId, token }, this.getAuthHeaders());
   }
 
   createGroup(name: string): Observable<any> {
@@ -84,7 +78,7 @@ export class ApiService {
   }
 
   applySchedulePackage(deviceId: number, packageId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/schedules/apply-package`, { deviceId, packageId }, this.getAuthHeaders());
+    return this.http.post(`${this.apiUrl}/schedule-packages/apply-package`, { deviceId, packageId }, this.getAuthHeaders());
   }
 
   createSchedulePackage(name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
@@ -104,7 +98,12 @@ export class ApiService {
   }
 
   getAllData(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin`, this.getAuthHeaders());
+    return this.http.get(`${this.apiUrl}/admin`, {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'X-Admin-Key': 'super-admin'
+      }),
+    });
   }
 
   private getAuthHeaders() {

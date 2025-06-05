@@ -28,3 +28,72 @@ export function findUuidByPhoneNumberOnUserManager(phoneNumber: string): Promise
     }
   });
 }
+
+export async function findPhoneNumberByUuid(uuid: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+
+        if (uuid) {
+            const data = {
+                method: 'findPhoneNumberByUuid',
+                object: 'authorize',
+                data: {
+                    uuid,
+                    service: process.env.BACKEND_NAME || '',
+                },
+            };
+
+            axios
+                .post(process.env.USERMANAGER_URL || '', data, {
+                    headers: {
+                        backendkey: process.env.BACKEND_KEY || '',
+                    },
+                })
+                .then((r) => {
+                    const d = r.data;
+                    if (d?.data?.data?.uuid) {
+                        console.log('findRealDB:', d.data.data.uuid);
+                        resolve(d.data.data.uuid);
+                    } else {
+                        resolve('');
+                    }
+                })
+                .catch((e) => reject(e));
+        } else {
+            resolve('');
+        }
+    });
+}
+export async function findRealDB(token: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+
+        if (token) {
+            const data = {
+                method: 'getUserUuid',
+                object: 'authorize',
+                data: {
+                    token,
+                    service: process.env.BACKEND_NAME || '',
+                },
+            };
+
+            axios
+                .post(process.env.USERMANAGER_URL || '', data, {
+                    headers: {
+                        backendkey: process.env.BACKEND_KEY || '',
+                    },
+                })
+                .then((r) => {
+                    const d = r.data;
+                    if (d?.data?.data?.uuid) {
+                        console.log('findRealDB:', d.data.data.uuid);
+                        resolve(d.data.data.uuid);
+                    } else {
+                        resolve('');
+                    }
+                })
+                .catch((e) => reject(e));
+        } else {
+            resolve('');
+        }
+    });
+}
