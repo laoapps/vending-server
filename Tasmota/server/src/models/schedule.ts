@@ -1,9 +1,10 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { Device } from './device';
+import sequelize from '../config/database';
 
 export interface ScheduleAttributes {
   id: number;
   deviceId: number;
+  packageId: number | null;
   type: string;
   cron?: string;
   command: string;
@@ -18,6 +19,7 @@ export interface ScheduleAttributes {
 export class Schedule extends Model<ScheduleAttributes> {
   public id!: number;
   public deviceId!: number;
+  public packageId!: number | null;
   public type!: string;
   public cron?: string;
   public command!: string;
@@ -27,9 +29,6 @@ export class Schedule extends Model<ScheduleAttributes> {
   public createdBy?: string;
   public createdAt!: Date;
   public updatedAt!: Date;
-
-  // Associations
-  public device?: Device;
 }
 
 export function initScheduleModel(sequelize: Sequelize) {
@@ -43,6 +42,12 @@ export function initScheduleModel(sequelize: Sequelize) {
       deviceId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: { model: 'Devices', key: 'id' },
+      },
+      packageId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: 'SchedulePackages', key: 'id' },
       },
       type: {
         type: DataTypes.STRING,

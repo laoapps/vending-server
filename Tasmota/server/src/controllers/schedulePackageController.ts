@@ -3,22 +3,30 @@ import models from '../models';
 import { scheduleJob } from '../services/scheduleService';
 
 export const createSchedulePackage = async (req: Request, res: Response) => {
-  const { name, durationMinutes, powerConsumptionWatts, price } = req.body;
+  const { name, price, conditionType, conditionValue } = req.body;
   const user = res.locals.user;
 
   try {
+    if (user.role !== 'owner') {
+      return res.status(403).json({ error: 'Only owners can create schedule packages' });
+    }
+
     const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
-      return res.status(403).json({ error: 'Only owners can create schedule packages' });
+      return res.status(404).json({ error: 'Owner not found' });
+    }
+
+    if (!['time_duration', 'energy_consumption'].includes(conditionType)) {
+      return res.status(400).json({ error: 'Invalid condition type' });
     }
 
     const schedulePackage = await models.SchedulePackage.create({
       name,
       ownerId: owner.id,
-      durationMinutes,
-      powerConsumptionWatts,
       price,
-    } as any);
+      conditionType,
+      conditionValue,
+    }as any);
 
     res.json(schedulePackage);
   } catch (error) {
@@ -35,13 +43,18 @@ export const getSchedulePackages = async (req: Request, res: Response) => {
       schedulePackages = await models.SchedulePackage.findAll({
         include: [{ model: models.Owner, as: 'owner' }],
       });
-    } else {
+    } else if (user.role === 'owner') {
       const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) {
-        return res.status(403).json({ error: 'Owner not found' });
+        return res.status(404).json({ error: 'Owner not found' });
       }
       schedulePackages = await models.SchedulePackage.findAll({
         where: { ownerId: owner.id },
+        include: [{ model: models.Owner, as: 'owner' }],
+      });
+    } else {
+      schedulePackages = await models.SchedulePackage.findAll({
+        include: [{ model: models.Owner, as: 'owner' }],
       });
     }
     res.json(schedulePackages);
@@ -52,13 +65,17 @@ export const getSchedulePackages = async (req: Request, res: Response) => {
 
 export const updateSchedulePackage = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, durationMinutes, powerConsumptionWatts, price } = req.body;
+  const { name, price, conditionType, conditionValue } = req.body;
   const user = res.locals.user;
 
   try {
+    if (user.role !== 'owner') {
+      return res.status(403).json({ error: 'Only owners can update schedule packages' });
+    }
+
     const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
-      return res.status(403).json({ error: 'Only owners can update schedule packages' });
+      return res.status(404).json({ error: 'Owner not found' });
     }
 
     const schedulePackage = await models.SchedulePackage.findOne({ where: { id: parseInt(id), ownerId: owner.id } });
@@ -66,7 +83,11 @@ export const updateSchedulePackage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Schedule package not found or not owned' });
     }
 
-    await schedulePackage.update({ name, durationMinutes, powerConsumptionWatts, price });
+    if (conditionType && !['time_duration', 'energy_consumption'].includes(conditionType)) {
+      return res.status(400).json({ error: 'Invalid condition type' });
+    }
+
+    await schedulePackage.update({ name, price, conditionType, conditionValue });
     res.json(schedulePackage);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to update schedule package' });
@@ -78,14 +99,23 @@ export const deleteSchedulePackage = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
+    if (user.role !== 'owner') {
+      return res.status(403).json({ error: 'Only owners can delete schedule packages' });
+    }
+
     const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
-      return res.status(403).json({ error: 'Only owners can delete schedule packages' });
+      return res.status(404).json({ error: 'Owner not found' });
     }
 
     const schedulePackage = await models.SchedulePackage.findOne({ where: { id: parseInt(id), ownerId: owner.id } });
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Schedule package not found or not owned' });
+    }
+
+    const schedules = await models.Schedule.findAll({ where: { packageId: schedulePackage.id } });
+    if (schedules.length > 0) {
+      return res.status(400).json({ error: 'Cannot delete package with active schedules' });
     }
 
     await schedulePackage.destroy();
@@ -123,23 +153,31 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Schedule package not found' });
     }
 
-    // Create a schedule based on the package
-    let scheduleData: any = {
-      deviceId,
-      type: 'conditional',
-      command: 'POWER ON',
-      createdBy: user.uuid,
-    };
-
-    if (schedulePackage.durationMinutes) {
-      // Convert duration to cron (e.g., every X minutes)
-      scheduleData.type = 'timer';
-      scheduleData.cron = `*/${schedulePackage.durationMinutes} * * * *`;
+    // Check for existing active schedule for this device and package
+    const existingSchedule = await models.Schedule.findOne({
+      where: { deviceId, packageId, active: true },
+    });
+    if (existingSchedule) {
+      return res.status(400).json({ error: 'Active schedule already exists for this device and package' });
     }
 
-    if (schedulePackage.powerConsumptionWatts) {
-      scheduleData.conditionType = 'power_overload';
-      scheduleData.conditionValue = schedulePackage.powerConsumptionWatts;
+    // Create schedule based on package
+    let scheduleData: any = {
+      deviceId,
+      packageId,
+      type: schedulePackage.conditionType === 'time_duration' ? 'timer' : 'conditional',
+      command: 'POWER ON',
+      createdBy: user.uuid,
+      active: true,
+    };
+
+    if (schedulePackage.conditionType === 'time_duration') {
+      // Convert duration (hours) to cron
+      const durationHours = schedulePackage.conditionValue;
+      scheduleData.cron = `0 0 */${Math.round(durationHours)} * * *`;
+    } else if (schedulePackage.conditionType === 'energy_consumption') {
+      scheduleData.conditionType = 'energy_limit';
+      scheduleData.conditionValue = schedulePackage.conditionValue;
       scheduleData.command = 'POWER OFF';
     }
 

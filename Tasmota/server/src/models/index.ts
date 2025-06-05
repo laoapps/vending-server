@@ -29,7 +29,7 @@ models.DeviceGroup.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' 
 models.DeviceGroup.hasMany(models.Device, { foreignKey: 'groupId', as: 'devices' });
 models.Device.belongsTo(models.DeviceGroup, { foreignKey: 'groupId', as: 'deviceGroup' });
 
-models.Device.hasMany(models.Schedule, { foreignKey: 'deviceId', as: 'schedules' });
+models.Device.hasMany(models.Schedule, { foreignKey: 'deviceId', as: 'en' });
 models.Schedule.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
 
 models.Device.hasMany(models.UserDevice, { foreignKey: 'deviceId', as: 'userDevices' });
@@ -37,6 +37,9 @@ models.UserDevice.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device
 
 models.Owner.hasMany(models.SchedulePackage, { foreignKey: 'ownerId', as: 'schedulePackages' });
 models.SchedulePackage.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+
+models.SchedulePackage.hasMany(models.Schedule, { foreignKey: 'packageId', as: 'schedules' });
+models.Schedule.belongsTo(models.SchedulePackage, { foreignKey: 'packageId', as: 'package' });
 
 export default models;
 export { sequelize };

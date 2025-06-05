@@ -5,9 +5,9 @@ export interface SchedulePackageAttributes {
   id: number;
   name: string;
   ownerId: number;
-  durationMinutes?: number;
-  powerConsumptionWatts?: number;
-  price?: number;
+  price: number;
+  conditionType: 'time_duration' | 'energy_consumption';
+  conditionValue: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,9 +16,9 @@ export class SchedulePackage extends Model<SchedulePackageAttributes> {
   public id!: number;
   public name!: string;
   public ownerId!: number;
-  public durationMinutes?: number;
-  public powerConsumptionWatts?: number;
-  public price?: number;
+  public price!: number;
+  public conditionType!: 'time_duration' | 'energy_consumption';
+  public conditionValue!: number;
   public createdAt!: Date;
   public updatedAt!: Date;
 }
@@ -38,18 +38,22 @@ export function initSchedulePackageModel(sequelize: Sequelize) {
       ownerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-      },
-      durationMinutes: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      powerConsumptionWatts: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
+        references: { model: 'Owners', key: 'id' },
       },
       price: {
         type: DataTypes.FLOAT,
-        allowNull: true,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      conditionType: {
+        type: DataTypes.ENUM('time_duration', 'energy_consumption'),
+        allowNull: false,
+        defaultValue: 'time_duration',
+      },
+      conditionValue: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+        defaultValue: 0,
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
