@@ -52,7 +52,7 @@ export async function findPhoneNumberByUuid(uuid: string): Promise<string> {
                     const d = r.data;
                     console.log('findPhoneNumberByUuid:', d);
                     if (d?.data[0]?.uuid) {
-                        console.log('findRealDB:', d.data[0]?.uuid, 'Phone Number:', d.data[0]?.phoneNumber);
+                        console.log('findPhoneNumberByUuid:', d.data[0]?.uuid, 'Phone Number:', d.data[0]?.phoneNumber);
                         resolve(d.data[0]?.phoneNumber);
                     } else {
                         resolve('');
@@ -85,6 +85,7 @@ export async function findRealDB(token: string): Promise<string> {
                 })
                 .then((r) => {
                     const d = r.data;
+                    console.log('findRealDB:', d);
                     if (d?.data?.data?.uuid) {
                         console.log('findRealDB:', d.data.data.uuid);
                         resolve(d.data.data.uuid);
