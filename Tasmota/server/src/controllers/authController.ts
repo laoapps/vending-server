@@ -17,6 +17,7 @@ export const registerOwner = async (req: Request, res: Response) => {
     if (existingOwner) {
       return res.status(400).json({ error: 'Owner already registered' });
     }
+    console.log('Registering owner with UUID:', uuid);
     const phoneNumber = await findPhoneNumberByUuid(uuid);
     if (!phoneNumber) {
       return res.status(400).json({ error: 'Phone number not found for this user' });
