@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { registerOwner } from '../controllers/authController';
+import { authMiddleware } from '../middleware/authMiddleware';
+import { registerOwner, getUserRole } from '../controllers/authController';
 
 const router = Router();
 
 router.post('/register-owner', registerOwner);
+router.get('/role', authMiddleware, getUserRole);
 
 export default router;

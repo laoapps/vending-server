@@ -6,6 +6,7 @@ import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
 import { HomePage } from '../app/home/home.page';
 import { AdminReportsPage } from './pages/admin-reports/admin-reports.page';
 import { UserSchedulePage } from './pages/user-schedule/user-schedule.page';
+import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices/admin-unregistered-devices.page';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -14,7 +15,10 @@ const routes: Routes = [
   { path: 'owner-dashboard', component: OwnerDashboardPage },
   { path: 'user-dashboard', component: UserDashboardPage },
   { path: 'admin-reports', component: AdminReportsPage },
-  { path: 'user-schedule', component: UserSchedulePage }
+  { path: 'user-schedule', component: UserSchedulePage },
+    { path: 'admin-unregistered-devices', component: AdminUnregisteredDevicesPage }
+
+ 
 ];
 
 @NgModule({

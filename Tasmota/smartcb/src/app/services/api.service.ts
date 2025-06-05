@@ -15,7 +15,9 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/auth/register-owner`, { token });
   }
 
-
+  getUserRole(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/auth/role`, this.getAuthHeaders());
+  }
 
   createDevice(name: string, tasmotaId: string, zone?: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices`, { name, tasmotaId, zone }, this.getAuthHeaders());
@@ -97,13 +99,20 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/schedule-packages/${id}`, this.getAuthHeaders());
   }
 
+  getUnregisteredDevices(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/unregistered-devices`, this.getAdminHeaders());
+  }
+
+  banUnregisteredDevice(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/unregistered-devices/${id}/ban`, {}, this.getAdminHeaders());
+  }
+
+  unbanUnregisteredDevice(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/unregistered-devices/${id}/unban`, {}, this.getAdminHeaders());
+  }
+
   getAllData(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin`, {
-      headers: new HttpHeaders({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-        'X-Admin-Key': 'super-admin'
-      }),
-    });
+    return this.http.get(`${this.apiUrl}/admin`, this.getAdminHeaders());
   }
 
   private getAuthHeaders() {
@@ -111,6 +120,16 @@ export class ApiService {
     return {
       headers: new HttpHeaders({
         Authorization: `Bearer ${token}`,
+      }),
+    };
+  }
+
+  private getAdminHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`,
+        'X-Admin-Key': 'super-admin'
       }),
     };
   }

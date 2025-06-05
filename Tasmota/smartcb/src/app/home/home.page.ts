@@ -18,10 +18,20 @@ export class HomePage implements OnInit {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       this.token = storedToken;
+      this.loadRole();
     }
   }
 
- 
+  loadRole() {
+    this.apiService.getUserRole().subscribe(
+      (response) => {
+        this.role = response.role;
+      },
+      () => {
+        this.role = 'user'; // Default to client user if token is invalid
+      }
+    );
+  }
 
   registerOwner() {
     this.apiService.registerOwner(this.token).subscribe(

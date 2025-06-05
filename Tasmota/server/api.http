@@ -13,6 +13,10 @@ Content-Type: application/json
 
 > {% client.global.set("jwt_token", response.body.token); %}
 
+### Get User Role
+GET https://smartcb-api.laoapps.com:31884/api/auth/role
+Authorization: Bearer {{jwt_token}}
+
 ### List Devices (Admin/Owner/Client)
 GET https://smartcb-api.laoapps.com:31884/api/devices
 Authorization: Bearer {{jwt_token}}

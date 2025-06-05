@@ -11,6 +11,7 @@ import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
 import { HomePage } from './home/home.page';
 import {UserSchedulePage} from './pages/user-schedule/user-schedule.page'
 import {AdminReportsPage} from './pages/admin-reports/admin-reports.page';
+import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices/admin-unregistered-devices.page';
 @NgModule({
   declarations: [
     AppComponent,
@@ -19,6 +20,7 @@ import {AdminReportsPage} from './pages/admin-reports/admin-reports.page';
     UserDashboardPage,
     UserSchedulePage,
     AdminReportsPage,
+    AdminUnregisteredDevicesPage,
     HomePage
   ],
   imports: [

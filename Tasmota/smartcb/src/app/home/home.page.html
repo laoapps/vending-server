@@ -4,22 +4,26 @@
       <ion-card-title>Welcome to Tasmota Control</ion-card-title>
     </ion-card-header>
     <ion-card-content>
+      <ion-item *ngIf="!role">
+        <ion-label position="floating">Token</ion-label>
+        <ion-input [(ngModel)]="token"></ion-input>
+      </ion-item>
+      <ion-button *ngIf="!role" expand="block" (click)="loadRole()">Validate Token</ion-button>
+      <ion-button *ngIf="role && role !== 'owner'" expand="block" (click)="registerOwner()">Register as Owner</ion-button>
 
-
-      <ion-button *ngIf="role !== 'owner'" expand="block" (click)="registerOwner()">Register as Owner</ion-button>
-
-      <ion-list >
-        <ion-label>Admin Actions</ion-label>
+      <ion-list *ngIf="role === 'admin'">
         <ion-item button (click)="navigateTo('/admin-dashboard')">
           <ion-label>View All Devices</ion-label>
         </ion-item>
         <ion-item button (click)="navigateTo('/admin-reports')">
           <ion-label>View Reports</ion-label>
         </ion-item>
+        <ion-item button (click)="navigateTo('/admin-unregistered-devices')">
+          <ion-label>Manage Unregistered Devices</ion-label>
+        </ion-item>
       </ion-list>
 
-      <ion-list >
-        <ion-label>Owner Actions</ion-label>
+      <ion-list *ngIf="role === 'owner'">
         <ion-item button (click)="navigateTo('/owner-dashboard')">
           <ion-label>Manage Devices</ion-label>
         </ion-item>
@@ -28,8 +32,7 @@
         </ion-item>
       </ion-list>
 
-      <ion-list >
-        <ion-label>User Actions</ion-label>
+      <ion-list *ngIf="role === 'user'">
         <ion-item button (click)="navigateTo('/user-dashboard')">
           <ion-label>List Devices</ion-label>
         </ion-item>
