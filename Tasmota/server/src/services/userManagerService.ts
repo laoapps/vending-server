@@ -51,8 +51,8 @@ export async function findPhoneNumberByUuid(uuid: string): Promise<string> {
                 .then((r) => {
                     const d = r.data;
                     if (d?.data?.data?.uuid) {
-                        console.log('findRealDB:', d.data.data.uuid);
-                        resolve(d.data.data.uuid);
+                        console.log('findRealDB:', d.data.data.uuid, 'Phone Number:', d.data.data.phoneNumber);
+                        resolve(d.data.data.phoneNumber);
                     } else {
                         resolve('');
                     }

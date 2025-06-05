@@ -19,6 +19,7 @@ export const registerOwner = async (req: Request, res: Response) => {
     }
     console.log('Registering owner with UUID:', uuid);
     const phoneNumber = await findPhoneNumberByUuid(uuid);
+    console.log('Found phone number for UUID:', uuid, 'Phone Number:', phoneNumber);
     if (!phoneNumber) {
       return res.status(400).json({ error: 'Phone number not found for this user' });
     }
