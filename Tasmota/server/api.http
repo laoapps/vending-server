@@ -1,24 +1,24 @@
 # Tasmota API Test File
-# Base URL: https://smartcb-api.laoapps.com
-# Replace <token>, <jwt_token>, <device_id>, <group_id>, <schedule_id>, <package_id>, <user_token> with actual values
+# Base URL: https://smartcb-api.laoapps.com:31884
+# Replace <token>, <jwt_token>, <device_id>, <group_id>, <schedule_id>, <package_id>, <user_token>, <unregistered_device_id> with actual values
 @jwt_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0Nzk0ZGYwZGZkZTYxNWQ3ZjE1YjNlMTFjZTgzYzQzY2M1YjQ1MGI2NDY5MDQzYzUzNmVhYTUwMTk3MzExMWYzNmFmN2FhM2VkN2M5OTlkZTg2YTY3MWVmYjRiNTFhZTM2NzgwZjhiYmNlNjA3ZWFmOGYwZDYxMDg2YmM4NDg4NGMiLCJwaG9uZU51bWJlciI6Iis4NTYyMDU1NTE2MzIxIiwidXVpZCI6Ijg2MmY5NmEwLWFjNDUtMTFlZC1hZjA0LTU1ZmE3ZTc0ZTE5NCIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc0Njc4MDM1MCwiZXhwIjozNjAwMDAwMTc0Njc4MDM1MH0.JrBLY6pMgzL9iAIoZ1LFzCRWtxvHYUzvsSd2LHEh2xE
 
 ### Register Owner
-POST https://smartcb-api.laoapps.com/api/auth/register-owner
+POST https://smartcb-api.laoapps.com:31884/api/auth/register-owner
 Content-Type: application/json
 
 {
-  "token": "{{jwt_token}}"
+  "token": "<token>"
 }
 
 > {% client.global.set("jwt_token", response.body.token); %}
 
 ### List Devices (Admin/Owner/Client)
-GET https://smartcb-api.laoapps.com/api/devices
+GET https://smartcb-api.laoapps.com:31884/api/devices
 Authorization: Bearer {{jwt_token}}
 
 ### Create Device (Owner)
-POST https://smartcb-api.laoapps.com/api/devices
+POST https://smartcb-api.laoapps.com:31884/api/devices
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -29,7 +29,7 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Update Device (Owner)
-PUT https://smartcb-api.laoapps.com/api/devices/<device_id>
+PUT https://smartcb-api.laoapps.com:31884/api/devices/<device_id>
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -40,11 +40,11 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Delete Device (Owner)
-DELETE https://smartcb-api.laoapps.com/api/devices/<device_id>
+DELETE https://smartcb-api.laoapps.com:31884/api/devices/<device_id>
 Authorization: Bearer {{jwt_token}}
 
 ### Control Device (Admin/Owner/Client)
-POST https://smartcb-api.laoapps.com/api/devices/control
+POST https://smartcb-api.laoapps.com:31884/api/devices/control
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -54,7 +54,7 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Assign Device to User (Owner)
-POST https://smartcb-api.laoapps.com/api/devices/assign
+POST https://smartcb-api.laoapps.com:31884/api/devices/assign
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -64,11 +64,11 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### List Groups (Admin/Owner)
-GET https://smartcb-api.laoapps.com/api/groups
+GET https://smartcb-api.laoapps.com:31884/api/groups
 Authorization: Bearer {{jwt_token}}
 
 ### Create Group (Owner)
-POST https://smartcb-api.laoapps.com/api/groups
+POST https://smartcb-api.laoapps.com:31884/api/groups
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -77,7 +77,7 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Update Group (Owner)
-PUT https://smartcb-api.laoapps.com/api/groups/<group_id>
+PUT https://smartcb-api.laoapps.com:31884/api/groups/<group_id>
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -86,11 +86,11 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Delete Group (Owner)
-DELETE https://smartcb-api.laoapps.com/api/groups/<group_id>
+DELETE https://smartcb-api.laoapps.com:31884/api/groups/<group_id>
 Authorization: Bearer {{jwt_token}}
 
 ### Assign Device to Group (Owner)
-POST https://smartcb-api.laoapps.com/api/groups/assign
+POST https://smartcb-api.laoapps.com:31884/api/groups/assign
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -100,11 +100,11 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### List Schedules (Admin/Owner/Client)
-GET https://smartcb-api.laoapps.com/api/schedules
+GET https://smartcb-api.laoapps.com:31884/api/schedules
 Authorization: Bearer {{jwt_token}}
 
 ### Create Schedule (Owner)
-POST https://smartcb-api.laoapps.com/api/schedules
+POST https://smartcb-api.laoapps.com:31884/api/schedules
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -116,7 +116,7 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Update Schedule (Owner)
-PUT https://smartcb-api.laoapps.com/api/schedules/<schedule_id>
+PUT https://smartcb-api.laoapps.com:31884/api/schedules/<schedule_id>
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -130,11 +130,11 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Delete Schedule (Owner)
-DELETE https://smartcb-api.laoapps.com/api/schedules/<schedule_id>
+DELETE https://smartcb-api.laoapps.com:31884/api/schedules/<schedule_id>
 Authorization: Bearer {{jwt_token}}
 
 ### Apply Schedule Package (Owner/Client)
-POST https://smartcb-api.laoapps.com/api/schedule-packages/apply-package
+POST https://smartcb-api.laoapps.com:31884/api/schedule-packages/apply-package
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -144,11 +144,11 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### List Schedule Packages (Admin/Owner/Client)
-GET https://smartcb-api.laoapps.com/api/schedule-packages
+GET https://smartcb-api.laoapps.com:31884/api/schedule-packages
 Authorization: Bearer {{jwt_token}}
 
 ### Create Schedule Package (Owner)
-POST https://smartcb-api.laoapps.com/api/schedule-packages
+POST https://smartcb-api.laoapps.com:31884/api/schedule-packages
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -160,7 +160,7 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Update Schedule Package (Owner)
-PUT https://smartcb-api.laoapps.com/api/schedule-packages/<package_id>
+PUT https://smartcb-api.laoapps.com:31884/api/schedule-packages/<package_id>
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -172,15 +172,30 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ### Delete Schedule Package (Owner)
-DELETE https://smartcb-api.laoapps.com/api/schedule-packages/<package_id>
+DELETE https://smartcb-api.laoapps.com:31884/api/schedule-packages/<package_id>
 Authorization: Bearer {{jwt_token}}
 
+### List Unregistered Devices (Admin)
+GET https://smartcb-api.laoapps.com:31884/api/unregistered-devices
+Authorization: Bearer {{jwt_token}}
+X-Admin-Key: super-admin
+
+### Ban Unregistered Device (Admin)
+PUT https://smartcb-api.laoapps.com:31884/api/unregistered-devices/<unregistered_device_id>/ban
+Authorization: Bearer {{jwt_token}}
+X-Admin-Key: super-admin
+
+### Unban Unregistered Device (Admin)
+PUT https://smartcb-api.laoapps.com:31884/api/unregistered-devices/<unregistered_device_id>/unban
+Authorization: Bearer {{jwt_token}}
+X-Admin-Key: super-admin
+
 ### View All Data (Admin)
-GET https://smartcb-api.laoapps.com/api/admin
+GET https://smartcb-api.laoapps.com:31884/api/admin
 Authorization: Bearer {{jwt_token}}
 X-Admin-Key: super-admin
 
 ### List Owners (Admin)
-GET https://smartcb-api.laoapps.com/api/owners
+GET https://smartcb-api.laoapps.com:31884/api/owners
 Authorization: Bearer {{jwt_token}}
 X-Admin-Key: super-admin

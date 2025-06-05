@@ -43,13 +43,39 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
     if (parts.length === 3 && parts[2] === 'LWT') {
       if (messageStr === 'Online' || messageStr === 'Offline') {
         const device = await models.Device.findOne({ where: { tasmotaId } });
-        if (!device) {
-          console.error(`Device not found for tasmotaId: ${tasmotaId}`);
-          return;
+        if (device) {
+          await device.update({ status: { ...device.status, online: messageStr === 'Online' } });
+        } else {
+          // Handle unregistered device
+          let unregisteredDevice = await models.UnregisteredDevice.findOne({ where: { tasmotaId } });
+          if (!unregisteredDevice) {
+            unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] }as any);
+          }
+
+          const lastConnections = [...unregisteredDevice.lastConnections, new Date()].slice(-5);
+          let connectionAttempts = unregisteredDevice.connectionAttempts + 1;
+          let isBanned = unregisteredDevice.isBanned || connectionAttempts >= 5;
+
+          await unregisteredDevice.update({
+            connectionAttempts,
+            lastConnections,
+            isBanned,
+          });
+
+          if (isBanned) {
+            console.log(`Device ${tasmotaId} banned after ${connectionAttempts} attempts`);
+            return;
+          }
         }
-        await device.update({ status: { ...device.status, online: messageStr === 'Online' } });
         return;
       }
+    }
+
+    // Check if device is banned
+    const unregisteredDevice = await models.UnregisteredDevice.findOne({ where: { tasmotaId } });
+    if (unregisteredDevice?.isBanned) {
+      console.log(`Ignoring message from banned device ${tasmotaId}`);
+      return;
     }
 
     // Handle telemetry messages (e.g., tele/tongou_3B0444/SENSOR)
