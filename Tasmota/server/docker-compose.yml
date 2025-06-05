@@ -15,7 +15,7 @@ services:
       - MQTT_PASSWORD=f15c58a3-0d3e-495d-91ca-54b18c13037f
       - USERMANAGER_URL=https://nocnoc-api.laoapps.com
       - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
-      - SERVICE_NAME=smartcb
+      - SERVICE_NAME=SMARTCB
     depends_on:
       - db
       - mqtt

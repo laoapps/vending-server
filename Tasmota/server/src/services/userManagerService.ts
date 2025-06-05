@@ -38,7 +38,7 @@ export async function findPhoneNumberByUuid(uuid: string): Promise<string> {
                 object: 'authorize',
                 data: {
                     uuid,
-                    service: process.env.BACKEND_NAME || '',
+                    service: process.env.SERVICE_NAME || '',
                 },
             };
 
@@ -72,7 +72,7 @@ export async function findRealDB(token: string): Promise<string> {
                 object: 'authorize',
                 data: {
                     token,
-                    service: process.env.BACKEND_NAME || '',
+                    service: process.env.SERVICE_NAME || '',
                 },
             };
 
