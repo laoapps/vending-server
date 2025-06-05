@@ -38,14 +38,14 @@ export async function findPhoneNumberByUuid(uuid: string): Promise<string> {
                 object: 'authorize',
                 data: {
                     uuid,
-                    service: process.env.SERVICE_NAME || '',
+                    service:env.SERVICE_NAME || '',
                 },
             };
 
             axios
                 .post(process.env.USERMANAGER_URL || '', data, {
                     headers: {
-                        backendkey: process.env.BACKEND_KEY || '',
+                        backendkey:env.BACKEND_KEY || '',
                     },
                 })
                 .then((r) => {
@@ -72,14 +72,14 @@ export async function findRealDB(token: string): Promise<string> {
                 object: 'authorize',
                 data: {
                     token,
-                    service: process.env.SERVICE_NAME || '',
+                    service:env.SERVICE_NAME || '',
                 },
             };
 
             axios
                 .post(process.env.USERMANAGER_URL || '', data, {
                     headers: {
-                        backendkey: process.env.BACKEND_KEY || '',
+                        backendkey:env.BACKEND_KEY || '',
                     },
                 })
                 .then((r) => {
