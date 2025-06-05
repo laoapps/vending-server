@@ -1,17 +1,21 @@
 FROM node:20-alpine
+
 # Set the working directory in the container
 WORKDIR /app
 
 # Copy package.json and package-lock.json (if it exists)
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies, including TypeScript as a dev dependency
 RUN npm install
 RUN npm install typescript --save-dev
-RUN tsc
 
-# Copy the rest of the application code
-COPY . .
+# Copy TypeScript configuration and source files
+COPY tsconfig.json ./
+COPY src ./src
+
+# Compile TypeScript to JavaScript
+RUN npx tsc
 
 # Expose the port the app runs on
 EXPOSE 3000
