@@ -104,7 +104,15 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
         await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
       } else if (schedule.conditionType === 'energy_limit' && schedule.package && schedule.startEnergy !== undefined) {
         const packageEnergyLimit = schedule.package.conditionValue;
-        const currentEnergyUsage = energy - schedule.startEnergy;
+        let currentEnergyUsage = energy - schedule.startEnergy;
+        
+        // Handle potential energy reset (e.g., Tasmota device reset)
+        if (currentEnergyUsage < 0) {
+          console.warn(`Energy reset detected for schedule ${schedule.id}, deactivating`);
+          await schedule.update({ active: false });
+          continue;
+        }
+
         if (currentEnergyUsage >= packageEnergyLimit) {
           await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
           await schedule.update({ active: false });

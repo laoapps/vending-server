@@ -33,6 +33,8 @@
             <h2>Device: {{ schedule.device?.name }}</h2>
             <p>Package: {{ schedule.package?.name }}</p>
             <p>Condition: {{ schedule.package?.conditionType === 'time_duration' ? schedule.package?.conditionValue + ' hours' : schedule.package?.conditionValue + ' kWh' }}</p>
+            <p *ngIf="schedule.package?.conditionType === 'energy_consumption'">Energy Used: {{ schedule.energyUsed }} kWh</p>
+            <p *ngIf="schedule.package?.conditionType === 'energy_consumption'">Energy Remaining: {{ schedule.energyRemaining }} kWh</p>
             <p>Status: {{ schedule.active ? 'Active' : 'Inactive' }}</p>
           </ion-label>
         </ion-item>

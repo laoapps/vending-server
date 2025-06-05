@@ -5,7 +5,7 @@ import { OwnerDashboardPage } from './pages/owner-dashboard/owner-dashboard.page
 import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
 import { HomePage } from '../app/home/home.page';
 import { AdminReportsPage } from './pages/admin-reports/admin-reports.page';
-import { UserSchedulePage } from './pages/user-schedule/user-schedule.page';
+import { UserSchedulesPage } from './pages/user-schedules/user-schedule.page';
 import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices/admin-unregistered-devices.page';
 
 const routes: Routes = [
@@ -15,7 +15,7 @@ const routes: Routes = [
   { path: 'owner-dashboard', component: OwnerDashboardPage },
   { path: 'user-dashboard', component: UserDashboardPage },
   { path: 'admin-reports', component: AdminReportsPage },
-  { path: 'user-schedule', component: UserSchedulePage },
+  { path: 'user-schedule', component: UserSchedulesPage },
     { path: 'admin-unregistered-devices', component: AdminUnregisteredDevicesPage }
 
  

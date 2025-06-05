@@ -19,13 +19,14 @@ export class OwnerDashboardPage implements OnInit {
   newSchedule = { deviceId: null, type: 'timer', cron: '', command: '', conditionType: '', conditionValue: null };
   newSchedulePackage = { name: '', price: 0, conditionType: 'time_duration', conditionValue: 0 };
   assignDevice = { groupId: null, deviceId: null };
-  assignUser = { deviceId: null, token: '' };
+  assignUser = { deviceId: null, token: '', userPhoneNumber: '' };
+
 
   constructor(
     private apiService: ApiService,
     private mqttService: MqttClientService,
     private alertController: AlertController
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadData();
@@ -39,9 +40,20 @@ export class OwnerDashboardPage implements OnInit {
           device.status = JSON.parse(message.payload.toString());
         });
         this.mqttService.subscribeToTelemetry(device.tasmotaId).subscribe((message) => {
-          const data = JSON.parse(message.payload.toString());
-          device.power = data?.ENERGY?.Power || 0;
-          device.energy = data?.ENERGY?.Total || 0;
+          console.log(`Received telemetry for device ${device.tasmotaId}:`, message);
+          try {
+            const data = JSON.parse(message.payload.toString());
+            console.log(`Parsed telemetry data for device ${device.tasmotaId}:`, data);
+            
+            device.power = data?.ENERGY?.Power || 0;
+            device.energy = data?.ENERGY?.Total || 0;
+            device.Temperature = (data?.ANALOG?.Temperature1 || 0)+' '+data?.TempUnit;
+          } catch (error) {
+            console.log(`Failed to parse telemetry data for device ${device.tasmotaId}:`, error);
+            
+            device.status=message.payload.toString();
+          }
+
         });
       });
     });
@@ -107,5 +119,99 @@ export class OwnerDashboardPage implements OnInit {
     await alert.present();
   }
 
-  // Other methods (addDevice, updateDevice, etc.) remain unchanged
+  addDevice() {
+    this.apiService.createDevice(this.newDevice.name, this.newDevice.tasmotaId, this.newDevice.zone).subscribe(() => {
+      this.loadData();
+      this.newDevice = { name: '', tasmotaId: '', zone: '' };
+    });
+  }
+
+  updateDevice(device: any) {
+    this.apiService.updateDevice(device.id, device.name, device.tasmotaId, device.zone, device.groupId).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  deleteDevice(id: number) {
+    this.apiService.deleteDevice(id).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  togglePower(deviceId: number) {
+    this.apiService.controlDevice(deviceId, 'POWER TOGGLE').subscribe();
+  }
+
+  addGroup() {
+    this.apiService.createGroup(this.newGroup.name).subscribe(() => {
+      this.loadData();
+      this.newGroup = { name: '' };
+    });
+  }
+
+  updateGroup(group: any) {
+    this.apiService.updateGroup(group.id, group.name).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  deleteGroup(id: number) {
+    this.apiService.deleteGroup(id).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  assignDeviceToGroup() {
+    if (this.assignDevice.groupId && this.assignDevice.deviceId) {
+      this.apiService.assignDeviceToGroup(this.assignDevice.groupId, this.assignDevice.deviceId).subscribe(() => {
+        this.loadData();
+        this.assignDevice = { groupId: null, deviceId: null };
+      });
+    }
+  }
+
+  addSchedule() {
+    if (this.newSchedule.deviceId) {
+      this.apiService.createSchedule(
+        this.newSchedule.deviceId,
+        this.newSchedule.type,
+        this.newSchedule.cron,
+        this.newSchedule.command,
+        this.newSchedule.conditionType,
+        this.newSchedule.conditionValue || undefined
+      ).subscribe(() => {
+        this.loadData();
+        this.newSchedule = { deviceId: null, type: 'timer', cron: '', command: '', conditionType: '', conditionValue: null };
+      });
+    }
+  }
+
+  updateSchedule(schedule: any) {
+    this.apiService.updateSchedule(
+      schedule.id,
+      schedule.type,
+      schedule.cron,
+      schedule.command,
+      schedule.conditionType,
+      schedule.conditionValue,
+      schedule.active
+    ).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  deleteSchedule(id: number) {
+    this.apiService.deleteSchedule(id).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  assignDeviceToUser() {
+    if (this.assignUser.deviceId && this.assignUser.userPhoneNumber) {
+      this.apiService.assignDevice(this.assignUser.deviceId, this.assignUser.userPhoneNumber).subscribe(() => {
+        this.loadData();
+        this.assignUser = { deviceId: null, token: '', userPhoneNumber: '' };
+      });
+    }
+  }
 }

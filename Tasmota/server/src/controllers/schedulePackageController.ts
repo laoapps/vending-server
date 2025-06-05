@@ -159,6 +159,10 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Active schedule already exists for this device and package' });
     }
 
+    if (!device.energy && schedulePackage.conditionType === 'energy_consumption') {
+      return res.status(400).json({ error: 'No energy data available for this device' });
+    }
+
     let scheduleData: any = {
       deviceId,
       packageId,
@@ -175,7 +179,7 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
       scheduleData.conditionType = 'energy_limit';
       scheduleData.conditionValue = schedulePackage.conditionValue;
       scheduleData.command = 'POWER OFF';
-      scheduleData.startEnergy = device.energy ?? 0; // Capture initial energy
+      scheduleData.startEnergy = device.energy ?? 0;
     }
 
     const schedule = await models.Schedule.create(scheduleData);

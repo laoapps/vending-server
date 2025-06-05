@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { UserSchedulePageRoutingModule } from './user-schedule-routing.module';
+import { UserSchedulePageRoutingModule } from './user-schedules-routing.module';
 
-import { UserSchedulePage } from './user-schedule.page';
+import { UserSchedulesPage } from './user-schedule.page';
 
 @NgModule({
   imports: [

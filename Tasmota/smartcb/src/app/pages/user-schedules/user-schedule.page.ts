@@ -3,12 +3,12 @@ import { ApiService } from '../../services/api.service';
 import { AlertController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-user-schedule',
-  templateUrl: './user-schedule.page.html',
-  styleUrls: ['./user-schedule.page.scss'],
+  selector: 'app-user-schedules',
+  templateUrl: './user-schedules.page.html',
+  styleUrls: ['./user-schedules.page.scss'],
   standalone: false
 })
-export class UserSchedulePage implements OnInit {
+export class UserSchedulesPage implements OnInit {
   schedulePackages: any[] = [];
   devices: any[] = [];
   schedules: any[] = [];
@@ -46,7 +46,13 @@ export class UserSchedulePage implements OnInit {
   loadSchedules() {
     this.apiService.getSchedules().subscribe(
       (schedules) => {
-        this.schedules = schedules;
+        this.schedules = schedules.map((schedule: any) => {
+          if (schedule.package?.conditionType === 'energy_consumption' && schedule.startEnergy !== undefined && schedule.device?.energy !== undefined) {
+            schedule.energyUsed = (schedule.device.energy - schedule.startEnergy).toFixed(2);
+            schedule.energyRemaining = (schedule.package.conditionValue - schedule.energyUsed).toFixed(2);
+          }
+          return schedule;
+        });
       },
       (error) => {
         console.error('Failed to load schedules:', error);

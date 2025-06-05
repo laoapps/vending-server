@@ -9,7 +9,7 @@ import { AdminDashboardPage } from './pages/admin-dashboard/admin-dashboard.page
 import { OwnerDashboardPage } from './pages/owner-dashboard/owner-dashboard.page';
 import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
 import { HomePage } from './home/home.page';
-import {UserSchedulePage} from './pages/user-schedule/user-schedule.page'
+import {UserSchedulesPage} from './pages/user-schedules/user-schedule.page'
 import {AdminReportsPage} from './pages/admin-reports/admin-reports.page';
 import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices/admin-unregistered-devices.page';
 @NgModule({
@@ -18,7 +18,7 @@ import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices
     AdminDashboardPage,
     OwnerDashboardPage,
     UserDashboardPage,
-    UserSchedulePage,
+    UserSchedulesPage,
     AdminReportsPage,
     AdminUnregisteredDevicesPage,
     HomePage
