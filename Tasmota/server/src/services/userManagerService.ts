@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { env } from '../config/env';
-
+console.log('ENV:', env);
 export function findUuidByPhoneNumberOnUserManager(phoneNumber: string): Promise<any> {
   return new Promise<any>(async (resolve, reject) => {
     try {
