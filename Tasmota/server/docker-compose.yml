@@ -1,13 +1,13 @@
 version: '3.8'
 services:
-  api:
+  tasmota-api:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - '31884:3000'
     environment:
-      - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@db:5432/tasmota?schema=public
+      - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota:5432/tasmota?schema=public
       - JWT_SECRET=your_jwt_secret
       - MQTT_BROKER=mqtt://mqtt:1883
       - MQTT_WS_URL=wss://mqtt.laoapps.com
@@ -17,14 +17,14 @@ services:
       - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
       - SERVICE_NAME=SMARTCB
     depends_on:
-      - db
+      - tasmota-db
       - mqtt
     volumes:
       - .:/app
     networks:
       - tasmota-net
 
-  db:
+  tasmota-db:
     image: postgres:15
     environment:
       - POSTGRES_USER=user
