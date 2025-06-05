@@ -16,6 +16,8 @@ services:
       - USERMANAGER_URL=https://nocnoc-api.laoapps.com
       - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
       - SERVICE_NAME=SMARTCB
+      - REDIS_URL=redis://tasmota-redis:6379
+
     depends_on:
       - tasmota-db
       - mqtt
@@ -46,10 +48,18 @@ services:
       - mqtt_data:/mosquitto/data
     networks:
       - tasmota-net
-
+  tasmota-redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - tasmota-net
 volumes:
   pgdata:
   mqtt_data:
+  redis_data:
 
 networks:
   tasmota-net:
