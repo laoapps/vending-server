@@ -14,7 +14,7 @@ module.exports = {
       phoneNumber: {
         type: Sequelize.STRING,
         unique: true,
-        allowNull: false,
+        allowNull: true,
       },
       createdAt: Sequelize.DATE,
       updatedAt: Sequelize.DATE,
@@ -162,7 +162,7 @@ module.exports = {
       phoneNumber: {
         type: Sequelize.STRING,
         unique: true,
-        allowNull: false,
+        allowNull: true,
       },
       createdAt: Sequelize.DATE,
       updatedAt: Sequelize.DATE,
@@ -204,8 +204,8 @@ module.exports = {
     await queryInterface.dropTable('Admins');
     await queryInterface.dropTable('UserDevices');
     await queryInterface.dropTable('Schedules');
-    await queryInterface.dropTable('Devices');
     await queryInterface.dropTable('DeviceGroups');
+    await queryInterface.dropTable('Devices');
     await queryInterface.dropTable('Owners');
     await queryInterface.dropTable('SchedulePackages');
   },
