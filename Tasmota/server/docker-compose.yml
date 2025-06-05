@@ -19,8 +19,12 @@ services:
       - REDIS_URL=redis://tasmota-redis:6379
 
     depends_on:
-      - tasmota-db
-      - mqtt
+      tasmota-db:
+        condition: service_healthy
+      tasmota-redis:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
     volumes:
       - .:/app
     networks:
@@ -34,6 +38,11 @@ services:
       - POSTGRES_DB=tasmota
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d tasmota"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - tasmota-net
 
@@ -54,6 +63,11 @@ services:
       - '6379:6379'
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
       - tasmota-net
 volumes:
