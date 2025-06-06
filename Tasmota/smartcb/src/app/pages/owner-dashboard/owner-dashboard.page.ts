@@ -37,7 +37,13 @@ export class OwnerDashboardPage implements OnInit {
       this.devices = devices;
       this.devices.forEach((device) => {
         this.mqttService.subscribeToDevice(device.tasmotaId).subscribe((message) => {
-          device.status = JSON.parse(message.payload.toString());
+         try {
+           device.status =JSON.parse( message.payload.toString());
+         } catch (error) {
+          console.log(`Failed to parse message for device ${device.tasmotaId}:`, error);
+           device.status = message.payload.toString();
+          
+         }
         });
         this.mqttService.subscribeToTelemetry(device.tasmotaId).subscribe((message) => {
           console.log(`Received telemetry for device ${device.tasmotaId}:`, message);
@@ -139,7 +145,16 @@ export class OwnerDashboardPage implements OnInit {
   }
 
   togglePower(deviceId: number) {
-    this.apiService.controlDevice(deviceId, 'POWER TOGGLE').subscribe();
+    try {
+      this.apiService.controlDevice(deviceId, 'POWER TOGGLE').subscribe((v)=>{
+        console.log(`Toggled power for device ${deviceId}`,v);
+        // this.loadData();
+      });
+    } catch (error) {
+      console.log(`Failed to toggle power for device ${deviceId}:`, error);
+      
+    }
+    
   }
 
   addGroup() {
