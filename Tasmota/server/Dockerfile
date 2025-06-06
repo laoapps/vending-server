@@ -1,24 +1,22 @@
-FROM node:20-alpine
+FROM oven/bun:alpine
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if it exists)
 COPY package*.json ./
+COPY bun.lockb ./
 
-# Install dependencies, including TypeScript as a dev dependency
-RUN npm install
-RUN npm install typescript --save-dev
+RUN bun install
 
-# Copy TypeScript configuration and source files
 COPY tsconfig.json ./
 COPY src ./src
 
-# Compile TypeScript to JavaScript
-RUN tsc
+# Compile TypeScript to JavaScript (uncomment when switching to JS)
+# RUN bun build ./src/index.ts --outdir dist --target bun
 
-# Expose the port the app runs on
 EXPOSE 3000
 
-# Command to run the application
-CMD ["npm", "start"]
+# Run TypeScript directly
+CMD ["bun", "src/index.ts"]
+
+# Run compiled JavaScript (uncomment when switching to JS)
+# CMD ["bun", "dist/index.js"]
