@@ -3,7 +3,8 @@ FROM oven/bun:alpine
 WORKDIR /app
 
 COPY package*.json ./
-COPY bun.lockb ./
+# Copy bun.lockb if it exists, avoid error if missing
+COPY bun.lockb* ./
 
 RUN bun install
 
