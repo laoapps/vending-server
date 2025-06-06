@@ -2,13 +2,13 @@ import mqtt from 'mqtt';
 import { env } from '../config/env';
 
 const client = mqtt.connect(env.MQTT_BROKER, {
-  username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD,
-  clientId: `tasmota-${env.SERVICE_NAME}-${Math.random().toString(16).slice(2)}`,
+  username: env.MQTT_USERNAME,
+  password: env.MQTT_PASSWORD,
+  clientId: `smartcb_api_${Math.random().toString(16).slice(3)}`,
 });
 
 client.on('connect', () => {
-  console.log('Connected to MQTT broker');
+  console.log(`Connected to MQTT broker with username: ${env.MQTT_USERNAME}`);
   client.subscribe('tele/+/LWT', (err) => {
     if (err) console.error('Failed to subscribe to LWT:', err);
   });
@@ -19,6 +19,10 @@ client.on('connect', () => {
 
 client.on('error', (err) => {
   console.error('MQTT error:', err);
+});
+
+client.on('close', () => {
+  console.warn('MQTT connection closed');
 });
 
 export const publishMqttMessage = async (topic: string, payload: string) => {
@@ -47,6 +51,7 @@ export const subscribeToTopic = (topic: string, callback: (topic: string, payloa
 
   client.on('message', (receivedTopic, payload) => {
     if (receivedTopic.startsWith(topic)) {
+      console.log(`Received message on ${receivedTopic}: ${payload.toString()}`);
       callback(receivedTopic, payload);
     }
   });
