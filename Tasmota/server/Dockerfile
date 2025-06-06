@@ -1,30 +1,17 @@
-FROM oven/bun:latest AS base
-FROM base AS install
+FROM oven/bun:alpine
 
-ENV NODE_ENV $NODE_ENV
 WORKDIR /app
-COPY package.json /app
 
-COPY package-lock.json /app/package-lock.json
-# RUN npm install
-# RUN npm install typescript -g
-COPY . /app
+COPY package*.json ./
+# COPY bun.lockb* ./
 
+# RUN bun install
 
+COPY tsconfig.json ./
+COPY src ./src
 
-# RUN mkdir -p /temp/prod
-# COPY package.json bun.lockb /temp/prod/
-# RUN cd /temp/prod && bun install --frozen-lockfile --production
-
-
-
-
-# FROM base AS release
-# COPY --from=install /temp/prod/node_modules node_modules
-# COPY --from=prerelease /app/index.ts .
-# COPY --from=prerelease /app/package.json .
-USER bun
-
+# Compile TypeScript to JavaScript (uncomment when switching to JS)
+# RUN bun build ./src/index.ts --outdir dist --target bun
 
 EXPOSE 3000
 
