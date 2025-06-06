@@ -11,6 +11,7 @@ export const createDevice = async (req: Request, res: Response) => {
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }
+    console.log('Creating device for user:', user.uuid, 'Name:', name, 'Tasmota ID:', tasmotaId, 'Zone:', zone);
     const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone);
     // Remove from UnregisteredDevices if exists
     await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
