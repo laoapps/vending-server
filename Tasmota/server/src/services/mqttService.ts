@@ -19,7 +19,13 @@ client.on('message', async (topic, message) => {
   try {
     if (topic.startsWith('stat/')) {
       const tasmotaId = topic.split('/')[1];
-      const status = JSON.parse(message.toString());
+      let status:any;
+      try {
+        status =JSON.parse(message.toString());
+      } catch (error) {
+        status = message.toString();
+      }
+
 
       await models.Device.update(
         { status },
