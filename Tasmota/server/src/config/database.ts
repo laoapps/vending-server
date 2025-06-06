@@ -5,7 +5,7 @@ const sequelize = new Sequelize(env.DATABASE_URL, {
   dialect: 'postgres',
   logging: false,
   query:{
-    raw:false
+    raw:true
   }
 });
 
