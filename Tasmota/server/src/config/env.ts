@@ -10,4 +10,5 @@ export const env = cleanEnv(process.env, {
   USERMANAGER_URL: str(),
   BACKEND_KEY: str(),
   SERVICE_NAME: str(),
+  REDIS_URL: str({ default: 'redis://localhost:6379' }),
 });
