@@ -6,7 +6,7 @@ import { findUuidByPhoneNumberOnUserManager } from './userManagerService';
 export class DeviceService {
   static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string): Promise<DeviceAttributes> {
     const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
-    console.log('Creating device for owner:', ownerUuid, 'Owner found:', !!owner);
+    console.log('Creating device for owner:', ownerUuid, 'Owner found:', owner);
     if (!owner) throw new Error('Owner not found');
 
     const device = await models.Device.create({

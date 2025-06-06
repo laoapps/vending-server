@@ -13,6 +13,7 @@ export const createDevice = async (req: Request, res: Response) => {
     }
     console.log('Creating device for user:', user.uuid, 'Name:', name, 'Tasmota ID:', tasmotaId, 'Zone:', zone);
     const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone);
+    console.log('Device created:', device);
     // Remove from UnregisteredDevices if exists
     await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
