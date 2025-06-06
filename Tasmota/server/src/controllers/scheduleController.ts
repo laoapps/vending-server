@@ -11,12 +11,24 @@ export const createSchedule = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can create schedules' });
     }
 
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
+    .then(owner => {
+      if (!owner) {
+        return res.status(404).json({ error: 'Owner not found' });
+      }
+      return owner.get({ plain: true });
+    });
     if (!owner) {
       return res.status(404).json({ error: 'Owner not found' });
     }
 
-    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } });
+    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } })
+    .then(device => {
+      if (!device) {
+        return null;
+      }
+      return device.get({ plain: true });
+    });
     if (!device) {
       return res.status(404).json({ error: 'Device not found or not owned' });
     }
@@ -53,6 +65,11 @@ export const getSchedules = async (req: Request, res: Response) => {
           { model: models.Device, as: 'device' },
           { model: models.SchedulePackage, as: 'package' },
         ],
+      }).then(schedules => {
+        if (schedules.length === 0) {
+          return [];
+        }
+        return schedules.map(schedule => schedule.get({ plain: true }));
       });
     } else if (user.role === 'owner') {
       const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
@@ -68,6 +85,12 @@ export const getSchedules = async (req: Request, res: Response) => {
           },
           { model: models.SchedulePackage, as: 'package' },
         ],
+      })
+      .then(schedules => {
+        if (schedules.length === 0) {
+          return [];
+        }
+        return schedules.map(schedule => schedule.get({ plain: true }));
       });
     } else {
       schedules = await models.Schedule.findAll({
@@ -79,6 +102,11 @@ export const getSchedules = async (req: Request, res: Response) => {
           },
           { model: models.SchedulePackage, as: 'package' },
         ],
+      }).then(schedules => {
+        if (schedules.length === 0) {
+          return [];
+        }
+        return schedules.map(schedule => schedule.get({ plain: true }));
       });
     }
     res.json(schedules);
@@ -97,7 +125,13 @@ export const updateSchedule = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can update schedules' });
     }
 
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
+    .then(owner => {
+      if (!owner) {
+        return res.status(404).json({ error: 'Owner not found' });
+      }
+      return owner.get({ plain: true });
+    }); 
     if (!owner) {
       return res.status(404).json({ error: 'Owner not found' });
     }
@@ -105,7 +139,7 @@ export const updateSchedule = async (req: Request, res: Response) => {
     const schedule = await models.Schedule.findOne({
       where: { id: parseInt(id) },
       include: [{ model: models.Device, as: 'device' }],
-    });
+    })
     if (!schedule || schedule.device?.ownerId !== owner.id) {
       return res.status(404).json({ error: 'Schedule not found or not owned' });
     }

@@ -13,7 +13,13 @@ export const registerOwner = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    const existingOwner = await models.Owner.findOne({ where: { uuid } });
+    const existingOwner = await models.Owner.findOne({ where: { uuid } })
+      .then(owner => {
+        if (!owner) {
+          return null;
+        }
+        return owner.get({ plain: true });
+      }); 
     if (existingOwner) {
       return res.status(400).json({ error: 'Owner already registered' });
     }
