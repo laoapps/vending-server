@@ -16,7 +16,7 @@ COPY src ./src
 EXPOSE 3000
 
 # Run TypeScript directly
-CMD ["bun", "src/index.ts"]
+CMD ["bun", "src/server.ts"]
 
 # Run compiled JavaScript (uncomment when switching to JS)
 # CMD ["bun", "dist/index.js"]
