@@ -88,7 +88,8 @@ export class DeviceService {
     if (!isOwner && !isAssignedUser && user.role !== 'admin') {
       throw new Error('Unauthorized');
     }
-
+    console.log(`Controlling device ${device.tasmotaId} `+`cmnd/${device.tasmotaId}/${command}`);
+    
     await publishMqttMessage(`cmnd/${device.tasmotaId}/${command}`, '');
   }
 
