@@ -12,7 +12,7 @@ export class DeviceService {
       zone,
       ownerId: owner.id,
       status: {},
-    }as DeviceAttributes);
+    } as DeviceAttributes);
 
     return device;
   }
@@ -74,25 +74,33 @@ export class DeviceService {
   }
 
   static async controlDevice(user: { uuid: string; role: string }, deviceId: number, command: string): Promise<void> {
-    const device = await models.Device.findByPk(deviceId, {
-      include: [
-        { model: models.Owner, as: 'owner' },
-        { model: models.UserDevice, as: 'userDevices' },
-      ],
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        const device = await models.Device.findByPk(deviceId, {
+          include: [
+            { model: models.Owner, as: 'owner' },
+            { model: models.UserDevice, as: 'userDevices' },
+          ],
+        });
+
+        if (!device) throw new Error('Device not found');
+
+        const isOwner = device.owner?.uuid === user.uuid;
+        const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
+        if (!isOwner
+          && !isAssignedUser
+        ) {
+          throw new Error('Unauthorized');
+        }
+        console.log(`Controlling device ${device.tasmotaId} ` + `cmnd/${device.tasmotaId}/${command}`);
+
+        resolve(await publishMqttMessage(`cmnd/${device.tasmotaId}/${command}`, ''));
+      } catch (error) {
+        console.error('Error controlling device:', error);
+        reject(error);
+      }
+
     });
-
-    if (!device) throw new Error('Device not found');
-
-    const isOwner = device.owner?.uuid === user.uuid;
-    const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
-    if (!isOwner
-       && !isAssignedUser 
-      ) {
-      throw new Error('Unauthorized');
-    }
-    console.log(`Controlling device ${device.tasmotaId} `+`cmnd/${device.tasmotaId}/${command}`);
-    
-    await publishMqttMessage(`cmnd/${device.tasmotaId}/${command}`, '');
   }
 
   static async assignDeviceToUser(ownerUuid: string, deviceId: number, userPhoneNumber: string): Promise<any> {
