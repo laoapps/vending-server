@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { DeviceService } from '../services/deviceService';
 import { findRealDB } from '../services/userManagerService';
 import models from '../models';
-import { publishMqttMessage } from '../services/mqttService';
 
 export const createDevice = async (req: Request, res: Response) => {
   const { name, tasmotaId, zone } = req.body;
@@ -70,30 +69,9 @@ export const controlDevice = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const device = await models.Device.findByPk(deviceId, {
-      include: [
-        { model: models.Owner, as: 'owner' },
-        { model: models.UserDevice, as: 'userDevices' },
-      ],
-    });
-
-    if (!device) {
-      return res.status(404).json({ error: 'Device not found' });
-    }
-
-    const isOwner = device.owner?.uuid === user.uuid;
-    const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
-    if (!isOwner && !isAssignedUser && user.role !== 'admin') {
-      return res.status(403).json({ error: 'Unauthorized to control device' });
-    }
-
-    const topic = `cmnd/${device.tasmotaId}/POWER`;
-    console.log(`Controlling device ${device.tasmotaId} ${topic} ${command}`);
-    await publishMqttMessage(topic, command);
-
+    await DeviceService.controlDevice(user, deviceId, command);
     res.json({ message: 'Command sent' });
   } catch (error) {
-    console.error(`Error controlling device ${deviceId}:`, error);
     res.status(500).json({ error: (error as Error).message || 'Failed to control device' });
   }
 };

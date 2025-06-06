@@ -85,7 +85,9 @@ export class DeviceService {
 
     const isOwner = device.owner?.uuid === user.uuid;
     const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
-    if (!isOwner && !isAssignedUser && user.role !== 'admin') {
+    if (!isOwner
+       && !isAssignedUser 
+      ) {
       throw new Error('Unauthorized');
     }
     console.log(`Controlling device ${device.tasmotaId} `+`cmnd/${device.tasmotaId}/${command}`);
