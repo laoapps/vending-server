@@ -29,7 +29,7 @@ USER bun
 EXPOSE 3000
 
 # Run TypeScript directly
-CMD ["bun","run", "src/index.ts"]
+CMD ["bun", "src/index.ts"]
 
 # Run compiled JavaScript (uncomment when switching to JS)
 # CMD ["bun", "dist/index.js"]
