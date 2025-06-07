@@ -16,7 +16,7 @@ const routes: Routes = [
   { path: 'user-dashboard', component: UserDashboardPage },
   { path: 'admin-reports', component: AdminReportsPage },
   { path: 'user-schedule', component: UserSchedulesPage },
-    { path: 'admin-unregistered-devices', component: AdminUnregisteredDevicesPage }
+  { path: 'admin-unregistered-devices', component: AdminUnregisteredDevicesPage }
 
  
 ];

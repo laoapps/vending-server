@@ -4,6 +4,10 @@ import { publishMqttMessage } from './mqttService';
 import { findUuidByPhoneNumberOnUserManager } from './userManagerService';
 
 type DeviceWithAssociations = Device & DeviceAssociations;
+interface User {
+  uuid: string;
+  role: string;
+}
 export class DeviceService {
   static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string): Promise<Device> {
     const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
@@ -78,32 +82,23 @@ export class DeviceService {
     await device.destroy();
   }
 
-  static async controlDevice(user: { uuid: string; role: string }, deviceId: number, command: string): Promise<void> {
+  static async controlDevice(user: User, deviceId: number, command: string): Promise<void> {
     try {
-      const device:DeviceWithAssociations|null = await models.Device.findByPk(deviceId, {
+      const device: DeviceWithAssociations | null = await models.Device.findByPk(deviceId, {
         include: [
           { model: models.Owner, as: 'owner' },
           { model: models.UserDevice, as: 'userDevices' },
-        ]
+        ],
       });
 
       if (!device) throw new Error('Device not found');
-
-      console.log('Device instance:', device);
-      console.log('Device owner:', device.owner);
-      console.log('Device userDevices:', device.userDevices);
-      console.log(
-        `Controlling device with ID: ${deviceId}, Command: ${command}`,
-        'device', device,
-        'device owner', device.owner,
-        'device user device', device.userDevices?.length
-      );
       console.log(`Controlling device with ID: ${deviceId}, Command: ${command} by User: ${user.uuid}`, user);
 
       const isOwner = device.owner?.uuid === user.uuid;
-      const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
+      const isAssignedUser = device.userDevices?.some((ud) => ud.userUuid === user.uuid);
       console.log(
-        `User UUID: ${user.uuid}, Device Owner UUID: ${device.owner?.uuid}, Assigned Users: ${device.userDevices?.map((ud: any) => ud.userUuid).join(', ') || 'none'
+        `User UUID: ${user.uuid}, Device Owner UUID: ${device.owner?.uuid}, Assigned Users: ${
+          device.userDevices?.map((ud) => ud.userUuid).join(', ') || 'none'
         }`
       );
 
@@ -111,8 +106,11 @@ export class DeviceService {
         throw new Error('Unauthorized');
       }
 
-      console.log(`Controlling device ${device.dataValues.tasmotaId} cmnd/${device.dataValues.tasmotaId}/${command}`);
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/${command}`, '');
+      // Normalize command for MQTT topic and payload
+      const mqttCommand = command.toUpperCase().replace(/\s+/g, ''); // e.g., "POWER TOGGLE" -> "TOGGLE"
+      const mqttTopic = `cmnd/${device.dataValues.tasmotaId}/POWER`;
+      console.log(`Controlling device ${device.dataValues.tasmotaId} ${mqttTopic} with payload: ${mqttCommand}`);
+      await publishMqttMessage(mqttTopic, mqttCommand);
     } catch (error) {
       console.error('Error controlling device:', error);
       throw error;
