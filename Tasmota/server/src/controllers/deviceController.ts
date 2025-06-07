@@ -92,7 +92,13 @@ export const assignDeviceToUser = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Owner not found' });
     }
 
-    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } });
+    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } })
+    .then(device => {
+      if (!device) {
+        return null; // Device not found or not owned
+      }
+      return device.get({ plain: true });
+    });
     if (!device) {
       return res.status(404).json({ error: 'Device not found or not owned' });
     }
