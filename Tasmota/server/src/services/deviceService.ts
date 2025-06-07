@@ -36,7 +36,13 @@ export class DeviceService {
         ],
       });
     } else if (user.role === 'owner') {
-      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
+      .then((owner) => {
+        if (!owner) {
+          console.error('Owner not found for UUID:', user.uuid);
+        }
+        return owner?.get({ plain: true });
+      });
       if (!owner) throw new Error('Owner not found');
 
       return models.Device.findAll({
@@ -62,7 +68,13 @@ export class DeviceService {
   }
 
   static async updateDevice(ownerUuid: string, id: number, data: Partial<DeviceAttributes>): Promise<DeviceAttributes> {
-    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } })
+    .then((owner) => {
+      if (!owner) {
+        console.error('Owner not found for UUID:', ownerUuid);
+      }
+      return owner?.get({ plain: true });
+    });
     if (!owner) throw new Error('Owner not found');
 
     const device = await models.Device.findOne({ where: { id, ownerId: owner.id } });
@@ -73,7 +85,13 @@ export class DeviceService {
   }
 
   static async deleteDevice(ownerUuid: string, id: number): Promise<void> {
-    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } })
+    .then((owner) => {
+      if (!owner) {
+        console.error('Owner not found for UUID:', ownerUuid);
+      }
+      return owner?.get({ plain: true });
+    });
     if (!owner) throw new Error('Owner not found');
 
     const device = await models.Device.findOne({ where: { id, ownerId: owner.id } });

@@ -50,7 +50,13 @@ export const getSchedulePackages = async (req: Request, res: Response) => {
         include: [{ model: models.Owner, as: 'owner' }],
       });
     } else if (user.role === 'owner') {
-      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
+      .then(owner => {
+        if (!owner) {
+          return res.status(404).json({ error: 'Owner not found' });
+        }
+        return owner.get({ plain: true });
+      });
       if (!owner) {
         return res.status(404).json({ error: 'Owner not found' });
       }
@@ -79,7 +85,13 @@ export const updateSchedulePackage = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can update schedule packages' });
     }
 
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
+    .then(owner => {
+      if (!owner) {
+        return res.status(404).json({ error: 'Owner not found' });
+      }
+      return owner.get({ plain: true });
+    });
     if (!owner) {
       return res.status(404).json({ error: 'Owner not found' });
     }
@@ -109,7 +121,13 @@ export const deleteSchedulePackage = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can delete schedule packages' });
     }
 
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
+    .then(owner => {
+      if (!owner) {
+        return res.status(404).json({ error: 'Owner not found' });
+      }
+      return owner.get({ plain: true });
+    });
     if (!owner) {
       return res.status(404).json({ error: 'Owner not found' });
     }
