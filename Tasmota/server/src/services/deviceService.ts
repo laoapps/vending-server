@@ -106,8 +106,8 @@ export class DeviceService {
         include: [
           { model: models.Owner, as: 'owner' },
           { model: models.UserDevice, as: 'userDevices' },
-        ],
-      });
+        ]
+      ,raw:false},);
 
       if (!device) throw new Error('Device not found');
       console.log(`Controlling device with ID: ${deviceId}, Command: ${command}`,device,device.owner, device.userDevices);
