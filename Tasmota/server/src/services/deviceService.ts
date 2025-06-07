@@ -110,9 +110,9 @@ export class DeviceService {
       });
 
       if (!device) throw new Error('Device not found');
-      console.log(`Controlling device with ID: ${deviceId}, Command: ${command}`,'device',device,'device owner',device.owner?.dataValues, 'device user device',device.userDevices?.length);
+      console.log(`Controlling device with ID: ${deviceId}, Command: ${command}`,'device',device,'device owner',device.owner, 'device user device',device.userDevices?.length);
       console.log(`Controlling device with ID: ${device}, Command: ${command} by User: ${user.uuid}`,user);
-      const isOwner = device.owner?.dataValues?.uuid === user.uuid;
+      const isOwner = device.owner?.uuid === user.uuid;
       const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
       console.log(`User UUID: ${user.uuid}, Device Owner UUID: ${device.owner?.dataValues?.uuid}, Assigned Users: ${device.userDevices?.map((ud: any) => ud.userUuid).join(', ')}`);
       if (!isOwner && !isAssignedUser) {
