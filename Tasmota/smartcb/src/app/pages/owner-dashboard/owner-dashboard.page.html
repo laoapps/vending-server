@@ -68,10 +68,10 @@
         <ion-item *ngIf="controlDevice.id">
           <ion-label>Relay</ion-label>
           <ion-select [(ngModel)]="controlDevice.relay">
-            <ion-select-option value="1">Relay 1</ion-select-option>
-            <ion-select-option value="2">Relay 2</ion-select-option>
-            <ion-select-option value="3">Relay 3</ion-select-option>
-            <ion-select-option value="4">Relay 4</ion-select-option>
+            <ion-select-option value=1>Relay 1</ion-select-option>
+            <ion-select-option value=2>Relay 2</ion-select-option>
+            <ion-select-option value=3>Relay 3</ion-select-option>
+            <ion-select-option value=4>Relay 4</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-button *ngIf="controlDevice.id" expand="block" (click)="controlDeviceAction()">Send Command</ion-button>
