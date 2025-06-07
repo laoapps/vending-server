@@ -107,12 +107,12 @@ export class DeviceService {
           { model: models.Owner, as: 'owner' },
           { model: models.UserDevice, as: 'userDevices' },
         ]
-      ,raw:false},);
+      });
 
       if (!device) throw new Error('Device not found');
       console.log(`Controlling device with ID: ${deviceId}, Command: ${command}`,device,device.owner, device.userDevices);
       console.log(`Controlling device with ID: ${device}, Command: ${command} by User: ${user.uuid}`,user);
-      const isOwner = device.owner?.uuid === user.uuid;
+      const isOwner = device.owner?.dataValues.uuid === user.uuid;
       const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
       console.log(`User UUID: ${user.uuid}, Device Owner UUID: ${device.owner?.uuid}, Assigned Users: ${device.userDevices?.map((ud: any) => ud.userUuid).join(', ')}`);
       if (!isOwner && !isAssignedUser) {
