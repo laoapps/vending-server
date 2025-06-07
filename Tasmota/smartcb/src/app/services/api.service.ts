@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -35,12 +36,12 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/devices/${id}`, this.getAuthHeaders());
   }
 
-  controlDevice(deviceId: number, command: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/devices/control`, { deviceId, command }, this.getAuthHeaders());
+  controlDevice(deviceId: number, command: string, relay: number = 1): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices/control`, { deviceId, command, relay }, this.getAuthHeaders());
   }
 
-  assignDevice(deviceId: number, token: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/devices/assign`, { deviceId, token }, this.getAuthHeaders());
+  assignDevice(deviceId: number, userPhoneNumber: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices/assign`, { deviceId, userPhoneNumber }, this.getAuthHeaders());
   }
 
   createGroup(name: string): Observable<any> {
@@ -129,7 +130,7 @@ export class ApiService {
     return {
       headers: new HttpHeaders({
         Authorization: `Bearer ${token}`,
-        'X-Admin-Key': 'super-admin'
+        'X-Admin-Key': 'super-admin',
       }),
     };
   }

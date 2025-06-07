@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { MqttClientService } from '../../services/mqttClient.service';
@@ -7,7 +8,7 @@ import { AlertController } from '@ionic/angular';
   selector: 'app-owner-dashboard',
   templateUrl: './owner-dashboard.page.html',
   styleUrls: ['./owner-dashboard.page.scss'],
-  standalone: false
+  standalone: false,
 })
 export class OwnerDashboardPage implements OnInit {
   devices: any[] = [];
@@ -16,11 +17,11 @@ export class OwnerDashboardPage implements OnInit {
   schedulePackages: any[] = [];
   newDevice = { name: '', tasmotaId: '', zone: '' };
   newGroup = { name: '' };
-  newSchedule = { deviceId: null, type: 'timer', cron: '', command: '', conditionType: '', conditionValue: null };
+  newSchedule = { deviceId: -1, type: 'timer', cron: '', command: '', conditionType: '', conditionValue: null };
   newSchedulePackage = { name: '', price: 0, conditionType: 'time_duration', conditionValue: 0 };
-  assignDevice = { groupId: null, deviceId: null };
-  assignUser = { deviceId: null, token: '', userPhoneNumber: '' };
-
+  assignDevice = { groupId: -1, deviceId: -1 };
+  assignUser = { deviceId: -1, userPhoneNumber: '' };
+  controlDevice = { id: -1, command: 'TOGGLE', relay: 1 }; // New state for device control
 
   constructor(
     private apiService: ApiService,
@@ -37,29 +38,25 @@ export class OwnerDashboardPage implements OnInit {
       this.devices = devices;
       this.devices.forEach((device) => {
         this.mqttService.subscribeToDevice(device.tasmotaId).subscribe((message) => {
-         try {
-           device.status =JSON.parse( message.payload.toString());
-         } catch (error) {
-          console.log(`Failed to parse message for device ${device.tasmotaId}:`, error);
-           device.status = message.payload.toString();
-          
-         }
+          try {
+            device.status = JSON.parse(message.payload.toString());
+          } catch (error) {
+            console.log(`Failed to parse message for device ${device.tasmotaId}:`, error);
+            device.status = message.payload.toString();
+          }
         });
         this.mqttService.subscribeToTelemetry(device.tasmotaId).subscribe((message) => {
           console.log(`Received telemetry for device ${device.tasmotaId}:`, message);
           try {
             const data = JSON.parse(message.payload.toString());
             console.log(`Parsed telemetry data for device ${device.tasmotaId}:`, data);
-            
             device.power = data?.ENERGY?.Power || 0;
             device.energy = data?.ENERGY?.Total || 0;
-            device.Temperature = (data?.ANALOG?.Temperature1 || 0)+' '+data?.TempUnit;
+            device.Temperature = (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
           } catch (error) {
             console.log(`Failed to parse telemetry data for device ${device.tasmotaId}:`, error);
-            
-            device.status=message.payload.toString();
+            device.status = message.payload.toString();
           }
-
         });
       });
     });
@@ -79,26 +76,28 @@ export class OwnerDashboardPage implements OnInit {
       const alert = await this.alertController.create({
         header: 'Error',
         message: 'Please fill in all fields with valid values.',
-        buttons: ['OK']
+        buttons: ['OK'],
       });
       await alert.present();
       return;
     }
 
-    this.apiService.createSchedulePackage(
-      this.newSchedulePackage.name,
-      this.newSchedulePackage.conditionValue,
-      this.newSchedulePackage.conditionType === 'energy_consumption' ? this.newSchedulePackage.conditionValue : undefined,
-      this.newSchedulePackage.price
-    ).subscribe(
-      () => {
-        this.loadData();
-        this.newSchedulePackage = { name: '', price: 0, conditionType: 'time_duration', conditionValue: 0 };
-      },
-      (error) => {
-        console.error('Failed to create schedule package:', error);
-      }
-    );
+    this.apiService
+      .createSchedulePackage(
+        this.newSchedulePackage.name,
+        this.newSchedulePackage.conditionType === 'time_duration' ? this.newSchedulePackage.conditionValue : undefined,
+        this.newSchedulePackage.conditionType === 'energy_consumption' ? this.newSchedulePackage.conditionValue : undefined,
+        this.newSchedulePackage.price
+      )
+      .subscribe(
+        () => {
+          this.loadData();
+          this.newSchedulePackage = { name: '', price: 0, conditionType: 'time_duration', conditionValue: 0 };
+        },
+        (error) => {
+          console.error('Failed to create schedule package:', error);
+        }
+      );
   }
 
   async deleteSchedulePackage(id: number) {
@@ -118,9 +117,9 @@ export class OwnerDashboardPage implements OnInit {
                 console.error('Failed to delete schedule package:', error);
               }
             );
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
   }
@@ -144,17 +143,26 @@ export class OwnerDashboardPage implements OnInit {
     });
   }
 
-  togglePower(deviceId: number) {
-    try {
-      this.apiService.controlDevice(deviceId, 'POWER TOGGLE').subscribe((v)=>{
-        console.log(`Toggled power for device ${deviceId}`,v);
-        // this.loadData();
-      });
-    } catch (error) {
-      console.log(`Failed to toggle power for device ${deviceId}:`, error);
-      
+  controlDeviceAction() {
+    if (this.controlDevice.id) {
+      this.apiService.controlDevice(this.controlDevice.id, this.controlDevice.command, this.controlDevice.relay).subscribe(
+        (response) => {
+          console.log(`Controlled device ${this.controlDevice.id} with command ${this.controlDevice.command} on relay ${this.controlDevice.relay}`, response);
+        },
+        (error) => {
+          console.error(`Failed to control device ${this.controlDevice.id}:`, error);
+        }
+      );
     }
-    
+  }
+
+  setControlDevice(deviceId: number) {
+
+    this.controlDevice = { id: deviceId, command: 'TOGGLE', relay: 1 }; // Reset control device state
+    console.log(`Setting control device with ID: ${deviceId}`);
+
+
+
   }
 
   addGroup() {
@@ -180,39 +188,43 @@ export class OwnerDashboardPage implements OnInit {
     if (this.assignDevice.groupId && this.assignDevice.deviceId) {
       this.apiService.assignDeviceToGroup(this.assignDevice.groupId, this.assignDevice.deviceId).subscribe(() => {
         this.loadData();
-        this.assignDevice = { groupId: null, deviceId: null };
+        this.assignDevice = { groupId: -1, deviceId: -1 };
       });
     }
   }
 
   addSchedule() {
     if (this.newSchedule.deviceId) {
-      this.apiService.createSchedule(
-        this.newSchedule.deviceId,
-        this.newSchedule.type,
-        this.newSchedule.cron,
-        this.newSchedule.command,
-        this.newSchedule.conditionType,
-        this.newSchedule.conditionValue || undefined
-      ).subscribe(() => {
-        this.loadData();
-        this.newSchedule = { deviceId: null, type: 'timer', cron: '', command: '', conditionType: '', conditionValue: null };
-      });
+      this.apiService
+        .createSchedule(
+          this.newSchedule.deviceId,
+          this.newSchedule.type,
+          this.newSchedule.cron,
+          this.newSchedule.command,
+          this.newSchedule.conditionType,
+          this.newSchedule.conditionValue || undefined
+        )
+        .subscribe(() => {
+          this.loadData();
+          this.newSchedule = { deviceId: -1, type: 'timer', cron: '', command: '', conditionType: '', conditionValue: null };
+        });
     }
   }
 
   updateSchedule(schedule: any) {
-    this.apiService.updateSchedule(
-      schedule.id,
-      schedule.type,
-      schedule.cron,
-      schedule.command,
-      schedule.conditionType,
-      schedule.conditionValue,
-      schedule.active
-    ).subscribe(() => {
-      this.loadData();
-    });
+    this.apiService
+      .updateSchedule(
+        schedule.id,
+        schedule.type,
+        schedule.cron,
+        schedule.command,
+        schedule.conditionType,
+        schedule.conditionValue,
+        schedule.active
+      )
+      .subscribe(() => {
+        this.loadData();
+      });
   }
 
   deleteSchedule(id: number) {
@@ -225,7 +237,7 @@ export class OwnerDashboardPage implements OnInit {
     if (this.assignUser.deviceId && this.assignUser.userPhoneNumber) {
       this.apiService.assignDevice(this.assignUser.deviceId, this.assignUser.userPhoneNumber).subscribe(() => {
         this.loadData();
-        this.assignUser = { deviceId: null, token: '', userPhoneNumber: '' };
+        this.assignUser = { deviceId: -1, userPhoneNumber: '' };
       });
     }
   }

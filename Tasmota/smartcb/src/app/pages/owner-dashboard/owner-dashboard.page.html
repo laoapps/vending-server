@@ -4,7 +4,8 @@
       <ion-card-title>Owner Dashboard</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-       <ion-item-group>
+      <!-- Schedule Packages -->
+      <ion-item-group>
         <ion-item-divider>Add Schedule Package</ion-item-divider>
         <ion-item>
           <ion-label position="floating">Name</ion-label>
@@ -28,7 +29,6 @@
         <ion-button expand="block" (click)="addSchedulePackage()">Add Schedule Package</ion-button>
       </ion-item-group>
 
-      <!-- List Schedule Packages -->
       <ion-item-group>
         <ion-item-divider>Schedule Packages</ion-item-divider>
         <ion-item *ngFor="let pkg of schedulePackages">
@@ -40,6 +40,7 @@
           <ion-button slot="end" color="danger" (click)="deleteSchedulePackage(pkg.id)">Delete</ion-button>
         </ion-item>
       </ion-item-group>
+
       <!-- Devices -->
       <ion-item-group>
         <ion-item-divider>Devices</ion-item-divider>
@@ -53,8 +54,28 @@
             <p>Energy: {{ device.energy }} kWh</p>
             <p>Status: {{ device.status | json }}</p>
           </ion-label>
-          <ion-button slot="end" (click)="togglePower(device.id)">Toggle</ion-button>
+          <ion-button slot="end" (click)="setControlDevice(device.id)">Control</ion-button>
         </ion-item>
+        <!-- Device Control Form -->
+        <ion-item *ngIf="controlDevice.id">
+          <ion-label>Command</ion-label>
+          <ion-select [(ngModel)]="controlDevice.command">
+            <ion-select-option value="TOGGLE">Toggle</ion-select-option>
+            <ion-select-option value="ON">On</ion-select-option>
+            <ion-select-option value="OFF">Off</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="controlDevice.id">
+          <ion-label>Relay</ion-label>
+          <ion-select [(ngModel)]="controlDevice.relay">
+            <ion-select-option value="1">Relay 1</ion-select-option>
+            <ion-select-option value="2">Relay 2</ion-select-option>
+            <ion-select-option value="3">Relay 3</ion-select-option>
+            <ion-select-option value="4">Relay 4</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-button *ngIf="controlDevice.id" expand="block" (click)="controlDeviceAction()">Send Command</ion-button>
+        <!-- Add Device Form -->
         <ion-item>
           <ion-label position="floating">Name</ion-label>
           <ion-input [(ngModel)]="newDevice.name"></ion-input>

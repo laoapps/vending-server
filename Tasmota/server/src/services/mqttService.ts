@@ -8,12 +8,14 @@ const client = mqtt.connect(env.MQTT_BROKER, {
 });
 
 client.on('connect', () => {
-  console.log(`Connected to MQTT broker with username: ${env.MQTT_USERNAME}`);
+  console.log(`Connected to MQTT broker ${env.MQTT_BROKER} with username: ${env.MQTT_USERNAME}`);
   client.subscribe('tele/+/LWT', (err) => {
     if (err) console.error('Failed to subscribe to LWT:', err);
+    else console.log('Subscribed to tele/+/LWT');
   });
   client.subscribe('tele/+/SENSOR', (err) => {
     if (err) console.error('Failed to subscribe to SENSOR:', err);
+    else console.log('Subscribed to tele/+/SENSOR');
   });
 });
 
@@ -33,7 +35,7 @@ export const publishMqttMessage = async (topic: string, payload: string) => {
         console.error(`Failed to publish to ${topic}:`, err);
         reject(err);
       } else {
-        console.log(`Published successfully to ${topic}`);
+        console.log(`Published successfully to ${topic} with payload: ${payload}`);
         resolve();
       }
     });

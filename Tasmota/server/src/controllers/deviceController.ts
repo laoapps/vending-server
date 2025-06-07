@@ -2,6 +2,14 @@ import { Request, Response } from 'express';
 import { DeviceService } from '../services/deviceService';
 import { findRealDB } from '../services/userManagerService';
 import models from '../models';
+import { z } from 'zod';
+
+// Validation schema for control device
+const controlDeviceSchema = z.object({
+  deviceId: z.number().int().positive(),
+  command: z.enum(['ON', 'OFF', 'TOGGLE']).optional(),
+  relay: z.number().int().min(1).optional(),
+});
 
 export const createDevice = async (req: Request, res: Response) => {
   const { name, tasmotaId, zone } = req.body;
@@ -11,10 +19,7 @@ export const createDevice = async (req: Request, res: Response) => {
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }
-    console.log('Creating device for user:', user.uuid, 'Name:', name, 'Tasmota ID:', tasmotaId, 'Zone:', zone);
     const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone);
-    console.log('Device created:', device);
-    // Remove from UnregisteredDevices if exists
     await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {
@@ -43,7 +48,6 @@ export const updateDevice = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can update devices' });
     }
     const device = await DeviceService.updateDevice(user.uuid, parseInt(id), { name, tasmotaId, zone, groupId });
-    // Remove from UnregisteredDevices if tasmotaId changes
     await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {
@@ -67,14 +71,18 @@ export const deleteDevice = async (req: Request, res: Response) => {
 };
 
 export const controlDevice = async (req: Request, res: Response) => {
-  const { deviceId, command } = req.body;
   const user = res.locals.user;
 
   try {
-    await DeviceService.controlDevice(user, deviceId, command);
+    const input = controlDeviceSchema.parse(req.body);
+    await DeviceService.controlDevice(user, input.deviceId, { command: input.command, relay: input.relay });
     res.json({ message: 'Command sent' });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to control device' });
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.errors });
+    } else {
+      res.status(500).json({ error: (error as Error).message || 'Failed to control device' });
+    }
   }
 };
 
