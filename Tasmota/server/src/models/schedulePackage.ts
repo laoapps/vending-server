@@ -1,5 +1,4 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import sequelize from '../config/database';
 
 export interface SchedulePackageAttributes {
   id: number;
@@ -13,14 +12,7 @@ export interface SchedulePackageAttributes {
 }
 
 export class SchedulePackage extends Model<SchedulePackageAttributes> {
-  public id!: number;
-  public name!: string;
-  public ownerId!: number;
-  public price!: number;
-  public conditionType!: 'time_duration' | 'energy_consumption';
-  public conditionValue!: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+  // No public class fields
 }
 
 export function initSchedulePackageModel(sequelize: Sequelize) {

@@ -1,11 +1,15 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class Admin extends Model {
-  public id!: number;
-  public uuid!: string;
-  public phoneNumber!: string;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+export interface AdminAttributes {
+  id: number;
+  uuid: string;
+  phoneNumber: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class Admin extends Model<AdminAttributes> {
+  // Remove public class fields
 }
 
 export function initAdminModel(sequelize: Sequelize) {

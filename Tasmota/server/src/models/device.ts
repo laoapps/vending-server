@@ -1,8 +1,10 @@
+
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { Owner } from './owner';
-import { DeviceGroup } from './deviceGroup';
-import { UserDevice } from './userDevice';
-import { Schedule } from './schedule';
+import { OwnerAttributes } from './owner';
+import { DeviceGroupAttributes } from './deviceGroup';
+import { UserDeviceAttributes } from './userDevice';
+import { ScheduleAttributes } from './schedule';
+import { ScheduleHistoryAttributes } from './scheduleHistory';
 
 export interface DeviceAttributes {
   id: number;
@@ -18,24 +20,17 @@ export interface DeviceAttributes {
   updatedAt: Date;
 }
 
-export class Device extends Model<DeviceAttributes> {
-  public id!: number;
-  public name!: string;
-  public tasmotaId!: string;
-  public zone?: string;
-  public ownerId!: number;
-  public status!: any;
-  public power?: number;
-  public energy?: number;
-  public groupId?: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+// Extend the attributes to include associations
+export interface DeviceAssociations {
+  owner?: OwnerAttributes;
+  deviceGroup?: DeviceGroupAttributes;
+  userDevices?: UserDeviceAttributes[];
+  schedules?: ScheduleAttributes[];
+  scheduleHistories?: ScheduleHistoryAttributes[];
+}
 
-  // Associations
-  public owner?: Owner;
-  public deviceGroup?: DeviceGroup;
-  public userDevices?: UserDevice[];
-  public schedules?: Schedule[];
+export class Device extends Model<DeviceAttributes & DeviceAssociations> {
+  // No public class fields
 }
 
 export function initDeviceModel(sequelize: Sequelize) {
@@ -62,6 +57,7 @@ export function initDeviceModel(sequelize: Sequelize) {
       ownerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: { model: 'Owners', key: 'id' },
       },
       status: {
         type: DataTypes.JSONB,
@@ -79,6 +75,7 @@ export function initDeviceModel(sequelize: Sequelize) {
       groupId: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        references: { model: 'DeviceGroups', key: 'id' },
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

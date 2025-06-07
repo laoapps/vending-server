@@ -1,7 +1,8 @@
 import { CronJob } from 'cron';
 import models from '../models';
 import { publishMqttMessage } from './mqttService';
-
+import { Schedule, ScheduleAssociations } from '../models/schedule';
+type ScheduleWithAssociations = Schedule & ScheduleAssociations;
 export const scheduleJob = async (schedule: {
   id: number;
   deviceId: number;
@@ -21,7 +22,7 @@ export const scheduleJob = async (schedule: {
             console.error(`Device not found for schedule ${schedule.id}`);
             return;
           }
-          await publishMqttMessage(`cmnd/${device.tasmotaId}/${schedule.command}`, '');
+          await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/${schedule.command}`, '');
         } catch (error) {
           console.error(`Error in schedule ${schedule.id}:`, error);
         }
@@ -44,7 +45,7 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
       if (messageStr === 'Online' || messageStr === 'Offline') {
         const device = await models.Device.findOne({ where: { tasmotaId } });
         if (device) {
-          await device.update({ status: { ...device.status, online: messageStr === 'Online' } });
+          await device.update({ status: { ...device.dataValues.status, online: messageStr === 'Online' } });
           await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
         } else {
           let unregisteredDevice = await models.UnregisteredDevice.findOne({ where: { tasmotaId } });
@@ -52,13 +53,13 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
             unregisteredDevice = await models.UnregisteredDevice.create({ tasmotaId, connectionAttempts: 0, lastConnections: [] } as any);
           }
 
-          if (unregisteredDevice.isBanned) {
+          if (unregisteredDevice.dataValues.isBanned) {
             console.log(`Ignoring message from banned device ${tasmotaId}`);
             return;
           }
 
-          const lastConnections = [...unregisteredDevice.lastConnections, new Date()].slice(-5);
-          const connectionAttempts = unregisteredDevice.connectionAttempts + 1;
+          const lastConnections = [...unregisteredDevice.dataValues.lastConnections, new Date()].slice(-5);
+          const connectionAttempts = unregisteredDevice.dataValues.connectionAttempts + 1;
           const isBanned = connectionAttempts >= 5;
 
           await unregisteredDevice.update({
@@ -77,7 +78,7 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
 
     // Check if device is banned
     const unregisteredDevice = await models.UnregisteredDevice.findOne({ where: { tasmotaId } });
-    if (unregisteredDevice?.isBanned) {
+    if (unregisteredDevice?.dataValues.isBanned) {
       console.log(`Ignoring message from banned device ${tasmotaId}`);
       return;
     }
@@ -94,27 +95,27 @@ export const monitorConditions = async (topic: string, message: Buffer) => {
     const energy = data?.ENERGY?.Total || 0;
     await device.update({ power, energy });
 
-    const schedules = await models.Schedule.findAll({
-      where: { deviceId: device.id, type: 'conditional', active: true },
+    const schedules: Array<ScheduleWithAssociations> | null = await models.Schedule.findAll({
+      where: { deviceId: device.dataValues.id, type: 'conditional', active: true },
       include: [{ model: models.SchedulePackage, as: 'package' }],
     });
 
     for (const schedule of schedules) {
-      if (schedule.conditionType === 'power_overload' && power > (schedule.conditionValue || 0)) {
-        await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
-      } else if (schedule.conditionType === 'energy_limit' && schedule.package && schedule.startEnergy !== undefined) {
+      if (schedule.dataValues.conditionType === 'power_overload' && power > (schedule.dataValues.conditionValue || 0)) {
+        await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.dataValues.command}`, '');
+      } else if (schedule.dataValues.conditionType === 'energy_limit' && schedule.package && schedule.dataValues.startEnergy !== undefined) {
         const packageEnergyLimit = schedule.package.conditionValue;
-        let currentEnergyUsage = energy - schedule.startEnergy;
+        let currentEnergyUsage = energy - schedule.dataValues.startEnergy;
         
         // Handle potential energy reset (e.g., Tasmota device reset)
         if (currentEnergyUsage < 0) {
-          console.warn(`Energy reset detected for schedule ${schedule.id}, deactivating`);
+          console.warn(`Energy reset detected for schedule ${schedule.dataValues.id}, deactivating`);
           await schedule.update({ active: false });
           continue;
         }
 
         if (currentEnergyUsage >= packageEnergyLimit) {
-          await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.command}`, '');
+          await publishMqttMessage(`cmnd/${tasmotaId}/${schedule.dataValues.command}`, '');
           await schedule.update({ active: false });
         }
       }

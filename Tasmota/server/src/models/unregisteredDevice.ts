@@ -1,5 +1,4 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import sequelize from '../config/database';
 
 export interface UnregisteredDeviceAttributes {
   id: number;
@@ -12,13 +11,7 @@ export interface UnregisteredDeviceAttributes {
 }
 
 export class UnregisteredDevice extends Model<UnregisteredDeviceAttributes> {
-  public id!: number;
-  public tasmotaId!: string;
-  public connectionAttempts!: number;
-  public lastConnections!: Date[];
-  public isBanned!: boolean;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+  // No public class fields
 }
 
 export function initUnregisteredDeviceModel(sequelize: Sequelize) {

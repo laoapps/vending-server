@@ -1,11 +1,15 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class UserDevice extends Model {
-  public id!: number;
-  public userUuid!: string;
-  public deviceId!: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+export interface UserDeviceAttributes {
+  id: number;
+  userUuid: string;
+  deviceId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class UserDevice extends Model<UserDeviceAttributes> {
+  // Remove public class fields
 }
 
 export function initUserDeviceModel(sequelize: Sequelize) {
@@ -23,6 +27,7 @@ export function initUserDeviceModel(sequelize: Sequelize) {
       deviceId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: { model: 'Devices', key: 'id' },
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

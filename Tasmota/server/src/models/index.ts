@@ -7,6 +7,7 @@ import { initUserDeviceModel, UserDevice } from './userDevice';
 import { initAdminModel, Admin } from './admin';
 import { initSchedulePackageModel, SchedulePackage } from './schedulePackage';
 import { initUnregisteredDeviceModel, UnregisteredDevice } from './unregisteredDevice';
+import { initScheduleHistoryModel, ScheduleHistory } from './scheduleHistory';
 
 const models = {
   Owner: initOwnerModel(sequelize),
@@ -17,6 +18,7 @@ const models = {
   Admin: initAdminModel(sequelize),
   SchedulePackage: initSchedulePackageModel(sequelize),
   UnregisteredDevice: initUnregisteredDeviceModel(sequelize),
+  ScheduleHistory: initScheduleHistoryModel(sequelize),
 };
 
 // Define relationships
@@ -40,6 +42,12 @@ models.SchedulePackage.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'own
 
 models.SchedulePackage.hasMany(models.Schedule, { foreignKey: 'packageId', as: 'schedules' });
 models.Schedule.belongsTo(models.SchedulePackage, { foreignKey: 'packageId', as: 'package' });
+
+models.Schedule.hasMany(models.ScheduleHistory, { foreignKey: 'scheduleId', as: 'histories' });
+models.ScheduleHistory.belongsTo(models.Schedule, { foreignKey: 'scheduleId', as: 'schedule' });
+
+models.Device.hasMany(models.ScheduleHistory, { foreignKey: 'deviceId', as: 'scheduleHistories' });
+models.ScheduleHistory.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
 
 export default models;
 export { sequelize };

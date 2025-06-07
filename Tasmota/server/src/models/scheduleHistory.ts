@@ -7,22 +7,13 @@ export interface ScheduleHistoryAttributes {
   scheduleId: number;
   deviceId: number;
   userUuid: string;
-  action: string; // e.g., "ON", "OFF"
+  action: string;
   executedAt: Date;
   createdAt: Date;
 }
 
 export class ScheduleHistory extends Model<ScheduleHistoryAttributes> {
-  public id!: number;
-  public scheduleId!: number;
-  public deviceId!: number;
-  public userUuid!: string;
-  public action!: string;
-  public executedAt!: Date;
-  public createdAt!: Date;
-
-  public schedule?: Schedule;
-  public device?: Device;
+  // No public class fields
 }
 
 export function initScheduleHistoryModel(sequelize: Sequelize) {
@@ -36,10 +27,12 @@ export function initScheduleHistoryModel(sequelize: Sequelize) {
       scheduleId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: { model: 'Schedules', key: 'id' },
       },
       deviceId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: { model: 'Devices', key: 'id' },
       },
       userUuid: {
         type: DataTypes.STRING,

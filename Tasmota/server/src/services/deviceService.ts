@@ -1,32 +1,28 @@
 import models from '../models';
-import { DeviceAttributes } from '../models/device';
+import { Device, DeviceAssociations, DeviceAttributes } from '../models/device';
 import { publishMqttMessage } from './mqttService';
 import { findUuidByPhoneNumberOnUserManager } from './userManagerService';
 
+type DeviceWithAssociations = Device & DeviceAssociations;
 export class DeviceService {
-  static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string): Promise<DeviceAttributes> {
-    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } }).then((owner) => {
-      if (!owner) {
-        console.error('Owner not found for UUID:', ownerUuid);
-      }
-      return owner?.get({ plain: true });
-    });
+  static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string): Promise<Device> {
+    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
     console.log('Owner:', owner);
-    console.log('Creating device for owner:', ownerUuid, 'Owner found:', owner?.id);
+    console.log('Creating device for owner:', ownerUuid, 'Owner found:', owner?.dataValues.id);
     if (!owner) throw new Error('Owner not found');
 
     const device = await models.Device.create({
       name,
       tasmotaId,
       zone,
-      ownerId: owner.id,
+      ownerId: owner.dataValues.id,
       status: {},
     } as DeviceAttributes);
 
     return device;
   }
 
-  static async getDevices(user: { uuid: string; role: string }): Promise<DeviceAttributes[]> {
+  static async getDevices(user: { uuid: string; role: string }): Promise<Device[]> {
     if (user.role === 'admin') {
       return models.Device.findAll({
         include: [
@@ -36,17 +32,11 @@ export class DeviceService {
         ],
       });
     } else if (user.role === 'owner') {
-      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
-        .then((owner) => {
-          if (!owner) {
-            console.error('Owner not found for UUID:', user.uuid);
-          }
-          return owner?.get({ plain: true });
-        });
+      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) throw new Error('Owner not found');
 
       return models.Device.findAll({
-        where: { ownerId: owner.id },
+        where: { ownerId: owner.dataValues.id },
         include: [
           { model: models.UserDevice, as: 'userDevices' },
           { model: models.DeviceGroup, as: 'deviceGroup' },
@@ -67,17 +57,11 @@ export class DeviceService {
     }
   }
 
-  static async updateDevice(ownerUuid: string, id: number, data: Partial<DeviceAttributes>): Promise<DeviceAttributes> {
-    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } })
-      .then((owner) => {
-        if (!owner) {
-          console.error('Owner not found for UUID:', ownerUuid);
-        }
-        return owner?.get({ plain: true });
-      });
+  static async updateDevice(ownerUuid: string, id: number, data: Partial<DeviceAttributes>): Promise<Device> {
+    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
     if (!owner) throw new Error('Owner not found');
 
-    const device = await models.Device.findOne({ where: { id, ownerId: owner.id } });
+    const device = await models.Device.findOne({ where: { id, ownerId: owner.dataValues.id } });
     if (!device) throw new Error('Device not found or not owned');
 
     await device.update(data);
@@ -85,16 +69,10 @@ export class DeviceService {
   }
 
   static async deleteDevice(ownerUuid: string, id: number): Promise<void> {
-    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } })
-      .then((owner) => {
-        if (!owner) {
-          console.error('Owner not found for UUID:', ownerUuid);
-        }
-        return owner?.get({ plain: true });
-      });
+    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
     if (!owner) throw new Error('Owner not found');
 
-    const device = await models.Device.findOne({ where: { id, ownerId: owner.id } });
+    const device = await models.Device.findOne({ where: { id, ownerId: owner.dataValues.id } });
     if (!device) throw new Error('Device not found or not owned');
 
     await device.destroy();
@@ -102,12 +80,11 @@ export class DeviceService {
 
   static async controlDevice(user: { uuid: string; role: string }, deviceId: number, command: string): Promise<void> {
     try {
-      const device = await models.Device.findByPk(deviceId, {
+      const device:DeviceWithAssociations|null = await models.Device.findByPk(deviceId, {
         include: [
           { model: models.Owner, as: 'owner' },
           { model: models.UserDevice, as: 'userDevices' },
-        ],
-        raw: false,
+        ]
       });
 
       if (!device) throw new Error('Device not found');
@@ -134,8 +111,8 @@ export class DeviceService {
         throw new Error('Unauthorized');
       }
 
-      console.log(`Controlling device ${device.tasmotaId} cmnd/${device.tasmotaId}/${command}`);
-      await publishMqttMessage(`cmnd/${device.tasmotaId}/${command}`, '');
+      console.log(`Controlling device ${device.dataValues.tasmotaId} cmnd/${device.dataValues.tasmotaId}/${command}`);
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/${command}`, '');
     } catch (error) {
       console.error('Error controlling device:', error);
       throw error;
@@ -146,7 +123,7 @@ export class DeviceService {
     const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
     if (!owner) throw new Error('Owner not found');
 
-    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.id } });
+    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.dataValues.id } });
     if (!device) throw new Error('Device not found or not owned');
 
     const userData = await findUuidByPhoneNumberOnUserManager(userPhoneNumber);
@@ -155,7 +132,7 @@ export class DeviceService {
     const userDevice = await models.UserDevice.create({
       userUuid: userData.uuid,
       deviceId,
-    });
+    } as any);
 
     return userDevice;
   }

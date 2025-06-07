@@ -1,11 +1,16 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class DeviceGroup extends Model {
-  public id!: number;
-  public name!: string;
-  public ownerId!: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+export interface DeviceGroupAttributes {
+  id: number;
+  name: string;
+  ownerId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class DeviceGroup extends Model<DeviceGroupAttributes> {
+  // Remove public class fields
+  // Attributes and associations are handled by Sequelize
 }
 
 export function initDeviceGroupModel(sequelize: Sequelize) {

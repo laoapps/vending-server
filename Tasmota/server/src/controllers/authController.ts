@@ -13,13 +13,7 @@ export const registerOwner = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    const existingOwner = await models.Owner.findOne({ where: { uuid } })
-      .then(owner => {
-        if (!owner) {
-          return null;
-        }
-        return owner.get({ plain: true });
-      }); 
+    const existingOwner = await models.Owner.findOne({ where: { uuid } });
     if (existingOwner) {
       return res.status(400).json({ error: 'Owner already registered' });
     }
@@ -29,7 +23,7 @@ export const registerOwner = async (req: Request, res: Response) => {
     if (!phoneNumber) {
       return res.status(400).json({ error: 'Phone number not found for this user' });
     }
-    const owner = await models.Owner.create({ uuid,phoneNumber });
+    const owner = await models.Owner.create({ uuid,phoneNumber } as any);
 
 
     res.json({ token, role: 'owner', owner });

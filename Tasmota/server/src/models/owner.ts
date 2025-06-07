@@ -1,12 +1,15 @@
-
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class Owner extends Model {
-  public id!: number;
-  public uuid!: string;
-  public phoneNumber!: string;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+export interface OwnerAttributes {
+  id: number;
+  uuid: string;
+  phoneNumber: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class Owner extends Model<OwnerAttributes> {
+  // No public class fields, which is correct
 }
 
 export function initOwnerModel(sequelize: Sequelize) {

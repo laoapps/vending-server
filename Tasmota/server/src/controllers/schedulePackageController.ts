@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import models from '../models';
 import { scheduleJob } from '../services/scheduleService';
-
+import { Device, DeviceAssociations } from '../models/device';
+type DeviceWithAssociations = Device & DeviceAssociations;
 export const createSchedulePackage = async (req: Request, res: Response) => {
   const { name, price, conditionType, conditionValue } = req.body;
   const user = res.locals.user;
@@ -11,13 +12,7 @@ export const createSchedulePackage = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can create schedule packages' });
     }
 
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
-    .then(owner => {
-      if (!owner) {
-        return res.status(404).json({ error: 'Owner not found' });
-      }
-      return owner.get({ plain: true });
-    });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(404).json({ error: 'Owner not found' });
     }
@@ -28,7 +23,7 @@ export const createSchedulePackage = async (req: Request, res: Response) => {
 
     const schedulePackage = await models.SchedulePackage.create({
       name,
-      ownerId: owner.id,
+      ownerId: owner.dataValues.id,
       price,
       conditionType,
       conditionValue,
@@ -50,18 +45,12 @@ export const getSchedulePackages = async (req: Request, res: Response) => {
         include: [{ model: models.Owner, as: 'owner' }],
       });
     } else if (user.role === 'owner') {
-      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
-      .then(owner => {
-        if (!owner) {
-          return res.status(404).json({ error: 'Owner not found' });
-        }
-        return owner.get({ plain: true });
-      });
+      const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) {
         return res.status(404).json({ error: 'Owner not found' });
       }
       schedulePackages = await models.SchedulePackage.findAll({
-        where: { ownerId: owner.id },
+        where: { ownerId: owner.dataValues.id },
         include: [{ model: models.Owner, as: 'owner' }],
       });
     } else {
@@ -85,18 +74,12 @@ export const updateSchedulePackage = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can update schedule packages' });
     }
 
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
-    .then(owner => {
-      if (!owner) {
-        return res.status(404).json({ error: 'Owner not found' });
-      }
-      return owner.get({ plain: true });
-    });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(404).json({ error: 'Owner not found' });
     }
 
-    const schedulePackage = await models.SchedulePackage.findOne({ where: { id: parseInt(id), ownerId: owner.id } });
+    const schedulePackage = await models.SchedulePackage.findOne({ where: { id: parseInt(id), ownerId: owner.dataValues.id } });
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Schedule package not found or not owned' });
     }
@@ -121,23 +104,17 @@ export const deleteSchedulePackage = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can delete schedule packages' });
     }
 
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
-    .then(owner => {
-      if (!owner) {
-        return res.status(404).json({ error: 'Owner not found' });
-      }
-      return owner.get({ plain: true });
-    });
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
     if (!owner) {
       return res.status(404).json({ error: 'Owner not found' });
     }
 
-    const schedulePackage = await models.SchedulePackage.findOne({ where: { id: parseInt(id), ownerId: owner.id } });
+    const schedulePackage = await models.SchedulePackage.findOne({ where: { id: parseInt(id), ownerId: owner.dataValues.id } });
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Schedule package not found or not owned' });
     }
 
-    const schedules = await models.Schedule.findAll({ where: { packageId: schedulePackage.id } });
+    const schedules = await models.Schedule.findAll({ where: { packageId: schedulePackage.dataValues.id } });
     if (schedules.length > 0) {
       return res.status(400).json({ error: 'Cannot delete package with active schedules' });
     }
@@ -154,7 +131,7 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
-    const device = await models.Device.findByPk(deviceId, {
+    const device: DeviceWithAssociations | null= await models.Device.findByPk(deviceId, {
       include: [
         { model: models.Owner, as: 'owner' },
         { model: models.UserDevice, as: 'userDevices' },
@@ -183,33 +160,33 @@ export const applySchedulePackage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Active schedule already exists for this device and package' });
     }
 
-    if (!device.energy && schedulePackage.conditionType === 'energy_consumption') {
+    if (!device.dataValues.energy && schedulePackage.dataValues.conditionType === 'energy_consumption') {
       return res.status(400).json({ error: 'No energy data available for this device' });
     }
 
     let scheduleData: any = {
       deviceId,
       packageId,
-      type: schedulePackage.conditionType === 'time_duration' ? 'timer' : 'conditional',
+      type: schedulePackage.dataValues.conditionType === 'time_duration' ? 'timer' : 'conditional',
       command: 'POWER ON',
       createdBy: user.uuid,
       active: true,
     };
 
-    if (schedulePackage.conditionType === 'time_duration') {
-      const durationHours = schedulePackage.conditionValue;
+    if (schedulePackage.dataValues.conditionType === 'time_duration') {
+      const durationHours = schedulePackage.dataValues.conditionValue;
       scheduleData.cron = `0 0 */${Math.round(durationHours)} * * *`;
-    } else if (schedulePackage.conditionType === 'energy_consumption') {
+    } else if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
       scheduleData.conditionType = 'energy_limit';
-      scheduleData.conditionValue = schedulePackage.conditionValue;
+      scheduleData.conditionValue = schedulePackage.dataValues.conditionValue;
       scheduleData.command = 'POWER OFF';
-      scheduleData.startEnergy = device.energy ?? 0;
+      scheduleData.startEnergy = device.dataValues.energy ?? 0;
     }
 
     const schedule = await models.Schedule.create(scheduleData);
 
     if (scheduleData.type === 'timer' && scheduleData.cron) {
-      await scheduleJob(schedule);
+      await scheduleJob(schedule as any);
     }
 
     res.json(schedule);

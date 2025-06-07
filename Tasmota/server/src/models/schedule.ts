@@ -1,5 +1,4 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import sequelize from '../config/database';
 import { DeviceAttributes } from './device';
 import { SchedulePackageAttributes } from './schedulePackage';
 
@@ -14,32 +13,19 @@ export interface ScheduleAttributes {
   conditionValue?: number;
   active: boolean;
   createdBy?: string;
-  startEnergy?: number; // New field for initial energy reading
+  startEnergy?: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface ScheduleInstance extends Model<ScheduleAttributes>, ScheduleAttributes {
+// Extend the attributes to include associations
+export interface ScheduleAssociations {
   device?: DeviceAttributes;
   package?: SchedulePackageAttributes;
 }
 
-export class Schedule extends Model<ScheduleAttributes, ScheduleInstance> {
-  public id!: number;
-  public deviceId!: number;
-  public packageId!: number | null;
-  public type!: string;
-  public cron?: string;
-  public command!: string;
-  public conditionType?: string;
-  public conditionValue?: number;
-  public active!: boolean;
-  public createdBy?: string;
-  public startEnergy?: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
-  public device?: DeviceAttributes;
-  public package?: SchedulePackageAttributes;
+export class Schedule extends Model<ScheduleAttributes & ScheduleAssociations> {
+  // No public class fields
 }
 
 export function initScheduleModel(sequelize: Sequelize) {
