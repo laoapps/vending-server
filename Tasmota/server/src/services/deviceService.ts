@@ -110,6 +110,7 @@ export class DeviceService {
       });
 
       if (!device) throw new Error('Device not found');
+      console.log(`Controlling device with ID: ${deviceId}, Command: ${command}`,device,device.owner, device.userDevices);
       console.log(`Controlling device with ID: ${device}, Command: ${command} by User: ${user.uuid}`,user);
       const isOwner = device.owner?.uuid === user.uuid;
       const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
