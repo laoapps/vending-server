@@ -188,7 +188,8 @@ export const CreateDatabase = (prefix: string) => {
                                 max: 5,
                                 acquire: 30000,
                                 idle: 10000,
-                            }
+                            },
+                            logging: false
                         }
                     );
                     // dbConnection.sync();

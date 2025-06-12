@@ -243,7 +243,7 @@ export class Tab1Page implements OnDestroy {
   otherModalAreOpening: boolean = false;
 
   t: any;
-  count = 6;
+  count = 7;
 
 
   countdownCheckLaoQRPaidTimer: any = {} as any;
@@ -2968,15 +2968,17 @@ export class Tab1Page implements OnDestroy {
     }
     if (--this.count <= 0) {
       this.count = 7;
-      const x = prompt('password');
-      console.log(x, this.getPassword());
+      // const x = prompt('password');
+      // console.log(x, this.getPassword());
 
-      if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+      // if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
 
       const xp = prompt('password1');
-      if (xp + '' == '123@5martH67') {
+      console.log('xp', xp);
+
+      if (xp + '' == '1234567890_laoapps') {
         console.log('xp', xp);
-        this.serial.close();
+        this.serial?.close();
         this.apiService.modal.create({
           component: TestmotorPage,
           componentProps: { serial: this.serial }

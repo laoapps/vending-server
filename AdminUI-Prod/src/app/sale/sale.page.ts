@@ -18,7 +18,7 @@ import { CuiSalePage } from './cui-sale/cui-sale.page';
   styleUrls: ['./sale.page.scss'],
 })
 export class SalePage implements OnInit {
-  @Input()machineId: string;
+  @Input() machineId: string;
   @Input() otp: string;
 
   private loadSaleListProcess: LoadSaleListProcess;
@@ -27,22 +27,22 @@ export class SalePage implements OnInit {
 
 
 
-  showImage:(p:string)=>string;
+  showImage: (p: string) => string;
   _l = new Array<IVendingMachineSale>();
   readonly: boolean;
 
   constructor(
-    public apiService: ApiService, 
+    public apiService: ApiService,
     private cashingService: AppcachingserviceService,
-    ) {
+  ) {
     this.loadSaleListProcess = new LoadSaleListProcess(this.apiService, this.cashingService);
     this.cloneSaleProcess = new CloneSaleProcess(this.apiService, this.cashingService);
-    this.showImage=this.apiService.showImage;
-   }
+    this.showImage = this.apiService.showImage;
+  }
 
   ngOnInit() {
     this.loadSaleList();
-    
+
     // this.apiService.listSaleByMachine(this.machineId).subscribe(r => {
     //   console.log(r);
     //   if (r.status) {
@@ -56,9 +56,9 @@ export class SalePage implements OnInit {
 
 
   loadSaleList(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-      //  await this.cashingService.clear();
+        //  await this.cashingService.clear();
         const params = {
           ownerUuid: this.apiService.ownerUuid,
           filemanagerURL: this.filemanagerURL,
@@ -68,7 +68,10 @@ export class SalePage implements OnInit {
         if (run.message != IENMessage.success) throw new Error(run);
         console.log(`---->`, run.data[0].readonly);
         this._l.push(...run.data[0].lists);
+        console.log('this._l', this._l);
+
         this.readonly = run.data[0].readonly;
+        console.log('this.readonly', this.readonly);
 
         resolve(IENMessage.success);
 
@@ -81,11 +84,11 @@ export class SalePage implements OnInit {
   }
 
   new() {
-    this.apiService.showModal(SaleAddPage,{machineId:this.machineId,sales:this._l}).then(ro => {
+    this.apiService.showModal(SaleAddPage, { machineId: this.machineId, sales: this._l }).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         if (r.data.s) {
-        console.log(`-->`, r.data);
+          console.log(`-->`, r.data);
 
           const base64 = r.data.s.stock.image;
           r.data.s.stock.image = r.data.s.stock.imageurl;
@@ -108,7 +111,7 @@ export class SalePage implements OnInit {
   edit(id: number | undefined) {
     const s = this._l.find(v => v.id == id);
     if (!s) return alert('Not found')
-    this.apiService.showModal(SaleDetailsPage, {machineId:this.machineId, s ,sales:this._l}).then(ro => {
+    this.apiService.showModal(SaleDetailsPage, { machineId: this.machineId, s, sales: this._l }).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         console.log(r);
@@ -137,14 +140,14 @@ export class SalePage implements OnInit {
       })
     })
   }
-  deletesale(s:IVendingMachineSale) {
-    if(! confirm('Are you sure?'))return;
+  deletesale(s: IVendingMachineSale) {
+    if (!confirm('Are you sure?')) return;
 
     this.apiService.deleteSale(s.id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
         this._l.find((v, i) => {
-          if (v.id ==s.id) {
+          if (v.id == s.id) {
             this._l.splice(i, 1);
             return true;
           }
@@ -157,8 +160,8 @@ export class SalePage implements OnInit {
 
     })
   }
-  save(s:IVendingMachineSale) {
-    this.apiService.disableSale(s.isActive,s.id).subscribe(rx => {
+  save(s: IVendingMachineSale) {
+    this.apiService.disableSale(s.isActive, s.id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
         this._l.find((v, i) => {
@@ -179,7 +182,7 @@ export class SalePage implements OnInit {
   close() {
     this.apiService.closeModal()
   }
-  showProductList(p:IVendingMachineSale){
+  showProductList(p: IVendingMachineSale) {
     this.apiService.showModal(ProductlistPage).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
@@ -188,10 +191,10 @@ export class SalePage implements OnInit {
         if (r.data) {
           this._l.find((v, i) => {
             console.log(v);
-            
+
             if (v.stock.id == p.stock.id) {
-              v.stock=r.data.data
-              this.apiService.updateSale(v).subscribe(v=>{
+              v.stock = r.data.data
+              this.apiService.updateSale(v).subscribe(v => {
                 this.apiService.toast.create({ message: v.message, duration: 2000 }).then(ry => {
                   ry.present();
                 })
@@ -209,9 +212,9 @@ export class SalePage implements OnInit {
   }
 
   cloneSale(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
+
         const msg = this.apiService.alert.create({
           header: 'Are you sure !?',
           subHeader: 'Enter clone machine id',
@@ -254,9 +257,9 @@ export class SalePage implements OnInit {
     });
   }
   cloneSaleCUI(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
+
         const msg = this.apiService.alert.create({
           header: 'Are you sure !?',
           subHeader: 'Enter clone machine id',
@@ -285,7 +288,7 @@ export class SalePage implements OnInit {
                     })
                   } else {
                     this.apiService.simpleMessage(r.message);
-                  } 
+                  }
                 });
 
               }

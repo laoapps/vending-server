@@ -12,7 +12,7 @@ export class LoadSaleListProcess {
     // services
     private apiService: ApiService;
     private cashingService: AppcachingserviceService;
-    
+
     // parameters
     private ownerUuid: string;
     private filemanagerURL: string;
@@ -24,7 +24,7 @@ export class LoadSaleListProcess {
     private timerData: any = {} as any;
     private timerNoData: any = {} as any;
     private counter: number = 0;
-    private firsttime: boolean =false;
+    private firsttime: boolean = false;
 
     constructor(
         apiService: ApiService,
@@ -35,9 +35,9 @@ export class LoadSaleListProcess {
     }
 
     public Init(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
 
 
                 console.log(`init machine list`, 1);
@@ -48,7 +48,7 @@ export class LoadSaleListProcess {
                 console.log(`init machine list`, 2);
 
                 this.InitParams(params);
-  
+
                 console.log(`init machine list`, 3);
 
                 const ValidateParams = this.ValidateParams();
@@ -69,7 +69,7 @@ export class LoadSaleListProcess {
                 if (LoadStorageImage != IENMessage.success) throw new Error(LoadStorageImage);
 
                 console.log(`init machine list`, 9);
-                
+
                 (await this.workload).dismiss();
                 resolve(this.Commit());
 
@@ -77,7 +77,7 @@ export class LoadSaleListProcess {
             } catch (error) {
                 console.log(`error`, error.message);
                 (await this.workload).dismiss();
-                resolve(error.message);     
+                resolve(error.message);
             }
         });
     }
@@ -98,7 +98,7 @@ export class LoadSaleListProcess {
 
 
     private LoadList(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 this.apiService.listSaleByMachine(this.machineId).subscribe(r => {
@@ -111,7 +111,7 @@ export class LoadSaleListProcess {
                     console.log(`lists`, this.lists);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -119,7 +119,7 @@ export class LoadSaleListProcess {
     }
 
     private LoadStorage(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 let run = await this.cashingService.get(IApp.cashing);
@@ -131,7 +131,7 @@ export class LoadSaleListProcess {
                 const parse = JSON.parse(run);
                 this.storage = parse.v;
                 resolve(IENMessage.success);
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -139,7 +139,7 @@ export class LoadSaleListProcess {
     }
 
     private LoadStorageImage(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 this.lists.filter(list => {
@@ -151,14 +151,13 @@ export class LoadSaleListProcess {
                     });
                 });
 
-                const data = this.lists.filter(item => item.stock.image != undefined && item.stock.image != undefined && item.stock.image.substring(0,4) == 'data');
-                const nodata = this.lists.filter(item => item.stock.image != undefined && item.stock.image.substring(0,4) != 'data');
+                const data = this.lists.filter(item => item.stock.image != undefined && item.stock.image != undefined && item.stock.image.substring(0, 4) == 'data');
+                const nodata = this.lists.filter(item => item.stock.image != undefined && item.stock.image.substring(0, 4) != 'data');
 
                 console.log(`all no data`, nodata);
-                if (nodata != undefined && nodata.length > 0)
-                {
-                    for(let i = 0; i < nodata.length; i++) {
-                        
+                if (nodata != undefined && nodata.length > 0) {
+                    for (let i = 0; i < nodata.length; i++) {
+
                         if (nodata[i].stock.image != "") {
                             console.log(`receive image new -->`, i);
 
@@ -170,12 +169,12 @@ export class LoadSaleListProcess {
                             });
                             let file = await this.apiService.convertBlobToBase64(run.data);
                             console.log(`response receive image new -->`);
-        
+
                             const obj = {
                                 name: nodata[i].stock.image,
                                 file: file
                             }
-        
+
                             nodata[i].stock.imageUrl = this.lists[i].stock.image;
                             nodata[i].stock.image = file;
                             this.storage.push(obj);
@@ -188,7 +187,7 @@ export class LoadSaleListProcess {
                 await this.cashingService.set(IApp.cashing, this.storage);
 
                 resolve(IENMessage.success);
-                
+
             } catch (error) {
                 resolve(error.message);
             }

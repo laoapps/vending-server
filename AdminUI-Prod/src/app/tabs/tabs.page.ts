@@ -48,7 +48,7 @@ export class TabsPage implements OnInit {
         });
         break;
       case 2:
-        this.apiService.showModal(MymachinePage, {}).then(r => { r?.present() });
+        this.apiService.showModal(MachinePage, {}).then(r => { r?.present() });
         break;
       case 3:
         this.apiService.showModal(ProductsPage, {}).then(r => { r?.present() });

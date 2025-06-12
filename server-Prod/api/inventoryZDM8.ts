@@ -651,7 +651,9 @@ export class InventoryZDM8 implements IBaseClass {
                             );
                             // console.log('QR IS :', qr);
 
-                            if (qr.status != 'OK') throw new Error(EMessage.generateQRFailed);
+                            // if (qr.status != 'OK') throw new Error(EMessage.generateQRFailed);
+                            if (qr.status != 'OK') return res.send(PrintError(d.command, [], EMessage.generateQRFailed, null));
+                            // throw new Error(EMessage.generateQRFailed);
 
                             const qrData = qr.data.emv;
 
