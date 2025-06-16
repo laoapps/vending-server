@@ -87,6 +87,7 @@ import { LiveupdateService } from '../liveupdate.service';
 import { App } from '@capacitor/app';
 import { VideoCacheService } from '../video-cache.service';
 import { SettingPage } from '../setting/setting.page';
+import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 
 @Component({
   selector: 'app-tab1',
@@ -691,6 +692,16 @@ export class Tab1Page implements OnDestroy {
 
       // that._processLoopCheckLaoQRPaid();
 
+      const showCloseSystem = localStorage.getItem('showCloseSystem') ?? '';
+      if (showCloseSystem == 'yes') {
+        const currentRoute = await this.apiService.modal.getTop();
+        if (!currentRoute) {
+          this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
+            r.present();
+          })
+        }
+      }
+
       if (this.processedQRPaid) return;
       this.processedQRPaid = true;
       await this._processLoopCheckLaoQRPaid();
@@ -738,7 +749,28 @@ export class Tab1Page implements OnDestroy {
           if (this.allowVending != r.allowVending) {
 
             this.allowVending = r.allowVending;
-            console.log('Update Allow vending to', this.allowVending);
+            const currentRoute = await this.apiService.modal.getTop();
+            // console.log('=====>currentRoute', currentRoute);
+
+            if (this.allowVending) {
+              localStorage.setItem('showCloseSystem', '');
+              // console.log('=====>Close Tab CloseSystem');
+              if (currentRoute) {
+                if (currentRoute.component == CloseStytemPage) {
+                  currentRoute.dismiss();
+                }
+              }
+
+            } else {
+              localStorage.setItem('showCloseSystem', 'yes');
+              if (!currentRoute) {
+                this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
+                  r.present();
+                })
+              }
+              // console.log('=====>Open Tab CloseSystem');
+            }
+
 
           }
 
@@ -2280,6 +2312,16 @@ export class Tab1Page implements OnDestroy {
             console.log('*****CHECK 30 SECOND');
 
             // that._processLoopCheckLaoQRPaid();
+
+            const showCloseSystem = localStorage.getItem('showCloseSystem') ?? '';
+            if (showCloseSystem == 'yes') {
+              const currentRoute = await this.apiService.modal.getTop();
+              if (!currentRoute) {
+                this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
+                  r.present();
+                })
+              }
+            }
 
             if (this.processedQRPaid) return;
             this.processedQRPaid = true;

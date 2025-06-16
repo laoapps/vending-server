@@ -543,11 +543,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else if (d.command == EClientCommand.buyLAOQR) {
-                            // console.log("=====>buyLAOQR" + JSON.stringify(d.data));
-
-                            const sale = d.data.ids as Array<IVendingMachineSale>; // item id
+                            const sale = d.data.ids as Array<IVendingMachineSale>;
                             const machineId = this.findMachineIdToken(d.token);
-                            // console.log('machineId', machineId);
+
                             const checkCountGen = await checkGenerateCount(machineId?.machineId);
                             if (checkCountGen.status == 1) {
                                 const ws = this.wsClient.find(v => v['machineId'] === machineId.machineId);
@@ -568,100 +566,54 @@ export class InventoryZDM8 implements IBaseClass {
                                 return res.send(PrintError(d.command, [], EMessage.LaoQRCount, null));
                             }
 
-                            // const position = d.data.position;
                             if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
-                            // throw new Error("Invalid token");
-                            // console.log(" passed token", machineId);
                             if (!Array.isArray(sale)) throw new Error("Invalid array id");
-                            // console.log(' sale is  id', sale);
                             if (await this.isMachineDisabled(machineId.machineId)) return res.send(PrintError(d.command, [], EMessage.machineisdisabled, null));
-                            // throw new Error("machine was disabled");
 
-                            // console.log(' machine was enabled', sale);
                             const checkIds = Array<IVendingMachineSale>();
                             sale.forEach((v) => {
                                 v.stock.qtty = 1;
                                 const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
                                 y.stock.qtty = 1;
                                 y.stock.image = "";
-                                y.machineId = machineId.machineId
+                                y.machineId = machineId.machineId;
                                 checkIds.push(y);
                             });
-                            // console.log(' checkids', sale);
 
-                            // console.log('checkIds', checkIds, 'ids', sale);
-
-                            // if (checkIds.length < sale.length) throw new Error('some array id not exist or wrong qtty');
-
-                            const value = checkIds.reduce((a, b) => {
-                                return a + b.stock.price * b.stock.qtty;
-                            }, 0);
-                            // console.log(' sum by ids', sale);
-                            // console.log('qtty', checkIds);
-                            // console.log('ids', sale.length);
-
-                            // console.log(" value" + d.data.value + " " + value);
-
+                            const value = checkIds.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
                             if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
-                            // throw new Error("Invalid value" + d.data.value + " " + value);
 
-                            // console.log(' value is valid', sale);
-                            let a = machineId?.data?.find(v => v.settingName == 'setting');
-                            // console.log('A is', a);
+                            const a = machineId?.data?.find(v => v.settingName == 'setting');
+                            const mId = a?.imei + '';
+                            const ownerPhone = a?.ownerPhone + '';
+                            const owner = (a?.owner + '').trim();
 
-                            let mId = a?.imei + ''; // for MMoney need 10 digits
-                            // console.log(`check emei derrrrr`, mId);
-                            if (!mId) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            if (!mId || !ownerPhone || !owner) {
+                                return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            }
 
-                            let ownerPhone = a?.ownerPhone + ''; // for MMoney need 10 digits
-                            // console.log(`check ownerPhone derrrrr`, ownerPhone);
-                            if (!ownerPhone) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            // 🔁 พยายาม generate QR ไม่เกิน 3 ครั้ง
+                            let qr;
+                            let attempts = 0;
+                            const maxAttempts = 3;
 
-                            if (a.owner == null || a.owner == undefined || a.owner == "") return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            while (attempts < maxAttempts) {
+                                qr = await this.generateBillLaoQRPro(value, mId, owner, ownerPhone);
+                                if (qr?.status === 'OK') break;
+                                console.log('Attempt', attempts + 1, 'failed. Retrying...');
+                                attempts++;
+                            }
 
-                            // throw new Error('buyLAOQR need IMEI');
-
-                            // const emei: string = 
-                            // console.log(`emei -->`, emei, emei.length, `time -->`, time, time.length);
-                            // const transactionID = emei + time;
-                            const x = new Date().getTime();
-                            // const transactionID = String(mId.substring(mId.length - 10)) + (x + '').substring(2);
-                            // const transactionID = String(mId.substring(mId.length - 8)) + (x + '').substring(5);
-                            // console.log(`transactionID`, transactionID);
-                            // const transactionID = Number(
-                            //     Number(
-                            //         mId.substring(0, mId.length - 10) // 21
-                            //     ) +
-                            //     "" +
-                            //     new Date().getTime() 
-                            // );
-                            // console.log('MID IS :', mId);
-
-                            // const phoneNumber = await findPhoneNumberByUuidOnUserManager(machineId.ownerUuid);
-                            // if (!phoneNumber) throw new Error(EMessage.phoneNumberNotExist);
-
-
-
-
-                            const qr = await this.generateBillLaoQRPro(
-                                value,
-                                mId + '',
-                                (a.owner + '').trim(),
-                                ownerPhone
-                            );
-                            // console.log('QR IS :', qr);
-
-                            // if (qr.status != 'OK') throw new Error(EMessage.generateQRFailed);
-                            if (qr.status != 'OK') return res.send(PrintError(d.command, [], EMessage.generateQRFailed, null));
-                            // throw new Error(EMessage.generateQRFailed);
+                            if (!qr || qr.status !== 'OK') {
+                                return res.send(PrintError(d.command, [], EMessage.generateQRFailed, null));
+                            }
 
                             const qrData = qr.data.emv;
-
                             const bill = {
                                 uuid: uuid4(),
                                 clientId,
                                 qr: qrData,
-                                transactionID: qr.requestId ?? '' + '',
+                                transactionID: qr.requestId ?? '',
                                 machineId: machineId.machineId,
                                 hashM: "",
                                 hashP: "",
@@ -675,43 +627,23 @@ export class InventoryZDM8 implements IBaseClass {
                                 isActive: true,
                             } as VendingMachineBillModel;
 
-                            // console.log('=====> BILL IS :', bill);
-
-
                             const m = await machineClientIDEntity.findOne({
                                 where: {
-                                    machineId: this.findMachineIdToken(d.token)
-                                        ?.machineId,
+                                    machineId: machineId.machineId,
                                 },
                             });
                             const ownerUuid = m?.ownerUuid || "";
-                            const ent = VendingMachineBillFactory(
-                                EEntity.vendingmachinebill + "_" + ownerUuid,
-                                dbConnection
-                            );
+                            const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
                             await ent.sync();
 
                             ent.create(bill).then(async (r) => {
-                                // console.log("SET transactionID by owner", ownerUuid);
                                 redisClient.setEx(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
                                 redisClient.save();
 
-                                let resule = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
-                                // let trandList: Array<any> = JSON.parse(resule);
-                                // // console.log('=====>trandList', trandList);
-                                // if (trandList.length >= 1) {
-                                //     // console.log('REMOVE FIRST TRAND');
-                                //     trandList.splice(0, 1);
-                                // }
-                                // trandList.push({
-                                //     transactionID: bill.transactionID,
-                                //     createdAt: new Date()
-                                // })
-                                // console.log('=====>trandList2', trandList);
-
+                                let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
                                 let trandList: Array<any>;
                                 try {
-                                    trandList = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                                    trandList = JSON.parse(result);
                                     if (!Array.isArray(trandList)) {
                                         console.warn('trandList is not an array, initializing as empty array');
                                         trandList = [];
@@ -725,23 +657,160 @@ export class InventoryZDM8 implements IBaseClass {
                                     console.log('REMOVE FIRST TRAND');
                                     trandList.splice(0, 1);
                                 }
+
                                 trandList.push({
                                     transactionID: bill.transactionID,
                                     createdAt: new Date()
                                 });
 
                                 redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
-
-
-
-                                // redisClient.setEx(`FIND_${qr.transactionId + EMessage.BillCreatedTemp}`, 60 * 15, ownerUuid);
-                                // redisClient.save();
-
-                                // console.log('BILL CREATED', r);
-
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         }
+
+                        //      {
+
+                        //     const sale = d.data.ids as Array<IVendingMachineSale>;
+                        //     const machineId = this.findMachineIdToken(d.token);
+                        //     const checkCountGen = await checkGenerateCount(machineId?.machineId);
+                        //     if (checkCountGen.status == 1) {
+                        //         const ws = this.wsClient.find(v => v['machineId'] === machineId.machineId);
+                        //         ws?.send(
+                        //             JSON.stringify(
+                        //                 PrintSucceeded(
+                        //                     "ping",
+                        //                     {
+                        //                         command: "ping",
+                        //                         production: this.production,
+                        //                         setting: { refresh: true }
+                        //                     },
+                        //                     EMessage.succeeded,
+                        //                     null
+                        //                 )
+                        //             )
+                        //         );
+                        //         return res.send(PrintError(d.command, [], EMessage.LaoQRCount, null));
+                        //     }
+
+                        //     if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
+
+                        //     if (!Array.isArray(sale)) throw new Error("Invalid array id");
+
+                        //     if (await this.isMachineDisabled(machineId.machineId)) return res.send(PrintError(d.command, [], EMessage.machineisdisabled, null));
+
+                        //     const checkIds = Array<IVendingMachineSale>();
+                        //     sale.forEach((v) => {
+                        //         v.stock.qtty = 1;
+                        //         const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
+                        //         y.stock.qtty = 1;
+                        //         y.stock.image = "";
+                        //         y.machineId = machineId.machineId
+                        //         checkIds.push(y);
+                        //     });
+
+                        //     const value = checkIds.reduce((a, b) => {
+                        //         return a + b.stock.price * b.stock.qtty;
+                        //     }, 0);
+
+
+                        //     if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                        //     let a = machineId?.data?.find(v => v.settingName == 'setting');
+
+
+                        //     let mId = a?.imei + '';
+
+                        //     if (!mId) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                        //     let ownerPhone = a?.ownerPhone + '';
+
+                        //     if (!ownerPhone) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                        //     if (a.owner == null || a.owner == undefined || a.owner == "") return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+
+
+
+                        //     const qr = await this.generateBillLaoQRPro(
+                        //         value,
+                        //         mId + '',
+                        //         (a.owner + '').trim(),
+                        //         ownerPhone
+                        //     );
+
+
+                        //     if (qr.status != 'OK') return res.send(PrintError(d.command, [], EMessage.generateQRFailed, null));
+
+                        //     const qrData = qr.data.emv;
+
+                        //     const bill = {
+                        //         uuid: uuid4(),
+                        //         clientId,
+                        //         qr: qrData,
+                        //         transactionID: qr.requestId ?? '' + '',
+                        //         machineId: machineId.machineId,
+                        //         hashM: "",
+                        //         hashP: "",
+                        //         paymentmethod: d.command,
+                        //         paymentref: qrData,
+                        //         paymentstatus: EPaymentStatus.pending,
+                        //         paymenttime: new Date(),
+                        //         requestpaymenttime: new Date(),
+                        //         totalvalue: value,
+                        //         vendingsales: sale,
+                        //         isActive: true,
+                        //     } as VendingMachineBillModel;
+
+
+
+                        //     const m = await machineClientIDEntity.findOne({
+                        //         where: {
+                        //             machineId: this.findMachineIdToken(d.token)
+                        //                 ?.machineId,
+                        //         },
+                        //     });
+                        //     const ownerUuid = m?.ownerUuid || "";
+                        //     const ent = VendingMachineBillFactory(
+                        //         EEntity.vendingmachinebill + "_" + ownerUuid,
+                        //         dbConnection
+                        //     );
+                        //     await ent.sync();
+
+                        //     ent.create(bill).then(async (r) => {
+
+                        //         redisClient.setEx(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                        //         redisClient.save();
+
+                        //         let resule = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
+
+
+                        //         let trandList: Array<any>;
+                        //         try {
+                        //             trandList = JSON.parse(resule);
+                        //             if (!Array.isArray(trandList)) {
+                        //                 console.warn('trandList is not an array, initializing as empty array');
+                        //                 trandList = [];
+                        //             }
+                        //         } catch (error) {
+                        //             console.error('JSON parse error:', error.message);
+                        //             trandList = [];
+                        //         }
+
+                        //         if (trandList.length >= 1) {
+                        //             console.log('REMOVE FIRST TRAND');
+                        //             trandList.splice(0, 1);
+                        //         }
+                        //         trandList.push({
+                        //             transactionID: bill.transactionID,
+                        //             createdAt: new Date()
+                        //         });
+
+                        //         redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+
+
+                        //         res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
+                        //     });
+                        // }
                         else {
                             res.send(PrintError(d.command, [], EMessage.notsupport, null));
                         }
@@ -3018,6 +3087,8 @@ export class InventoryZDM8 implements IBaseClass {
 
                         const o = req.body.data as IMachineClientID;
                         // console.log('OOOOOO', o);
+                        console.log('UPDATE MACHINE SETTING');
+
 
                         this.machineClientlist
                             .findOne({ where: { ownerUuid, id } })
@@ -3107,6 +3178,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 const ws = this.wsClient.find(v => v['machineId'] === r?.machineId);
 
                                 /// WS send to client directly
+                                console.log('=====>S :', s);
+
 
                                 ws?.send(
                                     JSON.stringify(

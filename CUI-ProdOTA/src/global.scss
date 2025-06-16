@@ -155,7 +155,12 @@ ion-item {
 
 
 
-
+  .full-modal {
+     --height: 100%;
+  --width: 100%;
+  --border-radius: 0;
+  --box-shadow: none;
+}
 
 
 // **** control menu **** 
