@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialServiceService } from './services/serialservice.service';
+import { Subject } from 'rxjs';
 
-// FOR RS485 only
+// FOR RS485 only (Ionic Capacitor compatible)
 @Injectable({
   providedIn: 'root'
 })
@@ -19,6 +20,8 @@ export class ADH814Service implements ISerialService {
   private adh814: ADH814Protocol;
   private totalValue = 0; // Optional: track value if needed for future extensions
   machinestatus = { data: '' };
+  private pollInterval?: NodeJS.Timeout; // To manage the software-initiated polling interval
+  private statusSubject = new Subject<IResModel>(); // For real-time status updates
 
   constructor(private serialService: SerialServiceService) { }
 
@@ -54,9 +57,6 @@ export class ADH814Service implements ISerialService {
         this.addLogMessage(this.log, `Raw data: ${hexData}`);
       } else if (event.event === 'serialOpened') {
         this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
-        this.setupDevice().catch(err => {
-          this.addLogMessage(this.log, `Setup failed: ${err.message}`);
-        });
       }
     });
   }
@@ -65,12 +65,45 @@ export class ADH814Service implements ISerialService {
     try {
       const idResponse = await this.adh814.requestID(0x01); // Default to address 1
       this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
-      this.addLogMessage(this.log, 'ADH814 setup complete');
       return Promise.resolve();
     } catch (err) {
       this.addLogMessage(this.log, `Setup error: ${err.message}`);
       return Promise.reject(err);
     }
+  }
+
+  private startPolling(address: number, interval: number = 1000): void {
+    if (this.pollInterval) clearInterval(this.pollInterval); // Clear existing interval if any
+    this.pollInterval = setInterval(() => {
+      // Software-initiated polling for ADH814E_PLUS status
+      this.adh814.pollStatus(address, (response) => {
+        const result: IResModel = {
+          command: EMACHINE_COMMAND.READ_EVENTS,
+          data: {
+            status: response.data[0], // 0=Idle, 1=Delivering, 2=Delivery End
+            motorNumber: response.data[1],
+            executionResult: response.data[2], // Bit0-1: Fault, Bit2: Drop Success/Failure
+            maxCurrent: (response.data[3] << 8) | response.data[4], // mA, high byte first
+            avgCurrent: (response.data[5] << 8) | response.data[6], // mA, high byte first
+            runTime: response.data[7], // 0-255, unit 0.1s
+            temperature: response.data[8] // -127 to 127, unit °C
+          },
+          status: 1,
+          message: 'Software-initiated poll status retrieved',
+          transactionID: Date.now() // Use timestamp as transaction ID
+        };
+        this.statusSubject.next(result); // Emit status update
+        if (response.data[0] === 0x02) { // Delivery End state
+          this.adh814.acknowledgeResult(address, () => {
+            this.addLogMessage(this.log, 'Automatic ACK sent for delivery end');
+          }).catch(err => {
+            this.addLogMessage(this.log, `ACK failed: ${err.message}`);
+          });
+        }
+      }).catch(err => {
+        this.addLogMessage(this.log, `Polling error: ${err.message}`);
+      });
+    }, interval); // Use provided interval (default 1000ms)
   }
 
   initializeSerialPort(
@@ -79,7 +112,8 @@ export class ADH814Service implements ISerialService {
     log: IlogSerial,
     machineId: string,
     otp: string,
-    isNative: ESerialPortType
+    isNative: ESerialPortType,
+    pollInterval: number = 1000 // Configurable polling interval in ms, default to 1000ms
   ): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
       this.machineId = machineId;
@@ -95,6 +129,12 @@ export class ADH814Service implements ISerialService {
 
       if (init === this.portName) {
         this.initADH814();
+        await this.setupDevice().then(() => {
+          this.startPolling(0x01, pollInterval); // Start software-initiated polling
+        }).catch(err => {
+          this.addLogMessage(this.log, `Setup failed during polling start: ${err.message}`);
+          reject(err);
+        });
         resolve(init);
       } else {
         reject(init);
@@ -109,33 +149,59 @@ export class ADH814Service implements ISerialService {
         return;
       }
 
+      const { motorNumber = 0x00, mode = 0x00, tempValue = 8, address = 0x01 } = params || {};
+      const onError = (error: Error) => {
+        reject(new Error(`Command failed: ${error.message}`));
+      };
+
       const onResponse = (response: IADH814) => {
+        this.addLogMessage(this.log, `Response: ${JSON.stringify(response)}`);
+        let status = 1;
+        let message = `Command 0x${response.command.toString(16).padStart(2, '0')} executed`;
+        if ([0xA5, 0xB5].includes(response.command) && response.data[0] !== 0) {
+          status = 0;
+          message += `: Error code ${response.data[0]}`;
+        }
         const result: IResModel = {
           command,
           data: { response },
-          status: response.data.length > 0 && response.data[0] === 0 ? 1 : 0, // 0 typically indicates success
-          message: `Command 0x${response.command.toString(16).padStart(2, '0')} executed`,
+          status,
+          message,
           transactionID
         };
         resolve(result);
       };
 
-      const { motorNumber = 0x00, mode = 0x00, tempValue = 0x0008, address = 0x01 } = params || {};
-      const onError = (error: Error) => {
-        reject(new Error(`Command failed: ${error.message}`));
-      };
-
       switch (command) {
         case EMACHINE_COMMAND.SET_TEMP:
-          
+          if (![0x00, 0x01, 0x02].includes(mode)) {
+            reject(new Error('Mode must be 0x00-0x02'));
+            return;
+          }
+          if (tempValue < -127 || tempValue > 127) {
+            reject(new Error('Temp value must be -127 to 127'));
+            return;
+          }
           this.adh814.setTemperature(address, mode, tempValue, onResponse).catch(onError);
           break;
         case EMACHINE_COMMAND.START_MOTOR:
-
-          this.adh814.startMotor(address, motorNumber, onResponse).catch(onError);
+          if (motorNumber < 0x00 || motorNumber > 0x8C) {
+            reject(new Error('Motor number must be 0x00-0x8C'));
+            return;
+          }
+          this.adh814.pollStatus(address, (statusResponse) => {
+            if (statusResponse.data[0] === 0x02) {
+              this.adh814.acknowledgeResult(address, () => {
+                this.adh814.startMotor(address, motorNumber, onResponse).catch(onError);
+              }).catch(onError);
+            } else if (statusResponse.data[0] === 0x00) {
+              this.adh814.startMotor(address, motorNumber, onResponse).catch(onError);
+            } else {
+              reject(new Error('Board is busy (state: ' + statusResponse.data[0] + ')'));
+            }
+          }).catch(onError);
           break;
         case EMACHINE_COMMAND.CLEAR_RESULT:
-
           this.adh814.acknowledgeResult(address, onResponse).catch(onError);
           break;
         case EMACHINE_COMMAND.RESET:
@@ -143,17 +209,18 @@ export class ADH814Service implements ISerialService {
           resolve(PrintSucceeded(command, {}, 'reset'));
           break;
         case EMACHINE_COMMAND.READ_EVENTS:
-          this.adh814.pollStatus(0x01, (response) => {
+          const { address: pollAddress = 0x01 } = params || {};
+          this.adh814.pollStatus(pollAddress, (response) => {
             const result: IResModel = {
               command,
               data: {
-                status: response.data[0],
+                status: response.data[0], // 0=Idle, 1=Delivering, 2=Delivery End
                 motorNumber: response.data[1],
-                executionResult: response.data[2],
-                maxCurrent: (response.data[3] << 8) | response.data[4],
-                avgCurrent: (response.data[5] << 8) | response.data[6],
-                runTime: response.data[7],
-                temperature: response.data[8]
+                executionResult: response.data[2], // Bit0-1: Fault, Bit2: Drop Success/Failure
+                maxCurrent: (response.data[3] << 8) | response.data[4], // mA, high byte first
+                avgCurrent: (response.data[5] << 8) | response.data[6], // mA, high byte first
+                runTime: response.data[7], // 0-255, unit 0.1s
+                temperature: response.data[8] // -127 to 127, unit °C
               },
               status: 1,
               message: 'Poll status retrieved',
@@ -163,11 +230,26 @@ export class ADH814Service implements ISerialService {
           }).catch(onError);
           break;
         case EMACHINE_COMMAND.SCAN_DOOR:
-          this.adh814.scanDoorFeedback(0x01, onResponse).catch(onError);
+          const { address: scanAddress = 0x01 } = params || {};
+          this.adh814.scanDoorFeedback(scanAddress, onResponse).catch(onError);
           break;
         case EMACHINE_COMMAND.START_MOTOR_MERGED:
           const { motorNumber1 = 0x00, motorNumber2 = 0x00, address: mergedAddress = 0x01 } = params || {};
-          this.adh814.startMotorMerged(mergedAddress, motorNumber1, motorNumber2, onResponse).catch(onError);
+          if (motorNumber1 < 0x00 || motorNumber1 > 0x8C || motorNumber2 < 0x00 || motorNumber2 > 0x8C) {
+            reject(new Error('Motor numbers must be 0x00-0x8C'));
+            return;
+          }
+          this.adh814.pollStatus(mergedAddress, (statusResponse) => {
+            if (statusResponse.data[0] === 0x02) {
+              this.adh814.acknowledgeResult(mergedAddress, () => {
+                this.adh814.startMotorMerged(mergedAddress, motorNumber1, motorNumber2, onResponse).catch(onError);
+              }).catch(onError);
+            } else if (statusResponse.data[0] === 0x00) {
+              this.adh814.startMotorMerged(mergedAddress, motorNumber1, motorNumber2, onResponse).catch(onError);
+            } else {
+              reject(new Error('Board is busy (state: ' + statusResponse.data[0] + ')'));
+            }
+          }).catch(onError);
           break;
         default:
           resolve(PrintSucceeded(command, params, 'unknown command'));
@@ -183,8 +265,14 @@ export class ADH814Service implements ISerialService {
     return this.serialService.getSerialEvents();
   }
 
+  getStatusUpdates() {
+    return this.statusSubject.asObservable(); // Provide observable for software-initiated status updates
+  }
+
   close(): Promise<void> {
+    if (this.pollInterval) clearInterval(this.pollInterval); // Stop software-initiated polling on close
     if (this.adh814) this.adh814.dispose();
+    this.statusSubject.complete(); // Complete the subject to clean up subscribers
     return this.serialService.close();
   }
 
@@ -193,7 +281,7 @@ export class ADH814Service implements ISerialService {
   }
 }
 
-// Interface for ADH814 protocol message (reusing IADH815 for compatibility)
+// Interface for ADH814E_PLUS protocol message
 interface IADH814 {
   address: number;
   command: number;
@@ -201,20 +289,30 @@ interface IADH814 {
   crc: number;
 }
 
-// Utility to calculate CRC-16 (IBM polynomial: 0xA001)
-function calculateCRC16(data: number[]): number {
-  let crc = 0xFFFF;
-  const polynomial = 0xA001;
-
-  for (const byte of data) {
-    crc ^= byte;
-    for (let i = 0; i < 8; i++) {
-      const lsb = crc & 0x0001;
-      crc >>= 1;
-      if (lsb) crc ^= polynomial;
+// Custom Modbus CRC-16 function
+function checkSumCRC(d: string[]): string {
+  const data = d.join('');
+  let crc = 0xFFFF; // Initial CRC value
+  for (let i = 0; i < data.length; i += 2) {
+    const byte = parseInt(data.substring(i, i + 2), 16); // Convert hex string to byte
+    crc ^= byte; // XOR with the current byte
+    for (let j = 0; j < 8; j++) {
+      if (crc & 0x0001) { // Check if the least significant bit is set
+        crc = (crc >> 1) ^ 0xA001; // Shift right and XOR with polynomial
+      } else {
+        crc >>= 1; // Just shift right
+      }
     }
   }
-  return ((crc >> 8) & 0xFF) | ((crc << 8) & 0xFF00); // Byte swap
+  // Convert the CRC to a 4-character hexadecimal string
+  const crcHex = crc.toString(16).padStart(4, '0');
+  // Swap the bytes (little-endian to big-endian)
+  return crcHex.substring(2) + crcHex.substring(0, 2);
+}
+
+// Utility to convert hex string array to Uint8Array for CRC calculation
+function hexArrayToUint8Array(hexArray: string[]): Uint8Array {
+  return new Uint8Array(hexArray.map(hex => parseInt(hex, 16)));
 }
 
 // Utility to convert Uint8Array to hex string
@@ -254,7 +352,7 @@ class ADH814Protocol {
           console.warn(`No listener for command: 0x${command.toString(16)}`);
         }
       } catch (error) {
-        console.log('ADH814 Error parsing response:', error);
+        console.log('ADH814E_PLUS Error parsing response:', error);
       }
     });
   }
@@ -336,8 +434,14 @@ class ADH814Protocol {
   private createRequest(address: number, command: number, data: number[]): Uint8Array {
     if (address < 0x01 || address > 0x04) throw new Error('Address must be 0x01-0x04');
     const payload = [address, command, ...data];
-    const crc = calculateCRC16(payload);
-    return new Uint8Array([...payload, crc & 0xFF, (crc >> 8) & 0xFF]);
+    // Convert number array to hex string array for CRC calculation
+    const hexPayload = payload.map(byte => byte.toString(16).padStart(2, '0'));
+    const crc = checkSumCRC(hexPayload); // Get CRC as "HHLL" string
+    const crcBytes = [
+      parseInt(crc.substring(0, 2), 16), // Low byte
+      parseInt(crc.substring(2, 4), 16)  // High byte
+    ];
+    return new Uint8Array([...payload, ...crcBytes]);
   }
 
   private parseResponse(buffer: Uint8Array): IADH814 {
@@ -345,10 +449,13 @@ class ADH814Protocol {
     const address = buffer[0];
     const command = buffer[1];
     const data = Array.from(buffer.slice(2, buffer.length - 2));
-    const receivedCRC = (buffer[buffer.length - 1] << 8) | buffer[buffer.length - 2];
-    const calculatedCRC = calculateCRC16(Array.from(buffer.slice(0, buffer.length - 2)));
+    const receivedCRC = (buffer[buffer.length - 1] << 8) | buffer[buffer.length - 2]; // High byte first for comparison
+    // Convert buffer to hex string array for CRC calculation
+    const hexData = Array.from(buffer.slice(0, buffer.length - 2))
+      .map(byte => byte.toString(16).padStart(2, '0'));
+    const calculatedCRC = parseInt(checkSumCRC(hexData), 16); // Convert "HHLL" to number
     if (receivedCRC !== calculatedCRC) {
-      console.warn(`CRC mismatch: received 0x${receivedCRC.toString(16)}, calculated 0x${calculatedCRC.toString(16)}`);
+      console.warn(`CRC mismatch: received 0x${receivedCRC.toString(16).padStart(4, '0')}, calculated 0x${calculatedCRC.toString(16).padStart(4, '0')}`);
       throw new Error('CRC validation failed');
     }
     return { address, command, data, crc: receivedCRC };
