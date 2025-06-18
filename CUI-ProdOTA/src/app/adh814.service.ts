@@ -22,6 +22,7 @@ export class ADH814Service implements ISerialService {
   machinestatus = { data: '' };
   private pollInterval?: NodeJS.Timeout; // To manage the software-initiated polling interval
   private statusSubject = new Subject<IResModel>(); // For real-time status updates
+  private currentInterval: number = 1000; // Current polling interval in ms
 
   constructor(private serialService: SerialServiceService) { }
 
@@ -50,11 +51,12 @@ export class ADH814Service implements ISerialService {
 
     this.adh814 = new ADH814Protocol(portAdapter);
 
-    // Log raw data for debugging
+    // Log raw data and response times for debugging
     this.getSerialEvents().subscribe((event) => {
       if (event.event === 'dataReceived') {
         const hexData = event.data;
-        this.addLogMessage(this.log, `Raw data: ${hexData}`);
+        const time = new Date().toISOString();
+        this.addLogMessage(this.log, `Raw data: ${hexData} at ${time}`);
       } else if (event.event === 'serialOpened') {
         this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
       }
@@ -74,9 +76,13 @@ export class ADH814Service implements ISerialService {
 
   private startPolling(address: number, interval: number = 1000): void {
     if (this.pollInterval) clearInterval(this.pollInterval); // Clear existing interval if any
+    this.currentInterval = interval; // Update current interval
     this.pollInterval = setInterval(() => {
-      // Software-initiated polling for ADH814E_PLUS status
+      const startTime = Date.now();
+      // Software-initiated polling (ping) for ADH814E_PLUS status
       this.adh814.pollStatus(address, (response) => {
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
         const result: IResModel = {
           command: EMACHINE_COMMAND.READ_EVENTS,
           data: {
@@ -89,10 +95,11 @@ export class ADH814Service implements ISerialService {
             temperature: response.data[8] // -127 to 127, unit °C
           },
           status: 1,
-          message: 'Software-initiated poll status retrieved',
+          message: `Software-initiated poll status retrieved (Response time: ${responseTime}ms)`,
           transactionID: Date.now() // Use timestamp as transaction ID
         };
         this.statusSubject.next(result); // Emit status update
+        this.addLogMessage(this.log, `Response time: ${responseTime}ms for interval ${this.currentInterval}ms`);
         if (response.data[0] === 0x02) { // Delivery End state
           this.adh814.acknowledgeResult(address, () => {
             this.addLogMessage(this.log, 'Automatic ACK sent for delivery end');
@@ -103,7 +110,21 @@ export class ADH814Service implements ISerialService {
       }).catch(err => {
         this.addLogMessage(this.log, `Polling error: ${err.message}`);
       });
-    }, interval); // Use provided interval (default 1000ms)
+    }, interval); // Use provided interval
+  }
+
+  // Method to adjust polling interval dynamically
+  setPollingInterval(interval: number): void {
+    if (interval < 100) {
+      this.addLogMessage(this.log, 'Interval too low, setting to minimum 100ms');
+      interval = 100;
+    }
+    this.currentInterval = interval;
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.startPolling(0x01, this.currentInterval); // Restart with new interval
+      this.addLogMessage(this.log, `Polling interval updated to ${interval}ms`);
+    }
   }
 
   initializeSerialPort(
@@ -130,7 +151,7 @@ export class ADH814Service implements ISerialService {
       if (init === this.portName) {
         this.initADH814();
         await this.setupDevice().then(() => {
-          this.startPolling(0x01, pollInterval); // Start software-initiated polling
+          this.startPolling(0x01, pollInterval); // Start software-initiated polling (ping)
         }).catch(err => {
           this.addLogMessage(this.log, `Setup failed during polling start: ${err.message}`);
           reject(err);
@@ -279,6 +300,11 @@ export class ADH814Service implements ISerialService {
   public async listPorts(): Promise<SerialPortListResult> {
     return this.serialService.listPorts();
   }
+
+  // Getter for current interval (for debugging or UI)
+  getCurrentInterval(): number {
+    return this.currentInterval;
+  }
 }
 
 // Interface for ADH814E_PLUS protocol message
@@ -288,6 +314,7 @@ interface IADH814 {
   data: number[];
   crc: number;
 }
+
 // Custom Modbus CRC-16 function
 function checkSumCRC(d: string[]): string {
   const data = d.join('');
@@ -434,8 +461,8 @@ class ADH814Protocol {
     if (address < 0x01 || address > 0x04) throw new Error('Address must be 0x01-0x04');
     const payload = [address, command, ...data];
     // Convert number array to hex string array for CRC calculation
-    const hexPayload = payload.map(byte => byte.toString(16).padStart(2, '0'));
-    const crc = checkSumCRC(hexPayload); // Get CRC as "HHLL" string
+    const hexPayload = payload.map(byte => byte.toString(16).padStart(2, '0').toUpperCase());
+    const crc = checkSumCRC(hexPayload); // Get CRC as "HHLL" string (e.g., "4059")
     const crcBytes = [
       parseInt(crc.substring(0, 2), 16), // Low byte
       parseInt(crc.substring(2, 4), 16)  // High byte
@@ -449,9 +476,9 @@ class ADH814Protocol {
     const command = buffer[1];
     const data = Array.from(buffer.slice(2, buffer.length - 2));
     const receivedCRC = (buffer[buffer.length - 1] << 8) | buffer[buffer.length - 2]; // High byte first for comparison
-    // Convert buffer to hex string array for CRC calculation
+    // Convert buffer to hex string array for CRC calculation (exclude CRC bytes)
     const hexData = Array.from(buffer.slice(0, buffer.length - 2))
-      .map(byte => byte.toString(16).padStart(2, '0'));
+      .map(byte => byte.toString(16).padStart(2, '0').toUpperCase());
     const calculatedCRC = parseInt(checkSumCRC(hexData), 16); // Convert "HHLL" to number
     if (receivedCRC !== calculatedCRC) {
       console.warn(`CRC mismatch: received 0x${receivedCRC.toString(16).padStart(4, '0')}, calculated 0x${calculatedCRC.toString(16).padStart(4, '0')}`);
