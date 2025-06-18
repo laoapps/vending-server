@@ -21,8 +21,11 @@ export function initialize() {
 
     UserEntity.init({
         id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        uuid: { type: DataTypes.STRING, allowNull: false, unique: true },
         name: { type: DataTypes.STRING, allowNull: false },
+        phoneNumber: { type: DataTypes.STRING, allowNull: false },
         token: { type: DataTypes.STRING, allowNull: false, unique: true },
+        ownerUuid: { type: DataTypes.STRING, allowNull: false },
         balance: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0 }
     }, { sequelize, modelName: 'User' });
 
@@ -102,8 +105,6 @@ export function validate_server_key(key: string): Promise<string> {
                 } else {
                     resolve('')
                 }
-
-
             }).catch(e => { reject(e) });
         }
         else resolve('')

@@ -41,7 +41,7 @@ CreateDatabase("")
   .then((r) => {
     console.log("DATABASE CREATED OK", r);
 
-    initialize();
+    // initialize();
 
 
     const isVending = process.env.VENDING || true;
