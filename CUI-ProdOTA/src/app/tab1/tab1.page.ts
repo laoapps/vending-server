@@ -700,6 +700,13 @@ export class Tab1Page implements OnDestroy {
             r.present();
           })
         }
+      } else {
+        const currentRoute = await this.apiService.modal.getTop();
+        if (currentRoute) {
+          if (currentRoute.component == CloseStytemPage) {
+            currentRoute.dismiss();
+          }
+        }
       }
 
       if (this.processedQRPaid) return;
@@ -745,16 +752,15 @@ export class Tab1Page implements OnDestroy {
 
           // set allow vending
           console.log('ALLOW VENDING', r.allowVending);
+          localStorage.setItem('showCloseSystem', r.allowVending ? '' : 'yes');
 
           if (this.allowVending != r.allowVending) {
 
             this.allowVending = r.allowVending;
             const currentRoute = await this.apiService.modal.getTop();
-            // console.log('=====>currentRoute', currentRoute);
 
             if (this.allowVending) {
-              localStorage.setItem('showCloseSystem', '');
-              // console.log('=====>Close Tab CloseSystem');
+              this.apiService.toast.create({ message: 'Close Tab CloseSystem', duration: 3000 }).then(r => r.present());
               if (currentRoute) {
                 if (currentRoute.component == CloseStytemPage) {
                   currentRoute.dismiss();
@@ -762,13 +768,13 @@ export class Tab1Page implements OnDestroy {
               }
 
             } else {
-              localStorage.setItem('showCloseSystem', 'yes');
               if (!currentRoute) {
                 this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
                   r.present();
                 })
               }
-              // console.log('=====>Open Tab CloseSystem');
+              this.apiService.toast.create({ message: 'Open Tab CloseSystem', duration: 3000 }).then(r => r.present());
+
             }
 
 
@@ -2320,6 +2326,17 @@ export class Tab1Page implements OnDestroy {
                 this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
                   r.present();
                 })
+              } else {
+                if (currentRoute.component == CloseStytemPage) {
+                  currentRoute.dismiss();
+                }
+              }
+            } else {
+              const currentRoute = await this.apiService.modal.getTop();
+              if (currentRoute) {
+                if (currentRoute.component == CloseStytemPage) {
+                  currentRoute.dismiss();
+                }
               }
             }
 
