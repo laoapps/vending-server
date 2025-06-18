@@ -24,6 +24,7 @@ import { InventoryLocker } from "./api/inventoryLocker";
 import { ControlVersionAPI } from "./api/controlVersion";
 import dotenv from "dotenv";
 import { initBundle } from "./services/appupdate";
+import { initialize } from "./services/topup.service";
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
@@ -39,6 +40,9 @@ process.env._log_path = path.join(__dirname, "..", "logs");
 CreateDatabase("")
   .then((r) => {
     console.log("DATABASE CREATED OK", r);
+
+    initialize();
+
 
     const isVending = process.env.VENDING || true;
     console.log(`is vending`, isVending);

@@ -130,6 +130,9 @@ services:
       - backendKey=2d3e210c-1069-4b18-9dd7-a2ec70b57a06
       - production=false
       - name=SHAREHAPPINESS
+
+      - NOCNOC_SERVER=
+
     ports:
       # - 51231:31231
       # - 51232:31232
