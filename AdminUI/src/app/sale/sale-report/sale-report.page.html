@@ -70,7 +70,7 @@
         <thead class="fw-bold">
           <tr>
             <td>#</td>
-            <td>Machine</td>
+            <td>ທະນາຄານ</td>
             <td>Product</td>
             <td>Price</td>
             <td>Total Quantity</td>
@@ -83,7 +83,7 @@
         <tbody *ngFor="let sale of saleSumerizeList; let i = index">
           <tr>
             <td>{{ i+1 }}</td>
-            <td>{{ sale.machineId }}</td>
+            <td>{{ shouldHidePaymentRef(sale.paymentref) ? '' : sale.paymentref }}</td>
             <td>{{ sale.stock.name }}</td>
             <td>{{ sale.stock.price | number }}</td>
             <td>{{ sale.stock.qtty | number }}</td>
