@@ -288,7 +288,6 @@ interface IADH814 {
   data: number[];
   crc: number;
 }
-
 // Custom Modbus CRC-16 function
 function checkSumCRC(d: string[]): string {
   const data = d.join('');
