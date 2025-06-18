@@ -1387,7 +1387,8 @@ export interface IMMoneyConfirm {
     amount: string,
     msisdn_merchan: string,
     msisdn_consumer: string,
-    qrcode: string
+    qrcode: string,
+    bankname: string,
 
 
 }

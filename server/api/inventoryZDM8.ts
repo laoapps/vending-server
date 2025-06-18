@@ -5406,7 +5406,7 @@ export class InventoryZDM8 implements IBaseClass {
     //         }
     //     });
     // }
-    callBackConfirmLaoQR(transactionID: string) {
+    callBackConfirmLaoQR(transactionID: string, bankname: string) {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
                 console.log('TransactionID', transactionID);
@@ -5442,7 +5442,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // Update bill properties
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
-                bill.paymentref = bill.transactionID + '';
+                bill.paymentref = bankname + '';
                 bill.changed("paymentref", true);
                 bill.paymenttime = new Date();
                 bill.changed("paymenttime", true);
@@ -5770,7 +5770,8 @@ export class InventoryZDM8 implements IBaseClass {
                 axios.post('https://vendingserviceapi.laoapps.com', {
                     "command": "confirmLAOQR",
                     "data": {
-                        "trandID": transactionID
+                        "trandID": transactionID,
+                        "bankname": res.data.data?.bankname ?? ''
                     }
                 }, {
                     headers: {
@@ -5842,7 +5843,8 @@ export class InventoryZDM8 implements IBaseClass {
                     axios.post('https://vendingserviceapi.laoapps.com', {
                         "command": "confirmLAOQR",
                         "data": {
-                            "trandID": transactionID
+                            "trandID": transactionID,
+                            "bankname": res.data.data?.bankname ?? ''
                         }
                     }, {
                         headers: {
@@ -6517,7 +6519,7 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<any>((resolve, reject) => {
             console.log('=====>ConfirmLAOQR  is :', c);
 
-            this.callBackConfirmLaoQR(c.trandID).then((r) => {
+            this.callBackConfirmLaoQR(c.trandID, c.bankname).then((r) => {
                 if (r) {
                     resolve({ bill: r, transactionID: c.tranid_client });
                 } else {
