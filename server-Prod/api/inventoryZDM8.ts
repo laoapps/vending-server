@@ -3352,8 +3352,9 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const transactionID = req.body.transactionID;
                         const ownerUuid = req.body.ownerUuid;
+                        const bankname = req.body.bankname;
 
-                        if (!transactionID || !ownerUuid) {
+                        if (!transactionID || !ownerUuid || !bankname) {
                             res.send(PrintError("reportBillNotPaid", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
                             return;
                         };
@@ -3377,7 +3378,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         bill.paymentstatus = EPaymentStatus.paid;
                         bill.changed("paymentstatus", true);
-                        bill.paymentref = bill.transactionID + '';
+                        bill.paymentref = bankname + '';
                         bill.changed("paymentref", true);
                         bill.paymenttime = new Date();
                         bill.changed("paymenttime", true);
@@ -5559,7 +5560,7 @@ export class InventoryZDM8 implements IBaseClass {
     //         }
     //     });
     // }
-    callBackConfirmLaoQR(transactionID: string) {
+    callBackConfirmLaoQR(transactionID: string, bankname: string) {
         return new Promise<IVendingMachineBill>(async (resolve, reject) => {
             try {
                 console.log('TransactionID', transactionID);
@@ -5595,7 +5596,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // Update bill properties
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
-                bill.paymentref = bill.transactionID + '';
+                bill.paymentref = bankname + '';
                 bill.changed("paymentref", true);
                 bill.paymenttime = new Date();
                 bill.changed("paymenttime", true);
@@ -5916,7 +5917,8 @@ export class InventoryZDM8 implements IBaseClass {
                     axios.post('https://vending-service-api5.laoapps.com', {
                         "command": "confirmLAOQR",
                         "data": {
-                            "trandID": transactionID
+                            "trandID": transactionID,
+                            "bankname": res.data.data?.bankname ?? ''
                         }
                     }, {
                         headers: {
@@ -5974,7 +5976,8 @@ export class InventoryZDM8 implements IBaseClass {
                 axios.post('https://vendingserviceapi.laoapps.com', {
                     "command": "confirmLAOQR",
                     "data": {
-                        "trandID": transactionID
+                        "trandID": transactionID,
+                        "bankname": res.data.data?.bankname ?? ''
                     }
                 }, {
                     headers: {
@@ -6696,7 +6699,7 @@ export class InventoryZDM8 implements IBaseClass {
             console.log('=====>ConfirmLAOQR  is :', c);
 
 
-            this.callBackConfirmLaoQR(c.trandID).then((r) => {
+            this.callBackConfirmLaoQR(c.trandID, c.bankname).then((r) => {
                 if (r) {
                     resolve({ bill: r, transactionID: c.tranid_client });
                 } else {

@@ -27,6 +27,7 @@ import {
   ModalController,
   ModalOptions,
   ToastController,
+  IonicSafeString
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
 import * as  moment from 'moment';
@@ -850,27 +851,84 @@ export class ApiService {
   }
 
 
-  public alertTimeout(text: string) {
+  // public alertTimeout(text: string) {
 
-    this.alert.create({
-      header: 'Fail',
-      message: text,
+  //   this.alert.create({
+  //     header: 'Fail',
+  //     message: text,
+  //     buttons: [
+  //       {
+  //         text: 'OK',
+  //         role: 'confirm',
+  //         cssClass: 'alert-ok-button',
+  //       },
+  //     ],
+  //     backdropDismiss: false,
+  //     // cssClass: 'custom-alert-error',
+  //   }).then((v) => v.present());
+
+  //   // });
+  //   setTimeout(() => {
+  //     this.alert.dismiss();
+  //   }, 15000);
+  // }
+
+
+
+
+  // public alertTimeout(text: string) {
+  //   this.alert.create({
+  //     header: 'เกิดข้อผิดพลาด',
+  //     message: new IonicSafeString(`
+  //     <div style="display: flex; flex-direction: column; align-items: center;">
+  //       <ion-icon name="alert-circle" style="color: #f44336; font-size: 40px; margin-bottom: 10px;"></ion-icon>
+  //       <div style="color: #333; font-size: 15px; text-align: center;">${text}</div>
+  //     </div>
+  //   `),
+  //     buttons: [
+  //       {
+  //         text: 'ตกลง',
+  //         role: 'confirm',
+  //         cssClass: 'alert-ok-button',
+  //       },
+  //     ],
+  //     cssClass: 'custom-alert-error',
+  //     backdropDismiss: false,
+  //   }).then((alertEl) => {
+  //     alertEl.present();
+
+  //     setTimeout(() => {
+  //       alertEl.dismiss();
+  //     }, 15000);
+  //   });
+  // }
+
+
+  async alertTimeout(text: string) {
+    const alert = await this.alert.create({
+      header: 'Session Timeout',
+      message: `<ion-icon name="warning-outline" slot="start"></ion-icon> ${text}`,
       buttons: [
         {
           text: 'OK',
           role: 'confirm',
-          cssClass: 'alert-ok-button',
-        },
+          cssClass: 'alert-ok-button'
+        }
       ],
       backdropDismiss: false,
-      // cssClass: 'custom-alert-error',
-    }).then((v) => v.present());
+      cssClass: 'custom-alert-error',
+      animated: true
+    });
 
-    // });
+    await alert.present();
+
     setTimeout(() => {
-      this.alert.dismiss();
+      alert.dismiss();
     }, 15000);
   }
+
+
+
 
   public alertWarnning(title: string, text: string) {
     // Swal.fire({

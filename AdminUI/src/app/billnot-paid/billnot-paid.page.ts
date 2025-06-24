@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { IENMessage } from '../models/base.model';
 import { LoadVendingMachineSaleBillReportProcess } from '../sale/processes/loadVendingMachineBillReport.process';
+import { EMessage } from '../services/syste.model';
 
 @Component({
   selector: 'app-billnot-paid',
@@ -158,20 +159,28 @@ export class BillnotPaidPage implements OnInit {
     });
   }
 
-  SendDrop(transactionID: string): Promise<any> {
+  SendDrop(transactionID: string, bankname: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
         const paramsData = {
           transactionID: transactionID,
           ownerUuid: this.ownerUuid,
-          token: this.token
+          token: this.token,
+          bankname: bankname
         }
         this.apiService.sendDropBill(paramsData).subscribe(async r => {
-          console.log('response SendDrop', r);
+          // console.log('response SendDrop', r);
+          const response: any = r;
+          console.log('response', response.data.status);
+          if (response?.data?.status === 1) {
+            resolve(EMessage.succeeded);
+          } else {
+            resolve(EMessage.error);
+          }
         })
       } catch (error) {
         console.log('error', error);
-
+        resolve(EMessage.error);
       }
     });
 
@@ -197,14 +206,7 @@ export class BillnotPaidPage implements OnInit {
                   handler: () => {
                     console.log('Confirm Okay');
                   }
-                },
-                {
-                  text: 'ສັ່ງເຄື່ອງຕົກ',
-                  handler: () => {
-                    // console.log('Confirm Okay');
-                    this.SendDrop(transactionID);
-                  }
-                },
+                }
               ]
             }).then(alert => {
               alert.present();
@@ -230,6 +232,64 @@ export class BillnotPaidPage implements OnInit {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
+    });
+  }
+
+
+  SendDropBill(transactionID: string, index: number) {
+    this.apiService?.alert.create({
+      header: 'Paid',
+      inputs: [
+        {
+          name: 'bankname',
+          type: 'text',
+          placeholder: 'ຊື່ທະນາຄານ',
+        },
+        {
+          name: 'textConfirm',
+          type: 'text',
+          placeholder: 'ຂໍ້ຄວາມຢືນຢັນ',
+        },
+      ],
+      buttons: [
+        {
+          text: 'ຍົກເລີກ',
+          role: 'cancel',
+          cssClass: 'secondary',
+        },
+        {
+          text: 'ຕົກລົງ',
+          handler: async (data) => {
+            if (!data.bankname || !data.textConfirm) {
+              console.log('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບ');
+              return false; // ไม่ปิด Alert
+            }
+            if (data.textConfirm != 'confirm') {
+              return false;
+            }
+            // console.log('Bank Name:', data.bankname);
+            // console.log('Text Confirm:', data.textConfirm);
+            this.apiService.showLoading();
+            const run = await this.SendDrop(transactionID, data.bankname);
+            if (run != EMessage.succeeded) {
+              this.apiService.toast.create({
+                message: 'ຍິງເຄື່ອງຕົກບໍ່ສໍາເລັດ',
+                duration: 2000
+              }).then(toast => toast.present());
+            } else {
+              this.apiService.toast.create({
+                message: 'ຍິງເຄື່ອງຕົກສໍາເລັດ',
+                duration: 2000
+              }).then(toast => toast.present());
+            }
+            this.saleSumerizeList.splice(index, 1);
+            this.apiService.dismissLoading();
+            return true;
+          },
+        },
+      ]
+    }).then(alert => {
+      alert.present();
     });
   }
 

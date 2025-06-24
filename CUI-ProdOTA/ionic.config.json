@@ -3,9 +3,10 @@
   "integrations": {
     "capacitor": {
       "server": {
-      "cleartext": true
+        "cleartext": true
       }
     }
   },
-  "type": "angular"
+  "type": "angular",
+  "innerHTMLTemplatesEnabled": true
 }

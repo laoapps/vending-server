@@ -96,13 +96,13 @@ services:
     # image: touyara/orderbillingapi:v1
     # command: npm start
     environment:
-      
+      - DATABASE_URL=postgres://dbvenderserveradmin:2Grg7Dith14P@postgres:5432/dbvenderservice5
       - DATABASE_HOST=vending-db5
       - REDIS_HOST=redis://vending-redis-service5:6379
       - REDIS_SERVER_HOST=vending-redis-service5
       - REDIS_SERVER_PORT=6379
 
-      - REDIS_HOST=host.docker.internal
+      # - REDIS_HOST=host.docker.internal
       - REDIS_LOCAL_HOST=host.docker.internal
       - REDIS_LOCAL_PORT=6379
       

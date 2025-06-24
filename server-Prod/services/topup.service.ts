@@ -4,12 +4,13 @@ import axios from 'axios';
 import { NextFunction, Response, Request } from 'express';
 import { OwnerEntity, UserEntity } from '../models/ topup.model';
 
-const sequelize = new Sequelize(process.env.DATABASE_HOST!, {
+
+const sequelize = new Sequelize(process.env.DATABASE_URL!, {
     dialect: 'postgres',
     logging: false
 });
 
-export const redisClient = createClient({ url: process.env.REDIS_LOCAL_HOST });
+export const redisClient = createClient({ url: process.env.REDIS_HOST });
 redisClient.connect().catch(console.error);
 
 export function initialize() {

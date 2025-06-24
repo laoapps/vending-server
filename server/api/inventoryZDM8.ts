@@ -3196,6 +3196,7 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const transactionID = req.body.transactionID;
                         const ownerUuid = req.body.ownerUuid;
+                        const bankname = req.body.bankname;
 
                         if (!transactionID || !ownerUuid) {
                             res.send(PrintError("reportBillNotPaid", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
@@ -3221,7 +3222,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         bill.paymentstatus = EPaymentStatus.paid;
                         bill.changed("paymentstatus", true);
-                        bill.paymentref = bill.transactionID + '';
+                        bill.paymentref = bankname + '';
                         bill.changed("paymentref", true);
                         bill.paymenttime = new Date();
                         bill.changed("paymenttime", true);
