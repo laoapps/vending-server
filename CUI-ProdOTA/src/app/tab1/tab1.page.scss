@@ -844,3 +844,66 @@ div.scrollmenu {
     50% { transform: scale(2); box-shadow: 0 0 25px #00ff00; opacity: 0.7; }
     100% { transform: scale(1); box-shadow: 0 0 15px #ff00ff; opacity: 1; }
   }
+
+
+  * {
+  box-sizing: border-box; /* Ensure padding and margins are included in width */
+}
+
+// .vending-machine-container {
+//   padding: 10px;
+//   width: 100%;
+// }
+
+// .row {
+//   display: flex;
+//   flex-wrap: nowrap; /* Keep items in one line */
+//   justify-content: space-between; /* Distribute items evenly for non-scrollable rows */
+//   gap: 10px; /* Space between items */
+//   margin-bottom: 20px;
+//   width: 100%;
+// }
+
+// .scrollable-row {
+//   overflow-x: auto; /* Enable horizontal scrolling */
+//   justify-content: flex-start; /* Align items to start for scrolling */
+//   scroll-snap-type: x mandatory; /* Snap to items (optional) */
+//   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+//   scrollbar-width: none; /* Hide scrollbar in Firefox */
+// }
+
+// .scrollable-row::-webkit-scrollbar {
+//   display: none; /* Hide scrollbar in Chrome/Safari */
+// }
+
+// .item-container {
+//   /* Fixed width based on 5 items: (100% - 4 gaps) / 5 */
+//   width: calc((100% - 40px) / 5);
+//   min-width: 100px; /* Prevent items from becoming too small */
+//   max-width: 250px; /* Prevent items from becoming too large */
+//   scroll-snap-align: start; /* Snap to start of item (optional) */
+// }
+
+// ion-card {
+//   text-align: center;
+//   width: 100%;
+// }
+
+// ion-item-divider.item-header {
+//   background-color: #f4f4f4;
+// }
+
+// .product-image {
+//   width: 100%; /* Image scales to container width */
+//   height: auto; /* Maintain aspect ratio */
+//   max-height: 300px; /* Cap height for consistency */
+//   object-fit: cover;
+// }
+
+// .row-separator {
+//   height: 4px; /* Thin separator */
+//   background: linear-gradient(to right, #d3d3d3, #a8a8a8, #d3d3d3); /* Subtle gradient */
+//   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+//   margin: 10px 0; /* Spacing above and below */
+//   border-radius: 2px; /* Slight rounding for smoothness */
+// }

@@ -183,7 +183,6 @@ export class Tab1Page implements OnDestroy {
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
-  versionId = environment.versionId ?? '0.0.0';
 
 
   adsOn: Boolean = false;
@@ -316,7 +315,7 @@ export class Tab1Page implements OnDestroy {
   allowCashIn = false;
   light = { start: 3, end: 2 };
 
-  allowVending = true;
+  // allowVending = true;
   tempStatus: { lowTemp: number, highTemp: number } = { lowTemp: 5, highTemp: 10 };
 
   initHashBankNotes(machineId: string) {
@@ -679,10 +678,11 @@ export class Tab1Page implements OnDestroy {
         label: key,  // Display name
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
-
     setTimeout(async () => {
       await this.connect();
+      this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
       this.readyState = true;
+
       Toast.show({ text: 'READY', duration: 'long' })
     }, 1000);
 
@@ -692,20 +692,38 @@ export class Tab1Page implements OnDestroy {
 
       // that._processLoopCheckLaoQRPaid();
 
-      const showCloseSystem = localStorage.getItem('showCloseSystem') ?? '';
-      if (showCloseSystem == 'yes') {
-        const currentRoute = await this.apiService.modal.getTop();
-        if (!currentRoute) {
-          this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
-            r.present();
-          })
-        }
-      } else {
+      // const showCloseSystem = localStorage.getItem('showCloseSystem') ?? '';
+      // if (showCloseSystem == 'yes') {
+      //   const currentRoute = await this.apiService.modal.getTop();
+      //   if (!currentRoute) {
+      //     this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
+      //       r.present();
+      //     })
+      //   }
+      // } else {
+      //   const currentRoute = await this.apiService.modal.getTop();
+      //   if (currentRoute) {
+      //     if (currentRoute.component == CloseStytemPage) {
+      //       currentRoute.dismiss();
+      //     }
+      //   }
+      // }
+
+      const vending = localStorage.getItem('allowVending') ?? '';
+      let allowVending = vending == 'yes' ? true : false;
+      if (allowVending) {
         const currentRoute = await this.apiService.modal.getTop();
         if (currentRoute) {
           if (currentRoute.component == CloseStytemPage) {
             currentRoute.dismiss();
           }
+        }
+      } else {
+        const currentRoute = await this.apiService.modal.getTop();
+        if (!currentRoute) {
+          this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
+            r.present();
+          })
         }
       }
 
@@ -752,21 +770,19 @@ export class Tab1Page implements OnDestroy {
 
           // set allow vending
           console.log('ALLOW VENDING', r.allowVending);
-          localStorage.setItem('showCloseSystem', r.allowVending ? '' : 'yes');
-
-          if (this.allowVending != r.allowVending) {
-
-            this.allowVending = r.allowVending;
+          const vending = localStorage.getItem('allowVending') ?? '';
+          let allowVending = vending == 'yes' ? true : false;
+          localStorage.setItem('allowVending', r.allowVending ? 'yes' : '');
+          if (allowVending != r.allowVending) {
+            allowVending = r.allowVending;
             const currentRoute = await this.apiService.modal.getTop();
-
-            if (this.allowVending) {
+            if (allowVending) {
               this.apiService.toast.create({ message: 'Close Tab CloseSystem', duration: 3000 }).then(r => r.present());
               if (currentRoute) {
                 if (currentRoute.component == CloseStytemPage) {
                   currentRoute.dismiss();
                 }
               }
-
             } else {
               if (!currentRoute) {
                 this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
@@ -774,12 +790,10 @@ export class Tab1Page implements OnDestroy {
                 })
               }
               this.apiService.toast.create({ message: 'Open Tab CloseSystem', duration: 3000 }).then(r => r.present());
-
             }
-
-
           }
 
+          localStorage.setItem('qrPayment', r.qrPayment ? 'yes' : '');
 
           if (this.isAds != r.isAds) {
             this.isAds = r.isAds;
@@ -871,8 +885,8 @@ export class Tab1Page implements OnDestroy {
           }
           if (this.platform.is('android')) {
             if (r.versionId) {
-              if (this.versionId != r.versionId) {
-                this.versionId = r.versionId;
+              const versionId = environment.versionId ?? '0.0.0';
+              if (versionId != r.versionId) {
                 console.log('Update versionId to', r.versionId);
                 this.apiService.toast.create({ message: `Update versionId to ${r.versionId}`, duration: 3000 }).then(r => r.present());
                 this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
@@ -916,7 +930,6 @@ export class Tab1Page implements OnDestroy {
 
             } catch (error) {
               console.log('Error getReplacements', error);
-
             }
 
           }
@@ -1041,12 +1054,24 @@ export class Tab1Page implements OnDestroy {
   }
 
 
-  checkLiveUpdate(version: string) {
+  async checkLiveUpdate(version: string) {
     try {
+      this.apiService.toast.create({ message: 'Close Serial', duration: 2000 }).then(r => r.present());
+      if (this.serial) {
+        await this.serial?.close();
+        this.serial = null;
+        this.connecting = false;
+      }
       this.liveUpdateService.checkForUpdates(version).then(async (res) => {
-        console.log('checkForUpdates', res);
+        if (res == undefined) {
+          this.apiService.reloadPage();
+        }
+        // console.log('checkForUpdates', res);
+        // setInterval(() => {
+        //   App.exitApp();
+        // }, 20000);
       }).catch((e) => {
-
+        this.apiService.reloadPage();
         console.log('Error checkLiveUpdate', e);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checkLiveUpdate :${JSON.stringify(e)}` });
       });
@@ -2168,14 +2193,15 @@ export class Tab1Page implements OnDestroy {
   addOrder(x: IVendingMachineSale) {
     try {
       this.autopilot.auto = 0;
-      console.log(`allow vending`, this.allowVending);
+      // console.log(`allow vending`, this.allowVending);
 
       console.log('POS', x.position);
 
       // this.testDrop(x.position);
+      const vending = localStorage.getItem('allowVending') ?? '';
+      let allowVending = vending == 'yes' ? true : false;
 
-
-      if (this.allowVending == false) {
+      if (allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
         // const alert = Swal.fire({
@@ -2223,9 +2249,11 @@ export class Tab1Page implements OnDestroy {
   addOrderTest(x: IVendingMachineSale) {
     try {
       this.autopilot.auto = 0;
-      console.log(`allow vending`, this.allowVending);
+      // console.log(`allow vending`, this.allowVending);
+      const vending = localStorage.getItem('allowVending') ?? '';
+      let allowVending = vending == 'yes' ? true : false;
 
-      if (this.allowVending == false) {
+      if (allowVending == false) {
         // this.apiService.simpleMessage('Vending is closed');
         this.apiService.soundSystemError();
         // const alert = Swal.fire({
@@ -2319,24 +2347,21 @@ export class Tab1Page implements OnDestroy {
 
             // that._processLoopCheckLaoQRPaid();
 
-            const showCloseSystem = localStorage.getItem('showCloseSystem') ?? '';
-            if (showCloseSystem == 'yes') {
+            const vending = localStorage.getItem('allowVending') ?? '';
+            let allowVending = vending == 'yes' ? true : false;
+            if (allowVending) {
               const currentRoute = await this.apiService.modal.getTop();
-              if (!currentRoute) {
-                this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
-                  r.present();
-                })
-              } else {
+              if (currentRoute) {
                 if (currentRoute.component == CloseStytemPage) {
                   currentRoute.dismiss();
                 }
               }
             } else {
               const currentRoute = await this.apiService.modal.getTop();
-              if (currentRoute) {
-                if (currentRoute.component == CloseStytemPage) {
-                  currentRoute.dismiss();
-                }
+              if (!currentRoute) {
+                this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal').then(r => {
+                  r.present();
+                })
               }
             }
 
@@ -3402,5 +3427,25 @@ export class Tab1Page implements OnDestroy {
     //     }, 1500);
     //   }
     // }
+  }
+  rows: number[] = [5, 5, 10]; // Default to 10 items per row
+
+  get filteredSaleList(): any[] {
+    return this.saleList.filter(sl => sl.stock.qtty - this.checkCartCount(sl.position) > 0);
+  }
+
+  // Calculate the starting index for each row based on filtered list
+  getRowStart(rowIndex: number): number {
+    return this.rows.slice(0, rowIndex).reduce((sum, count) => sum + count, 0);
+  }
+
+  // Check if the row should be scrollable (third row with 10 items)
+  isScrollableRow(rowIndex: number): boolean {
+    return rowIndex === 2; // Third row (index 2) is scrollable
+  }
+
+  debugRow(rowIndex: number, rowCount: number, actualCount: number): string {
+    console.log(`Row ${rowIndex}: Expected ${rowCount}, Actual ${actualCount}`);
+    return '';
   }
 }

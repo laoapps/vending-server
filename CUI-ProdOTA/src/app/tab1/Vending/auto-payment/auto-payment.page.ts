@@ -2,21 +2,17 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
-import { EClientCommand, EMessage, IBillProcess, ISerialService, IVendingMachineSale } from 'src/app/services/syste.model';
+import { EClientCommand, EMessage, IVendingMachineSale } from 'src/app/services/syste.model';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
-// import Swal from 'sweetalert2';
 import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
-// import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 import { GenerateLaoQRCodeProcess } from '../../LaoQR_processes/generateLaoQRCode.process';
 import * as cryptojs from 'crypto-js';
 import qrlogo from 'qrcode-with-logos';
 import { WsapiService } from 'src/app/services/wsapi.service';
 import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
 // import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
-import { clear } from 'console';
 import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 import { RemainingbilllocalPage } from 'src/app/remainingbilllocal/remainingbilllocal.page';
-import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-auto-payment',
@@ -188,6 +184,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   paymentOptions: Array<any> = [...this.ewalletOptionList];
 
   paymentCheck: Array<any> = [...this.ewalletCheckList];
+  qrPayment: boolean = localStorage.getItem('qrPayment') == 'yes' ? true : false;
 
 
   private workload: any = {} as any;
@@ -224,6 +221,19 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     console.log(`order der`, this.parseorders);
     console.log(`--->`, this.parseGetTotalSale);
+    console.log('qrPayment', this.qrPayment);
+    if (this.qrPayment) {
+      this.paymentList.push({
+        image: `../../../../assets/logo/qrpayment.png`,
+        name: 'Popup QR',
+        title: 'Popup QR (optional)',
+        detail: 'Pay your orders by using Popup QR',
+        value: 'PopupQR'
+      });
+    }
+    console.log('paymentList', this.paymentList);
+
+
 
     this.loadDOMs();
     // this.loadFakeOrder();
@@ -509,7 +519,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
               this.apiService.myTab1.clearStockAfterLAABGo();
               this.close();
-              this.apiService.alertTimeout('ໝົດເວລາແລ້ວ, ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ. \nຫ້າມສ້າງບິນໃໝ່ໂດຍເດັດຂາດ!');
+              this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321');
               return resolve(IENMessage.success);
             } else {
               AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
@@ -530,6 +540,133 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           AutoPaymentPage.message = undefined;
 
           // this.apiService.myTab1.clearStockAfterLAABGo();
+          this.close();
+          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
+          return resolve(IENMessage.success);
+        });
+
+
+
+
+      } catch (error) {
+        // this.apiService.alertError(error.message);
+
+        // when choose payment method and it does not work this process will auto loop check laab balance
+        const transactionID = localStorage.getItem('transactionID');
+        // this._processLoopCheckLaoQRPaid(transactionID ?? '');;
+        // this._processLoopPayment();
+
+        resolve(error.message);
+      }
+    });
+  }
+
+
+  private _processLoopDestroyPopupQR(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+
+        let title: string = 'Destroy all orders';
+        let text: string = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+        let cls: string = `countdownDestroy`;
+
+        const params: IPaymentStation = {
+          orders: this.parseorders,
+          getTotalSale: this.parseGetTotalSale,
+          paymentmethod: this.paymentmethod
+        }
+        console.log('START GENERATE POPUP QR');
+
+        this.workload = this.apiService.load.create({ message: 'loading...' });
+        (await this.workload).present();
+
+        clearInterval(this.countdownCheckGenQrResTimer);
+        this.countdownCheckGenQrResTimer = setTimeout(async () => {
+          clearInterval(this.countdownCheckGenQrResTimer);
+          (await this.workload).dismiss();
+          clearInterval(this.countdownDestroyTimer);
+          this.countdownDestroy = 60;
+          if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+          AutoPaymentPage.message = undefined;
+
+          // this.apiService.myTab1.clearStockAfterLAABGo();
+          this.close();
+          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
+          return resolve(IENMessage.success);
+        }, 60000);
+
+        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t, this.apiService.machineId.machineId).subscribe(async r => {
+          clearInterval(this.countdownCheckGenQrResTimer);
+          (await this.workload).dismiss();
+          const response: any = r;
+
+          console.log(`response generate LaoQR`, response);
+          if (response.status != 1) {
+
+            clearInterval(this.countdownDestroyTimer);
+            this.countdownDestroy = 60;
+            if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+            AutoPaymentPage.message = undefined;
+
+            // this.apiService.myTab1.clearStockAfterLAABGo();
+            this.close();
+            this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
+            return resolve(IENMessage.success);
+
+          }
+
+          const run = response.data;
+          console.log('-----> SUCCESS GENERATE:', run);
+
+
+
+          const transactionID = run.transactionID;
+
+
+
+          localStorage.setItem('transactionID', transactionID);
+
+          // const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
+          AutoPaymentPage.qrimgElement.src = `../../../../assets/logo/scannow.gif`;
+          this.isPayment = true;
+          // this.isLoading = false
+          this.billDate = new Date();
+          console.log('END GENERATE LAOQR AND SUCCESS');
+
+          console.log('QR CODE :');
+
+          this.countdownDestroyTimer = setInterval(async () => {
+            this.countdownDestroy--;
+
+
+
+            if (this.countdownDestroy <= 0) {
+              clearInterval(this.countdownDestroyTimer);
+              this.countdownDestroy = 60;
+              if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+              AutoPaymentPage.message = undefined;
+
+              this.apiService.myTab1.clearStockAfterLAABGo();
+              this.close();
+              this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321');
+              return resolve(IENMessage.success);
+            } else {
+              AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
+              if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
+            }
+
+          }, 1000);
+
+
+          return resolve(IENMessage.success);
+        }, async error => {
+          clearInterval(this.countdownCheckGenQrResTimer);
+          (await this.workload).dismiss();
+          clearInterval(this.countdownDestroyTimer);
+          this.countdownDestroy = 60;
+          if (AutoPaymentPage.message) AutoPaymentPage.message.close();
+          AutoPaymentPage.message = undefined;
+
           this.close();
           this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
           return resolve(IENMessage.success);
@@ -848,7 +985,12 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           this.paymentText = 'Lao QR';
           resolve(await this._processLoopDestroyLastest());
           resolve(IENMessage.success);
-        } else {
+        } else if (this.paymentmethod == IPaymentMethod.popupQR) {
+          this.paymentText = 'Popup QR';
+          resolve(await this._processLoopDestroyPopupQR());
+          resolve(IENMessage.success);
+        }
+        else {
 
         }
 
@@ -1037,7 +1179,9 @@ enum IPaymentMethod {
   laab = 'laab',
   mmoney = 'mmoney',
   LaoQR = 'LaoQR',
-  bcelone = 'bcelone'
+  bcelone = 'bcelone',
+  popupQR = 'PopupQR'
+
 }
 interface IPaymentStation {
   orders: Array<any>,

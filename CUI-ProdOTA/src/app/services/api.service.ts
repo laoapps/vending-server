@@ -906,8 +906,8 @@ export class ApiService {
 
   async alertTimeout(text: string) {
     const alert = await this.alert.create({
-      header: 'Session Timeout',
-      message: `<ion-icon name="warning-outline" slot="start"></ion-icon> ${text}`,
+      header: 'ໝົດເວລາແລ້ວ',
+      message: text,
       buttons: [
         {
           text: 'OK',
@@ -916,7 +916,7 @@ export class ApiService {
         }
       ],
       backdropDismiss: false,
-      cssClass: 'custom-alert-error',
+      cssClass: 'app-alert',
       animated: true
     });
 

@@ -59,7 +59,7 @@
             </a>
           </div>
 
-          <div class="title" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false"
+          <!-- <div class="title" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false"
             style="margin-top: 20px;">
             ທາງເລືອກເພີ່ມເຕີມ</div>
 
@@ -83,23 +83,10 @@
               </div>
               <div class="text">{{ list.name }}</div>
             </a>
-          </div>
-
-
-          <!-- <div class="vending-section">
-            <div class="title">LAAB Cash</div>
-            <div class="sub-title">{{ apiService.cash.amount | number }}</div>
-            <div class="line"></div>
-
-            <div class="title">LAAB Cash in</div>
-            <div class="sub-title">You can cash in by using LAAB QR</div>
-
-            <img src="" alt="" id="laab-qr-img" class="laab-qr-img">
-            <a (click)="laabGo()" href="javascript:void(0)" class="btn-go" id="btn-laab-go">
-              <div class="title">GO</div>
-              <div class="text">Use LAAB cash pay these orders</div>
-            </a>
           </div> -->
+
+
+
 
         </div>
         <div *ngIf="true" class="payment-list-right">
@@ -116,7 +103,7 @@
               <div class="total">{{ parseGetTotalSale.t | number }}</div>
               <div *ngIf="isPayment == true"
                 style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;">
-                ຫນ້ານີ້ຈະປິດພາຍໃນ {{
+                ໜ້ານີ້ຈະປິດພາຍໃນ {{
                 countdownDestroy }} ວິນາທີ </div>
             </div>
             <div *ngIf="isPayment == false" class="bill-body">

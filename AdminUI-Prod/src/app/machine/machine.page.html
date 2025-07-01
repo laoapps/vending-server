@@ -166,8 +166,8 @@
                       <div style="float: right;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
                           class="custominput" type="text" label="version" placeholder="enter version"
                           [(ngModel)]="settings[p.machineId].versionId"></ion-input> </div>
-                      <div style="float: left;"> <ion-icon name="cash-sharp"></ion-icon><ion-checkbox
-                          [(ngModel)]="settings[p.machineId].allowCashIn"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="qr-code-outline"></ion-icon><ion-checkbox
+                          [(ngModel)]="settings[p.machineId].qrPayment"></ion-checkbox> </div>
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 
