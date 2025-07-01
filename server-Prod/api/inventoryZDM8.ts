@@ -3122,6 +3122,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const musicVolume = o.data[0]?.musicVolume || 0;
                                 const adsList = o.data[0]?.adsList || [];
                                 const versionId = o.data[0]?.versionId || '';
+                                const qrPayment = o.data[0]?.qrPayment || false;
 
 
                                 const imgh = o.data[0]?.imgHeader;
@@ -3136,7 +3137,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId, qrPayment: qrPayment };
                                     r.data.push(a);
                                 }
                                 else {
@@ -3150,6 +3151,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.musicVolume = musicVolume;
                                     a.adsList = adsList;
                                     a.versionId = versionId;
+                                    a.qrPayment = qrPayment;
                                 }
 
                                 // r.data = [a];
