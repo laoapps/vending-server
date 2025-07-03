@@ -6417,6 +6417,10 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 let settingVersion = d?.data?.settingVersion;
                                 let adsVersion = d?.data?.adsVersion;
+                                let clientVersion = d?.data?.clientVersion;
+                                // console.log('=====>clientVersion', clientVersion);
+
+
                                 // console.log('=====>pingData', d.data);
 
                                 // console.log('=====>adsVersion', adsVersion, 'settingVersion', settingVersion);
@@ -6566,7 +6570,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                     // console.log('FIND SETTING FOR REFRESH COMMAND', setting);
 
-
+                                    setting.clientVersion = clientVersion;
                                     if (settingVersion === serverSettingVersion) {
                                         setting = null;
                                     }
@@ -6598,6 +6602,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     adsSetting,
                                                     adsVersion,
                                                     settingVersion,
+
                                                 },
                                                 EMessage.succeeded
                                                 ,
