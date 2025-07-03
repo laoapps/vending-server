@@ -5858,7 +5858,7 @@ export class InventoryZDM8 implements IBaseClass {
                         return resolve({ status: 0, message: e });
                     })
                 } else {
-                    // console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                    console.log('=====> CHECK MMONEY NOT PAID', res.data);
                     return resolve({ status: 0, message: EMessage.LaoQRNotPaid });
                 }
             } catch (error) {

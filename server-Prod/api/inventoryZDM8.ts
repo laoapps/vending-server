@@ -5927,13 +5927,15 @@ export class InventoryZDM8 implements IBaseClass {
                             "Content-Type": 'application/json'
                         }
                     }).then(async r => {
+                        console.log('=====>CONFIRM PAID', r.data);
+
                         return resolve({ status: 1, message: r.data });
                     }).catch(e => {
                         console.log('=====>CONFIRM ERROR', e);
                         return resolve({ status: 0, message: e });
                     })
                 } else {
-                    // console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                    console.log('=====> CHECK MMONEY NOT PAID', res.data);
                     return resolve({ status: 0, message: EMessage.LaoQRNotPaid });
                 }
             } catch (error) {
@@ -5975,7 +5977,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('=====> CHECK MMONEY PAID', res.data);
             if (res.data.success) {
                 console.log('=====> CHECK MMONEY PAID', res.data);
-                axios.post('https://vendingserviceapi.laoapps.com', {
+                axios.post('https://vending-service-api5.laoapps.com', {
                     "command": "confirmLAOQR",
                     "data": {
                         "trandID": transactionID,
