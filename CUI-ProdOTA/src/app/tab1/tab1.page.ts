@@ -679,12 +679,16 @@ export class Tab1Page implements OnDestroy {
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
     setTimeout(async () => {
-      await this.connect();
       this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
       this.readyState = true;
-
+      await this.connect();
       Toast.show({ text: 'READY', duration: 'long' })
     }, 1000);
+
+    const clientVersionId = localStorage.getItem('ClientVersionId') ?? '0.0.0';
+    if (clientVersionId != environment.versionId) {
+      this.checkLiveUpdate(clientVersionId);
+    }
 
     clearInterval(this.countdownCheckLaoQRPaidTimer);
     this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
@@ -760,8 +764,8 @@ export class Tab1Page implements OnDestroy {
         if (res?.data?.settingVersion) {
           localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
-        // if (r && this.readyState) {
-        if (r) {
+        if (r && this.readyState) {
+          // if (r) {
 
           if (r.refresh) {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
@@ -885,6 +889,7 @@ export class Tab1Page implements OnDestroy {
           }
           if (this.platform.is('android')) {
             if (r.versionId) {
+              localStorage.setItem('ClientVersionId', r.versionId ?? '0.0.0');
               const versionId = environment.versionId ?? '0.0.0';
               if (versionId != r.versionId) {
                 console.log('Update versionId to', r.versionId);
@@ -1056,22 +1061,22 @@ export class Tab1Page implements OnDestroy {
 
   async checkLiveUpdate(version: string) {
     try {
-      this.apiService.toast.create({ message: 'Close Serial', duration: 2000 }).then(r => r.present());
       if (this.serial) {
         await this.serial?.close();
         this.serial = null;
         this.connecting = false;
       }
+      this.apiService.toast.create({ message: 'Close Serial', duration: 2000 }).then(r => r.present());
       this.liveUpdateService.checkForUpdates(version).then(async (res) => {
-        if (res == undefined) {
-          this.apiService.reloadPage();
-        }
-        // console.log('checkForUpdates', res);
+        // if (res == undefined) {
+        //   this.apiService.reloadPage();
+        // }
+        console.log('checkForUpdates', res);
         // setInterval(() => {
         //   App.exitApp();
         // }, 20000);
       }).catch((e) => {
-        this.apiService.reloadPage();
+        // this.apiService.reloadPage();
         console.log('Error checkLiveUpdate', e);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checkLiveUpdate :${JSON.stringify(e)}` });
       });

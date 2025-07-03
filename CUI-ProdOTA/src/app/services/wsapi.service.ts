@@ -7,6 +7,7 @@ import { EventEmitter } from 'events';
 import { AppcachingserviceService } from './appcachingservice.service';
 import { IENMessage } from '../models/base.model';
 import { IndexerrorService } from '../indexerror.service';
+import { environment } from 'src/environments/environment.prod';
 @Injectable({
   providedIn: 'root'
 })
@@ -70,6 +71,7 @@ export class WsapiService {
         command: EMACHINE_COMMAND.ping, data: {
           settingVersion: settingVersion,
           errorLog: allLogs,
+          clientVersion: environment.versionId || '0.0.0'
         }, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
       });
     }, 10000);
