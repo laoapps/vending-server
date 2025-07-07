@@ -1133,6 +1133,7 @@ export enum EClientCommand {
     list = 'list',
     buyMMoney = 'buyMMoney',
     buyLAOQR = "buyLAOQR",
+    buyTopUp = "buyTopUp",
     confirmMMoney = 'confirmMMoney',
     confirmLAAB = 'confirmLAAB',
     confirmLAOQR = 'confirmLAOQR',

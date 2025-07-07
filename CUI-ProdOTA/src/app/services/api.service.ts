@@ -1337,10 +1337,32 @@ export class ApiService {
   }
 
 
-  buyLaoQR(ids: Array<IVendingMachineSale>, value: number, machineId: string) {
+  buyLaoQR(ids: Array<IVendingMachineSale>, value: number) {
     this.currentPaymentProvider = EPaymentProvider.laoqr;
     const req = {} as IReqModel;
     req.command = EClientCommand.buyLAOQR;
+    req.data = {
+      ids,
+      value,
+      clientId: this.clientId.clientId,
+    };
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+    // console.log('req', req);
+
+    // req.data.clientId = this.clientId.clientId;
+    return this.http.post<IResModel>(this.url, req, {
+      headers: this.headerBase(),
+    });
+  }
+
+  buyTopUpQR(ids: Array<IVendingMachineSale>, value: number) {
+    this.currentPaymentProvider = EPaymentProvider.laoqr;
+    const req = {} as IReqModel;
+    req.command = EClientCommand.buyTopUp;
     req.data = {
       ids,
       value,

@@ -2000,7 +2000,7 @@ export class Tab1Page implements OnDestroy {
       const amount = x.stock.price * 1;
 
       this.apiService
-        .buyLaoQR([x], amount, this.machineId.machineId)
+        .buyLaoQR([x], amount)
         .subscribe((r) => {
           console.log(r);
           if (r.status) {
@@ -2129,7 +2129,7 @@ export class Tab1Page implements OnDestroy {
     this.apiService.showLoading();
     console.log(this.orders, amount);
     this.apiService
-      .buyLaoQR(this.orders, amount, this.machineId.machineId)
+      .buyLaoQR(this.orders, amount)
       .subscribe((r) => {
         console.log(r);
         if (r.status) {

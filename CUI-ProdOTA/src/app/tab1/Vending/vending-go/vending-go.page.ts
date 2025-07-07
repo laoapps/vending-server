@@ -116,7 +116,7 @@ export class VendingGoPage implements OnInit {
     this.apiService.showLoading();
     console.log(this.orders, amount);
     this.apiService
-      .buyLaoQR(this.orders, amount, this.machineId.machineId)
+      .buyLaoQR(this.orders, amount)
       .subscribe((r) => {
         console.log(r);
         if (r.status) {

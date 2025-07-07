@@ -74,7 +74,7 @@ export class GenerateLaoQRCodeProcess {
                 console.log('=====>Amout2 :', this.amount);
 
 
-                this.apiService.buyLaoQR(this.orders, this.amount, this.machineId).subscribe(r => {
+                this.apiService.buyLaoQR(this.orders, this.amount).subscribe(r => {
                     const response: any = r;
                     console.log(`response generate LaoQR`, response);
                     if (response.status != 1) {

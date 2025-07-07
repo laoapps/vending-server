@@ -5745,7 +5745,7 @@ export class InventoryZDM8 implements IBaseClass {
                 rejectUnauthorized: false,
             });
 
-            const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
+            const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransactionByBillV3';
 
             const authUsername = 'lmm'
             const authPassword = 'Lmm@2024qaz2wsx'
@@ -5761,7 +5761,8 @@ export class InventoryZDM8 implements IBaseClass {
             }
 
             const res = await axios.post(API_BASE_URL, {
-                tranid: transactionID
+                requestId: transactionID,
+                billNumber: transactionID
             },
                 { headers, httpsAgent: agent });
 
@@ -5820,7 +5821,7 @@ export class InventoryZDM8 implements IBaseClass {
                     rejectUnauthorized: false,
                 });
 
-                const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
+                const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransactionByBillV3';
 
                 const authUsername = 'lmm'
                 const authPassword = 'Lmm@2024qaz2wsx'
@@ -5836,7 +5837,8 @@ export class InventoryZDM8 implements IBaseClass {
                 }
 
                 const res = await axios.post(API_BASE_URL, {
-                    tranid: transactionID
+                    requestId: transactionID,
+                    billNumber: transactionID
                 },
                     { headers, httpsAgent: agent });
 

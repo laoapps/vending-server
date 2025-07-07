@@ -463,7 +463,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }, 60000);
 
-        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t, this.apiService.machineId.machineId).subscribe(async r => {
+        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t).subscribe(async r => {
           clearInterval(this.countdownCheckGenQrResTimer);
           (await this.workload).dismiss();
           const response: any = r;
@@ -595,7 +595,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }, 60000);
 
-        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t, this.apiService.machineId.machineId).subscribe(async r => {
+        this.apiService.buyTopUpQR(this.parseorders, this.parseGetTotalSale.t).subscribe(async r => {
           clearInterval(this.countdownCheckGenQrResTimer);
           (await this.workload).dismiss();
           const response: any = r;

@@ -666,6 +666,96 @@ export class InventoryZDM8 implements IBaseClass {
                                 redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
+                        } else if (d.command == EClientCommand.buyTopUp) {
+                            const sale = d.data.ids as Array<IVendingMachineSale>;
+                            const machineId = this.findMachineIdToken(d.token);
+
+                            if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
+                            if (!Array.isArray(sale)) throw new Error("Invalid array id");
+                            if (await this.isMachineDisabled(machineId.machineId)) return res.send(PrintError(d.command, [], EMessage.machineisdisabled, null));
+
+                            const checkIds = Array<IVendingMachineSale>();
+                            sale.forEach((v) => {
+                                v.stock.qtty = 1;
+                                const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
+                                y.stock.qtty = 1;
+                                y.stock.image = "";
+                                y.machineId = machineId.machineId;
+                                checkIds.push(y);
+                            });
+
+                            const value = checkIds.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
+                            if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                            const a = machineId?.data?.find(v => v.settingName == 'setting');
+                            const mId = a?.imei + '';
+                            const ownerPhone = a?.ownerPhone + '';
+                            const owner = (a?.owner + '').trim();
+
+                            if (!mId || !ownerPhone || !owner) {
+                                return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            }
+                            const x = new Date().getTime();
+
+                            const transactionID = String(mId.substring(mId.length - 8)) + (x + '').substring(5);
+
+                            const bill = {
+                                uuid: uuid4(),
+                                clientId,
+                                qr: '',
+                                transactionID: transactionID + '',
+                                machineId: machineId.machineId,
+                                hashM: "",
+                                hashP: "",
+                                paymentmethod: d.command,
+                                paymentref: '',
+                                paymentstatus: EPaymentStatus.pending,
+                                paymenttime: new Date(),
+                                requestpaymenttime: new Date(),
+                                totalvalue: value,
+                                vendingsales: sale,
+                                isActive: true,
+                            } as VendingMachineBillModel;
+
+                            const m = await machineClientIDEntity.findOne({
+                                where: {
+                                    machineId: machineId.machineId,
+                                },
+                            });
+                            const ownerUuid = m?.ownerUuid || "";
+                            const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
+                            await ent.sync();
+
+                            ent.create(bill).then(async (r) => {
+                                redisClient.setEx(transactionID + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                redisClient.save();
+
+                                let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
+                                let trandList: Array<any>;
+                                try {
+                                    trandList = JSON.parse(result);
+                                    if (!Array.isArray(trandList)) {
+                                        console.warn('trandList is not an array, initializing as empty array');
+                                        trandList = [];
+                                    }
+                                } catch (error) {
+                                    console.error('JSON parse error:', error.message);
+                                    trandList = [];
+                                }
+
+                                if (trandList.length >= 1) {
+                                    console.log('REMOVE FIRST TRAND');
+                                    trandList.splice(0, 1);
+                                }
+
+                                trandList.push({
+                                    transactionID: bill.transactionID,
+                                    createdAt: new Date()
+                                });
+
+                                redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
+                            });
                         }
 
                         //      {
@@ -5895,7 +5985,7 @@ export class InventoryZDM8 implements IBaseClass {
                     rejectUnauthorized: false,
                 });
 
-                const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
+                const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransactionByBillV3';
 
                 const authUsername = 'lmm'
                 const authPassword = 'Lmm@2024qaz2wsx'
@@ -5911,7 +6001,8 @@ export class InventoryZDM8 implements IBaseClass {
                 }
 
                 const res = await axios.post(API_BASE_URL, {
-                    tranid: transactionID
+                    requestId: transactionID,
+                    billNumber: transactionID
                 },
                     { headers, httpsAgent: agent });
 
@@ -5954,7 +6045,7 @@ export class InventoryZDM8 implements IBaseClass {
                 rejectUnauthorized: false,
             });
 
-            const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransaction';
+            const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransactionByBillV3';
 
             const authUsername = 'lmm'
             const authPassword = 'Lmm@2024qaz2wsx'
@@ -5970,7 +6061,8 @@ export class InventoryZDM8 implements IBaseClass {
             }
 
             const res = await axios.post(API_BASE_URL, {
-                tranid: transactionID
+                requestId: transactionID,
+                billNumber: transactionID
             },
                 { headers, httpsAgent: agent });
 

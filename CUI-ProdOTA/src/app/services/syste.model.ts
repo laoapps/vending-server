@@ -1003,6 +1003,7 @@ export enum EClientCommand {
     confirmMMoney = 'confirmMMoney',
     paidLAAB = 'paidLAAB',
     buyLAOQR = "buyLAOQR",
+    buyTopUp = "buyTopUp",
     MACHINE_STATAUS = "MACHINE_STATAUS"
 }
 export interface IMachineId {
