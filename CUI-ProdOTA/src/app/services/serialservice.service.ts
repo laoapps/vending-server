@@ -4,6 +4,7 @@ import { ToastController } from '@ionic/angular';
 import { SerialConnectionCapacitor, SerialPortListResult, SerialPortEventTypes } from 'SerialConnectionCapacitor';
 import { addLogMessage, ESerialPortType, IlogSerial } from '../services/syste.model'
 import { Subject, Subscription, } from 'rxjs';
+import { Toast } from '@capacitor/toast';
 
 
 
@@ -35,6 +36,7 @@ export class SerialServiceService implements OnDestroy {
     return new Promise<string>(async (resolve, reject) => {
       if (this.initialized) {
         console.log("Serial port already initialized, skipping...");
+        Toast.show({ text: "Serial port already initialized, skipping..." });
         return reject('Serial port already initialized');
       }
 
@@ -45,26 +47,31 @@ export class SerialServiceService implements OnDestroy {
           SerialConnectionCapacitor.addListener('serialOpened', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Native serial opened:', data?.message);
+            Toast.show({ text: 'Native serial opened' });
             this.serialEventSubject.next({ event: SerialPortEvent.SerialOpened, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('usbSerialOpened', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  USB serial opened:', data?.message);
+            Toast.show({ text: 'USB serial opened' });
             this.serialEventSubject.next({ event: SerialPortEvent.UsbSerialOpened, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('connectionClosed', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Connection closed:', data?.message);
+            Toast.show({ text: 'Connection closed' });
             this.serialEventSubject.next({ event: SerialPortEvent.ConnectionClosed, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('serialWriteSuccess', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Native write succeeded:', data?.message);
+            Toast.show({ text: 'Native write succeeded' });
             this.serialEventSubject.next({ event: SerialPortEvent.SerialWriteSuccess, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('usbWriteSuccess', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  USB write succeeded:', data?.message);
+            Toast.show({ text: 'USB write succeeded' });
             this.serialEventSubject.next({ event: SerialPortEvent.UsbWriteSuccess, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('dataReceived', (data) => {

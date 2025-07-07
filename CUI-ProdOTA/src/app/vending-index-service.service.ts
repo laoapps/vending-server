@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Zdm8Service } from './zdm8.service';
 import { VmcService } from './vmc.service';
 import { Tp77PulseService } from './Tp77Pulse.Service';
-import { ESerialPortType, IlogSerial, ISerialService } from './services/syste.model';
+import { addLogMessage, ESerialPortType, IlogSerial, ISerialService } from './services/syste.model';
 import { BackgroundTask } from '@capawesome/capacitor-background-task';
 import { App } from '@capacitor/app';
 import { EsspService } from './essp.service';
@@ -11,6 +11,7 @@ import { CCTALKTb74Service } from './cctalktb74.service';
 import { MT102Service } from './mt102.service';
 import { ADH815Service } from './adh815.service';
 import { ADH814Service } from './adh814.service';
+import { Toast } from '@capacitor/toast';
 
 
 
@@ -162,9 +163,13 @@ export class VendingIndexServiceService {
       this.baudRate = baudRate;
       const x = await this.adh814.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
+        Toast.show({ text: 'vendingindex service  initADH815 NULL' });
+        addLogMessage(this.log, 'vendingindex service  initADH815 NULL');
         return reject(null);
       }
       console.log('vendingindex service  initADH815 Serial port initialized');
+      addLogMessage(this.log, 'vendingindex service  initADH815 Serial port initialized');
+      Toast.show({ text: 'vendingindex service  initADH815 Serial port initialized' });
       this.task = this.adh815;
       return resolve(this.adh815);
     });

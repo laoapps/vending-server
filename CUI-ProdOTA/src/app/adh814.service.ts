@@ -3,6 +3,7 @@ import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definit
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
 import { SerialServiceService } from './services/serialservice.service';
 import { Subject } from 'rxjs';
+import { Toast } from '@capacitor/toast';
 
 // FOR RS485 only (Ionic Capacitor compatible)
 @Injectable({
@@ -175,13 +176,23 @@ export class ADH814Service implements ISerialService {
       this.baudRate = baudRate || this.baudRate;
       this.log = log;
 
-      if (this.adh814) this.adh814.dispose();
+      if (this.adh814) {
+        Toast.show({ text: 'Dispose adh814' });
+        this.addLogMessage(this.log, 'Dispose adh814');
+        this.adh814.dispose();
+      }
 
       const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+      Toast.show({ text: 'init adh814' });
+      this.addLogMessage(this.log, 'init adh814');
       this.serialService.startReading();
+      Toast.show({ text: 'start reading' });
+      this.addLogMessage(this.log, 'start reading');
 
       if (init === this.portName) {
         this.initADH814();
+        Toast.show({ text: 'init adh814' });
+        this.addLogMessage(this.log, 'init adh814');
         try {
           await this.setupDevice();
           await this.setDefaultTemperature(); // Set default temperature to 7°C
@@ -189,6 +200,8 @@ export class ADH814Service implements ISerialService {
           resolve(init);
         } catch (err) {
           this.addLogMessage(this.log, `Setup failed: ${err.message}`);
+          Toast.show({ text: `Setup failed: ${err.message}` });
+
           reject(err);
         }
       } else {

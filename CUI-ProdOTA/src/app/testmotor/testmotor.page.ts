@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { VendingIndexServiceService } from '../vending-index-service.service'
-import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ICreditData } from '../services/syste.model'
+import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ICreditData, addLogMessage } from '../services/syste.model'
 import { Toast } from '@capacitor/toast';
 // import {SerialConnectionCapacitor} from 'SerialConnectionCapacitor';
 import { SerialServiceService } from '../services/serialservice.service';
@@ -90,6 +90,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       await this.startAHD815();
       Toast.show({ text: 'Start adh815' });
     } else if (this.selectedDevice == 'adh814') {
+      Toast.show({ text: 'select adh814' });
       await this.startAHD814();
       Toast.show({ text: 'Start adh814' });
     }
@@ -310,12 +311,15 @@ export class TestmotorPage implements OnInit, OnDestroy {
     if (this.serial) {
       await this.serial.close();
       this.serial = null;
+      Toast.show({ text: 'serial close' });
     }
     this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId, this.machineId, this.isSerial);
     if (!this.serial) {
+      addLogMessage(this.vlog.log, 'serial not init');
       Toast.show({ text: 'serial not init' });
     }
     this.vlog.log = this.serial.log;
+    Toast.show({ text: 'vlog.log' + JSON.stringify(this.vlog.log) });
   }
   async startM102() {
     if (this.serial) {
