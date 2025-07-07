@@ -45,7 +45,7 @@ export class SettingPage implements OnInit, OnDestroy {
   successList: Array<number> = [];
   errorList: Array<number> = [];
 
-  devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
+  devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815', 'adh814'];
 
   constructor(
     public apiService: ApiService,

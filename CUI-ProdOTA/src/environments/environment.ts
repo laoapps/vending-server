@@ -4,17 +4,17 @@
 
 export const environment = {
   production: false,
-  url: 'https://tvending4.khamvong.com/zdm8',
-  wsurl: 'wss://tvending4.khamvong.com/zdm8',
-  vending_server: 'https://tvending4.khamvong.com',
-  filemanagerurl: 'http://filemanager-api.laoapps.com/api/v1/file/',
+  // url: 'https://tvending4.khamvong.com/zdm8',
+  // wsurl: 'wss://tvending4.khamvong.com/zdm8',
+  // vending_server: 'https://tvending4.khamvong.com',
+  // filemanagerurl: 'http://filemanager-api.laoapps.com/api/v1/file/',
 
 
 
-  // url: 'https://vendingserviceapi.laoapps.com/zdm8',
-  // wsurl: 'wss://vendingserviceapi.laoapps.com/zdm8',
-  // vending_server: 'https://vendingserviceapi.laoapps.com',
-  // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
+  url: 'https://vendingserviceapi.laoapps.com/zdm8',
+  wsurl: 'wss://vendingserviceapi.laoapps.com/zdm8',
+  vending_server: 'https://vendingserviceapi.laoapps.com',
+  filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
   // url: 'https://vending-service-api5.laoapps.com/zdm8',
   // wsurl: 'wss://vending-service-api5.laoapps.com/zdm8',

@@ -10,6 +10,7 @@ import { EsspService } from './essp.service';
 import { CCTALKTb74Service } from './cctalktb74.service';
 import { MT102Service } from './mt102.service';
 import { ADH815Service } from './adh815.service';
+import { ADH814Service } from './adh814.service';
 
 
 
@@ -27,7 +28,7 @@ export class VendingIndexServiceService {
   task: ISerialService;
 
 
-  constructor(public vmc: VmcService, public zdm8: Zdm8Service, public tp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service, public m102: MT102Service, public adh815: ADH815Service) {
+  constructor(public vmc: VmcService, public zdm8: Zdm8Service, public tp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service, public m102: MT102Service, public adh815: ADH815Service, public adh814: ADH814Service) {
     App.addListener('appStateChange', async ({ isActive }) => {
       if (isActive) {
         return;
@@ -145,6 +146,21 @@ export class VendingIndexServiceService {
       this.portName = portName;
       this.baudRate = baudRate;
       const x = await this.adh815.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  initADH815 Serial port initialized');
+      this.task = this.adh815;
+      return resolve(this.adh815);
+    });
+  }
+
+
+  async initADH814(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
+      this.portName = portName;
+      this.baudRate = baudRate;
+      const x = await this.adh814.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
         return reject(null);
       }

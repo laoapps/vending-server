@@ -27,7 +27,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   otp = '111111';
   // serial: ISerialService;
   open = false;
-  devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815'];
+  devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815', 'adh814'];
   selectedDevice = 'VMC';
 
   portName = '/dev/ttyS0';
@@ -89,6 +89,9 @@ export class TestmotorPage implements OnInit, OnDestroy {
     else if (this.selectedDevice == 'adh815') {
       await this.startAHD815();
       Toast.show({ text: 'Start adh815' });
+    } else if (this.selectedDevice == 'adh814') {
+      await this.startAHD814();
+      Toast.show({ text: 'Start adh814' });
     }
     else if (this.selectedDevice == 'm102') {
       await this.startM102();
@@ -297,6 +300,18 @@ export class TestmotorPage implements OnInit, OnDestroy {
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initADH815(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
+
+  async startAHD814() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId, this.machineId, this.isSerial);
     if (!this.serial) {
       Toast.show({ text: 'serial not init' });
     }
