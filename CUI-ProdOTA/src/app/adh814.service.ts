@@ -23,6 +23,8 @@ export class ADH814Service implements ISerialService {
   private pollInterval?: NodeJS.Timeout; // To manage the software-initiated polling interval
   private statusSubject = new Subject<IResModel>(); // For real-time status updates
   private currentInterval: number = 1000; // Current polling interval in ms
+  private readonly DEFAULT_TEMPERATURE = 7; // Default temperature: 7°C
+  private readonly COOLING_MODE = 0x01; // Cooling mode for compressor
 
   constructor(private serialService: SerialServiceService) { }
 
@@ -74,6 +76,20 @@ export class ADH814Service implements ISerialService {
     }
   }
 
+  private async setDefaultTemperature(address: number = 0x01): Promise<void> {
+    try {
+      const response = await this.command(EMACHINE_COMMAND.SET_TEMP, {
+        address,
+        mode: this.COOLING_MODE,
+        tempValue: this.DEFAULT_TEMPERATURE
+      }, Date.now());
+      this.addLogMessage(this.log, `Default temperature set to ${this.DEFAULT_TEMPERATURE}°C in cooling mode: ${JSON.stringify(response)}`);
+    } catch (err) {
+      this.addLogMessage(this.log, `Failed to set default temperature: ${err.message}`);
+      throw err;
+    }
+  }
+
   private startPolling(address: number, interval: number = 1000): void {
     if (this.pollInterval) clearInterval(this.pollInterval); // Clear existing interval if any
     this.currentInterval = interval; // Update current interval
@@ -83,21 +99,37 @@ export class ADH814Service implements ISerialService {
       this.adh814.pollStatus(address, (response) => {
         const endTime = Date.now();
         const responseTime = endTime - startTime;
+        // Parse drop detection result from executionResult (Bit2)
+        const executionResult = response.data[2];
+        const dropSuccess = !(executionResult & 0x04); // Bit2: 0=success, 1=failure
+        const faultCode = executionResult & 0x03; // Bit0-1: 0=no fault, 1=overcurrent, 2=open circuit, 3=timeout
         const result: IResModel = {
           command: EMACHINE_COMMAND.READ_EVENTS,
           data: {
             status: response.data[0], // 0=Idle, 1=Delivering, 2=Delivery End
             motorNumber: response.data[1],
-            executionResult: response.data[2], // Bit0-1: Fault, Bit2: Drop Success/Failure
+            executionResult,
+            dropSuccess, // Explicitly indicate drop success/failure
+            faultCode, // Explicitly indicate fault code
             maxCurrent: (response.data[3] << 8) | response.data[4], // mA, high byte first
             avgCurrent: (response.data[5] << 8) | response.data[6], // mA, high byte first
             runTime: response.data[7], // 0-255, unit 0.1s
             temperature: response.data[8] // -127 to 127, unit °C
           },
           status: 1,
-          message: `Software-initiated poll status retrieved (Response time: ${responseTime}ms)`,
+          message: `Poll status retrieved (Response time: ${responseTime}ms, Drop: ${dropSuccess ? 'Success' : 'Failure'}, Fault: ${faultCode})`,
           transactionID: Date.now() // Use timestamp as transaction ID
         };
+        // Check for temperature sensor issues
+        if (result.data.temperature === -40) {
+          this.addLogMessage(this.log, 'Temperature sensor disconnected');
+        } else if (result.data.temperature === 120) {
+          this.addLogMessage(this.log, 'Temperature sensor shorted');
+        }
+        // Log drop detection result when delivery ends
+        if (result.data.status === 0x02) {
+          this.addLogMessage(this.log, `Delivery ended for motor ${result.data.motorNumber}: Drop ${dropSuccess ? 'successful' : 'failed'}${faultCode ? `, Fault code: ${faultCode}` : ''}`);
+        }
         this.statusSubject.next(result); // Emit status update
         this.addLogMessage(this.log, `Response time: ${responseTime}ms for interval ${this.currentInterval}ms`);
         if (response.data[0] === 0x02) { // Delivery End state
@@ -150,13 +182,15 @@ export class ADH814Service implements ISerialService {
 
       if (init === this.portName) {
         this.initADH814();
-        await this.setupDevice().then(() => {
-          this.startPolling(0x01, pollInterval); // Start software-initiated polling (ping)
-        }).catch(err => {
-          this.addLogMessage(this.log, `Setup failed during polling start: ${err.message}`);
+        try {
+          await this.setupDevice();
+          await this.setDefaultTemperature(); // Set default temperature to 7°C
+          this.startPolling(0x01, pollInterval); // Start software-initiated polling
+          resolve(init);
+        } catch (err) {
+          this.addLogMessage(this.log, `Setup failed: ${err.message}`);
           reject(err);
-        });
-        resolve(init);
+        }
       } else {
         reject(init);
       }
@@ -232,12 +266,17 @@ export class ADH814Service implements ISerialService {
         case EMACHINE_COMMAND.READ_EVENTS:
           const { address: pollAddress = 0x01 } = params || {};
           this.adh814.pollStatus(pollAddress, (response) => {
+            const executionResult = response.data[2];
+            const dropSuccess = !(executionResult & 0x04); // Bit2: 0=success, 1=failure
+            const faultCode = executionResult & 0x03; // Bit0-1: 0=no fault, 1=overcurrent, 2=open circuit, 3=timeout
             const result: IResModel = {
               command,
               data: {
                 status: response.data[0], // 0=Idle, 1=Delivering, 2=Delivery End
                 motorNumber: response.data[1],
-                executionResult: response.data[2], // Bit0-1: Fault, Bit2: Drop Success/Failure
+                executionResult,
+                dropSuccess,
+                faultCode,
                 maxCurrent: (response.data[3] << 8) | response.data[4], // mA, high byte first
                 avgCurrent: (response.data[5] << 8) | response.data[6], // mA, high byte first
                 runTime: response.data[7], // 0-255, unit 0.1s
@@ -314,6 +353,9 @@ interface IADH814 {
   data: number[];
   crc: number;
 }
+
+// Extended IResModel data interface for drop sensor
+
 
 // Custom Modbus CRC-16 function
 function checkSumCRC(d: string[]): string {
