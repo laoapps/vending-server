@@ -596,7 +596,8 @@ export enum EMACHINE_COMMAND {
     MOTOR_SCAN = "MOTOR_SCAN",
     SCAN_DOOR = "SCAN_DOOR",
     START_MOTOR_MERGED = "START_MOTOR_MERGED",
-
+    QUERY_SWAP="QUERY_SWAP",
+    SET_SWAP="SET_SWAP",
 
 }
 export enum ESerialPortType {
