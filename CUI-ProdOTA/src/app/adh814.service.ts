@@ -130,6 +130,10 @@ export class ADH814Service implements ISerialService {
         const executionResult = response.data[2] || 0;
         const dropSuccess = !(executionResult & 0x04);
         const faultCode = executionResult & 0x03;
+        if (response === undefined || response?.data?.length < 9) {
+          this.addLogMessage(this.log, 'Invalid response data length '+JSON.stringify(response));
+          return;
+        }
         const result: IResModel = {
           command: EMACHINE_COMMAND.READ_EVENTS,
           data: {
@@ -173,7 +177,7 @@ export class ADH814Service implements ISerialService {
   setPollingInterval(interval: number): void {
     if (interval < 100) {
       this.addLogMessage(this.log, 'Interval too low, setting to minimum 100ms');
-      interval = 100;
+      interval = 200;
     }
     this.currentInterval = interval;
     if (this.pollInterval) {
@@ -222,8 +226,15 @@ export class ADH814Service implements ISerialService {
 
         // Perform setup
         await this.setupDevice();
+        console.log('Device setup completed');
+        this.addLogMessage(this.log, 'Device setup completed successfully');
         await this.setDefaultTemperature();
+        console.log('Default temperature set');
+        this.addLogMessage(this.log, 'Default temperature set successfully');
         this.startPolling(0x01, pollInterval);
+        console.log('Polling started');
+        this.addLogMessage(this.log, `Polling started with interval ${pollInterval}ms`);
+
         this.addLogMessage(this.log, `Serial port ${init} initialized successfully`);
         resolve(init);
       } catch (err) {
