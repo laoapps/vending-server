@@ -66,8 +66,8 @@ export class ADH814Service implements ISerialService {
       case 0xA4: return EMACHINE_COMMAND.SET_TEMP;
       case 0xA5: return EMACHINE_COMMAND.shippingcontrol;
       case 0xA6: return EMACHINE_COMMAND.CLEAR_RESULT;
-      case 0xB5: return EMACHINE_COMMAND.shippingcontrol;
-      case 0x34: return EMACHINE_COMMAND.SET_SWAP;
+      case 0xB5: return EMACHINE_COMMAND.START_MOTOR_MERGED;
+      case 0x34: return EMACHINE_COMMAND.QUERY_SWAP;
       case 0x35: return EMACHINE_COMMAND.SET_SWAP;
       case 0x21: return EMACHINE_COMMAND.SET_TWO_WIRE_MODE;
       default: return EMACHINE_COMMAND.RESET;
