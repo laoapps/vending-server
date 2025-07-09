@@ -111,7 +111,7 @@ export class Tab1Page implements OnDestroy {
 
   selectedDevice = localStorage.getItem('device') || '';
 
-  portName = localStorage.getItem('portName') || '/dev/ttyS0';
+  portName = localStorage.getItem('portName') || '/dev/ttyS3';
   baudRate = localStorage.getItem('baudRate') || 9600;
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial;
@@ -1123,49 +1123,55 @@ export class Tab1Page implements OnDestroy {
 
 
   async connect() {
-    if (!this.selectedDevice) return Toast.show({ text: 'Please select setting', duration: 'long' });
-    Toast.show({ text: 'Prepare a connection to ' + this.selectedDevice });
-    if (this.connecting) {
-      return Toast.show({ text: 'Connecting' });
+    try {
+      if (!this.selectedDevice) return Toast.show({ text: 'Please select setting', duration: 'long' });
+      Toast.show({ text: 'Prepare a connection to ' + this.selectedDevice });
+      if (this.connecting) {
+        return Toast.show({ text: 'Connecting' });
+      }
+      this.connecting = true;
+      if (this.selectedDevice == 'VMC') {
+        // this.baudRate = 57600;
+        await this.startVMC();
+        Toast.show({ text: 'Start VMC' });
+      }
+      else if (this.selectedDevice == 'ZDM8') {
+        await this.startZDM8();
+        Toast.show({ text: 'Start ZDM8' });
+      }
+      else if (this.selectedDevice == 'Tp77p') {
+        await this.satrtTp77p();
+        Toast.show({ text: 'Start Tp77p3b' });
+      }
+      else if (this.selectedDevice == 'essp') {
+        await this.startEssp();
+        Toast.show({ text: 'Start essp' });
+      }
+      else if (this.selectedDevice == 'cctalk') {
+        await this.startCctalk();
+        Toast.show({ text: 'Start essp' });
+      }
+      else if (this.selectedDevice == 'adh815') {
+        await this.startAHD815();
+        Toast.show({ text: 'Start adh815' });
+      } else if (this.selectedDevice == 'adh814') {
+        await this.startAHD814();
+        Toast.show({ text: 'Start adh814' });
+      } else if (this.selectedDevice == 'm102') {
+        await this.startM102();
+        Toast.show({ text: 'Start m102' });
+      }
+      else {
+        Toast.show({ text: 'Please select device' })
+      }
+      this.connecting = false;
+      if (this.serial)
+        this.apiService.serialPort = this.serial;
+    } catch (error) {
+      console.log('Error connect', error);
+      Toast.show({ text: 'Error connect ' + JSON.stringify(error), duration: 'long' });
     }
-    this.connecting = true;
-    if (this.selectedDevice == 'VMC') {
-      // this.baudRate = 57600;
-      await this.startVMC();
-      Toast.show({ text: 'Start VMC' });
-    }
-    else if (this.selectedDevice == 'ZDM8') {
-      await this.startZDM8();
-      Toast.show({ text: 'Start ZDM8' });
-    }
-    else if (this.selectedDevice == 'Tp77p') {
-      await this.satrtTp77p();
-      Toast.show({ text: 'Start Tp77p3b' });
-    }
-    else if (this.selectedDevice == 'essp') {
-      await this.startEssp();
-      Toast.show({ text: 'Start essp' });
-    }
-    else if (this.selectedDevice == 'cctalk') {
-      await this.startCctalk();
-      Toast.show({ text: 'Start essp' });
-    }
-    else if (this.selectedDevice == 'adh815') {
-      await this.startAHD815();
-      Toast.show({ text: 'Start adh815' });
-    } else if (this.selectedDevice == 'adh814') {
-      await this.startAHD814();
-      Toast.show({ text: 'Start adh814' });
-    } else if (this.selectedDevice == 'm102') {
-      await this.startM102();
-      Toast.show({ text: 'Start m102' });
-    }
-    else {
-      Toast.show({ text: 'Please select device' })
-    }
-    this.connecting = false;
-    if (this.serial)
-      this.apiService.serialPort = this.serial;
+
   }
   // VMC only
   async Enable() {

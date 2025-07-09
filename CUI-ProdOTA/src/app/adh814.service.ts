@@ -60,39 +60,44 @@ export class ADH814Service implements ISerialService {
 
   private async setupDevice(): Promise<void> {
     if (!this.adh814) {
-      this.addLogMessage(this.log,'ADH814Protocol not initialized');
+      this.addLogMessage(this.log, 'ADH814Protocol not initialized');
     }
 
 
-      try {
-        // Switch to two-wire mode
-        const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
-        this.addLogMessage(this.log, `Two-wire mode switch response (attempt 0): ${JSON.stringify(modeResponse)}`);
-        if (modeResponse?.data[0] !== 0) {
-           this.addLogMessage(this.log, `Failed to switch to two-wire mode: Code ${modeResponse.data[0]}`);
-        }
+    try {
 
-        // Verify device ID
-        const idResponse = await this.adh814.requestID(0x01);
-        this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
 
-        // Query row/column swap status
-        const swapResponse = await this.adh814.querySwap(0x01);
-        this.addLogMessage(this.log, `Query Swap response: ${JSON.stringify(swapResponse)}, Swap ${swapResponse.data[0] === 0x01 ? 'enabled' : 'disabled'}`);
+      // Verify device ID
+      const idResponse = await this.adh814.requestID(0x01);
+      this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
 
-        // Set row/column swap if not enabled
-        if (swapResponse.data[0] !== 0x01) {
-          const setSwapResponse = await this.adh814.setSwap(0x01);
-          this.addLogMessage(this.log, `Set Swap response: ${JSON.stringify(setSwapResponse)}`);
-        } else {
-          this.addLogMessage(this.log, 'Row/column swap already enabled');
-        }
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait before retry
+      // Query row/column swap status
+      // const swapResponse = await this.adh814.querySwap(0x01);
+      // this.addLogMessage(this.log, `Query Swap response: ${JSON.stringify(swapResponse)}, `);
 
-        return;
-      } catch (err) {
-        this.addLogMessage(this.log, `Setup attempt ${JSON.stringify(err)} failed: ${err?.message}`);
-        await new Promise(resolve => setTimeout(resolve, 500)); // Wait before retry
-      }
+      // // Set row/column swap if not enabled
+      // if (swapResponse.data) {
+      //   if (swapResponse.data[0] !== 0x01) {
+      //     const setSwapResponse = await this.adh814.setSwap(0x01);
+      //     this.addLogMessage(this.log, `Set Swap response: ${JSON.stringify(setSwapResponse)}`);
+      //   } else {
+      //     this.addLogMessage(this.log, 'Row/column swap already enabled');
+      //   }
+      // }
+
+      // await new Promise(resolve => setTimeout(resolve, 3000)); // Wait before retry
+
+
+      // Switch to two-wire mode
+      // const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
+      // this.addLogMessage(this.log, `Two-wire mode switch response (attempt 0): ${JSON.stringify(modeResponse)}`);
+
+      return;
+    } catch (err) {
+      this.addLogMessage(this.log, `Setup attempt ${JSON.stringify(err)} failed: ${err?.message}`);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait before retry
+    }
 
   }
 
@@ -229,7 +234,7 @@ export class ADH814Service implements ISerialService {
   }
 
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
-    return new Promise<IResModel>((resolve, reject) => {
+    return new Promise<IResModel>(async (resolve, reject) => {
       if (!this.adh814) {
         const error = new Error('Serial port not initialized');
         this.addLogMessage(this.log, error.message);
@@ -267,6 +272,24 @@ export class ADH814Service implements ISerialService {
       };
 
       switch (command) {
+        case EMACHINE_COMMAND.SET_SWAP:
+          const swapResponse = await this.adh814.querySwap(0x01);
+          this.addLogMessage(this.log, `Query Swap response: ${JSON.stringify(swapResponse)}, `);
+
+          // Set row/column swap if not enabled
+          if (swapResponse.data) {
+            if (swapResponse.data[0] !== 0x01) {
+              const setSwapResponse = await this.adh814.setSwap(0x01);
+              this.addLogMessage(this.log, `Set Swap response: ${JSON.stringify(setSwapResponse)}`);
+            } else {
+              this.addLogMessage(this.log, 'Row/column swap already enabled');
+            }
+          }
+          break;
+        case EMACHINE_COMMAND.SET_TWO_WIRE_MODE:
+          const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
+          this.addLogMessage(this.log, `Two-wire mode switch response (attempt 0): ${JSON.stringify(modeResponse)}`);
+          break;
         case EMACHINE_COMMAND.SET_TEMP:
           if (![0x00, 0x01, 0x02].includes(mode)) {
             reject(new Error('Mode must be 0x00-0x02'));

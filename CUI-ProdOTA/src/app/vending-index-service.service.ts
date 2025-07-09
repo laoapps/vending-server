@@ -23,7 +23,7 @@ import { Toast } from '@capacitor/toast';
 })
 export class VendingIndexServiceService {
   log: IlogSerial = { data: '', limit: 50 };
-  portName = '/dev/ttyS1';
+  portName = '/dev/ttyS3';
   baudRate = 9600;
 
   task: ISerialService;
@@ -157,19 +157,19 @@ export class VendingIndexServiceService {
   }
 
 
-  async initADH814(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+  async initADH814(portName: string = '/dev/ttyS3', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
     return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
       this.baudRate = baudRate;
       const x = await this.adh814.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
-        Toast.show({ text: 'vendingindex service  initADH815 NULL' });
-        addLogMessage(this.log, 'vendingindex service  initADH815 NULL');
+        Toast.show({ text: 'vendingindex service  initADH814 NULL' });
+        addLogMessage(this.log, 'vendingindex service  initADH814 NULL');
         return reject(null);
       }
-      console.log('vendingindex service  initADH815 Serial port initialized');
-      addLogMessage(this.log, 'vendingindex service  initADH815 Serial port initialized');
-      Toast.show({ text: 'vendingindex service  initADH815 Serial port initialized' });
+      console.log('vendingindex service  initADH814 Serial port initialized');
+      addLogMessage(this.log, 'vendingindex service  initADH814 Serial port initialized');
+      Toast.show({ text: 'vendingindex service  initADH814 Serial port initialized' });
       this.task = this.adh814;
       return resolve(this.adh814);
     });
