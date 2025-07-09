@@ -101,7 +101,7 @@ export class ADH814Service implements ISerialService {
 
   }
 
-  private async setDefaultTemperature(address: number = 0x01): Promise<void> {
+  public async setDefaultTemperature(address: number = 0x01): Promise<void> {
     try {
       const response = await this.command(EMACHINE_COMMAND.SET_TEMP, {
         address,
@@ -115,7 +115,7 @@ export class ADH814Service implements ISerialService {
     }
   }
 
-  private startPolling(address: number, interval: number = 300): void {
+  public startPolling(address: number = 0x01, interval: number = 300): void {
     if (this.pollInterval) clearInterval(this.pollInterval);
     this.currentInterval = interval;
     this.pollInterval = setInterval(() => {
@@ -131,7 +131,7 @@ export class ADH814Service implements ISerialService {
         const dropSuccess = !(executionResult & 0x04);
         const faultCode = executionResult & 0x03;
         if (response === undefined || response?.data?.length < 9) {
-          this.addLogMessage(this.log, 'Invalid response data length '+JSON.stringify(response));
+          this.addLogMessage(this.log, 'Invalid response data length ' + JSON.stringify(response));
           return;
         }
         const result: IResModel = {
@@ -174,18 +174,7 @@ export class ADH814Service implements ISerialService {
     }, interval);
   }
 
-  setPollingInterval(interval: number): void {
-    if (interval < 100) {
-      this.addLogMessage(this.log, 'Interval too low, setting to minimum 100ms');
-      interval = 200;
-    }
-    this.currentInterval = interval;
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
-      this.startPolling(0x01, this.currentInterval);
-      this.addLogMessage(this.log, `Polling interval updated to ${interval}ms`);
-    }
-  }
+
 
   initializeSerialPort(
     portName: string,
@@ -194,7 +183,7 @@ export class ADH814Service implements ISerialService {
     machineId: string,
     otp: string,
     isNative: ESerialPortType,
-    pollInterval: number = 300
+    pollInterval: number = 100
   ): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
       this.machineId = machineId;
@@ -226,15 +215,15 @@ export class ADH814Service implements ISerialService {
 
         // Perform setup
         await this.setupDevice();
+
         console.log('Device setup completed');
         this.addLogMessage(this.log, 'Device setup completed successfully');
-        await this.setDefaultTemperature();
-        console.log('Default temperature set');
-        this.addLogMessage(this.log, 'Default temperature set successfully');
         this.startPolling(0x01, pollInterval);
         console.log('Polling started');
         this.addLogMessage(this.log, `Polling started with interval ${pollInterval}ms`);
 
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await this.setDefaultTemperature();
         this.addLogMessage(this.log, `Serial port ${init} initialized successfully`);
         resolve(init);
       } catch (err) {

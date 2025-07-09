@@ -1369,6 +1369,7 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: 'serial not init' });
     }
     this.vlog.log = this.serial.log;
+
   }
   async startM102() {
     if (this.serial) {

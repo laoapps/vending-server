@@ -166,6 +166,7 @@ export class VendingIndexServiceService {
         Toast.show({ text: 'vendingindex service  initADH814 NULL' });
         addLogMessage(this.log, 'vendingindex service  initADH814 NULL');
         return reject(null);
+
       }
       console.log('vendingindex service  initADH814 Serial port initialized');
       addLogMessage(this.log, 'vendingindex service  initADH814 Serial port initialized');
