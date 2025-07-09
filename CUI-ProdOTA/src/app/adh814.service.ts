@@ -75,7 +75,7 @@ export class ADH814Service implements ISerialService {
       const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
       this.addLogMessage(this.log, `Two-wire mode switch response: ${JSON.stringify(modeResponse)}`);
       if (modeResponse.data[0] !== 0) {
-        throw new Error(`Failed to switch to two-wire mode: Code ${modeResponse.data[0]}`);
+        this.addLogMessage(this.log,`Failed to switch to two-wire mode: Code ${JSON.stringify(modeResponse)}`);
       }
 
       // Verify device ID
@@ -97,7 +97,7 @@ export class ADH814Service implements ISerialService {
       return Promise.resolve();
     } catch (err) {
       this.addLogMessage(this.log, `Setup error: ${err.message}`);
-      throw err;
+      // throw err;
     }
   }
 
@@ -111,7 +111,7 @@ export class ADH814Service implements ISerialService {
       this.addLogMessage(this.log, `Default temperature set to ${this.DEFAULT_TEMPERATURE}°C in cooling mode: ${JSON.stringify(response)}`);
     } catch (err) {
       this.addLogMessage(this.log, `Failed to set default temperature: ${err.message}`);
-      throw err;
+      // throw err;
     }
   }
 
