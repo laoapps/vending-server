@@ -1366,6 +1366,7 @@ export class Tab1Page implements OnDestroy {
     }
     this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
     if (!this.serial) {
+      await this.apiService.toast.create({ message: 'serial not init', duration: 10000 }).then(r => r.present());
       Toast.show({ text: 'serial not init' });
     }
     this.vlog.log = this.serial.log;
