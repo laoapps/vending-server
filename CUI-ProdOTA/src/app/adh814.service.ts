@@ -75,7 +75,7 @@ export class ADH814Service implements ISerialService {
       const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
       this.addLogMessage(this.log, `Two-wire mode switch response: ${JSON.stringify(modeResponse)}`);
       if (modeResponse.data[0] !== 0) {
-        this.addLogMessage(this.log,`Failed to switch to two-wire mode: Code ${JSON.stringify(modeResponse)}`);
+        this.addLogMessage(this.log, `Failed to switch to two-wire mode: Code ${JSON.stringify(modeResponse)}`);
       }
 
       // Verify device ID
@@ -210,7 +210,7 @@ export class ADH814Service implements ISerialService {
 
       if (init === this.portName) {
         this.initADH814();
-        Toast.show({ text: 'init adh814' });
+        Toast.show({ text: '--->init adh814' });
         this.addLogMessage(this.log, 'init adh814');
         try {
           await this.setupDevice();
