@@ -12,21 +12,21 @@ import { Toast } from '@capacitor/toast';
 export class ADH814Service implements ISerialService {
   machineId = '11111111';
   portName = '/dev/ttyS1';
-  baudRate = 9600; // Default baud rate, supports 9600 or 38400
+  baudRate = 9600;
   log: IlogSerial = { data: '', limit: 50 };
   otp = '111111';
   parity: 'none' = 'none';
   dataBits: 8 = 8;
   stopBits: 1 = 1;
-  private adh814: ADH814Protocol;
-  private totalValue = 0; // Optional: track value if needed for future extensions
+  private adh814: ADH814Protocol | undefined;
+  private totalValue = 0;
   machinestatus = { data: '' };
-  private pollInterval?: NodeJS.Timeout; // To manage the software-initiated polling interval
-  private statusSubject = new Subject<IResModel>(); // For real-time status updates
-  private currentInterval: number = 300; // Current polling interval in ms (changed to 300ms)
-  private readonly DEFAULT_TEMPERATURE = 7; // Default temperature: 7°C
-  private readonly COOLING_MODE = 0x01; // Cooling mode for compressor
-  private readonly MAX_RETRIES = 3; // Retry count for swap commands
+  private pollInterval?: NodeJS.Timeout;
+  private statusSubject = new Subject<IResModel>();
+  private currentInterval: number = 300;
+  private readonly DEFAULT_TEMPERATURE = 7;
+  private readonly COOLING_MODE = 0x01;
+  private readonly MAX_RETRIES = 3;
 
   constructor(private serialService: SerialServiceService) { }
 
@@ -55,49 +55,47 @@ export class ADH814Service implements ISerialService {
     };
 
     this.adh814 = new ADH814Protocol(portAdapter);
-    Toast.show({ text: 'ADH814Protocol initialized' });
-
-    // Log raw data and response times for debugging
-    this.getSerialEvents().subscribe((event) => {
-      if (event.event === 'dataReceived') {
-        const hexData = event.data;
-        const time = new Date().toISOString();
-        this.addLogMessage(this.log, `Raw data: ${hexData} at ${time}`);
-      } else if (event.event === 'serialOpened') {
-        this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
-      }
-    });
+    this.addLogMessage(this.log, 'ADH814Protocol initialized');
   }
 
   private async setupDevice(): Promise<void> {
-    try {
-      // Switch to two-wire mode
-      const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
-      this.addLogMessage(this.log, `Two-wire mode switch response: ${JSON.stringify(modeResponse)}`);
-      if (modeResponse.data[0] !== 0) {
-        this.addLogMessage(this.log, `Failed to switch to two-wire mode: Code ${JSON.stringify(modeResponse)}`);
+    if (!this.adh814) {
+      throw new Error('ADH814Protocol not initialized');
+    }
+
+    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        // Switch to two-wire mode
+        const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
+        this.addLogMessage(this.log, `Two-wire mode switch response (attempt ${attempt}): ${JSON.stringify(modeResponse)}`);
+        if (modeResponse.data[0] !== 0) {
+          throw new Error(`Failed to switch to two-wire mode: Code ${modeResponse.data[0]}`);
+        }
+
+        // Verify device ID
+        const idResponse = await this.adh814.requestID(0x01);
+        this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
+
+        // Query row/column swap status
+        const swapResponse = await this.adh814.querySwap(0x01);
+        this.addLogMessage(this.log, `Query Swap response: ${JSON.stringify(swapResponse)}, Swap ${swapResponse.data[0] === 0x01 ? 'enabled' : 'disabled'}`);
+
+        // Set row/column swap if not enabled
+        if (swapResponse.data[0] !== 0x01) {
+          const setSwapResponse = await this.adh814.setSwap(0x01);
+          this.addLogMessage(this.log, `Set Swap response: ${JSON.stringify(setSwapResponse)}`);
+        } else {
+          this.addLogMessage(this.log, 'Row/column swap already enabled');
+        }
+
+        return;
+      } catch (err) {
+        this.addLogMessage(this.log, `Setup attempt ${attempt} failed: ${err.message}`);
+        if (attempt === this.MAX_RETRIES) {
+          throw new Error(`Setup failed after ${this.MAX_RETRIES} attempts: ${err.message}`);
+        }
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait before retry
       }
-
-      // Verify device ID
-      const idResponse = await this.adh814.requestID(0x01);
-      this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
-
-      // Query row/column swap status
-      const swapResponse = await this.adh814.querySwap(0x01);
-      this.addLogMessage(this.log, `Query Swap response: ${JSON.stringify(swapResponse)}, Swap ${swapResponse.data[0] === 0x01 ? 'enabled' : 'disabled'}`);
-
-      // Set row/column swap if not already enabled
-      if (swapResponse.data[0] !== 0x01) {
-        const setSwapResponse = await this.adh814.setSwap(0x01);
-        this.addLogMessage(this.log, `Set Swap response: ${JSON.stringify(setSwapResponse)}`);
-      } else {
-        this.addLogMessage(this.log, 'Row/column swap already enabled');
-      }
-
-      return Promise.resolve();
-    } catch (err) {
-      this.addLogMessage(this.log, `Setup error: ${err.message}`);
-      // throw err;
     }
   }
 
@@ -111,7 +109,7 @@ export class ADH814Service implements ISerialService {
       this.addLogMessage(this.log, `Default temperature set to ${this.DEFAULT_TEMPERATURE}°C in cooling mode: ${JSON.stringify(response)}`);
     } catch (err) {
       this.addLogMessage(this.log, `Failed to set default temperature: ${err.message}`);
-      // throw err;
+      throw err;
     }
   }
 
@@ -119,6 +117,10 @@ export class ADH814Service implements ISerialService {
     if (this.pollInterval) clearInterval(this.pollInterval);
     this.currentInterval = interval;
     this.pollInterval = setInterval(() => {
+      if (!this.adh814) {
+        this.addLogMessage(this.log, 'Polling skipped: ADH814Protocol not initialized');
+        return;
+      }
       const startTime = Date.now();
       this.adh814.pollStatus(address, (response) => {
         const endTime = Date.now();
@@ -186,7 +188,7 @@ export class ADH814Service implements ISerialService {
     machineId: string,
     otp: string,
     isNative: ESerialPortType,
-    pollInterval: number = 300 // Changed to 300ms
+    pollInterval: number = 300
   ): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
       this.machineId = machineId;
@@ -195,35 +197,36 @@ export class ADH814Service implements ISerialService {
       this.baudRate = baudRate || this.baudRate;
       this.log = log;
 
-      if (this.adh814) {
-        Toast.show({ text: 'Dispose adh814' });
-        this.addLogMessage(this.log, 'Dispose adh814');
-        this.adh814.dispose();
-      }
-
-      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-      Toast.show({ text: 'init adh814' });
-      this.addLogMessage(this.log, 'init adh814');
-      this.serialService.startReading();
-      Toast.show({ text: 'start reading' });
-      this.addLogMessage(this.log, 'start reading');
-
-      if (init === this.portName) {
-        this.initADH814();
-        Toast.show({ text: '--->init adh814' });
-        this.addLogMessage(this.log, 'init adh814');
-        try {
-          await this.setupDevice();
-          await this.setDefaultTemperature();
-          this.startPolling(0x01, pollInterval);
-          resolve(init);
-        } catch (err) {
-          this.addLogMessage(this.log, `Setup failed: ${err.message}`);
-          Toast.show({ text: `Setup failed: ${err.message}` });
-          reject(err);
+      try {
+        // Ensure previous instance is cleaned up
+        if (this.adh814) {
+          this.addLogMessage(this.log, 'Disposing existing ADH814Protocol');
+          this.adh814.dispose();
+          this.adh814 = undefined;
         }
-      } else {
-        reject(init);
+
+        // Initialize serial port
+        const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+        if (init !== this.portName) {
+          throw new Error(`Serial port initialization failed: Expected ${this.portName}, got ${init}`);
+        }
+
+        this.addLogMessage(this.log, 'Starting serial reading');
+        await this.serialService.startReading();
+
+        // Initialize ADH814Protocol
+        this.initADH814();
+        this.addLogMessage(this.log, 'ADH814Protocol initialized');
+
+        // Perform setup
+        await this.setupDevice();
+        await this.setDefaultTemperature();
+        this.startPolling(0x01, pollInterval);
+        this.addLogMessage(this.log, `Serial port ${init} initialized successfully`);
+        resolve(init);
+      } catch (err) {
+        this.addLogMessage(this.log, `Initialization failed: ${err.message}`);
+        reject(err);
       }
     });
   }
@@ -231,7 +234,9 @@ export class ADH814Service implements ISerialService {
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>((resolve, reject) => {
       if (!this.adh814) {
-        reject(new Error('Serial port not initialized'));
+        const error = new Error('Serial port not initialized');
+        this.addLogMessage(this.log, error.message);
+        reject(error);
         return;
       }
 
@@ -242,6 +247,7 @@ export class ADH814Service implements ISerialService {
         slot = 0x00;
       }
       const onError = (error: Error) => {
+        this.addLogMessage(this.log, `Command failed: ${error.message}`);
         reject(new Error(`Command failed: ${error.message}`));
       };
 
@@ -249,7 +255,7 @@ export class ADH814Service implements ISerialService {
         this.addLogMessage(this.log, `Response: ${JSON.stringify(response)}`);
         let status = 1;
         let message = `Command 0x${response.command.toString(16).padStart(2, '0')} executed`;
-        if ([0xA5].includes(response.command) && response.data[0] !== 0) {
+        if (response.command === 0xA5 && response.data[0] !== 0) {
           status = 0;
           message += `: Error code ${response.data[0]}`;
         }
@@ -390,7 +396,7 @@ function checkSumCRC(d: string[]): string {
   return crcHex.substring(2) + crcHex.substring(0, 2);
 }
 
-// Utility to convert hex string array to Uint8Array for CRC calculation
+// Utility to convert hex string array to Uint8Array
 function hexArrayToUint8Array(hexArray: string[]): Uint8Array {
   return new Uint8Array(hexArray.map(hex => parseInt(hex, 16)));
 }
@@ -560,7 +566,7 @@ class ADH814Protocol {
     } else if (address !== 0x00) {
       throw new Error(`Invalid address for command 0x${command.toString(16)}: expected 0x00, got 0x${address.toString(16)}`);
     }
-    if (![0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xB5, 0x34, 0x35, 0x21].includes(command)) {
+    if (![0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0x34, 0x35, 0x21].includes(command)) {
       throw new Error(`Invalid command: got 0x${command.toString(16)}`);
     }
     return { address, command, data, crc: receivedCRC };
