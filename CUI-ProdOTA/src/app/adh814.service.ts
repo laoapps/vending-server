@@ -60,16 +60,16 @@ export class ADH814Service implements ISerialService {
 
   private async setupDevice(): Promise<void> {
     if (!this.adh814) {
-      throw new Error('ADH814Protocol not initialized');
+      this.addLogMessage(this.log,'ADH814Protocol not initialized');
     }
 
-    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+
       try {
         // Switch to two-wire mode
         const modeResponse = await this.adh814.switchToTwoWireMode(0x01);
-        this.addLogMessage(this.log, `Two-wire mode switch response (attempt ${attempt}): ${JSON.stringify(modeResponse)}`);
-        if (modeResponse.data[0] !== 0) {
-          throw new Error(`Failed to switch to two-wire mode: Code ${modeResponse.data[0]}`);
+        this.addLogMessage(this.log, `Two-wire mode switch response (attempt 0): ${JSON.stringify(modeResponse)}`);
+        if (modeResponse?.data[0] !== 0) {
+           this.addLogMessage(this.log, `Failed to switch to two-wire mode: Code ${modeResponse.data[0]}`);
         }
 
         // Verify device ID
@@ -90,13 +90,10 @@ export class ADH814Service implements ISerialService {
 
         return;
       } catch (err) {
-        this.addLogMessage(this.log, `Setup attempt ${attempt} failed: ${err.message}`);
-        if (attempt === this.MAX_RETRIES) {
-          throw new Error(`Setup failed after ${this.MAX_RETRIES} attempts: ${err.message}`);
-        }
+        this.addLogMessage(this.log, `Setup attempt ${JSON.stringify(err)} failed: ${err?.message}`);
         await new Promise(resolve => setTimeout(resolve, 500)); // Wait before retry
       }
-    }
+
   }
 
   private async setDefaultTemperature(address: number = 0x01): Promise<void> {
