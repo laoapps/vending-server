@@ -234,7 +234,12 @@ export class ADH814Service implements ISerialService {
         return;
       }
 
-      const { motorNumber = 0x00, mode = 0x00, tempValue = 8, address = 0x01 } = params || {};
+      let { slot = 1, mode = 0x00, lowTemp = 8, address = 0x01 } = params || {};
+      if (slot > 0) {
+        slot = parseInt((slot - 1).toString(16), 16); // Adjust to 0-based and convert to hex number
+      } else {
+        slot = 0x00; // Default to 0x00 if slot <= 0
+      }
       const onError = (error: Error) => {
         reject(new Error(`Command failed: ${error.message}`));
       };
@@ -263,24 +268,24 @@ export class ADH814Service implements ISerialService {
             reject(new Error('Mode must be 0x00-0x02'));
             return;
           }
-          if (tempValue < -127 || tempValue > 127) {
+          if (lowTemp < -127 || lowTemp > 127) {
             reject(new Error('Temp value must be -127 to 127'));
             return;
           }
-          this.adh814.setTemperature(address, mode, tempValue, onResponse).catch(onError);
+          this.adh814.setTemperature(address, mode, lowTemp, onResponse).catch(onError);
           break;
         case EMACHINE_COMMAND.START_MOTOR:
-          if (motorNumber < 0x00 || motorNumber > 0x3C) {
+          if (slot < 0x00 || slot > 0x3C) {
             reject(new Error('Motor number must be 0x00-0x3C'));
             return;
           }
           this.adh814.pollStatus(address, (statusResponse) => {
             if (statusResponse.data[0] === 0x02) {
               this.adh814.acknowledgeResult(address, () => {
-                this.adh814.startMotor(address, motorNumber, onResponse).catch(onError);
+                this.adh814.startMotor(address, slot, onResponse).catch(onError);
               }).catch(onError);
             } else if (statusResponse.data[0] === 0x00) {
-              this.adh814.startMotor(address, motorNumber, onResponse).catch(onError);
+              this.adh814.startMotor(address, slot, onResponse).catch(onError);
             } else {
               reject(new Error('Board is busy (state: ' + statusResponse.data[0] + ')'));
             }
