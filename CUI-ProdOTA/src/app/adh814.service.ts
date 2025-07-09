@@ -55,6 +55,7 @@ export class ADH814Service implements ISerialService {
     };
 
     this.adh814 = new ADH814Protocol(portAdapter);
+    Toast.show({ text: 'ADH814Protocol' });
 
     // Log raw data and response times for debugging
     this.getSerialEvents().subscribe((event) => {
@@ -69,30 +70,30 @@ export class ADH814Service implements ISerialService {
   }
 
   // In ADH814Service class, replace the setupDevice method
-private async setupDevice(): Promise<void> {
-  try {
-    // Verify device ID
-    const idResponse = await this.adh814.requestID(0x01); // Default to address 1
-    this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
+  private async setupDevice(): Promise<void> {
+    try {
+      // Verify device ID
+      const idResponse = await this.adh814.requestID(0x01); // Default to address 1
+      this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
 
-    // Query row/column swap status
-    const swapResponse = await this.adh814.querySwap(0x01);
-    this.addLogMessage(this.log, `Query Swap response: ${JSON.stringify(swapResponse)}, Swap ${swapResponse.data[0] === 0x01 ? 'enabled' : 'disabled'}`);
+      // Query row/column swap status
+      const swapResponse = await this.adh814.querySwap(0x01);
+      this.addLogMessage(this.log, `Query Swap response: ${JSON.stringify(swapResponse)}, Swap ${swapResponse.data[0] === 0x01 ? 'enabled' : 'disabled'}`);
 
-    // Set row/column swap if not already enabled
-    if (swapResponse.data[0] !== 0x01) {
-      const setSwapResponse = await this.adh814.setSwap(0x01);
-      this.addLogMessage(this.log, `Set Swap response: ${JSON.stringify(setSwapResponse)}`);
-    } else {
-      this.addLogMessage(this.log, 'Row/column swap already enabled');
+      // Set row/column swap if not already enabled
+      if (swapResponse.data[0] !== 0x01) {
+        const setSwapResponse = await this.adh814.setSwap(0x01);
+        this.addLogMessage(this.log, `Set Swap response: ${JSON.stringify(setSwapResponse)}`);
+      } else {
+        this.addLogMessage(this.log, 'Row/column swap already enabled');
+      }
+
+      return Promise.resolve();
+    } catch (err) {
+      this.addLogMessage(this.log, `Setup error: ${err.message}`);
+      throw err;
     }
-
-    return Promise.resolve();
-  } catch (err) {
-    this.addLogMessage(this.log, `Setup error: ${err.message}`);
-    throw err;
   }
-}
 
   private async setDefaultTemperature(address: number = 0x01): Promise<void> {
     try {
