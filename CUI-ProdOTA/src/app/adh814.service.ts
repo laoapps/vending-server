@@ -311,6 +311,8 @@ export class ADH814Service implements ISerialService {
 
   async command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
+              this.addLogMessage(this.log, `************ Executing command: ${EMACHINE_COMMAND[command]} `);
+
       if (command != EMACHINE_COMMAND.READ_EVENTS) {
         this.addLogMessage(this.log, `Executing command: ${EMACHINE_COMMAND[command]} with params: ${JSON.stringify(params)}`, `Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params)}`);
       }
