@@ -16,7 +16,7 @@ export class ADH814Service implements ISerialService {
   otp = '111111';
   machinestatus = { data: '' };
   private pollInterval?: NodeJS.Timeout;
-  private currentInterval: number = 300;
+  private currentInterval: number = 100;
   private readonly DEFAULT_TEMPERATURE = 7;
   private readonly COOLING_MODE = 0x01;
   private pendingCommand: { command: EMACHINE_COMMAND, transactionID: number, resolve: (value: IResModel) => void, reject: (reason: any) => void } | null = null;
@@ -286,15 +286,15 @@ export class ADH814Service implements ISerialService {
         if (init === this.portName) {
           this.initADH814();
           this.addLogMessage(this.log, `Serial port initialized: ${init}`);
-          this.setupDevice();
+          await this.setupDevice();
           await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for serial port to stabilize
 
           this.setPolling(0x01, pollInterval);
           await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for serial port to stabilize
 
-          this.setDefaultTemperature();
+          await this.setDefaultTemperature();
           setTimeout(() => {
-            this.command(EMACHINE_COMMAND.shippingcontrol, { address: 0x01, slot: 0 }, Date.now())
+            this.command(EMACHINE_COMMAND.shippingcontrol, { address: 0x01, slot: 1 }, Date.now())
             this.addLogMessage(this.log, 'Shipping control command sent '+` for address 0x01 and slot 0`);
           }, 30000);
           resolve(init);
