@@ -34,6 +34,7 @@ export class SerialServiceService implements OnDestroy {
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, isNative = ESerialPortType.Serial, dataBits = 8, stopBits = 1, parity = 'none', bufferSize = 1024, flags = 0): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
       if (this.initialized) {
+        await this.close();
         console.log("Serial port already initialized, skipping...");
         return reject('Serial port already initialized');
       }
@@ -218,8 +219,9 @@ export class SerialServiceService implements OnDestroy {
     return this.initialized;
   }
   async close(): Promise<any> {
-    await SerialConnectionCapacitor.stopReading();
     this.initialized = false;
+    await SerialConnectionCapacitor.stopReading();
+    
     await Promise.all(this.listenerSubscriptions.map(handle => handle.remove()));
     this.listenerSubscriptions = [];
     this.serialEventSubject.complete();  // Complete the subject

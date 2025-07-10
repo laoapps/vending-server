@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
 import { IAlive } from './services/syste.model';
-
+import { DebugService } from './debug.service';
 import * as moment from 'moment';
 
 import { Platform } from '@ionic/angular';
@@ -44,8 +44,10 @@ export class AppComponent {
     public apiService: ApiService,
     private platform: Platform,
     public vendingIndex: VendingIndexServiceService,
-    private liveUpdateService: LiveupdateService
+    private liveUpdateService: LiveupdateService,
+    private debugService: DebugService
   ) {
+    this.debugService.addDebugMessage('App initialized');
     this.platform.ready().then(() => {
       this.initializeApp();
     });

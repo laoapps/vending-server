@@ -599,6 +599,7 @@ export enum EMACHINE_COMMAND {
     QUERY_SWAP = "QUERY_SWAP",
     SET_SWAP = "SET_SWAP",
     SET_TWO_WIRE_MODE = "SET_TWO_WIRE_MODE",
+    READ_ID="READ_ID"
 
 }
 export enum ESerialPortType {

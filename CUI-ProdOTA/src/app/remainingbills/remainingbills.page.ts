@@ -140,6 +140,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
           this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
             await this.loadBillLocal();
+            Toast.show({ text: 'Bill process deleted', duration: 'long' });
 
             this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
               console.log('shippingcontrol');
