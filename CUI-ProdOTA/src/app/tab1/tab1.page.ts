@@ -885,7 +885,7 @@ export class Tab1Page implements OnDestroy {
             console.log('Update musicVolume to', this.musicVolume);
             localStorage.setItem('musicVolume', this.musicVolume.toString());
             this.apiService.musicVolume = this.musicVolume;
-            this.apiService.reloadPage();
+            // this.apiService.reloadPage();
           }
           if (this.platform.is('android')) {
             if (r.versionId) {
@@ -3010,6 +3010,42 @@ export class Tab1Page implements OnDestroy {
           });
 
         resolve(IENMessage.success);
+      } catch (error) {
+        this.apiService.simpleMessage(error.message);
+        resolve(error.message);
+      }
+    });
+  }
+
+
+  public testDrop1(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        const xp = prompt('password1');
+        console.log('xp', xp);
+        const param = { slot: Number(xp), dropSensor: 1 };
+
+        this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+          console.log('shippingcontrol', r);
+          Toast.show({ text: 'shippingcontrol' + JSON.stringify(r) })
+        }).catch((e) => {
+          console.log('shippingcontrol error', e);
+          Toast.show({ text: 'shippingcontrol error' + JSON.stringify(e) })
+        })
+        // this.apiService.modal
+        //   .create({
+        //     component: PlayGamesPage,
+        //     cssClass: 'dialog-fullscreen',
+        //   })
+        //   .then((r) => {
+        //     r.present();
+        //     this.otherModalAreOpening = true;
+        //     this.openAnotherModal(r);
+        //     clearInterval(this.autoShowMyOrderTimer);
+        //     this.checkActiveModal(r);
+        //   });
+
+        // resolve(IENMessage.success);
       } catch (error) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
