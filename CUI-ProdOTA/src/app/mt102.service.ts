@@ -18,7 +18,9 @@ export class MT102Service implements ISerialService {
   private stopBits: 1 = 1;
   private totalValue = 0; // Optional: for tracking if MT102 reports values
   machinestatus = { data: '' };
-  constructor(private serialService: SerialServiceService) { }
+  constructor(private serialService: SerialServiceService) { 
+
+  }
 
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
@@ -107,14 +109,23 @@ export class MT102Service implements ISerialService {
       this.baudRate = baudRate || this.baudRate;
       this.log = log;
 
-      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-      this.serialService.startReading();
-
-      if (init === this.portName) {
-        this.initM102(); // Default slave address 1
+      try {
+        const init = await this.serialService.initializeSerialPort(
+          this.portName,
+          this.baudRate,
+          this.log
+        );
+        if (init !== this.portName) {
+          this.addLogMessage(this.log, `Serial port mismatch: Expected ${this.portName}, got ${init}`);
+          return reject(new Error(`Serial port mismatch: Expected ${this.portName}, got ${init}`));
+        }
+        this.initM102(); // Initialize M102 protocol
+        await this.serialService.startReading(); // Start reading to trigger M102 setup and polling
+        this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
         resolve(init);
-      } else {
-        reject(init);
+      } catch (error) {
+        this.addLogMessage(this.log, `Serial port initialization failed: ${error.message}`);
+        reject(error);
       }
     });
   }
@@ -133,7 +144,7 @@ export class MT102Service implements ISerialService {
             case EMACHINE_COMMAND.POLL:
               m102Command = this.m102.motorPoll();
               break;
-            case EMACHINE_COMMAND.START_MOTOR: // Renamed for clarity
+            case EMACHINE_COMMAND.shippingcontrol: // Renamed for clarity
               
               m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
               break;

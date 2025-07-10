@@ -279,14 +279,14 @@ export class Zdm8Service implements ISerialService {
     return new Promise<IResModel>((resolve, reject) => {
       switch (command) {
         case EMACHINE_COMMAND.version:
-          this.commandZDM8(EZDM8_COMMAND.hwversion, params).then(resolve).catch(reject);
+           this.commandZDM8(EZDM8_COMMAND.hwversion, params).then(resolve).catch(reject);
 
           break;
         case EMACHINE_COMMAND.status:
-          this.commandZDM8(EZDM8_COMMAND.status, params).then(resolve).catch(reject);
+           this.commandZDM8(EZDM8_COMMAND.status, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.dropdetectstatus:
-          this.commandZDM8(EZDM8_COMMAND.dropdetectstatus, params).then(resolve).catch(reject);
+           this.commandZDM8(EZDM8_COMMAND.dropdetectstatus, params).then(resolve).catch(reject);
           break;
         case EMACHINE_COMMAND.arrayoutputstatus:
           this.commandZDM8(EZDM8_COMMAND.arrayoutputstatus, params).then(resolve).catch(reject);

@@ -164,12 +164,10 @@ export class VendingIndexServiceService {
       const x = await this.adh814.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
         Toast.show({ text: 'vendingindex service  initADH814 NULL' });
-        addLogMessage(this.log, 'vendingindex service  initADH814 NULL');
         return reject(null);
 
       }
       console.log('vendingindex service  initADH814 Serial port initialized');
-      addLogMessage(this.log, 'vendingindex service  initADH814 Serial port initialized');
       Toast.show({ text: 'vendingindex service  initADH814 Serial port initialized' });
       this.task = this.adh814;
       return resolve(this.adh814);
