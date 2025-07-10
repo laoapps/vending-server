@@ -296,7 +296,7 @@ export class ADH814Service implements ISerialService {
           setTimeout(() => {
             this.command(EMACHINE_COMMAND.shippingcontrol, { address: 0x01, slot: 1 }, Date.now())
             this.addLogMessage(this.log, 'Shipping control command sent '+` for address 0x01 and slot 0`);
-          }, 30000);
+          }, 20000);
           resolve(init);
         } else {
           this.addLogMessage(this.log, `Serial port mismatch: Expected ${this.portName}, got ${init}`);
@@ -311,6 +311,8 @@ export class ADH814Service implements ISerialService {
 
   async command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
+              this.addLogMessage(this.log, `************ Executing command: ${EMACHINE_COMMAND[command]} `);
+
       if (command != EMACHINE_COMMAND.READ_EVENTS) {
         this.addLogMessage(this.log, `Executing command: ${EMACHINE_COMMAND[command]} with params: ${JSON.stringify(params)}`, `Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params)}`);
       }
