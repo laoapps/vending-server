@@ -296,7 +296,7 @@ export class ADH814Service implements ISerialService {
           setTimeout(() => {
             this.command(EMACHINE_COMMAND.shippingcontrol, { address: 0x01, slot: 1 }, Date.now())
             this.addLogMessage(this.log, 'Shipping control command sent '+` for address 0x01 and slot 0`);
-          }, 30000);
+          }, 20000);
           resolve(init);
         } else {
           this.addLogMessage(this.log, `Serial port mismatch: Expected ${this.portName}, got ${init}`);
