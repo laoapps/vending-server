@@ -99,7 +99,6 @@ export class ADH814Service implements ISerialService {
           this.setPolling(); // Start polling with default address 0x01
           new Promise(resolve => setTimeout(resolve, 2000)).then(()=>{
           this.setDefaultTemperature();
-
           }); // Wait for stabilization
           break;
         case 0xA2: // Scan Door Feedback
