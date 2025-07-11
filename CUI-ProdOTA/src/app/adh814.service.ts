@@ -85,6 +85,11 @@ export class ADH814Service implements ISerialService {
             command: EMACHINE_COMMAND.READ_ID,
             firmwareVersion: data.map(byte => String.fromCharCode(parseInt(byte, 16))).join('').trim()
           };
+          this.setPolling(); // Start polling with default address 0x01
+          new Promise(resolve => setTimeout(resolve, 2000)).then(() => {
+            this.setDefaultTemperature();
+
+          }); // Wait for stabilization
           break;
         case 0xA2: // Scan Door
           result = {
