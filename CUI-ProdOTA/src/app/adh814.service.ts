@@ -4,7 +4,7 @@ import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ISerialSe
 import { SerialServiceService } from './services/serialservice.service';
 import { Toast } from '@capacitor/toast';
 import { DebugService } from './debug.service';
-import { stat } from 'fs';
+import { Subscription } from 'rxjs'; // Import RxJS Subscription
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +20,7 @@ export class ADH814Service implements ISerialService {
   private currentInterval: number = 200;
   private readonly DEFAULT_TEMPERATURE = 7;
   private readonly COOLING_MODE = 0x01;
-
+  private subscription?: Subscription; // Store the subscription
   constructor(public serialService: SerialServiceService,
     private debugService: DebugService) { }
 
@@ -96,10 +96,33 @@ export class ADH814Service implements ISerialService {
             status: 1,
             message: 'ID retrieved successfully',
           };
-          this.setPolling(); // Start polling with default address 0x01
-          new Promise(resolve => setTimeout(resolve, 2000)).then(()=>{
-          this.setDefaultTemperature();
-          }); // Wait for stabilization
+          // this.setPolling(); // Start polling with default address 0x01
+          // new Promise(resolve => setTimeout(resolve, 2000)).then(()=>{
+
+          // this.setDefaultTemperature();
+          this.setDefaultTemperature().then((res) => {
+            this.addLogMessage(this.log, `Default temperature set: ${JSON.stringify(res || {})}`);
+          }).catch((err) => {
+            this.addLogMessage(this.log, `Failed to set default temperature: ${err?.message}`);
+          })
+          // setTimeout(() => {
+          //   this.command(EMACHINE_COMMAND.SET_SWAP, {}, new Date().getTime()).then((res) => {
+          //     this.addLogMessage(this.log, `Swap set: ${JSON.stringify(res)}`);
+          //   }).catch((err) => {
+          //     this.addLogMessage(this.log, `Failed to set swap: ${err?.message}`);
+          //   });
+          // }, 3000);
+
+          // setTimeout(() => {
+          //   this.command(EMACHINE_COMMAND.SET_TWO_WIRE_MODE, {}, new Date().getTime()).then((res) => {
+          //     this.addLogMessage(this.log, `Two-wire mode set: ${JSON.stringify(res)}`);
+          //   }).catch((err) => {
+          //     this.addLogMessage(this.log, `Failed to set two-wire mode: ${err?.message}`);
+          //   });
+          // }, 10000);
+
+
+          // }); // Wait for stabilization
           break;
         case 0xA2: // Scan Door Feedback
           if (data.length !== 18) {
@@ -256,7 +279,7 @@ export class ADH814Service implements ISerialService {
   }
 
   private initADH814(): void {
-    this.getSerialEvents().subscribe(async (event) => {
+    this.subscription = this.getSerialEvents().subscribe(async (event) => {
       if (event?.event === 'dataReceived') {
         const rawData = event?.data;
         this.addLogMessage(this.log, `Raw data: ${rawData}`);
@@ -264,7 +287,7 @@ export class ADH814Service implements ISerialService {
         const result = this.processResponse(rawData);
         if (result) {
           if (result.command !== EMACHINE_COMMAND.READ_EVENTS) {
-            this.addLogMessage(this.log, `Processed response: ${JSON.stringify(result)}`, `Response: ${JSON.stringify(result)}`);
+            this.addLogMessage(this.log, `Processed response: ${JSON.stringify(result || {})}`, `Response: ${JSON.stringify(result || {})}`);
           }
           // Send ACK for POLL status 0x02
           if (result.command === EMACHINE_COMMAND.READ_EVENTS && result.status === 0x02) {
@@ -304,7 +327,7 @@ export class ADH814Service implements ISerialService {
           mode: this.COOLING_MODE,
           tempValue: this.DEFAULT_TEMPERATURE
         }, Date.now());
-        this.addLogMessage(this.log, `Default temperature set to ${this.DEFAULT_TEMPERATURE}°C: ${JSON.stringify(result)}`);
+        this.addLogMessage(this.log, `Default temperature set to ${this.DEFAULT_TEMPERATURE}°C:`);
         resolve(result); // Explicit return
       } catch (err) {
         this.addLogMessage(this.log, `Failed to set default temperature: ${err?.message}`);
@@ -317,142 +340,141 @@ export class ADH814Service implements ISerialService {
   setPolling(address: number = 0x01, interval: number = 200): void {
     if (this.pollInterval) clearInterval(this.pollInterval);
     this.currentInterval = interval < 100 ? 100 : interval;
-    this.addLogMessage(this.log, `Starting polling with interval ${this.currentInterval}ms`);
-
     let errorCount = 0;
-    const that = this;
+    let isPolling = false;
     this.pollInterval = setInterval(async () => {
+      if (isPolling) return;
+      isPolling = true;
       try {
-        const result = await that.command(EMACHINE_COMMAND.READ_EVENTS, { address }, Date.now());
+        const result = await this.command(EMACHINE_COMMAND.READ_EVENTS, { address }, Date.now());
         if (result?.data?.status === 0x02) {
-          // that.addLogMessage(that.log, `Delivery ended for motor ${result?.data?.motorNumber}: Drop ${result?.data?.dropSuccess ? 'successful' : 'failed'}${result?.data?.faultCode ? `, Fault code: ${result?.data?.faultCode}` : ''}`);
-          await that.command(EMACHINE_COMMAND.CLEAR_RESULT, { address }, Date.now());
-          // that.addLogMessage(that.log, 'ACK sent for delivery end');
+          await this.command(EMACHINE_COMMAND.CLEAR_RESULT, { address }, Date.now());
         }
-        errorCount = 0; // Reset on success
+        errorCount = 0;
       } catch (err) {
-        // errorCount++;
-        that.addLogMessage(that.log, `Polling error: ${err?.message}`);
-        // if (errorCount >= 3) {
-        //   that.addLogMessage(that.log, 'Stopping polling due to repeated errors');
-        //   clearInterval(that.pollInterval!);
-        //   that.pollInterval = undefined;
-        // }
+        errorCount++;
+        this.addLogMessage(this.log, `Polling error: ${err?.message}`);
+        if (errorCount >= 3) {
+          this.addLogMessage(this.log, 'Stopping polling due to repeated errors');
+          clearInterval(this.pollInterval!);
+          this.pollInterval = undefined;
+        }
+      } finally {
+        isPolling = false;
       }
-    }, that.currentInterval);
-
+    }, this.currentInterval);
   }
 
-  initializeSerialPort(
-    portName: string,
-    baudRate: number,
-    log: IlogSerial,
-    machineId: string,
-    otp: string,
-    isNative: ESerialPortType
-  ): Promise<string> {
-    return new Promise<string>(async (resolve, reject) => {
+  async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative: ESerialPortType): Promise<string> {
+    try {
       this.machineId = machineId;
       this.otp = otp;
       this.portName = portName || this.portName;
       this.baudRate = baudRate || this.baudRate;
       this.log = log;
+      const init = await Promise.race([this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative), this.timeout(15000)]);
+      await Promise.race([this.serialService.startReading(), this.timeout(15000)]);
+      if (init === this.portName) {
+        this.initADH814();
+        setTimeout(async () => {
+          try {
+            await this.setupDevice();
+            this.addLogMessage(this.log, `Device setup initiated for port: ${this.portName}`);
+          } catch (err) {
+            this.addLogMessage(this.log, `Device setup failed: ${err?.message}`);
+          }
+        }, 15000);
 
-      try {
-        const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-        await this.serialService.startReading();
-        if (init === this.portName) {
-          this.initADH814();
-          this.addLogMessage(this.log, `Serial port initialized: ${init}`);
-          await this.setupDevice();
-          
-          resolve(init);
-        } else {
-          this.addLogMessage(this.log, `Serial port mismatch: Expected ${this.portName}, got ${init}`);
-          reject(new Error(`Serial port mismatch: Expected ${this.portName}, got ${init}`));
-        }
-      } catch (err) {
-        this.addLogMessage(this.log, `Initialization failed: ${err?.message}`);
-        reject(err);
+        this.addLogMessage(this.log, `Serial port initialized: ${this.portName}`);
+        return init;
       }
-    });
+      throw new Error(`Serial port mismatch: Expected ${this.portName}, got ${init}`);
+    } catch (err) {
+      this.addLogMessage(this.log, `Initialization failed: ${err?.message}`);
+      throw err;
+    }
   }
 
   async command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
-    return new Promise<IResModel>(async (resolve, reject) => {
+    try {
       if (command !== EMACHINE_COMMAND.READ_EVENTS) {
-        this.addLogMessage(this.log, `Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params)}`);
+        this.addLogMessage(this.log, `Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params || {})}, Transaction ID: ${transactionID}`);
       }
       let buff: string[] = [];
       let check = '';
       const address = params?.address?.toString(16).padStart(2, '0') || '01';
 
-      try {
-        switch (command) {
-          case EMACHINE_COMMAND.READ_ID:
-            buff = [address, 'A1'];
-            break;
-          case EMACHINE_COMMAND.QUERY_SWAP:
-            buff = [address, '34'];
-            break;
-          case EMACHINE_COMMAND.SET_SWAP:
-            const swapEnabled = params.swapEnabled ?? 1; // 0x01 = enabled, 0x00 = disabled
-            if (swapEnabled !== 0 && swapEnabled !== 1) {
-              throw new Error('swapEnabled must be 0 or 1');
-            }
-            buff = [address, '35', swapEnabled.toString(16).padStart(2, '0')];
-            break;
-          case EMACHINE_COMMAND.SET_TWO_WIRE_MODE:
-            buff = [address, '21', '10', '00'];
-            break;
-          case EMACHINE_COMMAND.SET_TEMP:
-            const mode = params.mode?.toString(16).padStart(2, '0') || '01';
-            const tempValue = params.lowTemp ?? 7;
-            if (tempValue < -127 || tempValue > 127) {
-              throw new Error('Temperature must be between -127 and 127°C');
-            }
-            const tempHighByte = ((tempValue >> 8) & 0xFF).toString(16).padStart(2, '0');
-            const tempLowByte = (tempValue & 0xFF).toString(16).padStart(2, '0');
-            buff = [address, 'A4', mode, tempHighByte, tempLowByte];
-            this.addLogMessage(this.log, `Setting temperature: Mode ${mode}, Value ${tempValue}°C`);
-            break;
-          case EMACHINE_COMMAND.shippingcontrol:
-            const slotNum = params.slot ? params.slot - 1 : 0;
-            if (slotNum < 0 || slotNum > 0x3C) throw new Error('Motor number must be 1–61');
-            const slot = slotNum.toString(16).padStart(2, '0');
-            buff = [address, 'A5', slot];
-            break;
-          case EMACHINE_COMMAND.CLEAR_RESULT:
-            buff = [address, 'A6'];
-            break;
-          case EMACHINE_COMMAND.READ_EVENTS:
-            buff = [address, 'A3'];
-            break;
-          case EMACHINE_COMMAND.SCAN_DOOR:
-            buff = [address, 'A2'];
-            break;
-          case EMACHINE_COMMAND.RESET:
-            resolve({ command, data: {}, status: 1, message: 'Reset command executed', transactionID });
-            return;
-          default:
-            reject(new Error('Unknown command'));
-            return;
-        }
-
-        check = this.calculateCrc16(buff);
-        const request = buff.join('') + check;
-        this.serialService.write(request).then(() => {
-          console.log('zdm service  Command succeeded:', request);
-          resolve({ command, data: params, message: 'Command sent successfully' } as IResModel);
-        }).catch(e => {
-          console.log('zdm service  Command failed:', e);
-          reject({ command, params, result: e?.message });
-        });
-      } catch (error) {
-        this.addLogMessage(this.log, `Command failed: ${error?.message}`);
-        reject(error);
+      switch (command) {
+        case EMACHINE_COMMAND.READ_ID:
+          buff = [address, 'A1'];
+          break;
+        case EMACHINE_COMMAND.QUERY_SWAP:
+          buff = [address, '34'];
+          break;
+        case EMACHINE_COMMAND.SET_SWAP:
+          const swapEnabled = params.swapEnabled ?? 1;
+          if (swapEnabled !== 0 && swapEnabled !== 1) {
+            throw new Error('swapEnabled must be 0 or 1');
+          }
+          buff = [address, '35', swapEnabled.toString(16).padStart(2, '0')];
+          break;
+        case EMACHINE_COMMAND.SET_TWO_WIRE_MODE:
+          buff = [address, '21', '10', '00'];
+          break;
+        case EMACHINE_COMMAND.SET_TEMP:
+          const mode = params.mode?.toString(16)?.padStart(2, '0') || '01';
+          const tempValue = params?.lowTemp ?? 7;
+          if (tempValue < -127 || tempValue > 127) {
+            throw new Error('Temperature must be between -127 and 127°C');
+          }
+          const tempHighByte = ((tempValue >> 8) & 0xFF).toString(16).padStart(2, '0');
+          const tempLowByte = (tempValue & 0xFF).toString(16).padStart(2, '0');
+          buff = [address, 'A4', mode, tempHighByte, tempLowByte];
+          this.addLogMessage(this.log, `Setting temperature: Mode ${mode}, Value ${tempValue}°C`);
+          break;
+        case EMACHINE_COMMAND.shippingcontrol:
+          const slotNum = params.slot ? params.slot - 1 : 0;
+          if (slotNum < 0 || slotNum > 0x3C) throw new Error('Motor number must be 1–61');
+          const slot = slotNum.toString(16).padStart(2, '0');
+          buff = [address, 'A5', slot];
+          break;
+        case EMACHINE_COMMAND.CLEAR_RESULT:
+          buff = [address, 'A6'];
+          break;
+        case EMACHINE_COMMAND.READ_EVENTS:
+          buff = [address, 'A3'];
+          break;
+        case EMACHINE_COMMAND.SCAN_DOOR:
+          buff = [address, 'A2'];
+          break;
+        case EMACHINE_COMMAND.RESET:
+          return { command, data: {}, status: 1, message: 'Reset command executed', transactionID };
+        default:
+          throw new Error('Unknown command');
       }
-    });
+
+      check = this.calculateCrc16(buff);
+      const request = buff.join('') + check;
+      const portOpenTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Serial port not open after timeout')), 5000));
+      while (this.serialService.isPortOpen() === false) {
+        await Promise.race([
+          new Promise(resolve => setTimeout(resolve, 1000)),
+          portOpenTimeout
+        ]);
+        this.addLogMessage(this.log, `Serial port is not open. Retrying...`);
+      }
+      this.addLogMessage(this.log, `Sending command: ${request}`);
+      await Promise.race([this.serialService.write(request), this.timeout(15000)]); // Add timeout
+      console.log('ADH814 service Command succeeded:', request);
+      return { command, data: params, message: 'Command sent successfully' } as IResModel;
+    } catch (error) {
+      this.addLogMessage(this.log, `Command failed: ${error?.message}`);
+      throw error;
+    }
+  }
+
+  timeout(ms: number) {
+    return new Promise((_, reject) => setTimeout(() => reject(new Error('Operation timed out')), ms));
   }
 
   checkSum(data: string[]): string {
@@ -468,7 +490,14 @@ export class ADH814Service implements ISerialService {
   }
 
   close(): Promise<void> {
-    if (this.pollInterval) clearInterval(this.pollInterval);
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = undefined;
+    }
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = undefined;
+    }
     return this.serialService.close();
   }
 
