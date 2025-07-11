@@ -17,7 +17,7 @@ export class ADH814Service implements ISerialService {
   otp = '111111';
   machinestatus = { data: '' };
   private pollInterval?: NodeJS.Timeout;
-  private currentInterval: number = 250;
+  private currentInterval: number = 200;
   private readonly DEFAULT_TEMPERATURE = 7;
   private readonly COOLING_MODE = 0x01;
 
@@ -53,12 +53,11 @@ export class ADH814Service implements ISerialService {
   private processResponse(rawData: string): any {
     try {
       const hexData = rawData.replace(/\s/g, '').toLowerCase();
-      this.addLogMessage(this.log, `Raw response: ${hexData}`);
       console.log(`Raw response: ${hexData}`);
 
       if (hexData.length < 8) {
         this.addLogMessage(this.log, `Invalid response: Too short (${hexData.length / 2} bytes)`);
-        return {command:'',status:0, data: {}, message: 'Invalid response: Too short', transactionID: 0};
+        return { command: '', status: 0, data: {}, message: 'Invalid response: Too short', transactionID: 0 };
       }
 
       const address = parseInt(hexData.slice(0, 2), 16);
@@ -76,11 +75,11 @@ export class ADH814Service implements ISerialService {
       // Allow 0x01-0x04 for 0xA1, 0x34, 0x35, 0x21; 0x00 for others
       if (command !== 0xA1 && command !== 0x34 && command !== 0x35 && command !== 0x21 && address !== 0x00) {
         this.addLogMessage(this.log, `Invalid address for command 0x${command.toString(16)}: Expected 0x00, got 0x${address.toString(16)}`);
-        return { command, status: 0, data: {}, message: 'Invalid address', transactionID: 0};
+        return { command, status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
       }
       if ((command === 0xA1 || command === 0x34 || command === 0x35 || command === 0x21) && (address < 0x01 || address > 0x04)) {
         this.addLogMessage(this.log, `Invalid address for command 0x${command.toString(16)}: Expected 0x01-0x04, got 0x${address.toString(16)}`);
-        return { command, status: 0, data: {}, message: 'Invalid address', transactionID: 0  };
+        return { command, status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
       }
 
       let result: any;
@@ -97,24 +96,29 @@ export class ADH814Service implements ISerialService {
             status: 1,
             message: 'ID retrieved successfully',
           };
+          this.setPolling(); // Start polling with default address 0x01
+          new Promise(resolve => setTimeout(resolve, 2000)).then(()=>{
+          this.setDefaultTemperature();
+
+          }); // Wait for stabilization
           break;
         case 0xA2: // Scan Door Feedback
           if (data.length !== 18) {
             this.addLogMessage(this.log, `Invalid SCAN response: Expected 18 data bytes, got ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid SCAN response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid SCAN response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.SCAN_DOOR,
             data: data.map(byte => parseInt(byte, 16)),
-            status:1,
-            message:'Scan door feedback retrieved successfully'
+            status: 1,
+            message: 'Scan door feedback retrieved successfully'
           };
           break;
         case 0xA3: // Poll Status
           if (data.length !== 9) {
             this.addLogMessage(this.log, `Invalid POLL status data length: ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid POLL status data length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid POLL status data length', transactionID: 0 };
             break;
           }
           const statusData = data.map(byte => parseInt(byte, 16));
@@ -129,7 +133,7 @@ export class ADH814Service implements ISerialService {
             avgCurrent: (statusData[5] << 8) | statusData[6],
             runTime: statusData[7] || 0,
             temperature: statusData[8] > 127 ? statusData[8] - 256 : statusData[8],
-            message:'Poll status retrieved successfully',
+            message: 'Poll status retrieved successfully',
           };
           if (result.temperature === -40) {
             this.addLogMessage(this.log, 'Temperature sensor disconnected');
@@ -144,7 +148,7 @@ export class ADH814Service implements ISerialService {
         case 0xA4: // Set Temperature
           if (data.length !== 3) {
             this.addLogMessage(this.log, `Invalid TEMP response: Expected 3 data bytes, got ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid TEMP response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid TEMP response length', transactionID: 0 };
             break;
           }
           result = {
@@ -158,23 +162,23 @@ export class ADH814Service implements ISerialService {
         case 0xA5: // Start Motor
           if (data.length !== 1) {
             this.addLogMessage(this.log, `Invalid RUN response: Expected 1 data byte, got ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid RUN response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid RUN response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.shippingcontrol,
             data: parseInt(data[0], 16),
-            status:1,
+            status: 1,
             message: 'Motor started successfully',
           };
-          if (result.executionCode !== 0) {
-            this.addLogMessage(this.log, `Motor error: Code ${result.executionCode}`);
+          if (result?.executiodatanCode !== 0) {
+            this.addLogMessage(this.log, `Motor error: Code ${result?.data}`);
           }
           break;
         case 0xB5: // Start Motor (Merged)
           if (data.length !== 1) {
             this.addLogMessage(this.log, `Invalid RUN2 response: Expected 1 data byte, got ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid RUN2 response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid RUN2 response length', transactionID: 0 };
             break;
           }
           result = {
@@ -183,28 +187,28 @@ export class ADH814Service implements ISerialService {
             status: 1,
             message: 'START_MOTOR_MERGED successfully',
           };
-          if (result.executionCode !== 0) {
-            this.addLogMessage(this.log, `Merged motor error: Code ${result.executionCode}`);
+          if (result.data !== 0) {
+            this.addLogMessage(this.log, `Merged motor error: Code ${result?.data}`);
           }
           break;
         case 0xA6: // Acknowledge Result
           if (data.length !== 0) {
             this.addLogMessage(this.log, `Invalid ACK response: Expected 0 data bytes, got ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid ACK response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid ACK response length', transactionID: 0 };
             break;
 
           }
           result = {
             command: EMACHINE_COMMAND.CLEAR_RESULT,
             acknowledged: true,
-            status:1,
+            status: 1,
             message: 'Result acknowledged successfully',
           };
           break;
         case 0x34: // Query Swap
           if (data.length !== 1) {
             this.addLogMessage(this.log, `Invalid QUERY_SWAP response: Expected 1 data byte, got ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid QUERY_SWAP response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid QUERY_SWAP response length', transactionID: 0 };
             break;
           }
           result = {
@@ -217,7 +221,7 @@ export class ADH814Service implements ISerialService {
         case 0x35: // Set Swap
           if (data.length !== 1) {
             this.addLogMessage(this.log, `Invalid SET_SWAP response: Expected 1 data byte, got ${data.length}`);
-            result= { command, status: 0, data: {}, message: 'Invalid SET_SWAP response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid SET_SWAP response length', transactionID: 0 };
             break;
           }
           result = {
@@ -230,7 +234,7 @@ export class ADH814Service implements ISerialService {
         case 0x21: // Switch to Two-Wire Mode
           if (data.length !== 2) {
             this.addLogMessage(this.log, `Invalid TWO_WIRE_MODE response: Expected 2 data bytes, got ${data.length}`);
-            result={ command, status: 0, data: {}, message: 'Invalid TWO_WIRE_MODE response length', transactionID: 0 };
+            result = { command, status: 0, data: {}, message: 'Invalid TWO_WIRE_MODE response length', transactionID: 0 };
             break;
           }
           result = {
@@ -243,31 +247,33 @@ export class ADH814Service implements ISerialService {
           break;
         default:
           this.addLogMessage(this.log, `Unsupported command: 0x${command.toString(16)}`);
-          result={ command, status: 0, data: {}, message: 'Unsupported command', transactionID: 0 };
+          result = { command, status: 0, data: {}, message: 'Unsupported command', transactionID: 0 };
       }
       return result;
     } catch (error) {
-      this.addLogMessage(this.log, `Error processing response: ${error.message}`);
-      return { command: '', status: 0, data: {}, message: `Error processing response: ${error.message}`, transactionID: 0 };
+      this.addLogMessage(this.log, `Error processing response: ${error?.message}`);
+      return { command: '', status: 0, data: {}, message: `Error processing response: ${error?.message}`, transactionID: 0 };
     }
   }
 
   private initADH814(): void {
     this.getSerialEvents().subscribe(async (event) => {
-      if (event.event === 'dataReceived') {
-        const rawData = event.data;
+      if (event?.event === 'dataReceived') {
+        const rawData = event?.data;
         this.addLogMessage(this.log, `Raw data: ${rawData}`);
         console.log('ADH814 Received from device:', rawData);
         const result = this.processResponse(rawData);
         if (result) {
-          this.addLogMessage(this.log, `Processed response: ${JSON.stringify(result)}`, `Response: ${JSON.stringify(result)}`);
+          if (result.command !== EMACHINE_COMMAND.READ_EVENTS) {
+            this.addLogMessage(this.log, `Processed response: ${JSON.stringify(result)}`, `Response: ${JSON.stringify(result)}`);
+          }
           // Send ACK for POLL status 0x02
           if (result.command === EMACHINE_COMMAND.READ_EVENTS && result.status === 0x02) {
             try {
               await this.command(EMACHINE_COMMAND.CLEAR_RESULT, { address: 0x01 }, Date.now());
               this.addLogMessage(this.log, 'Sent ACK for POLL status 0x02');
             } catch (error) {
-              this.addLogMessage(this.log, `Failed to send ACK: ${error.message}`);
+              this.addLogMessage(this.log, `Failed to send ACK: ${error?.message}`);
             }
           }
         }
@@ -280,14 +286,11 @@ export class ADH814Service implements ISerialService {
       try {
         this.addLogMessage(this.log, `Setting up device at address 0x${address.toString(16)}`);
         const result = await this.command(EMACHINE_COMMAND.READ_ID, { address }, Date.now());
-        if (result?.data?.firmwareVersion) {
-          this.addLogMessage(this.log, `Device ID: ${result.data.firmwareVersion}`);
-          resolve(result); // Explicit return
-        } else {
-          reject(new Error('Failed to read device ID'));
-        }
+        this.addLogMessage(this.log, `Device ID: ${result?.data?.firmwareVersion}`);
+        resolve(result); // Explicit return
+
       } catch (err) {
-        this.addLogMessage(this.log, `Setup failed: ${err.message}`);
+        this.addLogMessage(this.log, `Setup failed: ${err?.message}`);
         reject(err);
       }
     })
@@ -305,7 +308,7 @@ export class ADH814Service implements ISerialService {
         this.addLogMessage(this.log, `Default temperature set to ${this.DEFAULT_TEMPERATURE}°C: ${JSON.stringify(result)}`);
         resolve(result); // Explicit return
       } catch (err) {
-        this.addLogMessage(this.log, `Failed to set default temperature: ${err.message}`);
+        this.addLogMessage(this.log, `Failed to set default temperature: ${err?.message}`);
         reject(err);
       }
     })
@@ -330,7 +333,7 @@ export class ADH814Service implements ISerialService {
         errorCount = 0; // Reset on success
       } catch (err) {
         // errorCount++;
-        that.addLogMessage(that.log, `Polling error: ${err.message}`);
+        that.addLogMessage(that.log, `Polling error: ${err?.message}`);
         // if (errorCount >= 3) {
         //   that.addLogMessage(that.log, 'Stopping polling due to repeated errors');
         //   clearInterval(that.pollInterval!);
@@ -338,7 +341,7 @@ export class ADH814Service implements ISerialService {
         // }
       }
     }, that.currentInterval);
-    return; // Explicit return
+
   }
 
   initializeSerialPort(
@@ -362,17 +365,15 @@ export class ADH814Service implements ISerialService {
         if (init === this.portName) {
           this.initADH814();
           this.addLogMessage(this.log, `Serial port initialized: ${init}`);
-          // await this.setupDevice();
-          //this.setPolling(); // Start polling with default address 0x01
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for stabilization
-          // await this.setDefaultTemperature();
+          await this.setupDevice();
+          
           resolve(init);
         } else {
           this.addLogMessage(this.log, `Serial port mismatch: Expected ${this.portName}, got ${init}`);
           reject(new Error(`Serial port mismatch: Expected ${this.portName}, got ${init}`));
         }
       } catch (err) {
-        this.addLogMessage(this.log, `Initialization failed: ${err.message}`);
+        this.addLogMessage(this.log, `Initialization failed: ${err?.message}`);
         reject(err);
       }
     });
@@ -407,7 +408,7 @@ export class ADH814Service implements ISerialService {
             break;
           case EMACHINE_COMMAND.SET_TEMP:
             const mode = params.mode?.toString(16).padStart(2, '0') || '01';
-            const tempValue = params.tempValue ?? 7;
+            const tempValue = params.lowTemp ?? 7;
             if (tempValue < -127 || tempValue > 127) {
               throw new Error('Temperature must be between -127 and 127°C');
             }
@@ -446,10 +447,10 @@ export class ADH814Service implements ISerialService {
           resolve({ command, data: params, message: 'Command sent successfully' } as IResModel);
         }).catch(e => {
           console.log('zdm service  Command failed:', e);
-          reject({ command, params, result: e.message });
+          reject({ command, params, result: e?.message });
         });
       } catch (error) {
-        this.addLogMessage(this.log, `Command failed: ${error.message}`);
+        this.addLogMessage(this.log, `Command failed: ${error?.message}`);
         reject(error);
       }
     });

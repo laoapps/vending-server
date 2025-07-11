@@ -65,7 +65,6 @@ export class SerialServiceService implements OnDestroy {
           SerialConnectionCapacitor.addListener('serialWriteSuccess', (data) => {
             !log || this.addLogMessage(log, JSON.stringify(data), data?.message);
             console.log('serial service  Native write succeeded:', data?.message);
-            Toast.show({ text: 'Native write succeeded '+JSON.stringify(data) });
             this.serialEventSubject.next({ event: SerialPortEvent.SerialWriteSuccess, data: data?.data });
           }),
           SerialConnectionCapacitor.addListener('usbWriteSuccess', (data) => {
