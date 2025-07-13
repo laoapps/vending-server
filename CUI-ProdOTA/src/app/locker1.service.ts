@@ -113,7 +113,7 @@ export class Locker1Service implements ILockControlService {
   }
 
   async unlock(lockAddress: number): Promise<IResModel> {
-    const lockAddrHex = lockAddress.toString(16).padStart(2, '0').toUpperCase();
+    const lockAddrHex = lockAddress.toString(16).padStart(2, '0')?.toUpperCase();
     const command = ['8A', this.boardAddress, lockAddrHex, '11'];
     return this.commandLocker1(command, EProtocol1Command.Unlock);
   }

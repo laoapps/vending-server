@@ -465,7 +465,7 @@ class PacketBuilder {
 
   private bytesToHex(bytes: number[], length: number): string {
     return Array.from(bytes.slice(0, length))
-      .map(b => b.toString(16).padStart(2, "0").toUpperCase())
+      .map(b => b.toString(16).padStart(2, "0")?.toUpperCase())
       .join(" ");
   }
 

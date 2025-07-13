@@ -27,7 +27,7 @@ import { Buffer } from 'buffer'
 
 //   private toHexString(bytes: Uint8Array): string {
 //     return Array.from(bytes)
-//       .map(byte => byte.toString(16).padStart(2, '0').toUpperCase())
+//       .map(byte => byte.toString(16).padStart(2, '0')?.toUpperCase())
 //       .join('');
 //   }
 
@@ -72,7 +72,7 @@ import { Buffer } from 'buffer'
 //     const crcCalculated = crcCalculatedBuffer.readUInt16LE(0); // Little-endian from Buffer
 
 //     if (crcCalculated !== crcReceived) {
-//       console.log('CRC mismatch - Expected:', crcCalculated.toString(16).toUpperCase(), 'Received:', crcReceived.toString(16).toUpperCase());
+//       console.log('CRC mismatch - Expected:', crcCalculated.toString(16)?.toUpperCase(), 'Received:', crcReceived.toString(16)?.toUpperCase());
 //       throw new Error('CRC mismatch');
 //     }
 
@@ -95,7 +95,7 @@ import { Buffer } from 'buffer'
 //   const testData = new Uint8Array([0x00, 0x01, 0xF0]);
 //   const crcBuffer = essp['calculateCrc16'](testData);
 //   const crc = crcBuffer.readUInt16LE(0);
-//   console.log('CRC for [00, 01, F0]:', crc.toString(16).toUpperCase(), `(decimal: ${crc})`);
+//   console.log('CRC for [00, 01, F0]:', crc.toString(16)?.toUpperCase(), `(decimal: ${crc})`);
 //   console.log('Expected CRC: 0A20 (2592), Device expects in packet: 20 0A');
 
 //   // Test 2: Build SYNC packet
@@ -108,8 +108,8 @@ import { Buffer } from 'buffer'
 //   try {
 //     const parsed = essp.parsePacket(responsePacket);
 //     console.log('Parsed Response:', {
-//       command: parsed.command.toString(16).toUpperCase(),
-//       data: parsed.data.map(d => d.toString(16).toUpperCase()).join(' ')
+//       command: parsed.command.toString(16)?.toUpperCase(),
+//       data: parsed.data.map(d => d.toString(16)?.toUpperCase()).join(' ')
 //     });
 //     console.log('Expected: { command: F0, data: [] }');
 //   } catch (error) {
@@ -122,8 +122,8 @@ import { Buffer } from 'buffer'
 //   try {
 //     const parsedBuilt = essp.parsePacket(builtPacket);
 //     console.log('Parsed Built Packet:', {
-//       command: parsedBuilt.command.toString(16).toUpperCase(),
-//       data: parsedBuilt.data.map(d => d.toString(16).toUpperCase()).join(' ')
+//       command: parsedBuilt.command.toString(16)?.toUpperCase(),
+//       data: parsedBuilt.data.map(d => d.toString(16)?.toUpperCase()).join(' ')
 //     });
 //   } catch (error) {
 //     console.error('Parse Error:', error.message);
