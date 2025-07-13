@@ -88,6 +88,7 @@ import { App } from '@capacitor/app';
 import { VideoCacheService } from '../video-cache.service';
 import { SettingPage } from '../setting/setting.page';
 import { CloseStytemPage } from '../close-stytem/close-stytem.page';
+import { IResModel } from '../services/syste.model';
 
 @Component({
   selector: 'app-tab1',
@@ -1361,9 +1362,196 @@ export class Tab1Page implements OnDestroy {
     this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
     if (!this.serial) {
       Toast.show({ text: 'serial not init' });
+    }else{
+      this.serial.getSerialEvents().subscribe(async (event) => {
+      if (event?.event === 'dataReceived') {
+        const rawData = event?.data;
+        // this.addLogMessage(`Raw data: ${rawData}`);
+        console.log('ADH814 Received from device:', rawData);
+        if (rawData) {
+          const result = this.processResponseADH814(rawData);
+          if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
+            // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
+          }
+        }
+
+      }
+    });
     }
     this.vlog.log = this.serial.log;
   }
+  private processResponseADH814(rawData: string): IResModel {
+      try {
+        const hexData = rawData?.replace(/\s/g, '').toLowerCase();
+        console.log(`Raw response: ${hexData}`);
+         console.log(`Raw data: ${hexData}`);
+  
+        if (hexData.length < 8) {
+           console.log(`Invalid response: Too short (${hexData.length / 2} bytes)`);
+          return { command: '', status: 0, data: {}, message: 'Invalid response: Too short', transactionID: 0 };
+        }
+  
+        const address = parseInt(hexData.slice(0, 2), 16);
+        const command = parseInt(hexData.slice(2, 4), 16);
+
+        const data = hexData.slice(4, -4).match(/.{2}/g) || [];
+  
+
+        
+  
+        if (command !== 0xA1 && address !== 0x00) {
+           console.log(`Invalid address for command 0x${command.toString(16)}: Expected 0x00, got 0x${address.toString(16)}`);
+          return { command: '', status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
+        }
+        if (command === 0xA1 && (address < 0x01 || address > 0x04)) {
+           console.log(`Invalid address for command 0xA1: Expected 0x01-0x04, got 0x${address.toString(16)}`);
+          return { command: '', status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
+        }
+  
+        let result: IResModel;//IResModel;
+        switch (command) {
+          case 0xA1: // Request ID
+            if (data.length !== 16) {
+              (`Invalid ID response: Expected 16 data bytes, got ${data.length}`);
+              result = { command: EMACHINE_COMMAND.READ_ID, status: 0, data: {}, message: 'Invalid ID response length', transactionID: 0 };
+              break;
+            }
+            result = {
+              command: EMACHINE_COMMAND.READ_ID,
+              status: 1,
+              data: { firmwareVersion: data.map(byte => String.fromCharCode(parseInt(byte, 16))).join('').trim() },
+              message: 'ID retrieved successfully',
+              transactionID: 0
+            };
+             console.log(`Device ID: ${result.data.firmwareVersion}`);
+            break;
+          case 0xA2: // Scan Door Feedback
+            if (data.length !== 18) {
+               console.log(`Invalid SCAN response: Expected 18 data bytes, got ${data.length}`);
+              result = { command: EMACHINE_COMMAND.SCAN_DOOR, status: 0, data: {}, message: 'Invalid SCAN response length', transactionID: 0 };
+              break;
+            }
+            result = {
+              command: EMACHINE_COMMAND.SCAN_DOOR,
+              status: 1,
+              data: { doorFeedback: data.map(byte => parseInt(byte, 16)) },
+              message: 'Scan door feedback retrieved successfully',
+              transactionID: 0
+            };
+             console.log(`Door feedback: ${JSON.stringify(result.data.doorFeedback)}`);
+            break;
+          case 0xA3: // Poll Status
+            if (data.length !== 9) {
+              console.log(`Invalid POLL status data length: ${data.length}`);
+              result = { command: EMACHINE_COMMAND.READ_EVENTS, status: 0, data: {}, message: 'Invalid POLL status data length', transactionID: 0 };
+              break;
+            }
+            const statusData = data.map(byte => parseInt(byte, 16));
+            result = {
+              command: EMACHINE_COMMAND.READ_EVENTS,
+              status: 1,
+              data: {
+                status: statusData[0],
+                motorNumber: statusData[1],
+                executionResult: statusData[2],
+                dropSuccess: !(statusData[2] & 0x04),
+                faultCode: statusData[2] & 0x03,
+                maxCurrent: (statusData[3] << 8) | statusData[4],
+                avgCurrent: (statusData[5] << 8) | statusData[6],
+                runTime: statusData[7],
+                temperature: statusData[8] > 127 ? statusData[8] - 256 : statusData[8]
+              },
+              message: 'Poll status retrieved successfully',
+              transactionID: 0
+            };
+             console.log(`Poll status: Motor ${result.data.motorNumber}, Status ${result.data.status}, Drop ${result.data.dropSuccess ? 'Success' : 'Failed'}, Temp ${result.data.temperature}°C`);
+            if (result.data.temperature === -40) {
+               console.log('Temperature sensor disconnected');
+            } else if (result.data.temperature === 120) {
+               console.log('Temperature sensor shorted');
+            }
+            if (result.data.faultCode !== 0) {
+              console.log(`Fault code: ${result.data.faultCode === 1 ? 'Overcurrent' : result.data.faultCode === 2 ? 'Open circuit' : 'Timeout'}`);
+            }
+            this._machineStatus.status.temp=result.data.temperature;
+            this.machinestatus.data = result.data;
+
+            break;
+          case 0xA4: // Set Temperature
+            if (data.length !== 3) {
+
+              result = { command: EMACHINE_COMMAND.SET_TEMP, status: 0, data: {}, message: 'Invalid TEMP response length', transactionID: 0 };
+              break;
+            }
+            result = {
+              command: EMACHINE_COMMAND.SET_TEMP,
+              status: 1,
+              data: {
+                mode: parseInt(data[0], 16),
+                tempValue: (parseInt(data[1], 16) << 8) | parseInt(data[2], 16)
+              },
+              message: 'Temperature set successfully',
+              transactionID: 0
+            };
+
+            break;
+          case 0xA5: // Start Motor
+            if (data.length !== 1) {
+
+              result = { command: EMACHINE_COMMAND.shippingcontrol, status: 0, data: {}, message: 'Invalid RUN response length', transactionID: 0 };
+              break;
+            }
+            result = {
+              command: EMACHINE_COMMAND.shippingcontrol,
+              status: parseInt(data[0], 16) === 0 ? 1 : 0,
+              data: { executionStatus: parseInt(data[0], 16) },
+              message: parseInt(data[0], 16) === 0 ? 'Motor started successfully' : `Motor error: Code ${parseInt(data[0], 16)}`,
+              transactionID: 0
+            };
+
+            break;
+          case 0xB5: // Start Motor Combined
+            if (data.length !== 1) {
+
+              result = { command: EMACHINE_COMMAND.START_MOTOR_MERGED, status: 0, data: {}, message: 'Invalid RUN2 response length', transactionID: 0 };
+              break;
+            }
+            result = {
+              command: EMACHINE_COMMAND.START_MOTOR_MERGED,
+              status: parseInt(data[0], 16) === 0 ? 1 : 0,
+              data: { executionStatus: parseInt(data[0], 16) },
+              message: parseInt(data[0], 16) === 0 ? 'Merged motor started successfully' : `Merged motor error: Code ${parseInt(data[0], 16)}`,
+              transactionID: 0
+            };
+
+            break;
+          case 0xA6: // Acknowledge Result
+            if (data.length !== 0) {
+
+              result = { command: EMACHINE_COMMAND.CLEAR_RESULT, status: 0, data: {}, message: 'Invalid ACK response length', transactionID: 0 };
+              break;
+            }
+            result = {
+              command: EMACHINE_COMMAND.CLEAR_RESULT,
+              status: 1,
+              data: { acknowledged: true },
+              message: 'Result acknowledged successfully',
+              transactionID: 0
+            };
+
+            break;
+          default:
+
+            result = { command: '', status: 0, data: {}, message: 'Unsupported command', transactionID: 0 };
+        }
+        return result;
+      } catch (error: any) {
+
+        return { command: '', status: 0, data: {}, message: `Error processing response: ${error.message}`, transactionID: 0 };
+      }
+    }
+
+
   async startM102() {
     if (this.serial) {
       await this.serial.close();

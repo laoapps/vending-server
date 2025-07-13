@@ -34,9 +34,9 @@ export class ADH814Service implements ISerialService {
 
   constructor(private serialService: SerialServiceService) { }
 
-  private addLogMessage(message: string, consoleMessage?: string): void {
+  private addLogMessage(message: string, consoleMessage?: string,showToast=false): void {
     this.log.data += `${message}\n`;
-    // Toast.show({ text: message, duration: 'long' });
+    if(showToast)Toast.show({ text: message, duration: 'long' });
     if (consoleMessage) console.log(consoleMessage);
   }
 
@@ -156,6 +156,7 @@ export class ADH814Service implements ISerialService {
             this.addLogMessage(`Fault code: ${result.data.faultCode === 1 ? 'Overcurrent' : result.data.faultCode === 2 ? 'Open circuit' : 'Timeout'}`);
           }
           this.machinestatus.data = result.data;
+          // this.addLogMessage(`Machine status: ${JSON.stringify(this.machinestatus?.data)}`,'',true);
           break;
         case 0xA4: // Set Temperature
           if (data.length !== 3) {
@@ -232,20 +233,20 @@ export class ADH814Service implements ISerialService {
   }
 
   private initADH814(): void {
-    this.getSerialEvents().subscribe(async (event) => {
-      if (event?.event === 'dataReceived') {
-        const rawData = event?.data;
-        this.addLogMessage(`Raw data: ${rawData}`);
-        console.log('ADH814 Received from device:', rawData);
-        if (rawData) {
-          const result = this.processResponse(rawData);
-          if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
-            this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
-          }
-        }
+    // this.getSerialEvents().subscribe(async (event) => {
+    //   if (event?.event === 'dataReceived') {
+    //     const rawData = event?.data;
+    //     this.addLogMessage(`Raw data: ${rawData}`);
+    //     console.log('ADH814 Received from device:', rawData);
+    //     if (rawData) {
+    //       const result = this.processResponse(rawData);
+    //       if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
+    //         this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
+    //       }
+    //     }
 
-      }
-    });
+    //   }
+    // });
   }
 
   async command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
@@ -355,12 +356,12 @@ export class ADH814Service implements ISerialService {
         await this.setDefaultTemperature(address);
         this.addLogMessage(`Default temperature set`);
 
-        setTimeout(async () => {
+        setInterval(async () => {
           let pollResult = await this.command(EMACHINE_COMMAND.READ_EVENTS, { address }, Date.now());
           if (pollResult?.data?.status !== 0) {
             this.addLogMessage(`Board not in idle state (status: ${JSON.stringify(pollResult)})`);
           }
-        }, 40000);
+        }, 10000);
 
         resolve(result);
       } catch (err: any) {
