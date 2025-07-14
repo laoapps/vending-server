@@ -519,6 +519,7 @@ export enum EZDM8_COMMAND {
 export interface ICreditData { id: number, name: string, transactionID, data: ICreditDataDetails, description: string };
 export interface ICreditDataDetails { raw: string, data: string, t: number, transactionID: string, command: EMACHINE_COMMAND }
 export enum EMACHINE_COMMAND {
+    LIGHTSOFF='LIGHTSOFF',
     login = 'login',
     ping = 'ping',
     status = 'status',

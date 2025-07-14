@@ -158,7 +158,7 @@ module.exports = class SSP extends EventEmitter {
   }
 
   exec(command, args = []) {
-    command = command.toUpperCase();
+    command = command?.toUpperCase();
     if (commandList[command] === undefined) { throw new Error('command not found'); }
     let buffer = this.serialService.hexToUint8Array(this.getPacket(command, args));
     return this.getPromise(command, buffer);

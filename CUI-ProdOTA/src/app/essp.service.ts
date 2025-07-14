@@ -103,7 +103,7 @@ export class EsspService implements ISerialService {
   constructor(private serialService: SerialServiceService) {
     this.getSerialEvents().subscribe((event) => {
       if (event.event === 'dataReceived') {
-        const hexString = event.data.toUpperCase();
+        const hexString = event.data?.toUpperCase();
         this.responseBuffer += hexString;
         this.addLogMessage(this.log, `Buffering response: ${this.responseBuffer}`);
 
@@ -472,7 +472,7 @@ export class EsspService implements ISerialService {
   }
 
   private toHexString(bytes: Uint8Array): string {
-    return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join('');
+    return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')?.toUpperCase()).join('');
   }
 
   private hexToUint8Array(hex: string): Uint8Array {

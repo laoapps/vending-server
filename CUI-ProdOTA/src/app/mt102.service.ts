@@ -80,9 +80,13 @@ export class MT102Service implements ISerialService {
           }
         } else if (event.event === 'serialOpened') {
           this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
-          this.setupDevice().catch(err => {
+          setTimeout(() => {
+            // Start setup after a delay to ensure port is ready
+             this.setupDevice().catch(err => {
             this.addLogMessage(this.log, `Setup failed: ${err.message}`);
           });
+          },10000);
+         
         }
       });
     });
@@ -102,7 +106,7 @@ export class MT102Service implements ISerialService {
       const serialNumberPacket = this.m102.getSerialNumber();
       await this.serialService.write(serialNumberPacket);
       this.addLogMessage(this.log, 'MT102 setup complete');
-      this.startPolling(); // Start polling after setup
+      // this.startPolling(); // Start polling after setup
     } catch (err) {
       this.addLogMessage(this.log, `Setup error: ${err.message}`);
       return Promise.reject(err);
