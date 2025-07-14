@@ -34,9 +34,9 @@ export class ADH814Service implements ISerialService {
 
   constructor(private serialService: SerialServiceService) { }
 
-  private addLogMessage(message: string, consoleMessage?: string,showToast=false): void {
+  private addLogMessage(message: string, consoleMessage?: string, showToast = false): void {
     this.log.data += `${message}\n`;
-    if(showToast)Toast.show({ text: message, duration: 'long' });
+    if (showToast) Toast.show({ text: message, duration: 'long' });
     if (consoleMessage) console.log(consoleMessage);
   }
 
@@ -350,7 +350,7 @@ export class ADH814Service implements ISerialService {
         const result = await this.command(EMACHINE_COMMAND.READ_ID, { address }, Date.now());
         this.addLogMessage(`Device ID: ${result?.data?.firmwareVersion}`);
 
-        
+
 
 
         await this.setDefaultTemperature(address);
