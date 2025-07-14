@@ -30,8 +30,29 @@ export class MT102Service implements ISerialService {
   }
 
   private setupListeners(): void {
+    if (this.serialEventsSubscription) {
+      this.serialEventsSubscription.unsubscribe();
+    }
     this.serialEventsSubscription = this.getSerialEvents().subscribe((event) => {
-      this.m102.on('SERIAL_NUMBER', ({ details }) => {
+
+     if (event.event === 'dataReceived') {
+        const hexData = event.data;
+        this.addLogMessage(this.log, `Raw data: ${hexData}`);
+        try {
+          this.m102.parseResponse(hexData);
+        } catch (error) {
+          this.addLogMessage(this.log, `Parse error: ${error.message}`);
+        }
+      } else if (event.event === 'serialOpened') {
+        this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
+        setTimeout(() => {
+          this.setupDevice().catch(err => {
+            this.addLogMessage(this.log, `Setup failed: ${err.message}`);
+          });
+        }, 500); // Reduced to 500ms
+      }
+    });
+    this.m102.on('SERIAL_NUMBER', ({ details }) => {
         this.addLogMessage(this.log, `Serial Number: ${this.formatHexArray(details)}`);
       });
       this.m102.on('MOTOR_POLL', ({ details }) => {
@@ -68,28 +89,6 @@ export class MT102Service implements ISerialService {
       this.m102.on('ERROR', ({ details }) => {
         this.addLogMessage(this.log, `Error: Code ${details?.[0]}`);
       });
-
-      this.getSerialEvents().subscribe((event) => {
-        if (event.event === 'dataReceived') {
-          const hexData = event.data;
-          this.addLogMessage(this.log, `Raw data: ${hexData}`);
-          try {
-            this.m102.parseResponse(hexData);
-          } catch (error) {
-            this.addLogMessage(this.log, `Parse error: ${error.message}`);
-          }
-        } else if (event.event === 'serialOpened') {
-          this.addLogMessage(this.log, `Serial port opened: ${this.portName}`);
-          setTimeout(() => {
-            // Start setup after a delay to ensure port is ready
-             this.setupDevice().catch(err => {
-            this.addLogMessage(this.log, `Setup failed: ${err.message}`);
-          });
-          },10000);
-         
-        }
-      });
-    });
   }
 
   private formatHexArray(data: number[]): string {
@@ -105,8 +104,8 @@ export class MT102Service implements ISerialService {
     try {
       const serialNumberPacket = this.m102.getSerialNumber();
       await this.serialService.write(serialNumberPacket);
+      await new Promise(resolve => setTimeout(resolve, 50)); // Wait 50ms
       this.addLogMessage(this.log, 'MT102 setup complete');
-      // this.startPolling(); // Start polling after setup
     } catch (err) {
       this.addLogMessage(this.log, `Setup error: ${err.message}`);
       return Promise.reject(err);
@@ -123,7 +122,6 @@ export class MT102Service implements ISerialService {
       try {
         const result = await this.command(EMACHINE_COMMAND.POLL, {}, Date.now());
         this.addLogMessage(this.log, `Poll result: ${JSON.stringify(result)}`);
-        // Update machinestatus based on MOTOR_POLL event (handled in setupListeners)
       } catch (error) {
         this.addLogMessage(this.log, `Polling error: ${error.message}`);
       }
@@ -177,74 +175,57 @@ export class MT102Service implements ISerialService {
     });
   }
 
-  async command(command: EMACHINE_COMMAND, params: any, transactionID: number, retries = 3): Promise<IResModel> {
-    return new Promise<IResModel>(async (resolve, reject) => {
-      if (!this.m102) {
-        reject(new Error('MT102 protocol not initialized'));
-        return;
-      }
-      for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-          let m102Command: string;
-          const { motorIndex = 0, motorType = 3, lightCurtainMode = 0, overcurrent = 100, undercurrent = 50, timeout = 70 } = params || {};
-          switch (command) {
-            case EMACHINE_COMMAND.POLL:
-              m102Command = this.m102.motorPoll();
-              break;
-            case EMACHINE_COMMAND.shippingcontrol: // Renamed for clarity
-
-              m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
-              break;
-            case EMACHINE_COMMAND.READ_TEMP:
-              m102Command = this.m102.readTemp();
-              break;
-            case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
-              const { switchIndex = 0 } = params || {};
-              if (switchIndex < 0 || switchIndex > 7) throw new Error('Switch index must be 0-7');
-              m102Command = this.m102.writeDO(switchIndex, 0); // Read by setting operation to 0
-              break;
-            case EMACHINE_COMMAND.READ_SWITCH_INPUT:
-              m102Command = this.m102.readDI();
-              break;
-            case EMACHINE_COMMAND.SET_ADDRESS:
-              const { newAddress = 1 } = params || {};
-              m102Command = this.m102.setAddress(newAddress);
-              break;
-            case EMACHINE_COMMAND.RESET:
-              resolve(PrintSucceeded(command, {}, 'reset'));
-              return;
-            case EMACHINE_COMMAND.READ_EVENTS:
-              resolve(PrintSucceeded(command, {}, 'no events tracked'));
-              return;
-            case EMACHINE_COMMAND.MOTOR_SCAN:
-              m102Command = this.m102.motorScan(motorIndex);
-              break;
-            default:
-              resolve(PrintSucceeded(command, params, 'unknown command'));
-              return;
-          }
-
-          this.addLogMessage(this.log, `Sending (Attempt ${attempt}): ${m102Command}`);
-          const message=await this.serialService.write(m102Command);
-          await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Response timeout')), 1000);
-            this.getSerialEvents().subscribe((event) => {
-              if (event.event === 'dataReceived') {
-                clearTimeout(timeout);
-                resolve(event.data);
-              }
-            });
-          });
-           resolve( PrintSucceeded(command, params, 'Command sent, response received '+JSON.stringify(message)));
-           return;
-        } catch (error) {
-          this.addLogMessage(this.log, `Attempt ${attempt} failed: ${error.message}`);
-          if (attempt === retries) reject(new Error(`Command failed after ${retries} attempts: ${error.message}`));
-          else this.addLogMessage(this.log, `Retrying... (${attempt}/${retries})`);
+  public async command(command: EMACHINE_COMMAND, params: any, transactionID: number, retries = 3): Promise<IResModel> {
+    if (!this.m102) {
+      throw new Error('MT102 protocol not initialized');
+    }
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        let m102Command: string;
+        const { motorIndex = 0, motorType = 3, lightCurtainMode = 0, overcurrent = 100, undercurrent = 50, timeout = 70 } = params || {};
+        switch (command) {
+          case EMACHINE_COMMAND.POLL:
+            m102Command = this.m102.motorPoll();
+            break;
+          case EMACHINE_COMMAND.shippingcontrol:
+            m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
+            break;
+          case EMACHINE_COMMAND.READ_TEMP:
+            m102Command = this.m102.readTemp();
+            break;
+          case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
+            const { switchIndex = 0 } = params || {};
+            if (switchIndex < 0 || switchIndex > 7) throw new Error('Switch index must be 0-7');
+            m102Command = this.m102.writeDO(switchIndex, 0);
+            break;
+          case EMACHINE_COMMAND.READ_SWITCH_INPUT:
+            m102Command = this.m102.readDI();
+            break;
+          case EMACHINE_COMMAND.SET_ADDRESS:
+            const { newAddress = 1 } = params || {};
+            m102Command = this.m102.setAddress(newAddress);
+            break;
+          case EMACHINE_COMMAND.RESET:
+            return PrintSucceeded(command, {}, 'reset');
+          case EMACHINE_COMMAND.READ_EVENTS:
+            return PrintSucceeded(command, {}, 'no events tracked');
+          case EMACHINE_COMMAND.MOTOR_SCAN:
+            m102Command = this.m102.motorScan(motorIndex);
+            break;
+          default:
+            return PrintSucceeded(command, params, 'unknown command');
         }
+
+        this.addLogMessage(this.log, `Sending (Attempt ${attempt}): ${m102Command}`);
+        return await this.serialService.write(m102Command);
+       
+      } catch (error) {
+        this.addLogMessage(this.log, `Attempt ${attempt} failed: ${error.message}`);
+        if (attempt === retries) throw new Error(`Command failed after ${retries} attempts: ${error.message}`);
+        this.addLogMessage(this.log, `Retrying... (${attempt}/${retries})`);
       }
-      reject(new Error('Command failed after all retries'));
-    });
+    }
+    throw new Error('Command failed after all retries');
   }
 
   checkSum(data?: any[]): string {
@@ -301,7 +282,7 @@ class M102Protocol {
       crc ^= byte;
       for (let i = 0; i < 8; i++) {
         if (crc & 0x0001) {
-          crc = (crc >> 1) ^ 0x8408; // Polynomial used in original code
+          crc = (crc >> 1) ^ 0x1021; // Verify polynomial
         } else {
           crc >>= 1;
         }
