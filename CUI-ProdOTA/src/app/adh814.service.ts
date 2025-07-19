@@ -29,7 +29,7 @@ export class ADH814Service implements ISerialService {
   log: IlogSerial = { data: '', limit: 50 };
   machinestatus = { data: '' };
   private currentInterval: number = 300;
-  private readonly DEFAULT_TEMPERATURE = 7;
+  private readonly DEFAULT_TEMPERATURE = 3;
   private readonly COOLING_MODE = 0x01;
 
   constructor(private serialService: SerialServiceService) { }
@@ -353,7 +353,7 @@ export class ADH814Service implements ISerialService {
 
 
 
-        await this.setDefaultTemperature(address);
+
         this.addLogMessage(`Default temperature set`);
 
         setInterval(async () => {
@@ -380,6 +380,22 @@ export class ADH814Service implements ISerialService {
           tempValue: this.DEFAULT_TEMPERATURE
         }, Date.now());
         this.addLogMessage(`Default temperature set to ${this.DEFAULT_TEMPERATURE}°C`);
+        resolve(result);
+      } catch (err: any) {
+        this.addLogMessage(`Failed to set default temperature: ${err.message}`);
+        reject(err);
+      }
+    });
+  }
+  async setTemperature(address: number = 0x01, temp = 5): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this.command(EMACHINE_COMMAND.SET_TEMP, {
+          address,
+          mode: this.COOLING_MODE,
+          tempValue: temp
+        }, Date.now());
+        this.addLogMessage(`Default temperature set to ${temp}°C`);
         resolve(result);
       } catch (err: any) {
         this.addLogMessage(`Failed to set default temperature: ${err.message}`);

@@ -184,7 +184,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   paymentOptions: Array<any> = [...this.ewalletOptionList];
 
   paymentCheck: Array<any> = [...this.ewalletCheckList];
-  qrPayment: boolean = localStorage.getItem('qrPayment') == 'yes' ? true : false;
+  // qrPayment: boolean = localStorage.getItem('qrPayment') == 'yes' ? true : false;
 
 
   private workload: any = {} as any;
@@ -221,16 +221,16 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     console.log(`order der`, this.parseorders);
     console.log(`--->`, this.parseGetTotalSale);
-    console.log('qrPayment', this.qrPayment);
-    if (this.qrPayment) {
-      this.paymentList.push({
-        image: `../../../../assets/logo/qrpayment.png`,
-        name: 'Popup QR',
-        title: 'Popup QR (optional)',
-        detail: 'Pay your orders by using Popup QR',
-        value: 'PopupQR'
-      });
-    }
+    // console.log('qrPayment', this.qrPayment);
+    // if (this.qrPayment) {
+    //   this.paymentList.push({
+    //     image: `../../../../assets/logo/qrpayment.png`,
+    //     name: 'Popup QR',
+    //     title: 'Popup QR (optional)',
+    //     detail: 'Pay your orders by using Popup QR',
+    //     value: 'PopupQR'
+    //   });
+    // }
     console.log('paymentList', this.paymentList);
 
 

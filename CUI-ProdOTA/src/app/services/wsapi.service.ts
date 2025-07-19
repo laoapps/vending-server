@@ -65,11 +65,11 @@ export class WsapiService {
       }
       console.log('ping');
       const allLogs = await this.IndexedLogDB.getAllErrorData();
-      const settingVersion = localStorage.getItem('settingVersion') ?? 'NO';
+      // const settingVersion = localStorage.getItem('settingVersion') ?? 'NO';
 
       this.send({
         command: EMACHINE_COMMAND.ping, data: {
-          settingVersion: settingVersion,
+          settingVersion: `${new Date().getTime()}`,
           errorLog: allLogs,
           clientVersion: environment.versionId || '0.0.0'
         }, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)

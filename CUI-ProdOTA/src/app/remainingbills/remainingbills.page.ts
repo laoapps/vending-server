@@ -40,22 +40,25 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       }
       this.r = data;
 
-
-
     } catch (error) {
       console.log('Error loadBillLocal', error);
     }
   }
 
   async ngOnInit() {
-    await this.loadBillLocal();
-    console.log('R', this.r);
-    console.log(`here`);
-    await this.apiService.soundPleaseSelect();
+    try {
+      await this.loadBillLocal();
+      this.loadAutoFall();
+      console.log('R', this.r);
+      console.log(`here`);
+      await this.apiService.soundPleaseSelect();
+    } catch (error) {
+      this.loadAutoFall();
+    }
 
 
-    this.loadAutoFall();
   }
+
   loadAutoFall() {
     console.log(`counter`, this.counter, `counterLimit`, this.counterLimit);
     if (this.r != undefined && Object.entries(this.r).length > 0) {

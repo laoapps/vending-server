@@ -519,7 +519,7 @@ export enum EZDM8_COMMAND {
 export interface ICreditData { id: number, name: string, transactionID, data: ICreditDataDetails, description: string };
 export interface ICreditDataDetails { raw: string, data: string, t: number, transactionID: string, command: EMACHINE_COMMAND }
 export enum EMACHINE_COMMAND {
-    LIGHTSOFF='LIGHTSOFF',
+    LIGHTSOFF = 'LIGHTSOFF',
     login = 'login',
     ping = 'ping',
     status = 'status',
@@ -600,7 +600,8 @@ export enum EMACHINE_COMMAND {
     QUERY_SWAP = "QUERY_SWAP",
     SET_SWAP = "SET_SWAP",
     SET_TWO_WIRE_MODE = "SET_TWO_WIRE_MODE",
-    READ_ID="READ_ID"
+    READ_ID = "READ_ID",
+    ADH814_STATUS = "ADH814_STATUS"
 
 }
 export enum ESerialPortType {

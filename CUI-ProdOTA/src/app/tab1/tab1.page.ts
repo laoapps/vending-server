@@ -316,7 +316,7 @@ export class Tab1Page implements OnDestroy {
   allowCashIn = false;
   light = { start: 3, end: 2 };
 
-  // allowVending = true;
+  allowVending = true;
   tempStatus: { lowTemp: number, highTemp: number } = { lowTemp: 5, highTemp: 10 };
 
   initHashBankNotes(machineId: string) {
@@ -696,21 +696,21 @@ export class Tab1Page implements OnDestroy {
       console.log('*****CHECK 30 SECOND');
 
 
-      const localStorageValue = localStorage.getItem('allowVending') ?? '';
-      const allowVending = localStorageValue === 'yes';
+      // const localStorageValue = localStorage.getItem('allowVending') ?? '';
+      // const allowVending = localStorageValue === 'yes';
 
-      const currentRoute = await this.apiService.modal.getTop();
+      // const currentRoute = await this.apiService.modal.getTop();
 
-      if (allowVending) {
-        if (currentRoute?.component === CloseStytemPage) {
-          currentRoute.dismiss();
-        }
-      } else {
-        if (!currentRoute) {
-          this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
-            .then(modal => modal.present());
-        }
-      }
+      // if (allowVending) {
+      //   if (currentRoute?.component === CloseStytemPage) {
+      //     currentRoute.dismiss();
+      //   }
+      // } else {
+      //   if (!currentRoute) {
+      //     this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
+      //       .then(modal => modal.present());
+      //   }
+      // }
 
 
       if (this.processedQRPaid) return;
@@ -744,7 +744,7 @@ export class Tab1Page implements OnDestroy {
       try {
         const r = res?.data?.setting;
         if (res?.data?.settingVersion) {
-          localStorage.setItem('settingVersion', res?.data?.settingVersion);
+          // localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
         if (r && this.readyState) {
           // if (r) {
@@ -754,23 +754,27 @@ export class Tab1Page implements OnDestroy {
             this.refresh();
           }
 
+
+
+
+
           // set allow vending
           console.log('ALLOW VENDING', r.allowVending);
 
           // อ่านค่าจาก localStorage
-          const localStorageValue = localStorage.getItem('allowVending') ?? '';
-          let allowVending = localStorageValue === 'yes';
+          // const localStorageValue = localStorage.getItem('allowVending') ?? '';
+          // let allowVending = localStorageValue === 'yes';
 
           // อัปเดต localStorage ด้วยค่าล่าสุด
-          localStorage.setItem('allowVending', r.allowVending ? 'yes' : '');
+          // localStorage.setItem('allowVending', r.allowVending ? 'yes' : '');
 
           // ตรวจสอบว่ามีการเปลี่ยนค่า allowVending
-          if (allowVending !== r.allowVending) {
-            allowVending = r.allowVending;
+          if (this.allowVending !== r.allowVending) {
+            this.allowVending = r.allowVending;
 
             const currentRoute = await this.apiService.modal.getTop();
 
-            if (allowVending) {
+            if (this.allowVending) {
               await this.apiService.toast.create({
                 message: 'Close Tab CloseSystem',
                 duration: 3000,
@@ -793,7 +797,7 @@ export class Tab1Page implements OnDestroy {
           }
 
 
-          localStorage.setItem('qrPayment', r.qrPayment ? 'yes' : '');
+          // localStorage.setItem('qrPayment', r.qrPayment ? 'yes' : '');
 
           if (this.isAds != r.isAds) {
             this.isAds = r.isAds;
@@ -888,10 +892,14 @@ export class Tab1Page implements OnDestroy {
               localStorage.setItem('ClientVersionId', r.versionId ?? '0.0.0');
               const versionId = environment.versionId ?? '0.0.0';
               if (versionId != r.versionId) {
-                console.log('Update versionId to', r.versionId);
-                this.apiService.toast.create({ message: `Update versionId to ${r.versionId}`, duration: 3000 }).then(r => r.present());
-                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
-                this.checkLiveUpdate(r.versionId);
+                const updateVersion = localStorage.getItem('updateVersion') ?? '0.0.0';
+                if (updateVersion != r.versionId) {
+                  localStorage.setItem('updateVersion', r.versionId ?? '0.0.0');
+                  console.log('Update versionId to', r.versionId);
+                  this.apiService.toast.create({ message: `Update versionId to ${r.versionId}`, duration: 3000 }).then(r => r.present());
+                  this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
+                  this.checkLiveUpdate(r.versionId);
+                }
               }
             }
           }
@@ -961,6 +969,23 @@ export class Tab1Page implements OnDestroy {
               this.light = r.light;
               this.vendingIndex.vmc.setLights(this.light.start, this.light.end);
             }
+          } else {
+            console.log('Nothing to do for other devices');
+          }
+
+
+
+          if (this.selectedDevice == 'adh814') {
+            // set Temperature
+            if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
+              this.tempStatus.lowTemp = r.lowTemp;
+              this.tempStatus.highTemp = r.highTemp;
+              // this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
+              Toast.show({ text: `Update Tem to ${this.tempStatus.lowTemp}` });
+              this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
+            }
+
+
           } else {
             console.log('Nothing to do for other devices');
           }
@@ -1358,6 +1383,7 @@ export class Tab1Page implements OnDestroy {
     if (!this.serial) {
       Toast.show({ text: 'serial not init' });
     } else {
+      this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
       this.serial.getSerialEvents().subscribe(async (event) => {
         if (event?.event === 'dataReceived') {
           const rawData = event?.data;
@@ -1470,6 +1496,8 @@ export class Tab1Page implements OnDestroy {
           }
           this._machineStatus.status.temp = result.data.temperature;
           this.machinestatus.data = result.data;
+          // this.sendStatus();
+          this.sendStatus(result.data.temperature, new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
 
           break;
         case 0xA4: // Set Temperature
@@ -2397,11 +2425,11 @@ export class Tab1Page implements OnDestroy {
       this.autopilot.auto = 0;
       // console.log(`allow vending`, this.allowVending);
 
-      const localStorageValue = localStorage.getItem('allowVending') ?? '';
-      const allowVending = localStorageValue === 'yes';
+      // const localStorageValue = localStorage.getItem('allowVending') ?? '';
+      // const allowVending = localStorageValue === 'yes';
 
 
-      if (!allowVending) {
+      if (!this.allowVending) {
         this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
           .then(modal => modal.present());
         return;
