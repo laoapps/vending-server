@@ -968,6 +968,23 @@ export class InventoryZDM8 implements IBaseClass {
                             )
                         );
                     }
+
+                    else if (d.command == EClientCommand.ADH814_STATUS) {
+                        const mstatus = { temperature: data } as IMachineStatus;
+                        console.log(`-----> ${machineId}, status: ${JSON.stringify(mstatus)}`);
+
+                        writeMachineStatus(machineId, mstatus)
+
+                        res.send(
+                            PrintSucceeded(
+                                d.command,
+                                d.data,
+                                EMessage.succeeded,
+                                returnLog(req, res)
+                            )
+                        );
+                    }
+
                     else if (d.command == EClientCommand.VMC_DISPENSE || EClientCommand.VMC_DISPENSED || EClientCommand.VMC_DISPENSEFAILED) {
 
                         // update order status after deliverying here 
@@ -1031,6 +1048,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 returnLog(req, res)
                             )
                         );
+
+
+
                     }
                 } catch (error) {
                     console.log('updateStatus error', error);

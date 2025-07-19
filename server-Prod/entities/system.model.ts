@@ -1150,6 +1150,7 @@ export enum EClientCommand {
     VMC_DISPENSE = "VMC_DISPENSE",
     VMC_CREDIT_NOTE = "VMC_CREDIT_NOTE",
     VMC_UNKNOWN = "VMC_UNKNOWN",
+    ADH814_STATUS = "ADH814_STATUS"
 
 }
 export interface IVendingMachineSale extends IBase, IBC {
