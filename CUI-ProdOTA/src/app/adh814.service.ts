@@ -427,7 +427,9 @@ export class ADH814Service implements ISerialService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this.command(EMACHINE_COMMAND.SET_TEMP, {
-          address
+          address,
+          mode: this.COOLING_MODE,
+          tempValue: temp
         }, Date.now());
         this.addLogMessage(`Default temperature set to ${temp}°C`);
         resolve(result);
