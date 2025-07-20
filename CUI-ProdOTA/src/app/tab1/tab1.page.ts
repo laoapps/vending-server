@@ -1384,6 +1384,14 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: 'serial not init' });
     } else {
       this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
+      const swapAndTwoWireMode = localStorage.getItem('swapAndTwoWireMode') ? 'true':'false';
+      if (swapAndTwoWireMode !== 'true'|| !swapAndTwoWireMode) {
+        this.vendingIndex.adh814.setSwap();
+        this.vendingIndex.adh814.setTwoWires();
+         console.log('swapAndTwoWireMode', swapAndTwoWireMode);
+         Toast.show({ text: 'Swap and Two Wire Mode enabled', duration: 'long' });
+      }
+     
       this.serial.getSerialEvents().subscribe(async (event) => {
         if (event?.event === 'dataReceived') {
           const rawData = event?.data;
