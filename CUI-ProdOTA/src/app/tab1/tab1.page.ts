@@ -110,10 +110,10 @@ export class Tab1Page implements OnDestroy {
 
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815', 'adh814'];
 
-  selectedDevice = localStorage.getItem('device') || '';
+  selectedDevice = localStorage.getItem('device') || 'adh814';
 
-  portName = localStorage.getItem('portName') || '/dev/ttyS0';
-  baudRate = localStorage.getItem('baudRate') || 9600;
+  portName = localStorage.getItem('portName') || '/dev/ttyS1';
+  baudRate = localStorage.getItem('baudRate') || 38400;
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial;
 
@@ -1379,19 +1379,39 @@ export class Tab1Page implements OnDestroy {
       await this.serial.close();
       this.serial = null;
     }
+    Toast.show({ text: `Starting ADH814 ${this.baudRate} ${this.portName}  ${this.machineId.machineId} ${this.machineId.otp} ` });
+    console.log('Starting ADH814');
+
+
     this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
     if (!this.serial) {
       Toast.show({ text: 'serial not init' });
     } else {
-      this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
-      const swapAndTwoWireMode = localStorage.getItem('swapAndTwoWireMode') ? 'true':'false';
-      if (swapAndTwoWireMode !== 'true'|| !swapAndTwoWireMode) {
-        this.vendingIndex.adh814.setSwap();
+
+      const swapAndTwoWireMode = localStorage.getItem('swapAndTwoWireMode') ? 'true' : 'false';
+      if (swapAndTwoWireMode !== 'true' || !swapAndTwoWireMode) {
+
+        setTimeout(() => {
+          this.vendingIndex.adh814.setSwap();
+          console.log('set swap');
+          Toast.show({ text: 'Swap enabled', duration: 'long' });
+        }, 5000);
+
+
         this.vendingIndex.adh814.setTwoWires();
-         console.log('swapAndTwoWireMode', swapAndTwoWireMode);
-         Toast.show({ text: 'Swap and Two Wire Mode enabled', duration: 'long' });
+        console.log('swapAndTwoWireMode', swapAndTwoWireMode);
+        Toast.show({ text: 'Swap and Two Wire Mode enabled', duration: 'long' });
+        localStorage.setItem('swapAndTwoWireMode', 'true');
+      } else {
+        setTimeout(() => {
+          this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
+          console.log('set temp', this.tempStatus.lowTemp);
+          Toast.show({ text: 'Set Temperature to ' + this.tempStatus.lowTemp, duration: 'long' });
+        }, 20000);
+
+
       }
-     
+
       this.serial.getSerialEvents().subscribe(async (event) => {
         if (event?.event === 'dataReceived') {
           const rawData = event?.data;
