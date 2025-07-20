@@ -1308,10 +1308,10 @@ export class Tab1Page implements OnDestroy {
               const d = typeof rawData === 'object' ? JSON.stringify(rawData) : rawData;
               Toast.show({ text: 'zdm service Received from device: ' + d, duration: 'long' });
               // Process the Modbus response
-              // const response = this.zdm8Service.processModbusResponse(rawData);
-              // if (response) {
-              //   console.log('Processed Modbus response:', response);
-              // }
+              const response = this.vendingIndex.zdm8.processModbusResponse(rawData);
+              if (response) {
+                console.log('Processed Modbus response:', response);
+              }
               // Toast.show({ text: 'Processed Modbus response: ' + JSON.stringify(response), duration: 'long' });
             }
           } catch (error: any) {

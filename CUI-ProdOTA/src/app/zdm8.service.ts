@@ -23,20 +23,20 @@ export class Zdm8Service implements ISerialService {
   constructor(private serialService: SerialServiceService) { }
   initZDM8() {
     const that = this;
-    that.getSerialEvents().subscribe((event) => {
-      if (event.event === 'dataReceived') {
-        const rawData = event.data; // Assuming event.data contains the raw hex string
-        that.addLogMessage(that.log, `Raw data: ${rawData}`);
-        console.log('zdm service Received from device:', rawData);
+    // that.getSerialEvents().subscribe((event) => {
+    //   if (event.event === 'dataReceived') {
+    //     const rawData = event.data; // Assuming event.data contains the raw hex string
+    //     that.addLogMessage(that.log, `Raw data: ${rawData}`);
+    //     console.log('zdm service Received from device:', rawData);
 
-        // Process the Modbus response
-        const response = that.processModbusResponse(rawData);
-        if (response) {
-          that.addLogMessage(that.log, `Processed response: ${JSON.stringify(response)}`);
-          console.log('Processed Modbus response:', response);
-        }
-      }
-    });
+    //     // Process the Modbus response
+    //     const response = that.processModbusResponse(rawData);
+    //     if (response) {
+    //       that.addLogMessage(that.log, `Processed response: ${JSON.stringify(response)}`);
+    //       console.log('Processed Modbus response:', response);
+    //     }
+    //   }
+    // });
   }
 
   // Process incoming Modbus RTU response
