@@ -31,7 +31,7 @@ export class ADH814Service implements ISerialService {
   log: IlogSerial = { data: '', limit: 50 };
   machinestatus = { data: '' };
   private currentInterval: number = 300;
-  private readonly DEFAULT_TEMPERATURE = 3;
+  private readonly DEFAULT_TEMPERATURE = 5;
   private readonly COOLING_MODE = 0x01;
 
   constructor(private serialService: SerialServiceService) { }
@@ -383,7 +383,7 @@ export class ADH814Service implements ISerialService {
         const result = await this.command(EMACHINE_COMMAND.SET_TEMP, {
           address,
           mode: this.COOLING_MODE,
-          tempValue: this.DEFAULT_TEMPERATURE
+          lowTemp: this.DEFAULT_TEMPERATURE
         }, Date.now());
         this.addLogMessage(`Default temperature set to ${this.DEFAULT_TEMPERATURE}°C`);
         resolve(result);
@@ -429,7 +429,7 @@ export class ADH814Service implements ISerialService {
         const result = await this.command(EMACHINE_COMMAND.SET_TEMP, {
           address,
           mode: this.COOLING_MODE,
-          tempValue: temp
+          lowTemp: temp
         }, Date.now());
         this.addLogMessage(`Default temperature set to ${temp}°C`);
         resolve(result);
