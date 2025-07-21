@@ -110,10 +110,10 @@ export class Tab1Page implements OnDestroy {
 
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815', 'adh814'];
 
-  selectedDevice = localStorage.getItem('device') || '';
+  selectedDevice = localStorage.getItem('device') || 'adh814';
 
-  portName = localStorage.getItem('portName') || '/dev/ttyS0';
-  baudRate = localStorage.getItem('baudRate') || 9600;
+  portName = localStorage.getItem('portName') || '/dev/ttyS1';
+  baudRate = localStorage.getItem('baudRate') || 38400;
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial;
 
@@ -686,10 +686,10 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: 'READY', duration: 'long' })
     }, 1000);
 
-    const clientVersionId = localStorage.getItem('ClientVersionId') ?? '0.0.0';
-    if (clientVersionId != environment.versionId) {
-      this.checkLiveUpdate(clientVersionId);
-    }
+    // const clientVersionId = localStorage.getItem('ClientVersionId') ?? '0.0.0';
+    // if (clientVersionId != environment.versionId) {
+    //   this.checkLiveUpdate(clientVersionId);
+    // }
 
     clearInterval(this.countdownCheckLaoQRPaidTimer);
     this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
@@ -889,7 +889,7 @@ export class Tab1Page implements OnDestroy {
           }
           if (this.platform.is('android')) {
             if (r.versionId) {
-              localStorage.setItem('ClientVersionId', r.versionId ?? '0.0.0');
+              // localStorage.setItem('ClientVersionId', r.versionId ?? '0.0.0');
               const versionId = environment.versionId ?? '0.0.0';
               if (versionId != r.versionId) {
                 const updateVersion = localStorage.getItem('updateVersion') ?? '0.0.0';
