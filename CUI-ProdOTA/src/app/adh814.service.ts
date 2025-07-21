@@ -12,7 +12,9 @@ export enum EADH814_COMMAND {
   SET_TEMP = 'A4',
   START_MOTOR = 'A5',
   ACKNOWLEDGE = 'A6',
-  START_MOTOR_COMBINED = 'B5'
+  START_MOTOR_COMBINED = 'B5',
+  SET_SWAP= '35',
+  SET_TWO_WIRE_MODE = '21'
 }
 
 @Injectable({
@@ -29,7 +31,7 @@ export class ADH814Service implements ISerialService {
   log: IlogSerial = { data: '', limit: 50 };
   machinestatus = { data: '' };
   private currentInterval: number = 300;
-  private readonly DEFAULT_TEMPERATURE = 3;
+  private readonly DEFAULT_TEMPERATURE = 5;
   private readonly COOLING_MODE = 0x01;
 
   constructor(private serialService: SerialServiceService) { }
@@ -305,6 +307,14 @@ export class ADH814Service implements ISerialService {
             return { command, data: params, status: 0, message: `Invalid motor numbers`, transactionID };
           }
           break;
+        case EMACHINE_COMMAND.SET_SWAP:
+          cmd = EADH814_COMMAND.SET_SWAP;
+          params?params.on=[0x01]:params.on=[0x00];
+          break;
+        case EMACHINE_COMMAND.SET_TWO_WIRE_MODE:
+          cmd = EADH814_COMMAND.SET_TWO_WIRE_MODE;
+          params?params.swap=[0x10, 0x00]:params.swap=[0x00, 0x00];
+          break;
         default:
           this.addLogMessage(`Unsupported command: ${command}`);
           return { command, data: params, status: 0, message: `Unsupported command`, transactionID };
@@ -350,10 +360,6 @@ export class ADH814Service implements ISerialService {
         const result = await this.command(EMACHINE_COMMAND.READ_ID, { address }, Date.now());
         this.addLogMessage(`Device ID: ${result?.data?.firmwareVersion}`);
 
-
-
-
-
         this.addLogMessage(`Default temperature set`);
 
         setInterval(async () => {
@@ -377,6 +383,36 @@ export class ADH814Service implements ISerialService {
         const result = await this.command(EMACHINE_COMMAND.SET_TEMP, {
           address,
           mode: this.COOLING_MODE,
+          lowTemp: this.DEFAULT_TEMPERATURE
+        }, Date.now());
+        this.addLogMessage(`Default temperature set to ${this.DEFAULT_TEMPERATURE}°C`);
+        resolve(result);
+      } catch (err: any) {
+        this.addLogMessage(`Failed to set default temperature: ${err.message}`);
+        reject(err);
+      }
+    });
+  }
+   public async setSwap(address: number = 0x01): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this.command(EMACHINE_COMMAND.SET_SWAP, {
+          address
+        }, Date.now());
+        this.addLogMessage(`Default temperature set to ${this.DEFAULT_TEMPERATURE}°C`);
+        resolve(result);
+      } catch (err: any) {
+        this.addLogMessage(`Failed to set default temperature: ${err.message}`);
+        reject(err);
+      }
+    });
+  }
+  public async setTwoWires(address: number = 0x01): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this.command(EMACHINE_COMMAND.SET_TWO_WIRE_MODE, {
+          address,
+          mode: this.COOLING_MODE,
           tempValue: this.DEFAULT_TEMPERATURE
         }, Date.now());
         this.addLogMessage(`Default temperature set to ${this.DEFAULT_TEMPERATURE}°C`);
@@ -393,7 +429,7 @@ export class ADH814Service implements ISerialService {
         const result = await this.command(EMACHINE_COMMAND.SET_TEMP, {
           address,
           mode: this.COOLING_MODE,
-          tempValue: temp
+          lowTemp: temp
         }, Date.now());
         this.addLogMessage(`Default temperature set to ${temp}°C`);
         resolve(result);
