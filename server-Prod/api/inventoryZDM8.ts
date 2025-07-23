@@ -5783,28 +5783,28 @@ export class InventoryZDM8 implements IBaseClass {
                 res.message = EMessage.waitingt;
                 res.status = 1;
 
-                setImmediate(async () => {
-                    try {
-                        const resultList = await GetTransactionToCheck(machineId);
-                        if (resultList.status === 1) {
-                            // console.log('Get transaction list:', resultList.message);
-                            for (let index = 0; index < resultList.message.length; index++) {
-                                const transactionID = resultList.message[index].transactionID;
-                                // console.log('=====>transactionID', transactionID);
-                                const responseCheck = await this.checkQRPaidMmoneyResponse(transactionID);
-                                if (responseCheck.status === 1) {
-                                    await DeleteTransactionToCheck(machineId);
-                                } else {
-                                    console.log('=====>Error checking QR payment:', responseCheck.message, 'Transaction ID:', transactionID);
-                                }
+                // setImmediate(async () => {
+                try {
+                    const resultList = await GetTransactionToCheck(machineId);
+                    if (resultList?.status === 1) {
+                        // console.log('Get transaction list:', resultList.message);
+                        for (let index = 0; index < resultList.message.length; index++) {
+                            const transactionID = resultList.message[index].transactionID;
+                            // console.log('=====>transactionID', transactionID);
+                            const responseCheck = await this.checkQRPaidMmoneyResponse(transactionID);
+                            if (responseCheck?.status === 1) {
+                                await DeleteTransactionToCheck(machineId);
+                            } else {
+                                console.log('=====>Error checking QR payment:', responseCheck.message, 'Transaction ID:', transactionID);
                             }
-                        } else {
-                            console.log('=====>Error fetching transactions:', resultList.message);
                         }
-                    } catch (error) {
-                        console.log('=====>Error in findCallBackConfirmLaoQR:', error);
+                    } else {
+                        console.log('=====>Error fetching transactions:', resultList.message);
                     }
-                });
+                } catch (error) {
+                    console.log('=====>Error in findCallBackConfirmLaoQR:', error);
+                }
+                // });
                 this.getBillProcess(machineId, async (b) => {
 
                     if (b.length == 0) {
@@ -5843,7 +5843,7 @@ export class InventoryZDM8 implements IBaseClass {
                         if (trandList.length > 0) {
                             const firstItem = trandList[0];
                             if (firstItem && firstItem.createdAt) {
-                                const result = isMoreThan50SecondsAgo(firstItem.createdAt, new Date().toISOString());
+                                const result = isMoreThan5SecondsAgo(firstItem.createdAt, new Date().toISOString());
                                 if (result) {
                                     console.log('More than 50 seconds have passed.');
                                     this.checkQRPaidMmoney(firstItem.transactionID, machineId);
@@ -5916,7 +5916,7 @@ export class InventoryZDM8 implements IBaseClass {
                         if (trandList.length > 0) {
                             const firstItem = trandList[0];
                             if (firstItem && firstItem.createdAt) {
-                                const result = isMoreThan50SecondsAgo(firstItem.createdAt, new Date().toISOString());
+                                const result = isMoreThan5SecondsAgo(firstItem.createdAt, new Date().toISOString());
                                 if (result) {
                                     this.checkQRPaidMmoney(firstItem.transactionID, machineId);
                                     console.log('More than 50 seconds have passed.');
@@ -7397,9 +7397,9 @@ export class LoadVendingMachineStockReport {
 }
 
 
-function isMoreThan50SecondsAgo(fromTimeStr, toTimeStr) {
+function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr,t=5) {
     const from = new Date(fromTimeStr);
     const to = new Date(toTimeStr);
     const diffInSeconds = (to.getTime() - from.getTime()) / 1000;
-    return diffInSeconds > 50;
+    return diffInSeconds > t;
 }
