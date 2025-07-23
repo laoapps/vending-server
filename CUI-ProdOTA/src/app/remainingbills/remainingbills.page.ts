@@ -590,7 +590,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.clearTimer();
   }
   reload() {
-    this.apiService.reloadPage();
+    // this.apiService.reloadPage();
   }
 
 }
