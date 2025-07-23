@@ -6533,7 +6533,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 let settingVersion = d?.data?.settingVersion;
                                 let adsVersion = d?.data?.adsVersion;
                                 let clientVersion = d?.data?.clientVersion;
-                                // console.log('=====>clientVersion', clientVersion);
+                                console.log(`----->MachineId :${ws['machineId']} clientVersion`, clientVersion);
 
 
                                 // console.log('=====>pingData', d.data);
