@@ -7397,7 +7397,7 @@ export class LoadVendingMachineStockReport {
 }
 
 
-function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr,t=5) {
+function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
     const from = new Date(fromTimeStr);
     const to = new Date(toTimeStr);
     const diffInSeconds = (to.getTime() - from.getTime()) / 1000;
