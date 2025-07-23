@@ -682,6 +682,7 @@ export class Tab1Page implements OnDestroy {
     setTimeout(async () => {
       this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
       this.readyState = true;
+      localStorage.setItem('updateVersion', '0.0.0');
       await this.connect();
       Toast.show({ text: 'READY', duration: 'long' })
     }, 1000);
