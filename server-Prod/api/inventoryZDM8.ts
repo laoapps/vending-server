@@ -3816,6 +3816,7 @@ export class InventoryZDM8 implements IBaseClass {
         try {
             console.log('checkSupAdmin');
             const token = req.body.token;
+            const secret = req.body.secret;
             let phoneNumber = req.body.shopPhonenumber;
             if (!token) throw new Error(EMessage.tokenNotFound);
 
@@ -3824,7 +3825,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (!uuid) throw new Error(EMessage.notfound);
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
-                if (phoneNumber) {
+                if (phoneNumber&&secret=='e2f48898-3453-4214-9025-27e905b269d9') {
                     phoneNumber = `+85620${phoneNumber}`;
                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
                         res.locals["ownerUuid"] = r_owneruuid.uuid;
