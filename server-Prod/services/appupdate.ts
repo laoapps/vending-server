@@ -126,11 +126,43 @@ export function initBundle(app: express.Application) {
 
             res.json({
                 bundleId: bundle.bundleId,
-                url: `${serverUrl}/${bundle.filePath}`,
+                url: `${bundle.filePath}`,
                 channel: bundle.channel
             });
         } catch (error) {
             console.error('Error fetching latest bundle:', error);
+            res.status(500).json({ error: 'Failed to fetch latest bundle' });
+        }
+    });
+
+
+    app.post('/insert-bundle', async (req: Request, res: Response) => {
+        try {
+
+            const { bundleId, fileURL, channel = 'production' } = req.body;
+
+            if (!bundleId) {
+                return res.status(400).json({ error: 'bundleId is required' });
+            }
+
+            const bundle = await BundleEntity.create({
+                bundleId: bundleId,
+                filePath: fileURL,
+                channel,
+                name: ''
+            });
+
+            res.json({
+                message: 'Bundle uploaded successfully',
+                bundle: {
+                    id: bundle.id,
+                    bundleId: bundle.bundleId,
+                    filePath: bundle.filePath,
+                    channel: bundle.channel
+                }
+            });
+        } catch (error) {
+            console.error('Error Insert latest bundle:', error);
             res.status(500).json({ error: 'Failed to fetch latest bundle' });
         }
     });

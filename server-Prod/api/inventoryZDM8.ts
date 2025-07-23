@@ -1069,7 +1069,7 @@ export class InventoryZDM8 implements IBaseClass {
             // });
             router.post(this.path + "/refreshMachine",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -1639,7 +1639,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/addProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 // this.checkToken,
@@ -1684,7 +1684,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/disableProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -1738,7 +1738,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/deleteProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -1785,7 +1785,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/listProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
@@ -1821,7 +1821,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/cloneSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -1887,7 +1887,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/addSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
@@ -1952,7 +1952,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/deleteSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -1987,7 +1987,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/disableSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -2035,7 +2035,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/updateSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -2108,7 +2108,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/listSale",
 
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -2666,7 +2666,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/readMachineSaleForAdmin",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
 
                 this.checkAdmin,
 
@@ -2755,7 +2755,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/saveMachineSaleReport",
                 // this.checkAdmin,
-                // this.checkSubAdmin,
+
                 // this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -2801,7 +2801,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 async (req, res) => {
@@ -2849,7 +2849,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/loadVendingMachineDropPositionReport",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 async (req, res) => {
@@ -2877,7 +2877,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/loadVendingMachineStockReport",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 (req, res) => {
@@ -2957,7 +2957,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/listSaleByMachine",
                 this.checkSuperAdmin,
                 this.checkAdmin,
-                this.checkSubAdmin,
+
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -2998,7 +2998,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3186,7 +3186,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/updateMachineSetting",
 
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -3330,7 +3330,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/setAdminControl",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -3357,7 +3357,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/reportBillNotPaid',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3391,7 +3391,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/reportClientLog',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 async (req, res) => {
@@ -3432,7 +3432,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/checkPaidMmoney',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3458,7 +3458,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/sendDropAdmin',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3554,7 +3554,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/readAdminControl",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -3576,7 +3576,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/disableMachine",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -3620,7 +3620,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/resetCashing",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3645,7 +3645,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/listMachine",
                 //APIAdminAccess,
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 // this.checkDisabled.bind(this),
@@ -3693,7 +3693,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/checkMyMmoney",
                 //APIAdminAccess,
                 // this.checkSuperAdmin,
-                // this.checkSubAdmin,
+
                 // this.checkAdmin,
 
                 // this.checkDisabled.bind(this),
@@ -3721,7 +3721,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/loadLogs",
                 //APIAdminAccess,
                 // this.checkSuperAdmin,
-                // this.checkSubAdmin,
+
                 // this.checkAdmin,
 
                 // this.checkDisabled.bind(this),
@@ -3825,7 +3825,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (!uuid) throw new Error(EMessage.notfound);
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
-                if (phoneNumber&&secret=='e2f48898-3453-4214-9025-27e905b269d9') {
+                if (phoneNumber && secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
                     phoneNumber = `+85620${phoneNumber}`;
                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
                         res.locals["ownerUuid"] = r_owneruuid.uuid;
@@ -3847,66 +3847,66 @@ export class InventoryZDM8 implements IBaseClass {
             res.status(400).end();
         }
     }
-    checkSubAdmin(req: Request, res: Response, next: NextFunction) {
-        console.log('checkSubAdmin');
+    // checkSubAdmin(req: Request, res: Response, next: NextFunction) {
+    //     console.log('checkSubAdmin');
 
-        try {
-            if (res.locals['ownerUuid']) {
-                next();
-            }
-            else {
-                const token = req.body.token;
-                const phoneNumber = req.body.shopPhonenumber + '';
-                if (!token) throw new Error(EMessage.tokenNotFound);
-                findRealDB(token).then((r) => {
-                    const uuid = r;
-                    if (!uuid) throw new Error(EMessage.notfound);
-                    // req['gamerUuid'] = gamerUuid;
-                    res.locals["subadmin"] = uuid;
-                    if (phoneNumber) {
-                        findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
-                            const ownerUuid = r.uuid;
-                            if (ownerUuid) {
-                                subadminEntity.findOne({ where: { data: { uuid }, ownerUuid } }).then(subadmin => {
-                                    if (subadmin != null) {
-                                        res.locals["ownerUuid"] = subadmin.ownerUuid;
-                                    } else {
-                                        res.locals["ownerUuid"] = uuid;
-                                        res.locals["subadmin"] = '';
-                                    }
-                                    next();
-                                }).catch(error => {
-                                    console.log(error);
-                                    res.status(400).end();
-                                });
-                            } else {
-                                res.locals["ownerUuid"] = uuid;
-                                res.locals["subadmin"] = '';
-                                next();
-                            }
-                        });
-                    } else {
-                        res.locals["ownerUuid"] = uuid;
-                        res.locals["subadmin"] = '';
-                        next();
-                    }
-
-
+    //     try {
+    //         if (res.locals['ownerUuid']) {
+    //             next();
+    //         }
+    //         else {
+    //             const token = req.body.token;
+    //             const phoneNumber = req.body.shopPhonenumber + '';
+    //             if (!token) throw new Error(EMessage.tokenNotFound);
+    //             findRealDB(token).then((r) => {
+    //                 const uuid = r;
+    //                 if (!uuid) throw new Error(EMessage.notfound);
+    //                 // req['gamerUuid'] = gamerUuid;
+    //                 res.locals["subadmin"] = uuid;
+    //                 if (phoneNumber) {
+    //                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
+    //                         const ownerUuid = r.uuid;
+    //                         if (ownerUuid) {
+    //                             subadminEntity.findOne({ where: { data: { uuid }, ownerUuid } }).then(subadmin => {
+    //                                 if (subadmin != null) {
+    //                                     res.locals["ownerUuid"] = subadmin.ownerUuid;
+    //                                 } else {
+    //                                     res.locals["ownerUuid"] = uuid;
+    //                                     res.locals["subadmin"] = '';
+    //                                 }
+    //                                 next();
+    //                             }).catch(error => {
+    //                                 console.log(error);
+    //                                 res.status(400).end();
+    //                             });
+    //                         } else {
+    //                             res.locals["ownerUuid"] = uuid;
+    //                             res.locals["subadmin"] = '';
+    //                             next();
+    //                         }
+    //                     });
+    //                 } else {
+    //                     res.locals["ownerUuid"] = uuid;
+    //                     res.locals["subadmin"] = '';
+    //                     next();
+    //                 }
 
 
-                })
-                    .catch((e) => {
-                        console.log(e);
-                        res.status(400).end();
-                    });
-            }
 
-        } catch (error) {
-            console.log(error);
 
-            res.status(400).end();
-        }
-    }
+    //             })
+    //                 .catch((e) => {
+    //                     console.log(e);
+    //                     res.status(400).end();
+    //                 });
+    //         }
+
+    //     } catch (error) {
+    //         console.log(error);
+
+    //         res.status(400).end();
+    //     }
+    // }
     checkAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             console.log('checkAdmin');
