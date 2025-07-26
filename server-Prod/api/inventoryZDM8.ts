@@ -914,7 +914,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
             router.post(this.path + "/updateStatus", async (req, res) => {
-                // console.log('updateStatus', req.body);
+                console.log('updateStatus', req.body);
                 const d = req.body as IReqModel;
                 // console.log(d.command, EClientCommand.VMC_MACHINE_STATUS, d.command == EClientCommand.VMC_MACHINE_STATUS)
 
