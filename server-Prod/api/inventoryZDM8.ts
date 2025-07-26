@@ -957,7 +957,7 @@ export class InventoryZDM8 implements IBaseClass {
                             mstatus.lastUpdate = new Date();
 
                         writeMachineStatus(machineId, mstatus);
-                        // console.log('VMC_MACHINE_STATUS', mstatus);
+                        console.log('VMC_MACHINE_STATUS',machineId, mstatus);
 
                         res.send(
                             PrintSucceeded(
