@@ -680,38 +680,29 @@ export class Tab1Page implements OnDestroy {
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
     setTimeout(async () => {
-      this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
-      this.readyState = true;
-      localStorage.setItem('updateVersion', '0.0.0');
-      await this.connect();
-      Toast.show({ text: 'READY', duration: 'long' })
+
+      try {
+        await this.connect();
+        Toast.show({ text: 'READY', duration: 'long' })
+
+        this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
+        this.readyState = true;
+      } catch (error) {
+        Toast.show({ text: 'Error connecting to serial port ' + JSON.stringify(error || {}), duration: 'long' });
+      }
+
+
+
     }, 1000);
 
-    // const clientVersionId = localStorage.getItem('ClientVersionId') ?? '0.0.0';
-    // if (clientVersionId != environment.versionId) {
-    //   this.checkLiveUpdate(clientVersionId);
-    // }
+
 
     clearInterval(this.countdownCheckLaoQRPaidTimer);
     this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
       console.log('*****CHECK 30 SECOND');
 
 
-      // const localStorageValue = localStorage.getItem('allowVending') ?? '';
-      // const allowVending = localStorageValue === 'yes';
 
-      // const currentRoute = await this.apiService.modal.getTop();
-
-      // if (allowVending) {
-      //   if (currentRoute?.component === CloseStytemPage) {
-      //     currentRoute.dismiss();
-      //   }
-      // } else {
-      //   if (!currentRoute) {
-      //     this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
-      //       .then(modal => modal.present());
-      //   }
-      // }
 
 
       if (this.processedQRPaid) return;
@@ -741,8 +732,9 @@ export class Tab1Page implements OnDestroy {
 
 
     this.WSAPIService.aliveSubscription.subscribe(async res => {
-      console.log('ALIVE TAB1', res);
+
       try {
+        console.log('ALIVE TAB1', JSON.stringify(res || {}));
         const r = res?.data?.setting;
         if (res?.data?.settingVersion) {
           // localStorage.setItem('settingVersion', res?.data?.settingVersion);
@@ -889,20 +881,29 @@ export class Tab1Page implements OnDestroy {
             // this.apiService.reloadPage();
           }
           if (this.platform.is('android')) {
-            if (r.versionId) {
-              // localStorage.setItem('ClientVersionId', r.versionId ?? '0.0.0');
-              const versionId = environment.versionId ?? '0.0.0';
-              if (versionId != r.versionId) {
-                const updateVersion = localStorage.getItem('updateVersion') ?? '0.0.0';
-                if (updateVersion != r.versionId) {
-                  localStorage.setItem('updateVersion', r.versionId ?? '0.0.0');
-                  console.log('Update versionId to', r.versionId);
-                  this.apiService.toast.create({ message: `Update versionId to ${r.versionId}`, duration: 3000 }).then(r => r.present());
-                  this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r.versionId}` });
-                  this.checkLiveUpdate(r.versionId);
-                }
+            if (r.versionId && r?.versionId !== '0.0.0') {
+              const updateVersion = localStorage.getItem('updateVersion') ?? environment.versionId;
+              console.log('check current version', updateVersion, ' check r.versionId', r?.versionId, 'env versionId', environment.versionId);
+              if (updateVersion != r.versionId) {
+                localStorage.setItem('updateVersion', r?.versionId ?? environment.versionId);
+                console.log('Update versionId to', r?.versionId, 'current version', updateVersion, 'env versionId', environment.versionId);
+                this.apiService.toast.create({ message: `Update versionId to ${r?.versionId} from version ${updateVersion} env versionId ${environment.versionId}`, duration: 3000 }).then(r => r.present());
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r?.versionId}` });
+
+                setTimeout(() => {
+                  if (this.serial) {
+                    this.serial?.close();
+                    console.log('serial closed');
+                    Toast.show({ text: 'Serial closed', duration: 'long' });
+                    this.serial = null;
+                  }
+                  this.checkLiveUpdate(r?.versionId);
+                }, 15000);
+
               }
+
             }
+
           }
 
           // if (r.versionId && this.versionId !== r.versionId) {
@@ -1075,20 +1076,16 @@ export class Tab1Page implements OnDestroy {
 
 
     if (this.serial) {
-      this.serial.close();
+      this.serial?.close();
       console.log('serial closed');
     }
   }
 
 
+
+
   async checkLiveUpdate(version: string) {
     try {
-      if (this.serial) {
-        await this.serial?.close();
-        this.serial = null;
-        this.connecting = false;
-      }
-      this.apiService.toast.create({ message: 'Close Serial', duration: 2000 }).then(r => r.present());
       this.liveUpdateService.checkForUpdates(version).then(async (res) => {
         // if (res == undefined) {
         //   this.apiService.reloadPage();
@@ -1097,6 +1094,7 @@ export class Tab1Page implements OnDestroy {
         // setInterval(() => {
         //   App.exitApp();
         // }, 20000);
+
       }).catch((e) => {
         // this.apiService.reloadPage();
         console.log('Error checkLiveUpdate', e);
@@ -1221,9 +1219,10 @@ export class Tab1Page implements OnDestroy {
   }
   async startVMC() {
     if (this.serial) {
-      await this.serial.close();
+      await this.serial?.close();
       this.serial = null;
     }
+
     this.serial = await this.vendingIndex.initVMC(this.portName, Number(this.baudRate), '', '', this.isSerial);
 
     if (!this.serial) {
@@ -1290,9 +1289,8 @@ export class Tab1Page implements OnDestroy {
   async startZDM8() {
     try {
       if (this.serial) {
-        await this.serial.close();
+        await this.serial?.close();
         this.serial = null;
-        Toast.show({ text: 'serial closed' });
       }
       console.log('starting ZDM8');
       this.serial = await this.vendingIndex.initZDM8(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
@@ -1332,7 +1330,7 @@ export class Tab1Page implements OnDestroy {
 
   async satrtTp77p() {
     if (this.serial) {
-      await this.serial.close();
+      await this.serial?.close();
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initPulseTop77p(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
@@ -1343,7 +1341,7 @@ export class Tab1Page implements OnDestroy {
   }
   async startEssp() {
     if (this.serial) {
-      await this.serial.close();
+      await this.serial?.close();
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initEssp(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
@@ -1354,7 +1352,7 @@ export class Tab1Page implements OnDestroy {
   }
   async startCctalk() {
     if (this.serial) {
-      await this.serial.close();
+      await this.serial?.close();
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initCctalk(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
@@ -1365,7 +1363,7 @@ export class Tab1Page implements OnDestroy {
   }
   async startAHD815() {
     if (this.serial) {
-      await this.serial.close();
+      await this.serial?.close();
       this.serial = null;
     }
     this.serial = await this.vendingIndex.initADH815(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
@@ -1377,7 +1375,7 @@ export class Tab1Page implements OnDestroy {
 
   async startAHD814() {
     if (this.serial) {
-      await this.serial.close();
+      await this.serial?.close();
       this.serial = null;
     }
     Toast.show({ text: `Starting ADH814 ${this.baudRate} ${this.portName}  ${this.machineId.machineId} ${this.machineId.otp} ` });
@@ -1605,10 +1603,10 @@ export class Tab1Page implements OnDestroy {
 
 
   async startM102() {
-    if (this.serial) {
-      await this.serial.close();
-      this.serial = null;
-    }
+
+    await this.serial?.close();
+    this.serial = null;
+
     this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
     if (!this.serial) {
       Toast.show({ text: 'serial not init' });
@@ -1746,7 +1744,7 @@ export class Tab1Page implements OnDestroy {
       // this._machineStatus = resultStatus;
 
     } else {
-      // this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
+      this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
       console.log('Unhandled response:', hex);
     }
   }
@@ -3338,7 +3336,7 @@ export class Tab1Page implements OnDestroy {
         }).then(r => {
           r.present();
           r.onDidDismiss().then(r => {
-            this.serial.close();
+            this.serial?.close();
           })
         })
 

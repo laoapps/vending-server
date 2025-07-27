@@ -246,12 +246,12 @@ export class SerialServiceService implements OnDestroy {
   async close(): Promise<void> {
     try {
       if (this.initialized) {
-        await SerialConnectionCapacitor.stopReading();
-        await SerialConnectionCapacitor.close();
+        await SerialConnectionCapacitor?.stopReading();
+        await SerialConnectionCapacitor?.close();
         this.initialized = false;
-        await Promise.all(this.listenerSubscriptions.map(handle => handle.remove()));
+        await Promise.all(this.listenerSubscriptions?.map(handle => handle?.remove()));
         this.listenerSubscriptions = [];
-        this.serialEventSubject.complete();
+        this.serialEventSubject?.complete();
         console.log('serial service SerialServiceService destroyed and cleaned up');
       }
     } catch (e) {

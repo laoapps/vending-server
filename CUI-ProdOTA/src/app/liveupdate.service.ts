@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from './services/api.service';
 import { environment } from 'src/environments/environment.prod';
 import { Preferences } from '@capacitor/preferences';
+import { App } from '@capacitor/app';
 
 @Injectable({
   providedIn: 'root',
@@ -63,23 +64,26 @@ export class LiveupdateService {
         throw new Error(`Bundle ${bundleId} not found in available bundles`);
       }
 
-      // Set next bundle and reload
+      // Set next bundle and prepare update
       await LiveUpdate.setNextBundle({ bundleId: bundleId });
       await new Promise(resolve => setTimeout(resolve, 5000));
 
+      // Confirm update is ready
       await LiveUpdate.ready();
       await new Promise(resolve => setTimeout(resolve, 5000));
 
-      await LiveUpdate.reload();
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
+      // Update completed, close app to force full restart
+      console.log('=====>Update completed, closing app to restart...');
+      await this.showToast(`App updated to version ${bundleId}. Closing to complete restart.`);
       await this.updateAppData();
-      await this.showToast(`=====>App updated to version ${bundleId}`);
+      App.exitApp(); // Exit app once to trigger full restart
+
       return latestBundle;
     } catch (error) {
       console.error('=====>Update process failed:', JSON.stringify(error));
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update process failed: ${JSON.stringify(error)}` });
       await this.updateAppData();
+      App.exitApp(); // Exit app once to trigger full restart
       return undefined;
     }
   }

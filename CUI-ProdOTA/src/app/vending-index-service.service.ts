@@ -66,6 +66,7 @@ export class VendingIndexServiceService {
     return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
       this.baudRate = baudRate;
+
       const x = await this.vmc.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
         return reject(null);
@@ -106,6 +107,7 @@ export class VendingIndexServiceService {
     return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
       this.baudRate = baudRate;
+
       this.essp.setChannels(channels);
       const x = await this.essp.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
@@ -120,6 +122,7 @@ export class VendingIndexServiceService {
     return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
       this.baudRate = baudRate;
+
       const x = await this.cctalk.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
         return reject(null);
@@ -133,6 +136,7 @@ export class VendingIndexServiceService {
     return new Promise<ISerialService>(async (resolve, reject) => {
       this.portName = portName;
       this.baudRate = baudRate;
+
       const x = await this.m102.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
         return reject(null);
