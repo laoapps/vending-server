@@ -519,7 +519,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
               this.apiService.myTab1.clearStockAfterLAABGo();
               this.close();
-              this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321');
+              this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321');
               return resolve(IENMessage.success);
             } else {
               AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);

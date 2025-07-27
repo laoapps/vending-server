@@ -241,7 +241,7 @@ export class LoadStockListProcess {
                 {
                     for(let i = 0; i < nodata.length; i++) {
                         // const url = `${this.filemanagerURL}download/${nodata[i].name}`;
-                        const url = `${this.filemanagerURL}downloadphoto?url=${nodata[i].name}&w=100&h=248`;
+                        const url = `${this.filemanagerURL}downloadphoto?url=${nodata[i].name}&w=50&h=124`;
                         const run = await axios({
                             method: 'POST',
                             url: url,

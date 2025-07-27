@@ -563,6 +563,39 @@ ion-content {
     }
 }
 
+
+// src/app/components/payment-message/payment-message.component.scss
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  background-color: #fdf6e3;
+  border-top: 2px solid #ff9800;
+  border-bottom: 2px solid #ff9800;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #444;
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: scroll-left 30s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+
 .loader {
   border: 5px solid #f3f3f3;        /* สีพื้นหลัง */
   border-top: 5px solid #3498db;    /* สีหมุน */
@@ -579,3 +612,5 @@ ion-content {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
