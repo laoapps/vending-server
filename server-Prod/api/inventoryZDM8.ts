@@ -971,7 +971,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     else if (d.command == EClientCommand.ADH814_STATUS) {
                         const mstatus = { temperature: data } as IMachineStatus;
-                        console.log(`-----> ${machineId}, status: ${JSON.stringify(mstatus)}`);
+                        console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
 
                         writeMachineStatus(machineId, mstatus)
 
