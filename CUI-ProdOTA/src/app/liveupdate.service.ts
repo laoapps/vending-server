@@ -71,7 +71,7 @@ export class LiveupdateService {
       // Confirm update is ready
       await LiveUpdate.ready();
       await new Promise(resolve => setTimeout(resolve, 5000));
-
+      localStorage.setItem('restart', 'true');
       await LiveUpdate.reload();
       await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -79,7 +79,7 @@ export class LiveupdateService {
       console.log('=====>Update completed, closing app to restart...');
       await this.showToast(`App updated to version ${bundleId}. Closing to complete restart.`);
       await this.updateAppData();
-      localStorage.setItem('restart', 'true');
+      
        // Exit app once to trigger full restart
       return latestBundle;
     } catch (error) {
