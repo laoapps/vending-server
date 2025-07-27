@@ -914,7 +914,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
             router.post(this.path + "/updateStatus", async (req, res) => {
-                // console.log('updateStatus', req.body);
+                console.log('updateStatus', req.body);
                 const d = req.body as IReqModel;
                 // console.log(d.command, EClientCommand.VMC_MACHINE_STATUS, d.command == EClientCommand.VMC_MACHINE_STATUS)
 
@@ -957,7 +957,7 @@ export class InventoryZDM8 implements IBaseClass {
                             mstatus.lastUpdate = new Date();
 
                         writeMachineStatus(machineId, mstatus);
-                        // console.log('VMC_MACHINE_STATUS', mstatus);
+                        console.log('VMC_MACHINE_STATUS',machineId, mstatus);
 
                         res.send(
                             PrintSucceeded(
@@ -971,7 +971,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     else if (d.command == EClientCommand.ADH814_STATUS) {
                         const mstatus = { temperature: data } as IMachineStatus;
-                        console.log(`-----> ${machineId}, status: ${JSON.stringify(mstatus)}`);
+                        console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
 
                         writeMachineStatus(machineId, mstatus)
 
