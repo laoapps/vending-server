@@ -670,6 +670,18 @@ export class Tab1Page implements OnDestroy {
     //   await this.serial.close();
 
     // });
+    // check nee restart
+    const r = localStorage.getItem('restart');
+    if (r) {
+      localStorage.removeItem('restart');
+      setTimeout(() => {
+        App.exitApp();
+      }, 10000);
+      
+      return;
+    }
+
+
 
     this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
 

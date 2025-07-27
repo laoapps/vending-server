@@ -72,21 +72,20 @@ export class LiveupdateService {
       await LiveUpdate.ready();
       await new Promise(resolve => setTimeout(resolve, 5000));
 
+      await LiveUpdate.reload();
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
       // Update completed, close app to force full restart
       console.log('=====>Update completed, closing app to restart...');
       await this.showToast(`App updated to version ${bundleId}. Closing to complete restart.`);
       await this.updateAppData();
+      localStorage.setItem('restart', 'true');
        // Exit app once to trigger full restart
-      setTimeout(() => {
-        App.exitApp();
-      },5000)
       return latestBundle;
     } catch (error) {
       console.error('=====>Update process failed:', JSON.stringify(error));
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update process failed: ${JSON.stringify(error)}` });
       await this.updateAppData();
-
-      App.exitApp(); // Exit app once to trigger full restart
       return undefined;
     }
   }
