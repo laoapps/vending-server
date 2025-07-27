@@ -19,6 +19,7 @@ import {
   IMachineId,
   IMMoneyQRRes,
   ISerialService,
+
   IStock,
   IVendingMachineBill,
   IVendingMachineSale,
@@ -710,20 +711,64 @@ export class Tab1Page implements OnDestroy {
       await this._processLoopCheckLaoQRPaid();
       this.processedQRPaid = false;
 
-      this.apiService.IndexedDB.getBillProcesses().then((r) => {
-        if (r.length > 0) {
-          console.log('dropStock', r);
-          this.apiService.isDropStock = true;
+        this.apiService.IndexedDB.getBillProcesses().then((r) => {
+          if (r.length > 0) {
+            console.log('dropStock', r);
+            this.apiService.isDropStock = true;
 
-        } else {
-          console.log('out dropStock', r);
+          } else {
+            console.log('out dropStock', r);
+            this.apiService.isDropStock = false;
+          }
+        }).catch((e) => {
+          console.log('Error get dropStock from local', e);
+          this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error get dropStock from local :${JSON.stringify(e)}` });
           this.apiService.isDropStock = false;
-        }
-      }).catch((e) => {
-        console.log('Error get dropStock from local', e);
-        this.apiService.isDropStock = false;
-      });
-    }, 30000);
+        });
+      } catch (error) {
+        Toast.show({ text: 'Error readyState' + error.message, duration: 'long' });
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error readyState :${JSON.stringify(error)}` });
+      }
+
+
+
+
+
+      // clearInterval(this.countdownCheckLaoQRPaidTimer);
+      // this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+      //   console.log('*****CHECK 30 SECOND');
+
+      //   if (this.processedQRPaid) return;
+      //   this.processedQRPaid = true;
+      //   await this._processLoopCheckLaoQRPaid();
+      //   this.processedQRPaid = false;
+
+      //   this.apiService.IndexedDB.getBillProcesses().then((r) => {
+      //     if (r.length > 0) {
+      //       console.log('dropStock', r);
+      //       this.apiService.isDropStock = true;
+
+      //     } else {
+      //       console.log('out dropStock', r);
+      //       this.apiService.isDropStock = false;
+      //     }
+      //   }).catch((e) => {
+      //     console.log('Error get dropStock from local', e);
+      //     this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error get dropStock from local :${JSON.stringify(e)}` });
+      //     this.apiService.isDropStock = false;
+      //   });
+      // }, 30000);
+
+
+      Toast.show({ text: 'READY', duration: 'long' })
+    }, 1000);
+
+    // const clientVersionId = localStorage.getItem('ClientVersionId') ?? '0.0.0';
+    // if (clientVersionId != environment.versionId) {
+    //   this.checkLiveUpdate(clientVersionId);
+    // }
+
+
 
 
 
@@ -1143,49 +1188,60 @@ export class Tab1Page implements OnDestroy {
 
 
   async connect() {
-    if (!this.selectedDevice) return Toast.show({ text: 'Please select setting', duration: 'long' });
-    Toast.show({ text: 'Prepare a connection to ' + this.selectedDevice });
-    if (this.connecting) {
-      return Toast.show({ text: 'Connecting' });
+    try {
+      if (!this.selectedDevice) return Toast.show({ text: 'Please select setting', duration: 'long' });
+      Toast.show({ text: 'Prepare a connection to ' + this.selectedDevice });
+      if (this.connecting) {
+        return Toast.show({ text: 'Connecting' });
+      }
+      this.connecting = true;
+      if (this.selectedDevice == 'VMC') {
+        // this.baudRate = 57600;
+        await this.startVMC();
+        Toast.show({ text: 'Start VMC' });
+      }
+      else if (this.selectedDevice == 'ZDM8') {
+        await this.startZDM8();
+        Toast.show({ text: 'Start ZDM8' });
+      }
+      else if (this.selectedDevice == 'Tp77p') {
+        await this.satrtTp77p();
+        Toast.show({ text: 'Start Tp77p3b' });
+      }
+      else if (this.selectedDevice == 'essp') {
+        await this.startEssp();
+        Toast.show({ text: 'Start essp' });
+      }
+      else if (this.selectedDevice == 'cctalk') {
+        await this.startCctalk();
+        Toast.show({ text: 'Start essp' });
+      }
+      else if (this.selectedDevice == 'adh815') {
+        await this.startAHD815();
+        Toast.show({ text: 'Start adh815' });
+      } else if (this.selectedDevice == 'adh814') {
+        const x = await this.startAHD814();
+        Toast.show({ text: 'Start adh814' });
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Success Connected to ${this.selectedDevice} serial :${!!this.serial} ${JSON.stringify(x)}` });
+
+      } else if (this.selectedDevice == 'm102') {
+        await this.startM102();
+        Toast.show({ text: 'Start m102' });
+      }
+      else {
+        Toast.show({ text: 'Please select device' })
+      }
+      this.connecting = false;
+      if (this.serial)
+        this.apiService.serialPort = this.serial;
+      Toast.show({ text: 'Connected to ' + this.selectedDevice + ' ' + !!this.serial, duration: 'long' });
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Success Connected to ${this.selectedDevice} serial :${!!this.serial}` });
+    } catch (error) {
+      Toast.show({ text: 'Error connect ' + error?.message + ' ' + !!this.serial, duration: 'long' });
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error connect :${JSON.stringify(error)} serial :${!!this.serial}` });
+      this.connecting = false;
     }
-    this.connecting = true;
-    if (this.selectedDevice == 'VMC') {
-      // this.baudRate = 57600;
-      await this.startVMC();
-      Toast.show({ text: 'Start VMC' });
-    }
-    else if (this.selectedDevice == 'ZDM8') {
-      await this.startZDM8();
-      Toast.show({ text: 'Start ZDM8' });
-    }
-    else if (this.selectedDevice == 'Tp77p') {
-      await this.satrtTp77p();
-      Toast.show({ text: 'Start Tp77p3b' });
-    }
-    else if (this.selectedDevice == 'essp') {
-      await this.startEssp();
-      Toast.show({ text: 'Start essp' });
-    }
-    else if (this.selectedDevice == 'cctalk') {
-      await this.startCctalk();
-      Toast.show({ text: 'Start essp' });
-    }
-    else if (this.selectedDevice == 'adh815') {
-      await this.startAHD815();
-      Toast.show({ text: 'Start adh815' });
-    } else if (this.selectedDevice == 'adh814') {
-      await this.startAHD814();
-      Toast.show({ text: 'Start adh814' });
-    } else if (this.selectedDevice == 'm102') {
-      await this.startM102();
-      Toast.show({ text: 'Start m102' });
-    }
-    else {
-      Toast.show({ text: 'Please select device' })
-    }
-    this.connecting = false;
-    if (this.serial)
-      this.apiService.serialPort = this.serial;
+
   }
   // VMC only
   async Enable() {
@@ -1382,51 +1438,57 @@ export class Tab1Page implements OnDestroy {
     console.log('Starting ADH814');
 
 
-    this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
-    if (!this.serial) {
-      Toast.show({ text: 'serial not init' });
-    } else {
+        this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId.machineId, this.machineId.otp, this.isSerial);
+        if (!this.serial) {
+          Toast.show({ text: 'serial not init' });
+        } else {
 
-      const swapAndTwoWireMode = localStorage.getItem('swapAndTwoWireMode') ? 'true' : 'false';
-      if (swapAndTwoWireMode !== 'true' || !swapAndTwoWireMode) {
+          const swapAndTwoWireMode = localStorage.getItem('swapAndTwoWireMode') ? 'true' : 'false';
+          if (swapAndTwoWireMode !== 'true' || !swapAndTwoWireMode) {
 
-        setTimeout(() => {
-          this.vendingIndex.adh814.setSwap();
-          console.log('set swap');
-          Toast.show({ text: 'Swap enabled', duration: 'long' });
-        }, 5000);
-
-
-        this.vendingIndex.adh814.setTwoWires();
-        console.log('swapAndTwoWireMode', swapAndTwoWireMode);
-        Toast.show({ text: 'Swap and Two Wire Mode enabled', duration: 'long' });
-        localStorage.setItem('swapAndTwoWireMode', 'true');
-      } else {
-        setTimeout(() => {
-          this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
-          console.log('set temp', this.tempStatus.lowTemp);
-          Toast.show({ text: 'Set Temperature to ' + this.tempStatus.lowTemp, duration: 'long' });
-        }, 20000);
+            setTimeout(() => {
+              this.vendingIndex.adh814.setSwap();
+              console.log('set swap');
+              Toast.show({ text: 'Swap enabled', duration: 'long' });
+            }, 5000);
 
 
-      }
+            this.vendingIndex.adh814.setTwoWires();
+            console.log('swapAndTwoWireMode', swapAndTwoWireMode);
+            Toast.show({ text: 'Swap and Two Wire Mode enabled', duration: 'long' });
+            localStorage.setItem('swapAndTwoWireMode', 'true');
+          } else {
+            setTimeout(() => {
+              this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
+              console.log('set temp', this.tempStatus.lowTemp);
+              Toast.show({ text: 'Set Temperature to ' + this.tempStatus.lowTemp, duration: 'long' });
+            }, 20000);
 
-      this.serial.getSerialEvents().subscribe(async (event) => {
-        if (event?.event === 'dataReceived') {
-          const rawData = event?.data;
-          // this.addLogMessage(`Raw data: ${rawData}`);
-          console.log('ADH814 Received from device:', rawData);
-          if (rawData) {
-            const result = this.processResponseADH814(rawData);
-            if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
-              // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
-            }
+
           }
 
+          this.serial.getSerialEvents().subscribe(async (event) => {
+            if (event?.event === 'dataReceived') {
+              const rawData = event?.data;
+              // this.addLogMessage(`Raw data: ${rawData}`);
+              console.log('ADH814 Received from device:', rawData);
+              if (rawData) {
+                const result = this.processResponseADH814(rawData);
+                if (result && result?.command !== EMACHINE_COMMAND.READ_EVENTS) {
+                  // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
+                }
+              }
+
+            }
+          });
         }
-      });
-    }
-    this.vlog.log = this.serial.log;
+        this.vlog.log = this.serial?.log;
+        resolve(this.serial);
+      } catch (error) {
+        reject(error);
+      }
+    })
+
   }
   private processResponseADH814(rawData: string): IResModel {
     try {
@@ -3045,26 +3107,29 @@ export class Tab1Page implements OnDestroy {
         if (this.apiService.pb.length) {
           this.apiService.isDropStock = true;
           if (!this.apiService.isRemainingBillsModalOpen) {
-            if (this.serial) {
-              this.apiService
-                .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
-                .then((r) => {
-                  this.apiService.isRemainingBillsModalOpen = true;
-                  r.present();
-                  r.onDidDismiss().then(() => {
-                    this.apiService.isRemainingBillsModalOpen = false;
-                  })
-                  this.otherModalAreOpening = true;
-                  this.openAnotherModal(r);
-                  clearInterval(this.autoShowMyOrderTimer);
-                  this.checkActiveModal(r);
-                });
-            } else {
-              Toast.show({
-                text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
-                duration: 'long',
-              })
-            }
+            // if (this.serial) {
+
+            // } else {
+            //   Toast.show({
+            //     text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
+            //     duration: 'long',
+            //   })
+            // }
+
+
+            this.apiService
+              .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
+              .then((r) => {
+                this.apiService.isRemainingBillsModalOpen = true;
+                r.present();
+                r.onDidDismiss().then(() => {
+                  this.apiService.isRemainingBillsModalOpen = false;
+                })
+                this.otherModalAreOpening = true;
+                this.openAnotherModal(r);
+                clearInterval(this.autoShowMyOrderTimer);
+                this.checkActiveModal(r);
+              });
           }
         }
 

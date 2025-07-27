@@ -166,7 +166,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
               });
             }, 2000);
 
-            this.apiService.soundThankYou();
+
 
             this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
               console.log('reload_ticket', reload_ticket);
@@ -184,7 +184,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
               if (human == true) {
                 this.loadAutoFall();
               }
-            })
+            });
+            this.apiService.soundThankYou();
           }).catch((error) => {
             console.log('Error deleteBillProcess', error);
             this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error deleteBillProcess :${JSON.stringify(error)}` });
