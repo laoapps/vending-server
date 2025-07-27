@@ -1746,7 +1746,7 @@ export class Tab1Page implements OnDestroy {
       // this._machineStatus = resultStatus;
 
     } else {
-      this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
+      // this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
       console.log('Unhandled response:', hex);
     }
   }
