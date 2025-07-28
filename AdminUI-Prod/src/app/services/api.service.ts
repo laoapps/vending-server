@@ -278,6 +278,13 @@ export class ApiService {
 
         return this.http.post<IResModel>(this.url + '/refreshMachine', { token, data }, { headers: this.headerBase() });
     }
+
+
+    exitAppMachine(data: any) {
+        const token = localStorage.getItem('lva_token');
+
+        return this.http.post<IResModel>(this.url + '/exitAppMachine', { token, data }, { headers: this.headerBase() });
+    }
     resetCashing(data: any) {
         return this.http.post<IResModel>(this.url + '/resetCashing', data, { headers: this.headerBase() });
     }

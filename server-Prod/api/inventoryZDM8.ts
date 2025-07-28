@@ -957,7 +957,7 @@ export class InventoryZDM8 implements IBaseClass {
                             mstatus.lastUpdate = new Date();
 
                         writeMachineStatus(machineId, mstatus);
-                        console.log('VMC_MACHINE_STATUS',machineId, mstatus);
+                        console.log('VMC_MACHINE_STATUS', machineId, mstatus);
 
                         res.send(
                             PrintSucceeded(
@@ -1101,6 +1101,42 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
+
+            router.post(this.path + "/exitAppMachine",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+
+                        // const w = ws.find(v=>v['clientId']);
+                        // console.log(`----------->`, m);
+
+                        const ws = this.wsClient.find(v => v['machineId'] === m);
+                        ws.send(
+                            JSON.stringify(
+                                PrintSucceeded(
+                                    "ping",
+                                    {
+                                        command: "ping",
+                                        production: this.production,
+                                        setting: { exit: true }
+                                    },
+                                    EMessage.succeeded,
+                                    null
+                                )
+                            )
+                        );
+
+                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
             router.post(
                 this.path + "/getDeliveryingBills",
                 this.checkMachineIdToken.bind(this),
