@@ -97,6 +97,7 @@ import {
     dropLogEntity,
     laabHashService,
     logEntity,
+    LogsTempEntity,
     machineCashoutMMoneyEntity,
     machineClientIDEntity,
     machineIDEntity,
@@ -972,6 +973,16 @@ export class InventoryZDM8 implements IBaseClass {
                     else if (d.command == EClientCommand.ADH814_STATUS) {
                         const mstatus = { temperature: data } as IMachineStatus;
                         console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
+
+                        try {
+                            LogsTempEntity.create({ machineId: machineId, mstatus: mstatus }).then(r => {
+                            }).catch(e => {
+                                console.log('error save temp to database', e);
+                            });
+
+                        } catch (error) {
+                            console.log('Error save temp to database', error);
+                        }
 
                         writeMachineStatus(machineId, mstatus)
 
@@ -3460,6 +3471,46 @@ export class InventoryZDM8 implements IBaseClass {
                     } catch (error) {
                         console.log('reportClientLog :', error);
                         res.send(PrintError("reportClientLog", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
+
+            router.post(this.path + '/reportLogsTemp',
+                this.checkSuperAdmin,
+                this.checkAdmin,
+
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId;
+                        const data = req.body;
+
+                        if (!machineId) {
+                            res.send(PrintError("reportLogsTemp", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        // console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const cksum = generateChecksum(machineId + fromDate.toString() + toDate.toString());
+                        const resp = await redisClient.get(cksum);
+                        if (resp) {
+                            return res.send(PrintSucceeded("report", JSON.parse(resp), EMessage.succeeded, returnLog(req, res)));
+                        }
+                        const run = await this.getReportLogsTemp(machineId, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        redisClient.setEx(cksum, 60 * 1, JSON.stringify(response));
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportLogsTemp :', error);
+                        res.send(PrintError("reportLogsTemp", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
 
@@ -7062,6 +7113,37 @@ export class InventoryZDM8 implements IBaseClass {
         // );
         // await ent.sync();
         const bill = await ClientlogEntity.findAndCountAll(condition);
+        return bill;
+    }
+
+
+    private async getReportLogsTemp(machineId: string, fromDate: string, toDate: string) {
+        let condition: any = {};
+        if (machineId == 'all') {
+
+            condition = {
+                where: {
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        else {
+            condition = {
+                where: {
+                    machineId: machineId,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+
+        // const ent = VendingMachineBillFactory(
+        //     EEntity.vendingmachinebill + "_" + ownerUuid,
+        //     dbConnection
+        // );
+        // await ent.sync();
+        const bill = await LogsTempEntity.findAndCountAll(condition);
         return bill;
     }
 

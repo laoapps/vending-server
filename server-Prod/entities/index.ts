@@ -24,6 +24,7 @@ import { VendingVersionFactory, VendingVersionStatic } from "./vendingversion.en
 import { DropLogActivityFactory, DropLogActivityStatic } from "./droplogactivity.entity";
 import { BundleFactory, BundleStatic } from "./appupdate.entity";
 import { ClientlogFactory, ClientlogStatic } from "./clientlog.entity";
+import { LogsTempFactory, LogsTempStatic } from "./logstemp.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -45,6 +46,7 @@ export let doorEntity: DoorStatic;
 export let doorPaymentEntity: DoorPaymentStatic;
 export let vendingVersionEntity: VendingVersionStatic;
 export let ClientlogEntity: ClientlogStatic;
+export let LogsTempEntity: LogsTempStatic;
 
 
 // LAAB
@@ -145,6 +147,9 @@ export const initDB = async () => {
 
     ClientlogEntity = ClientlogFactory(EEntity.Clientlog, dbConnection);
     ClientlogEntity ? await ClientlogEntity.sync() : console.log('==========> ClientlogFactory is not initialized');
+
+    LogsTempEntity = LogsTempFactory(EEntity.LogsTemp, dbConnection);
+    LogsTempEntity ? await LogsTempEntity.sync() : console.log('==========> LogsTempEntity is not initialized');
 
 
 }
