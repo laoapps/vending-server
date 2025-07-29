@@ -2109,7 +2109,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             if (["stock", "max"].includes(k)) {
                                                 r[k] = o[k];
                                                 r.changed("stock", true);
-                                                console.log("changed", r[k]);
+                                                // console.log("changed", r[k]);
                                             }
                                         });
                                         // r.changed('stock', true);
@@ -3326,7 +3326,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const ws = this.wsClient.find(v => v['machineId'] === r?.machineId);
 
                                 /// WS send to client directly
-                                console.log('=====>S :', s);
+                                // console.log('=====>S :', s);
 
 
                                 ws?.send(
@@ -4350,7 +4350,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     console.log(`TEST DER -->`, 11);
 
-                    console.log("billCashIn", d?.data);
+                    // console.log("billCashIn", d?.data);
 
                     // *** cash in here
                     const bn = { amount: cashInValue, channel: -1 * cashInValue, value: cashInValue } as IBankNote;
@@ -4407,19 +4407,19 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log(`creditMachineMMoney`, 2);
 
                         machineCashoutMMoneyEntity.create(model).then(run_createLAABLog => {
-                            console.log(`creditMachineMMoney`, 3, run_createLAABLog);
+                            // console.log(`creditMachineMMoney`, 3, run_createLAABLog);
                             if (!run_createLAABLog) return resolve(IENMessage.createLAABBillFail);
                             machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
-                                console.log(`creditMachineMMoney`, 4, run_findbill);
+                                // console.log(`creditMachineMMoney`, 4, run_findbill);
                                 if (run_findbill == null) return resolve(IENMessage.notFoundBill);
                                 this.refillMMoney(phonenumber, transactionID, cashInValue, params.description).then(refill => {
-                                    console.log(`creditMachineMMoney`, 5, refill);
+                                    // console.log(`creditMachineMMoney`, 5, refill);
                                     machineCashoutMMoneyEntity.update({ MMoney: refill }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-                                        console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                        // console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                         if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                         model.MMoney = refill;
                                         model.message = IENMessage.success;
-                                        console.log(`creditMachineMMoney`, 7);
+                                        // console.log(`creditMachineMMoney`, 7);
                                         resolve(model);
                                     }).catch(error => resolve(error.message));
                                 }).catch(error => {
@@ -4447,7 +4447,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             info: run_return.data.info.info
                                         }
                                         machineCashoutMMoneyEntity.update({ LAABReturn: h }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-                                            console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                            // console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                             if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                             writeMachineBalance(ifError.machineId, ifError.vendingBalance);
                                             resolve(error.message);
@@ -4458,7 +4458,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         // if transfer back and everything fail database will save error data
                                         machineCashoutMMoneyEntity.update({ LAABReturn: error.message }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
 
-                                            console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                            // console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                             if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                             resolve(error.message);
                                         }).catch(error => resolve(`update bill return br sum led 002` + error.message));
@@ -5163,15 +5163,15 @@ export class InventoryZDM8 implements IBaseClass {
         try {
 
             this.billCashEnt.create(billCash).then((rx) => {
-                console.log(
-                    "SAVED BILL CASH-IN",
-                    provider + "_",
-                    EEntity.billcash +
-                    "_" +
-                    this.production +
-                    "_" +
-                    billCash?.requestor?.transData[0]?.accountRef
-                );
+                // console.log(
+                //     "SAVED BILL CASH-IN",
+                //     provider + "_",
+                //     EEntity.billcash +
+                //     "_" +
+                //     this.production +
+                //     "_" +
+                //     billCash?.requestor?.transData[0]?.accountRef
+                // );
             });
             const mId = this.findMachineId(machineId);
             const mEnt: MachineIDStatic = MachineIDFactory(
@@ -5188,14 +5188,14 @@ export class InventoryZDM8 implements IBaseClass {
                         bill: billCash,
                     })
                     .then((rx) => {
-                        console.log(
-                            "SAVED MachineIDStatic",
-                            EEntity.machineIDHistory +
-                            "_" +
-                            this.production +
-                            "_" +
-                            mId?.machineId
-                        );
+                        // console.log(
+                        //     "SAVED MachineIDStatic",
+                        //     EEntity.machineIDHistory +
+                        //     "_" +
+                        //     this.production +
+                        //     "_" +
+                        //     mId?.machineId
+                        // );
                     })
                     .catch((e) => {
                         console.log("  mEnt.create", e);
@@ -5222,10 +5222,10 @@ export class InventoryZDM8 implements IBaseClass {
         try {
 
             this.badBillCashEnt.create(billCash).then((rx) => {
-                console.log(
-                    "SAVED BILL CASH-IN",
-                    EEntity.badbillcash + "_" + this.production
-                );
+                // console.log(
+                //     "SAVED BILL CASH-IN",
+                //     EEntity.badbillcash + "_" + this.production
+                // );
             });
 
             const mId = this.findMachineId(machineId);
@@ -5243,10 +5243,10 @@ export class InventoryZDM8 implements IBaseClass {
                         bill: billCash,
                     })
                     .then((rx) => {
-                        console.log(
-                            "SAVED MachineIDStatic",
-                            EEntity.machineIDHistory + "_" + mId?.machineId
-                        );
+                        // console.log(
+                        //     "SAVED MachineIDStatic",
+                        //     EEntity.machineIDHistory + "_" + mId?.machineId
+                        // );
                         // const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
                         // this.billCashIn.splice(i, 1);
                     })
@@ -6075,7 +6075,7 @@ export class InventoryZDM8 implements IBaseClass {
                             "Content-Type": 'application/json'
                         }
                     }).then(async r => {
-                        console.log('=====>CONFIRM PAID', r.data);
+                        // console.log('=====>CONFIRM PAID', r.data);
 
                         return resolve({ status: 1, message: r.data });
                     }).catch(e => {
@@ -6083,7 +6083,7 @@ export class InventoryZDM8 implements IBaseClass {
                         return resolve({ status: 0, message: e });
                     })
                 } else {
-                    console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                    // console.log('=====> CHECK MMONEY NOT PAID', res.data);
                     return resolve({ status: 0, message: EMessage.LaoQRNotPaid });
                 }
             } catch (error) {
@@ -6125,7 +6125,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             // console.log('=====> CHECK MMONEY PAID', res.data);
             if (res.data.success) {
-                console.log('=====> CHECK MMONEY PAID', res.data);
+                // console.log('=====> CHECK MMONEY PAID', res.data);
                 axios.post('https://vending-service-api5.laoapps.com', {
                     "command": "confirmLAOQR",
                     "data": {
@@ -6137,7 +6137,7 @@ export class InventoryZDM8 implements IBaseClass {
                         "Content-Type": 'application/json'
                     }
                 }).then(async r => {
-                    console.log('=====>CONFIRM', r.data);
+                    // console.log('=====>CONFIRM', r.data);
                     let resule = (await redisClient.get(machineId + EMessage.ListTransaction)) ?? '[]';
                     // let trandList: Array<any> = JSON.parse(resule);
                     // const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
@@ -6162,7 +6162,7 @@ export class InventoryZDM8 implements IBaseClass {
                     console.log('=====>CONFIRM ERROR', e);
                 })
             } else {
-                console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                // console.log('=====> CHECK MMONEY NOT PAID', res.data);
             }
             resolve(null);
         });
@@ -6433,7 +6433,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // console.log(" WS current connection is alive", ws["isAlive"]);
 
                 ws.onopen = (ev: Event) => {
-                    console.log(" WS open", ev);
+                    // console.log(" WS open", ev);
                 };
 
                 // ws['isAlive'] = true;
@@ -6854,7 +6854,7 @@ export class InventoryZDM8 implements IBaseClass {
     confirmLaoQROrder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
             // console.log('C is :', c);
-            console.log('=====>ConfirmLAOQR  is :', c);
+            // console.log('=====>ConfirmLAOQR  is :', c);
 
 
             this.callBackConfirmLaoQR(c.trandID, c.bankname).then((r) => {
@@ -6874,7 +6874,7 @@ export class InventoryZDM8 implements IBaseClass {
     findLaoQROrderPaid(c: any) {
         return new Promise<any>((resolve, reject) => {
             // console.log('C findLaoQROrderPaid is :', c);
-            console.log('findLaoQRPaid  is :', c);
+            // console.log('findLaoQRPaid  is :', c);
 
             this.findCallBackConfirmLaoQR(c.machineId).then((r) => {
                 if (r) {
@@ -6910,7 +6910,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
             if (x && x == machineId) {
                 // yy.push(v);
-                console.log("WS SENDING machine id", x, v?.readyState);
+                // console.log("WS SENDING machine id", x, v?.readyState);
                 // console.log('=====> RES CONFIRMED', JSON.stringify(resx));
 
                 v.send(JSON.stringify(resx));
