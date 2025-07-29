@@ -48,11 +48,23 @@ export class LoginPage implements OnInit {
         const run = await this.loginProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
-        localStorage.setItem('lva_ownerUuid', run.data[0].owneruuid);
-        localStorage.setItem('lva_name', run.data[0].name);
-        localStorage.setItem('lva_token', run.data[0].token);
+
         // this.apiService.router.navigate(['/template']);
-        this.apiService.router.navigate(['/tabs/tab1']);
+        // this.apiService.router.navigate(['/tabs/tab1']);
+        const result = await this.apiService.presentPhoneSecretDialog();
+        if (result) {
+          localStorage.setItem('lva_ownerUuid', run.data[0].owneruuid);
+          localStorage.setItem('lva_name', run.data[0].name);
+          localStorage.setItem('lva_token', run.data[0].token);
+          if (result.secret) {
+            localStorage.setItem('secretLocal', result.secret);
+          }
+          localStorage.setItem('phoneNumberLocal', result.phoneNumber);
+          this.apiService.router.navigate(['/tabs/tab1']);
+          resolve(IENMessage.success);
+        }
+        console.log('-----> result', result);
+
         resolve(IENMessage.success);
 
       } catch (error) {

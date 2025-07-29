@@ -26,9 +26,9 @@ export class AddProvideToSubadminProcess {
     }
 
     public Init(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 console.log(`show epin short code list`, 1);
 
                 this.workload = this.apiService.load.create({ message: 'loading...' });
@@ -56,7 +56,7 @@ export class AddProvideToSubadminProcess {
             } catch (error) {
 
                 (await this.workload).dismiss();
-                resolve(error.message);     
+                resolve(error.message);
             }
         });
     }
@@ -71,12 +71,12 @@ export class AddProvideToSubadminProcess {
 
     private ValidateParams(): string {
         if (!(this.id && this.phonenumber && this.machineId && this.imei && this.token)) return IENMessage.parametersEmpty;
-        
+
         return IENMessage.success;
     }
 
     private CreateSubadmin(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 const params = {
@@ -94,7 +94,7 @@ export class AddProvideToSubadminProcess {
                     this.id = response.info.commit_id;
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
-                
+
             } catch (error) {
                 resolve(error.message);
             }

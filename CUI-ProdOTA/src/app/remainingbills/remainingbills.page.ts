@@ -147,9 +147,10 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
             this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
               console.log('shippingcontrol');
-
+              Toast.show({ text: 'shippingcontrol' + JSON.stringify(r || {}) });
             }).catch(async (error) => {
               console.log('error shippingcontrol', error);
+              Toast.show({ text: 'error shippingcontrol' + JSON.stringify(error || {}) });
               this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error shippingcontrol :${JSON.stringify(error)}` });
             });
 

@@ -663,7 +663,7 @@ export class Tab1Page implements OnDestroy {
     }, 5000);
   }
 
-  ngOnInit() {
+  async ngOnInit() {
 
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
@@ -677,7 +677,7 @@ export class Tab1Page implements OnDestroy {
       setTimeout(() => {
         App.exitApp();
       }, 10000);
-      
+
       return;
     }
 
@@ -691,51 +691,50 @@ export class Tab1Page implements OnDestroy {
         label: key,  // Display name
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
-    setTimeout(async () => {
+    try {
+      await this.connect();
+      Toast.show({ text: 'READY', duration: 'long' })
+
+      this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
+      this.readyState = true;
 
       try {
-        await this.connect();
-        Toast.show({ text: 'READY', duration: 'long' })
+        clearInterval(this.countdownCheckLaoQRPaidTimer);
+        this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+          console.log('*****CHECK 30 SECOND');
 
-        this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
-        this.readyState = true;
+
+          if (this.processedQRPaid) return;
+          this.processedQRPaid = true;
+          await this._processLoopCheckLaoQRPaid();
+          this.processedQRPaid = false;
+
+          this.apiService.IndexedDB.getBillProcesses().then((r) => {
+            if (r.length > 0) {
+              console.log('dropStock', r);
+              this.apiService.isDropStock = true;
+
+            } else {
+              console.log('out dropStock', r);
+              this.apiService.isDropStock = false;
+            }
+          }).catch((e) => {
+            console.log('Error get dropStock from local', e);
+            this.apiService.isDropStock = false;
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error get dropStock from local :${JSON.stringify(e)}` });
+          });
+        }, 30000);
       } catch (error) {
-        Toast.show({ text: 'Error connecting to serial port ' + JSON.stringify(error || {}), duration: 'long' });
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error _processLoopCheckLaoQRPaid :${JSON.stringify(error)}` });
       }
-
-
-
-    }, 1000);
-
-
-
-    clearInterval(this.countdownCheckLaoQRPaidTimer);
-    this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
-      console.log('*****CHECK 30 SECOND');
+    } catch (error) {
+      Toast.show({ text: 'Error connecting to serial port ' + JSON.stringify(error || {}), duration: 'long' });
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error connecting to serial port :${JSON.stringify(error)}` });
+    }
 
 
 
 
-
-      if (this.processedQRPaid) return;
-      this.processedQRPaid = true;
-      await this._processLoopCheckLaoQRPaid();
-      this.processedQRPaid = false;
-
-      this.apiService.IndexedDB.getBillProcesses().then((r) => {
-        if (r.length > 0) {
-          console.log('dropStock', r);
-          this.apiService.isDropStock = true;
-
-        } else {
-          console.log('out dropStock', r);
-          this.apiService.isDropStock = false;
-        }
-      }).catch((e) => {
-        console.log('Error get dropStock from local', e);
-        this.apiService.isDropStock = false;
-      });
-    }, 30000);
 
 
 
@@ -758,7 +757,7 @@ export class Tab1Page implements OnDestroy {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
             return this.refresh();
           }
-          if(r.exit){
+          if (r.exit) {
             setTimeout(() => {
               Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
               App.exitApp();
@@ -1003,7 +1002,7 @@ export class Tab1Page implements OnDestroy {
               this.tempStatus.highTemp = r.highTemp;
               // this.vendingIndex.vmc.command(EMACHINE_COMMAND.SET_TEMP, { lowTemp: this.tempStatus.lowTemp, highTemp: this.tempStatus.highTemp }, -1);
               Toast.show({ text: `Update Tem to ${this.tempStatus.lowTemp}` });
-              this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
+              await this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
             }
 
 
