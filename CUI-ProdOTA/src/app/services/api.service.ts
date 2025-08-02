@@ -577,6 +577,7 @@ export class ApiService {
     // this.initLocalHowToVideoPlayList();
   }
 
+  
   async waitingDelivery(r: any, serial: ISerialService) {
     return new Promise<string>((resolve, reject) => {
       console.log('WAITING DELIVERY NEW :', r);
