@@ -5500,7 +5500,10 @@ export class InventoryZDM8 implements IBaseClass {
 
                     redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
-                    await DeleteTransactionToCheck(bill.machineId)
+                    await DeleteTransactionToCheck(bill.machineId);
+
+
+                    this.sendWSToMachine(bill?.machineId + "", res);
 
                     return resolve(bill); // Add return to stop callback execution
                 });
