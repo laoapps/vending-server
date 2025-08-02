@@ -591,7 +591,7 @@ export class ApiService {
             this.dismissModal();
           }
           this.dismissLoading();
-          const pb = r.data as Array<IBillProcess>;
+          const pb = r?r as Array<IBillProcess>:[] as Array<IBillProcess>;
           // console.log('=====> PB', pb);
 
           // console.log('=====> PB Length :', pb.length);
