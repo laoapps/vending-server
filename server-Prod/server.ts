@@ -180,9 +180,9 @@ CreateDatabase("")
             res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
           });
         } else if (d.command == EClientCommand.confirmLAOQR) {
-          // console.log('confirmLAOQR');
+          console.log('confirmLAOQR');
           invZDM8.confirmLaoQROrder(c).then((r) => {
-            // console.log(r.data);
+            console.log(r.data);
             if (r) {
               res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
             } else {
