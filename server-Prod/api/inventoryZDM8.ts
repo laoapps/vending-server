@@ -6921,14 +6921,17 @@ export class InventoryZDM8 implements IBaseClass {
 
     confirmLaoQROrder(c: IMMoneyConfirm) {
         return new Promise<any>((resolve, reject) => {
-            // console.log('C is :', c);
-            // console.log('=====>ConfirmLAOQR  is :', c);
+            console.log('C is :', c);
+            console.log('=====>ConfirmLAOQR  is :', c);
 
 
             this.callBackConfirmLaoQR(c.trandID, c.bankname).then((r) => {
                 if (r) {
+                    console.log('=====>ConfirmLAOQR  is not null', r);
                     resolve({ bill: r, transactionID: c.tranid_client });
                 } else {
+                    console.log('=====>ConfirmLAOQR  is null', c);
+                    
                     resolve(null);
                 }
             })
