@@ -558,6 +558,18 @@ export class ApiService {
       //   });
       //   // this.showModal(RemainingbillsPage, { r });
       // }
+      this.waitingDelivery(r, this.serialPort).then((r) => {
+        console.log('waitingDelivery result:', r);
+        if (r === EMessage.succeeded) {
+          this.toast.create({ message: 'Delivery successful '+JSON.stringify(r||{}), duration: 2000 }).then((r) => {
+            r.present();
+          });
+        } else {
+          this.toast.create({ message: 'Delivery failed '+JSON.stringify(r||{}), duration: 2000 }).then((r) => {
+            r.present();
+          });
+        }
+      });
     });
 
     // this.initLocalHowToVideoPlayList();
@@ -577,7 +589,7 @@ export class ApiService {
             this.dismissModal();
           }
           this.dismissLoading();
-          const pb = r.data as Array<IBillProcess>;
+          const pb = r?r as Array<IBillProcess>:[] as Array<IBillProcess>;
           // console.log('=====> PB', pb);
 
           // console.log('=====> PB Length :', pb.length);

@@ -2564,19 +2564,20 @@ export class Tab1Page implements OnDestroy {
     }
   }
 
+
   showMyOrdersModal() {
     try {
       // timer check payment for any orders
-      clearInterval(this.countdownCheckLaoQRPaidTimer);
-      this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
-        console.log('*****CHECK 5 SECOND');
-        // await this._processLoopCheckLaoQRPaid();
+      // clearInterval(this.countdownCheckLaoQRPaidTimer);
+      // this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+      //   console.log('*****CHECK 5 SECOND');
+      //   // await this._processLoopCheckLaoQRPaid();
 
-        if (this.processedQRPaid) return;
-        this.processedQRPaid = true;
-        await this._processLoopCheckLaoQRPaid();
-        this.processedQRPaid = false;
-      }, 5000);
+      //   if (this.processedQRPaid) return;
+      //   this.processedQRPaid = true;
+      //   await this._processLoopCheckLaoQRPaid();
+      //   this.processedQRPaid = false;
+      // }, 5000);
 
       if (this.otherModalAreOpening == true) return;
       if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
@@ -2595,13 +2596,21 @@ export class Tab1Page implements OnDestroy {
         r.present();
         this.otherModalAreOpening = true;
         // this.apiService.allModals.push(this.apiService.modal);
-        r.onDidDismiss().then(cb => {
+        r.onDidDismiss().then(async cb => {
           this.otherModalAreOpening = false;
           AutoPaymentPage.message?.close();
           AutoPaymentPage.message = undefined;
           if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
             // this.loadAutoShowMyOrders();
           }
+
+
+
+
+
+            await this._processLoopCheckLaoQRPaid();
+            this.processedQRPaid = false;
+
           clearInterval(this.countdownCheckLaoQRPaidTimer);
           that.countdownCheckLaoQRPaidTimer = setInterval(async () => {
             console.log('*****CHECK 30 SECOND');

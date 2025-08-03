@@ -5671,8 +5671,8 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                     this.setBillProces(bill.machineId, b);
-                    // res.data = b.filter((v) => v.ownerUuid == ownerUuid);
-                    // this.sendWSToMachine(bill?.machineId + "", res);
+                    res.data = b.filter((v) => v.ownerUuid == ownerUuid);
+                    this.sendWSToMachine(bill?.machineId + "", res);
 
                 });
 
@@ -5868,6 +5868,7 @@ export class InventoryZDM8 implements IBaseClass {
                     redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
                     await DeleteTransactionToCheck(bill.machineId)
+                    this.sendWSToMachine(bill?.machineId + "", res);
 
                     return resolve(bill); // Add return to stop callback execution
                 });
@@ -6919,16 +6920,19 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    confirmLaoQROrder(c: IMMoneyConfirm) {
-        return new Promise<any>((resolve, reject) => {
-            // console.log('C is :', c);
-            // console.log('=====>ConfirmLAOQR  is :', c);
+    confirmLaoQROrder(c: IMMoneyConfirm): Promise<{bill: IVendingMachineBill | null,transactionID: string | null}> {
+        return new Promise<{bill: IVendingMachineBill | null,transactionID: string | null}>((resolve, reject) => {
+            console.log('C is :', c);
+            console.log('=====>ConfirmLAOQR  is :', c);
 
 
             this.callBackConfirmLaoQR(c.trandID, c.bankname).then((r) => {
                 if (r) {
+                    console.log('=====>ConfirmLAOQR  is not null', r);
                     resolve({ bill: r, transactionID: c.tranid_client });
                 } else {
+                    console.log('=====>ConfirmLAOQR  is null', c);
+                    
                     resolve(null);
                 }
             })
