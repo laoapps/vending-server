@@ -1016,6 +1016,7 @@ export class Tab1Page implements OnDestroy {
         } else {
           console.log('No data from alive');
         }
+
       } catch (error) {
         Toast.show({ text: 'Error alive ' + JSON.stringify(error || '{}'), duration: 'long' })
       }
@@ -1396,7 +1397,7 @@ export class Tab1Page implements OnDestroy {
       await this.serial?.close();
       this.serial = null;
     }
-    Toast.show({ text: `Starting ADH814 ${this.baudRate} ${this.portName}  ${this.machineId.machineId} ${this.machineId.otp} ` });
+    // Toast.show({ text: `Starting ADH814 ${this.baudRate} ${this.portName}  ${this.machineId.machineId} ${this.machineId.otp} ` });
     console.log('Starting ADH814');
 
 
