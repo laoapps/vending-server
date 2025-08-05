@@ -44,6 +44,6 @@ export class UserDashboardPage implements OnInit {
   }
 
   togglePower(deviceId: number) {
-    this.apiService.controlDevice(deviceId, 'POWER TOGGLE').subscribe();
+    this.apiService.controlDevice(deviceId, 'TOGGLE').subscribe();
   }
 }

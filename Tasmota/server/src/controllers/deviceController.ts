@@ -74,8 +74,13 @@ export const controlDevice = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
+    console.log('controlDevice000');
     const input = controlDeviceSchema.parse(req.body);
+    console.log('controlDevice111', input);
+
     await DeviceService.controlDevice(user, input.deviceId, { command: input.command, relay: input.relay });
+
+    console.log('controlDevice222');
     res.json({ message: 'Command sent' });
   } catch (error) {
     if (error instanceof z.ZodError) {

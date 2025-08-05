@@ -7,16 +7,15 @@ import { createSchedulePackage, getSchedulePackages, applySchedulePackage } from
 const router = Router();
 
 const createSchedulePackageSchema = z.object({
-  deviceId: z.number(),
   name: z.string().min(1),
-  onDuration: z.number().min(1),
-  offDuration: z.number().min(1),
-  powerConsumption: z.number().optional(),
   price: z.number().optional(),
+  conditionType: z.string().min(1),
+  conditionValue: z.number().min(1),
 });
 
 const applySchedulePackageSchema = z.object({
   packageId: z.number(),
+  deviceId: z.number(),
 });
 
 router.post('/', authMiddleware, validate(createSchedulePackageSchema), createSchedulePackage);
