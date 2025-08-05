@@ -177,7 +177,7 @@ class ADH814Protocol {
 }
 
 async function testMotorWithConfig() {
-    const portName = '/dev/ttyS3';
+    const portName = '/dev/ttyS1';
     const address = 0x01;
 
     const rl = readline.createInterface({
