@@ -141,7 +141,7 @@ export class WsapiService {
               break;
 
             case 'waitingt':
-              console.log('Start waiting');
+              console.log('----->Start waiting');
               // this.waitingDelivery.next(data)
               break;
 

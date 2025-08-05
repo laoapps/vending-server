@@ -3645,6 +3645,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
                             redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                            this.sendWSToMachine(bill.machineId, resD);
                             return res.send(PrintSucceeded("reportBillNotPaid", resD, EMessage.succeeded, returnLog(req, res)));
                         });
                     } catch (error) {
@@ -6920,8 +6921,8 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    confirmLaoQROrder(c: IMMoneyConfirm): Promise<{bill: IVendingMachineBill | null,transactionID: string | null}> {
-        return new Promise<{bill: IVendingMachineBill | null,transactionID: string | null}>((resolve, reject) => {
+    confirmLaoQROrder(c: IMMoneyConfirm): Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }> {
+        return new Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }>((resolve, reject) => {
             console.log('C is :', c);
             console.log('=====>ConfirmLAOQR  is :', c);
 
@@ -6932,7 +6933,7 @@ export class InventoryZDM8 implements IBaseClass {
                     resolve({ bill: r, transactionID: c.tranid_client });
                 } else {
                     console.log('=====>ConfirmLAOQR  is null', c);
-                    
+
                     resolve(null);
                 }
             })
