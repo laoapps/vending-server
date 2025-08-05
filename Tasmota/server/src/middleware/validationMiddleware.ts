@@ -26,9 +26,14 @@ export const createDeviceSchema = z.object({
   zone: z.string().optional(),
 });
 
+// export const controlDeviceSchema = z.object({
+//   deviceId: z.number(),
+//   command: z.string().min(1),
+// });
 export const controlDeviceSchema = z.object({
   deviceId: z.number(),
   command: z.string().min(1),
+  relay: z.number().int().min(1).optional(),
 });
 
 export const assignDeviceSchema = z.object({
