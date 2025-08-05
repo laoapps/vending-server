@@ -137,8 +137,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
     try {
       if (this.serial) {
-        const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '1') || 1;
-        const param = { slot: position, dropSensor };
+        // const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '1') || 1;
+        const param = { slot: position, dropSensor: 1 };
         const device = localStorage.getItem('device') || 'VMC';
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
           this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
