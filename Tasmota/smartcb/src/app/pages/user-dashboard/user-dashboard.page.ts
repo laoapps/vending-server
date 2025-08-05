@@ -11,19 +11,33 @@ import { MqttClientService } from '../../services/mqttClient.service';
 export class UserDashboardPage implements OnInit {
   devices: any[] = [];
 
-  constructor(private apiService: ApiService, private mqttService: MqttClientService) {}
+  constructor(private apiService: ApiService, private mqttService: MqttClientService) { }
 
   ngOnInit() {
     this.apiService.getDevices().subscribe((devices) => {
       this.devices = devices;
       this.devices.forEach((device) => {
         this.mqttService.subscribeToDevice(device.tasmotaId).subscribe((message) => {
-          device.status = JSON.parse(message.payload.toString());
+          // console.log('message',message);
+
+          try {
+            device.status = JSON.parse(message.payload.toString());
+          } catch (error) {
+            device.status = {status:message?.payload?.toString()};
+          }
+
+
         });
         this.mqttService.subscribeToTelemetry(device.tasmotaId).subscribe((message) => {
-          const data = JSON.parse(message.payload.toString());
-          device.power = data?.ENERGY?.Power || 0;
-          device.energy = data?.ENERGY?.Total || 0;
+          // console.log('message2 payload',message?.payload?.toString())
+          try {
+            const data = JSON.parse(message.payload.toString());
+            device.power = data?.ENERGY?.Power || 0;
+            device.energy = data?.ENERGY?.Total || 0;
+          } catch (error) {
+            device.status = {status:message?.payload?.toString()};
+          }
+
         });
       });
     });
