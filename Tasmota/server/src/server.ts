@@ -59,7 +59,6 @@ async function recoverActiveOrders() {
         continue;
       }
 
-      // Re-apply energy consumption rule if needed
       if (orderData.conditionType === 'energy_consumption') {
         const device = await Device.findByPk(orderData.deviceId);
         if (device) {
@@ -95,18 +94,32 @@ async function startServer() {
             continue;
           }
 
+          const device = await Device.findByPk(orderData.deviceId);
+          if (!device) {
+            await redis.del(key);
+            await notifyStakeholders(order, 'Order terminated due to missing device.');
+            continue;
+          }
+
           if (orderData.conditionType === 'time_duration') {
             const elapsed = (Date.now() - orderData.startedTime) / (60 * 1000);
             if (elapsed >= orderData.conditionValue) {
-              const device = await Device.findByPk(orderData.deviceId);
-              if (device) {
-                await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
-                await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-              }
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
               order.dataValues.completedTime = new Date();
               await order.save();
               await redis.del(key);
               await notifyStakeholders(order, 'Order completed due to time duration limit.');
+            }
+          } else if (orderData.conditionType === 'energy_consumption') {
+            const energy = device.dataValues.energy || 0;
+            if (energy >= orderData.conditionValue) {
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+              order.dataValues.completedTime = new Date();
+              await order.save();
+              await redis.del(key);
+              await notifyStakeholders(order, 'Order completed due to energy consumption limit (server check).');
             }
           }
         }
