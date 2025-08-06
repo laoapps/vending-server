@@ -81,7 +81,7 @@ async function startServer() {
     await recoverActiveOrders();
     startDeviceMonitoring();
 
-    cron.schedule('*/10 * * * * *', async () => {
+    cron.schedule('*/5 * * * * *', async () => {
       try {
         const orderKeys = await redis.keys('activeOrder:*');
         for (const key of orderKeys) {

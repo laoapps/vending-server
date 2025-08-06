@@ -34,7 +34,7 @@ export const createOrder = async (req: Request, res: Response) => {
     } as any);
 
     const qr = await generateQR(order.dataValues.id);
-    await redis.setex(`qr:${order.dataValues.id}`, 5 * 60, order.dataValues.id.toString());
+    await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
     return res.json({ qr, data: { order } });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
@@ -81,7 +81,7 @@ export const payOrder = async (req: Request, res: Response) => {
   const data = req.body;
 
   try {
-    const orderId = await redis.get(transid);
+    const orderId = await redis.get(`qr:${transid}`);
     if (!orderId) {
       return res.status(403).json({ error: 'Transaction ID not found' });
     }
