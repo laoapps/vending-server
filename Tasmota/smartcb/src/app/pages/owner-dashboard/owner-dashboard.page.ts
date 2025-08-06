@@ -149,6 +149,8 @@ export class OwnerDashboardPage implements OnInit {
   }
 
   controlDeviceAction() {
+    console.log('sksksksksk',this.controlDevice.id);
+    
     if (this.controlDevice.id) {
       this.apiService.controlDevice(this.controlDevice.id, this.controlDevice.command, Number(this.controlDevice.relay)).subscribe(
         (response) => {
