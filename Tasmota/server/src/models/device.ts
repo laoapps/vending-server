@@ -2,8 +2,8 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 import { OwnerAttributes } from './owner';
 import { DeviceGroupAttributes } from './deviceGroup';
-import { UserDeviceAttributes } from './userDevice';
-import { ScheduleAttributes } from './schedule';
+
+
 import { ScheduleHistoryAttributes } from './scheduleHistory';
 
 export interface DeviceAttributes {
@@ -24,8 +24,8 @@ export interface DeviceAttributes {
 export interface DeviceAssociations {
   owner?: OwnerAttributes;
   deviceGroup?: DeviceGroupAttributes;
-  userDevices?: UserDeviceAttributes[];
-  schedules?: ScheduleAttributes[];
+
+
   scheduleHistories?: ScheduleHistoryAttributes[];
 }
 

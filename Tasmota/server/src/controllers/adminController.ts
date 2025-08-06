@@ -17,7 +17,6 @@ export const getAllData = async (req: Request, res: Response) => {
     const devices = await models.Device.findAll({
       include: [
         { model: models.Owner, as: 'owner' },
-        { model: models.UserDevice, as: 'userDevices' },
         { model: models.DeviceGroup, as: 'deviceGroup' },
       ],
     });
@@ -27,15 +26,15 @@ export const getAllData = async (req: Request, res: Response) => {
         { model: models.Owner, as: 'owner' },
       ],
     });
-    const schedules = await models.Schedule.findAll({
-      include: [{ model: models.Device, as: 'device' }],
-    });
-    // Fetch user devices with associated device information
-    const userDevices = await models.UserDevice.findAll({
-      include: [{ model: models.Device, as: 'device' }],
-    });
 
-    res.json({ owners, devices, groups, schedules, userDevices });
+    // Fetch user devices with associated device information
+    // const userDevices = await models.UserDevice.findAll({
+    //   include: [{ model: models.Device, as: 'device' }],
+    // });
+
+    res.json({ owners, devices, groups, 
+      // userDevices
+     });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch data' });
   }

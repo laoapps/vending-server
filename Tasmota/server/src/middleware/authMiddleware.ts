@@ -40,7 +40,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
               if (!phoneNumber) {
                 return res.status(400).json({ error: 'Phone number not found for this user' });
               }
-          await models.Admin.create({ uuid: validatedUuid, phoneNumber });
+          await models.Admin.create({ uuid: validatedUuid, phoneNumber } as any);
         }
         role = 'admin';
       }
