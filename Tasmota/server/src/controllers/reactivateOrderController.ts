@@ -41,6 +41,14 @@ export const reactivateOrder = async (req: Request, res: Response) => {
       data: { compensation: true, originalOrderId: orderId },
     } as any);
 
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    if (conditionType === 'energy_consumption') {
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
+      const rule = `ON Energy#Total>${compensationValue} DO Power${order.dataValues.relay || 1} OFF ENDON`;
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
+    }
+
     const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`;
     await publishMqttMessage(topic, 'ON');
 

@@ -1,21 +1,20 @@
-import app from './app'; // Adjust import as per your setup
+import app from './app';
 import sequelize from './config/database';
 import { Umzug, SequelizeStorage } from 'umzug';
 import cron from 'node-cron';
 import { Op } from 'sequelize';
 import { Order } from './models/order';
+import { Device } from './models/device';
 import WebSocket from 'ws';
 import { userClients, adminClients, ownerClients } from './services/wsService';
 import http from 'http';
 import { findRealDB } from './services/userManagerService';
-import { startDeviceMonitoring } from './controllers/monitorOrderController'; // Import monitoring
-import {Device} from './models/device';
+import { startDeviceMonitoring } from './controllers/monitorOrderController';
 import { publishMqttMessage } from './services/mqttService';
 import { notifyStakeholders } from './services/wsService';
-import redis from './config/redis'; // Adjust import as per your setup
+import redis from './config/redis';
 const PORT = process.env.PORT || 3000;
 
-// Initialize migrations with Umzug
 const umzug = new Umzug({
   migrations: {
     glob: 'migrations/*.js',
@@ -35,13 +34,10 @@ const umzug = new Umzug({
 
 async function startServer() {
   try {
-    // Start device monitoring
     startDeviceMonitoring();
 
-    // Every 10 seconds for order monitoring
     cron.schedule('*/10 * * * * *', async () => {
       try {
-        // Check active orders for time_duration limits
         const orderKeys = await redis.keys('activeOrder:*');
         for (const key of orderKeys) {
           const orderData = JSON.parse((await redis.get(key)) || '{}');
@@ -54,11 +50,12 @@ async function startServer() {
           }
 
           if (orderData.conditionType === 'time_duration') {
-            const elapsed = (Date.now() - orderData.startedTime) / (60 * 1000); // Minutes
+            const elapsed = (Date.now() - orderData.startedTime) / (60 * 1000);
             if (elapsed >= orderData.conditionValue) {
               const device = await Device.findByPk(orderData.deviceId);
               if (device) {
                 await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
+                await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
               }
               order.dataValues.completedTime = new Date();
               await order.save();
@@ -68,7 +65,6 @@ async function startServer() {
           }
         }
 
-        // Delete unpaid orders older than 1 hour
         const twentyFourHoursAgo = new Date(Date.now() - 60 * 60 * 1000);
         const deletedCount = await Order.destroy({
           where: {
@@ -85,15 +81,12 @@ async function startServer() {
       }
     });
 
-    // Authenticate database connection
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    // Run migrations
     await umzug.up();
     console.log('Database migrations applied successfully.');
 
-    // Start server
     const server = http.createServer(app);
     const wss = new WebSocket.Server({ server });
 
