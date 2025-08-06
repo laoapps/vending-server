@@ -15,22 +15,22 @@ import { notifyStakeholders } from './services/wsService';
 import redis from './config/redis';
 const PORT = process.env.PORT || 3000;
 
-const umzug = new Umzug({
-  migrations: {
-    glob: 'migrations/*.js',
-    resolve: ({ name, path: migrationPath }) => {
-      const migration = require(migrationPath!);
-      return {
-        name,
-        up: async () => migration.up(sequelize.getQueryInterface(), sequelize.Sequelize),
-        down: async () => migration.down(sequelize.getQueryInterface(), sequelize.Sequelize),
-      };
-    },
-  },
-  context: sequelize.getQueryInterface(),
-  storage: new SequelizeStorage({ sequelize }),
-  logger: console,
-});
+// const umzug = new Umzug({
+//   migrations: {
+//     glob: 'migrations/*.js',
+//     resolve: ({ name, path: migrationPath }) => {
+//       const migration = require(migrationPath!);
+//       return {
+//         name,
+//         up: async () => migration.up(sequelize.getQueryInterface(), sequelize.Sequelize),
+//         down: async () => migration.down(sequelize.getQueryInterface(), sequelize.Sequelize),
+//       };
+//     },
+//   },
+//   context: sequelize.getQueryInterface(),
+//   storage: new SequelizeStorage({ sequelize }),
+//   logger: console,
+// });
 
 async function startServer() {
   try {
@@ -84,7 +84,7 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    await umzug.up();
+    // await umzug.up();
     console.log('Database migrations applied successfully.');
 
     const server = http.createServer(app);
