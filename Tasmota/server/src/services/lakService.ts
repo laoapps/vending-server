@@ -41,3 +41,16 @@ export function updateLAXUserBalance(data:any, token: string): Promise<any> {
     }
   });
 }
+export function generateQR(data:any):Promise<any>{
+  return new Promise<any>(async (resolve, reject) => {
+    try {
+      const res = await axios.post(process.env.LAABX_LAK_URL + 'laab/generateQR', data, { headers: { 'Content-Type': 'application/json' } });
+      console.log('generateQR', res.data);
+      if (res.data.status != 1) return reject({ errr: new Error(res.data) });
+      resolve(res.data.data);
+    } catch (error) {
+      console.log('generateQRError', error);
+      resolve(null)
+    }
+  });
+}

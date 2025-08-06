@@ -1,0 +1,15 @@
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+ion-label {
+  h2 {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  p {
+    color: var(--ion-text-color, #000);
+    margin: 4px 0;
+  }
+}

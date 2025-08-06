@@ -1,10 +1,8 @@
-
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { Sequelize, DataTypes, Model, BelongsToGetAssociationMixin } from 'sequelize';
 import { OwnerAttributes } from './owner';
 import { DeviceGroupAttributes } from './deviceGroup';
-import { UserDeviceAttributes } from './userDevice';
-import { ScheduleAttributes } from './schedule';
 import { ScheduleHistoryAttributes } from './scheduleHistory';
+import { Owner } from './owner'; // Import Owner model for association typing
 
 export interface DeviceAttributes {
   id: number;
@@ -20,17 +18,19 @@ export interface DeviceAttributes {
   updatedAt: Date;
 }
 
-// Extend the attributes to include associations
+// Update DeviceAssociations to use model types instead of attributes for better typing
 export interface DeviceAssociations {
-  owner?: OwnerAttributes;
-  deviceGroup?: DeviceGroupAttributes;
-  userDevices?: UserDeviceAttributes[];
-  schedules?: ScheduleAttributes[];
-  scheduleHistories?: ScheduleHistoryAttributes[];
+  owner?: Owner; // Use Owner model
+  deviceGroup?: DeviceGroupAttributes; // Keep as attributes if no changes needed, or update similarly
+  scheduleHistories?: ScheduleHistoryAttributes[]; // Keep as attributes, or update to array of models
 }
 
 export class Device extends Model<DeviceAttributes & DeviceAssociations> {
-  // No public class fields
+  // Declare association getter methods to satisfy TypeScript
+  declare getOwner: BelongsToGetAssociationMixin<Owner>;
+
+  // If needed, declare other association methods (e.g., for hasMany scheduleHistories)
+  // declare getScheduleHistories: HasManyGetAssociationsMixin<ScheduleHistory>;
 }
 
 export function initDeviceModel(sequelize: Sequelize) {

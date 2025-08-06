@@ -74,8 +74,13 @@ export const controlDevice = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   try {
+    console.log('controlDevice000');
     const input = controlDeviceSchema.parse(req.body);
+    console.log('controlDevice111', input);
+
     await DeviceService.controlDevice(user, input.deviceId, { command: input.command, relay: input.relay });
+
+    console.log('controlDevice222');
     res.json({ message: 'Command sent' });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -86,37 +91,3 @@ export const controlDevice = async (req: Request, res: Response) => {
   }
 };
 
-export const assignDeviceToUser = async (req: Request, res: Response) => {
-  const { deviceId, token } = req.body;
-  const user = res.locals.user;
-
-  try {
-    if (user.role !== 'owner') {
-      return res.status(403).json({ error: 'Only owners can assign devices' });
-    }
-
-    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
-    if (!owner) {
-      return res.status(403).json({ error: 'Owner not found' });
-    }
-
-    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.dataValues.id } });
-    if (!device) {
-      return res.status(404).json({ error: 'Device not found or not owned' });
-    }
-
-    const userUuid = await findRealDB(token);
-    if (!userUuid) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const userDevice = await models.UserDevice.create({
-      userUuid,
-      deviceId,
-    } as any);
-
-    res.json(userDevice);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to assign device' });
-  }
-};

@@ -38,7 +38,7 @@ export class DeviceService {
       return models.Device.findAll({
         include: [
           { model: models.Owner, as: 'owner' },
-          { model: models.UserDevice, as: 'userDevices' },
+
           { model: models.DeviceGroup, as: 'deviceGroup' },
         ],
       });
@@ -49,7 +49,7 @@ export class DeviceService {
       return models.Device.findAll({
         where: { ownerId: owner.dataValues.id },
         include: [
-          { model: models.UserDevice, as: 'userDevices' },
+
           { model: models.DeviceGroup, as: 'deviceGroup' },
         ],
       });
@@ -57,7 +57,7 @@ export class DeviceService {
       return models.Device.findAll({
         include: [
           {
-            model: models.UserDevice,
+
             as: 'userDevices',
             where: { userUuid: user.uuid },
           },
@@ -89,7 +89,7 @@ export class DeviceService {
     await device.destroy();
   }
 
-  static async controlDevice(user: User, deviceId: number, input: { command?: string; relay?: number }): Promise<void> {
+  static async controlDevice( deviceId: number, input: { command?: string; relay?: number }): Promise<void> {
     try {
       // Validate input
       const { command, relay } = controlDeviceSchema.parse(input);
@@ -97,24 +97,13 @@ export class DeviceService {
       const device: DeviceWithAssociations | null = await models.Device.findByPk(deviceId, {
         include: [
           { model: models.Owner, as: 'owner' },
-          { model: models.UserDevice, as: 'userDevices' },
+
         ],
       });
 
       if (!device) throw new Error('Device not found');
-      console.log(`Controlling device with ID: ${deviceId}, Command: ${command}, Relay: ${relay} by User: ${user.uuid}`);
+      console.log(`Controlling device with ID: ${deviceId}, Command: ${command}, Relay: ${relay} `);
 
-      const isOwner = device.owner?.uuid === user.uuid;
-      const isAssignedUser = device.userDevices?.some((ud) => ud.userUuid === user.uuid);
-      console.log(
-        `User UUID: ${user.uuid}, Device Owner UUID: ${device.owner?.uuid}, Assigned Users: ${
-          device.userDevices?.map((ud) => ud.userUuid).join(', ') || 'none'
-        }`
-      );
-
-      if (!isOwner && !isAssignedUser) {
-        throw new Error('Unauthorized');
-      }
 
       const mqttTopic = `cmnd/${device.dataValues.tasmotaId}/POWER${relay === 1 ? '' : relay}`;
       console.log(`Sending MQTT command to ${mqttTopic} with payload: ${command}`);
@@ -125,21 +114,4 @@ export class DeviceService {
     }
   }
 
-  static async assignDeviceToUser(ownerUuid: string, deviceId: number, userPhoneNumber: string): Promise<any> {
-    const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
-    if (!owner) throw new Error('Owner not found');
-
-    const device = await models.Device.findOne({ where: { id: deviceId, ownerId: owner.dataValues.id } });
-    if (!device) throw new Error('Device not found or not owned');
-
-    const userData = await findUuidByPhoneNumberOnUserManager(userPhoneNumber);
-    if (!userData) throw new Error('User not found');
-
-    const userDevice = await models.UserDevice.create({
-      userUuid: userData.uuid,
-      deviceId,
-    }as any);
-
-    return userDevice;
-  }
 }
