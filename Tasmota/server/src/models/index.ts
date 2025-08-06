@@ -9,6 +9,7 @@ import { initSchedulePackageModel, SchedulePackage } from './schedulePackage';
 import { initUnregisteredDeviceModel, UnregisteredDevice } from './unregisteredDevice';
 import { initScheduleHistoryModel, ScheduleHistory } from './scheduleHistory';
 import { initOrderModel, Order } from './order';
+import { initNotificationModel } from './notification';
 
 const models = {
   Owner: initOwnerModel(sequelize),
@@ -21,6 +22,7 @@ const models = {
   UnregisteredDevice: initUnregisteredDeviceModel(sequelize),
   ScheduleHistory: initScheduleHistoryModel(sequelize),
   Order:initOrderModel(sequelize),
+  Notification: initNotificationModel(sequelize),
 };
 
 // Define relationships

@@ -1,16 +1,12 @@
 import { Request, Response } from 'express';
-import { DeviceService } from '../services/deviceService';
-import { findRealDB } from '../services/userManagerService';
-import models from '../models';
-import { z } from 'zod';
 import { SchedulePackage } from '../models/schedulePackage';
 import { Device } from '../models/device';
 import { Order } from '../models/order';
 import { Op } from 'sequelize';
 import redis from '../config/redis';
-import { controlDeviceSchema } from '../middleware/validationMiddleware';
-
-// Validation schema for control device
+import { publishMqttMessage } from '../services/mqttService';
+import { notifyStakeholders } from '../services/wsService';
+import {generateQR} from '../services/lakService';
 
 export const createOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
@@ -18,122 +14,142 @@ export const createOrder = async (req: Request, res: Response) => {
 
   try {
     if (user.role !== 'user') {
-      return res.status(403).json({ error: 'Only user can create order' });
+      return res.status(403).json({ error: 'Only users can create orders' });
     }
-    const schedulePackage = await SchedulePackage.findByPk(packageId || -1);
+    const schedulePackage = await SchedulePackage.findByPk(packageId);
     if (!schedulePackage) {
-      return res.status(403).json({ error: 'Package not found' });
+      return res.status(404).json({ error: 'Package not found' });
     }
-    const device = await Device.findByPk(deviceId || -1);
+    const device = await Device.findByPk(deviceId);
     if (!device) {
-      return res.status(403).json({ error: 'Device not found' });
+      return res.status(404).json({ error: 'Device not found' });
     }
 
-    const order = await Order.create({ deviceId, packageId, userUuid: user.uuid, relay } as any);
-    // genearte QR and show QR
-    const qr = '';
+    const order = await Order.create({
+      uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      deviceId,
+      packageId,
+      userUuid: user.uuid,
+      relay,
+    }as any);
 
-    redis.setex(`${qr}`, 60 * 5, order.dataValues.id);
+    const qr = await generateQR(order.dataValues.id);
+    await redis.setex(`qr:${order.dataValues.id}`, 5 * 60, order.dataValues.id.toString());
     return res.json({ qr, data: { order } });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to create Orders' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
   }
 };
 
 export const getOrders = async (req: Request, res: Response) => {
   const user = res.locals.user;
-  const offset = req.body.offset || 0;
-  const limit = req.body.limit < 5 ? 10 : req.body.limit
+  const offset = Number(req.body.offset) || 0;
+  const limit = Math.max(Number(req.body.limit), 5) || 10;
+
   try {
     const orders = await Order.findAll({
-      where: { userUuid: user.uuid }, limit, offset,
-      order: [['createdAt', 'DESC']]
+      where: { userUuid: user.uuid },
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
     });
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to fetch Orders' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch orders' });
   }
 };
+
 export const getOrderById = async (req: Request, res: Response) => {
   const user = res.locals.user;
-  const id = req.params.id || -1;
+  const id = Number(req.params.id) || -1;
+
   try {
     const order = await Order.findOne({
-      where: { userUuid: user.uuid,id }
+      where: { userUuid: user.uuid, id },
     });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
     res.json(order);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to fetch Orders' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch order' });
   }
 };
-
-
-
-// pay, callback from payment gateway
 
 export const payOrder = async (req: Request, res: Response) => {
-
   const { transid } = req.body;
   const data = req.body;
-  const orderId = redis.get(transid);
+
   try {
+    const orderId = await redis.get(transid);
     if (!orderId) {
-      return res.status(403).json({ error: 'tranid Id Not found' });
+      return res.status(403).json({ error: 'Transaction ID not found' });
     }
+
     const order = await Order.findByPk(Number(orderId));
     if (!order) {
-      return res.status(403).json({ error: 'order Id Not found' });
+      return res.status(403).json({ error: 'Order not found' });
     }
-    order.set('paidTime', new Date());
-    order.set('data', data);
 
-    // paid and start immediately
-    order.set('startedTime', new Date());
-    const s = await order.save();
+    const schedulePackage = await SchedulePackage.findByPk(order.dataValues.packageId);
+    if (!schedulePackage) {
+      return res.status(403).json({ error: 'Package not found' });
+    }
 
-    /// start the machine
+    const device = await Device.findByPk(order.dataValues.deviceId);
+    if (!device) {
+      return res.status(403).json({ error: 'Device not found' });
+    }
 
+    order.dataValues.paidTime = new Date();
+    order.dataValues.data = data;
+    order.dataValues.startedTime = new Date();
+    await order.save();
 
-    // start here
-    await DeviceService.controlDevice(s.dataValues.deviceId, { command: 'ON', relay: s.dataValues.relay || 1 });
+    const command = 'ON';
+    const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`;
+    await publishMqttMessage(topic, command);
 
-    console.log('controlDevice222');
-    res.json({ message: 'Command sent' });
+    const orderDetails = {
+      orderId: order.dataValues.id,
+      deviceId: order.dataValues.deviceId,
+      tasmotaId: device.dataValues.tasmotaId,
+      packageId: order.dataValues.packageId,
+      conditionType: schedulePackage.dataValues.conditionType,
+      conditionValue: schedulePackage.dataValues.conditionValue,
+      startedTime: order.dataValues.startedTime.getTime(),
+      relay: order.dataValues.relay || 1,
+    };
+    await redis.set(`activeOrder:${order.dataValues.id}`, JSON.stringify(orderDetails), 'EX', 24 * 60 * 60);
 
-    res.json(s);
+    res.json({ message: 'Command sent', order });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to update device' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to process order' });
   }
 };
 
-
-// complete from MQTT only
-// MQTT server check if 
-// device has been completed then send here to update database 
-// MQTT server activate the device to be completed if the device still running
 export const completeOrder = async (req: Request, res: Response) => {
   const { deviceId } = req.body;
 
   try {
     const order = await Order.findOne({
       where: {
-        [Op.and]: [{
-          deviceId,
-          startedTime: { [Op.ne]: '', },
-          completedTime: { [Op.eq]: '', },
-        }]
-      }
-    })
+        [Op.and]: [
+          { deviceId },
+          { startedTime: { [Op.ne]: '' } },
+          { completedTime: { [Op.eq]: '' } },
+        ],
+      },
+    });
     if (!order) {
-      return res.status(403).json({ error: 'order Id Not found' });
+      return res.status(404).json({ error: 'Order not found' });
     }
-    order.set('completedTime',new Date());
-    const s = order?.save();
-    res.json(s);
+    order.dataValues.completedTime = new Date();
+    await order.save();
+    await redis.del(`activeOrder:${order.dataValues.id}`);
+    await notifyStakeholders(order, 'Order completed via MQTT');
+    res.json(order);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to update device' });
+    res.status(500).json({ error: (error as Error).message || 'Failed to complete order' });
   }
 };
-
-
-

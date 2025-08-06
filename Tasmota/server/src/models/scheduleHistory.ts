@@ -1,5 +1,4 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { Schedule } from './schedule';
 import { Device } from './device';
 
 export interface ScheduleHistoryAttributes {
