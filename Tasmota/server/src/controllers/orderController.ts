@@ -6,7 +6,7 @@ import { Op } from 'sequelize';
 import redis from '../config/redis';
 import { publishMqttMessage } from '../services/mqttService';
 import { notifyStakeholders } from '../services/wsService';
-import {generateQR} from '../services/lakService';
+import { generateQR } from '../services/lakService';
 
 export const createOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
@@ -31,7 +31,7 @@ export const createOrder = async (req: Request, res: Response) => {
       packageId,
       userUuid: user.uuid,
       relay,
-    }as any);
+    } as any);
 
     const qr = await generateQR(order.dataValues.id);
     await redis.setex(`qr:${order.dataValues.id}`, 5 * 60, order.dataValues.id.toString());
@@ -101,10 +101,25 @@ export const payOrder = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Device not found' });
     }
 
-    order.dataValues.paidTime = new Date();
-    order.dataValues.data = data;
-    order.dataValues.startedTime = new Date();
+    order.set('paidTime', new Date());
+    order.set('data', data);
+    order.set('startedTime', new Date());
     await order.save();
+
+    // Clear existing rule and timer
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+
+    if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
+      const rule = `ON Energy#Total>${schedulePackage.dataValues.conditionValue} DO Power${order.dataValues.relay || 1} OFF ENDON`;
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
+    } else if (schedulePackage.dataValues.conditionType === 'time_duration') {
+      const minutes = Math.ceil(schedulePackage.dataValues.conditionValue);
+      const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, timer);
+    }
 
     const command = 'ON';
     const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`;
@@ -144,7 +159,12 @@ export const completeOrder = async (req: Request, res: Response) => {
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
-    order.dataValues.completedTime = new Date();
+    const device = await Device.findByPk(order.dataValues.deviceId);
+    if (device) {
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+    }
+    order.set('completedTime', new Date());
     await order.save();
     await redis.del(`activeOrder:${order.dataValues.id}`);
     await notifyStakeholders(order, 'Order completed via MQTT');

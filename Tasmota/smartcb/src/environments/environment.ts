@@ -1,6 +1,8 @@
 export const environment = {
   production: false,
   apiUrl: 'https://smartcb-api.laoapps.com/api',
+  wsUrl: 'wss://smartcb-api.laoapps.com',
+
   mqtt: {
     hostname: 'smartcb-api.laoapps.com',
     port: 443,

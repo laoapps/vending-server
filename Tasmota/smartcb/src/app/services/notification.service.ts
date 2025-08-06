@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { WebSocket } from 'ws';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Capacitor } from '@capacitor/core';
+import { environment } from '../../environments/environment';
 
 export interface Notification {
   message: string;
@@ -18,8 +17,8 @@ export interface Notification {
 export class NotificationService {
   private notificationSubject = new BehaviorSubject<Notification[]>([]);
   public notifications$ = this.notificationSubject.asObservable();
-  private wsUrl = 'wss://your-server:31884'; // Replace with your server URL
-  private socket: any = null;
+  private wsUrl = environment.wsUrl; // e.g., 'wss://tasmota-api.laoapps.com:31884'
+  private socket: WebSocket | null = null;
 
   constructor() {}
 
@@ -27,12 +26,16 @@ export class NotificationService {
     if (this.socket) {
       await this.disconnect();
     }
-    const ws = new WebSocket(`${this.wsUrl}/ws?type=user&token=${token}&uuid=${userUuid}`);
+
     try {
       const url = `${this.wsUrl}/ws?type=user&token=${token}&uuid=${userUuid}`;
-      this.socket = new  WebSocket(url);
+      this.socket = new WebSocket(url);
 
-      await this.socket .addListener('message', (event: any) => {
+      this.socket.onopen = () => {
+        console.log('WebSocket connected for user:', userUuid);
+      };
+
+      this.socket.onmessage = (event) => {
         try {
           const notification: Notification = JSON.parse(event.data);
           const currentNotifications = this.notificationSubject.getValue();
@@ -40,34 +43,31 @@ export class NotificationService {
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
         }
-      });
+      };
 
-      await this.socket .addListener('close', () => {
+      this.socket.onclose = () => {
         console.log('WebSocket disconnected');
         this.socket = null;
-      });
+        this.reconnect(userUuid, token);
+      };
 
-      await this.socket .addListener('error', (error: any) => {
+      this.socket.onerror = (error) => {
         console.error('WebSocket error:', error);
         this.reconnect(userUuid, token);
-      });
-
-      console.log('WebSocket connected for user:', userUuid);
+      };
     } catch (error) {
       console.error('WebSocket connection failed:', error);
       this.reconnect(userUuid, token);
     }
   }
 
-  private async reconnect(userUuid: string, token: string): Promise<void> {
-    if (Capacitor.isNativePlatform()) {
-      setTimeout(() => this.connect(userUuid, token), 5000); // Retry after 5 seconds
-    }
+  private reconnect(userUuid: string, token: string): void {
+    setTimeout(() => this.connect(userUuid, token), 5000);
   }
 
   async disconnect(): Promise<void> {
     if (this.socket) {
-      await this.socket .disconnect();
+      this.socket.close();
       this.socket = null;
     }
   }
