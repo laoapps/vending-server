@@ -101,6 +101,7 @@ import {
     machineCashoutMMoneyEntity,
     machineClientIDEntity,
     machineIDEntity,
+    ProductImageEntity,
     stockEntity,
     subadminEntity,
     vendingMachineSaleReportEntity,
@@ -137,6 +138,7 @@ import { channel } from "diagnostics_channel";
 import { LogActivity } from "../entities/logactivity.entity";
 import { checkGenerateCount } from "../services/laoqr.service";
 import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
+import { IProductImage } from "../models/sys.model";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -1728,6 +1730,51 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+
+            router.post(
+                this.path + "/addProductImageSystem",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        try {
+                            const ownerUuid = res.locals["ownerUuid"] || "";
+                            const sEnt = StockFactory(
+                                EEntity.product + "_" + ownerUuid,
+                                dbConnection
+                            );
+                            // await sEnt.sync();
+                            const o = req.body.data as IProductImage;
+                            if (!o.imageURL || !o.name || !o.price)
+                                return res.send(
+                                    PrintError("addProduct", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
+                                );
+                            ProductImageEntity
+                                .create(o)
+                                .then((r) => {
+                                    res.send(PrintSucceeded("addProduct", r, EMessage.succeeded, returnLog(req, res)));
+                                })
+                                .catch((e) => {
+                                    console.log("error add product", e);
+
+                                    res.send(PrintError("addProduct", e, EMessage.error, returnLog(req, res, true)));
+                                });
+                        } catch (error) {
+                            console.log(error);
+                            res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/disableProduct",
                 this.checkSuperAdmin,

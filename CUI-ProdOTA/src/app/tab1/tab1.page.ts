@@ -1137,14 +1137,14 @@ export class Tab1Page implements OnDestroy {
   public _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        // console.log('CHECK LAOQR SERVER');
+        console.log('CHECK LAOQR SERVER');
 
         const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
 
         if (run.status == 1) {
-          // console.log('=====> LAOQR CHECK :', run.message['data']['bill']);
+          console.log('=====> LAOQR CHECK :', run.message['data']['bill']);
 
-          // await this.apiService.waitingDelivery(run.message['data']['bill'], this.serial);
+          await this.apiService.waitingDelivery(run.message['data']['bill'], this.serial);
           resolve(IENMessage.success);
 
         } else {

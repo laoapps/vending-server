@@ -533,7 +533,7 @@ export class ApiService {
 
     // fix der
     this.wsapi.waitingDelivery.subscribe((r) => {
-      console.log('----->WAITING FOR DELIVERY :', r);
+      // console.log('WAITING FOR DELIVERY :', r);
 
       // if (r) {
       //   this.dismissModal();
@@ -560,22 +560,18 @@ export class ApiService {
       //   });
       //   // this.showModal(RemainingbillsPage, { r });
       // }
-
-
-
-
-      // this.waitingDelivery(r?.['data']['bill'], this.serialPort).then((r) => {
-      //   console.log('waitingDelivery result:', r);
-      //   if (r === EMessage.succeeded) {
-      //     this.toast.create({ message: 'Delivery successful ' + JSON.stringify(r || {}), duration: 2000 }).then((r) => {
-      //       r.present();
-      //     });
-      //   } else {
-      //     this.toast.create({ message: 'Delivery failed ' + JSON.stringify(r || {}), duration: 2000 }).then((r) => {
-      //       r.present();
-      //     });
-      //   }
-      // });
+      this.waitingDelivery(r, this.serialPort).then((r) => {
+        console.log('waitingDelivery result:', r);
+        if (r === EMessage.succeeded) {
+          this.toast.create({ message: 'Delivery successful ' + JSON.stringify(r || {}), duration: 2000 }).then((r) => {
+            r.present();
+          });
+        } else {
+          this.toast.create({ message: 'Delivery failed ' + JSON.stringify(r || {}), duration: 2000 }).then((r) => {
+            r.present();
+          });
+        }
+      });
     });
 
     // this.initLocalHowToVideoPlayList();

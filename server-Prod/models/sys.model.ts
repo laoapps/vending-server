@@ -15,3 +15,11 @@ export interface ILogsTemp {
     mstatus: any;
     description: any;
 }
+
+
+export interface IProductImage extends IBase {
+    imageURL: string;
+    name: string;
+    price: number;
+    description: any;
+}

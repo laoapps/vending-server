@@ -2388,7 +2388,8 @@ export enum EEntity {
     droplogactivity = "droplogactivity",
     bundle = "bundle",
     Clientlog = "Clientlog",
-    LogsTemp = "LogsTemp"
+    LogsTemp = "LogsTemp",
+    ProductImage = "ProductImage"
 }
 
 export interface ISaveMachineSaleReport {

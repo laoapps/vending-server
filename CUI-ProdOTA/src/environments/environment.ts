@@ -21,7 +21,7 @@ export const environment = {
   vending_server: 'https://vending-service-api5.laoapps.com',
   filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
-  versionId: '1.0.46'
+  versionId: '1.0.48'
 };
 
 /*

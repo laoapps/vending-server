@@ -25,6 +25,7 @@ import { DropLogActivityFactory, DropLogActivityStatic } from "./droplogactivity
 import { BundleFactory, BundleStatic } from "./appupdate.entity";
 import { ClientlogFactory, ClientlogStatic } from "./clientlog.entity";
 import { LogsTempFactory, LogsTempStatic } from "./logstemp.entity";
+import { ProductImageFactory, ProductImageStatic } from "./productimage.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -47,6 +48,8 @@ export let doorPaymentEntity: DoorPaymentStatic;
 export let vendingVersionEntity: VendingVersionStatic;
 export let ClientlogEntity: ClientlogStatic;
 export let LogsTempEntity: LogsTempStatic;
+
+export let ProductImageEntity: ProductImageStatic;
 
 
 // LAAB
@@ -150,6 +153,9 @@ export const initDB = async () => {
 
     LogsTempEntity = LogsTempFactory(EEntity.LogsTemp, dbConnection);
     LogsTempEntity ? await LogsTempEntity.sync() : console.log('==========> LogsTempEntity is not initialized');
+
+    ProductImageEntity = ProductImageFactory(EEntity.ProductImage, dbConnection);
+    ProductImageEntity ? await ProductImageEntity.sync() : console.log('==========> ProductImageEntity is not initialized');
 
 
 }
