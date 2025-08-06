@@ -65,7 +65,7 @@ async function recoverActiveOrders() {
         if (device) {
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
-          const rule = `ON Energy#Total>${orderData.dataValues.conditionValue} DO Power${orderData.relay || 1} OFF ENDON`;
+          const rule = `ON Energy#Total>${orderData.conditionValue} DO Power${orderData.relay || 1} OFF ENDON`;
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
         }
@@ -130,7 +130,7 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    await umzug.up();
+    // await umzug.up();
     console.log('Database migrations applied successfully.');
 
     const server = http.createServer(app);
@@ -171,7 +171,7 @@ async function startServer() {
           if (!ownerClients.has(ownerId)) ownerClients.set(ownerId, new Set());
           ownerClients.get(ownerId)?.add({ WebSocket: ws, uuid: authenticatedId });
           ws.on('close', () => {
-            userClients.get(ownerId+'')?.delete({ WebSocket: ws, uuid: authenticatedId });
+            ownerClients.get(ownerId)?.delete({ WebSocket: ws, uuid: authenticatedId });
             if (ownerClients.get(ownerId)?.size === 0) ownerClients.delete(ownerId);
           });
         } else {
