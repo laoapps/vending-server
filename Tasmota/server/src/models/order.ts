@@ -58,6 +58,7 @@ export function initOrderModel(sequelize: Sequelize) {
       sequelize,
       modelName: 'Order',
       tableName: 'orders',
+      freezeTableName: true
     }
   );
   return Order;

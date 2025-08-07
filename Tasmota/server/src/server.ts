@@ -143,6 +143,10 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
+    // ✅ Sync all models after connection
+    await sequelize.sync({ alter: true }); // or { force: true } for dev reset
+    console.log('✅ All models synced to the database.');
+
     // await umzug.up();
     console.log('Database migrations applied successfully.');
 
