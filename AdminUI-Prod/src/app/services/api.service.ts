@@ -207,6 +207,51 @@ export class ApiService {
         return result.role === 'cancel' ? null : result.data?.values ?? null;
     }
 
+
+    public async presentAddProductDialog(name?: string, price?: string): Promise<{ name: string; price: string } | null> {
+        const alert = await this.alert.create({
+            header: 'ป้อนข้อมูล',
+            inputs: [
+                {
+                    name: 'name',
+                    type: 'text',
+                    placeholder: 'ຊື່ສິນຄ້າ',
+                    value: name
+                },
+                {
+                    name: 'price',
+                    type: 'number',
+                    placeholder: 'ລາຄາ',
+                    value: price
+                }
+            ],
+            buttons: [
+                {
+                    text: 'ຍົກເລີກ',
+                    role: 'cancel',
+                },
+                {
+                    text: 'ຕົກລົງ',
+                    handler: (data) => {
+                        if (data.name && data.price) {
+                            return data; // ✅ ส่งข้อมูลกลับ
+                        } else {
+                            // ❌ ไม่กรอกให้แสดงข้อความ
+                            alert.message = 'ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ';
+                            return false;
+                        }
+
+                    }
+                }
+            ]
+        });
+
+        await alert.present();
+
+        const result = await alert.onDidDismiss();
+        return result.role === 'cancel' ? null : result.data?.values ?? null;
+    }
+
     public alertConfirm(text: string) {
         const alert = Swal.fire({
             icon: 'question',
@@ -434,6 +479,12 @@ export class ApiService {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');
         return this.http.post<IResModel>(this.url + '/listProduct?isActive=' + isActive, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
+    }
+    listProductImages(isActive: string = 'all') {
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/listProductImages?isActive=' + isActive, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     disableProduct(isActive: boolean, id: number) {
         const token = localStorage.getItem('lva_token');
