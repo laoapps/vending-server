@@ -1912,6 +1912,38 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+
+            router.post(
+                this.path + "/listProductImages",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const isActive = req.query['isActive'];
+                        let actives = [];
+                        if (isActive == 'all') actives.push(...[true, false]);
+                        else actives.push(...isActive == 'yes' ? [true] : [false]);
+                        // const ownerUuid = res.locals["ownerUuid"] || "";
+                        ProductImageEntity
+                            .findAll({ where: { isActive: { [Op.in]: actives } } })
+                            .then((r) => {
+                                res.send(PrintSucceeded("listProductImages", r, EMessage.succeeded, returnLog(req, res)));
+                            })
+                            .catch((e) => {
+                                console.log("error listProductImages", e);
+
+                                res.send(PrintError("listProductImages", e, EMessage.error, returnLog(req, res, true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listProductImages", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/cloneSale",
                 this.checkSuperAdmin,

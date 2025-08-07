@@ -10,6 +10,7 @@ import { AdvertisementPage } from '../superadmin/advertisement/advertisement.pag
 import { FindMyEpinPage } from '../find-my-epin/find-my-epin.page';
 import { VersionControlPage } from '../version-control/version-control.page';
 import { MymachinePage } from '../machine/mymachine/mymachine.page';
+import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
 
 @Component({
   selector: 'app-tabs',
@@ -70,6 +71,9 @@ export class TabsPage implements OnInit {
         break;
       case 8:
         this.apiService.showModal(VersionControlPage, {}).then(r => { r?.present() });
+        break;
+      case 9:
+        this.apiService.showModal(ImagesproductPage, {}).then(r => { r?.present() });
         break;
 
       default:

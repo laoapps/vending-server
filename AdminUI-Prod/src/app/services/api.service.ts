@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IMachineClientID, IMachineStatus, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IMachineClientID, IMachineStatus, IProductImage, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
@@ -467,6 +467,16 @@ export class ApiService {
         const secret = localStorage.getItem('secretLocal');
         if (!o.name || !o.price) { alert('Body is empty'); return null; }
         return this.http.post<IResModel>(this.url + '/addProduct', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
+    }
+
+    addProductImages(o: IProductImage) {
+        console.log(o);
+
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        if (!o.name || !o.price) { alert('Body is empty'); return null; }
+        return this.http.post<IResModel>(this.url + '/addProductImageSystem', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     readMachineSaleForAdmin(data: any) {
         return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin', data, { headers: this.headerBase() });
