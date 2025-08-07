@@ -8,6 +8,74 @@ import { publishMqttMessage } from '../services/mqttService';
 import { notifyStakeholders } from '../services/wsService';
 import { generateQR } from '../services/lakService';
 
+export const testOrder = async (req: Request, res: Response) => {
+  const { packageId, deviceId, relay = 1 } = req.body;
+  const user = res.locals.user;
+  try {
+    if (user.role !== 'user') {
+      return res.status(403).json({ error: 'Only users can create orders' });
+    }
+    const schedulePackage = await SchedulePackage.findByPk(packageId);
+    if (!schedulePackage) {
+      return res.status(404).json({ error: 'Package not found' });
+    }
+    const device = await Device.findByPk(deviceId);
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    const order = await Order.create({
+      uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      deviceId,
+      packageId,
+      userUuid: user.uuid,
+      relay,
+    } as any);
+
+    order.set('paidTime', new Date());
+    // order.set('data', data);
+    order.set('startedTime', new Date());
+    await order.save();
+
+    // Clear existing rule and timer
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+
+    if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
+      const rule = `ON Energy#Total>${schedulePackage.dataValues.conditionValue} DO Power${order.dataValues.relay || 1} OFF ENDON`;
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
+    } else if (schedulePackage.dataValues.conditionType === 'time_duration') {
+      const minutes = Math.ceil(schedulePackage.dataValues.conditionValue);
+      const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
+      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, timer);
+    }
+
+    const command = 'ON';
+    const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`;
+    await publishMqttMessage(topic, command);
+
+    const orderDetails = {
+      orderId: order.dataValues.id,
+      deviceId: order.dataValues.deviceId,
+      tasmotaId: device.dataValues.tasmotaId,
+      packageId: order.dataValues.packageId,
+      conditionType: schedulePackage.dataValues.conditionType,
+      conditionValue: schedulePackage.dataValues.conditionValue,
+      startedTime: order.dataValues.startedTime.getTime(),
+      relay: order.dataValues.relay || 1,
+    };
+    await redis.set(`activeOrder:${order.dataValues.id}`, JSON.stringify(orderDetails), 'EX', 24 * 60 * 60);
+
+    res.json({ message: 'Command sent', order });
+
+    return res.json({ qr: '', data: { order } });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
+  }
+};
+
 export const createOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
