@@ -11,7 +11,8 @@
             <p>Price: {{ pkg.price }} LAK</p>
             <p>Condition: {{ pkg.conditionType === 'time_duration' ? pkg.conditionValue + ' hours' : pkg.conditionValue + ' kWh' }}</p>
           </ion-label>
-          <ion-select placeholder="Select Device" (ionChange)="applySchedulePackage($event.detail.value, pkg.id)">
+          <!-- <ion-select placeholder="Select Device" (ionChange)="applySchedulePackage($event.detail.value, pkg.id)"> -->
+          <ion-select placeholder="Select Device" >
             <ion-select-option *ngFor="let device of devices" [value]="device.id">{{ device.name }}</ion-select-option>
           </ion-select>
         </ion-item>

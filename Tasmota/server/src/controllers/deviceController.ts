@@ -12,14 +12,14 @@ const controlDeviceSchema = z.object({
 });
 
 export const createDevice = async (req: Request, res: Response) => {
-  const { name, tasmotaId, zone } = req.body;
+  const { name, tasmotaId, zone, groupId } = req.body;
   const user = res.locals.user;
 
   try {
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }
-    const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone);
+    const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone, groupId);
     await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {

@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from 'src/environments/environment.prod';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +10,7 @@ import { environment } from '../../environments/environment';
 export class ApiService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   registerOwner(token: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/register-owner`, { token });
@@ -20,8 +20,8 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/auth/role`, this.getAuthHeaders());
   }
 
-  createDevice(name: string, tasmotaId: string, zone?: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/devices`, { name, tasmotaId, zone }, this.getAuthHeaders());
+  createDevice(name: string, tasmotaId: string, zone?: string, groupId?: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices`, { name, tasmotaId, zone, groupId }, this.getAuthHeaders());
   }
 
   getDevices(): Observable<any> {
@@ -64,9 +64,32 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/groups/assign`, { groupId, deviceId }, this.getAuthHeaders());
   }
 
-  createSchedulePackage(name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/schedule-packages`, { name, durationMinutes, powerConsumptionWatts, price }, this.getAuthHeaders());
+  createSchedule(deviceId: number, type: string, cron?: string, command?: string, conditionType?: string, conditionValue?: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedules`, { deviceId, type, cron, command, conditionType, conditionValue }, this.getAuthHeaders());
   }
+
+  getSchedules(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/schedules`, this.getAuthHeaders());
+  }
+
+  updateSchedule(id: number, type: string, cron?: string, command?: string, conditionType?: string, conditionValue?: number, active?: boolean): Observable<any> {
+    return this.http.put(`${this.apiUrl}/schedules/${id}`, { type, cron, command, conditionType, conditionValue, active }, this.getAuthHeaders());
+  }
+
+  deleteSchedule(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/schedules/${id}`, this.getAuthHeaders());
+  }
+
+  applySchedulePackage(deviceId: number, packageId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedule-packages/apply-package`, { deviceId, packageId }, this.getAuthHeaders());
+  }
+
+  createSchedulePackage(name: string, price: number, conditionType: string, conditionValue: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedule-packages`, { name, price, conditionType, conditionValue }, this.getAuthHeaders());
+  }
+  // createSchedulePackage(name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/schedule-packages`, { name, durationMinutes, powerConsumptionWatts, price }, this.getAuthHeaders());
+  // }
 
   getSchedulePackages(): Observable<any> {
     return this.http.get(`${this.apiUrl}/schedule-packages`, this.getAuthHeaders());

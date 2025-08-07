@@ -90,6 +90,9 @@
           <ion-button fill="clear" slot="end" (click)="setControlDevice(device.id)">
             ⚙️ Control
           </ion-button>
+          <ion-button fill="clear" slot="end" (click)="deleteDevice(device.id)">
+            🗑️ RM
+          </ion-button>
         </ion-item>
 
         <!-- ⚙️ Control Selected Device -->
@@ -129,6 +132,13 @@
         <ion-item>
           <ion-label position="floating">Zone</ion-label>
           <ion-input [(ngModel)]="newDevice.zone"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Group</ion-label>
+          <ion-select [(ngModel)]="newDevice.groupId">
+            <ion-select-option *ngFor="let group of groups" [value]="group.id">{{ group.name }}</ion-select-option>
+          </ion-select>
         </ion-item>
         <ion-button expand="block" color="success" class="ion-margin-top" (click)="addDevice()">
           ➕ Add Device
