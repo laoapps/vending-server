@@ -12,17 +12,20 @@ const controlDeviceSchema = z.object({
 });
 
 export const createDevice = async (req: Request, res: Response) => {
-  const { name, tasmotaId, zone } = req.body;
+  const { name, tasmotaId, zone, groupId } = req.body;
   const user = res.locals.user;
-
+  console.log('createDevice', name, tasmotaId, zone, groupId, user);
   try {
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }
-    const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone);
-    await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
+    const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone, groupId);
+  console.log('createDevice4');
+
+    // await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {
+    console.log('createDeviceERROR', (error as Error).message);
     res.status(500).json({ error: (error as Error).message || 'Failed to create device' });
   }
 };
@@ -48,7 +51,7 @@ export const updateDevice = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can update devices' });
     }
     const device = await DeviceService.updateDevice(user.uuid, parseInt(id), { name, tasmotaId, zone, groupId });
-    await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
+    // await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to update device' });

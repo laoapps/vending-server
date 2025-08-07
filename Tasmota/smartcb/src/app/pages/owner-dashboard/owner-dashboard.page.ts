@@ -16,7 +16,7 @@ export class OwnerDashboardPage implements OnInit {
   devices: any[] = [];
   groups: any[] = [];
   schedulePackages: any[] = [];
-  newDevice = { name: '', tasmotaId: '', zone: '' };
+  newDevice = { name: '', tasmotaId: '', zone: '', groupId: -1 };
   newGroup = { name: '' };
   newSchedulePackage = { name: '', price: 0, conditionType: 'time_duration', conditionValue: 0 };
   assignDevice = { groupId: -1, deviceId: -1 };
@@ -26,9 +26,9 @@ export class OwnerDashboardPage implements OnInit {
     private apiService: ApiService,
     private mqttService: MqttClientService,
     private alertController: AlertController,
-    public m:LoadingService
+    public m: LoadingService
   ) { }
-    dismiss(data: any = { dismiss: true }) {
+  dismiss(data: any = { dismiss: true }) {
     this.m.closeModal(data)
   }
 
@@ -91,7 +91,7 @@ export class OwnerDashboardPage implements OnInit {
       .createSchedulePackage(
         this.newSchedulePackage.name,
         this.newSchedulePackage.price,
-        Number(this.newSchedulePackage.conditionType+''),
+        this.newSchedulePackage.conditionType,
         this.newSchedulePackage.conditionValue,
       )
       .subscribe(
@@ -130,9 +130,12 @@ export class OwnerDashboardPage implements OnInit {
   }
 
   addDevice() {
-    this.apiService.createDevice(this.newDevice.name, this.newDevice.tasmotaId, this.newDevice.zone).subscribe(() => {
+    if (!this.newDevice.name || !this.newDevice.tasmotaId || !this.newDevice.zone || !this.newDevice.groupId) {
+      return alert('empty!!!')
+    }
+    this.apiService.createDevice(this.newDevice.name, this.newDevice.tasmotaId, this.newDevice.zone, this.newDevice.groupId).subscribe(() => {
       this.loadData();
-      this.newDevice = { name: '', tasmotaId: '', zone: '' };
+      this.newDevice = { name: '', tasmotaId: '', zone: '', groupId: -1 };
     });
   }
 
@@ -142,15 +145,32 @@ export class OwnerDashboardPage implements OnInit {
     });
   }
 
-  deleteDevice(id: number) {
-    this.apiService.deleteDevice(id).subscribe(() => {
-      this.loadData();
+  async deleteDevice(id: number) {
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message: 'Are you sure you want to delete this Device?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Delete',
+          handler: () => {
+            this.apiService.deleteDevice(id).subscribe(() => {
+              this.loadData();
+            },
+              (error) => {
+                console.error('Failed to delete Device:', error);
+              });
+          },
+        },
+      ],
     });
+    await alert.present();
+
   }
 
   controlDeviceAction() {
-    console.log('sksksksksk',this.controlDevice.id);
-    
+    console.log('sksksksksk', this.controlDevice.id);
+
     if (this.controlDevice.id) {
       this.apiService.controlDevice(this.controlDevice.id, this.controlDevice.command, Number(this.controlDevice.relay)).subscribe(
         (response) => {
@@ -171,6 +191,9 @@ export class OwnerDashboardPage implements OnInit {
 
   //==================== Group ==================
   addGroup() {
+    if (!this.newGroup.name) {
+      return alert('empty!!!')
+    }
     this.apiService.createGroup(this.newGroup.name).subscribe(() => {
       this.loadData();
       this.newGroup = { name: '' };
