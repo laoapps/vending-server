@@ -11,10 +11,12 @@ import { generateQR } from '../services/lakService';
 export const testOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
+  console.log('testOrder1111',req.body);
+  
   try {
-    if (user.role !== 'user') {
-      return res.status(403).json({ error: 'Only users can create orders' });
-    }
+    // if (user.role !== 'user') {
+    //   return res.status(403).json({ error: 'Only users can create orders' });
+    // }
     const schedulePackage = await SchedulePackage.findByPk(packageId);
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });

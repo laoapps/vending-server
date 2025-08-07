@@ -38,6 +38,8 @@ export class OwnerDashboardPage implements OnInit {
 
   loadData() {
     this.apiService.getDevices().subscribe((devices) => {
+      console.log('getDevices',devices);
+
       this.devices = devices;
       this.devices.forEach((device) => {
         this.mqttService.subscribeToDevice(device.tasmotaId).subscribe((message) => {
@@ -64,9 +66,13 @@ export class OwnerDashboardPage implements OnInit {
       });
     });
     this.apiService.getGroups().subscribe((groups) => {
+      console.log('getGroups',groups);
+
       this.groups = groups;
     });
     this.apiService.getSchedulePackages().subscribe((packages) => {
+      console.log('getSchedulePackages',packages);
+      
       this.schedulePackages = packages;
     });
   }
