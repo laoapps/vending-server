@@ -4,7 +4,7 @@ import { FilemanagerApiService } from '../services/filemanager-api.service';
 import { environment } from 'src/environments/environment';
 import { IENMessage } from '../models/base.model';
 import { ProductAddPage } from '../products/product-add/product-add.page';
-import { IStock } from '../services/syste.model';
+import { IProductImage, IStock } from '../services/syste.model';
 
 @Component({
   selector: 'app-imagesproduct',
@@ -13,7 +13,7 @@ import { IStock } from '../services/syste.model';
 })
 export class ImagesproductPage implements OnInit {
   filemanagerURL: string = environment.filemanagerurl + 'download/';
-  _l = new Array<IStock>();
+  _l = new Array<IProductImage>();
 
 
   constructor(
