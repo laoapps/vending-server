@@ -26,7 +26,6 @@ export function initScheduleHistoryModel(sequelize: Sequelize) {
       scheduleId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'Schedules', key: 'id' },
       },
       deviceId: {
         type: DataTypes.INTEGER,

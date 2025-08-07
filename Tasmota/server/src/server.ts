@@ -2,7 +2,7 @@ import app from './app';
 import sequelize from './config/database';
 import { Umzug, SequelizeStorage } from 'umzug';
 import cron from 'node-cron';
-import { Op } from 'sequelize';
+import { Op,WhereOptions } from 'sequelize';
 import { Order } from './models/order';
 import { Device } from './models/device';
 import WebSocket from 'ws';
@@ -81,7 +81,7 @@ async function startServer() {
     await recoverActiveOrders();
     startDeviceMonitoring();
 
-    cron.schedule('*/10 * * * * *', async () => {
+    cron.schedule('*/5 * * * * *', async () => {
       try {
         const orderKeys = await redis.keys('activeOrder:*');
         for (const key of orderKeys) {
@@ -125,11 +125,19 @@ async function startServer() {
         }
 
         const twentyFourHoursAgo = new Date(Date.now() - 60 * 60 * 1000);
+        // const deletedCount = await Order.destroy({
+        //   where: {
+        //     paidTime: { [Op.is]: null },
+        //     createdAt: { [Op.lte]: twentyFourHoursAgo },
+        //   },
+        // });
+        const whereCondition: WhereOptions<any> = {
+          paidTime: { [Op.is]: null },
+          createdAt: { [Op.lte]: twentyFourHoursAgo },
+        };
+
         const deletedCount = await Order.destroy({
-          where: {
-            paidTime: '',
-            createdAt: { [Op.lte]: twentyFourHoursAgo },
-          },
+          where: whereCondition,
         });
 
         if (deletedCount > 0) {
@@ -142,6 +150,10 @@ async function startServer() {
 
     await sequelize.authenticate();
     console.log('Database connected successfully.');
+
+    // ✅ Sync all models after connection
+    await sequelize.sync({ alter: true }); // or { force: true } for dev reset
+    console.log('✅ All models synced to the database.');
 
     // await umzug.up();
     console.log('Database migrations applied successfully.');

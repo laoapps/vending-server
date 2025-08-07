@@ -1,45 +1,76 @@
 <ion-content class="ion-padding">
+
   <ion-card>
     <ion-card-header>
-      <ion-card-title>Welcome to Tasmota Control</ion-card-title>
+      <ion-card-title class="ion-text-center">Welcome to Tasmota Control</ion-card-title>
     </ion-card-header>
+
     <ion-card-content>
+
+      <!-- Token Input -->
       <ion-item *ngIf="!role">
-        <ion-label position="floating">Token</ion-label>
-        <ion-input [(ngModel)]="token"></ion-input>
+        <ion-label position="floating">Enter Token</ion-label>
+        <ion-input [(ngModel)]="token" type="text"></ion-input>
       </ion-item>
-      <ion-button *ngIf="!role" expand="block" (click)="loadRole()">Validate Token</ion-button>
-      <ion-button *ngIf="role && role !== 'owner'" expand="block" (click)="registerOwner()">Register as Owner</ion-button>
 
-      <ion-list *ngIf="role === 'admin'">
+      <ion-button *ngIf="!role" expand="block" class="ion-margin-top" (click)="loadRole()">
+        ✅ Validate Token
+      </ion-button>
+
+      <ion-button *ngIf="role && role !== 'owner'" expand="block" color="secondary" class="ion-margin-top" (click)="registerOwner()">
+        📝 Register as Owner
+      </ion-button>
+
+      <!-- Admin Section -->
+      <ion-list *ngIf="role === 'admin'" class="ion-margin-top">
+        <ion-list-header>
+          <ion-label color="primary"><strong>Admin Menu</strong></ion-label>
+        </ion-list-header>
+
         <ion-item button (click)="navigateTo('/admin-dashboard')">
-          <ion-label>View All Devices</ion-label>
+          <ion-label>📟 View All Devices</ion-label>
         </ion-item>
+
         <ion-item button (click)="navigateTo('/admin-reports')">
-          <ion-label>View Reports</ion-label>
+          <ion-label>📊 View Reports</ion-label>
         </ion-item>
+
         <ion-item button (click)="navigateTo('/admin-unregistered-devices')">
-          <ion-label>Manage Unregistered Devices</ion-label>
+          <ion-label>⚙️ Manage Unregistered Devices</ion-label>
         </ion-item>
       </ion-list>
 
-      <ion-list *ngIf="role === 'owner'">
-        <ion-item button (click)="navigateTo('/owner-dashboard')">
-          <ion-label>Manage Devices</ion-label>
+      <!-- Owner Section -->
+      <ion-list *ngIf="role === 'owner'" class="ion-margin-top">
+        <ion-list-header>
+          <ion-label color="tertiary"><strong>Owner Menu</strong></ion-label>
+        </ion-list-header>
+
+        <ion-item button (click)="tomodal('owner')">
+          <ion-label>🔌 Manage Devices</ion-label>
         </ion-item>
+
         <ion-item button (click)="navigateTo('/owner-reports')">
-          <ion-label>View Reports</ion-label>
+          <ion-label>📈 View Reports</ion-label>
         </ion-item>
       </ion-list>
 
-      <ion-list *ngIf="role === 'user'">
-        <ion-item button (click)="navigateTo('/user-dashboard')">
-          <ion-label>List Devices</ion-label>
+      <!-- User Section -->
+      <ion-list *ngIf="role === 'user'" class="ion-margin-top">
+        <ion-list-header>
+          <ion-label color="success"><strong>User Menu</strong></ion-label>
+        </ion-list-header>
+
+        <ion-item button (click)="tomodal('user')">
+          <ion-label>📋 List Devices</ion-label>
         </ion-item>
+
         <ion-item button (click)="navigateTo('/user-schedules')">
-          <ion-label>Subscribe to Schedules</ion-label>
+          <ion-label>🕒 Subscribe to Schedules</ion-label>
         </ion-item>
       </ion-list>
+
     </ion-card-content>
   </ion-card>
+
 </ion-content>

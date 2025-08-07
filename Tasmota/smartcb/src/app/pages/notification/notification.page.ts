@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 
 
 @Component({
+  standalone:false,
   selector: 'app-notification',
   templateUrl: './notification.page.html',
   styleUrls: ['./notification.page.scss'],
