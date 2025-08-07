@@ -20,12 +20,12 @@ export const createDevice = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }
     const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone, groupId);
-  console.log('createDevice4');
+  console.log('createDevice4',device);
 
     // await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
   } catch (error) {
-    console.log('createDeviceERROR', (error as Error).message);
+    console.log('createDeviceERROR', error);
     res.status(500).json({ error: (error as Error).message || 'Failed to create device' });
   }
 };

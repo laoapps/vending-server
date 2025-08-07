@@ -25,7 +25,7 @@ export class DeviceService {
   console.log('createDevice2');
 
     const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
-  console.log('createDevice3');
+  console.log('createDevice3',owner);
 
     if (!owner) throw new Error('Owner not found');
 
@@ -37,6 +37,9 @@ export class DeviceService {
       groupId,
       status: {},
     } as DeviceAttributes);
+
+  console.log('createDevice3.5',device);
+
 
     return device;
   }
