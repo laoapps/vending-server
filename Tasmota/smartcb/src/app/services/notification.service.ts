@@ -22,9 +22,9 @@ export class NotificationService {
 
   constructor() {}
 
-  async connect(userUuid: string, token: string): Promise<void> {
+  connect(userUuid: string, token: string): void {
     if (this.socket) {
-      await this.disconnect();
+      this.disconnect();
     }
 
     try {
@@ -65,7 +65,7 @@ export class NotificationService {
     setTimeout(() => this.connect(userUuid, token), 5000);
   }
 
-  async disconnect(): Promise<void> {
+  disconnect(): void {
     if (this.socket) {
       this.socket.close();
       this.socket = null;

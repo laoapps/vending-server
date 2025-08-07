@@ -1,0 +1,150 @@
+# test.http
+# Test file for Tasmota API endpoints
+# Use with VS Code REST Client or similar tools
+# Replace placeholders: {{jwtToken}}, {{userUuid}}, {{ownerUuid}}, {{ownerId}}, {{deviceId}}, {{packageId}}, {{orderId}}, {{transId}}, {{tasmotaId}}
+@jwtToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0Nzk0ZGYwZGZkZTYxNWQ3ZjE1YjNlMTFjZTgzYzQzY2M1YjQ1MGI2NDY5MDQzYzUzNmVhYTUwMTk3MzExMWYzNmFmN2FhM2VkN2M5OTlkZTg2YTY3MWVmYjRiNTFhZTM2NzgwZjhiYmNlNjA3ZWFmOGYwZDYxMDg2YmM4NDg4NGMiLCJwaG9uZU51bWJlciI6Iis4NTYyMDU1NTE2MzIxIiwidXVpZCI6Ijg2MmY5NmEwLWFjNDUtMTFlZC1hZjA0LTU1ZmE3ZTc0ZTE5NCIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc0Njc4MDM1MCwiZXhwIjozNjAwMDAwMTc0Njc4MDM1MH0.JrBLY6pMgzL9iAIoZ1LFzCRWtxvHYUzvsSd2LHEh2xE
+@tasmotaId=tongou_3B0444
+@ownerUuid=86f96a0-ac45-11ed-af04-55fa7e74e194
+@ownerId=1
+@userUuid=123e4567-e89b-12d3-a456-426614174000
+@deviceId=1
+@packageId=1
+@orderId=1
+@transId=1234567890abcdef
+@host=https://smartcb-api.laoapps.com
+#Device Servicesrc/services/deviceService.tstypescript•Test HTTP Filetext# test.http
+# Test file for Tasmota API endpoints
+# Use with VS Code REST Client or similar tools
+# Replace placeholders: {{jwtToken}}, {{userUuid}}, {{ownerUuid}}, {{ownerId}}, {{deviceId}}, {{packageId}}, {{orderId}}, {{transId}}, {{tasmotaId}}
+
+### Add New Device
+POST http://{{host}}/api/devices
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "name": "Test Device",
+  "tasmotaId": "{{tasmotaId}}",
+  "ownerUuid": "{{ownerUuid}}",
+  "zone": "Test Zone"
+}
+
+### Add Package (Time Duration)
+POST http://{{host}}/api/packages
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "name": "30 Minute Package",
+  "ownerId": {{ownerId}},
+  "price": 10.0,
+  "conditionType": "time_duration",
+  "conditionValue": 30
+}
+
+### Add Package (Energy Consumption)
+POST http://{{host}}/api/packages
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "name": "5 kWh Package",
+  "ownerId": {{ownerId}},
+  "price": 15.0,
+  "conditionType": "energy_consumption",
+  "conditionValue": 5
+}
+
+### Create Order
+POST http://{{host}}/api/orders
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "packageId": {{packageId}},
+  "deviceId": {{deviceId}},
+  "relay": 1,
+  "userUuid": "{{userUuid}}"
+}
+
+### Get Orders
+POST http://{{host}}/api/orders/list
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "offset": 0,
+  "limit": 10
+}
+
+### Get Order by ID
+GET http://{{host}}/api/orders/{{orderId}}
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+### Pay Order
+POST http://{{host}}/api/orders/pay
+Content-Type: application/json
+
+{
+  "transid": "{{transId}}",
+  "data": {
+    "paymentDetails": "Test Payment"
+  }
+}
+
+### Start Device Manually (No Conditions)
+POST http://{{host}}/api/devices/control
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "deviceId": {{deviceId}},
+  "command": "ON",
+  "relay": 1
+}
+
+### Stop Device Manually (No Conditions)
+POST http://{{host}}/api/devices/control
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "deviceId": {{deviceId}},
+  "command": "OFF",
+  "relay": 1
+}
+
+### Start Device with Duration (30 minutes)
+POST http://{{host}}/api/devices/control
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "deviceId": {{deviceId}},
+  "command": "ON",
+  "relay": 1,
+  "conditionType": "time_duration",
+  "conditionValue": 30
+}
+
+### Start Device with Energy Limit (5 kWh)
+POST http://{{host}}/api/devices/control
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "deviceId": {{deviceId}},
+  "command": "ON",
+  "relay": 1,
+  "conditionType": "energy_consumption",
+  "conditionValue": 5
+}
+
+### Stop Device with Duration/Energy (Complete Order)
+POST http://{{host}}/api/orders/complete
+Content-Type: application/json
+
+{
+  "deviceId": {{deviceId}}
+}
