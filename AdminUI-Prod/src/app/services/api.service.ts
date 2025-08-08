@@ -391,7 +391,14 @@ export class ApiService {
         return this.http.post<IResModel>(this.url + '/exitAppMachine', { token, shopPhonenumber, secret, data }, { headers: this.headerBase() });
     }
     resetCashing(data: any) {
-        return this.http.post<IResModel>(this.url + '/resetCashing', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post<IResModel>(this.url + '/resetCashing', payload, { headers: this.headerBase() });
     }
 
     listMachine(isActive = 'all') {
@@ -530,6 +537,13 @@ export class ApiService {
         return this.http.post<IResModel>(this.url + '/addProductImageSystem', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     readMachineSaleForAdmin(data: any) {
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
         return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin', data, { headers: this.headerBase() });
     }
     loadVendingMachineSaleBillReport(data: any) {
@@ -544,19 +558,47 @@ export class ApiService {
     }
 
     loadVendingMachineDropReport(data: any) {
-        return this.http.post(this.url + '/loadVendingMachineDropPositionReport', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/loadVendingMachineDropPositionReport', payload, { headers: this.headerBase() });
     }
 
     loadVendingMachineBillNotPaid(data: any) {
-        return this.http.post(this.url + '/reportBillNotPaid', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/reportBillNotPaid', payload, { headers: this.headerBase() });
     }
 
     CheckBillPaidFromMmoney(data: any) {
-        return this.http.post(this.url + '/checkPaidMmoney', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/checkPaidMmoney', payload, { headers: this.headerBase() });
     }
 
     sendDropBill(data: any) {
-        return this.http.post(this.url + '/sendDropAdmin', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/sendDropAdmin', payload, { headers: this.headerBase() });
     }
 
     loadVendingMachineStockReport(data: any) {
