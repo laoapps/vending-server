@@ -4,7 +4,7 @@ import { Device } from '../models/device';
 import { Order } from '../models/order';
 import { Op } from 'sequelize';
 import redis from '../config/redis';
-import { publishMqttMessage } from '../services/mqttService';
+import { DEVICE_CACHE_PREFIX, publishMqttMessage } from '../services/mqttService';
 import { notifyStakeholders } from '../services/wsService';
 import { generateQR } from '../services/lakService';
 
@@ -42,6 +42,11 @@ export const testOrder = async (req: Request, res: Response) => {
     // Clear existing rule and timer
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+
+    // const current_energy = await redis.get(`${DEVICE_CACHE_PREFIX}${device.dataValues.tasmotaId}`);
+    // if(current_energy){
+
+    // }
 
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');

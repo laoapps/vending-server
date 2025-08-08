@@ -160,16 +160,16 @@ async function startServer() {
           } else if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
             console.log('current_energy================',device.dataValues.energy );
             const energy = device.dataValues.energy || 0;
-            // if (energy >= schedulePackage.dataValues.conditionValue) {
-            // // if (energy >= order?.dataValues?.conditionValue) {
-            //   await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
-            //   await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-            //   await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-            //   order.set('completedTime', new Date());
-            //   await order.save();
-            //   await redis.del(key);
-            //   await notifyStakeholders(order, 'Order completed due to energy consumption limit (server check).');
-            // }
+            if (energy >= schedulePackage.dataValues.conditionValue) {
+            // if (energy >= order?.dataValues?.conditionValue) {
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+              order.set('completedTime', new Date());
+              await order.save();
+              await redis.del(key);
+              await notifyStakeholders(order, 'Order completed due to energy consumption limit (server check).');
+            }
           }
         }
 
