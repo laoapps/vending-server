@@ -11,8 +11,8 @@ import { generateQR } from '../services/lakService';
 export const testOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
-  console.log('testOrder1111',req.body);
-  
+  console.log('testOrder1111', req.body);
+
   try {
     // if (user.role !== 'user') {
     //   return res.status(403).json({ error: 'Only users can create orders' });
@@ -45,9 +45,17 @@ export const testOrder = async (req: Request, res: Response) => {
 
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
-      const rule = `ON Energy#Total>${schedulePackage.dataValues.conditionValue} DO Power${order.dataValues.relay || 1} OFF ENDON`;
+      const rule = `ON Energy#Total>${(schedulePackage.dataValues.conditionValue / 1000) + (device?.dataValues?.energy || 0)} DO Power${order.dataValues.relay || 1} OFF ENDON`;
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
+
+      const newconditionValue = (device.dataValues.energy || 0) + (schedulePackage.dataValues.conditionValue / 1000)
+      const updateNewconditionValue = await order.update({
+        conditionValue: newconditionValue
+      });
+      console.log('updateNewconditionValue', updateNewconditionValue.toJSON());
+
+
     } else if (schedulePackage.dataValues.conditionType === 'time_duration') {
       const minutes = Math.ceil(schedulePackage.dataValues.conditionValue);
       const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
@@ -182,9 +190,15 @@ export const payOrder = async (req: Request, res: Response) => {
 
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
-      const rule = `ON Energy#Total>${schedulePackage.dataValues.conditionValue} DO Power${order.dataValues.relay || 1} OFF ENDON`;
+      const rule = `ON Energy#Total>${(schedulePackage.dataValues.conditionValue / 1000) + (device?.dataValues?.energy || 0)} DO Power${order.dataValues.relay || 1} OFF ENDON`;
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
+
+      const newconditionValue = (device.dataValues.energy || 0) + (schedulePackage.dataValues.conditionValue / 1000)
+      const updateNewconditionValue = await order.update({
+        conditionValue: newconditionValue
+      });
+      console.log('updateNewconditionValue', updateNewconditionValue.toJSON());
     } else if (schedulePackage.dataValues.conditionType === 'time_duration') {
       const minutes = Math.ceil(schedulePackage.dataValues.conditionValue);
       const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
