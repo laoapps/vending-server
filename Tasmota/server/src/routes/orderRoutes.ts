@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
-import { createOrder, getOrders, getOrderById, payOrder, completeOrder } from '../controllers/orderController';
+import { createOrder, getOrders, getOrderById, payOrder, completeOrder, testOrder } from '../controllers/orderController';
 import { reactivateOrder } from '../controllers/reactivateOrderController';
 
 const router = Router();
@@ -11,5 +11,8 @@ router.get('/:id', authMiddleware, getOrderById); // Get specific order (user on
 router.post('/pay', payOrder); // Payment callback
 router.post('/complete', completeOrder); // MQTT completion
 router.post('/reactivate', authMiddleware, reactivateOrder); // Reactivate order with compensation
+
+
+router.post('/testneworder', authMiddleware, testOrder); // Create order (user only)
 
 export default router;

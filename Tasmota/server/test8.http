@@ -11,7 +11,7 @@
 @packageId=1
 @orderId=1
 @transId=1234567890abcdef
-@host=https://smartcb-api.laoapps.com
+@host=smartcb-api.laoapps.com
 #Device Servicesrc/services/deviceService.tstypescript•Test HTTP Filetext# test.http
 # Test file for Tasmota API endpoints
 # Use with VS Code REST Client or similar tools
@@ -55,8 +55,20 @@ Authorization: Bearer {{jwtToken}}
   "conditionValue": 5
 }
 
+### test Order
+POST https://{{host}}/api/orders/testneworder
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "packageId": 6,
+  "deviceId": 3,
+  "relay": 1,
+  "userUuid": "{{userUuid}}"
+}
+
 ### Create Order
-POST http://{{host}}/api/orders
+POST https://{{host}}/api/orders
 Content-Type: application/json
 Authorization: Bearer {{jwtToken}}
 
