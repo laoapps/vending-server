@@ -60,7 +60,7 @@ export function initOrderModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Order',
-      tableName: 'Orders',
+      tableName: 'orders',
     }
   );
   return Order;

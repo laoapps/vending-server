@@ -61,8 +61,8 @@ Content-Type: application/json
 Authorization: Bearer {{jwtToken}}
 
 {
-  "packageId": 3,
-  "deviceId": 10,
+  "packageId": 6,
+  "deviceId": 3,
   "relay": 1,
   "userUuid": "{{userUuid}}"
 }
