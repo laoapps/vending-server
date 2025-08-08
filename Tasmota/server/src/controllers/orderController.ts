@@ -45,7 +45,8 @@ export const testOrder = async (req: Request, res: Response) => {
 
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
-      const rule = `ON Energy#Total>${(schedulePackage.dataValues.conditionValue / 1000) + (device?.dataValues?.energy || 0)} DO Power${order.dataValues.relay || 1} OFF ENDON`;
+      // const rule = `ON Energy#Total>${(schedulePackage.dataValues.conditionValue / 1000) + (device?.dataValues?.energy || 0)} DO Power${order.dataValues.relay || 1} OFF ENDON`;
+      const rule = `ON Energy#Total>${schedulePackage.dataValues.conditionValue } DO Power${order.dataValues.relay || 1} OFF ENDON`;
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
 
