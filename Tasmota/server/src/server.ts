@@ -95,7 +95,8 @@ async function startServer() {
     await recoverActiveOrders();
     startDeviceMonitoring();
 
-    cron.schedule('*/5 * * * * *', async () => {
+    // cron.schedule('*/5 * * * * *', async () => { // 5s
+    cron.schedule('* * * * *', async () => { // 1 mn
       try {
         const orderKeys = await redis.keys('activeOrder:*');
         const ordersData = await Promise.all(

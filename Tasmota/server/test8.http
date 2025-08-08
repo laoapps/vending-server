@@ -55,6 +55,16 @@ Authorization: Bearer {{jwtToken}}
   "conditionValue": 5
 }
 
+### test clear device rule
+POST https://{{host}}/api/devices/clearDeviceRule
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "deviceId": 3,
+  "relay": 1
+}
+
 ### test Order
 POST https://{{host}}/api/orders/testneworder
 Content-Type: application/json

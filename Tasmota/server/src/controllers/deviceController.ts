@@ -102,6 +102,7 @@ export const clearDeviceRule = async (req: Request, res: Response) => {
   try {
     console.log('clearDeviceRule000',deviceId,relay);
     const device = await Device.findByPk(deviceId);
+    console.log('clearDeviceRule111',device?.toJSON());
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });
     }
