@@ -127,7 +127,7 @@ export class WsapiService {
 
 
 
-              console.log('Ping');
+              console.log('----->Ping');
               // { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
               // this.setting_allowCashIn = data.setting.allowCashIn;
               // this.setting_allowVending = data.setting.allowVending;

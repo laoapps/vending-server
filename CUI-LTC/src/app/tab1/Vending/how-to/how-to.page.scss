@@ -1,0 +1,248 @@
+ion-content {
+    --ion-background-color: #F5F5F5;
+    // --ion-background-color: #EE3124;
+}
+
+.laab-card {
+    margin: 10px;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgb(255,255,255);
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(238,49,36,0.7161239495798319) 0%, rgba(214,43,31,1) 100%, rgba(255,255,255,1) 100%);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+    overflow: hidden;
+
+    .laab-card-options {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+
+        .left {
+            
+            .status-list {
+                display: flex;
+                gap: 10px;
+
+                label {
+                    color: #fff;
+                }
+            }
+       }
+
+       .right {
+            .btn-close-modal {
+                color: #fff;
+                text-decoration: none;
+            }
+       }
+    }
+
+    .laab-card-header {
+        display: flex;
+        flex-direction: column;
+        color: #fff;
+
+        .title {
+            font-size: 35px;
+            font-weight: bold;
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+    }
+
+    .laab-card-body {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+
+        .left {
+
+            .main-display {
+                position: relative;
+                
+                // background: #fff;
+                // border: 1px solid #3333;
+                // padding: 10px;
+
+                .control-options {
+                    display: flex;
+
+                    .btn-full-screen {
+                        position: absolute;
+                        text-decoration: none;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        color: #fff;
+                        border: 1px solid #fff;
+                        height: 35px;
+                        opacity: .9;
+                        transition: .2s;
+                        z-index: 999999;
+                        padding: 0px 5px;
+                        margin: 10px;
+
+                        i {
+                            padding-right: 5px;
+                        }
+                    }
+                    .btn-full-screen:hover {
+                        opacity: 1;
+                    }
+                }
+
+                .close-options {
+                    position: fixed;
+                    bottom: 30%;
+                    left: 300px;
+                    z-index: 99999999;
+                    .btn-close-full-screen {
+                        
+                        text-decoration: none;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        color: #fff;
+                        border: 1px solid #fff;
+                        height: 35px;
+                        opacity: .6;
+                        transition: .2s;
+                    }
+                    .btn-close-full-screen:hover {
+                        opacity: 1;
+                    }
+                }
+                
+                .how-to-player {
+                    display: none;
+                    height: 600px;
+                    border-radius: 5px;
+                    transition: .2s;
+
+                    .hello {
+                        font-size: 30px;
+                        position: absolute;
+                        left: 300px;
+                    }
+                }
+                .how-to-player-cover {
+                    display: none;
+                    transition: .2s;
+                    height: 601px;
+                    width: 530px;
+                }
+                .how-to-player::-webkit-media-controls-fullscreen-button { display: none; }
+                .how-to-player.active,
+                .how-to-player-cover.active {
+                    display: block;
+                }
+                
+
+                color: #fff;
+
+                .title {
+                    text-transform: uppercase;
+                    font-size: 20px;
+                    font-weight: bold;
+                }
+
+                .sub-title {
+                    font-size: 16px;
+                }
+            }
+
+        }
+
+        .right {
+            width: 100%;
+            
+
+            .main-list {
+                display: flex;
+                flex-direction: column;
+                overflow-y: scroll;
+                min-height: 800px;
+                max-height: 800px;
+                padding-bottom: 120px;
+
+                .item {
+                    text-decoration: none;
+                    display: flex;
+                    color: #333;
+                    padding: 10px;
+                    min-height: 270px;
+                    max-height: 270px;
+                    overflow: hidden;
+                    gap: 8px;
+
+                    // background: #fff;
+
+                    background: rgb(255,255,255);
+                    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(242,241,241,1) 100%);
+
+                    transition: .2s;
+
+                    .left {
+                        video {
+                            height: 250px;
+                            border-radius: 5px;
+                            border: 1px solid #3333;
+                        }
+
+                        .list-cover {
+                            width: 200px;
+                            height: 250px;
+                        }
+                        
+                    }
+
+                    .right {
+
+                        .title {
+                            text-transform: uppercase;
+                            font-size: 20px;
+                            font-weight: bold;
+                        }
+
+                        .sub-title {
+                            font-size: 16px;
+                        }
+                    }
+                }
+                .item:hover {
+                    // 1 f7f7f7
+                    // 2 ededed
+                    background: rgb(247,247,247);
+                    background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgba(237,237,237,1) 100%);
+                }
+            }
+            .main-list::-webkit-scrollbar {
+                width: 0;
+                height: 0;
+            }
+            
+        }
+    }
+}
+
+input[type="checkbox"], input[type="radio"] {
+    border-color: #3333;
+}
+input[type="checkbox"]:checked, input[type="radio"]:checked {
+    background-color: #A41D4F;
+}
+
+:not(:root):fullscreen::backdrop {
+    background: #fff;
+}
+// video::-webkit-media-controls {
+//     display: none;
+// }
+
+
+

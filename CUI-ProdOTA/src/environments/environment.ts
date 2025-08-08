@@ -11,15 +11,15 @@ export const environment = {
 
 
 
-  // url: 'https://vendingserviceapi.laoapps.com/zdm8',
-  // wsurl: 'wss://vendingserviceapi.laoapps.com/zdm8',
-  // vending_server: 'https://vendingserviceapi.laoapps.com',
-  // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
-
-  url: 'https://vending-service-api5.laoapps.com/zdm8',
-  wsurl: 'wss://vending-service-api5.laoapps.com/zdm8',
-  vending_server: 'https://vending-service-api5.laoapps.com',
+  url: 'https://vendingserviceapi.laoapps.com/zdm8',
+  wsurl: 'wss://vendingserviceapi.laoapps.com/zdm8',
+  vending_server: 'https://vendingserviceapi.laoapps.com',
   filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
+
+  // url: 'https://vending-service-api5.laoapps.com/zdm8',
+  // wsurl: 'wss://vending-service-api5.laoapps.com/zdm8',
+  // vending_server: 'https://vending-service-api5.laoapps.com',
+  // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
   versionId: '1.0.48'
 };

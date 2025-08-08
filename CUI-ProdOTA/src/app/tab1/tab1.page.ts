@@ -745,13 +745,13 @@ export class Tab1Page implements OnDestroy {
     this.WSAPIService.aliveSubscription.subscribe(async res => {
 
       try {
-        console.log('ALIVE TAB1', JSON.stringify(res || {}));
+        console.log('----->ALIVE TAB1', JSON.stringify(res || {}));
         const r = res?.data?.setting;
         if (res?.data?.settingVersion) {
           // localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
-        if (r && this.readyState) {
-          // if (r) {
+        // if (r && this.readyState) {
+        if (r) {
 
           if (r.refresh) {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
