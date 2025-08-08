@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { validate, createDeviceSchema, controlDeviceSchema, assignDeviceSchema } from '../middleware/validationMiddleware';
-import { createDevice, getDevices, updateDevice, deleteDevice, controlDevice } from '../controllers/deviceController';
+import { createDevice, getDevices, updateDevice, deleteDevice, controlDevice, clearDeviceRule } from '../controllers/deviceController';
 
 const router = Router();
 
@@ -10,6 +10,7 @@ router.get('/', authMiddleware, getDevices);
 router.put('/:id', authMiddleware, validate(createDeviceSchema), updateDevice);
 router.delete('/:id', authMiddleware, deleteDevice);
 router.post('/control', authMiddleware, validate(controlDeviceSchema), controlDevice);
+router.post('/clearDeviceRule', authMiddleware, clearDeviceRule);
 
 
 export default router;
