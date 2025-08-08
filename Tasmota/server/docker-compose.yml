@@ -30,6 +30,8 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=039153d3-9a68-444b-be96-10c6d1325197
       - POSTGRES_DB=tasmota
+    ports:
+      -  31885:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

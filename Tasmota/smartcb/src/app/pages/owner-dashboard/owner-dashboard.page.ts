@@ -56,7 +56,7 @@ export class OwnerDashboardPage implements OnInit {
             const data = JSON.parse(message.payload.toString());
             console.log(`Parsed telemetry data for device ${device.tasmotaId}:`, data);
             device.power = data?.ENERGY?.Power || 0;
-            device.energy = data?.ENERGY?.Total || 0;
+            device.energy = (data?.ENERGY?.Total || 0) + 10;
             device.Temperature = (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
           } catch (error) {
             console.log(`Failed to parse telemetry data for device ${device.tasmotaId}:`, error);
