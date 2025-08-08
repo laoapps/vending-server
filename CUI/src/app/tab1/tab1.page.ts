@@ -83,6 +83,7 @@ import * as moment from 'moment';
 import { DatabaseService } from '../database.service';
 import { IBankNote, IHashBankNote } from '../vmc.service';
 import { Zdm8Service } from '../zdm8.service';
+import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 
 @Component({
   selector: 'app-tab1',
@@ -676,6 +677,7 @@ export class Tab1Page implements OnDestroy {
       console.log('ALIVE TAB1', res);
       try {
         const r = res?.data?.setting;
+        // if (r) {
         if (r && this.readyState) {
           // refresh
 
@@ -687,11 +689,38 @@ export class Tab1Page implements OnDestroy {
           // set allow vending
           console.log('ALLOW VENDING', r.allowVending);
 
-          if (this.allowVending != r.allowVending) {
+          // if (this.allowVending != r.allowVending) {
 
+          //   this.allowVending = r.allowVending;
+          //   console.log('Update Allow vending to', this.allowVending);
+
+          // }
+
+          if (this.allowVending !== r.allowVending) {
             this.allowVending = r.allowVending;
-            console.log('Update Allow vending to', this.allowVending);
 
+            const currentRoute = await this.apiService.modal.getTop();
+
+            if (this.allowVending) {
+              await this.apiService.toast.create({
+                message: 'Close Tab CloseSystem',
+                duration: 3000,
+              }).then(t => t.present());
+
+              if (currentRoute?.component === CloseStytemPage) {
+                currentRoute.dismiss();
+              }
+            } else {
+              if (!currentRoute) {
+                this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
+                  .then(modal => modal.present());
+              }
+
+              await this.apiService.toast.create({
+                message: 'Open Tab CloseSystem',
+                duration: 3000,
+              }).then(t => t.present());
+            }
           }
 
           if (this.selectedDevice == 'VMC') {
@@ -2042,8 +2071,8 @@ export class Tab1Page implements OnDestroy {
             // this.loadAutoShowMyOrders();
           }
 
-            await this._processLoopCheckLaoQRPaid();
-            this.processedQRPaid = false;
+          await this._processLoopCheckLaoQRPaid();
+          this.processedQRPaid = false;
 
 
 

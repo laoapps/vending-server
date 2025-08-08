@@ -153,7 +153,12 @@ ion-item {
 
 
 
-
+  .full-modal {
+     --height: 100%;
+  --width: 100%;
+  --border-radius: 0;
+  --box-shadow: none;
+}
 
 
 
@@ -271,3 +276,114 @@ ion-item {
 	// ปรับแต่ง backdrop ให้ดูสวย
 	--backdrop-opacity: 0.5; // ความโปร่งใสของพื้นหลัง
   }
+
+  @keyframes alertFadeIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes alertFadeOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseIcon {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+  .app-alert .alert-wrapper {
+  animation: alertFadeIn 0.4s ease forwards;
+  border: 2px solid #f4c430;
+  border-radius: 12px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  max-width: 90%;
+}
+
+.app-alert .alert-head {
+  background: #fff8e1;
+  color: #f4c430;
+  text-align: center;
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-alert .alert-head::before {
+  content: '⚠️';
+  font-size: 48px;
+  margin-bottom: 8px;
+  animation: pulseIcon 1.5s infinite;
+}
+
+.app-alert .alert-head h2 {
+  color: #d17b0f;
+  font-size: 20px;
+  margin: 0;
+  font-weight: bold;
+}
+
+.app-alert .alert-message {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  padding: 15px 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.app-alert .alert-button-group {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 0;
+  background: #fff8e1;
+}
+
+.app-alert .alert-button-group button {
+  border: 1px solid #f4c430;
+  width: 45%;
+  border-radius: 6px;
+  margin-left: 3px;
+  font-weight: bold;
+  color: #d17b0f;
+  background: white;
+  transition: background 0.3s ease;
+}
+
+.app-alert .alert-button-group button:last-child {
+  background: #f4c430;
+  color: white;
+  border: 1px solid #f4c430;
+}
+
+.app-alert .alert-button-group button:hover {
+  filter: brightness(0.95);
+}
+
+.app-alert .alert-button-group span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

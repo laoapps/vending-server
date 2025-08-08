@@ -154,6 +154,10 @@ const routes: Routes = [
   {
     path: 'testmotor',
     loadChildren: () => TestmotorPageModule
+  },
+  {
+    path: 'close-stytem',
+    loadChildren: () => import('./close-stytem/close-stytem.module').then( m => m.CloseStytemPageModule)
   }
 ];
 @NgModule({

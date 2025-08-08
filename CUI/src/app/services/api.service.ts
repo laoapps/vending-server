@@ -561,11 +561,11 @@ export class ApiService {
       this.waitingDelivery(r, this.serialPort).then((r) => {
         console.log('waitingDelivery result:', r);
         if (r === EMessage.succeeded) {
-          this.toast.create({ message: 'Delivery successful '+JSON.stringify(r||{}), duration: 2000 }).then((r) => {
+          this.toast.create({ message: 'Delivery successful ' + JSON.stringify(r || {}), duration: 2000 }).then((r) => {
             r.present();
           });
         } else {
-          this.toast.create({ message: 'Delivery failed '+JSON.stringify(r||{}), duration: 2000 }).then((r) => {
+          this.toast.create({ message: 'Delivery failed ' + JSON.stringify(r || {}), duration: 2000 }).then((r) => {
             r.present();
           });
         }
@@ -589,7 +589,7 @@ export class ApiService {
             this.dismissModal();
           }
           this.dismissLoading();
-          const pb = r?r as Array<IBillProcess>:[] as Array<IBillProcess>;
+          const pb = r ? r as Array<IBillProcess> : [] as Array<IBillProcess>;
           // console.log('=====> PB', pb);
 
           // console.log('=====> PB Length :', pb.length);
@@ -863,25 +863,26 @@ export class ApiService {
   }
 
 
-  public alertTimeout(text: string) {
-
-    this.alert.create({
-      header: 'Fail',
+  async alertTimeout(text: string) {
+    const alert = await this.alert.create({
+      header: 'ໝົດເວລາແລ້ວ',
       message: text,
       buttons: [
         {
           text: 'OK',
           role: 'confirm',
-          cssClass: 'alert-ok-button',
-        },
+          cssClass: 'alert-ok-button'
+        }
       ],
       backdropDismiss: false,
-      // cssClass: 'custom-alert-error',
-    }).then((v) => v.present());
+      cssClass: 'app-alert',
+      animated: true
+    });
 
-    // });
+    await alert.present();
+
     setTimeout(() => {
-      this.alert.dismiss();
+      alert.dismiss();
     }, 15000);
   }
 
