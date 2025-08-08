@@ -14,9 +14,6 @@ export const testOrder = async (req: Request, res: Response) => {
   console.log('testOrder1111', req.body);
 
   try {
-    // if (user.role !== 'user') {
-    //   return res.status(403).json({ error: 'Only users can create orders' });
-    // }
     const schedulePackage = await SchedulePackage.findByPk(packageId);
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
@@ -34,12 +31,14 @@ export const testOrder = async (req: Request, res: Response) => {
       relay,
     } as any);
 
+
+
+
+
     order.set('paidTime', new Date());
     // order.set('data', data);
     order.set('startedTime', new Date());
     await order.save();
-
-
     // check if device isActive? return 'want to buy more?' : next
 
     if (!device?.dataValues?.energy) {
@@ -102,6 +101,7 @@ export const testOrder = async (req: Request, res: Response) => {
 export const createOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
+  console.log('createOrder==========', req.body);
 
   try {
     if (user.role !== 'user') {
@@ -124,8 +124,11 @@ export const createOrder = async (req: Request, res: Response) => {
       relay,
     } as any);
 
-    const qr = await generateQR(order.dataValues.id);
-    await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
+    const token = req.headers.authorization?.split(' ')[1];
+    const qr = await generateQR(order.dataValues.id, schedulePackage.dataValues.price, token || '');
+    console.log('createOrder==========111', qr);
+
+    // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
     return res.json({ qr, data: { order } });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
@@ -168,16 +171,19 @@ export const getOrderById = async (req: Request, res: Response) => {
 };
 
 export const payOrder = async (req: Request, res: Response) => {
-  const { transid } = req.body;
-  const data = req.body;
+  const { orderID, data } = req.body;
 
   try {
-    const orderId = await redis.get(`qr:${transid}`);
-    if (!orderId) {
-      return res.status(403).json({ error: 'Transaction ID not found' });
-    }
+    // const orderId = await redis.get(`qr:${trandID}`);
+    // if (!orderId) {
+    //   return res.status(403).json({ error: 'Transaction ID not found' });
+    // }
 
-    const order = await Order.findByPk(Number(orderId));
+    console.log('payOrder==========', req.body);
+
+    const order = await Order.findByPk(Number(orderID));
+    console.log('payOrder==========111', order);
+
     if (!order) {
       return res.status(403).json({ error: 'Order not found' });
     }
@@ -195,6 +201,9 @@ export const payOrder = async (req: Request, res: Response) => {
     if (!device?.dataValues?.energy) {
       return res.status(404).json({ error: 'Device energy not found' });
     }
+
+    console.log('payOrder==========222', device.dataValues.energy);
+
 
     order.set('paidTime', new Date());
     order.set('data', data);
