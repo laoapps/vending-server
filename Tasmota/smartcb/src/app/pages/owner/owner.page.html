@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Owner Menu</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="none" class="menu-list">
+    <ion-list-header class="menu-header">
+      Main Menu
+    </ion-list-header>
+
+    <ion-item button detail="false" *ngFor="let menu of menus" (click)="onMenuSelect(menu)">
+      <ion-icon [name]="menu.icon" slot="start" class="menu-icon"></ion-icon>
+      <ion-label class="menu-label">{{ menu.title }}</ion-label>
+      <!-- <ion-note slot="end" *ngIf="menu.badge" class="menu-badge">{{ menu.badge }}</ion-note> -->
+    </ion-item>
+  </ion-list>
+</ion-content>

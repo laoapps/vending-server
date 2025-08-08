@@ -1,0 +1,22 @@
+<ion-content class="ion-padding ">
+  <div class="login-page">
+    <div class="login-box">
+      <h1 class="title">Login</h1>
+  
+      <ion-item class="input-item" lines="none">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-input type="text" placeholder="PhoneNumber 8 charecter" [(ngModel)]="phonenumber"></ion-input>
+      </ion-item>
+  
+      <ion-item class="input-item" lines="none">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
+      </ion-item>
+  
+      <ion-button expand="block" class="login-btn" (click)="onClick_login()">Login</ion-button>
+      <ion-button expand="block" fill="clear" class="register-btn" (click)="onClick_Register()">Register</ion-button>
+    </div>
+  </div>
+</ion-content>
+
+

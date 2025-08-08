@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Pagekets</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onClick_add()"><ion-icon style="font-size: 26px;" name="add-outline"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding list-container">
+  <ion-list *ngIf="schedulePackages.length > 0; else noData">
+    <ion-item *ngFor="let item of schedulePackages; let i = index" lines="full" class="pageket-item">   
+      <ion-label>
+        <h2 class="name">{{ item.name }}</h2>
+        <p class="price">Price: <strong>{{ item.price | number}}</strong></p>
+        <p class="condition">
+          Condition: <span class="condition-type">{{ item.conditionType }}</span> = 
+          <span class="condition-value">{{ item.conditionValue }}</span>
+        </p>
+      </ion-label>
+
+      <ion-buttons slot="end" class="action-buttons">
+        <ion-button color="warning" fill="clear" (click)="openEditModal(item)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button color="danger" fill="clear" (click)="deleteSchedulePackage(i)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      No pagekets found.
+    </div>
+  </ng-template>
+</ion-content>
+

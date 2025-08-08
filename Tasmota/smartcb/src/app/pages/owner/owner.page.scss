@@ -1,0 +1,48 @@
+.menu-list {
+  margin: 20px 10px;
+  --background: #fafafa;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.menu-header {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #222;
+  padding: 16px 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+ion-item {
+  --background: transparent;
+  --min-height: 56px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+  margin: 8px 0;
+}
+
+ion-item:hover {
+  background-color: #e6f0ff;
+}
+
+.menu-icon {
+  color: #3b82f6;
+  font-size: 24px;
+}
+
+.menu-label {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.menu-badge {
+  background-color: #3b82f6;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
