@@ -2,7 +2,7 @@ import app from './app';
 import sequelize from './config/database';
 import { Umzug, SequelizeStorage } from 'umzug';
 import cron from 'node-cron';
-import { Op,WhereOptions } from 'sequelize';
+import { Op } from 'sequelize';
 import { Order } from './models/order';
 import { Device } from './models/device';
 import WebSocket from 'ws';
@@ -12,7 +12,10 @@ import { findRealDB } from './services/userManagerService';
 import { startDeviceMonitoring } from './controllers/monitorOrderController';
 import { publishMqttMessage } from './services/mqttService';
 import { notifyStakeholders } from './services/wsService';
+import { SchedulePackage } from './models/schedulePackage';
 import redis from './config/redis';
+import models from './models';
+
 const PORT = process.env.PORT || 3000;
 
 const umzug = new Umzug({
@@ -42,17 +45,20 @@ async function recoverActiveOrders() {
         continue;
       }
 
-      const order = await Order.findByPk(orderData.orderId);
+      const order = await Order.findByPk(orderData.orderId, {
+        include: [{ model: models.Device, as: 'device' }, { model: models.SchedulePackage, as: 'package' }],
+      });
       if (!order) {
         await redis.del(key);
         continue;
       }
 
       if (order.dataValues.completedTime) {
-        const device = await Device.findByPk(orderData.deviceId);
+        const device = await order.getDevice();
         if (device) {
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+          await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
         }
         await redis.del(key);
         await notifyStakeholders(order, 'Order terminated due to completed state on server restart.');
@@ -60,9 +66,10 @@ async function recoverActiveOrders() {
       }
 
       if (orderData.conditionType === 'energy_consumption') {
-        const device = await Device.findByPk(orderData.deviceId);
+        const device = await order.getDevice();
         if (device) {
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+          await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
           const rule = `ON Energy#Total>${orderData.conditionValue} DO Power${orderData.relay || 1} OFF ENDON`;
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
@@ -78,45 +85,69 @@ async function recoverActiveOrders() {
 
 async function startServer() {
   try {
+    await sequelize.authenticate();
+    console.log('Database connected successfully.');
+
+    await umzug.up();
+    console.log('Database migrations applied successfully.');
+
     await recoverActiveOrders();
     startDeviceMonitoring();
 
     cron.schedule('*/5 * * * * *', async () => {
       try {
         const orderKeys = await redis.keys('activeOrder:*');
-        for (const key of orderKeys) {
-          const orderData = JSON.parse((await redis.get(key)) || '{}');
-          if (!orderData.orderId) continue;
+        const ordersData = await Promise.all(
+          orderKeys.map(async (key) => ({
+            key,
+            data: JSON.parse((await redis.get(key)) || '{}'),
+          }))
+        );
+        const orderIds = ordersData
+          .filter(({ data }) => data.orderId)
+          .map(({ data }) => data.orderId);
 
-          const order = await Order.findByPk(orderData.orderId);
+        const orders = await Order.findAll({
+          where: { id: { [Op.in]: orderIds }, completedTime: { [Op.eq]: '' } },
+          include: [
+            { model: models.Device, as: 'device' },
+            { model: models.SchedulePackage, as: 'package' },
+          ],
+        });
+
+        for (const order of orders) {
+          const key = `activeOrder:${order.dataValues.id}`;
           if (!order || order.dataValues.completedTime) {
             await redis.del(key);
             continue;
           }
 
-          const device = await Device.findByPk(orderData.deviceId);
+          const device = await order.getDevice();
+          const schedulePackage = await order.getPackage();
           if (!device) {
             await redis.del(key);
             await notifyStakeholders(order, 'Order terminated due to missing device.');
             continue;
           }
 
-          if (orderData.conditionType === 'time_duration') {
-            const elapsed = (Date.now() - orderData.startedTime) / (60 * 1000);
-            if (elapsed >= orderData.conditionValue) {
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
+          if (schedulePackage.dataValues.conditionType === 'time_duration') {
+            const elapsed = (Date.now() - order.dataValues.startedTime.getTime()) / (60 * 1000);
+            if (elapsed >= schedulePackage.dataValues.conditionValue) {
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
               await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-              order.dataValues.completedTime = new Date();
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+              order.set('completedTime', new Date());
               await order.save();
               await redis.del(key);
               await notifyStakeholders(order, 'Order completed due to time duration limit.');
             }
-          } else if (orderData.conditionType === 'energy_consumption') {
+          } else if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
             const energy = device.dataValues.energy || 0;
-            if (energy >= orderData.conditionValue) {
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
+            if (energy >= schedulePackage.dataValues.conditionValue) {
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
               await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-              order.dataValues.completedTime = new Date();
+              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+              order.set('completedTime', new Date());
               await order.save();
               await redis.del(key);
               await notifyStakeholders(order, 'Order completed due to energy consumption limit (server check).');
@@ -125,19 +156,11 @@ async function startServer() {
         }
 
         const twentyFourHoursAgo = new Date(Date.now() - 60 * 60 * 1000);
-        // const deletedCount = await Order.destroy({
-        //   where: {
-        //     paidTime: { [Op.is]: null },
-        //     createdAt: { [Op.lte]: twentyFourHoursAgo },
-        //   },
-        // });
-        const whereCondition: WhereOptions<any> = {
-          paidTime: { [Op.is]: null },
-          createdAt: { [Op.lte]: twentyFourHoursAgo },
-        };
-
         const deletedCount = await Order.destroy({
-          where: whereCondition,
+          where: {
+            paidTime: '',
+            createdAt: { [Op.lte]: twentyFourHoursAgo },
+          },
         });
 
         if (deletedCount > 0) {
@@ -147,16 +170,6 @@ async function startServer() {
         console.error('Error in cron job:', error);
       }
     });
-
-    await sequelize.authenticate();
-    console.log('Database connected successfully.');
-
-    // ✅ Sync all models after connection
-    await sequelize.sync({ alter: true }); // or { force: true } for dev reset
-    console.log('✅ All models synced to the database.');
-
-    // await umzug.up();
-    console.log('Database migrations applied successfully.');
 
     const server = http.createServer(app);
     const wss = new WebSocket.Server({ server });

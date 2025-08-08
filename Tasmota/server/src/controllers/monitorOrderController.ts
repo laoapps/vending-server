@@ -1,13 +1,11 @@
 import { Op } from 'sequelize';
 import { Order } from '../models/order';
 import { Device } from '../models/device';
-import { SchedulePackage } from '../models/schedulePackage';
 import { publishMqttMessage, subscribeToTopic } from '../services/mqttService';
 import redis from '../config/redis';
 import { notifyStakeholders } from '../services/wsService';
 
 export const startDeviceMonitoring = () => {
-  // Subscribe to Tasmota SENSOR topic for energy consumption
   subscribeToTopic('tele/+/SENSOR', async (topic, payload) => {
     const tasmotaId = topic.split('/')[1];
     const device = await Device.findOne({ where: { tasmotaId } });
@@ -15,8 +13,8 @@ export const startDeviceMonitoring = () => {
 
     try {
       const sensorData = JSON.parse(payload.toString());
-      const energy = sensorData?.ENERGY?.Total || 0;
-      await device.update({ energy });
+      const energy = sensorData?.ENERGY?.Total || 0; // Energy in kWh
+      await device.update({ energy }); // Store as kWh
 
       const orderKeys = await redis.keys('activeOrder:*');
       for (const key of orderKeys) {
@@ -32,7 +30,6 @@ export const startDeviceMonitoring = () => {
     }
   });
 
-  // Subscribe to Tasmota LWT topic for device status
   subscribeToTopic('tele/+/LWT', async (topic, payload) => {
     const tasmotaId = topic.split('/')[1];
     const device = await Device.findOne({ where: { tasmotaId } });
@@ -50,7 +47,6 @@ export const startDeviceMonitoring = () => {
     }
   });
 
-  // Subscribe to Tasmota STATE topic to verify power state
   subscribeToTopic('tele/+/STATE', async (topic, payload) => {
     const tasmotaId = topic.split('/')[1];
     const device = await Device.findOne({ where: { tasmotaId } });
@@ -67,7 +63,11 @@ export const startDeviceMonitoring = () => {
           if (!order || order.dataValues.completedTime) continue;
 
           if (powerState === 'OFF' && !order.dataValues.completedTime) {
-            await handlePowerLoss(orderData);
+            if (orderData.conditionType === 'energy_consumption') {
+              await stopOrder(orderData.orderId, 'Order completed due to energy consumption limit (device rule).');
+            } else {
+              await handlePowerLoss(orderData);
+            }
           }
         }
       }
@@ -84,9 +84,10 @@ const stopOrder = async (orderId: number, reason: string) => {
   const device = await Device.findByPk(order.dataValues.deviceId);
   if (device) {
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
   }
 
-  order.dataValues.completedTime = new Date();
+  order.set('completedTime', new Date());
   await order.save();
   await redis.del(`activeOrder:${orderId}`);
   await notifyStakeholders(order, reason);
