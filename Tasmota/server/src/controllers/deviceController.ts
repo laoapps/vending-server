@@ -3,6 +3,8 @@ import { DeviceService } from '../services/deviceService';
 import { findRealDB } from '../services/userManagerService';
 import models from '../models';
 import { z } from 'zod';
+import { publishMqttMessage } from '../services/mqttService';
+import { Device } from '../models/device';
 
 // Validation schema for control device
 const controlDeviceSchema = z.object({
@@ -20,7 +22,7 @@ export const createDevice = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }
     const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone, groupId);
-  console.log('createDevice4',device);
+    console.log('createDevice4', device);
 
     // await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
@@ -94,3 +96,36 @@ export const controlDevice = async (req: Request, res: Response) => {
   }
 };
 
+export const clearDeviceRule = async (req: Request, res: Response) => {
+  const { deviceId, relay = 1 } = req.body;
+  const user = res.locals.user;
+  try {
+    console.log('clearDeviceRule000',deviceId,relay);
+    const device = await Device.findByPk(deviceId);
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    // // 1. Clear existing rule and disable it
+    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '""');
+    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
+
+    // Clear existing rule and timer
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+
+    // 2. Turn relay ON directly
+    const command = 'ON';
+    const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${relay || 1}`;
+    await publishMqttMessage(topic, command);
+
+    console.log('controlDevice222');
+    res.json({ message: 'Command sent' });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.errors });
+    } else {
+      res.status(500).json({ error: (error as Error).message || 'Failed to control device' });
+    }
+  }
+};
