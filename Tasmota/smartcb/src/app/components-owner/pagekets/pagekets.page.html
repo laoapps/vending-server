@@ -28,7 +28,7 @@
         <ion-button color="warning" fill="clear" (click)="openEditModal(item)">
           <ion-icon slot="icon-only" name="create-outline"></ion-icon>
         </ion-button>
-        <ion-button color="danger" fill="clear" (click)="deleteSchedulePackage(i)">
+        <ion-button color="danger" fill="clear" (click)="deleteSchedulePackage(item?.id)">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
