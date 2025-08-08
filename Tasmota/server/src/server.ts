@@ -2,7 +2,7 @@ import app from './app';
 import sequelize from './config/database';
 import { Umzug, SequelizeStorage } from 'umzug';
 import cron from 'node-cron';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { Order } from './models/order';
 import { Device } from './models/device';
 import WebSocket from 'ws';
@@ -156,12 +156,21 @@ async function startServer() {
         }
 
         const twentyFourHoursAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+        const whereCondition: WhereOptions<any> = {
+          paidTime: { [Op.is]: null },
+          createdAt: { [Op.lte]: twentyFourHoursAgo },
+        };
+
         const deletedCount = await Order.destroy({
-          where: {
-            paidTime: '',
-            createdAt: { [Op.lte]: twentyFourHoursAgo },
-          },
+          where: whereCondition,
         });
+        // const deletedCount = await Order.destroy({
+        //   where: {
+        //     paidTime: {[Op.is]:null},
+        //     createdAt: { [Op.lte]: twentyFourHoursAgo },
+        //   },
+        // });
 
         if (deletedCount > 0) {
           console.log(`Deleted ${deletedCount} unpaid order(s)`);
