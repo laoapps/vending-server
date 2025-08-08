@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validationMiddleware';
 import { z } from 'zod';
-import { createSchedulePackage, deleteSchedulePackage, getSchedulePackages } from '../controllers/schedulePackageController';
+import { createSchedulePackage, deleteSchedulePackage, getSchedulePackages, updateSchedulePackage } from '../controllers/schedulePackageController';
 
 const router = Router();
 
@@ -13,12 +13,8 @@ const createSchedulePackageSchema = z.object({
   conditionValue: z.number().min(1),
 });
 
-const applySchedulePackageSchema = z.object({
-  packageId: z.number(),
-  deviceId: z.number(),
-});
-
 router.post('/', authMiddleware, validate(createSchedulePackageSchema), createSchedulePackage);
+router.put('/:id', authMiddleware, validate(createSchedulePackageSchema), updateSchedulePackage);
 router.get('/', authMiddleware, getSchedulePackages);
 router.delete('/:id', authMiddleware, deleteSchedulePackage);
 
