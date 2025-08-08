@@ -87,6 +87,9 @@ export class ApiService {
   createSchedulePackage(name: string, price: number, conditionType: string, conditionValue: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/schedule-packages`, { name, price, conditionType, conditionValue }, this.getAuthHeaders());
   }
+  editSchedulePackage(id:number,name: string, price: number, conditionType: string, conditionValue: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/schedule-packages/${id}`, { name, price, conditionType, conditionValue }, this.getAuthHeaders());
+  }
   // createSchedulePackage(name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
   //   return this.http.post(`${this.apiUrl}/schedule-packages`, { name, durationMinutes, powerConsumptionWatts, price }, this.getAuthHeaders());
   // }
