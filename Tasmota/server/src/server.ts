@@ -107,13 +107,29 @@ async function startServer() {
           .filter(({ data }) => data.orderId)
           .map(({ data }) => data.orderId);
 
+        // const orders = await Order.findAll({
+        //   where: { id: { [Op.in]: orderIds }, completedTime: { [Op.eq]: '' } },
+        //   include: [
+        //     { model: models.Device, as: 'device' },
+        //     { model: models.SchedulePackage, as: 'package' },
+        //   ],
+        // });
+
+        // If you want only NULL completedTime
+        const whereCondition2: WhereOptions<any> = {
+          id: { [Op.in]: orderIds },
+          completedTime: { [Op.is]: null }
+        };
+
         const orders = await Order.findAll({
-          where: { id: { [Op.in]: orderIds }, completedTime: { [Op.eq]: '' } },
+          where: whereCondition2,
           include: [
             { model: models.Device, as: 'device' },
             { model: models.SchedulePackage, as: 'package' },
           ],
         });
+
+
 
         for (const order of orders) {
           const key = `activeOrder:${order.dataValues.id}`;
