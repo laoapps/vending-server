@@ -555,10 +555,14 @@ export class ApiService {
     loadVendingMachineStockReport(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');
-        data.shopPhonenumber = shopPhonenumber;
-        data.secret = secret;
-        return this.http.post(this.url + '/loadVendingMachineStockReport', data, { headers: this.headerBase() });
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/loadVendingMachineStockReport', payload, { headers: this.headerBase() });
     }
+
 
     getFreeProduct(position: number, id: number) {
         this.currentPaymentProvider = EPaymentProvider.mmoney;
