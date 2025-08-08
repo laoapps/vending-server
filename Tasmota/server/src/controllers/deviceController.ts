@@ -100,9 +100,9 @@ export const clearDeviceRule = async (req: Request, res: Response) => {
   const { deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
   try {
-    console.log('clearDeviceRule000',deviceId,relay);
+    console.log('clearDeviceRule000', deviceId, relay);
     const device = await Device.findByPk(deviceId);
-    console.log('clearDeviceRule111',device?.toJSON());
+    console.log('clearDeviceRule111', device?.toJSON());
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });
     }
@@ -111,14 +111,32 @@ export const clearDeviceRule = async (req: Request, res: Response) => {
     // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '""');
     // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
 
-    // Clear existing rule and timer
+    // // Clear existing rule and timer
+    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+
+    // // 2. Turn relay ON directly
+    // const command = 'ON';
+    // const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${relay || 1}`;
+    // await publishMqttMessage(topic, command);
+
+    // 1. ปิดการทำงานของ Rule ก่อน
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
+
+    // 2. เคลียร์ Rule
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+
+    // 3. ปิดการทำงานของ Timer
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '0');
+
+    // 4. เคลียร์ค่า Timer
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
 
-    // 2. Turn relay ON directly
+    // 5. เปิด Relay ตามต้องการ
     const command = 'ON';
     const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${relay || 1}`;
     await publishMqttMessage(topic, command);
+
 
     console.log('controlDevice222');
     res.json({ message: 'Command sent' });
