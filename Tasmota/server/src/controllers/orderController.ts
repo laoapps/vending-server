@@ -210,8 +210,9 @@ export const payOrder = async (req: Request, res: Response) => {
     order.set('startedTime', new Date());
     await order.save();
 
-    // Clear existing rule and timer
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '0');
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
 
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {

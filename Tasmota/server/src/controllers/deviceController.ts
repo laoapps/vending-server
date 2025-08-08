@@ -107,19 +107,6 @@ export const clearDeviceRule = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Device not found' });
     }
 
-    // // 1. Clear existing rule and disable it
-    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '""');
-    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
-
-    // // Clear existing rule and timer
-    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-
-    // // 2. Turn relay ON directly
-    // const command = 'ON';
-    // const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${relay || 1}`;
-    // await publishMqttMessage(topic, command);
-
     // 1. ปิดการทำงานของ Rule ก่อน
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
 
