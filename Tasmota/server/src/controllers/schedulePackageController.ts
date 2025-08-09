@@ -27,11 +27,24 @@ export const createSchedulePackage = async (req: Request, res: Response) => {
       price,
       conditionType,
       conditionValue,
-    }as any);
+    } as any);
 
     res.json(schedulePackage);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to create schedule package' });
+  }
+};
+
+export const findByOwnerID = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  const { id } = req.params;
+  try {
+    const schedulePackages = await models.SchedulePackage.findAll({
+      where: { ownerId: Number(id+'') }
+    });
+    res.json(schedulePackages);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedule packages' });
   }
 };
 
