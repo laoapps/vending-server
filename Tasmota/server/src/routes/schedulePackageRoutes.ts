@@ -14,7 +14,7 @@ const createSchedulePackageSchema = z.object({
 });
 
 router.post('/', authMiddleware, validate(createSchedulePackageSchema), createSchedulePackage);
-router.get('findByOwnerID/:id', authMiddleware, findByOwnerID);
+router.get('/findByOwnerID/:id', authMiddleware, findByOwnerID);
 router.put('/:id', authMiddleware, validate(createSchedulePackageSchema), updateSchedulePackage);
 router.get('/', authMiddleware, getSchedulePackages);
 router.delete('/:id', authMiddleware, deleteSchedulePackage);
