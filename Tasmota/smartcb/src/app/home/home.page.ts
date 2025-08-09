@@ -5,6 +5,7 @@ import { UserSchedulesPage } from '../pages/user-schedules/user-schedule.page';
 import { OwnerDashboardPage } from '../pages/owner-dashboard/owner-dashboard.page';
 import { LoadingService } from '../services/loading.service';
 import { OwnerPage } from '../pages/owner/owner.page';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +17,13 @@ export class HomePage implements OnInit {
   role: string | null = null;
   token: string = '';
 
-  constructor(private apiService: ApiService, private router: Router, public m:LoadingService) {}
+  constructor(private apiService: ApiService, private router: Router, public m:LoadingService,
+    private navCtrl: NavController
+  ) {
+    if (!localStorage.getItem('token') || localStorage.getItem('token') == null) {
+      this.router.navigate(['/login']);
+    }
+  }
 
   ngOnInit() {
     const storedToken = localStorage.getItem('token');
@@ -52,6 +59,14 @@ export class HomePage implements OnInit {
     );
   }
 
+  navigateTos(page: string) {
+    if (page === 'manage-devices') {
+      this.navCtrl.navigateForward('/manage-devices');
+    } else if (page === 'view-reports') {
+      this.navCtrl.navigateForward('/view-reports');
+    }
+  }
+
   navigateTo(path: string) {
     this.router.navigate([path]);
   }
@@ -77,5 +92,11 @@ export class HomePage implements OnInit {
         })
       }
     })
+  }
+
+  logout() {
+    // Example: Clear token and redirect to login page
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 }

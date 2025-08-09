@@ -27,6 +27,17 @@ export class ApiService {
   getDevices(): Observable<any> {
     return this.http.get(`${this.apiUrl}/devices`, this.getAuthHeaders());
   }
+  //user
+  getDevicesBy(data): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices/getDevicesBy`,data, this.getAuthHeaders());
+  }
+
+  orders(data): Observable<any> {
+    return this.http.post(`${this.apiUrl}/orders`,data, this.getAuthHeaders());
+  }
+  owners_detail(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/owners/findByID`, this.getAuthHeaders());
+  }
 
   updateDevice(id: number, name: string, tasmotaId: string, zone?: string, groupId?: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/devices/${id}`, { name, tasmotaId, zone, groupId }, this.getAuthHeaders());
@@ -96,6 +107,9 @@ export class ApiService {
 
   getSchedulePackages(): Observable<any> {
     return this.http.get(`${this.apiUrl}/schedule-packages`, this.getAuthHeaders());
+  }
+  schedulepackages(ownerID:number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/schedule-packages/findByOwnerID/${ownerID}`, this.getAuthHeaders());
   }
 
   updateSchedulePackage(id: number, name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {

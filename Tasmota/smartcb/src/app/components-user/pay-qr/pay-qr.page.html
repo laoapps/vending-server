@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Pay qr code</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="main-top"></div>
+  <div class="div-content">
+    <div class="div-qr-code">
+      <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;">
+        <img src="{{qrcode_logo}}" alt="" >
+      </div>
+    </div>
+  </div>
+</ion-content>

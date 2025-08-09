@@ -55,6 +55,38 @@ const routes: Routes = [
     path: 'login',
     loadChildren: () => import('./auth/login/login.module').then( m => m.LoginPageModule)
   },
+  {
+    path: 'user',
+    loadChildren: () => import('./pages/user/user.module').then( m => m.UserPageModule)
+  },
+  {
+    path: 'status',
+    loadChildren: () => import('./components-user/status/status.module').then( m => m.StatusPageModule)
+  },
+  {
+    path: 'history',
+    loadChildren: () => import('./components-user/history/history.module').then( m => m.HistoryPageModule)
+  },
+  {
+    path: 'show-devices',
+    loadChildren: () => import('./components-user/show-devices/show-devices.module').then( m => m.ShowDevicesPageModule)
+  },
+  {
+    path: 'show-pageket',
+    loadChildren: () => import('./components-user/show-pageket/show-pageket.module').then( m => m.ShowPageketPageModule)
+  },
+  {
+    path: 'gen-qr-code',
+    loadChildren: () => import('./components-owner/gen-qr-code/gen-qr-code.module').then( m => m.GenQrCodePageModule)
+  },
+  {
+    path: 'list-devices-qr',
+    loadChildren: () => import('./components-owner/list-devices-qr/list-devices-qr.module').then( m => m.ListDevicesQrPageModule)
+  },
+  {
+    path: 'pay-qr',
+    loadChildren: () => import('./components-user/pay-qr/pay-qr.module').then( m => m.PayQrPageModule)
+  },
 
  
 ];
