@@ -43,6 +43,20 @@ export const getDevices = async (req: Request, res: Response) => {
   }
 };
 
+export const getDevicesBy = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  const { ownerId, id } = req.body;
+  if (!ownerId) {
+    return res.status(403).json({ error: 'Owner not found' });
+  }
+  try {
+    const devices = await DeviceService.getDevicesBy({ ownerId, id });
+    res.json(devices);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch devices' });
+  }
+};
+
 export const updateDevice = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, tasmotaId, zone, groupId } = req.body;
