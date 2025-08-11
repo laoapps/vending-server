@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { SchedulePackage } from '../models/schedulePackage';
 import { Device } from '../models/device';
 import { Order } from '../models/order';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import redis from '../config/redis';
 import { DEVICE_CACHE_PREFIX, publishMqttMessage } from '../services/mqttService';
 import { notifyStakeholders } from '../services/wsService';
@@ -33,6 +33,15 @@ export const testOrder = async (req: Request, res: Response) => {
 
 
 
+    const ordersD = await findActiveOrderByDeviceId(deviceId)
+    if (ordersD.length) {
+      ordersD.forEach(v => {
+        const key = `activeOrder:${v?.orderId}`;
+        redis.del(key)
+      })
+    }
+    // close exist Order
+    await closeActiveOrder(deviceId);
 
 
     order.set('paidTime', new Date());
@@ -46,13 +55,20 @@ export const testOrder = async (req: Request, res: Response) => {
     }
 
     // Clear existing rule and timer
+    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '0');
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
 
     // const current_energy = await redis.get(`${DEVICE_CACHE_PREFIX}${device.dataValues.tasmotaId}`);
     // if(current_energy){
 
     // }
+
+    let newconditionValue = 0;
 
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
@@ -61,7 +77,7 @@ export const testOrder = async (req: Request, res: Response) => {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
 
-      const newconditionValue = (device.dataValues.energy || 0) + (schedulePackage.dataValues.conditionValue / 1000)
+      newconditionValue = (device.dataValues.energy || 0) + (schedulePackage.dataValues.conditionValue / 1000)
       const updateNewconditionValue = await order.update({
         conditionValue: newconditionValue
       });
@@ -72,6 +88,8 @@ export const testOrder = async (req: Request, res: Response) => {
       const minutes = Math.ceil(schedulePackage.dataValues.conditionValue);
       const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, timer);
+
+      newconditionValue = minutes
     }
 
     const command = 'ON';
@@ -182,6 +200,19 @@ export const payOrder = async (req: Request, res: Response) => {
     console.log('payOrder==========', req.body);
 
     const order = await Order.findByPk(Number(orderID));
+    const deviceId = order?.dataValues.deviceId;
+    const ordersD = await findActiveOrderByDeviceId(deviceId)
+    if (ordersD.length) {
+      ordersD.forEach(v => {
+        const key = `activeOrder:${v?.orderId}`;
+        redis.del(key)
+      })
+    }
+    // close exist Order
+    await closeActiveOrder(deviceId);
+
+
+
     console.log('payOrder==========111', order);
 
     if (!order) {
@@ -215,13 +246,14 @@ export const payOrder = async (req: Request, res: Response) => {
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '0');
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
 
+    let newconditionValue = 0;
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
       const rule = `ON Energy#Total>${(schedulePackage.dataValues.conditionValue / 1000) + (device?.dataValues?.energy || 0)} DO Power${order.dataValues.relay || 1} OFF ENDON`;
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
 
-      const newconditionValue = (device.dataValues.energy || 0) + (schedulePackage.dataValues.conditionValue / 1000)
+      newconditionValue = (device.dataValues.energy || 0) + (schedulePackage.dataValues.conditionValue / 1000)
       const updateNewconditionValue = await order.update({
         conditionValue: newconditionValue
       });
@@ -230,6 +262,7 @@ export const payOrder = async (req: Request, res: Response) => {
       const minutes = Math.ceil(schedulePackage.dataValues.conditionValue);
       const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, timer);
+      newconditionValue = minutes;
     }
 
     const command = 'ON';
@@ -242,7 +275,7 @@ export const payOrder = async (req: Request, res: Response) => {
       tasmotaId: device.dataValues.tasmotaId,
       packageId: order.dataValues.packageId,
       conditionType: schedulePackage.dataValues.conditionType,
-      conditionValue: schedulePackage.dataValues.conditionValue,
+      conditionValue: newconditionValue,
       startedTime: order.dataValues.startedTime.getTime(),
       relay: order.dataValues.relay || 1,
     };
@@ -284,3 +317,37 @@ export const completeOrder = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message || 'Failed to complete order' });
   }
 };
+
+export async function findActiveOrderIds() {
+  const orderKeys = await redis.keys('activeOrder:*');
+  const ordersData = await Promise.all(
+    orderKeys.map(async (key) => ({
+      key,
+      data: JSON.parse((await redis.get(key)) || '{}'),
+    }))
+  );
+  const orderIds = ordersData
+    .filter(({ data }) => data.orderId)
+    .map(({ data }) => data.orderId);
+
+  return orderIds
+}
+export const findActiveOrderByDeviceId = async (deviceId: number = -1) => {
+  const orderIds = await findActiveOrderIds()
+  const whereCondition2: WhereOptions<any> = {
+    id: { [Op.in]: orderIds },
+    completedTime: { [Op.is]: null }
+  };
+
+  const orders = await Order.findAll({
+    where: whereCondition2
+  });
+  const deviceIds = orders.map(v => { return { deviceId: v.dataValues.deviceId, orderId: v.dataValues.id, packageId: v.dataValues.packageId } })
+  return deviceId != -1 ? deviceIds.filter(v => v.deviceId == deviceId) : deviceIds;
+}
+export const closeActiveOrder = async (deviceId: number = -1) => {
+
+  const order = await Order.findOne({ where: { id: deviceId } });
+  order?.set('completedTime', new Date());
+  return await order?.save();
+}
