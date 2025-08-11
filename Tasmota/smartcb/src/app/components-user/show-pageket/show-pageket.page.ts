@@ -44,7 +44,7 @@ export class ShowPageketPage implements OnInit {
       console.log('====================================');
       console.log('res',r);
       console.log('====================================');
-      this.m.showModal(PayQrPage,{data:r?.qr.data,data_device:this.data_device,data_pageket:item}).then((r) => {
+      this.m.showModal(PayQrPage,{data:r?.qr.data,data_device:this.data_device | this.deviceID,data_pageket:item}).then((r) => {
         if (r) {
           r.present();
           r.onDidDismiss().then((res) => {
