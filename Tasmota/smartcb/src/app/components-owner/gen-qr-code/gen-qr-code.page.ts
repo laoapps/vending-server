@@ -18,6 +18,7 @@ export class GenQrCodePage implements OnInit {
   countdown: string = '';
   public pic_device = '../../../assets/icon/favicon.png'
   @Input() data:any
+  @Input() ownerID:any
 
 
   constructor(public apiService: ApiService, public m: LoadingService) {}
@@ -39,7 +40,7 @@ export class GenQrCodePage implements OnInit {
     // this.load.onLoading('')
     let data:any
     if (type == 'device') {
-      data = {deviceID:item}
+      data = {deviceID:item,ownerID:this.ownerID}
     }else{
       data = {ownerID:item}
     }

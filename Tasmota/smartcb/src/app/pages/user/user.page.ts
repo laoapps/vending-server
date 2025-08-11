@@ -9,6 +9,7 @@ import {
   BarcodeFormat,
 } from '@capacitor-mlkit/barcode-scanning';
 import { ShowDevicesPage } from 'src/app/components-user/show-devices/show-devices.page';
+import { ShowPageketPage } from 'src/app/components-user/show-pageket/show-pageket.page';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -91,16 +92,37 @@ export class UserPage implements OnInit {
   //   });
   }
 
-  getResultscan(data){
-    this.m.showModal(ShowDevicesPage,{data:JSON.parse(data)}).then((r) => {
-      if (r) {
-        r.present();
-        r.onDidDismiss().then((res) => {
-          if (res.data.dismiss) {
-          }
-        });
-      }
-    });
+  async getResultscan(data){
+    const new_data = JSON.parse(data)
+    if (new_data?.ownerID && new_data?.deviceID) {
+      this.m.showModal(ShowPageketPage,{data:new_data,deviceID:new_data?.deviceID}).then((r) => {
+        if (r) {
+          r.present();
+          r.onDidDismiss().then((res) => {
+            if (res.data.dismiss) {
+            }
+          });
+        }
+      });
+    }else if(new_data?.ownerID && !new_data?.deviceID || new_data?.deviceID == null){
+      this.m.showModal(ShowDevicesPage,{data:JSON.parse(data)}).then((r) => {
+        if (r) {
+          r.present();
+          r.onDidDismiss().then((res) => {
+            if (res.data.dismiss) {
+            }
+          });
+        }
+      });
+    }else{
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'Error Qr not found!!',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
   }
 
 }

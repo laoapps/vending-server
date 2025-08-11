@@ -45,7 +45,7 @@ export class ShowDevicesPage implements OnInit {
     console.log('====================================');
     console.log(item);
     console.log('====================================');
-    this.m.showModal(ShowPageketPage,{data:this.data,deviceID:item.id}).then((r) => {
+    this.m.showModal(ShowPageketPage,{data:this.data,deviceID:item.id,data_device:item}).then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {

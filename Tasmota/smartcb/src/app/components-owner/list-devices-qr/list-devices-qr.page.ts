@@ -68,7 +68,7 @@ export class ListDevicesQrPage implements OnInit {
                 (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
             } catch (error) {
               console.log(
-                `Failed to parse telemetry data for device ${device.tasmotaId}:`,
+                `Failed to parse telemetry data for device ${device?.tasmotaId}:`,
                 error
               );
               device.status = message.payload.toString();
@@ -83,7 +83,7 @@ export class ListDevicesQrPage implements OnInit {
   }
 
   onClick_to_qr(item){
-    this.m.showModal(GenQrCodePage,{data:item}).then((r) => {
+    this.m.showModal(GenQrCodePage,{data:item,ownerID:item.ownerId}).then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {

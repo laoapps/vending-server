@@ -15,6 +15,7 @@ export class ShowPageketPage implements OnInit {
   schedulePackages: any[] = [];
   @Input() data:any
   @Input() deviceID:any
+  @Input() data_device:any
   constructor(public m: LoadingService, private apiService: ApiService,
     public alertController: AlertController
   ) {}
@@ -43,7 +44,7 @@ export class ShowPageketPage implements OnInit {
       console.log('====================================');
       console.log('res',r);
       console.log('====================================');
-      this.m.showModal(PayQrPage,{data:r?.qr.data}).then((r) => {
+      this.m.showModal(PayQrPage,{data:r?.qr.data,data_device:this.data_device,data_pageket:item}).then((r) => {
         if (r) {
           r.present();
           r.onDidDismiss().then((res) => {

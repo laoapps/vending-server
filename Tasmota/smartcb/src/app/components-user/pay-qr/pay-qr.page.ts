@@ -18,8 +18,11 @@ export class PayQrPage implements OnInit {
   currentColor: string = 'color-red';
   private colorInterval: any;
   countdown: string = '';
-  public pic_device = '../../../assets/icon/favicon.png'
+  public pic_device = '../../../assets/icon/laoqr.png'
   @Input() data:any
+  @Input() data_device:any
+  @Input() data_pageket:any
+
 
 
   constructor(public apiService: ApiService, public m: LoadingService) {}
