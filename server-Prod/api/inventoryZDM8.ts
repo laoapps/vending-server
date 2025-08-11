@@ -1092,16 +1092,48 @@ export class InventoryZDM8 implements IBaseClass {
                         // console.log(`----------->`, m);
 
                         const ws = this.wsClient.find(v => v['machineId'] === m);
-                        ws.send(
+                        // ws.send(
+                        //     JSON.stringify(
+                        //         PrintSucceeded(
+                        //             "ping",
+                        //             {
+                        //                 command: "ping",
+                        //                 production: this.production,
+                        //                 setting: { refresh: true }
+                        //             },
+                        //             EMessage.succeeded,
+                        //             null
+                        //         )
+                        //     )
+                        // );
+
+                        ws?.send(
                             JSON.stringify(
                                 PrintSucceeded(
                                     "ping",
                                     {
                                         command: "ping",
-                                        production: this.production,
-                                        setting: { refresh: true }
+                                        production: this.production, // no versioning
+                                        balance: {},// no versioning
+                                        limiter: {},// no versioning
+                                        merchant: {},// no versioning
+                                        mymmachinebalance: {},// no versioning
+                                        mymlimiterbalance: {},// no versioning
+                                        setting: { refresh: true },
+                                        mstatus: {},// no versioning
+                                        mymstatus: {},// no versioning
+                                        mymsetting: {},// no versioning
+                                        mymlimiter: {},// no versioning
+                                        app_version: {},// no versioning
+                                        pendingStock: {},// no versioning
+
+                                        adsSetting: {},
+                                        adsVersion: {},
+                                        settingVersion: {},
+
                                     },
-                                    EMessage.succeeded,
+                                    EMessage.succeeded
+                                    ,
                                     null
                                 )
                             )
@@ -1127,16 +1159,49 @@ export class InventoryZDM8 implements IBaseClass {
                         // console.log(`----------->`, m);
 
                         const ws = this.wsClient.find(v => v['machineId'] === m);
-                        ws.send(
+                        // ws.send(
+                        //     JSON.stringify(
+                        //         PrintSucceeded(
+                        //             "ping",
+                        //             {
+                        //                 command: "ping",
+                        //                 production: this.production,
+                        //                 setting: { exit: true }
+                        //             },
+                        //             EMessage.succeeded,
+                        //             null
+                        //         )
+                        //     )
+                        // );
+
+
+                        ws?.send(
                             JSON.stringify(
                                 PrintSucceeded(
                                     "ping",
                                     {
                                         command: "ping",
-                                        production: this.production,
-                                        setting: { exit: true }
+                                        production: this.production, // no versioning
+                                        balance: {},// no versioning
+                                        limiter: {},// no versioning
+                                        merchant: {},// no versioning
+                                        mymmachinebalance: {},// no versioning
+                                        mymlimiterbalance: {},// no versioning
+                                        setting: { exit: true },
+                                        mstatus: {},// no versioning
+                                        mymstatus: {},// no versioning
+                                        mymsetting: {},// no versioning
+                                        mymlimiter: {},// no versioning
+                                        app_version: {},// no versioning
+                                        pendingStock: {},// no versioning
+
+                                        adsSetting: {},
+                                        adsVersion: {},
+                                        settingVersion: {},
+
                                     },
-                                    EMessage.succeeded,
+                                    EMessage.succeeded
+                                    ,
                                     null
                                 )
                             )
