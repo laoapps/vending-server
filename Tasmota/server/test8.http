@@ -55,6 +55,15 @@ Authorization: Bearer {{jwtToken}}
   "conditionValue": 5
 }
 
+### GET packages by ownerID
+GET https://{{host}}/api/schedule-packages/findByOwnerID/1
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+
+}
+
 ### test clear device rule
 POST https://{{host}}/api/devices/clearDeviceRule
 Content-Type: application/json

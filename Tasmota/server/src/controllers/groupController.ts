@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import models from '../models';
 
 export const createGroup = async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, description } = req.body;
   const user = res.locals.user;
 
   try {
@@ -13,6 +13,7 @@ export const createGroup = async (req: Request, res: Response) => {
 
     const group = await models.DeviceGroup.create({
       name,
+      description,
       ownerId: owner.dataValues.id,
     } as any);
 
@@ -52,7 +53,7 @@ export const getGroups = async (req: Request, res: Response) => {
 
 export const updateGroup = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name,description } = req.body;
   const user = res.locals.user;
 
   try {
@@ -66,7 +67,7 @@ export const updateGroup = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Group not found or not owned' });
     }
 
-    await group.update({ name });
+    await group.update({ name, description });
     res.json(group);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to update group' });

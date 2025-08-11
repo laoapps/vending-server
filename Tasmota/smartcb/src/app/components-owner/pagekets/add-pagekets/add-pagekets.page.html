@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>add pagekets</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card class="form-card">
+    <ion-card-header>
+      <ion-card-title class="title">Create Pageket</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-item class="input-item">
+        <ion-label position="floating">Name</ion-label>
+        <ion-input type="text" [(ngModel)]="newSchedulePackage.name"></ion-input>
+      </ion-item>
+
+      <ion-item class="input-item">
+        <ion-label position="floating">Price (USD)</ion-label>
+        <ion-input type="number" [(ngModel)]="newSchedulePackage.price"></ion-input>
+      </ion-item>
+
+      <ion-item class="input-item">
+        <ion-label>Condition Type</ion-label>
+        <ion-select [(ngModel)]="newSchedulePackage.conditionType" interface="popover" placeholder="Select Type">
+          <ion-select-option value="time_duration">Time Duration</ion-select-option>
+          <ion-select-option value="energy_consumption">Energy Consumption</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item class="input-item">
+        <ion-label position="floating">Condition Value</ion-label>
+        <ion-input type="number" [(ngModel)]="newSchedulePackage.conditionValue"></ion-input>
+      </ion-item>
+
+      <ion-button *ngIf="title == 'add'" expand="block" shape="round" color="primary" class="add-button" (click)="addSchedulePackage()">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Add Pageket
+      </ion-button>
+      <ion-button *ngIf="title == 'edit'" expand="block" shape="round" color="warning" class="add-button" (click)="editSchedulePackage()">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Edit Pageket
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+

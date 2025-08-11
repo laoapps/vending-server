@@ -1,4 +1,4 @@
-import { Router ,Request,Response} from 'express';
+import { Router, Request, Response } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import models from '../models';
 
@@ -22,6 +22,18 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     res.json(owners);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch owners' });
+  }
+});
+
+router.get('/findByID', authMiddleware, async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  try {
+    const owner = await models.Owner.findOne({
+      where: { uuid: user.uuid }
+    });
+    res.json(owner);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch owner' });
   }
 });
 
