@@ -139,6 +139,10 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
     console.log(`Device ${tasmotaId} sensor data unchanged in cache: energy=${energy}, power=${power}`);
     return;
   }
+  if(energy<=0||power<=0){
+        console.log(`Device ${tasmotaId} sensor data 0  in cache: energy=${energy}, power=${power}`);
+    return ;
+  }
 
   // Update database
   const device = await Device.findOne({ where: { tasmotaId } });

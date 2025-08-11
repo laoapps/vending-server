@@ -106,17 +106,12 @@ async function startServer() {
           }))
         );
 
-
-
         for (const order of ordersData) {
           const key = `activeOrder:${order.data.orderId}`;
           if (!order) {
             await redis.del(key);
             continue;
           }
-
-
-
 
           const device = await getDeviceFromCache(order.data.tasmotaId)
           if (order.data.conditionType === 'time_duration') {
