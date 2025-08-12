@@ -25,8 +25,13 @@ export class ShowPageketPage implements OnInit {
   }
 
   load_data(){
+    this.m.onLoading('')
     this.apiService.schedulepackages(this.data?.ownerID).subscribe((packages) => {
+      this.m.onDismiss();
       this.schedulePackages = packages;
+    },error=>{
+      this.m.onDismiss();
+      this.m.alertError('load pageket fail!!')
     });
   }
 

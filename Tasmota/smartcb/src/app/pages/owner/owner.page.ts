@@ -31,25 +31,7 @@ export class OwnerPage implements OnInit {
   }
 
   async logout(){
-    const alert = await this.alertController.create({
-      header: 'Confirm logout',
-      message: 'Are you sure you want logout?',
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'ok',
-          handler: () => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('uuid');
-            localStorage.removeItem('id_owner');
-            localStorage.removeItem('ownerHeader');
-            this.router.navigate(['/login']);
-          },
-        },
-      ],
-    });
-    await alert.present();
-
+    this.m.logout();
   }
 
   onMenuSelect(menu: any) {

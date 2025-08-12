@@ -45,14 +45,10 @@ export class AddPageketsPage implements OnInit {
       this.newSchedulePackage.price <= 0 ||
       this.newSchedulePackage.conditionValue <= 0
     ) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Please fill in all fields with valid values.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
+    this.m.onLoading('')
     this.apiService
       .createSchedulePackage(
         this.newSchedulePackage.name,
@@ -63,6 +59,7 @@ export class AddPageketsPage implements OnInit {
       .subscribe(
         () => {
           // this.loadData();
+          this.m.onDismiss();
           this.m.closeModal({ dismiss: true });
           this.newSchedulePackage = {
             name: '',
@@ -72,6 +69,8 @@ export class AddPageketsPage implements OnInit {
           };
         },
         (error) => {
+          this.m.onDismiss();
+          this.m.onAlert('Failed to create schedule package!!')
           console.error('Failed to create schedule package:', error);
         }
       );
@@ -83,14 +82,10 @@ export class AddPageketsPage implements OnInit {
       this.newSchedulePackage.price <= 0 ||
       this.newSchedulePackage.conditionValue <= 0
     ) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Please fill in all fields with valid values.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
+    this.m.onLoading('')
     this.apiService
       .editSchedulePackage(
         this.data.id,
@@ -102,6 +97,7 @@ export class AddPageketsPage implements OnInit {
       .subscribe(
         () => {
           // this.loadData();
+          this.m.onDismiss();
           this.m.closeModal({ dismiss: true });
           this.newSchedulePackage = {
             name: '',
@@ -111,6 +107,8 @@ export class AddPageketsPage implements OnInit {
           };
         },
         (error) => {
+          this.m.onDismiss();
+          this.m.onAlert('Failed to create schedule package!!')
           console.error('Failed to create schedule package:', error);
         }
       );

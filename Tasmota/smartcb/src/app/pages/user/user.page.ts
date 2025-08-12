@@ -32,25 +32,8 @@ export class UserPage implements OnInit {
   ngOnInit() {
   }
 
-  async logout(){
-    const alert = await this.alertController.create({
-      header: 'Confirm logout',
-      message: 'Are you sure you want logout?',
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'ok',
-          handler: () => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('uuid');
-            localStorage.removeItem('id_owner');
-            localStorage.removeItem('ownerHeader');
-            this.router.navigate(['/login']);
-          },
-        },
-      ],
-    });
-    await alert.present();
+  logout(){
+    this.m.logout();
   }
 
   onClick(item){
@@ -58,20 +41,13 @@ export class UserPage implements OnInit {
       BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] })
       .then(async (barcodeData) => {
         if (barcodeData.barcodes) {
-          // this.load.alertError(`Formar: ${barcodeData.barcodes[0].rawValue}`);
           this.getResultscan(barcodeData.barcodes[0].rawValue);
         } else {
-          const alert = await this.alertController.create({
-            header: 'Error',
-            message: 'Error Qr not found!!',
-            buttons: ['OK'],
-          });
-          await alert.present();
-          return;
+          this.m.alertError('Error Qr not found!!')
         }
       })
       .catch((err) => {
-        console.log("Error", err);
+        this.m.alertError('Error Qr not found!!')
       });
     }else if(item.title == 'Register owner'){
       const a = localStorage.getItem('token')
@@ -81,17 +57,14 @@ export class UserPage implements OnInit {
           console.log(response);
           console.log('====================================');
           if (response) {
-            const alert = await this.alertController.create({
-              header: 'Alert',
-              message: 'Register owner success!!',
-              buttons: ['OK'],
-            });
-            await alert.present();
-            return;
+            this.m.onAlert('Register owner success!!')
           }
-        },
-        (error) => {
-          console.error('Registration failed:', error);
+        },(error) => {
+          if (error?.error == 'Owner already registered') {
+            this.m.onAlert('already registered!!')
+          }else{
+            this.m.alertError('Register failed')
+          }
         }
       );
     }else{
@@ -142,13 +115,7 @@ export class UserPage implements OnInit {
         }
       });
     }else{
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Error Qr not found!!',
-        buttons: ['OK'],
-      });
-      await alert.present();
-      return;
+      this.m.alertError('Error Qr not found!!')
     }
   }
 

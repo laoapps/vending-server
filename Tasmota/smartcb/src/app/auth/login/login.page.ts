@@ -31,26 +31,18 @@ export class LoginPage implements OnInit {
   }
 
   async onClick_login(){
-    const selectedRole = this.isOwner ? 'Owner' : 'User';
-
-    console.log('====================================');
-    console.log(selectedRole);
-    console.log('====================================');
-
     if (!this.phonenumber  || !this.password) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Please fill in all fields with valid values.',
-        buttons: ['OK'],
-      });
-      await alert.present();
-      return;
+      this.m.onAlert('Please fill in all fields with valid values')
+      return
     }
 
     if (!this.isOwner && !this.isUser) {
-      this.showAlert('Alert', 'Please select a role');
+      this.m.onAlert('Please select a role')
       return;
     }
+
+    this.m.onLoading('')
+
 
     let a = JSON.parse(JSON.stringify(this.phonenumber));
     if (a?.toString().length == 8) {
@@ -73,25 +65,12 @@ export class LoginPage implements OnInit {
         this.loadRole();
         // this.navigateTo('/home')
       } else {
-        const alert = await this.alertController.create({
-          header: 'Error',
-          message: 'Login fail please check phonenumber and password',
-          buttons: ['OK'],
-        });
-        await alert.present();
-        return;
+        this.m.onDismiss();
+        this.m.alertError('Login fail please check phonenumber and password')
       }
     },async (error:any) => {
-      console.log('====================================');
-      console.log(error);
-      console.log('====================================');
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Login fail please check phonenumber and password',
-        buttons: ['OK'],
-      });
-      await alert.present();
-      return;
+      this.m.onDismiss();
+      this.m.alertError('Login fail please check phonenumber and password')
     });
   }
 
@@ -123,9 +102,11 @@ export class LoginPage implements OnInit {
           this.load_owner_detail();
           this.navigateTo('/owner')
         }else{
+          this.m.onDismiss()
           this.isOwner = false;
           this.isUser = false;
           this.navigateTo('/user')
+
         }
         
         // if (this.role == 'admin') {
@@ -134,9 +115,8 @@ export class LoginPage implements OnInit {
 
         // }else if(this.role == 'user'){
         // }
-      },
-      () => {
-        // this.role = 'user'; // Default to client user if token is invalid
+      },() => {
+        this.role = 'user'; // Default to client user if token is invalid
       }
     );
   }
@@ -147,24 +127,12 @@ export class LoginPage implements OnInit {
 
   load_owner_detail(){
     this.apiService.owners_detail().subscribe((r)=>{
-      console.log('====================================');
-      console.log('owner detail',r);
-      console.log('====================================');
       localStorage.setItem('id_owner',r.id)
+      this.m.onDismiss()
     },error=>{
-      console.log('====================================');
-      console.log(error);
-      console.log('====================================');
+      this.m.onDismiss();
+      this.m.alertError('Login fail please check phonenumber and password')
     })
-  }
-
-  async showAlert(header: string, message: string) {
-    const alert = await this.alertController.create({
-      header,
-      message,
-      buttons: ['OK'],
-    });
-    await alert.present();
   }
 
 }

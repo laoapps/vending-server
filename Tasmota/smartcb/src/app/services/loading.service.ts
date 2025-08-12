@@ -1,4 +1,5 @@
 import { Injectable, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { AlertController, IonContent, LoadingController, ModalController, Platform, ToastController } from '@ionic/angular';
 
 @Injectable({
@@ -8,10 +9,33 @@ export class LoadingService {
   constructor(public loadingCtrl: LoadingController,
     public modal:ModalController,
     public toast:ToastController,
-    public alertController:AlertController) {}
+    public alertController:AlertController,
+    public router:Router
+  ) {}
 
   load: any;
   gettoast:any;
+
+  async logout(){
+    const alert = await this.alertController.create({
+      header: 'Confirm logout',
+      message: 'Are you sure you want logout?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'ok',
+          handler: () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('uuid');
+            localStorage.removeItem('id_owner');
+            localStorage.removeItem('ownerHeader');
+            this.router.navigate(['/login']);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
 
   async ontoast(txt:string,time:number) {
     const toast = await this.toast.create({
@@ -41,11 +65,12 @@ export class LoadingService {
 
   async onLoading(msg: string, msgCustom?: string) {
     this.load = this.loadingCtrl.create({
-      spinner: 'bubbles',
+      spinner: null,
       duration: 10000,
-      message: msgCustom ? msgCustom : `ກຳລັງໂຫລດຂໍ້ມູນ${msg}...`,
+      // message: msgCustom ? msgCustom : `On Lodding${msg}...`,
+      message: msgCustom ? '<div class="loader"></div>' + msgCustom : '<div class="loader"></div>' + `On lodding${msg}...`,
       translucent: true,
-      cssClass: 'custom-class custom-loading',
+      cssClass: 'loading-wraper',
     });
     (await this.load).present();
   }
@@ -57,11 +82,11 @@ export class LoadingService {
 
   async onAlert(text:any){
     const alert = await this.alertController.create({
-      header: 'ແຈ້ງເຕືອນ',
+      header: 'Alert',
       cssClass:'app-alert',
       backdropDismiss: false,
       message: text,
-      buttons: ['ຕົກລົງ']
+      buttons: ['Ok']
     });
     await alert.present();
   }
@@ -71,7 +96,7 @@ export class LoadingService {
       cssClass:'app-alert',
       backdropDismiss: false,
       message: text,
-      buttons: ['ຕົກລົງ']
+      buttons: ['Ok']
     });
 
     await alert.present();
@@ -79,11 +104,11 @@ export class LoadingService {
   
   async alertError(text:any){
     const alert = await this.alertController.create({
-      header: 'ເກີດຂໍ້ຜິດພາດ',
+      header: 'Error',
       cssClass:'app-alert',
       backdropDismiss: false,
       message: text,
-      buttons: ['OK']
+      buttons: ['Ok']
     });
     await alert.present();
   }
@@ -92,13 +117,13 @@ export class LoadingService {
     return new Promise<boolean>(async (resolve, rejects) => {
       try {
         const alert = await this.alertController.create({
-          header: "ແຈ້ງເຕືອນ",
+          header: "Alert",
           cssClass:'app-alert',
           backdropDismiss: false,
           message: text,
           buttons: [
             {
-              text: "ຍົກເລີກ",
+              text: "Cancel",
               role: "cancel",
               cssClass: "secondary",
               handler: () => {
@@ -106,7 +131,7 @@ export class LoadingService {
               },
             },
             {
-              text: "ຕົກລົງ",
+              text: "Ok",
               handler: () => {
                 resolve(true);
               },
@@ -124,13 +149,13 @@ export class LoadingService {
     return new Promise<boolean>(async (resolve, rejects) => {
       try {
         const alert = await this.alertController.create({
-          header: "ແຈ້ງເຕືອນ",
+          header: "Alert",
           cssClass:'app-alert',
           backdropDismiss: false,
           message: text,
           buttons: [
             {
-              text: "ຕົກລົງ",
+              text: "Ok",
               handler: () => {
                 resolve(true);
               },

@@ -27,6 +27,7 @@ export class ShowDevicesPage implements OnInit {
   }
 
   load_data(){
+    this.m.onLoading('')
     let data = {
       ownerId:Number(this.data?.ownerID+''),
       id:this.data?.devince
@@ -35,9 +36,11 @@ export class ShowDevicesPage implements OnInit {
       console.log('====================================');
       console.log(r);
       console.log('====================================');
+      this.m.onDismiss();
       this.devices = r
     },(error)=>{
-      console.error('Failed to delete Device:', error);
+      this.m.onDismiss();
+      this.m.alertError('load devices fail!!')
     })
   }
 

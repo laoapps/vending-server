@@ -73,12 +73,17 @@ export class AddGroupsPage implements OnInit {
   }
 
     addGroup() {
-    if (!this.newGroup.name) {
-      return alert('empty!!!')
-    }
+      if (!this.newGroup.name) {
+        return alert('empty!!!')
+      }
+      this.m.onLoading('')
     this.apiService.createGroup(this.newGroup.name).subscribe(() => {
+      this.m.onDismiss();
       this.newGroup = { name: '' ,lat:'', lng:''};
       this.dismiss({ dismiss: true });
+    },error=>{
+      this.m.onDismiss();
+      this.m.alertError('add Groups fail!!')
     });
   }
 

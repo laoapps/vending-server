@@ -83,22 +83,22 @@ export class RegisterPage implements OnInit {
 
   async onClick_Register() {
     if (!this.phonenumber || !this.password || !this.confirmPassword) {
-      this.showAlert('Error', 'Please fill in all fields');
+      this.m.onAlert('Please fill in all fields');
       return;
     }
 
     if (this.phonenumber.length !== 8 || !/^\d+$/.test(this.phonenumber)) {
-      this.showAlert('Error', 'Phone number must be 8 digits');
+      this.m.onAlert( 'Phone number must be 8 digits');
       return;
     }
 
     if (this.password !== this.confirmPassword) {
-      this.showAlert('Error', 'Passwords do not match');
+      this.m.onAlert( 'Passwords do not match');
       return;
     }
 
     if (this.password != this.confirmPassword) {
-      this.showAlert('Error','password not the same!!')
+      this.m.onAlert('password not the same!!')
       return;
     }
     this.CaptchaAndSendOtp()
@@ -108,7 +108,7 @@ export class RegisterPage implements OnInit {
   async CaptchaAndSendOtp() {
     try {
       if (!this.captchaId || !this.captchaInput || !this.phonenumber) {
-        this.showAlert('Error','somthing wrong!!')
+        this.m.onAlert('somthing wrong!!')
         return;
       }
       const response = await this.captcha.validateCaptchaAndSendOtp(this.captchaId,this.captchaInput,this.phonenumber);
@@ -116,18 +116,18 @@ export class RegisterPage implements OnInit {
       console.log('res',response);
       console.log('====================================');
       if (response.message == "Invalid_CAPTCHA") {
-        this.showAlert('Error','Reptcha is not correct!!')
+        this.m.onAlert('Reptcha is not correct!!')
       }else if (response?.status == 1) {
         const code = await this.open_modal_comfrim("+85620" + this.phonenumber,response?.data.otp)
           if (code.data.code) {
             this.register(code.data.code)
           }
       }else{
-        this.showAlert('Error','somthing wrong!!')
+        this.m.alertError('somthing wrong!!')
       }
     } catch (error) {
       console.error('Error validating CAPTCHA:', error);
-      this.showAlert('Error','somthing wrong!!')
+      this.m.alertError('somthing wrong!!')
     }
   }
 
@@ -169,7 +169,7 @@ export class RegisterPage implements OnInit {
         if (res.status == 1) {
           console.log('register success!!!!!!!!!!!!!', res);
           // this.load.onAlertAccess('ການລົງທະບຽນສຳເລັດແລ້ວ');
-          this.showAlert('Alert','Register success!!');
+          this.m.onAlert('Register success!!');
           this.m.closeModal({dismiss: true});
           this.stopCountdown();
         } else {
@@ -177,39 +177,19 @@ export class RegisterPage implements OnInit {
           // this.alert('ການລົງທະບຽນບໍ່ສຳເລັດ');
           if(res.data.message=='username : +85620' + this.phonenumber + '  already exists!'){
             // this.load.onAlertAccess('ເບີໂທນີ້ເຄີຍລົງທະບຽນແລ້ວ');
-            this.showAlert_close('Alert','Already register');
+            this.m.alert_justOK('Already register');
           }else{       
-            this.showAlert('Error','Register fail!!')
+            this.m.alertError('Register fail!!')
           }
         }
       }, async error => {
         console.log('errror', error);
-        this.showAlert('Error','somthing wrong!!')
+        this.m.alertError('somthing wrong!!')
       })
     }
 
 
 
-  async showAlert(header: string, message: string) {
-    const alert = await this.alertCtrl.create({
-      header,
-      message,
-      buttons: ['OK'],
-    });
-    await alert.present();
-  }
-  async showAlert_close(header: string, message: string) {
-    const alert = await this.alertCtrl.create({
-      header,
-      message,
-      buttons: [{
-        text:'ok',
-        handler:() =>{
-          this.m.closeModal({dismiss:false})
-        }
-      }],
-    });
-    await alert.present();
-  }
+
 
 }

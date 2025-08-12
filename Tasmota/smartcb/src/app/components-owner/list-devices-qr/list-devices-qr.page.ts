@@ -12,7 +12,6 @@ import { GenQrCodePage } from '../gen-qr-code/gen-qr-code.page';
   templateUrl: './list-devices-qr.page.html',
   styleUrls: ['./list-devices-qr.page.scss'],
   standalone: false,
-
 })
 export class ListDevicesQrPage implements OnInit {
   devices: any[] = [];
@@ -30,72 +29,72 @@ export class ListDevicesQrPage implements OnInit {
   }
 
   load_data() {
-    this.apiService.getDevices().subscribe((devices) => {
-      console.log('====================================');
-      console.log(devices);
-      console.log('====================================');
-      this.devices = devices;
-      this.devices.forEach((device) => {
-        this.mqttService
-          .subscribeToDevice(device.tasmotaId)
-          .subscribe((message) => {
-            try {
-              device.status = JSON.parse(message.payload.toString());
-            } catch (error) {
+    this.m.onLoading('');
+    this.apiService.getDevices().subscribe(
+      (devices) => {
+        console.log('====================================');
+        console.log(devices);
+        console.log('====================================');
+        this.devices = devices;
+        this.devices.forEach((device) => {
+          this.mqttService
+            .subscribeToDevice(device.tasmotaId)
+            .subscribe((message) => {
+              try {
+                device.status = JSON.parse(message.payload.toString());
+              } catch (error) {
+                this.m.onDismiss();
+                this.m.onAlert('Failed to parse message for device!!');
+                device.status = message.payload.toString();
+              }
+            });
+          this.mqttService
+            .subscribeToTelemetry(device.tasmotaId)
+            .subscribe((message) => {
               console.log(
-                `Failed to parse message for device ${device.tasmotaId}:`,
-                error
+                `Received telemetry for device ${device.tasmotaId}:`,
+                message
               );
-              device.status = message.payload.toString();
-            }
-          });
-        this.mqttService
-          .subscribeToTelemetry(device.tasmotaId)
-          .subscribe((message) => {
-            console.log(
-              `Received telemetry for device ${device.tasmotaId}:`,
-              message
-            );
-            try {
-              const data = JSON.parse(message.payload.toString());
-              console.log(
-                `Parsed telemetry data for device ${device.tasmotaId}:`,
-                data
-              );
-              device.power = data?.ENERGY?.Power || 0;
-              device.energy = data?.ENERGY?.Total || 0;
-              device.Temperature =
-                (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
-            } catch (error) {
-              console.log(
-                `Failed to parse telemetry data for device ${device?.tasmotaId}:`,
-                error
-              );
-              device.status = message.payload.toString();
-            }
-          });
-      });
-    });
+              try {
+                const data = JSON.parse(message.payload.toString());
+                console.log(
+                  `Parsed telemetry data for device ${device.tasmotaId}:`,
+                  data
+                );
+                device.power = data?.ENERGY?.Power || 0;
+                device.energy = data?.ENERGY?.Total || 0;
+                device.Temperature =
+                  (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
+                this.m.onDismiss();
+              } catch (error) {
+                this.m.onDismiss();
+                this.m.onAlert('Failed to parse telemetry data!!');
+                device.status = message.payload.toString();
+              }
+            });
+        });
+      },
+      (error) => {}
+    );
   }
 
   dismiss(data: any = { dismiss: false }) {
     this.m.closeModal(data);
   }
 
-  onClick_to_qr(item){
-    this.m.showModal(GenQrCodePage,{data:item,ownerID:item.ownerId}).then((r) => {
-      if (r) {
-        r.present();
-        r.onDidDismiss().then((res) => {
-          if (res.data.dismiss) {
-            this.devices = [];
-            this.load_data();
-          }
-        });
-      }
-    });
+  onClick_to_qr(item) {
+    this.m
+      .showModal(GenQrCodePage, { data: item, ownerID: item.ownerId })
+      .then((r) => {
+        if (r) {
+          r.present();
+          r.onDidDismiss().then((res) => {
+            if (res.data.dismiss) {
+              this.devices = [];
+              this.load_data();
+            }
+          });
+        }
+      });
   }
-
-
-
 }
