@@ -10,6 +10,8 @@ import {
 } from '@capacitor-mlkit/barcode-scanning';
 import { ShowDevicesPage } from 'src/app/components-user/show-devices/show-devices.page';
 import { ShowPageketPage } from 'src/app/components-user/show-pageket/show-pageket.page';
+import { MapPage } from 'src/app/components-user/map/map.page';
+import { ApiService } from 'src/app/services/api.service';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -21,9 +23,11 @@ export class UserPage implements OnInit {
   public menus = [
     {title:'Histoy',icon: 'time-outline',path:HistoryPage},
     {title:'Status',icon: 'information-circle-outline',path:StatusPage},
-    {title:'Scan QR Code',icon: 'qr-code-outline'}
+    {title:'Scan QR Code',icon: 'qr-code-outline'},
+    {title:'Map',icon: 'map-outline',path:MapPage},
+    {title:'Register owner',icon: 'albums-outline'},
   ]
-  constructor(public m: LoadingService,public router:Router,public alertController:AlertController) {}
+  constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
 
   ngOnInit() {
   }
@@ -39,6 +43,8 @@ export class UserPage implements OnInit {
           handler: () => {
             localStorage.removeItem('token');
             localStorage.removeItem('uuid');
+            localStorage.removeItem('id_owner');
+            localStorage.removeItem('ownerHeader');
             this.router.navigate(['/login']);
           },
         },
@@ -67,6 +73,27 @@ export class UserPage implements OnInit {
       .catch((err) => {
         console.log("Error", err);
       });
+    }else if(item.title == 'Register owner'){
+      const a = localStorage.getItem('token')
+      this.apiService.registerOwner(a).subscribe(
+        async (response) => {
+          console.log('====================================');
+          console.log(response);
+          console.log('====================================');
+          if (response) {
+            const alert = await this.alertController.create({
+              header: 'Alert',
+              message: 'Register owner success!!',
+              buttons: ['OK'],
+            });
+            await alert.present();
+            return;
+          }
+        },
+        (error) => {
+          console.error('Registration failed:', error);
+        }
+      );
     }else{
       this.m.showModal(item.path).then((r) => {
         if (r) {

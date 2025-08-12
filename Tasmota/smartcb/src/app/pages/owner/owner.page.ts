@@ -42,6 +42,7 @@ export class OwnerPage implements OnInit {
             localStorage.removeItem('token');
             localStorage.removeItem('uuid');
             localStorage.removeItem('id_owner');
+            localStorage.removeItem('ownerHeader');
             this.router.navigate(['/login']);
           },
         },

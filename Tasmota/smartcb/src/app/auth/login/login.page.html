@@ -1,4 +1,4 @@
-<ion-content class="ion-padding ">
+<ion-content class="ion-no-padding">
   <div class="login-page">
     <div class="login-box">
       <h1 class="title">Login</h1>
@@ -12,6 +12,21 @@
         <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
         <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
       </ion-item>
+
+          <!-- Role Selection -->
+      <div class="role-selection">
+        <ion-label class="role-title">Select Role:</ion-label>
+        <div class="role-options">
+          <label class="role-option">
+            <ion-checkbox [(ngModel)]="isOwner" (ionChange)="isUser = !isOwner"></ion-checkbox>
+            <span>Owner</span>
+          </label>
+          <label class="role-option">
+            <ion-checkbox [(ngModel)]="isUser" (ionChange)="isOwner = !isUser"></ion-checkbox>
+            <span>User</span>
+          </label>
+        </div>
+      </div>
   
       <ion-button expand="block" class="login-btn" (click)="onClick_login()">Login</ion-button>
       <ion-button expand="block" fill="clear" class="register-btn" (click)="onClick_Register()">Register</ion-button>

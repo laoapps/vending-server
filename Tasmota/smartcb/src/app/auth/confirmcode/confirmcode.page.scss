@@ -1,0 +1,19 @@
+.x{
+    display:inline-block;
+    width:45px;
+    height:45px;
+    margin:3px;
+    // border-radius: 50%;
+    --background:#e1e1e1;
+    --padding-start:7px;
+    }
+    .ion-padding{
+        margin: 0;
+        padding: 0;
+        // font-family: montserrat;
+        --background: linear-gradient(180deg, var(--theme-title), #ffffff);
+        // height: 100vh;
+        overflow: hidden;
+        // font-size: 200%;
+        
+      }
