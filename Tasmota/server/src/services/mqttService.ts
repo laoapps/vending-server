@@ -33,7 +33,7 @@ client.on('close', () => {
 });
 
 // Helper function to get device data from Redis
-const getDeviceFromCache = async (tasmotaId: string) => {
+export const getDeviceFromCache = async (tasmotaId: string) => {
   const data = await redis.get(`${DEVICE_CACHE_PREFIX}${tasmotaId}`);
   return data ? JSON.parse(data) : null;
 };
@@ -139,6 +139,10 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
     console.log(`Device ${tasmotaId} sensor data unchanged in cache: energy=${energy}, power=${power}`);
     return;
   }
+  if(energy<=0||power<=0){
+        console.log(`Device ${tasmotaId} sensor data 0  in cache: energy=${energy}, power=${power}`);
+    return ;
+  }
 
   // Update database
   const device = await Device.findOne({ where: { tasmotaId } });
@@ -151,7 +155,7 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
 
   // Update Redis cache
   const updatedData = {
-    ...cachedDevice,
+    // ...cachedDevice,
     tasmotaId,
     status: device.dataValues.status,
     energy,

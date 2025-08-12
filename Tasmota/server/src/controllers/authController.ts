@@ -23,7 +23,7 @@ export const registerOwner = async (req: Request, res: Response) => {
     if (!phoneNumber) {
       return res.status(400).json({ error: 'Phone number not found for this user' });
     }
-    const owner = await models.Owner.create({ uuid,phoneNumber } as any);
+    const owner = await models.Owner.create({ uuid, phoneNumber } as any);
 
 
     res.json({ token, role: 'owner', owner });
@@ -33,10 +33,23 @@ export const registerOwner = async (req: Request, res: Response) => {
 };
 
 export const getUserRole = async (req: Request, res: Response) => {
-  const user = res.locals.user;
-
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
   try {
-    res.json({ role: user.role });
+    const uuid = await findRealDB(token);
+    if (!uuid) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const validatedUuid = await findRealDB(token);
+    if (!validatedUuid) {
+      return res.status(401).json({ error: 'Invalid token or user not found' });
+    }
+    const owner = (await models.Owner.findOne({ where: { uuid: validatedUuid } }));
+    let role = owner ? 'owner' : 'user';
+    res.json({ role });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch user role' });
   }

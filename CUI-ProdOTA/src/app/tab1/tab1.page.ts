@@ -671,6 +671,8 @@ export class Tab1Page implements OnDestroy {
 
     // });
     // check nee restart
+    console.log('-----> 1');
+
     const r = localStorage.getItem('restart');
     if (r) {
       localStorage.removeItem('restart');
@@ -681,9 +683,12 @@ export class Tab1Page implements OnDestroy {
       return;
     }
 
+    console.log('-----> 2');
 
 
     this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
+
+    console.log('-----> 3');
 
     this.platforms = Object.keys(ESerialPortType)
       .filter(key => isNaN(Number(key))) // Remove numeric keys
@@ -692,7 +697,15 @@ export class Tab1Page implements OnDestroy {
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
     try {
-      await this.connect();
+      console.log('-----> 4');
+
+      try {
+        await this.connect();
+      } catch (errorSerial) {
+        console.log('errorSerial', errorSerial);
+      }
+      console.log('-----> 5');
+
       Toast.show({ text: 'READY', duration: 'long' })
 
       this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
@@ -741,6 +754,7 @@ export class Tab1Page implements OnDestroy {
     // this._processLoopCheckLaoQRPaid();
 
 
+    console.log('readyState ALIVE', this.readyState);
 
     this.WSAPIService.aliveSubscription.subscribe(async res => {
 

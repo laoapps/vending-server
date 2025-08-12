@@ -5,6 +5,6 @@ import { registerOwner, getUserRole } from '../controllers/authController';
 const router = Router();
 
 router.post('/register-owner', registerOwner);
-router.get('/role', authMiddleware, getUserRole);
+router.get('/role', getUserRole);
 
 export default router;

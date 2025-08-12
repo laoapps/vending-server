@@ -6,6 +6,7 @@ export interface DeviceGroupAttributes {
   ownerId: number;
   createdAt: Date;
   updatedAt: Date;
+  description: any;
 }
 
 export class DeviceGroup extends Model<DeviceGroupAttributes> {
@@ -28,6 +29,10 @@ export function initDeviceGroupModel(sequelize: Sequelize) {
       ownerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      description: {
+        type: DataTypes.JSONB,
+        allowNull: true,
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

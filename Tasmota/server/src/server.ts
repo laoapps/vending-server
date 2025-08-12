@@ -10,7 +10,7 @@ import { userClients, adminClients, ownerClients } from './services/wsService';
 import http from 'http';
 import { findRealDB } from './services/userManagerService';
 import { startDeviceMonitoring } from './controllers/monitorOrderController';
-import { publishMqttMessage } from './services/mqttService';
+import { getDeviceFromCache, publishMqttMessage } from './services/mqttService';
 import { notifyStakeholders } from './services/wsService';
 import { SchedulePackage } from './models/schedulePackage';
 import redis from './config/redis';
@@ -105,72 +105,45 @@ async function startServer() {
             data: JSON.parse((await redis.get(key)) || '{}'),
           }))
         );
-        const orderIds = ordersData
-          .filter(({ data }) => data.orderId)
-          .map(({ data }) => data.orderId);
 
-        // const orders = await Order.findAll({
-        //   where: { id: { [Op.in]: orderIds }, completedTime: { [Op.eq]: '' } },
-        //   include: [
-        //     { model: models.Device, as: 'device' },
-        //     { model: models.SchedulePackage, as: 'package' },
-        //   ],
-        // });
-
-        // If you want only NULL completedTime
-        const whereCondition2: WhereOptions<any> = {
-          id: { [Op.in]: orderIds },
-          completedTime: { [Op.is]: null }
-        };
-
-        const orders = await Order.findAll({
-          where: whereCondition2,
-          include: [
-            { model: models.Device, as: 'device' },
-            { model: models.SchedulePackage, as: 'package' },
-          ],
-        });
-
-
-
-        for (const order of orders) {
-          const key = `activeOrder:${order.dataValues.id}`;
-          if (!order || order.dataValues.completedTime) {
+        for (const order of ordersData) {
+          const key = `activeOrder:${order.data.orderId}`;
+          if (!order) {
             await redis.del(key);
             continue;
           }
 
-          const device = await order.getDevice();
-          const schedulePackage = await order.getPackage();
-          if (!device) {
-            await redis.del(key);
-            await notifyStakeholders(order, 'Order terminated due to missing device.');
-            continue;
-          }
+          const device = await getDeviceFromCache(order.data.tasmotaId)
+          if (order.data.conditionType === 'time_duration') {
+            const elapsed = (Date.now() - order.data.startedTime) / (60 * 1000);
+            if (elapsed >= order.data.conditionValue) {
+              await publishMqttMessage(`cmnd/${order.data.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
+              // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+              // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+              const ord = await Order.findByPk(order.data.orderId);
+              if (ord) {
+                ord?.set('completedTime', new Date());
+                await ord?.save();
+                await redis.del(key);
+                await notifyStakeholders(ord, 'Order completed due to time duration limit.');
+              }
 
-          if (schedulePackage.dataValues.conditionType === 'time_duration') {
-            const elapsed = (Date.now() - order.dataValues.startedTime.getTime()) / (60 * 1000);
-            if (elapsed >= schedulePackage.dataValues.conditionValue) {
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-              order.set('completedTime', new Date());
-              await order.save();
-              await redis.del(key);
-              await notifyStakeholders(order, 'Order completed due to time duration limit.');
             }
-          } else if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
-            console.log('current_energy================',device.dataValues.energy );
-            const energy = device.dataValues.energy || 0;
+          } else if (order.data.conditionType === 'energy_consumption') {
+            console.log('current_energy================', device.dataValues.energy);
+            const energy = device.energy || 0;
             // if (energy >= schedulePackage.dataValues.conditionValue) {
-            if (energy >= order?.dataValues?.conditionValue) {
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-              await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-              order.set('completedTime', new Date());
-              await order.save();
-              await redis.del(key);
-              await notifyStakeholders(order, 'Order completed due to energy consumption limit (server check).');
+            if (energy >= order?.data?.conditionValue) {
+              await publishMqttMessage(`cmnd/${device.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
+              // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+              // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+              const ord = await Order.findByPk(order.data.orderId);
+              if (ord) {
+                ord?.set('completedTime', new Date());
+                await ord?.save();
+                await redis.del(key);
+                await notifyStakeholders(ord, 'Order completed due to time duration limit.');
+              }
             }
           }
         }
