@@ -110,7 +110,7 @@ export const testOrder = async (req: Request, res: Response) => {
 
     res.json({ message: 'Command sent', order });
 
-    return res.json({ qr: '', data: { order } });
+    // return res.json({ qr: '', data: { order } });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
   }
