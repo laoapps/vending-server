@@ -80,7 +80,7 @@
 
   <div *ngIf="isFranciseMode == true"
     [ngClass]="apiService.toggleWebviewTab == false ? 'webview-tab' : 'webview-tab hidden'">
-    <a *ngFor="let list of webviewList; let i = index" (click)="openWebViewMenu(list.link)" href="javascript:void(0)"
+    <a *ngFor="let list of webviewList; let i = index" (click)="selectModeFunc(list.link)" href="javascript:void(0)"
       class="item">
       <div class="item-left">
         <img src="{{ list.icon }}" alt="">
@@ -93,7 +93,7 @@
   </div>
   <div *ngIf="isFranciseMode == true"
     [ngClass]="apiService.toggleWebviewTab == false ? 'webview-small-tab' : 'webview-small-tab active'">
-    <a *ngFor="let list of webviewList; let i = index" (click)="openWebViewMenu(list.link)" href="javascript:void(0)"
+    <a *ngFor="let list of webviewList; let i = index" (click)="selectModeFunc(list.link)" href="javascript:void(0)"
       class="item">
       <div class="item-left">
         <img src="{{ list.icon }}" alt="">
@@ -200,7 +200,7 @@
   </span>
 
   <!-- tab vending segment -->
-  <div class="vending-segment segements">
+  <div *ngIf="selectMode == 'vending'" class="vending-segment segements">
     <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>

@@ -185,6 +185,8 @@ export class Tab1Page implements OnDestroy {
   isAds = localStorage.getItem('isAds') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
 
+  selectMode: string = 'vending';
+
 
   adsOn: Boolean = false;
 
@@ -211,30 +213,32 @@ export class Tab1Page implements OnDestroy {
   ];
   webviewList: Array<any> = [
     {
-      icon: "../../assets/webview/hangmistore.jpeg",
-      name: 'Hangmi Store',
-      description: 'Shopping online ecomerc by Hangmi Store application services',
-      link: 'hangmistore'
+      icon: "../../assets/webview/vending.png",
+      name: 'ຕູ້ຂາຍສິນຄ້າອັດຕະໂນມັດ',
+      description: 'ລະບົບຂາຍສິນຄ້າອັດຕະໂນມັດຜ່ານຕູ້',
+      link: 'vending'
     },
     {
-      icon: "../../assets/webview/hangmifood.png",
-      name: 'Hangmi Food',
-      description: 'Order and delivery your food by Hangmi Food application services',
-      link: 'hangmifood'
+      icon: "../../assets/webview/smartcb.png",
+      name: 'ຄວບຄຸມເຄື່ອງໃຊ້ໄຟຟ້າ',
+      description: 'ລະບົບຄວບຄຸມເຄື່ອງໃຊ້ໄຟຟ້າອັດຕະໂນມັດ',
+      link: 'smartcb'
     },
-    {
-      icon: "../../assets/webview/topupandservices.jpeg",
-      name: 'Topup & Services',
-      description: 'Online payment and options',
-      link: 'topupandservices'
-    }
+    // {
+    //   icon: "../../assets/webview/topupandservices.jpeg",
+    //   name: 'Topup & Services',
+    //   description: 'Online payment and options',
+    //   link: 'topupandservices'
+    // }
   ]
   currentSegementTab: string = ITabVendingSegement.vending;
 
   autoShowMyOrderTimer: any = {} as any;
   autoShowMyOrdersCounter: number = 15;
 
-  isFranciseMode: boolean = localStorage.getItem('francisemode') ? true : false;
+  // isFranciseMode: boolean = localStorage.getItem('francisemode') ? true : false;
+  isFranciseMode: boolean = true;
+
 
   checkAppUpdate: boolean = false;
   autoDismissCheckAppUpdate: any = {} as any;
@@ -331,6 +335,8 @@ export class Tab1Page implements OnDestroy {
     return hashNotes;
   }
 
+
+
   async deleteCredit(id: number) {
     await this.dbService.deleteItem(id);
     return await this.loadCredits();
@@ -364,6 +370,11 @@ export class Tab1Page implements OnDestroy {
       console.log('ERROR', error);
       alert('Error')
     }
+  }
+
+  selectModeFunc(data: any) {
+    console.log('select', data);
+    this.selectMode = data + '';
   }
 
 
