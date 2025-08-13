@@ -8,6 +8,7 @@ import redis from '../config/redis';
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1];
   const adminKey = req.headers['x-admin-key'];
+  const isOwnerFunction = req.headers['x-owner'] === 'true';
 
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
@@ -28,9 +29,12 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         return res.status(401).json({ error: 'Invalid token or user not found' });
       }
 
-      const owner = await models.Owner.findOne({ where: { uuid: validatedUuid } });
-      let role = owner ? 'owner' : 'user';
+      const owner =  (await models.Owner.findOne({ where: { uuid: validatedUuid } }));
 
+      let role = owner ? 'owner' : 'user';
+      if(!isOwnerFunction){
+        role = 'user';
+      }
       // Admin verification
       if (adminKey === 'super-admin') {
         const admin = await models.Admin.findOne({ where: { uuid: validatedUuid } });

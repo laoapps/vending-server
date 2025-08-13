@@ -10,6 +10,9 @@ import {
 } from '@capacitor-mlkit/barcode-scanning';
 import { ShowDevicesPage } from 'src/app/components-user/show-devices/show-devices.page';
 import { ShowPageketPage } from 'src/app/components-user/show-pageket/show-pageket.page';
+import { MapPage } from 'src/app/components-user/map/map.page';
+import { ApiService } from 'src/app/services/api.service';
+import { ListAllGroupsPage } from 'src/app/components-user/list-all-groups/list-all-groups.page';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -19,32 +22,20 @@ import { ShowPageketPage } from 'src/app/components-user/show-pageket/show-pagek
 })
 export class UserPage implements OnInit {
   public menus = [
-    {title:'Histoy',icon: 'time-outline',path:HistoryPage},
-    {title:'Status',icon: 'information-circle-outline',path:StatusPage},
-    {title:'Scan QR Code',icon: 'qr-code-outline'}
+    // {title:'Histoy',icon: 'time-outline',path:HistoryPage},
+    // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
+    {title:'Scan QR Code',icon: 'qr-code-outline'},
+    // {title:'Map',icon: 'map-outline',path:MapPage},
+    {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
+    {title:'Register owner',icon: 'albums-outline'},
   ]
-  constructor(public m: LoadingService,public router:Router,public alertController:AlertController) {}
+  constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
 
   ngOnInit() {
   }
 
-  async logout(){
-    const alert = await this.alertController.create({
-      header: 'Confirm logout',
-      message: 'Are you sure you want logout?',
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'ok',
-          handler: () => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('uuid');
-            this.router.navigate(['/login']);
-          },
-        },
-      ],
-    });
-    await alert.present();
+  logout(){
+    this.m.logout();
   }
 
   onClick(item){
@@ -52,21 +43,32 @@ export class UserPage implements OnInit {
       BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] })
       .then(async (barcodeData) => {
         if (barcodeData.barcodes) {
-          // this.load.alertError(`Formar: ${barcodeData.barcodes[0].rawValue}`);
           this.getResultscan(barcodeData.barcodes[0].rawValue);
         } else {
-          const alert = await this.alertController.create({
-            header: 'Error',
-            message: 'Error Qr not found!!',
-            buttons: ['OK'],
-          });
-          await alert.present();
-          return;
+          this.m.alertError('Error Qr not found!!')
         }
       })
       .catch((err) => {
-        console.log("Error", err);
+        this.m.alertError('Error Qr not found!!')
       });
+    }else if(item.title == 'Register owner'){
+      const a = localStorage.getItem('token')
+      this.apiService.registerOwner(a).subscribe(
+        async (response) => {
+          console.log('====================================');
+          console.log(response);
+          console.log('====================================');
+          if (response) {
+            this.m.onAlert('Register owner success!!')
+          }
+        },(error) => {
+          if (error?.error == 'Owner already registered') {
+            this.m.onAlert('already registered!!')
+          }else{
+            this.m.alertError('Register failed')
+          }
+        }
+      );
     }else{
       this.m.showModal(item.path).then((r) => {
         if (r) {
@@ -79,7 +81,7 @@ export class UserPage implements OnInit {
       });
     }
   //   let data = {
-  //     ownerID:1
+  //     ownerId:1
   //   }
   //   this.m.showModal(ShowDevicesPage,{data}).then((r) => {
   //     if (r) {
@@ -94,8 +96,8 @@ export class UserPage implements OnInit {
 
   async getResultscan(data){
     const new_data = JSON.parse(data)
-    if (new_data?.ownerID && new_data?.deviceID) {
-      this.m.showModal(ShowPageketPage,{data:new_data,deviceID:new_data?.deviceID}).then((r) => {
+    if (new_data?.ownerId && new_data?.deviceId) {
+      this.m.showModal(ShowPageketPage,{data:new_data,deviceId:new_data?.deviceId}).then((r) => {
         if (r) {
           r.present();
           r.onDidDismiss().then((res) => {
@@ -104,7 +106,7 @@ export class UserPage implements OnInit {
           });
         }
       });
-    }else if(new_data?.ownerID && !new_data?.deviceID || new_data?.deviceID == null){
+    }else if(new_data?.ownerId && !new_data?.deviceId || new_data?.deviceId == null){
       this.m.showModal(ShowDevicesPage,{data:JSON.parse(data)}).then((r) => {
         if (r) {
           r.present();
@@ -115,13 +117,7 @@ export class UserPage implements OnInit {
         }
       });
     }else{
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Error Qr not found!!',
-        buttons: ['OK'],
-      });
-      await alert.present();
-      return;
+      this.m.alertError('Error Qr not found!!')
     }
   }
 

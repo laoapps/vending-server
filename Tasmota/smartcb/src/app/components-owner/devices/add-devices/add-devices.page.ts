@@ -22,8 +22,16 @@ export class AddDevicesPage implements OnInit {
   }
 
   load_group() {
+    this.m.onLoading('')
     this.apiService.getGroups().subscribe((groups) => {
+      console.log('====================================');
+      console.log('Groups loaded:', groups);
+      console.log('====================================');
       this.groups = groups;
+      this.m.onDismiss()
+    },error=>{
+      this.m.onDismiss();
+      this.m.alertError('load Groups fail!!')
     });
   }
 
@@ -38,12 +46,7 @@ export class AddDevicesPage implements OnInit {
       !this.newDevice.zone ||
       !this.newDevice.groupId
     ) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Please fill in all fields with valid values.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
 
@@ -58,8 +61,13 @@ export class AddDevicesPage implements OnInit {
         this.newDevice.groupId
       )
       .subscribe(() => {
+        this.m.onDismiss();
         this.newDevice = { name: '', tasmotaId: '', zone: '', groupId: -1 };
         this.m.closeModal({ dismiss: true });
-      });
+      }, (error) => {
+        this.m.onDismiss();
+        this.m.onAlert('Failed to create schedule package!!')
+        console.error('Failed to create schedule package:', error);
+      })
   }
 }

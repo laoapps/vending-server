@@ -54,7 +54,10 @@ export class ApiService {
   assignDevice(deviceId: number, userPhoneNumber: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices/assign`, { deviceId, userPhoneNumber }, this.getAuthHeaders());
   }
-
+  //user
+  load_all_group(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/groups/loadAll`, { }, this.getAuthHeaders());
+  }
   createGroup(name: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups`, { name }, this.getAuthHeaders());
   }
@@ -138,11 +141,22 @@ export class ApiService {
 
   private getAuthHeaders() {
     const token = localStorage.getItem('token');
-    return {
-      headers: new HttpHeaders({
-        Authorization: `Bearer ${token}`,
-      }),
-    };
+    const owner_role = localStorage.getItem('ownerHeader');
+    if (owner_role) {
+      return {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${token}`,
+          'X-owner': 'true',
+        }),
+      };
+    }else{
+      return {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${token}`,
+        }),
+      };
+    }
+    
   }
 
   private getAdminHeaders() {

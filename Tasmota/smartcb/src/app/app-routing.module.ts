@@ -56,6 +56,10 @@ const routes: Routes = [
     loadChildren: () => import('./auth/login/login.module').then( m => m.LoginPageModule)
   },
   {
+    path: 'register',
+    loadChildren: () => import('./auth/register/register.module').then( m => m.RegisterPageModule)
+  },
+  {
     path: 'user',
     loadChildren: () => import('./pages/user/user.module').then( m => m.UserPageModule)
   },
@@ -86,6 +90,18 @@ const routes: Routes = [
   {
     path: 'pay-qr',
     loadChildren: () => import('./components-user/pay-qr/pay-qr.module').then( m => m.PayQrPageModule)
+  },
+  {
+    path: 'map',
+    loadChildren: () => import('./components-user/map/map.module').then( m => m.MapPageModule)
+  },
+  {
+    path: 'confirmcode',
+    loadChildren: () => import('./auth/confirmcode/confirmcode.module').then( m => m.ConfirmcodePageModule)
+  },
+  {
+    path: 'list-all-groups',
+    loadChildren: () => import('./components-user/list-all-groups/list-all-groups.module').then( m => m.ListAllGroupsPageModule)
   },
 
  

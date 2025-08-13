@@ -28,52 +28,53 @@ export class DevicesPage implements OnInit {
   }
 
   load_data() {
-    this.apiService.getDevices().subscribe((devices) => {
-      console.log('====================================');
-      console.log(devices);
-      console.log('====================================');
-      this.devices = devices;
-      this.devices.forEach((device) => {
-        this.mqttService
-          .subscribeToDevice(device.tasmotaId)
-          .subscribe((message) => {
-            try {
-              device.status = JSON.parse(message.payload.toString());
-            } catch (error) {
+    this.m.onLoading('');
+    this.apiService.getDevices().subscribe(
+      (devices) => {
+        console.log('====================================');
+        console.log(devices);
+        console.log('====================================');
+        this.m.onDismiss();
+        this.devices = devices;
+        this.devices.forEach((device) => {
+          this.mqttService
+            .subscribeToDevice(device.tasmotaId)
+            .subscribe((message) => {
+              try {
+                device.status = JSON.parse(message.payload.toString());
+              } catch (error) {
+                this.m.onDismiss();
+                // this.m.onAlert('Failed to parse message for device!!');
+                device.status = message.payload.toString();
+              }
+            });
+          this.mqttService
+            .subscribeToTelemetry(device.tasmotaId)
+            .subscribe((message) => {
               console.log(
-                `Failed to parse message for device ${device.tasmotaId}:`,
-                error
+                `Received telemetry for device ${device.tasmotaId}:`,
+                message
               );
-              device.status = message.payload.toString();
-            }
-          });
-        this.mqttService
-          .subscribeToTelemetry(device.tasmotaId)
-          .subscribe((message) => {
-            console.log(
-              `Received telemetry for device ${device.tasmotaId}:`,
-              message
-            );
-            try {
-              const data = JSON.parse(message.payload.toString());
-              console.log(
-                `Parsed telemetry data for device ${device.tasmotaId}:`,
-                data
-              );
-              device.power = data?.ENERGY?.Power || 0;
-              device.energy = data?.ENERGY?.Total || 0;
-              device.Temperature =
-                (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
-            } catch (error) {
-              console.log(
-                `Failed to parse telemetry data for device ${device.tasmotaId}:`,
-                error
-              );
-              device.status = message.payload.toString();
-            }
-          });
-      });
-    });
+              try {
+                const data = JSON.parse(message.payload.toString());
+                console.log(
+                  `Parsed telemetry data for device ${device.tasmotaId}:`,
+                  data
+                );
+                device.power = data?.ENERGY?.Power || 0;
+                device.energy = data?.ENERGY?.Total || 0;
+                device.Temperature =
+                  (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
+              } catch (error) {
+                this.m.onDismiss();
+                // this.m.onAlert('Failed to parse telemetry data!!');
+                device.status = message.payload.toString();
+              }
+            });
+        });
+      },
+      (error) => {}
+    );
   }
 
   dismiss(data: any = { dismiss: false }) {
@@ -97,7 +98,7 @@ export class DevicesPage implements OnInit {
   setControlDevice(deviceId: number) {
     // this.controlDevice = { id: deviceId, command: 'TOGGLE', relay: 1 }; // Reset control device state
     console.log(`Setting control device with ID: ${deviceId}`);
-     this.m.showModal(ControlDevicePage,{data:deviceId}).then((r) => {
+    this.m.showModal(ControlDevicePage, { data: deviceId }).then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
@@ -125,7 +126,7 @@ export class DevicesPage implements OnInit {
                 this.load_data();
               },
               (error) => {
-                console.error('Failed to delete Device:', error);
+                this.m.alertError('Delete Device fail!!');
               }
             );
           },

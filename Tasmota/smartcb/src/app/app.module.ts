@@ -25,7 +25,7 @@ import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices
   ],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }),
     HttpClientModule,
     FormsModule,
     AppRoutingModule

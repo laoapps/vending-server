@@ -14,7 +14,7 @@ import { PayQrPage } from '../pay-qr/pay-qr.page';
 export class ShowPageketPage implements OnInit {
   schedulePackages: any[] = [];
   @Input() data:any
-  @Input() deviceID:any
+  @Input() deviceId:any
   @Input() data_device:any
   constructor(public m: LoadingService, private apiService: ApiService,
     public alertController: AlertController
@@ -25,8 +25,13 @@ export class ShowPageketPage implements OnInit {
   }
 
   load_data(){
-    this.apiService.schedulepackages(this.data?.ownerID).subscribe((packages) => {
+    this.m.onLoading('')
+    this.apiService.schedulepackages(this.data?.ownerId).subscribe((packages) => {
+      this.m.onDismiss();
       this.schedulePackages = packages;
+    },error=>{
+      this.m.onDismiss();
+      this.m.alertError('load pageket fail!!')
     });
   }
 
@@ -37,14 +42,14 @@ export class ShowPageketPage implements OnInit {
   onClick(item){
     let data = {
       packageId:item.id,
-      deviceId:this.deviceID,
+      deviceId:this.deviceId,
       relay:1
     }
     this.apiService.orders(data).subscribe((r)=>{
       console.log('====================================');
       console.log('res',r);
       console.log('====================================');
-      this.m.showModal(PayQrPage,{data:r?.qr.data,data_device:this.data_device | this.deviceID,data_pageket:item}).then((r) => {
+      this.m.showModal(PayQrPage,{data:r?.qr.data,data_device:this.data_device | this.deviceId,data_pageket:item}).then((r) => {
         if (r) {
           r.present();
           r.onDidDismiss().then((res) => {

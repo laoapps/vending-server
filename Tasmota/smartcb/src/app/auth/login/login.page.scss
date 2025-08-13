@@ -60,3 +60,40 @@ ion-content{
     text-transform: none;
   }
   
+  /* Role selection container */
+.role-selection {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+
+}
+
+.role-title {
+  display: block;
+  font-weight: bold;
+  color: #00796b;
+  margin-bottom: 0.5rem;
+}
+
+/* Role option layout */
+.role-options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  background: #f1f1f1;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.role-option span {
+  font-size: 16px;
+  color: #00796b;
+  font-weight: 500;
+}

@@ -28,3 +28,66 @@ ion-select {
   font-weight: 600;
   letter-spacing: 0.5px;
 }
+
+
+//  ================map
+
+.profile-box img{
+  width: 130px;
+  height: 130px;
+}
+.img-fluid {
+max-width: 100%;
+height: auto;
+}
+.rounded-circle {
+border-radius: 50% !important;
+}
+.icon-l{
+font-size: larger;
+margin-right: 5px;
+}
+.cell-class{
+border-color: rgb(231, 231, 231); 
+border-width: 0px 1px 0px 0px; 
+border-style:solid; 
+}
+.b-top{
+border-color: rgb(231, 231, 231); 
+border-width: 1px 0px 0px 0px; 
+border-style:solid; 
+}
+.border{
+border-radius: 10px;
+border: 1px solid #DEDEDE;
+margin-bottom: 15px;
+border-bottom: 2px solid var(--ion-color-primary);
+
+}
+.icon{
+font-size: xx-large;
+}
+.back-icon{
+font-size: x-large;
+}
+.card-title{
+font-size: larger;
+font-weight: bold;
+}
+
+// * {
+// // "BoonHome",
+// font-family: "Noto Sans Lao", "saysettha OT" !important;
+// }
+
+.mylo {
+// background-color: #ffffff;
+position: absolute;
+bottom: 170px;
+right: 0px;
+z-index: 9999;
+}
+
+.map {
+position: relative;
+}

@@ -33,15 +33,10 @@ export class ControlDevicePage implements OnInit {
     console.log('sksksksksk', this.controlDevice.id);
 
     if (!this.controlDevice.id || !this.controlDevice.relay) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Please fill in all fields with valid values.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
-
+    this.m.onLoading('')
     if (this.controlDevice.id) {
       this.apiService
         .controlDevice(
@@ -55,17 +50,8 @@ export class ControlDevicePage implements OnInit {
               `Controlled device ${this.controlDevice.id} with command ${this.controlDevice.command} on relay ${this.controlDevice.relay}`,
               response
             );
-            const alert = await this.alertController.create({
-              header: 'Alert',
-              message: 'Control command sent successfully.',
-              buttons: [{
-                text: 'OK',
-                handler: () => {
-                  this.dismiss({ dismiss: true });
-                },
-              }],
-            });
-            await alert.present();
+            this.m.onDismiss();
+            this.m.alert_justOK('ontrol command sent successfully.');
             return;
           },
           (error) => {
@@ -73,6 +59,8 @@ export class ControlDevicePage implements OnInit {
               `Failed to control device ${this.controlDevice.id}:`,
               error
             );
+            this.m.alertError('Failed to control device')
+            this.m.onDismiss();
           }
         );
     }

@@ -23,6 +23,15 @@ export const createGroup = async (req: Request, res: Response) => {
   }
 };
 
+export const loadAllGroups = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  try {
+    const groups = await models.DeviceGroup.findAll();
+    res.json(groups);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch groups' });
+  }
+};
 export const getGroups = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
@@ -53,7 +62,7 @@ export const getGroups = async (req: Request, res: Response) => {
 
 export const updateGroup = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name,description } = req.body;
+  const { name, description } = req.body;
   const user = res.locals.user;
 
   try {

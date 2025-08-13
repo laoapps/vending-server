@@ -22,8 +22,13 @@ export class PageketsPage implements OnInit {
   }
 
   load_data(){
+    this.m.onLoading('')
     this.apiService.getSchedulePackages().subscribe((packages) => {
       this.schedulePackages = packages;
+      this.m.onDismiss();
+    },error=>{
+      this.m.onDismiss();
+      this.m.alertError('load pageket fail!!')
     });
   }
 
@@ -46,7 +51,7 @@ export class PageketsPage implements OnInit {
                 this.load_data();
               },
               (error) => {
-                console.error('Failed to delete schedule package:', error);
+                this.m.alertError('Delete pageket fail!!')
               }
             );
           },

@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { AuthServiceService } from 'src/app/services/authService/auth-service.service';
+import { LoadingService } from 'src/app/services/loading.service';
+import { RegisterPage } from '../register/register.page';
 
 @Component({
   selector: 'app-login',
@@ -14,12 +16,15 @@ export class LoginPage implements OnInit {
   public phonenumber:any;
   public password:any;
   role: string | null = null;
+  isOwner: boolean = false;
+  isUser: boolean = false;
 
   constructor(
     public auth:AuthServiceService,
     private apiService: ApiService,
     private router: Router,
-    public alertController:AlertController
+    public alertController:AlertController,
+    public m: LoadingService,
   ) { }
 
   ngOnInit() {
@@ -27,14 +32,18 @@ export class LoginPage implements OnInit {
 
   async onClick_login(){
     if (!this.phonenumber  || !this.password) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Please fill in all fields with valid values.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      this.m.onAlert('Please fill in all fields with valid values')
+      return
+    }
+
+    if (!this.isOwner && !this.isUser) {
+      this.m.onAlert('Please select a role')
       return;
     }
+
+    this.m.onLoading('')
+
+
     let a = JSON.parse(JSON.stringify(this.phonenumber));
     if (a?.toString().length == 8) {
       a = '+85620' + a
@@ -56,38 +65,57 @@ export class LoginPage implements OnInit {
         this.loadRole();
         // this.navigateTo('/home')
       } else {
-        // this.load.onDismiss();
-        // this.load.alertError('alert_error.message_check_name_password');
+        this.m.onDismiss();
+        this.m.alertError('Login fail please check phonenumber and password')
       }
     },async (error:any) => {
-      console.log('====================================');
-      console.log(error);
-      console.log('====================================');
-      // this.load.onDismiss();
-      // this.load.alertError('alert_error.message_something_wrong');
+      this.m.onDismiss();
+      this.m.alertError('Login fail please check phonenumber and password')
     });
   }
 
   onClick_Register(){
-    
+    this.m.showModal(RegisterPage).then((r) => {
+          if (r) {
+            r.present();
+            r.onDidDismiss().then((res) => {
+              if (res.data.dismiss) {
+           
+              }
+            });
+          }
+        });
   }
 
   loadRole() {
     this.apiService.getUserRole().subscribe(
       (response) => {
+        const selectedRole = this.isOwner ? 'Owner' : 'User';
         console.log('loadRole',response.role);
-        
+        console.log('selectedRole',selectedRole);
+
         this.role = response.role;
-        if (this.role == 'admin') {
-          
-        }else if(this.role == 'owner'){
+        if (selectedRole == 'Owner' && this.role == 'owner') {
+          this.isOwner = false;
+          this.isUser = false;
+          localStorage.setItem('ownerHeader','true')
           this.load_owner_detail();
           this.navigateTo('/owner')
-        }else if(this.role == 'user'){
+        }else{
+          this.m.onDismiss()
+          this.isOwner = false;
+          this.isUser = false;
           this.navigateTo('/user')
+
         }
-      },
-      () => {
+        
+        // if (this.role == 'admin') {
+          
+        // }else if(this.role == 'owner'){
+
+        // }else if(this.role == 'user'){
+        // }
+      },() => {
         this.role = 'user'; // Default to client user if token is invalid
       }
     );
@@ -99,14 +127,11 @@ export class LoginPage implements OnInit {
 
   load_owner_detail(){
     this.apiService.owners_detail().subscribe((r)=>{
-      console.log('====================================');
-      console.log('owner detail',r);
-      console.log('====================================');
       localStorage.setItem('id_owner',r.id)
+      this.m.onDismiss()
     },error=>{
-      console.log('====================================');
-      console.log(error);
-      console.log('====================================');
+      this.m.onDismiss();
+      this.m.alertError('Login fail please check phonenumber and password')
     })
   }
 
