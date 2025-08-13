@@ -58,8 +58,8 @@ export class ApiService {
   load_all_group(): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups/loadAll`, { }, this.getAuthHeaders());
   }
-  createGroup(name: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/groups`, { name }, this.getAuthHeaders());
+  createGroup(data): Observable<any> {
+    return this.http.post(`${this.apiUrl}/groups`, data, this.getAuthHeaders());
   }
 
   getGroups(): Observable<any> {

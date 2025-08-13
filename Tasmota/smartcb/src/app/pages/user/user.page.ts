@@ -25,7 +25,7 @@ export class UserPage implements OnInit {
     // {title:'Histoy',icon: 'time-outline',path:HistoryPage},
     // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
     {title:'Scan QR Code',icon: 'qr-code-outline'},
-    // {title:'Map',icon: 'map-outline',path:MapPage},
+    {title:'Map',icon: 'map-outline',path:MapPage},
     {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
     {title:'Register owner',icon: 'albums-outline'},
   ]

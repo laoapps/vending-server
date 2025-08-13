@@ -22,7 +22,6 @@ export class AddGroupsPage implements OnInit {
   newMarker: any;
   currentPosition: any;
 
-
   myIcon = icon({
     iconUrl: "assets/hangmi-icon/marker.png",
     iconSize: [25, 45],
@@ -61,8 +60,7 @@ export class AddGroupsPage implements OnInit {
   ngOnInit() {
     setTimeout(() => {
       this.loadMap_add();
-      // this.locatePosition();
-      this.map_mark();
+      this.locatePosition();
       this.map.attributionControl.remove();
     }, 100);
 
@@ -74,11 +72,19 @@ export class AddGroupsPage implements OnInit {
   }
 
     addGroup() {
-      if (!this.newGroup.name) {
-        return alert('empty!!!')
+      if (!this.newGroup.name || !this.newGroup.lat || !this.newGroup.lng) {
+        this.m.onAlert('please input field!!')
+        return
       }
       this.m.onLoading('')
-    this.apiService.createGroup(this.newGroup.name).subscribe(() => {
+      let data = {
+        name:this.newGroup.name,
+        description:{
+          lat:this.newGroup.lat,
+          lng:this.newGroup.lng
+        }
+      }
+    this.apiService.createGroup(data).subscribe(() => {
       this.m.onDismiss();
       this.newGroup = { name: '' ,lat:'', lng:''};
       this.dismiss({ dismiss: true });
@@ -118,39 +124,12 @@ export class AddGroupsPage implements OnInit {
     this.locatePosition();
   }
 
-  locatePosition() {
 
+  locatePosition(){
     this.map.locate({ setView: true }).removeEventListener('locationfound').on('locationfound', async (e: any) => {
       console.log(e.latitude, e.longitude);
-      //==== location now =======
-      if (this.currentPosition)
-        this.map.removeLayer(this.currentPosition)
-      this.currentPosition = marker([e.latitude, e.longitude], {
-        icon: this.nowlocationIcon,
-        draggable:true
-      }).addTo(this.map);
-      this.currentPosition.bindPopup('ທີ່ຢູ່ປັນຈຸບັນຂອງເຈົ້າ!', { closeButton: false }).openPopup();
-      //=========================
-
-      // if (this.newMarker)
-      //   this.map.removeLayer(this.newMarker)
-      //   this.newMarker = marker([e.latitude, e.longitude], {
-      //   draggable: true,
-      //   icon: this.myIcon,
-      // }).addTo(this.map);
-
-
-      // this.newMarker.bindPopup('ທີ່ຢູ່ຮັບສິນຄ້າ!', { closeButton: false }).openPopup();
-    });
-
-    this.map.attributionControl.remove();
-
-  }
-  newLat:any
-  newLng:any
-  map_mark(){
-    this.map.locate({ setView: true }).removeEventListener('locationfound').on('locationfound', async (e: any) => {
-      console.log(e.latitude, e.longitude);
+      this.newGroup.lat = e.latitude
+      this.newGroup.lng = e.longitude
 
       // Remove old marker if exists
       if (this.currentPosition) {
@@ -171,8 +150,8 @@ export class AddGroupsPage implements OnInit {
         const position = event.target.getLatLng();
         console.log("New Lat:", position.lat, "New Lng:", position.lng);
         // You can store them if needed
-        this.newLat = position.lat;
-        this.newLng = position.lng;
+        this.newGroup.lat = position.lat;
+        this.newGroup.lng = position.lng;
       });
     });
 
