@@ -8,6 +8,7 @@ const router = Router();
 router.post('/', authMiddleware, validate(createDeviceSchema), createDevice);
 router.get('/', authMiddleware, getDevices);
 router.post('/getDevicesBy', authMiddleware, getDevicesBy);
+router.post('/getDevicesBy_', getDevicesBy);
 router.put('/:id', authMiddleware, validate(createDeviceSchema), updateDevice);
 router.delete('/:id', authMiddleware, deleteDevice);
 router.post('/control', authMiddleware, validate(controlDeviceSchema), controlDevice);

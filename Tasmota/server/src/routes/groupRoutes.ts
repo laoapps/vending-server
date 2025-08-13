@@ -7,6 +7,7 @@ const router = Router();
 
 router.post('/', authMiddleware, validate(createGroupSchema), createGroup);
 router.post('/loadAll', authMiddleware, loadAllGroups);
+router.post('/loadAll_', loadAllGroups);
 router.get('/', authMiddleware, getGroups);
 router.put('/:id', authMiddleware, validate(createGroupSchema), updateGroup);
 router.delete('/:id', authMiddleware, deleteGroup);
