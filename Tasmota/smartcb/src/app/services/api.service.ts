@@ -54,7 +54,10 @@ export class ApiService {
   assignDevice(deviceId: number, userPhoneNumber: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices/assign`, { deviceId, userPhoneNumber }, this.getAuthHeaders());
   }
-
+  //user
+  load_all_group(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/groups/loadAll`, { }, this.getAuthHeaders());
+  }
   createGroup(name: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups`, { name }, this.getAuthHeaders());
   }

@@ -12,6 +12,7 @@ import { ShowDevicesPage } from 'src/app/components-user/show-devices/show-devic
 import { ShowPageketPage } from 'src/app/components-user/show-pageket/show-pageket.page';
 import { MapPage } from 'src/app/components-user/map/map.page';
 import { ApiService } from 'src/app/services/api.service';
+import { ListAllGroupsPage } from 'src/app/components-user/list-all-groups/list-all-groups.page';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -21,10 +22,11 @@ import { ApiService } from 'src/app/services/api.service';
 })
 export class UserPage implements OnInit {
   public menus = [
-    {title:'Histoy',icon: 'time-outline',path:HistoryPage},
-    {title:'Status',icon: 'information-circle-outline',path:StatusPage},
+    // {title:'Histoy',icon: 'time-outline',path:HistoryPage},
+    // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
     {title:'Scan QR Code',icon: 'qr-code-outline'},
-    {title:'Map',icon: 'map-outline',path:MapPage},
+    // {title:'Map',icon: 'map-outline',path:MapPage},
+    {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
     {title:'Register owner',icon: 'albums-outline'},
   ]
   constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
@@ -79,7 +81,7 @@ export class UserPage implements OnInit {
       });
     }
   //   let data = {
-  //     ownerID:1
+  //     ownerId:1
   //   }
   //   this.m.showModal(ShowDevicesPage,{data}).then((r) => {
   //     if (r) {
@@ -94,8 +96,8 @@ export class UserPage implements OnInit {
 
   async getResultscan(data){
     const new_data = JSON.parse(data)
-    if (new_data?.ownerID && new_data?.deviceID) {
-      this.m.showModal(ShowPageketPage,{data:new_data,deviceID:new_data?.deviceID}).then((r) => {
+    if (new_data?.ownerId && new_data?.deviceId) {
+      this.m.showModal(ShowPageketPage,{data:new_data,deviceId:new_data?.deviceId}).then((r) => {
         if (r) {
           r.present();
           r.onDidDismiss().then((res) => {
@@ -104,7 +106,7 @@ export class UserPage implements OnInit {
           });
         }
       });
-    }else if(new_data?.ownerID && !new_data?.deviceID || new_data?.deviceID == null){
+    }else if(new_data?.ownerId && !new_data?.deviceId || new_data?.deviceId == null){
       this.m.showModal(ShowDevicesPage,{data:JSON.parse(data)}).then((r) => {
         if (r) {
           r.present();

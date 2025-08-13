@@ -99,6 +99,10 @@ const routes: Routes = [
     path: 'confirmcode',
     loadChildren: () => import('./auth/confirmcode/confirmcode.module').then( m => m.ConfirmcodePageModule)
   },
+  {
+    path: 'list-all-groups',
+    loadChildren: () => import('./components-user/list-all-groups/list-all-groups.module').then( m => m.ListAllGroupsPageModule)
+  },
 
  
 ];

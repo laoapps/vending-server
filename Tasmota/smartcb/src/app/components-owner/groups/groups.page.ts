@@ -45,12 +45,13 @@ export class GroupsPage implements OnInit {
   }
 
   load_devices() {
-    this.m.onLoading('');
+    // this.m.onLoading('');
     this.apiService.getDevices().subscribe(
       (devices) => {
         console.log('====================================');
         console.log(devices);
         console.log('====================================');
+        this.m.onDismiss();
         this.devices = devices;
         this.devices.forEach((device) => {
           this.mqttService
@@ -60,7 +61,7 @@ export class GroupsPage implements OnInit {
                 device.status = JSON.parse(message.payload.toString());
               } catch (error) {
                 this.m.onDismiss();
-                this.m.onAlert('Failed to parse message for device!!');
+                // this.m.onAlert('Failed to parse message for device!!');
                 device.status = message.payload.toString();
               }
             });
@@ -81,10 +82,9 @@ export class GroupsPage implements OnInit {
                 device.energy = data?.ENERGY?.Total || 0;
                 device.Temperature =
                   (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
-                this.m.onDismiss();
               } catch (error) {
                 this.m.onDismiss();
-                this.m.onAlert('Failed to parse telemetry data!!');
+                // this.m.onAlert('Failed to parse telemetry data!!');
                 device.status = message.payload.toString();
               }
             });
@@ -98,7 +98,9 @@ export class GroupsPage implements OnInit {
     this.m.closeModal(data);
   }
 
-  deleteSchedulePackage(id: number) {}
+  deleteSchedulePackage(id: number) {
+
+  }
 
   assignDeviceToGroup(item) {
     console.log('====================================');

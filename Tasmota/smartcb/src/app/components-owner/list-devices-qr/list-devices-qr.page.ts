@@ -35,6 +35,7 @@ export class ListDevicesQrPage implements OnInit {
         console.log('====================================');
         console.log(devices);
         console.log('====================================');
+        this.m.onDismiss();
         this.devices = devices;
         this.devices.forEach((device) => {
           this.mqttService
@@ -44,7 +45,7 @@ export class ListDevicesQrPage implements OnInit {
                 device.status = JSON.parse(message.payload.toString());
               } catch (error) {
                 this.m.onDismiss();
-                this.m.onAlert('Failed to parse message for device!!');
+                // this.m.onAlert('Failed to parse message for device!!');
                 device.status = message.payload.toString();
               }
             });
@@ -65,10 +66,9 @@ export class ListDevicesQrPage implements OnInit {
                 device.energy = data?.ENERGY?.Total || 0;
                 device.Temperature =
                   (data?.ANALOG?.Temperature1 || 0) + ' ' + data?.TempUnit;
-                this.m.onDismiss();
               } catch (error) {
                 this.m.onDismiss();
-                this.m.onAlert('Failed to parse telemetry data!!');
+                // this.m.onAlert('Failed to parse telemetry data!!');
                 device.status = message.payload.toString();
               }
             });
@@ -84,7 +84,7 @@ export class ListDevicesQrPage implements OnInit {
 
   onClick_to_qr(item) {
     this.m
-      .showModal(GenQrCodePage, { data: item, ownerID: item.ownerId })
+      .showModal(GenQrCodePage, { data: item, ownerId: item.ownerId })
       .then((r) => {
         if (r) {
           r.present();

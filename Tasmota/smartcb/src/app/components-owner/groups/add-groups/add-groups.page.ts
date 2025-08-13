@@ -61,7 +61,8 @@ export class AddGroupsPage implements OnInit {
   ngOnInit() {
     setTimeout(() => {
       this.loadMap_add();
-      this.locatePosition();
+      // this.locatePosition();
+      this.map_mark();
       this.map.attributionControl.remove();
     }, 100);
 
@@ -96,19 +97,6 @@ export class AddGroupsPage implements OnInit {
     }).addTo(this.map);
   }
 
-  loadMap() {
-    // new Map("id of the DOM element").setView([lat,long],zoomlevel);
-    this.map = new Map('mapId').setView([17.996716,102.573385], 11);
-    // this.map.setZoom(15);
-    tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:
-        'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
-    }).addTo(this.map);
-
-    L.marker([17.996716,102.573385]).bindPopup('ຈຸດຮັບເຄື່ອງ!', { closeButton: false }).addTo(this.map).openPopup();
-
-  }
-
   async mylo() {
     if (this.platform.is('cordova')) {
       try {
@@ -139,16 +127,17 @@ export class AddGroupsPage implements OnInit {
         this.map.removeLayer(this.currentPosition)
       this.currentPosition = marker([e.latitude, e.longitude], {
         icon: this.nowlocationIcon,
+        draggable:true
       }).addTo(this.map);
       this.currentPosition.bindPopup('ທີ່ຢູ່ປັນຈຸບັນຂອງເຈົ້າ!', { closeButton: false }).openPopup();
       //=========================
 
-      if (this.newMarker)
-        this.map.removeLayer(this.newMarker)
-      this.newMarker = marker([e.latitude, e.longitude], {
-        draggable: true,
-        icon: this.myIcon,
-      }).addTo(this.map);
+      // if (this.newMarker)
+      //   this.map.removeLayer(this.newMarker)
+      //   this.newMarker = marker([e.latitude, e.longitude], {
+      //   draggable: true,
+      //   icon: this.myIcon,
+      // }).addTo(this.map);
 
 
       // this.newMarker.bindPopup('ທີ່ຢູ່ຮັບສິນຄ້າ!', { closeButton: false }).openPopup();
@@ -156,6 +145,38 @@ export class AddGroupsPage implements OnInit {
 
     this.map.attributionControl.remove();
 
+  }
+  newLat:any
+  newLng:any
+  map_mark(){
+    this.map.locate({ setView: true }).removeEventListener('locationfound').on('locationfound', async (e: any) => {
+      console.log(e.latitude, e.longitude);
+
+      // Remove old marker if exists
+      if (this.currentPosition) {
+        this.map.removeLayer(this.currentPosition);
+      }
+
+      // Create draggable marker
+      this.currentPosition = marker([e.latitude, e.longitude], {
+        icon: this.nowlocationIcon,
+        draggable: true
+      }).addTo(this.map);
+
+      // Popup
+      this.currentPosition.bindPopup('ທີ່ຢູ່ປັນຈຸບັນຂອງເຈົ້າ!', { closeButton: false }).openPopup();
+
+      // Listen for drag end event
+      this.currentPosition.on('dragend', (event: any) => {
+        const position = event.target.getLatLng();
+        console.log("New Lat:", position.lat, "New Lng:", position.lng);
+        // You can store them if needed
+        this.newLat = position.lat;
+        this.newLng = position.lng;
+      });
+    });
+
+  this.map.attributionControl.remove();
   }
 
   

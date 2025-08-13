@@ -18,7 +18,7 @@ export class ShowDevicesPage implements OnInit {
   constructor(public apiService: ApiService, public m: LoadingService) {}
 
   ngOnInit() {
-    // alert(this.data?.ownerID)
+    // alert(this.data?.ownerId)
     this.load_data();
   }
 
@@ -29,7 +29,7 @@ export class ShowDevicesPage implements OnInit {
   load_data(){
     this.m.onLoading('')
     let data = {
-      ownerId:Number(this.data?.ownerID+''),
+      ownerId:Number(this.data?.ownerId+''),
       id:this.data?.devince
     }
     this.apiService.getDevicesBy(data).subscribe((r)=>{
@@ -48,7 +48,7 @@ export class ShowDevicesPage implements OnInit {
     console.log('====================================');
     console.log(item);
     console.log('====================================');
-    this.m.showModal(ShowPageketPage,{data:this.data,deviceID:item.id,data_device:item}).then((r) => {
+    this.m.showModal(ShowPageketPage,{data:this.data,deviceId:item.id,data_device:item}).then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
