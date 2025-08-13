@@ -764,8 +764,8 @@ export class Tab1Page implements OnDestroy {
         if (res?.data?.settingVersion) {
           // localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
-        // if (r && this.readyState) {
-        if (r) {
+        if (r && this.readyState) {
+          // if (r) {
 
           if (r.refresh) {
             Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });

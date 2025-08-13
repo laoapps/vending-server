@@ -1113,19 +1113,19 @@ export class InventoryZDM8 implements IBaseClass {
                                     "ping",
                                     {
                                         command: "ping",
-                                        production: this.production, // no versioning
-                                        balance: {},// no versioning
-                                        limiter: {},// no versioning
-                                        merchant: {},// no versioning
-                                        mymmachinebalance: {},// no versioning
-                                        mymlimiterbalance: {},// no versioning
+                                        production: this.production,
+                                        balance: {},
+                                        limiter: {},
+                                        merchant: {},
+                                        mymmachinebalance: {},
+                                        mymlimiterbalance: {},
                                         setting: { refresh: true },
-                                        mstatus: {},// no versioning
-                                        mymstatus: {},// no versioning
-                                        mymsetting: {},// no versioning
-                                        mymlimiter: {},// no versioning
-                                        app_version: {},// no versioning
-                                        pendingStock: {},// no versioning
+                                        mstatus: {},
+                                        mymstatus: {},
+                                        mymsetting: {},
+                                        mymlimiter: {},
+                                        app_version: {},
+                                        pendingStock: {},
 
                                         adsSetting: {},
                                         adsVersion: {},
@@ -1181,27 +1181,25 @@ export class InventoryZDM8 implements IBaseClass {
                                     "ping",
                                     {
                                         command: "ping",
-                                        production: this.production, // no versioning
-                                        balance: {},// no versioning
-                                        limiter: {},// no versioning
-                                        merchant: {},// no versioning
-                                        mymmachinebalance: {},// no versioning
-                                        mymlimiterbalance: {},// no versioning
+                                        production: this.production,
+                                        balance: {},
+                                        limiter: {},
+                                        merchant: {},
+                                        mymmachinebalance: {},
+                                        mymlimiterbalance: {},
                                         setting: { exit: true },
-                                        mstatus: {},// no versioning
-                                        mymstatus: {},// no versioning
-                                        mymsetting: {},// no versioning
-                                        mymlimiter: {},// no versioning
-                                        app_version: {},// no versioning
-                                        pendingStock: {},// no versioning
+                                        mstatus: {},
+                                        mymstatus: {},
+                                        mymsetting: {},
+                                        mymlimiter: {},
+                                        app_version: {},
+                                        pendingStock: {},
 
                                         adsSetting: {},
                                         adsVersion: {},
                                         settingVersion: {},
-
                                     },
-                                    EMessage.succeeded
-                                    ,
+                                    EMessage.succeeded,
                                     null
                                 )
                             )
@@ -1343,7 +1341,6 @@ export class InventoryZDM8 implements IBaseClass {
                         });
 
                         if (!bill) {
-
                             return res.send(PrintError("retryProcessBill", "bill not found", EMessage.billnotfound));
                         }
 
