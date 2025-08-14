@@ -1,21 +1,24 @@
 import mqtt from 'mqtt';
 import { env } from '../config/env';
 import { Device } from '../models/device';
-
 import redis from '../config/redis';
 
-// Initialize Redis client
-
+// Initialize Redis client (ensure compatibility with previous fixes)
+const redisClient = redis; // Assuming redis is exported from '../config/redis'
 
 // Redis key prefix for device data
 export const DEVICE_CACHE_PREFIX = 'device:';
 export const CACHE_TTL = 3600; // Cache TTL in seconds (1 hour)
 
-// MQTT client setup
+// MQTT client setup with auto-reconnect options
 const client = mqtt.connect(env.MQTT_BROKER, {
   username: env.MQTT_USERNAME,
   password: env.MQTT_PASSWORD,
   clientId: `smartcb_api_${Math.random().toString(16).slice(3)}`,
+  reconnectPeriod: 1000, // Reconnect every 1 second if disconnected
+  connectTimeout: 30 * 1000, // Timeout after 30 seconds
+  keepalive: 60, // Send keepalive ping every 60 seconds
+  clean: true, // Clean session to avoid message backlog
 });
 
 client.on('connect', () => {
@@ -24,33 +27,56 @@ client.on('connect', () => {
   subscribeToTopic('tele/+/SENSOR', sensorCallback);
 });
 
+client.on('reconnect', () => {
+  console.log('Attempting to reconnect to MQTT broker...');
+});
+
 client.on('error', (err) => {
   console.error('MQTT error:', err);
 });
 
 client.on('close', () => {
   console.warn('MQTT connection closed');
+  // No need for manual client.connect() due to reconnectPeriod
+});
+
+client.on('offline', () => {
+  console.warn('MQTT client is offline');
 });
 
 // Helper function to get device data from Redis
 export const getDeviceFromCache = async (tasmotaId: string) => {
-  const data = await redis.get(`${DEVICE_CACHE_PREFIX}${tasmotaId}`);
-  return data ? JSON.parse(data) : null;
+  try {
+    const data = await redisClient.get(`${DEVICE_CACHE_PREFIX}${tasmotaId}`);
+    return data ? JSON.parse(data) : null;
+  } catch (err) {
+    console.error(`Error getting device ${tasmotaId} from Redis:`, err);
+    return null;
+  }
 };
 
 // Helper function to set device data in Redis
 const setDeviceInCache = async (tasmotaId: string, data: any) => {
-  await redis.setex(
-    `${DEVICE_CACHE_PREFIX}${tasmotaId}`,
-    CACHE_TTL,
-    JSON.stringify(data)
-  );
+  try {
+    await redisClient.setex(
+      `${DEVICE_CACHE_PREFIX}${tasmotaId}`,
+      CACHE_TTL,
+      JSON.stringify(data)
+    );
+  } catch (err) {
+    console.error(`Error setting device ${tasmotaId} in Redis:`, err);
+  }
 };
 
 // Publish MQTT message
 export const publishMqttMessage = async (topic: string, payload: string) => {
   return new Promise<void>((resolve, reject) => {
     console.log(`Publishing to topic: ${topic}, payload: ${payload}`);
+    if (!client.connected) {
+      console.warn(`Cannot publish to ${topic}: MQTT client is disconnected`);
+      reject(new Error('MQTT client is disconnected'));
+      return;
+    }
     client.publish(topic, payload, { qos: 1 }, (err) => {
       if (err) {
         console.error(`Failed to publish to ${topic}:`, err);
@@ -65,7 +91,7 @@ export const publishMqttMessage = async (topic: string, payload: string) => {
 
 // Subscribe to MQTT topic
 export const subscribeToTopic = (topic: string, callback: (receivedTopic: string, payload: Buffer) => void) => {
-  client.subscribe(topic, (err) => {
+  client.subscribe(topic, { qos: 1 }, (err) => {
     if (err) {
       console.error(`Failed to subscribe to ${topic}:`, err);
     } else {
@@ -104,7 +130,6 @@ const lwtCallback = async (receivedTopic: string, payload: Buffer) => {
 
   // Update Redis cache
   const updatedData = {
-    // ...cachedDevice,
     tasmotaId,
     status: { ...device.dataValues.status, connection: newStatus },
     energy: device.dataValues.energy,
@@ -139,9 +164,9 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
     console.log(`Device ${tasmotaId} sensor data unchanged in cache: energy=${energy}, power=${power}`);
     return;
   }
-  if(energy<=0||power<=0){
-        console.log(`Device ${tasmotaId} sensor data 0  in cache: energy=${energy}, power=${power}`);
-    return ;
+  if (energy <= 0 || power <= 0) {
+    console.log(`Device ${tasmotaId} sensor data 0 in cache: energy=${energy}, power=${power}`);
+    return;
   }
 
   // Update database
@@ -155,7 +180,6 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
 
   // Update Redis cache
   const updatedData = {
-    // ...cachedDevice,
     tasmotaId,
     status: device.dataValues.status,
     energy,
@@ -194,3 +218,22 @@ export const getDeviceData = async (tasmotaId: string) => {
   console.log(`Retrieved device ${tasmotaId} from database and cached`);
   return deviceData;
 };
+
+// Graceful shutdown
+export const shutdownMqttClient = () => {
+  if (client.connected) {
+    client.end(() => {
+      console.log('MQTT client disconnected gracefully');
+    });
+  }
+};
+
+// Handle process termination
+process.on('SIGINT', () => {
+  shutdownMqttClient();
+  process.exit(0);
+});
+process.on('SIGTERM', () => {
+  shutdownMqttClient();
+  process.exit(0);
+});
