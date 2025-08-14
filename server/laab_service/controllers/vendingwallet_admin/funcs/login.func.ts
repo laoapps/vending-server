@@ -5,17 +5,17 @@ import { IVendingWalletType } from "../../../models/base.model";
 
 export class LoginFunc {
 
-    private phonenumber:string;
+    private phonenumber: string;
     private password: string;
 
     private response: any = {} as any;
 
-    constructor(){}
+    constructor() { }
 
     public Init(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 console.log(`login`, 1);
 
                 this.InitParams(params);
@@ -30,10 +30,10 @@ export class LoginFunc {
                 const LAABLogin = await this.LAABLogin();
                 if (LAABLogin != IENMessage.success) throw new Error(LAABLogin);
 
-                console.log(`login`, 4 );
+                console.log(`login`, 4);
 
                 resolve(this.response);
-                
+
             } catch (error) {
 
                 resolve(error.message);
@@ -52,13 +52,13 @@ export class LoginFunc {
     }
 
     private LAABLogin(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
                 const params = {
-                   phonenumber: this.phonenumber,
-                   password: this.password
+                    phonenumber: this.phonenumber,
+                    password: this.password
                 }
-                console.log(`-->`, LAAB_Login);
+                console.log(`-->LAABLogin`, LAAB_Login);
                 const run = await axios.post(LAAB_Login, params);
                 console.log(`response`, run.data);
                 if (run.data.status != 1) return resolve(run.data.message);

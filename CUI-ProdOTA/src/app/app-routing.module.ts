@@ -17,6 +17,11 @@ import { CustomloadingPageModule } from './customloading/customloading.module';
 import { AdsPageModule } from './ads/ads.module';
 import { FortunewheelPageModule } from './fortunewheel/fortunewheel.module';
 import { TestmotorPageModule } from './testmotor/testmotor.module';
+import { ListAllGroupsPageModule } from './tab1/smartcb/components-user/list-all-groups/list-all-groups.module';
+import { ShowDevicesPageModule } from './tab1/smartcb/components-user/show-devices/show-devices.module';
+import { ShowPageketPageModule } from './tab1/smartcb/components-user/show-pageket/show-pageket.module';
+import { PayQrPageModule } from './tab1/smartcb/components-user/pay-qr/pay-qr.module';
+import { MapPageModule } from './tab1/smartcb/components-user/map/map.module';
 
 const routes: Routes = [
   // {
@@ -157,8 +162,28 @@ const routes: Routes = [
   },
   {
     path: 'close-stytem',
-    loadChildren: () => import('./close-stytem/close-stytem.module').then( m => m.CloseStytemPageModule)
-  }
+    loadChildren: () => import('./close-stytem/close-stytem.module').then(m => m.CloseStytemPageModule)
+  },
+  {
+    path: 'smart-cb-list-all-group',
+    loadChildren: () => ListAllGroupsPageModule
+  },
+  {
+    path: 'smart-cb-show-devices',
+    loadChildren: () => ShowDevicesPageModule
+  },
+  {
+    path: 'smart-cb-show-package',
+    loadChildren: () => ShowPageketPageModule
+  },
+  {
+    path: 'smart-cb-pay-qr',
+    loadChildren: () => PayQrPageModule
+  },
+  {
+    path: 'smart-cb-map',
+    loadChildren: () => MapPageModule
+  },
 ];
 @NgModule({
   imports: [

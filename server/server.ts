@@ -24,6 +24,7 @@ import { InventoryLocker } from "./api/inventoryLocker";
 import { ControlVersionAPI } from "./api/controlVersion";
 import dotenv from "dotenv";
 import { initBundle } from "./services/appupdate";
+import { initialize } from "./services/topup.service";
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
@@ -33,18 +34,35 @@ process.env.name = process.env.name;
 process.env._image_path = path.join(__dirname, "..", "public");
 process.env._log_path = path.join(__dirname, "..", "logs");
 
-process.env.serverkey = fs.readFileSync(__dirname + '/certs/server/server.key') + '';
-process.env.servercert = fs.readFileSync(__dirname + '/certs/server/server.crt') + '';
-process.env.ca = fs.readFileSync(__dirname + '/certs/ca/ca.crt') + '';
+// process.env.serverkey = fs.readFileSync(__dirname + '/certs/server/server.key') + '';
+// process.env.servercert = fs.readFileSync(__dirname + '/certs/server/server.crt') + '';
+// process.env.ca = fs.readFileSync(__dirname + '/certs/ca/ca.crt') + '';
 CreateDatabase("")
   .then((r) => {
     console.log("DATABASE CREATED OK", r);
+
+    initialize();
+
 
     const isVending = process.env.VENDING || true;
     console.log(`is vending`, isVending);
     const app = express();
     // const router = express.Router();
-    app.use(express.json({ limit: "2000mb" }));
+
+    // app.use(express.json({ limit: "2000mb" }));
+
+    app.use((req, res, next) => {
+      if (
+        req.headers["content-type"] &&
+        req.headers["content-type"].includes("application/json")
+      ) {
+        express.json({ limit: "2000mb" })(req, res, next);
+      } else {
+        next();
+      }
+    });
+
+
 
     app.use(
       express.urlencoded({
@@ -119,7 +137,6 @@ CreateDatabase("")
 
 
 
-    // console.log('=====> Log Path', process.env._log_path);
 
     fs.existsSync(process.env._log_path) || fs.mkdirSync(process.env._log_path);
     fs.existsSync(process.env._image_path) ||
@@ -140,10 +157,10 @@ CreateDatabase("")
       const host = req.get("Host"); // localhost:4000
       const server = http + host;
       const d = req.body as IReqModel;
-      // console.log("debug HOST", server, d);
+      console.log("debug HOST", server, d);
 
       try {
-        // console.log("POST Data", d);
+        console.log("POST Data", d);
         const c = d.data as IMMoneyConfirm;
         if (d.command == EClientCommand.confirmMMoney) {
           console.log("confirmMMoney");
@@ -167,7 +184,7 @@ CreateDatabase("")
           invZDM8.confirmLaoQROrder(c).then((r) => {
             // console.log(r.data);
             if (r) {
-              res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
+              res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
             } else {
               res.send(PrintError(d.command, r, EMessage.error));
             }

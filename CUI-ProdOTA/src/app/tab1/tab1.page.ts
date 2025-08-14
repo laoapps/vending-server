@@ -89,6 +89,8 @@ import { VideoCacheService } from '../video-cache.service';
 import { SettingPage } from '../setting/setting.page';
 import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 import { IResModel } from '../services/syste.model';
+import { MapPage } from './smartcb/components-user/map/map.page';
+import { ListAllGroupsPage } from './smartcb/components-user/list-all-groups/list-all-groups.page';
 
 @Component({
   selector: 'app-tab1',
@@ -230,6 +232,15 @@ export class Tab1Page implements OnDestroy {
     //   description: 'Online payment and options',
     //   link: 'topupandservices'
     // }
+  ]
+
+  public menus = [
+    // {title:'Histoy',icon: 'time-outline',path:HistoryPage},
+    // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
+    // { title: 'Scan QR Code', icon: 'qr-code-outline' },
+    { title: 'Map', icon: 'map-outline', path: MapPage },
+    { title: 'All groups', icon: 'receipt-outline', path: ListAllGroupsPage },
+    // { title: 'Register owner', icon: 'albums-outline' },
   ]
   currentSegementTab: string = ITabVendingSegement.vending;
 
@@ -375,6 +386,36 @@ export class Tab1Page implements OnDestroy {
   selectModeFunc(data: any) {
     console.log('select', data);
     this.selectMode = data + '';
+  }
+
+  onClickSmartCB(item) {
+    if (item.title == 'Scan QR Code') {
+
+    } else if (item.title == 'Register owner') {
+
+    } else {
+      this.apiService.showModal(item.path).then((r) => {
+        if (r) {
+          r.present();
+          r.onDidDismiss().then((res) => {
+            if (res.data.dismiss) {
+            }
+          });
+        }
+      });
+    }
+    //   let data = {
+    //     ownerId:1
+    //   }
+    //   this.m.showModal(ShowDevicesPage,{data}).then((r) => {
+    //     if (r) {
+    //       r.present();
+    //       r.onDidDismiss().then((res) => {
+    //         if (res.data.dismiss) {
+    //         }
+    //       });
+    //     }
+    //   });
   }
 
 

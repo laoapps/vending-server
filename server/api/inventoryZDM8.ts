@@ -44,6 +44,10 @@ import {
     setAdminControl,
     listMachineSaleLog,
     CheckMmoneyPaid,
+    writeMachineSettingVersion,
+    readMachineAdsVersion,
+    readMachineSettingVersion,
+    readMachineAds,
     generateChecksum,
 } from "../services/service";
 import {
@@ -93,9 +97,11 @@ import {
     dropLogEntity,
     laabHashService,
     logEntity,
+    LogsTempEntity,
     machineCashoutMMoneyEntity,
     machineClientIDEntity,
     machineIDEntity,
+    ProductImageEntity,
     stockEntity,
     subadminEntity,
     vendingMachineSaleReportEntity,
@@ -130,9 +136,9 @@ import { IVendingWalletType } from "../laab_service/models/base.model";
 import { log } from "console";
 import { channel } from "diagnostics_channel";
 import { LogActivity } from "../entities/logactivity.entity";
-import { AddTransactionToCheck, DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
 import { checkGenerateCount } from "../services/laoqr.service";
-
+import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
+import { IProductImage } from "../models/sys.model";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -310,6 +316,9 @@ export class InventoryZDM8 implements IBaseClass {
         return bn;
     }
 
+
+
+
     constructor(router: Router, wss: WebSocketServer.Server) {
         this.billCashEnt.sync();
         this.badBillCashEnt.sync();
@@ -325,8 +334,8 @@ export class InventoryZDM8 implements IBaseClass {
             // load production for each machine id
             this.init();
             router.get(this.path + "/", async (req, res) => {
-                // console.log("TEST IS WORKING");
-                // res.send({ data: "test is working" });
+                console.log("TEST IS WORKING");
+                res.send({ data: "test is working" });
             });
             router.post(this.path + "/", async (req, res) => {
                 const d = req.body as IReqModel;
@@ -439,8 +448,8 @@ export class InventoryZDM8 implements IBaseClass {
                             const machineId = this.findMachineIdToken(d.token);
                             // const position = d.data.position;
                             if (!machineId) throw new Error("Invalid token");
-                            console.log(" passed token", machineId);
-                            // if (!Array.isArray(sale)) throw new Error("Invalid array id");
+                            // console.log(" passed token", machineId);
+                            if (!Array.isArray(sale)) throw new Error("Invalid array id");
                             // console.log(' sale is  id', sale);
                             if (await this.isMachineDisabled(machineId.machineId))
                                 throw new Error("machine was disabled");
@@ -660,7 +669,241 @@ export class InventoryZDM8 implements IBaseClass {
                                 redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
+                        } else if (d.command == EClientCommand.buyTopUp) {
+                            const sale = d.data.ids as Array<IVendingMachineSale>;
+                            const machineId = this.findMachineIdToken(d.token);
+
+                            if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
+                            if (!Array.isArray(sale)) throw new Error("Invalid array id");
+                            if (await this.isMachineDisabled(machineId.machineId)) return res.send(PrintError(d.command, [], EMessage.machineisdisabled, null));
+
+                            const checkIds = Array<IVendingMachineSale>();
+                            sale.forEach((v) => {
+                                v.stock.qtty = 1;
+                                const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
+                                y.stock.qtty = 1;
+                                y.stock.image = "";
+                                y.machineId = machineId.machineId;
+                                checkIds.push(y);
+                            });
+
+                            const value = checkIds.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
+                            if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                            const a = machineId?.data?.find(v => v.settingName == 'setting');
+                            const mId = a?.imei + '';
+                            const ownerPhone = a?.ownerPhone + '';
+                            const owner = (a?.owner + '').trim();
+
+                            if (!mId || !ownerPhone || !owner) {
+                                return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            }
+                            const x = new Date().getTime();
+
+                            const transactionID = String(mId.substring(mId.length - 8)) + (x + '').substring(5);
+
+                            const bill = {
+                                uuid: uuid4(),
+                                clientId,
+                                qr: '',
+                                transactionID: transactionID + '',
+                                machineId: machineId.machineId,
+                                hashM: "",
+                                hashP: "",
+                                paymentmethod: d.command,
+                                paymentref: '',
+                                paymentstatus: EPaymentStatus.pending,
+                                paymenttime: new Date(),
+                                requestpaymenttime: new Date(),
+                                totalvalue: value,
+                                vendingsales: sale,
+                                isActive: true,
+                            } as VendingMachineBillModel;
+
+                            const m = await machineClientIDEntity.findOne({
+                                where: {
+                                    machineId: machineId.machineId,
+                                },
+                            });
+                            const ownerUuid = m?.ownerUuid || "";
+                            const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
+                            await ent.sync();
+
+                            ent.create(bill).then(async (r) => {
+                                redisClient.setEx(transactionID + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                redisClient.save();
+
+                                let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
+                                let trandList: Array<any>;
+                                try {
+                                    trandList = JSON.parse(result);
+                                    if (!Array.isArray(trandList)) {
+                                        console.warn('trandList is not an array, initializing as empty array');
+                                        trandList = [];
+                                    }
+                                } catch (error) {
+                                    console.error('JSON parse error:', error.message);
+                                    trandList = [];
+                                }
+
+                                if (trandList.length >= 1) {
+                                    console.log('REMOVE FIRST TRAND');
+                                    trandList.splice(0, 1);
+                                }
+
+                                trandList.push({
+                                    transactionID: bill.transactionID,
+                                    createdAt: new Date()
+                                });
+
+                                redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
+                            });
                         }
+
+                        //      {
+
+                        //     const sale = d.data.ids as Array<IVendingMachineSale>;
+                        //     const machineId = this.findMachineIdToken(d.token);
+                        //     const checkCountGen = await checkGenerateCount(machineId?.machineId);
+                        //     if (checkCountGen.status == 1) {
+                        //         const ws = this.wsClient.find(v => v['machineId'] === machineId.machineId);
+                        //         ws?.send(
+                        //             JSON.stringify(
+                        //                 PrintSucceeded(
+                        //                     "ping",
+                        //                     {
+                        //                         command: "ping",
+                        //                         production: this.production,
+                        //                         setting: { refresh: true }
+                        //                     },
+                        //                     EMessage.succeeded,
+                        //                     null
+                        //                 )
+                        //             )
+                        //         );
+                        //         return res.send(PrintError(d.command, [], EMessage.LaoQRCount, null));
+                        //     }
+
+                        //     if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
+
+                        //     if (!Array.isArray(sale)) throw new Error("Invalid array id");
+
+                        //     if (await this.isMachineDisabled(machineId.machineId)) return res.send(PrintError(d.command, [], EMessage.machineisdisabled, null));
+
+                        //     const checkIds = Array<IVendingMachineSale>();
+                        //     sale.forEach((v) => {
+                        //         v.stock.qtty = 1;
+                        //         const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
+                        //         y.stock.qtty = 1;
+                        //         y.stock.image = "";
+                        //         y.machineId = machineId.machineId
+                        //         checkIds.push(y);
+                        //     });
+
+                        //     const value = checkIds.reduce((a, b) => {
+                        //         return a + b.stock.price * b.stock.qtty;
+                        //     }, 0);
+
+
+                        //     if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                        //     let a = machineId?.data?.find(v => v.settingName == 'setting');
+
+
+                        //     let mId = a?.imei + '';
+
+                        //     if (!mId) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                        //     let ownerPhone = a?.ownerPhone + '';
+
+                        //     if (!ownerPhone) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                        //     if (a.owner == null || a.owner == undefined || a.owner == "") return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+
+
+
+                        //     const qr = await this.generateBillLaoQRPro(
+                        //         value,
+                        //         mId + '',
+                        //         (a.owner + '').trim(),
+                        //         ownerPhone
+                        //     );
+
+
+                        //     if (qr.status != 'OK') return res.send(PrintError(d.command, [], EMessage.generateQRFailed, null));
+
+                        //     const qrData = qr.data.emv;
+
+                        //     const bill = {
+                        //         uuid: uuid4(),
+                        //         clientId,
+                        //         qr: qrData,
+                        //         transactionID: qr.requestId ?? '' + '',
+                        //         machineId: machineId.machineId,
+                        //         hashM: "",
+                        //         hashP: "",
+                        //         paymentmethod: d.command,
+                        //         paymentref: qrData,
+                        //         paymentstatus: EPaymentStatus.pending,
+                        //         paymenttime: new Date(),
+                        //         requestpaymenttime: new Date(),
+                        //         totalvalue: value,
+                        //         vendingsales: sale,
+                        //         isActive: true,
+                        //     } as VendingMachineBillModel;
+
+
+
+                        //     const m = await machineClientIDEntity.findOne({
+                        //         where: {
+                        //             machineId: this.findMachineIdToken(d.token)
+                        //                 ?.machineId,
+                        //         },
+                        //     });
+                        //     const ownerUuid = m?.ownerUuid || "";
+                        //     const ent = VendingMachineBillFactory(
+                        //         EEntity.vendingmachinebill + "_" + ownerUuid,
+                        //         dbConnection
+                        //     );
+                        //     await ent.sync();
+
+                        //     ent.create(bill).then(async (r) => {
+
+                        //         redisClient.setEx(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                        //         redisClient.save();
+
+                        //         let resule = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
+
+
+                        //         let trandList: Array<any>;
+                        //         try {
+                        //             trandList = JSON.parse(resule);
+                        //             if (!Array.isArray(trandList)) {
+                        //                 console.warn('trandList is not an array, initializing as empty array');
+                        //                 trandList = [];
+                        //             }
+                        //         } catch (error) {
+                        //             console.error('JSON parse error:', error.message);
+                        //             trandList = [];
+                        //         }
+
+                        //         if (trandList.length >= 1) {
+                        //             console.log('REMOVE FIRST TRAND');
+                        //             trandList.splice(0, 1);
+                        //         }
+                        //         trandList.push({
+                        //             transactionID: bill.transactionID,
+                        //             createdAt: new Date()
+                        //         });
+
+                        //         redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+
+
+                        //         res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
+                        //     });
+                        // }
                         else {
                             res.send(PrintError(d.command, [], EMessage.notsupport, null));
                         }
@@ -674,7 +917,7 @@ export class InventoryZDM8 implements IBaseClass {
             });
 
             router.post(this.path + "/updateStatus", async (req, res) => {
-                // console.log('updateStatus', req.body);
+                console.log('updateStatus', req.body);
                 const d = req.body as IReqModel;
                 // console.log(d.command, EClientCommand.VMC_MACHINE_STATUS, d.command == EClientCommand.VMC_MACHINE_STATUS)
 
@@ -717,7 +960,7 @@ export class InventoryZDM8 implements IBaseClass {
                             mstatus.lastUpdate = new Date();
 
                         writeMachineStatus(machineId, mstatus);
-                        // console.log('VMC_MACHINE_STATUS', mstatus);
+                        console.log('VMC_MACHINE_STATUS', machineId, mstatus);
 
                         res.send(
                             PrintSucceeded(
@@ -728,15 +971,42 @@ export class InventoryZDM8 implements IBaseClass {
                             )
                         );
                     }
+
+                    else if (d.command == EClientCommand.ADH814_STATUS) {
+                        const mstatus = { temperature: data } as IMachineStatus;
+                        console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
+
+                        try {
+                            LogsTempEntity.create({ machineId: machineId, mstatus: mstatus }).then(r => {
+                            }).catch(e => {
+                                console.log('error save temp to database', e);
+                            });
+
+                        } catch (error) {
+                            console.log('Error save temp to database', error);
+                        }
+
+                        writeMachineStatus(machineId, mstatus)
+
+                        res.send(
+                            PrintSucceeded(
+                                d.command,
+                                d.data,
+                                EMessage.succeeded,
+                                returnLog(req, res)
+                            )
+                        );
+                    }
+
                     else if (d.command == EClientCommand.VMC_DISPENSE || EClientCommand.VMC_DISPENSED || EClientCommand.VMC_DISPENSEFAILED) {
 
                         // update order status after deliverying here 
                         //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
                         const hex = data + '';
                         const slot = parseInt(hex.substring(hex.length - 4, hex.length - 2), 16);
-                        if (data.substring(10, 12) == '01') { console.log('Dispensing', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensing`, status: EClientCommand.VMC_DISPENSE })) }
-                        if (data.substring(10, 12) == '02') { console.log('Dispensed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensed`, status: EClientCommand.VMC_DISPENSED })) }
-                        if (data.substring(10, 12) == '03') { console.log('Drop failed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensefailed`, status: EClientCommand.VMC_DISPENSEFAILED })) }
+                        // if (data.substring(10, 12) == '01') { console.log('Dispensing', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensing`, status: EClientCommand.VMC_DISPENSE })) }
+                        // if (data.substring(10, 12) == '02') { console.log('Dispensed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensed`, status: EClientCommand.VMC_DISPENSED })) }
+                        // if (data.substring(10, 12) == '03') { console.log('Drop failed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensefailed`, status: EClientCommand.VMC_DISPENSEFAILED })) }
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -791,6 +1061,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 returnLog(req, res)
                             )
                         );
+
+
+
                     }
                 } catch (error) {
                     console.log('updateStatus error', error);
@@ -809,7 +1082,7 @@ export class InventoryZDM8 implements IBaseClass {
             // });
             router.post(this.path + "/refreshMachine",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -819,14 +1092,112 @@ export class InventoryZDM8 implements IBaseClass {
                         // console.log(`----------->`, m);
 
                         const ws = this.wsClient.find(v => v['machineId'] === m);
-                        ws.send(
+                        // ws.send(
+                        //     JSON.stringify(
+                        //         PrintSucceeded(
+                        //             "ping",
+                        //             {
+                        //                 command: "ping",
+                        //                 production: this.production,
+                        //                 setting: { refresh: true }
+                        //             },
+                        //             EMessage.succeeded,
+                        //             null
+                        //         )
+                        //     )
+                        // );
+
+                        ws?.send(
                             JSON.stringify(
                                 PrintSucceeded(
                                     "ping",
                                     {
                                         command: "ping",
                                         production: this.production,
-                                        setting: { refresh: true }
+                                        balance: {},
+                                        limiter: {},
+                                        merchant: {},
+                                        mymmachinebalance: {},
+                                        mymlimiterbalance: {},
+                                        setting: { refresh: true },
+                                        mstatus: {},
+                                        mymstatus: {},
+                                        mymsetting: {},
+                                        mymlimiter: {},
+                                        app_version: {},
+                                        pendingStock: {},
+
+                                        adsSetting: {},
+                                        adsVersion: {},
+                                        settingVersion: {},
+
+                                    },
+                                    EMessage.succeeded
+                                    ,
+                                    null
+                                )
+                            )
+                        );
+
+                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
+            router.post(this.path + "/exitAppMachine",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+
+                        // const w = ws.find(v=>v['clientId']);
+                        // console.log(`----------->`, m);
+
+                        const ws = this.wsClient.find(v => v['machineId'] === m);
+                        // ws.send(
+                        //     JSON.stringify(
+                        //         PrintSucceeded(
+                        //             "ping",
+                        //             {
+                        //                 command: "ping",
+                        //                 production: this.production,
+                        //                 setting: { exit: true }
+                        //             },
+                        //             EMessage.succeeded,
+                        //             null
+                        //         )
+                        //     )
+                        // );
+
+
+                        ws?.send(
+                            JSON.stringify(
+                                PrintSucceeded(
+                                    "ping",
+                                    {
+                                        command: "ping",
+                                        production: this.production,
+                                        balance: {},
+                                        limiter: {},
+                                        merchant: {},
+                                        mymmachinebalance: {},
+                                        mymlimiterbalance: {},
+                                        setting: { exit: true },
+                                        mstatus: {},
+                                        mymstatus: {},
+                                        mymsetting: {},
+                                        mymlimiter: {},
+                                        app_version: {},
+                                        pendingStock: {},
+
+                                        adsSetting: {},
+                                        adsVersion: {},
+                                        settingVersion: {},
                                     },
                                     EMessage.succeeded,
                                     null
@@ -841,6 +1212,7 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
+
             router.post(
                 this.path + "/getDeliveryingBills",
                 this.checkMachineIdToken.bind(this),
@@ -969,7 +1341,6 @@ export class InventoryZDM8 implements IBaseClass {
                         });
 
                         if (!bill) {
-
                             return res.send(PrintError("retryProcessBill", "bill not found", EMessage.billnotfound));
                         }
 
@@ -984,7 +1355,7 @@ export class InventoryZDM8 implements IBaseClass {
                         } else {
                             const items = dataStock.filter((item: any) => item.position === position && !item.dropAt);
                             if (items.length === 0) {
-                                console.log("มีทุกตัวแล้ว");
+                                // console.log("มีทุกตัวแล้ว");
                             } else {
                                 // สุ่มเลือกตัวหนึ่งจากรายการที่ยังไม่มี dropAt
                                 const randomIndex = Math.floor(Math.random() * items.length);
@@ -1252,7 +1623,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     writeMachineLockDrop(res.locals["machineId"]?.machineId);
                                 }
                             } catch (error) {
-                                // console.log("error retryProcessBill", error, returnLog(req, res, true));
+                                console.log("error retryProcessBill", error, returnLog(req, res, true));
                                 writeErrorLogs(error.message, error);
                                 res.send(
                                     PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true))
@@ -1329,7 +1700,7 @@ export class InventoryZDM8 implements IBaseClass {
             );
             router.get(this.path + "/getOnlineMachines", async (req, res) => {
                 try {
-                    console.log(" WS getOnlineMachines");
+                    // console.log(" WS getOnlineMachines");
                     res.send(
                         PrintSucceeded(
                             "init",
@@ -1379,7 +1750,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/addProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 // this.checkToken,
@@ -1421,10 +1792,55 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+
+            router.post(
+                this.path + "/addProductImageSystem",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        try {
+                            const ownerUuid = res.locals["ownerUuid"] || "";
+                            const sEnt = StockFactory(
+                                EEntity.product + "_" + ownerUuid,
+                                dbConnection
+                            );
+                            // await sEnt.sync();
+                            const o = req.body.data as IProductImage;
+                            if (!o.imageURL || !o.name || !o.price)
+                                return res.send(
+                                    PrintError("addProduct", [], EMessage.bodyIsEmpty, returnLog(req, res, true))
+                                );
+                            ProductImageEntity
+                                .create(o)
+                                .then((r) => {
+                                    res.send(PrintSucceeded("addProduct", r, EMessage.succeeded, returnLog(req, res)));
+                                })
+                                .catch((e) => {
+                                    console.log("error add product", e);
+
+                                    res.send(PrintError("addProduct", e, EMessage.error, returnLog(req, res, true)));
+                                });
+                        } catch (error) {
+                            console.log(error);
+                            res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/disableProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -1478,7 +1894,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/deleteProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -1499,7 +1915,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     return res.send(
                                         PrintError("deleteProduct", [], EMessage.error, returnLog(req, res, true))
                                     );
-                                console.log('deleteProduct', r);
+                                // console.log('deleteProduct', r);
                                 res.send(
                                     PrintSucceeded(
                                         "deleteProduct",
@@ -1525,7 +1941,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/listProduct",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
@@ -1558,10 +1974,42 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+
+            router.post(
+                this.path + "/listProductImages",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const isActive = req.query['isActive'];
+                        let actives = [];
+                        if (isActive == 'all') actives.push(...[true, false]);
+                        else actives.push(...isActive == 'yes' ? [true] : [false]);
+                        // const ownerUuid = res.locals["ownerUuid"] || "";
+                        ProductImageEntity
+                            .findAll({ where: { isActive: { [Op.in]: actives } } })
+                            .then((r) => {
+                                res.send(PrintSucceeded("listProductImages", r, EMessage.succeeded, returnLog(req, res)));
+                            })
+                            .catch((e) => {
+                                console.log("error listProductImages", e);
+
+                                res.send(PrintError("listProductImages", e, EMessage.error, returnLog(req, res, true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listProductImages", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/cloneSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -1627,7 +2075,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/addSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkDisabled.bind(this),
@@ -1659,7 +2107,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     );
                                 p.qtty = 0;
                                 o.stock = p;
-                                console.log('addSale', o);
+                                // console.log('addSale', o);
 
                                 sEnt
                                     .findOne({ where: { position: o.position, machineId: o.machineId } })
@@ -1692,7 +2140,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/deleteSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -1727,7 +2175,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/disableSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken,
                 // this.checkMachineDisabled,
@@ -1775,7 +2223,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/updateSale",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -1813,11 +2261,11 @@ export class InventoryZDM8 implements IBaseClass {
                                             if (["stock", "max"].includes(k)) {
                                                 r[k] = o[k];
                                                 r.changed("stock", true);
-                                                console.log("changed", r[k]);
+                                                // console.log("changed", r[k]);
                                             }
                                         });
                                         // r.changed('stock', true);
-                                        console.log("update Sale", r);
+                                        // console.log("update Sale", r);
 
                                         res.send(
                                             PrintSucceeded(
@@ -1848,7 +2296,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/listSale",
 
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -2196,7 +2644,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 hashM: sign,
                                 hashP: 'null'
                             }).then(r => {
-                                console.log(`save stock successxxxxxx`);
+                                // console.log(`save stock successxxxxxx`);
                             }).catch(error => console.log(`save stock fail`));
 
                         } else {
@@ -2206,7 +2654,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 hashM: sign,
                                 hashP: run.hashM
                             }).then(r => {
-                                console.log(`save stock successxxx`);
+                                // console.log(`save stock successxxx`);
                             }).catch(error => console.log(`save stock fail`));
 
                         }
@@ -2406,7 +2854,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/readMachineSaleForAdmin",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
 
                 this.checkAdmin,
 
@@ -2495,7 +2943,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/saveMachineSaleReport",
                 // this.checkAdmin,
-                // this.checkSubAdmin,
+
                 // this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -2541,7 +2989,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 async (req, res) => {
@@ -2589,7 +3037,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/loadVendingMachineDropPositionReport",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 async (req, res) => {
@@ -2617,7 +3065,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/loadVendingMachineStockReport",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 (req, res) => {
@@ -2697,7 +3145,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/listSaleByMachine",
                 this.checkSuperAdmin,
                 this.checkAdmin,
-                this.checkSubAdmin,
+
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -2738,7 +3186,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -2926,7 +3374,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/updateMachineSetting",
 
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
@@ -2937,6 +3385,8 @@ export class InventoryZDM8 implements IBaseClass {
 
                         const o = req.body.data as IMachineClientID;
                         // console.log('OOOOOO', o);
+                        console.log('UPDATE MACHINE SETTING');
+
 
                         this.machineClientlist
                             .findOne({ where: { ownerUuid, id } })
@@ -2970,6 +3420,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const musicVolume = o.data[0]?.musicVolume || 0;
                                 const adsList = o.data[0]?.adsList || [];
                                 const versionId = o.data[0]?.versionId || '';
+                                const qrPayment = o.data[0]?.qrPayment || false;
 
 
                                 const imgh = o.data[0]?.imgHeader;
@@ -2984,7 +3435,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId, qrPayment: qrPayment };
                                     r.data.push(a);
                                 }
                                 else {
@@ -2998,17 +3449,19 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.musicVolume = musicVolume;
                                     a.adsList = adsList;
                                     a.versionId = versionId;
+                                    a.qrPayment = qrPayment;
                                 }
 
                                 // r.data = [a];
                                 r.changed('data', true);
-                                console.log('updating machine setting', r.data);
+                                // console.log('updating machine setting', r.data);
                                 const a2 = JSON.parse(JSON.stringify(r.data));
                                 const s = a2.find(v => v.settingName == 'setting');
                                 // s.owner = '';
                                 // s.ownerPhone = '';
                                 // s.imei = '';
                                 await writeMachineSetting(r.machineId, a2);
+                                writeMachineSettingVersion(r.machineId, a2);
                                 this.machineIds.find(v => {
                                     if (v.machineId == r.machineId) {
                                         Object.assign(v, r);
@@ -3025,6 +3478,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 const ws = this.wsClient.find(v => v['machineId'] === r?.machineId);
 
                                 /// WS send to client directly
+                                // console.log('=====>S :', s);
+
 
                                 ws?.send(
                                     JSON.stringify(
@@ -3063,7 +3518,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/setAdminControl",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -3090,7 +3545,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/reportBillNotPaid',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3124,7 +3579,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/reportClientLog',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 async (req, res) => {
@@ -3162,9 +3617,67 @@ export class InventoryZDM8 implements IBaseClass {
 
             )
 
+
+            router.post(this.path + '/reportLogsTemp',
+                this.checkSuperAdmin,
+                this.checkAdmin,
+
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId;
+                        const data = req.body;
+
+                        if (!machineId) {
+                            res.send(PrintError("reportLogsTemp", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        // console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const cksum = generateChecksum(machineId + fromDate.toString() + toDate.toString());
+                        const resp = await redisClient.get(cksum);
+                        if (resp) {
+                            return res.send(PrintSucceeded("report", JSON.parse(resp), EMessage.succeeded, returnLog(req, res)));
+                        }
+                        const run = await this.getReportLogsTemp(machineId, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        redisClient.setEx(cksum, 60 * 1, JSON.stringify(response));
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportLogsTemp :', error);
+                        res.send(PrintError("reportLogsTemp", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
+
+            router.post(this.path + '/clearLogsTemp',
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const q = `DELETE FROM "LogsTemp" WHERE "createdAt" < NOW() - INTERVAL '24 hours';`
+                        const bill = await LogsTempEntity.sequelize.query(q);
+                        return res.send(PrintSucceeded("clearLogsTemp", bill, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('clearLogsTemp :', error);
+                        res.send(PrintError("clearLogsTemp", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
+
             router.post(this.path + '/checkPaidMmoney',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3190,7 +3703,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/sendDropAdmin',
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3198,7 +3711,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = req.body.ownerUuid;
                         const bankname = req.body.bankname;
 
-                        if (!transactionID || !ownerUuid) {
+                        if (!transactionID || !ownerUuid || !bankname) {
                             res.send(PrintError("reportBillNotPaid", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
                             return;
                         };
@@ -3272,7 +3785,6 @@ export class InventoryZDM8 implements IBaseClass {
                             }
 
                             const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
-
                             redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
                             this.sendWSToMachine(bill.machineId, resD);
                             return res.send(PrintSucceeded("reportBillNotPaid", resD, EMessage.succeeded, returnLog(req, res)));
@@ -3288,7 +3800,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/readAdminControl",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -3310,7 +3822,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/disableMachine",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
@@ -3354,7 +3866,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + "/resetCashing",
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
                 async (req, res) => {
                     try {
@@ -3379,7 +3891,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/listMachine",
                 //APIAdminAccess,
                 this.checkSuperAdmin,
-                this.checkSubAdmin,
+
                 this.checkAdmin,
 
                 // this.checkDisabled.bind(this),
@@ -3427,7 +3939,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/checkMyMmoney",
                 //APIAdminAccess,
                 // this.checkSuperAdmin,
-                // this.checkSubAdmin,
+
                 // this.checkAdmin,
 
                 // this.checkDisabled.bind(this),
@@ -3455,7 +3967,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.path + "/loadLogs",
                 //APIAdminAccess,
                 // this.checkSuperAdmin,
-                // this.checkSubAdmin,
+
                 // this.checkAdmin,
 
                 // this.checkDisabled.bind(this),
@@ -3524,7 +4036,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     authorizeSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            // console.log('authorizeSuperAdmin');
+            console.log('authorizeSuperAdmin');
             if (!res.locals["superadmin"]) throw new Error('You are not superadmin');
             next();
 
@@ -3536,7 +4048,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     authorizeSubAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            // console.log('authorizeSubAdmin');
+            console.log('authorizeSubAdmin');
             if (!res.locals["subadmin"]) throw new Error('You are not Sub admin');
             next();
 
@@ -3548,18 +4060,17 @@ export class InventoryZDM8 implements IBaseClass {
     }
     checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            // console.log('checkSupAdmin');
+            console.log('checkSupAdmin');
             const token = req.body.token;
             const secret = req.body.secret;
-
             let phoneNumber = req.body.shopPhonenumber;
             if (!token) throw new Error(EMessage.tokenNotFound);
+
             findRealDB(token).then((r) => {
                 const uuid = r;
                 if (!uuid) throw new Error(EMessage.notfound);
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
-
                 if (phoneNumber && secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
                     phoneNumber = `+85620${phoneNumber}`;
                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
@@ -3582,69 +4093,69 @@ export class InventoryZDM8 implements IBaseClass {
             res.status(400).end();
         }
     }
-    checkSubAdmin(req: Request, res: Response, next: NextFunction) {
-        // console.log('checkSubAdmin');
+    // checkSubAdmin(req: Request, res: Response, next: NextFunction) {
+    //     console.log('checkSubAdmin');
 
-        try {
-            if (res.locals['ownerUuid']) {
-                next();
-            }
-            else {
-                const token = req.body.token;
-                const phoneNumber = req.body.shopPhonenumber + '';
-                if (!token) throw new Error(EMessage.tokenNotFound);
-                findRealDB(token).then((r) => {
-                    const uuid = r;
-                    if (!uuid) throw new Error(EMessage.notfound);
-                    // req['gamerUuid'] = gamerUuid;
-                    res.locals["subadmin"] = uuid;
-                    if (phoneNumber) {
-                        findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
-                            const ownerUuid = r.uuid;
-                            if (ownerUuid) {
-                                subadminEntity.findOne({ where: { data: { uuid }, ownerUuid } }).then(subadmin => {
-                                    if (subadmin != null) {
-                                        res.locals["ownerUuid"] = subadmin.ownerUuid;
-                                    } else {
-                                        res.locals["ownerUuid"] = uuid;
-                                        res.locals["subadmin"] = '';
-                                    }
-                                    next();
-                                }).catch(error => {
-                                    console.log(error);
-                                    res.status(400).end();
-                                });
-                            } else {
-                                res.locals["ownerUuid"] = uuid;
-                                res.locals["subadmin"] = '';
-                                next();
-                            }
-                        });
-                    } else {
-                        res.locals["ownerUuid"] = uuid;
-                        res.locals["subadmin"] = '';
-                        next();
-                    }
-
-
+    //     try {
+    //         if (res.locals['ownerUuid']) {
+    //             next();
+    //         }
+    //         else {
+    //             const token = req.body.token;
+    //             const phoneNumber = req.body.shopPhonenumber + '';
+    //             if (!token) throw new Error(EMessage.tokenNotFound);
+    //             findRealDB(token).then((r) => {
+    //                 const uuid = r;
+    //                 if (!uuid) throw new Error(EMessage.notfound);
+    //                 // req['gamerUuid'] = gamerUuid;
+    //                 res.locals["subadmin"] = uuid;
+    //                 if (phoneNumber) {
+    //                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r => {
+    //                         const ownerUuid = r.uuid;
+    //                         if (ownerUuid) {
+    //                             subadminEntity.findOne({ where: { data: { uuid }, ownerUuid } }).then(subadmin => {
+    //                                 if (subadmin != null) {
+    //                                     res.locals["ownerUuid"] = subadmin.ownerUuid;
+    //                                 } else {
+    //                                     res.locals["ownerUuid"] = uuid;
+    //                                     res.locals["subadmin"] = '';
+    //                                 }
+    //                                 next();
+    //                             }).catch(error => {
+    //                                 console.log(error);
+    //                                 res.status(400).end();
+    //                             });
+    //                         } else {
+    //                             res.locals["ownerUuid"] = uuid;
+    //                             res.locals["subadmin"] = '';
+    //                             next();
+    //                         }
+    //                     });
+    //                 } else {
+    //                     res.locals["ownerUuid"] = uuid;
+    //                     res.locals["subadmin"] = '';
+    //                     next();
+    //                 }
 
 
-                })
-                    .catch((e) => {
-                        console.log(e);
-                        res.status(400).end();
-                    });
-            }
 
-        } catch (error) {
-            console.log(error);
 
-            res.status(400).end();
-        }
-    }
+    //             })
+    //                 .catch((e) => {
+    //                     console.log(e);
+    //                     res.status(400).end();
+    //                 });
+    //         }
+
+    //     } catch (error) {
+    //         console.log(error);
+
+    //         res.status(400).end();
+    //     }
+    // }
     checkAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            // console.log('checkAdmin');
+            console.log('checkAdmin');
             if (res.locals['ownerUuid']) {
                 next();
             }
@@ -3708,7 +4219,7 @@ export class InventoryZDM8 implements IBaseClass {
             )
         );
         redisClient.set(k, JSON.stringify(b)).then(r => {
-            console.log('----->setBillProces Success :', r);
+            // console.log('----->setBillProces Success :', r);
         }).catch(e => {
             console.log('----->setBillProces Error :', e);
         });
@@ -3736,22 +4247,22 @@ export class InventoryZDM8 implements IBaseClass {
         resx.command = EMACHINE_COMMAND.confirm;
         resx.message = EMessage.confirmsucceeded;
         if (transactionID < 0)
-            // return console.log("deductStock ignore", transactionID);
-            if ([22331, 1000].includes(transactionID)) {
-                resx.status = 1;
-                console.log("deductStock 22231", transactionID);
-                resx.transactionID = ((transactionID || -1) + '') + '';
-                resx.data = { bill, position };
-                //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
-            } else {
-                const idx =
-                    bill?.vendingsales?.findIndex((v) => v.position == position) || -1;
-                idx == -1 || !idx ? "" : bill?.vendingsales?.splice(idx, 1);
-                resx.status = 1;
-                // console.log("deductStock xxx", transactionID);
-                resx.transactionID = ((transactionID || -1) + '') + '';
-                resx.data = { bill, position };
-            }
+            return console.log("deductStock ignore", transactionID);
+        if ([22331, 1000].includes(transactionID)) {
+            resx.status = 1;
+            // console.log("deductStock 22231", transactionID);
+            resx.transactionID = ((transactionID || -1) + '') + '';
+            resx.data = { bill, position };
+            //    return  cres?.res.send(PrintSucceeded('onMachineResponse '+re.transactionID, resx, EMessage.succeeded));
+        } else {
+            const idx =
+                bill?.vendingsales?.findIndex((v) => v.position == position) || -1;
+            idx == -1 || !idx ? "" : bill?.vendingsales?.splice(idx, 1);
+            resx.status = 1;
+            // console.log("deductStock xxx", transactionID);
+            resx.transactionID = ((transactionID || -1) + '') + '';
+            resx.data = { bill, position };
+        }
         const clientId = bill?.clientId + "";
         // console.log("send", clientId, bill?.clientId, resx);
         // console.log("deductStock", transactionID);
@@ -3885,7 +4396,7 @@ export class InventoryZDM8 implements IBaseClass {
                         )
                     )
                     // finish the process allow next queque with exist TransactionID
-                    console.log('finish the process allow next queque with exist TransactionID', transactionID);
+                    // console.log('finish the process allow next queque with exist TransactionID', transactionID);
                 })
 
                 return;
@@ -3928,10 +4439,10 @@ export class InventoryZDM8 implements IBaseClass {
                 func // OLD LAAB
                     .Init(params) // OLD LAAB
                     .then((run) => { // OLD LAAB
-                        console.log('RECORD THIS TRANSACTIION AS IT has been doen');
-                        // finish the process allow next queque 
-                        console.log('finish the process allow next queque ');
-                        writeACKConfirmCashIn(machineId + '' + transactionID);
+                        // console.log('RECORD THIS TRANSACTIION AS IT has been doen');
+                        // // finish the process allow next queque 
+                        // console.log('finish the process allow next queque ');
+                        // writeACKConfirmCashIn(machineId + '' + transactionID);
                         // console.log(`response cash in validation`, run);
                         if (run.message != IENMessage.success) throw new Error(run);
                         bsi.bankNotes.push(bn);
@@ -4027,10 +4538,10 @@ export class InventoryZDM8 implements IBaseClass {
                 res.command = d.command;
                 res.message = EMessage.machineCredit;
                 res.status = 1;
-                // console.log(
-                //     "creditMachine WS online machine",
-                //     that.listOnlineMachines()
-                // );
+                console.log(
+                    "creditMachine WS online machine",
+                    that.listOnlineMachines()
+                );
 
                 console.log(`TEST DER -->`, 8);
 
@@ -4049,7 +4560,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     console.log(`TEST DER -->`, 11);
 
-                    console.log("billCashIn", d?.data);
+                    // console.log("billCashIn", d?.data);
 
                     // *** cash in here
                     const bn = { amount: cashInValue, channel: -1 * cashInValue, value: cashInValue } as IBankNote;
@@ -4106,19 +4617,19 @@ export class InventoryZDM8 implements IBaseClass {
                         console.log(`creditMachineMMoney`, 2);
 
                         machineCashoutMMoneyEntity.create(model).then(run_createLAABLog => {
-                            console.log(`creditMachineMMoney`, 3, run_createLAABLog);
+                            // console.log(`creditMachineMMoney`, 3, run_createLAABLog);
                             if (!run_createLAABLog) return resolve(IENMessage.createLAABBillFail);
                             machineCashoutMMoneyEntity.findOne({ where: { id: run_createLAABLog.id } }).then(run_findbill => {
-                                console.log(`creditMachineMMoney`, 4, run_findbill);
+                                // console.log(`creditMachineMMoney`, 4, run_findbill);
                                 if (run_findbill == null) return resolve(IENMessage.notFoundBill);
                                 this.refillMMoney(phonenumber, transactionID, cashInValue, params.description).then(refill => {
-                                    console.log(`creditMachineMMoney`, 5, refill);
+                                    // console.log(`creditMachineMMoney`, 5, refill);
                                     machineCashoutMMoneyEntity.update({ MMoney: refill }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-                                        console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                        // console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                         if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                         model.MMoney = refill;
                                         model.message = IENMessage.success;
-                                        console.log(`creditMachineMMoney`, 7);
+                                        // console.log(`creditMachineMMoney`, 7);
                                         resolve(model);
                                     }).catch(error => resolve(error.message));
                                 }).catch(error => {
@@ -4146,7 +4657,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             info: run_return.data.info.info
                                         }
                                         machineCashoutMMoneyEntity.update({ LAABReturn: h }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
-                                            console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                            // console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                             if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                             writeMachineBalance(ifError.machineId, ifError.vendingBalance);
                                             resolve(error.message);
@@ -4157,7 +4668,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         // if transfer back and everything fail database will save error data
                                         machineCashoutMMoneyEntity.update({ LAABReturn: error.message }, { where: { id: run_createLAABLog.id } }).then(run_createMMoneyLog => {
 
-                                            console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
+                                            // console.log(`creditMachineMMoney`, 6, run_createMMoneyLog);
                                             if (!run_createMMoneyLog) return resolve(IENMessage.createMMoneyBillFail);
                                             resolve(error.message);
                                         }).catch(error => resolve(`update bill return br sum led 002` + error.message));
@@ -4299,10 +4810,10 @@ export class InventoryZDM8 implements IBaseClass {
             res.command = d.command;
             res.message = EMessage.machineCredit;
             res.status = 1;
-            // console.log(
-            //     "creditMachine WS online machine",
-            //     that.listOnlineMachines()
-            // );
+            console.log(
+                "creditMachine WS online machine",
+                that.listOnlineMachines()
+            );
 
             // console.log('FOUND ACK EXIST TRANSACTIONID', ack, d.transactionID);
 
@@ -4403,16 +4914,16 @@ export class InventoryZDM8 implements IBaseClass {
                     func
                         .Init(params)
                         .then((run) => {
-                            // console.log('RECORD THIS TRANSACTIION AS IT has been doen');
+                            console.log('RECORD THIS TRANSACTIION AS IT has been doen');
                             // finish the process allow next queque 
-                            // console.log('finish the process allow next queque ');
+                            console.log('finish the process allow next queque ');
                             writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
-                            // console.log(`response cash in validation`, run);
+                            console.log(`response cash in validation`, run);
                             if (run.message != IENMessage.success) throw new Error(run);
                             bsi.bankNotes.push(bn);
                             res.data = { clientId: wsclientId, billCashIn: bsi, bn, machineId: machineId.machineId };
                             that.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
-                            // console.log(`sw sender`, d.command, res.data, machineId.machineId);
+                            console.log(`sw sender`, d.command, res.data, machineId.machineId);
                             // redisClient.set('_balance_' + ws['clientId'], bn.value);
                             // writeMachineBalance(machineId.machineId,bn.value+'')
                             readMachineSetting(machineId.machineId).then(async r => {
@@ -4709,7 +5220,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     initMachineId(m: Array<IMachineClientID>) {
         this.machineIds.length = 0;
-        const data = JSON.parse(JSON.stringify(m));
+        // const data = JSON.parse(JSON.stringify(m));
         // console.log(`initMachineId`, data);
         this.machineIds.push(...m)
         // this.machineIds.forEach(v=>v.photo='');
@@ -4734,6 +5245,7 @@ export class InventoryZDM8 implements IBaseClass {
             if (!a) v.data.push({ settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l });
             else { a.allowVending = x; a.allowCashIn = y, a.light = w; a.highTemp = z; a.lowTemp = u; a.limiter = l }
             await writeMachineSetting(v.machineId, v.data);
+            await writeMachineSettingVersion(v.machineId, v.data);
         })
     }
     findMachineIdToken(token: string) {
@@ -4769,6 +5281,7 @@ export class InventoryZDM8 implements IBaseClass {
                     EEntity.vendingmachinebill + "_" + element.ownerUuid,
                     dbConnection
                 );
+                await ent.sync();
                 const currentTime = new Date();
                 const oneHourAgo = new Date(currentTime.getTime() - 60 * 60 * 1000); // Subtract 1 hour in milliseconds
                 ent.findAll({
@@ -4919,10 +5432,10 @@ export class InventoryZDM8 implements IBaseClass {
         try {
 
             this.badBillCashEnt.create(billCash).then((rx) => {
-                console.log(
-                    "SAVED BILL CASH-IN",
-                    EEntity.badbillcash + "_" + this.production
-                );
+                // console.log(
+                //     "SAVED BILL CASH-IN",
+                //     EEntity.badbillcash + "_" + this.production
+                // );
             });
 
             const mId = this.findMachineId(machineId);
@@ -4940,10 +5453,10 @@ export class InventoryZDM8 implements IBaseClass {
                         bill: billCash,
                     })
                     .then((rx) => {
-                        console.log(
-                            "SAVED MachineIDStatic",
-                            EEntity.machineIDHistory + "_" + mId?.machineId
-                        );
+                        // console.log(
+                        //     "SAVED MachineIDStatic",
+                        //     EEntity.machineIDHistory + "_" + mId?.machineId
+                        // );
                         // const i = this.billCashIn.findIndex(v => v.transactionID == transactionID && v.machineId == machineId);
                         // this.billCashIn.splice(i, 1);
                     })
@@ -5089,8 +5602,7 @@ export class InventoryZDM8 implements IBaseClass {
                 "channel": `VENDING_` + channel, // Vending Machine 
                 "owner": "LAABX", // Merchant Name  LAABX
                 // "callbackurl": "https://tvending.khamvong.com"
-                "callbackurl": "https://vendingserviceapi.laoapps.com"
-
+                "callbackurl": "https://vending-service-api5.laoapps.com"
             }
             // console.log("LAOQR", qr);
 
@@ -5101,17 +5613,14 @@ export class InventoryZDM8 implements IBaseClass {
                     { headers: { 'Content-Type': 'application/json' } }
                 )
                 .then((rx) => {
-                    // console.log("generateBillLaoQRPro", rx.data);
+                    console.log("generateBillLaoQRPro", rx.data);
                     if (rx.status) {
                         resolve(rx.data.data as ILaoQRGenerateQRRes);
                     } else {
-                        console.log("generateBillLaoQRPro error", rx.statusText);
                         reject(new Error(rx.statusText));
                     }
                 })
                 .catch((e) => {
-                    console.log('generateBillLaoQRPro error', e);
-
                     reject(e);
                 });
 
@@ -5242,7 +5751,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || ""; TODO LATER
                 const ownerUuid = (await redisClient.get(qr + EMessage.BillCreatedTemp)) || "";
-                console.log("GET transactionID by owner", ownerUuid);
+                // console.log("GET transactionID by owner", ownerUuid);
                 if (!ownerUuid && this.production) {
                     // throw new Error(EMessage.TransactionTimeOut);
                     return resolve(null);
@@ -5304,8 +5813,8 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                     this.setBillProces(bill.machineId, b);
-                    // res.data = b.filter((v) => v.ownerUuid == ownerUuid);
-                    // this.sendWSToMachine(bill?.machineId + "", res);
+                    res.data = b.filter((v) => v.ownerUuid == ownerUuid);
+                    this.sendWSToMachine(bill?.machineId + "", res);
 
                 });
 
@@ -5498,12 +6007,9 @@ export class InventoryZDM8 implements IBaseClass {
 
                     // ใช้ filter หลังจากยืนยันว่า trandList เป็นอาร์เรย์
                     const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
-
                     redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
-                    await DeleteTransactionToCheck(bill.machineId);
-
-
+                    await DeleteTransactionToCheck(bill.machineId)
                     this.sendWSToMachine(bill?.machineId + "", res);
 
                     return resolve(bill); // Add return to stop callback execution
@@ -5524,30 +6030,28 @@ export class InventoryZDM8 implements IBaseClass {
                 res.message = EMessage.waitingt;
                 res.status = 1;
 
-                // console.log('=====>machineId', machineId);
-                setImmediate(async () => {
-                    try {
-                        const resultList = await GetTransactionToCheck(machineId);
-                        if (resultList.status === 1) {
-                            // console.log('Get transaction list:', resultList.message);
-                            for (let index = 0; index < resultList.message.length; index++) {
-                                const transactionID = resultList.message[index].transactionID;
-                                // console.log('=====>transactionID', transactionID);
-                                const responseCheck = await this.checkQRPaidMmoneyResponse(transactionID);
-                                if (responseCheck.status === 1) {
-                                    await DeleteTransactionToCheck(machineId);
-                                } else {
-                                    console.log('=====>Error checking QR payment:', responseCheck.message, 'Transaction ID:', transactionID);
-                                }
+                // setImmediate(async () => {
+                try {
+                    const resultList = await GetTransactionToCheck(machineId);
+                    if (resultList?.status === 1) {
+                        // console.log('Get transaction list:', resultList.message);
+                        for (let index = 0; index < resultList.message.length; index++) {
+                            const transactionID = resultList.message[index].transactionID;
+                            // console.log('=====>transactionID', transactionID);
+                            const responseCheck = await this.checkQRPaidMmoneyResponse(transactionID);
+                            if (responseCheck?.status === 1) {
+                                await DeleteTransactionToCheck(machineId);
+                            } else {
+                                console.log('=====>Error checking QR payment:', responseCheck.message, 'Transaction ID:', transactionID);
                             }
-                        } else {
-                            console.log('=====>Error fetching transactions:', resultList.message);
                         }
-                    } catch (error) {
-                        console.log('=====>Error in findCallBackConfirmLaoQR:', error);
+                    } else {
+                        console.log('=====>Error fetching transactions:', resultList.message);
                     }
-                });
-
+                } catch (error) {
+                    console.log('=====>Error in findCallBackConfirmLaoQR:', error);
+                }
+                // });
                 this.getBillProcess(machineId, async (b) => {
 
                     if (b.length == 0) {
@@ -5586,7 +6090,7 @@ export class InventoryZDM8 implements IBaseClass {
                         if (trandList.length > 0) {
                             const firstItem = trandList[0];
                             if (firstItem && firstItem.createdAt) {
-                                const result = isMoreThan50SecondsAgo(firstItem.createdAt, new Date().toISOString());
+                                const result = isMoreThan5SecondsAgo(firstItem.createdAt, new Date().toISOString());
                                 if (result) {
                                     console.log('More than 50 seconds have passed.');
                                     this.checkQRPaidMmoney(firstItem.transactionID, machineId);
@@ -5642,7 +6146,6 @@ export class InventoryZDM8 implements IBaseClass {
                         //     }
                         // }
 
-
                         let trandList: Array<any> = [];
                         try {
                             const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
@@ -5660,7 +6163,7 @@ export class InventoryZDM8 implements IBaseClass {
                         if (trandList.length > 0) {
                             const firstItem = trandList[0];
                             if (firstItem && firstItem.createdAt) {
-                                const result = isMoreThan50SecondsAgo(firstItem.createdAt, new Date().toISOString());
+                                const result = isMoreThan5SecondsAgo(firstItem.createdAt, new Date().toISOString());
                                 if (result) {
                                     this.checkQRPaidMmoney(firstItem.transactionID, machineId);
                                     console.log('More than 50 seconds have passed.');
@@ -5686,7 +6189,6 @@ export class InventoryZDM8 implements IBaseClass {
                     // 2.3 if transaction paid in redis and confirmed in redis like callback
 
                     ////
-
 
                     resolve(res);
                     // this.setBillProces(bill.machineId, filteredB);
@@ -5743,6 +6245,66 @@ export class InventoryZDM8 implements IBaseClass {
     }
 
 
+    checkQRPaidMmoneyResponse(transactionID: string): Promise<{ status: number, message: any }> {
+        return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
+
+            try {
+                const agent = new https.Agent({
+                    rejectUnauthorized: false,
+                });
+
+                const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransactionByBillV3';
+
+                const authUsername = 'lmm'
+                const authPassword = 'Lmm@2024qaz2wsx'
+
+                const authToken = Buffer.from(`${authUsername}:${authPassword}`).toString('base64');
+
+                const headers = {
+                    "Authorization": `Basic ${authToken}`,
+                    "username": 'Vendeex',
+                    "password": 'vendeex@2025qaz2wsx',
+                    "apikey": 'eb718666-b20e-4091-b964-67a61e06fffe',
+                    "Content-Type": 'application/json'
+                }
+
+                const res = await axios.post(API_BASE_URL, {
+                    requestId: transactionID,
+                    billNumber: transactionID
+                },
+                    { headers, httpsAgent: agent });
+
+                if (res.data.success) {
+                    axios.post('https://vending-service-api5.laoapps.com', {
+                        "command": "confirmLAOQR",
+                        "data": {
+                            "trandID": transactionID,
+                            "bankname": res.data.data?.bankname ?? ''
+                        }
+                    }, {
+                        headers: {
+                            "Content-Type": 'application/json'
+                        }
+                    }).then(async r => {
+                        // console.log('=====>CONFIRM PAID', r.data);
+
+                        return resolve({ status: 1, message: r.data });
+                    }).catch(e => {
+                        console.log('=====>CONFIRM ERROR', e);
+                        return resolve({ status: 0, message: e });
+                    })
+                } else {
+                    // console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                    return resolve({ status: 0, message: EMessage.LaoQRNotPaid });
+                }
+            } catch (error) {
+                console.log('=====> CHECK MMONEY PAID ERROR', error);
+                return resolve({ status: 0, message: error });
+            }
+        });
+    }
+
+
     checkQRPaidMmoney(transactionID: string, machineId: string): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             // console.log('=====> CHECK MMONEY PAID', transactionID);
@@ -5775,7 +6337,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('=====> CHECK MMONEY PAID', res.data);
             if (res.data.success) {
                 // console.log('=====> CHECK MMONEY PAID', res.data);
-                axios.post('https://vendingserviceapi.laoapps.com', {
+                axios.post('https://vending-service-api5.laoapps.com', {
                     "command": "confirmLAOQR",
                     "data": {
                         "trandID": transactionID,
@@ -5806,73 +6368,14 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
                     const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
-
                     redisClient.setEx(machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
                 }).catch(e => {
                     console.log('=====>CONFIRM ERROR', e);
                 })
             } else {
-                console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                // console.log('=====> CHECK MMONEY NOT PAID', res.data);
             }
             resolve(null);
-        });
-    }
-
-
-    checkQRPaidMmoneyResponse(transactionID: string): Promise<{ status: number, message: any }> {
-        return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
-
-            try {
-                const agent = new https.Agent({
-                    rejectUnauthorized: false,
-                });
-
-                const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransactionByBillV3';
-
-                const authUsername = 'lmm'
-                const authPassword = 'Lmm@2024qaz2wsx'
-
-                const authToken = Buffer.from(`${authUsername}:${authPassword}`).toString('base64');
-
-                const headers = {
-                    "Authorization": `Basic ${authToken}`,
-                    "username": 'Vendeex',
-                    "password": 'vendeex@2025qaz2wsx',
-                    "apikey": 'eb718666-b20e-4091-b964-67a61e06fffe',
-                    "Content-Type": 'application/json'
-                }
-
-                const res = await axios.post(API_BASE_URL, {
-                    requestId: transactionID,
-                    billNumber: transactionID
-                },
-                    { headers, httpsAgent: agent });
-
-                if (res.data.success) {
-                    axios.post('https://vendingserviceapi.laoapps.com', {
-                        "command": "confirmLAOQR",
-                        "data": {
-                            "trandID": transactionID,
-                            "bankname": res.data.data?.bankname ?? ''
-                        }
-                    }, {
-                        headers: {
-                            "Content-Type": 'application/json'
-                        }
-                    }).then(async r => {
-                        return resolve({ status: 1, message: r.data });
-                    }).catch(e => {
-                        console.log('=====>CONFIRM ERROR', e);
-                        return resolve({ status: 0, message: e });
-                    })
-                } else {
-                    console.log('=====> CHECK MMONEY NOT PAID', res.data);
-                    return resolve({ status: 0, message: EMessage.LaoQRNotPaid });
-                }
-            } catch (error) {
-                console.log('=====> CHECK MMONEY PAID ERROR', error);
-                return resolve({ status: 0, message: error });
-            }
         });
     }
 
@@ -6141,7 +6644,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // console.log(" WS current connection is alive", ws["isAlive"]);
 
                 ws.onopen = (ev: Event) => {
-                    console.log(" WS open", ev);
+                    // console.log(" WS open", ev);
                 };
 
                 // ws['isAlive'] = true;
@@ -6172,10 +6675,10 @@ export class InventoryZDM8 implements IBaseClass {
                             res.status = 1;
                             if (d.token) {
                                 const x = d.token as string;
-                                // console.log(
-                                //     " WS online machine",
-                                //     this.listOnlineMachines()
-                                // );
+                                console.log(
+                                    " WS online machine",
+                                    this.listOnlineMachines()
+                                );
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exit");
@@ -6273,6 +6776,21 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         else if (d.command == "ping") {
                             try {
+
+                                let settingVersion = d?.data?.settingVersion;
+                                let adsVersion = d?.data?.adsVersion;
+                                let clientVersion = d?.data?.clientVersion;
+                                console.log(`----->MachineId :${ws['machineId']} clientVersion`, clientVersion);
+
+
+                                // console.log('=====>pingData', d.data);
+
+                                // console.log('=====>adsVersion', adsVersion, 'settingVersion', settingVersion);
+
+                                const serverAdsVersion = await readMachineAdsVersion(ws['machineId']);
+                                const serverSettingVersion = await readMachineSettingVersion(ws['machineId']);
+                                const adsSetting = adsVersion != serverAdsVersion ? await readMachineAds(ws['machineId']) : null;
+
                                 // console.log("WS PING", ws['clientId'], ws['myMachineId']);
                                 readMachineBalance(ws['machineId']).then(async r => {
                                     // console.log('machine balance', r);
@@ -6283,12 +6801,11 @@ export class InventoryZDM8 implements IBaseClass {
                                     // console.log('clientid  setting', ws['machineId'], x);
                                     // console.log('clientid  status', ws['machineId'], mstatus);
                                     const mArray = ws['myMachineId'] ? ws['myMachineId'] as Array<string> : [] as Array<string>;
+
                                     const errorLog = d?.data?.errorLog ?? [];
                                     if (errorLog.length > 0) {
-                                        console.log('=====>errorLog', ws['machineId'], '==', errorLog);
-
+                                        // console.log('=====>errorLog', ws['machineId'], '==', errorLog);
                                         try {
-
                                             ClientlogEntity.create({ machineId: ws['machineId'], errorLog: errorLog }).then(r => {
                                             }).catch(e => {
                                             });
@@ -6412,21 +6929,42 @@ export class InventoryZDM8 implements IBaseClass {
                                     }
                                     // 
 
+
                                     // console.log('FIND SETTING FOR REFRESH COMMAND', setting);
+
+                                    setting.clientVersion = clientVersion;
+                                    if (settingVersion === serverSettingVersion) {
+                                        setting = null;
+                                    }
+
+
+                                    settingVersion = serverSettingVersion;
+                                    adsVersion = serverAdsVersion;
+
                                     ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
                                                 "ping",
                                                 {
                                                     command: "ping",
-                                                    production: this.production,
-                                                    balance: r, limiter, merchant,
-                                                    mymmachinebalance, mymlimiterbalance,
-                                                    setting, mstatus, mymstatus,
-                                                    mymsetting,
-                                                    mymlimiter,
-                                                    app_version,
-                                                    pendingStock
+                                                    production: this.production, // no versioning
+                                                    balance: r,// no versioning
+                                                    limiter,// no versioning
+                                                    merchant,// no versioning
+                                                    mymmachinebalance,// no versioning
+                                                    mymlimiterbalance,// no versioning
+                                                    setting,
+                                                    mstatus,// no versioning
+                                                    mymstatus,// no versioning
+                                                    mymsetting,// no versioning
+                                                    mymlimiter,// no versioning
+                                                    app_version,// no versioning
+                                                    pendingStock,// no versioning
+
+                                                    adsSetting,
+                                                    adsVersion,
+                                                    settingVersion,
+
                                                 },
                                                 EMessage.succeeded
                                                 ,
@@ -6487,7 +7025,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log("WS SENDING", x, x == clientId, v?.readyState);
             if (x && x == clientId) {
                 // yy.push(v);
-                console.log("WS SENDING", x, v.readyState);
+                // console.log("WS SENDING", x, v.readyState);
 
                 v.send(JSON.stringify(resx));
             }
@@ -6524,14 +7062,19 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
-    confirmLaoQROrder(c: IMMoneyConfirm) {
-        return new Promise<any>((resolve, reject) => {
+    confirmLaoQROrder(c: IMMoneyConfirm): Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }> {
+        return new Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }>((resolve, reject) => {
+            console.log('C is :', c);
             console.log('=====>ConfirmLAOQR  is :', c);
+
 
             this.callBackConfirmLaoQR(c.trandID, c.bankname).then((r) => {
                 if (r) {
+                    console.log('=====>ConfirmLAOQR  is not null', r);
                     resolve({ bill: r, transactionID: c.tranid_client });
                 } else {
+                    console.log('=====>ConfirmLAOQR  is null', c);
+
                     resolve(null);
                 }
             })
@@ -6544,7 +7087,8 @@ export class InventoryZDM8 implements IBaseClass {
 
     findLaoQROrderPaid(c: any) {
         return new Promise<any>((resolve, reject) => {
-            console.log('findLaoQRPaid  is :', c);
+            // console.log('C findLaoQROrderPaid is :', c);
+            // console.log('findLaoQRPaid  is :', c);
 
             this.findCallBackConfirmLaoQR(c.machineId).then((r) => {
                 if (r) {
@@ -6577,7 +7121,7 @@ export class InventoryZDM8 implements IBaseClass {
 
         this.wsClient.forEach((v) => {
             const x = v["machineId"] as string;
-            console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
+            // console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
             if (x && x == machineId) {
                 // yy.push(v);
                 // console.log("WS SENDING machine id", x, v?.readyState);
@@ -6732,6 +7276,37 @@ export class InventoryZDM8 implements IBaseClass {
         // );
         // await ent.sync();
         const bill = await ClientlogEntity.findAndCountAll(condition);
+        return bill;
+    }
+
+
+    private async getReportLogsTemp(machineId: string, fromDate: string, toDate: string) {
+        let condition: any = {};
+        if (machineId == 'all') {
+
+            condition = {
+                where: {
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        else {
+            condition = {
+                where: {
+                    machineId: machineId,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+
+        // const ent = VendingMachineBillFactory(
+        //     EEntity.vendingmachinebill + "_" + ownerUuid,
+        //     dbConnection
+        // );
+        // await ent.sync();
+        const bill = await LogsTempEntity.findAndCountAll(condition);
         return bill;
     }
 
@@ -6907,7 +7482,7 @@ export class LoadVendingMachineSaleBillReport {
     }
 
     private InitParams(params: ILoadVendingMachineSaleBillReport): void {
-        // console.log(`params der`, params);
+        console.log(`params der`, params);
         this.ownerUuid = params.ownerUuid;
         this.fromDate = params.fromDate;
         this.toDate = params.toDate;
@@ -6981,6 +7556,7 @@ export class LoadVendingMachineSaleBillReport {
                 resolve(IENMessage.success);
             }
             catch (error) {
+                console.log('=====> error Report', error);
                 resolve(error.message);
             }
         });
@@ -7032,7 +7608,7 @@ export class LoadVendingMachineStockReport {
     }
 
     private InitParams(params: ILoadVendingMachineSaleBillReport): void {
-        // console.log(`params der`, params);
+        console.log(`params der`, params);
         this.ownerUuid = params.ownerUuid;
         this.fromDate = params.fromDate;
         this.toDate = params.toDate;
@@ -7102,9 +7678,9 @@ export class LoadVendingMachineStockReport {
 }
 
 
-function isMoreThan50SecondsAgo(fromTimeStr, toTimeStr) {
+function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
     const from = new Date(fromTimeStr);
     const to = new Date(toTimeStr);
     const diffInSeconds = (to.getTime() - from.getTime()) / 1000;
-    return diffInSeconds > 50;
+    return diffInSeconds > t;
 }

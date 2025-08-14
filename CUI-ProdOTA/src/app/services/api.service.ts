@@ -41,7 +41,7 @@ import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
 import axios from 'axios';
 // import Swal from "sweetalert2";
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
 import { EpinShowCodePageModule } from '../tab1/LAAB/epin-show-code/epin-show-code.module';
 import { LaabCashinShowCodePageModule } from '../tab1/LAAB/laab-cashin-show-code/laab-cashin-show-code.module';
@@ -94,6 +94,8 @@ import { IndexerrorService } from '../indexerror.service';
   providedIn: 'root',
 })
 export class ApiService {
+  private apiUrl = environment.apiUrl;
+
 
   serialPort: ISerialService;
   toggleWebviewTab: boolean = false;
@@ -2019,6 +2021,43 @@ export class ApiService {
       localStorage.setItem('balanceLocal', newBalance + '');
     }
 
+  }
+
+
+  private getAuthHeaders() {
+    // const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0OTUzM2EwNmU3NjNkMzczYTVkMDZjNTZjOTYxOGM4OTI2ZGE2NTIyMDUzMGE3YmY0M2MxYzQ5MDIzNzg3MWJiZDc1NDNiZGJiODA4OWYwNzNiZTg3MzJkNGZmZDViOGZmYmQ0ODE5YTgyNWMyODE4ZmZjNzQ1ZTIzM2M1YzVlOTMiLCJwaG9uZU51bWJlciI6Iis4NTYyMDU2MzgxMDA5IiwidXVpZCI6Ijk4YzViZDQwLWUzNTMtMTFlZC1hYWQ3LTE1OWIxZjAyMzFmYiIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc1NTA2MjczMCwiZXhwIjozNjAwMDAwMTc1NTA2MjczMH0.aFqtz_MSJMZRks5CPhFsoTkRZWU8Fv2ZHrIwXBrgG8Q';
+    const owner_role = localStorage.getItem('ownerHeader');
+    if (owner_role) {
+      return {
+        headers: new HttpHeaders({
+          // Authorization: `Bearer ${token}`,
+          'X-owner': 'true',
+        }),
+      };
+    } else {
+      return {
+        headers: new HttpHeaders({
+          // Authorization: `Bearer ${token}`,
+        }),
+      };
+    }
+
+  }
+
+  load_all_group(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/groups/loadAll_`, {}, this.getAuthHeaders());
+  }
+
+  getDevicesBy(data): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices/getDevicesBy_`, data, this.getAuthHeaders());
+  }
+
+  schedulepackages(ownerID: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/schedule-packages/findByOwnerID_/${ownerID}`, this.getAuthHeaders());
+  }
+
+  orders(data): Observable<any> {
+    return this.http.post(`${this.apiUrl}/orders/newOrderFromVending`, data, this.getAuthHeaders());
   }
 
 

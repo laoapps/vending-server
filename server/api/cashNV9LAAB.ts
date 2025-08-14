@@ -21,7 +21,7 @@ import { IENMessage, Self_CALLBACK_CashinValidation, Self_CALLBACK_CashValidatio
 import { CashinValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashinValidation.func';
 import { CashVendingLimiterValidationFunc } from '../laab_service/controllers/vendingwallet_client/funcs/cashLimiterValidation.func';
 export class CashNV9LAAB
-    implements IBaseClass {
+ implements IBaseClass {
     // websocket server for vending controller only
     wss: WebSocketServer.Server;
     // socket server for vending controller only
@@ -55,7 +55,7 @@ export class CashNV9LAAB
 
 
     path = '/cashNV9LAAB'
-    constructor(router: Router, wss: WebSocketServer.Server, ssock: SocketServerESSPKiosk) {
+    constructor(router: Router, wss: WebSocketServer.Server,ssock:SocketServerESSPKiosk) {
         this.ssocket = ssock;
         this.ssocket.setCashInstant(this as any);
         this.wss = wss;
@@ -118,7 +118,7 @@ export class CashNV9LAAB
                     limit = limit > 0 ? limit : 5;
                     const offset = limit * skip;
                     console.log(' REST getBillCashIn');
-                    const bEnt = BillCashInFactory(EEntity.badbillcash + '_' + this.production, dbConnection);
+                    const bEnt = BillCashInFactory( EEntity.badbillcash + '_' + this.production , dbConnection);
                     bEnt.sync().then(r => {
                         bEnt.findAndCountAll({ order: ['updatedAt', 'DESC'], limit, offset }).then(async r => {
                             res.send(PrintSucceeded('REST getBillCashIn', r, EMessage.succeeded));
@@ -220,9 +220,9 @@ export class CashNV9LAAB
         return true;
     }
 
-    findProvider(clientId: string) {
-        const x = this.wsClients.find(v => v['clientId'] == clientId) as any;
-        return x?.provider;
+    findProvider(clientId:string){
+         const x = this.wsClients.find(v=>v['clientId']==clientId) as any;
+         return x?.provider ;
     }
     wsSend(clientId: Array<string>, data: any) {
         try {
@@ -240,7 +240,7 @@ export class CashNV9LAAB
                 //         }
                 //     }
                 // })
-                this.wsClients.forEach(v => {
+                this.wsClients.forEach(v=>{
                     console.log('CLIENT ID', v['clientId']);
                     if (v.OPEN) {
                         if (clientId.includes(v['clientId'] + '')) {
@@ -337,7 +337,7 @@ export class CashNV9LAAB
                             res.status = 1;
                             if (d.token) {
                                 const x = d.token as string;
-                                // console.log(' WS online machine', this.ssocket.listOnlineMachine());
+                                console.log(' WS online machine', this.ssocket.listOnlineMachine());
                                 let machineId = this.ssocket.findMachineIdToken(x)
 
                                 if (!machineId) throw new Error('machine is not exist');
@@ -365,31 +365,31 @@ export class CashNV9LAAB
                                     bsi.uuid = uuid4();
                                     bsi.userUuid; // later
                                     bsi.id; // auto
-
+    
                                     bsi.isActive = true;
-
+    
                                     bsi.badBankNotes = []; // update from machine
                                     bsi.bankNotes = []; // update from machine
-
+    
                                     bsi.confirm; // update when cash has come
                                     bsi.confirmTime; // update when cash has come
-
+    
                                     bsi.requestTime = new Date();
                                     // bsi.requestor = requestor;
                                     bsi.machineId = machineId.machineId
                                     res.data = { clientId: ws['clientId'], billCashIn: bsi };
                                     console.log('billCashIn', res.data);
-
+    
                                     ws.send(JSON.stringify(PrintSucceeded(d.command, res, EMessage.succeeded)));
-
+    
                                     // bsi.requestor = requestor;
                                     this.billCashIn.push(bsi);
                                     //
-
+    
                                     this.updateBillCash(bsi, machineId.machineId, bsi.transactionID);
                                     this.ssocket.processOrder(machineId.machineId, bsi.transactionID);
-
-                                }).catch(error => ws.send(JSON.stringify(PrintError(d.command, [], error.message))))
+                                    
+                                }).catch(error =>  ws.send(JSON.stringify(PrintError(d.command, [], error.message))))
 
                                 // const requestor = this.requestors.find(v => v.transID == d.data.transID);
 
@@ -397,7 +397,7 @@ export class CashNV9LAAB
                                 // if (!requestor) throw new Error('Requestor is not exist');
 
 
-
+                                
                             } else throw new Error(EMessage.MachineIdNotFound)
                         } else if (d.command == 'ping') {
                             console.log('WS PING');
@@ -501,7 +501,7 @@ export class CashNV9LAAB
 
     updateBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, provider = '') {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.billcash + '_' + this.production, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory( EEntity.billcash + '_' + this.production , dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
                     console.log('SAVED BILL CASH-IN', provider + '_', EEntity.billcash + '_' + this.production + '_' + billCash?.requestor?.transData[0]?.accountRef);
@@ -529,12 +529,12 @@ export class CashNV9LAAB
         }
 
     }
-    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number,) {
+    updateBadBillCash(billCash: IBillCashIn, machineId: string, transactionID: number, ) {
         try {
-            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_' + this.production, dbConnection);
+            const bEnt: BillCashInStatic = BillCashInFactory(EEntity.badbillcash + '_' + this.production , dbConnection);
             bEnt.sync().then(r => {
                 bEnt.create(billCash).then(rx => {
-                    console.log('SAVED BILL CASH-IN', EEntity.badbillcash + '_' + this.production);
+                    console.log('SAVED BILL CASH-IN',  EEntity.badbillcash + '_' + this.production );
 
                 })
             }).catch(e => {
@@ -702,16 +702,16 @@ export class CashNV9LAAB
     confirmCredit(machineId: string, channel: number, transactionID: number) {
 
         const x = this.billCashIn.find(v => v.transactionID == transactionID && v.machineId == machineId);
-        const provider = this.findProvider(x?.clientId + '');
+        const provider = this.findProvider(x?.clientId+'');
         try {
-
+            
             if (!x) throw new Error('Confirm FAILED  bill not found' + channel + transactionID);
             const n = this.notes.find(v => v.channel == channel);
             if (!n) throw new Error('Confirm FAILED  note not found' + channel + transactionID);
             console.log('MACHINE ID', machineId);
             this.refillLAAB(machineId, n.value).then(rx => {
                 if (rx != IENMessage.success) throw new Error(rx);
-
+                
                 console.log('Succeeded confirmMmoneyCashin', rx);
                 // save to database
                 x.bankNotes.push(n);
@@ -759,7 +759,7 @@ export class CashNV9LAAB
     // refillLAAB(machineId: string, otp: string, cash: number): Promise<any> {
     //     return new Promise<any> (async (resolve, reject) => {
     //         try {
-
+                
     //             const url: string = Self_CALLBACK_CashinValidation;
     //             const params = { 
     //                 cash: cash,
@@ -778,11 +778,11 @@ export class CashNV9LAAB
     // }
 
     refillLAAB(machineId: string, cash: number): Promise<any> {
-        return new Promise<any>(async (resolve, reject) => {
+        return new Promise<any> (async (resolve, reject) => {
             try {
-
+                
                 const func = new CashinValidationFunc();
-                const params = {
+                const params = { 
                     cash: cash,
                     description: 'VENDING LAAB CASH IN',
                     machineId: machineId

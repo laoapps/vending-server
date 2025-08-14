@@ -239,9 +239,9 @@ export class CashNV9MMoney implements IBaseClass {
         return true;
     }
 
-    findProvider(clientId: string) {
-        const x = this.wsClients.find(v => v['clientId'] == clientId) as any;
-        return x?.provider;
+    findProvider(clientId:string){
+         const x = this.wsClients.find(v=>v['clientId']==clientId) as any;
+         return x?.provider ;
     }
     wsSend(clientId: Array<string>, data: any) {
         try {
@@ -259,7 +259,7 @@ export class CashNV9MMoney implements IBaseClass {
                 //         }
                 //     }
                 // })
-                this.wsClients.forEach(v => {
+                this.wsClients.forEach(v=>{
                     console.log('CLIENT ID', v['clientId']);
                     if (v.OPEN) {
                         if (clientId.includes(v['clientId'] + '')) {
@@ -356,7 +356,7 @@ export class CashNV9MMoney implements IBaseClass {
                             res.status = 1;
                             if (d.token) {
                                 const x = d.token as string;
-                                // console.log(' WS online machine', this.ssocket.listOnlineMachine());
+                                console.log(' WS online machine', this.ssocket.listOnlineMachine());
                                 let machineId = this.ssocket.findMachineIdToken(x)
 
                                 if (!machineId) throw new Error('machine is not exist');
@@ -716,9 +716,9 @@ export class CashNV9MMoney implements IBaseClass {
     confirmCredit(machineId: string, channel: number, transactionID: number) {
 
         const x = this.billCashIn.find(v => v.transactionID == transactionID && v.machineId == machineId);
-        const provider = this.findProvider(x?.clientId + '');
+        const provider = this.findProvider(x?.clientId+'');
         try {
-
+            
             if (!x) throw new Error('Confirm FAILED  bill not found' + channel + transactionID);
             const n = this.notes.find(v => v.channel == channel);
             if (!n) throw new Error('Confirm FAILED  note not found' + channel + transactionID);

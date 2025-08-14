@@ -9,8 +9,6 @@
 # COPY . /app
 # CMD ["npm","start"]
 
-
-
 FROM oven/bun:latest AS base
 FROM base AS install
 

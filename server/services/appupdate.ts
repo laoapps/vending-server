@@ -1,7 +1,7 @@
 import path from 'path';
 import express, { Request, Response } from 'express';
 import multer from 'multer';
-import { Sequelize, Model, DataTypes } from 'sequelize';
+// import { Sequelize, Model, DataTypes } from 'sequelize';
 import fs from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import { BundleEntity } from '../entities';
@@ -60,10 +60,12 @@ export function initBundle(app: express.Application) {
     // Upload new bundle
     app.post('/upload-bundle', upload.single('bundle'), async (req: MulterRequest, res: Response) => {
         try {
+            console.log('=====> upload-bundle');
+
             if (!req.file) {
                 return res.status(400).json({ error: 'No file uploaded' });
             }
-            console.log('File uploaded:', req.file);
+            console.log('File uploaded DATA:', req.file);
             // console.log('File path:', req.file.path);
             // console.log('File name:', req.file.filename);
 
@@ -105,6 +107,8 @@ export function initBundle(app: express.Application) {
     // Get latest bundle
     app.get('/latest-bundle', async (req: Request, res: Response) => {
         try {
+            console.log('Fetching latest bundle for query:', req.query);
+
             const { bundleId } = req.query;
 
             const bundle = await BundleEntity.findOne({
@@ -116,14 +120,49 @@ export function initBundle(app: express.Application) {
                 return res.status(404).json({ error: 'No bundle found' });
             }
 
+            // const serverUrl = `http://192.168.88.186:9046/bundles`;
             const serverUrl = `https://${req.get('host')}/bundles`;
+            console.log('Latest bundle:', serverUrl);
+
             res.json({
                 bundleId: bundle.bundleId,
-                url: `${serverUrl}/${bundle.filePath}`,
+                url: `${bundle.filePath}`,
                 channel: bundle.channel
             });
         } catch (error) {
             console.error('Error fetching latest bundle:', error);
+            res.status(500).json({ error: 'Failed to fetch latest bundle' });
+        }
+    });
+
+
+    app.post('/insert-bundle', async (req: Request, res: Response) => {
+        try {
+
+            const { bundleId, fileURL, channel = 'production' } = req.body;
+
+            if (!bundleId) {
+                return res.status(400).json({ error: 'bundleId is required' });
+            }
+
+            const bundle = await BundleEntity.create({
+                bundleId: bundleId,
+                filePath: fileURL,
+                channel,
+                name: ''
+            });
+
+            res.json({
+                message: 'Bundle uploaded successfully',
+                bundle: {
+                    id: bundle.id,
+                    bundleId: bundle.bundleId,
+                    filePath: bundle.filePath,
+                    channel: bundle.channel
+                }
+            });
+        } catch (error) {
+            console.error('Error Insert latest bundle:', error);
             res.status(500).json({ error: 'Failed to fetch latest bundle' });
         }
     });

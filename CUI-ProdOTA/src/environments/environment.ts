@@ -20,8 +20,9 @@ export const environment = {
   wsurl: 'wss://vending-service-api5.laoapps.com/zdm8',
   vending_server: 'https://vending-service-api5.laoapps.com',
   filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
+  apiUrl: 'https://smartcb-api.laoapps.com/api',
 
-  versionId: '1.0.49'
+  versionId: '1.1.1'
 };
 
 /*

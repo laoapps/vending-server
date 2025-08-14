@@ -1133,6 +1133,7 @@ export enum EClientCommand {
     list = 'list',
     buyMMoney = 'buyMMoney',
     buyLAOQR = "buyLAOQR",
+    buyTopUp = "buyTopUp",
     confirmMMoney = 'confirmMMoney',
     confirmLAAB = 'confirmLAAB',
     confirmLAOQR = 'confirmLAOQR',
@@ -1149,6 +1150,7 @@ export enum EClientCommand {
     VMC_DISPENSE = "VMC_DISPENSE",
     VMC_CREDIT_NOTE = "VMC_CREDIT_NOTE",
     VMC_UNKNOWN = "VMC_UNKNOWN",
+    ADH814_STATUS = "ADH814_STATUS"
 
 }
 export interface IVendingMachineSale extends IBase, IBC {
@@ -1388,7 +1390,7 @@ export interface IMMoneyConfirm {
     msisdn_merchan: string,
     msisdn_consumer: string,
     qrcode: string,
-    bankname: string,
+    bankname: string
 
 
 }
@@ -2385,7 +2387,9 @@ export enum EEntity {
     vendingVersion = 'vendingversion',
     droplogactivity = "droplogactivity",
     bundle = "bundle",
-    Clientlog = "Clientlog"
+    Clientlog = "Clientlog",
+    LogsTemp = "LogsTemp",
+    ProductImage = "ProductImage"
 }
 
 export interface ISaveMachineSaleReport {

@@ -548,7 +548,7 @@ export class InventoryVMC implements IBaseClass {
                             res.status = 1;
                             if (d.token) {
                                 const x = d.token as string;
-                                // console.log(' WS online machine', this.ssocket.listOnlineMachine());
+                                console.log(' WS online machine', this.ssocket.listOnlineMachine());
                                 let machineId = this.ssocket.findMachineIdToken(x)
 
                                 if (!machineId) throw new Error('machine is not exit');

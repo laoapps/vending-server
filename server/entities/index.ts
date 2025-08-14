@@ -24,6 +24,8 @@ import { VendingVersionFactory, VendingVersionStatic } from "./vendingversion.en
 import { DropLogActivityFactory, DropLogActivityStatic } from "./droplogactivity.entity";
 import { BundleFactory, BundleStatic } from "./appupdate.entity";
 import { ClientlogFactory, ClientlogStatic } from "./clientlog.entity";
+import { LogsTempFactory, LogsTempStatic } from "./logstemp.entity";
+import { ProductImageFactory, ProductImageStatic } from "./productimage.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -45,6 +47,10 @@ export let doorEntity: DoorStatic;
 export let doorPaymentEntity: DoorPaymentStatic;
 export let vendingVersionEntity: VendingVersionStatic;
 export let ClientlogEntity: ClientlogStatic;
+export let LogsTempEntity: LogsTempStatic;
+
+export let ProductImageEntity: ProductImageStatic;
+
 
 // LAAB
 export let vendingWallet: VendingWalletStatic;
@@ -142,9 +148,14 @@ export const initDB = async () => {
 
     machineIDHistoryEntity = MachineIDFactory(EEntity.machineIDHistory + '_', dbConnection); // private for machine
 
-
     ClientlogEntity = ClientlogFactory(EEntity.Clientlog, dbConnection);
     ClientlogEntity ? await ClientlogEntity.sync() : console.log('==========> ClientlogFactory is not initialized');
+
+    LogsTempEntity = LogsTempFactory(EEntity.LogsTemp, dbConnection);
+    LogsTempEntity ? await LogsTempEntity.sync() : console.log('==========> LogsTempEntity is not initialized');
+
+    ProductImageEntity = ProductImageFactory(EEntity.ProductImage, dbConnection);
+    ProductImageEntity ? await ProductImageEntity.sync() : console.log('==========> ProductImageEntity is not initialized');
 
 
 }
@@ -189,7 +200,7 @@ export const CreateDatabase = (prefix: string) => {
                                 acquire: 30000,
                                 idle: 10000,
                             },
-                            logging: false,
+                            logging: false
                         }
                     );
                     // dbConnection.sync();

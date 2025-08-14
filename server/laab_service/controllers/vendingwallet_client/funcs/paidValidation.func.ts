@@ -13,7 +13,7 @@ import { CashVendingWalletValidationFunc } from "./cashVendingWalletValidation.f
 export class PaidValidationFunc {
 
 
-    private machineId:string;
+    private machineId: string;
     private cash: number;
     private description: string;
     private paidLAAB: any = {} as any;
@@ -30,10 +30,10 @@ export class PaidValidationFunc {
     private amount: number;
     private response: any = {} as any;
 
-    constructor(){}
+    constructor() { }
 
     public Init(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 console.log(`paid validation`, 1);
@@ -75,7 +75,7 @@ export class PaidValidationFunc {
                 console.log(`paid validation`, 9);
 
                 resolve(this.response);
-                
+
             } catch (error) {
 
                 resolve(error.message);
@@ -106,9 +106,9 @@ export class PaidValidationFunc {
     }
 
     private FindVendingWallet(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 let run: any = await vendingWallet.findOne({ where: { machineClientId: this.machineId, walletType: IVendingWalletType.vendingWallet } });
                 if (run == null) return resolve(IENMessage.notFoundYourMerchant);
                 this.ownerUuid = run.ownerUuid;
@@ -125,9 +125,9 @@ export class PaidValidationFunc {
     }
 
     private CreateBill(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 const params = {
                     machineId: this.machineId,
                     ownerUuid: this.ownerUuid,
@@ -155,9 +155,9 @@ export class PaidValidationFunc {
     }
 
     private FindMerchant(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 let run: any = await vendingWallet.findOne({ where: { ownerUuid: this.ownerUuid, walletType: IVendingWalletType.merchant } });
                 if (run == null) return resolve(IENMessage.notFoundYourMerchant);
                 this.receiver = translateUToSU(run.uuid);
@@ -172,7 +172,7 @@ export class PaidValidationFunc {
     }
 
     private TransferCoin(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
                 const vendingBalance = await readMachineBalance(this.machineId);
                 const params = {
@@ -191,10 +191,10 @@ export class PaidValidationFunc {
                 let run: any = await axios.post(LAAB_CoinTransfer, params);
                 if (run.data.status != 1) return resolve(run.data.message);
 
-                const h ={
-                    hash:run.data.info.hash,
-                    info:run.data.info.info
-                } 
+                const h = {
+                    hash: run.data.info.hash,
+                    info: run.data.info.info
+                }
                 const bill = {
                     sender: run.data.info.sender,
                     receiver: run.data.info.receiver,
@@ -229,20 +229,20 @@ export class PaidValidationFunc {
     }
 
     private CallBackConfirmBill(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
 
                 const path = process.env.TEST_CALLBACK || 'http://localhost:9006';
                 console.log(`path`, path);
                 const params = {
                     command: EClientCommand.confirmLAAB,
-                    data:{
-                        qrcode: JSON.stringify({tranid_client: this.transactionID,amount: this.amount})
+                    data: {
+                        qrcode: JSON.stringify({ tranid_client: this.transactionID, amount: this.amount })
                     }
                 }
                 console.log(`params`, params);
                 const run = await axios.post(path, params);
-                
+
                 console.log(`confirm`, run.data);
                 if (run.data.status != 1) {
                     writeErrorLogs(IENMessage.laabConfirmBillFail, run.data);
@@ -252,7 +252,7 @@ export class PaidValidationFunc {
                 }
 
                 resolve(IENMessage.success);
-                
+
             } catch (error) {
                 resolve(error.message);
             }
@@ -280,12 +280,12 @@ class CreateBill {
     private vendingMachineBillEntity: VendingMachineBillStatic;
     private response: any = {} as any;
 
-    constructor() {}
+    constructor() { }
 
     public Init(params: any): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 console.log(`create bill`, 1);
 
                 this.InitParams(params);
@@ -349,7 +349,7 @@ class CreateBill {
     }
 
     private AddCheckIds(): string {
-        
+
         this.ids.forEach(v => {
             v.stock.qtty = 1;
             const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
@@ -374,8 +374,8 @@ class CreateBill {
     }
 
     private SetBill(): void {
-        this.transactionID = Number(Number(this.machineId.substring(this.machineId.length-5))+''+(new Date().getTime()));
-        const qr = JSON.stringify({tranid_client: this.transactionID,amount: this.value});
+        this.transactionID = Number(Number(this.machineId.substring(this.machineId.length - 5)) + '' + (new Date().getTime()));
+        const qr = JSON.stringify({ tranid_client: this.transactionID, amount: this.value });
         this.bill = {
             uuid: uuid4(),
             clientId: this.clientId,
@@ -396,9 +396,9 @@ class CreateBill {
     }
 
     private Connection(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 const connect = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + this.ownerUuid, dbConnection)
                 await connect.sync();
                 this.vendingMachineBillEntity = connect;
@@ -412,23 +412,23 @@ class CreateBill {
     }
 
     private Commit(): Promise<any> {
-        return new Promise<any> (async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             try {
-                
+
                 const run = await this.vendingMachineBillEntity.create(this.bill);
                 if (!run) return resolve(IENMessage.commitFail);
 
                 // redisClient.setEx(this.transactionID + '--_', 60 * 15, this.ownerUuid);
 
-                
+
                 // key -> expire -> data
-                const qr = JSON.stringify({tranid_client: this.transactionID,amount: this.value});
+                const qr = JSON.stringify({ tranid_client: this.transactionID, amount: this.value });
                 const key: string = qr + EMessage.BillCreatedTemp;
                 const expire: number = 60 * 15;
                 const data: string = this.ownerUuid;
                 redisClient.setEx(key, expire, data);
 
-                
+
 
                 this.response = {
                     transactionID: this.transactionID,
@@ -438,6 +438,8 @@ class CreateBill {
                 resolve(IENMessage.success);
 
             } catch (error) {
+                console.log('=====> error Commit', error);
+
                 resolve(error.message);
             }
         });
