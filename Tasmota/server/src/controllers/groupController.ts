@@ -24,7 +24,6 @@ export const createGroup = async (req: Request, res: Response) => {
 };
 
 export const loadAllGroups = async (req: Request, res: Response) => {
-  const user = res.locals.user;
   try {
     const groups = await models.DeviceGroup.findAll();
     res.json(groups);

@@ -17,6 +17,7 @@ services:
       - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
       - SERVICE_NAME=SMARTCB
       - REDIS_URL=redis://tasmota-redis:6379
+      - ADMINGAME_NOCNOC_UUID=3d55d7f0-b611-11ef-8c5b-dfe3a2fc2c00
     depends_on:
       - tasmota-db
       - tasmota-redis
