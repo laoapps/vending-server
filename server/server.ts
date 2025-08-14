@@ -28,9 +28,10 @@ import { initialize } from "./services/topup.service";
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
-process.env.backendKey = process.env.backendKey;
-process.env.production = process.env.production;
-process.env.name = process.env.name;
+const env = {"name":"SHAREHAPPINESS","version":"0.9.0","production":false,"resetdatabase" : false,"backendKey":"2d3e210c-1069-4b18-9dd7-a2ec70b57a06"};
+process.env.backendKey = process.env.backendKey||env.backendKey;
+process.env.production = process.env.production|| env.production+'';
+process.env.name = process.env.name|| env.name;
 process.env._image_path = path.join(__dirname, "..", "public");
 process.env._log_path = path.join(__dirname, "..", "logs");
 
