@@ -80,7 +80,7 @@ export function initDeviceModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Device',
-      tableName: 'Device',
+      tableName: 'Devices',
     }
   );
   return Device;

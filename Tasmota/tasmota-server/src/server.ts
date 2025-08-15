@@ -11,7 +11,7 @@ import { findRealDB } from './services/userManagerService';
 import { startDeviceMonitoring } from './controllers/monitorOrderController';
 import { getDeviceFromCache, publishMqttMessage } from './services/mqttService';
 import { notifyStakeholders } from './services/wsService';
-import { SchedulePackage } from './models/schedulePackage';
+// import { SchedulePackage } from './models/schedulePackage';
 import redis from './config/redis';
 import models from './models';
 
