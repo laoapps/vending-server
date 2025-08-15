@@ -12,12 +12,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const owners = await models.Owner.findAll({
-      include: [
-        { model: models.Device, as: 'devices', include: [{ model: models.DeviceGroup, as: 'deviceGroup' }] },
-        { model: models.DeviceGroup, as: 'groups' },
-      ],
-    });
+    const owners = await models.Owner.findAll();
 
     res.json(owners);
   } catch (error) {

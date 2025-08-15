@@ -25,31 +25,12 @@ export interface DeviceAssociations {
   scheduleHistories?: ScheduleHistoryAttributes[]; // Keep as attributes, or update to array of models
 }
 
-// export class Device extends Model<DeviceAttributes & DeviceAssociations> {
-//   // Declare association getter methods to satisfy TypeScript
-//   declare getOwner: BelongsToGetAssociationMixin<Owner>;
-
-//   // If needed, declare other association methods (e.g., for hasMany scheduleHistories)
-//   // declare getScheduleHistories: HasManyGetAssociationsMixin<ScheduleHistory>;
-// }
-
-export class Device extends Model<DeviceAttributes & DeviceAssociations> implements DeviceAttributes {
-  declare id: number;
-  declare name: string;
-  declare tasmotaId: string;
-  declare zone?: string;
-  declare ownerId: number;
-  declare status: any;
-  declare power?: number;
-  declare energy?: number;
-  declare groupId?: number;
-  declare createdAt: Date;
-  declare updatedAt: Date;
-
-  // Associations
-  declare getOwner: BelongsToGetAssociationMixin<Owner>;
+export class Device extends Model<DeviceAttributes & DeviceAssociations> {
+  // Declare association getter methods to satisfy TypeScript
+  // declare getOwner: BelongsToGetAssociationMixin<Owner>;
+  // If needed, declare other association methods (e.g., for hasMany scheduleHistories)
+  // declare getScheduleHistories: HasManyGetAssociationsMixin<ScheduleHistory>;
 }
-
 
 export function initDeviceModel(sequelize: Sequelize) {
   Device.init(
@@ -75,7 +56,6 @@ export function initDeviceModel(sequelize: Sequelize) {
       ownerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'Owners', key: 'id' },
       },
       status: {
         type: DataTypes.JSONB,
@@ -93,7 +73,6 @@ export function initDeviceModel(sequelize: Sequelize) {
       groupId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        references: { model: 'DeviceGroups', key: 'id' },
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

@@ -48,40 +48,26 @@ export class DeviceService {
     if (data?.id) {
       return models.Device.findAll({
         where: { ownerId: data.ownerId, id: data.id },
-        include: [{ model: models.DeviceGroup, as: 'deviceGroup' }],
       });
     } else {
       return models.Device.findAll({
         where: { ownerId: data.ownerId },
-        include: [{ model: models.DeviceGroup, as: 'deviceGroup' }],
       });
     }
   }
 
   static async getDevices(user: User): Promise<Device[]> {
     if (user.role === 'admin') {
-      return models.Device.findAll({
-        include: [
-          { model: models.Owner, as: 'owner' },
-          { model: models.DeviceGroup, as: 'deviceGroup' },
-        ],
-      });
+      return models.Device.findAll();
     } else if (user.role === 'owner') {
       const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) throw new Error('Owner not found');
 
       return models.Device.findAll({
         where: { ownerId: owner.dataValues.id },
-        include: [{ model: models.DeviceGroup, as: 'deviceGroup' }],
       });
     } else {
-      return models.Device.findAll({
-        include: [
-          { as: 'userDevices', where: { userUuid: user.uuid } },
-          { model: models.Owner, as: 'owner' },
-          { model: models.DeviceGroup, as: 'deviceGroup' },
-        ],
-      });
+      return models.Device.findAll();
     }
   }
 
@@ -109,9 +95,7 @@ export class DeviceService {
   static async controlDevice(deviceId: number, input: { command?: string; relay?: number; conditionType?: string; conditionValue?: number }): Promise<void> {
     try {
       const { command, relay, conditionType, conditionValue } = controlDeviceSchema.parse(input);
-      const device: DeviceWithAssociations | null = await models.Device.findByPk(deviceId, {
-        include: [{ model: models.Owner, as: 'owner' }],
-      });
+      const device: DeviceWithAssociations | null = await models.Device.findByPk(deviceId);
 
       if (!device) throw new Error('Device not found');
       console.log(`Controlling device with ID: ${deviceId}, Command: ${command}, Relay: ${relay}`);
