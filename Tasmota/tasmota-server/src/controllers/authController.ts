@@ -33,21 +33,20 @@ export const registerOwner = async (req: Request, res: Response) => {
 };
 
 export const getUserRole = async (req: Request, res: Response) => {
+  console.log('getUserRole');
   const token = req.headers.authorization?.split(' ')[1];
+  console.log('getUserRole2',token);
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
   try {
-    const uuid = await findRealDB(token);
-    if (!uuid) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
     const validatedUuid = await findRealDB(token);
+     console.log('getUserRole3',validatedUuid);
     if (!validatedUuid) {
       return res.status(401).json({ error: 'Invalid token or user not found' });
     }
     const owner = (await models.Owner.findOne({ where: { uuid: validatedUuid } }));
+     console.log('getUserRole4',owner);
     let role = owner ? 'owner' : 'user';
     res.json({ role });
   } catch (error) {
