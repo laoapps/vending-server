@@ -3,17 +3,17 @@ import { createClient } from 'redis';
 import axios from 'axios';
 import { NextFunction, Response, Request } from 'express';
 import { OwnerEntity, UserEntity } from '../models/ topup.model';
+import { dbConnection as sequelize  } from '../entities';
 
 
-const sequelize = new Sequelize(process.env.DATABASE_URL!, {
-    dialect: 'postgres',
-    logging: false
-});
 
-export const redisClient = createClient({ url: process.env.REDIS_HOST });
+export const redisClient = createClient({ url: process.env.REDIS_HOST|| 'redis://vending-redis-service:6379' });
 redisClient.connect().catch(console.error);
 
 export function initialize() {
+    if (!sequelize) {
+    throw new Error('Database connection not initialized');
+  }
     OwnerEntity.init({
         id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
         name: { type: DataTypes.STRING, allowNull: false },
