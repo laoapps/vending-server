@@ -30,7 +30,6 @@ export function initSchedulePackageModel(sequelize: Sequelize) {
       ownerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'Owners', key: 'id' },
       },
       price: {
         type: DataTypes.FLOAT,

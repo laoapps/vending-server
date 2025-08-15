@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { SchedulePackage } from '../models/schedulePackage';
-import { Device } from '../models/device';
-import { Order } from '../models/order';
+
 import { Op, WhereOptions } from 'sequelize';
 import redis from '../config/redis';
 import { DEVICE_CACHE_PREFIX, publishMqttMessage } from '../services/mqttService';
 import { notifyStakeholders } from '../services/wsService';
 import { generateQR } from '../services/lakService';
+import models from '../models';
 
 export const testOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
@@ -18,12 +18,12 @@ export const testOrder = async (req: Request, res: Response) => {
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
     }
-    const device = await Device.findByPk(deviceId);
+    const device = await models.Device.findByPk(deviceId);
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });
     }
 
-    const order = await Order.create({
+    const order = await models.Order.create({
       uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       deviceId,
       packageId,
@@ -33,7 +33,7 @@ export const testOrder = async (req: Request, res: Response) => {
 
 
 
-    const ordersD = await findActiveOrderByDeviceId(deviceId)
+    const ordersD = (await findActiveOrderByDeviceId(deviceId)) as Array<any>;
     if (ordersD.length) {
       ordersD.forEach(v => {
         const key = `activeOrder:${v?.orderId}`;
@@ -124,12 +124,12 @@ export const createOrderFromVending = async (req: Request, res: Response) => {
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
     }
-    const device = await Device.findByPk(deviceId);
+    const device = await models.Device.findByPk(deviceId);
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });
     }
 
-    const order = await Order.create({
+    const order = await models.Order.create({
       uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       deviceId,
       packageId,
@@ -162,12 +162,12 @@ export const createOrder = async (req: Request, res: Response) => {
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
     }
-    const device = await Device.findByPk(deviceId);
+    const device = await models.Device.findByPk(deviceId);
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });
     }
 
-    const order = await Order.create({
+    const order = await models.Order.create({
       uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       deviceId,
       packageId,
@@ -192,7 +192,7 @@ export const getOrders = async (req: Request, res: Response) => {
   const limit = Math.max(Number(req.body.limit), 5) || 10;
 
   try {
-    const orders = await Order.findAll({
+    const orders = await models.Order.findAll({
       where: { userUuid: user.uuid },
       limit,
       offset,
@@ -209,7 +209,7 @@ export const getOrderById = async (req: Request, res: Response) => {
   const id = Number(req.params.id) || -1;
 
   try {
-    const order = await Order.findOne({
+    const order = await models.Order.findOne({
       where: { userUuid: user.uuid, id },
     });
     if (!order) {
@@ -232,7 +232,7 @@ export const payOrder = async (req: Request, res: Response) => {
 
     console.log('payOrder==========', req.body);
 
-    const order = await Order.findByPk(Number(orderID));
+    const order = await models.Order.findByPk(Number(orderID));
     const deviceId = order?.dataValues.deviceId;
     const ordersD = await findActiveOrderByDeviceId(deviceId)
     if (ordersD.length) {
@@ -257,7 +257,7 @@ export const payOrder = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Package not found' });
     }
 
-    const device = await Device.findByPk(order.dataValues.deviceId);
+    const device = await models.Device.findByPk(order.dataValues.deviceId);
     if (!device) {
       return res.status(403).json({ error: 'Device not found' });
     }
@@ -325,7 +325,7 @@ export const completeOrder = async (req: Request, res: Response) => {
   const { deviceId } = req.body;
 
   try {
-    const order = await Order.findOne({
+    const order = await models.Order.findOne({
       where: {
         [Op.and]: [
           { deviceId },
@@ -337,7 +337,7 @@ export const completeOrder = async (req: Request, res: Response) => {
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
-    const device = await Device.findByPk(order.dataValues.deviceId);
+    const device = await models.Device.findByPk(order.dataValues.deviceId);
     if (device) {
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
       await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
@@ -373,7 +373,7 @@ export const findActiveOrderByDeviceId = async (deviceId: number = -1) => {
     completedTime: { [Op.is]: null }
   };
 
-  const orders = await Order.findAll({
+  const orders = await models.Order.findAll({
     where: whereCondition2
   });
   const deviceIds = orders.map(v => { return { deviceId: v.dataValues.deviceId, orderId: v.dataValues.id, packageId: v.dataValues.packageId } })
@@ -381,7 +381,7 @@ export const findActiveOrderByDeviceId = async (deviceId: number = -1) => {
 }
 export const closeActiveOrder = async (deviceId: number = -1) => {
 
-  const order = await Order.findOne({ where: { id: deviceId } });
+  const order = await models.Order.findOne({ where: { id: deviceId } });
   order?.set('completedTime', new Date());
   return await order?.save();
 }

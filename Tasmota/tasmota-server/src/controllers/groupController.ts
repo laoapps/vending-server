@@ -37,12 +37,7 @@ export const getGroups = async (req: Request, res: Response) => {
   try {
     let groups;
     if (user.role === 'admin') {
-      groups = await models.DeviceGroup.findAll({
-        include: [
-          { model: models.Device, as: 'devices' },
-          { model: models.Owner, as: 'owner' },
-        ],
-      });
+      groups = await models.DeviceGroup.findAll();
     } else {
       const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) {
@@ -50,7 +45,6 @@ export const getGroups = async (req: Request, res: Response) => {
       }
       groups = await models.DeviceGroup.findAll({
         where: { ownerId: owner.dataValues.id },
-        include: [{ model: models.Device, as: 'devices' }],
       });
     }
     res.json(groups);

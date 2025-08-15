@@ -1,17 +1,27 @@
 import WebSocket from 'ws';
-import { Order } from '../models/order';
-import { Device } from '../models/device';
+
+
 import { Notification } from '../models/notification';
+import { Order } from '../models/order';
+import models from '../models';
 
 export const userClients: Map<string, Set<{WebSocket:WebSocket,uuid:string}>> = new Map();
 export const adminClients: Set<{WebSocket:WebSocket,uuid:string}> = new Set();
 export const ownerClients: Map<number, Set<{WebSocket:WebSocket,uuid:string}>> = new Map();
 
 export const notifyStakeholders = async (order: Order, message: string) => {
-  const device = await Device.findByPk(order.dataValues.deviceId);
-  if (!device) return;
+  const device = await models.Device.findByPk(order.dataValues.deviceId);
+  if (!device) {
+    console.log('Device not found');
+ return;
+  }
+   
 
-  const owner = await device.getOwner();
+  const owner = await models.Owner.findByPk(device.dataValues.ownerId);
+    if (!owner) {
+    console.log('Owner not found');
+ return;
+  }
   const notification = {
     message,
     orderId: order.dataValues.id,

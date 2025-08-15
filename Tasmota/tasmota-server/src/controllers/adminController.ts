@@ -8,29 +8,9 @@ export const getAllData = async (req: Request, res: Response) => {
   }
 
   try {
-    const owners = await models.Owner.findAll({
-      include: [
-        { model: models.Device, as: 'devices' },
-        { model: models.DeviceGroup, as: 'groups' },
-      ],
-    });
-    const devices = await models.Device.findAll({
-      include: [
-        { model: models.Owner, as: 'owner' },
-        { model: models.DeviceGroup, as: 'deviceGroup' },
-      ],
-    });
-    const groups = await models.DeviceGroup.findAll({
-      include: [
-        { model: models.Device, as: 'devices' },
-        { model: models.Owner, as: 'owner' },
-      ],
-    });
-
-    // Fetch user devices with associated device information
-    // const userDevices = await models.UserDevice.findAll({
-    //   include: [{ model: models.Device, as: 'device' }],
-    // });
+    const owners = await models.Owner.findAll();
+    const devices = await models.Device.findAll();
+    const groups = await models.DeviceGroup.findAll();
 
     res.json({ owners, devices, groups, 
       // userDevices

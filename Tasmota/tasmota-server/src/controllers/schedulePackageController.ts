@@ -60,9 +60,7 @@ export const getSchedulePackages = async (req: Request, res: Response) => {
   try {
     let schedulePackages;
     if (user.role === 'admin') {
-      schedulePackages = await models.SchedulePackage.findAll({
-        include: [{ model: models.Owner, as: 'owner' }],
-      });
+      schedulePackages = await models.SchedulePackage.findAll();
     } else if (user.role === 'owner') {
       const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) {
@@ -70,12 +68,9 @@ export const getSchedulePackages = async (req: Request, res: Response) => {
       }
       schedulePackages = await models.SchedulePackage.findAll({
         where: { ownerId: owner.dataValues.id },
-        include: [{ model: models.Owner, as: 'owner' }],
       });
     } else {
-      schedulePackages = await models.SchedulePackage.findAll({
-        include: [{ model: models.Owner, as: 'owner' }],
-      });
+      schedulePackages = await models.SchedulePackage.findAll();
     }
     res.json(schedulePackages);
   } catch (error) {
@@ -144,72 +139,3 @@ export const deleteSchedulePackage = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message || 'Failed to delete schedule package' });
   }
 };
-
-// export const applySchedulePackage = async (req: Request, res: Response) => {
-//   const { deviceId, packageId } = req.body;
-//   const user = res.locals.user;
-
-//   try {
-//     const device: DeviceWithAssociations | null= await models.Device.findByPk(deviceId, {
-//       include: [
-//         { model: models.Owner, as: 'owner' },
-//         { model: models.UserDevice, as: 'userDevices' },
-//       ],
-//     });
-
-//     if (!device) {
-//       return res.status(404).json({ error: 'Device not found' });
-//     }
-
-//     const isOwner = device.owner?.uuid === user.uuid;
-//     const isAssignedUser = device.userDevices?.some((ud: any) => ud.userUuid === user.uuid);
-//     if (!isOwner && !isAssignedUser && user.role !== 'admin') {
-//       return res.status(403).json({ error: 'Unauthorized to apply schedule package' });
-//     }
-
-//     const schedulePackage = await models.SchedulePackage.findByPk(packageId);
-//     if (!schedulePackage) {
-//       return res.status(404).json({ error: 'Schedule package not found' });
-//     }
-
-//     const existingSchedule = await models.Schedule.findOne({
-//       where: { deviceId, packageId, active: true },
-//     });
-//     if (existingSchedule) {
-//       return res.status(400).json({ error: 'Active schedule already exists for this device and package' });
-//     }
-
-//     if (!device.dataValues.energy && schedulePackage.dataValues.conditionType === 'energy_consumption') {
-//       return res.status(400).json({ error: 'No energy data available for this device' });
-//     }
-
-//     let scheduleData: any = {
-//       deviceId,
-//       packageId,
-//       type: schedulePackage.dataValues.conditionType === 'time_duration' ? 'timer' : 'conditional',
-//       command: 'POWER ON',
-//       createdBy: user.uuid,
-//       active: true,
-//     };
-
-//     if (schedulePackage.dataValues.conditionType === 'time_duration') {
-//       const durationHours = schedulePackage.dataValues.conditionValue;
-//       scheduleData.cron = `0 0 */${Math.round(durationHours)} * * *`;
-//     } else if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
-//       scheduleData.conditionType = 'energy_limit';
-//       scheduleData.conditionValue = schedulePackage.dataValues.conditionValue;
-//       scheduleData.command = 'POWER OFF';
-//       scheduleData.startEnergy = device.dataValues.energy ?? 0;
-//     }
-
-//     const schedule = await models.Schedule.create(scheduleData);
-
-//     if (scheduleData.type === 'timer' && scheduleData.cron) {
-//       await scheduleJob(schedule as any);
-//     }
-
-//     res.json(schedule);
-//   } catch (error) {
-//     res.status(500).json({ error: (error as Error).message || 'Failed to apply schedule package' });
-//   }
-// };

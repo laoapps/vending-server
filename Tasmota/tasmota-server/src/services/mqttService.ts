@@ -1,7 +1,8 @@
 import mqtt from 'mqtt';
 import { env } from '../config/env';
-import { Device } from '../models/device';
+
 import redis from '../config/redis';
+import models from '../models';
 
 // Initialize Redis client (ensure compatibility with previous fixes)
 const redisClient = redis; // Assuming redis is exported from '../config/redis'
@@ -118,7 +119,7 @@ const lwtCallback = async (receivedTopic: string, payload: Buffer) => {
   }
 
   // Update database
-  const device = await Device.findOne({ where: { tasmotaId } });
+  const device = await models.Device.findOne({ where: { tasmotaId } });
   if (!device) {
     console.log(`Device ${tasmotaId} not found in database`);
     return;
@@ -170,7 +171,7 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
   }
 
   // Update database
-  const device = await Device.findOne({ where: { tasmotaId } });
+  const device = await models.Device.findOne({ where: { tasmotaId } });
   if (!device) {
     console.log(`Device ${tasmotaId} not found in database`);
     return;
@@ -200,7 +201,7 @@ export const getDeviceData = async (tasmotaId: string) => {
   }
 
   // Fallback to database
-  const device = await Device.findOne({ where: { tasmotaId } });
+  const device = await models.Device.findOne({ where: { tasmotaId } });
   if (!device) {
     console.log(`Device ${tasmotaId} not found in database`);
     return null;

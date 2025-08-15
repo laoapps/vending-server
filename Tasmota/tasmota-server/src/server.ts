@@ -3,8 +3,7 @@ import sequelize from './config/database';
 import { Umzug, SequelizeStorage } from 'umzug';
 import cron from 'node-cron';
 import { Op, WhereOptions } from 'sequelize';
-import { Order } from './models/order';
-import { Device } from './models/device';
+
 import WebSocket from 'ws';
 import { userClients, adminClients, ownerClients } from './services/wsService';
 import http from 'http';
@@ -12,28 +11,27 @@ import { findRealDB } from './services/userManagerService';
 import { startDeviceMonitoring } from './controllers/monitorOrderController';
 import { getDeviceFromCache, publishMqttMessage } from './services/mqttService';
 import { notifyStakeholders } from './services/wsService';
-import { SchedulePackage } from './models/schedulePackage';
+// import { SchedulePackage } from './models/schedulePackage';
 import redis from './config/redis';
 import models from './models';
 
 const PORT = process.env.PORT || 3000;
-
-const umzug = new Umzug({
-  migrations: {
-    glob: 'migrations/*.js',
-    resolve: ({ name, path: migrationPath }) => {
-      const migration = require(migrationPath!);
-      return {
-        name,
-        up: async () => migration.up(sequelize.getQueryInterface(), sequelize.Sequelize),
-        down: async () => migration.down(sequelize.getQueryInterface(), sequelize.Sequelize),
-      };
-    },
-  },
-  context: sequelize.getQueryInterface(),
-  storage: new SequelizeStorage({ sequelize }),
-  logger: console,
-});
+// const umzug = new Umzug({
+//   migrations: {
+//     glob: 'migrations/*.js',
+//     resolve: ({ name, path: migrationPath }) => {
+//       const migration = require(migrationPath!);
+//       return {
+//         name,
+//         up: async () => migration.up(sequelize.getQueryInterface(), sequelize.Sequelize),
+//         down: async () => migration.down(sequelize.getQueryInterface(), sequelize.Sequelize),
+//       };
+//     },
+//   },
+//   context: sequelize.getQueryInterface(),
+//   storage: new SequelizeStorage({ sequelize }),
+//   logger: console,
+// });
 
 async function recoverActiveOrders() {
   try {
@@ -45,16 +43,14 @@ async function recoverActiveOrders() {
         continue;
       }
 
-      const order = await Order.findByPk(orderData.orderId, {
-        include: [{ model: models.Device, as: 'device' }, { model: models.SchedulePackage, as: 'package' }],
-      });
+      const order = await models.Order.findByPk(orderData.orderId);
       if (!order) {
         await redis.del(key);
         continue;
       }
 
       if (order.dataValues.completedTime) {
-        const device = await order.getDevice();
+        const device = await models.Device.findByPk(order.dataValues.deviceId)
         if (device) {
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
@@ -66,7 +62,7 @@ async function recoverActiveOrders() {
       }
 
       if (orderData.conditionType === 'energy_consumption') {
-        const device = await order.getDevice();
+        const device = await models.Device.findByPk(order.dataValues.deviceId)
         if (device) {
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
@@ -89,7 +85,8 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    await umzug.up();
+    await sequelize.sync({ alter: true });
+    // await umzug.up();
     console.log('Database migrations applied successfully.');
 
     await recoverActiveOrders();
@@ -120,7 +117,7 @@ async function startServer() {
               await publishMqttMessage(`cmnd/${order.data.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-              const ord = await Order.findByPk(order.data.orderId);
+              const ord = await models.Order.findByPk(order.data.orderId);
               if (ord) {
                 ord?.set('completedTime', new Date());
                 await ord?.save();
@@ -137,7 +134,7 @@ async function startServer() {
               await publishMqttMessage(`cmnd/${device.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-              const ord = await Order.findByPk(order.data.orderId);
+              const ord = await models.Order.findByPk(order.data.orderId);
               if (ord) {
                 ord?.set('completedTime', new Date());
                 await ord?.save();
@@ -155,7 +152,7 @@ async function startServer() {
           createdAt: { [Op.lte]: twentyFourHoursAgo },
         };
 
-        const deletedCount = await Order.destroy({
+        const deletedCount = await models.Order.destroy({
           where: whereCondition,
         });
         // const deletedCount = await Order.destroy({

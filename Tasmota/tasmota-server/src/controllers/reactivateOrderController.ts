@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { Order } from '../models/order';
-import { Device } from '../models/device';
+
 import { publishMqttMessage } from '../services/mqttService';
 import redis from '../config/redis';
 import { notifyStakeholders } from '../services/wsService';
+import models from '../models';
 
 export const reactivateOrder = async (req: Request, res: Response) => {
   const { orderId } = req.body;
@@ -16,7 +16,7 @@ export const reactivateOrder = async (req: Request, res: Response) => {
     }
 
     const { deviceId, conditionType, compensationValue } = JSON.parse(compensationData);
-    const order = await Order.findByPk(orderId);
+    const order = await models.Order.findByPk(orderId);
     if (!order) {
       return res.status(403).json({ error: 'Order not found' });
     }
@@ -25,12 +25,12 @@ export const reactivateOrder = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Unauthorized to reactivate this order' });
     }
 
-    const device = await Device.findByPk(deviceId);
+    const device = await models.Device.findByPk(deviceId);
     if (!device) {
       return res.status(403).json({ error: 'Device not found' });
     }
 
-    const newOrder = await Order.create({
+    const newOrder = await models.Order.create({
       uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       deviceId,
       packageId: order.dataValues.packageId,

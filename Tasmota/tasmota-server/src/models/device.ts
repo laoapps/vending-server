@@ -27,8 +27,7 @@ export interface DeviceAssociations {
 
 export class Device extends Model<DeviceAttributes & DeviceAssociations> {
   // Declare association getter methods to satisfy TypeScript
-  declare getOwner: BelongsToGetAssociationMixin<Owner>;
-
+  // declare getOwner: BelongsToGetAssociationMixin<Owner>;
   // If needed, declare other association methods (e.g., for hasMany scheduleHistories)
   // declare getScheduleHistories: HasManyGetAssociationsMixin<ScheduleHistory>;
 }
@@ -57,7 +56,6 @@ export function initDeviceModel(sequelize: Sequelize) {
       ownerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'Owners', key: 'id' },
       },
       status: {
         type: DataTypes.JSONB,
@@ -75,7 +73,6 @@ export function initDeviceModel(sequelize: Sequelize) {
       groupId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        references: { model: 'DeviceGroups', key: 'id' },
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
@@ -83,7 +80,8 @@ export function initDeviceModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Device',
-      tableName: 'Devices',
+      tableName: 'devices',   
+      freezeTableName: true   
     }
   );
   return Device;
