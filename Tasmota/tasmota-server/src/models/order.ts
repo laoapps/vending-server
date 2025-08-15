@@ -23,10 +23,31 @@ export interface OrderAssociations {
   device: Device;
 }
 
-export class Order extends Model<OrderAttributes, OrderAssociations> {
+// export class Order extends Model<OrderAttributes, OrderAssociations> {
+//   declare getPackage: BelongsToGetAssociationMixin<SchedulePackage>;
+//   declare getDevice: BelongsToGetAssociationMixin<Device>;
+// }
+
+export class Order extends Model<OrderAttributes, OrderAssociations> implements OrderAttributes {
+  declare id: number;
+  declare uuid: string;
+  declare deviceId: number;
+  declare packageId: number;
+  declare paidTime: Date;
+  declare startedTime: Date;
+  declare completedTime: Date;
+  declare createdAt: Date;
+  declare updatedAt: Date;
+  declare userUuid: string;
+  declare data: any;
+  declare relay: number;
+  declare conditionValue: number;
+
+  // Associations
   declare getPackage: BelongsToGetAssociationMixin<SchedulePackage>;
   declare getDevice: BelongsToGetAssociationMixin<Device>;
 }
+
 
 export function initOrderModel(sequelize: Sequelize) {
   Order.init(
