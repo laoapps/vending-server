@@ -26,32 +26,32 @@ const models = {
 };
 
 // Define relationships
-// models.Owner.hasMany(models.Device, { foreignKey: 'ownerId', as: 'devices' });
-// models.Device.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+models.Owner.hasMany(models.Device, { foreignKey: 'ownerId', as: 'devices' });
+models.Device.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
 
-// models.Owner.hasMany(models.DeviceGroup, { foreignKey: 'ownerId', as: 'groups' });
-// models.DeviceGroup.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+models.Owner.hasMany(models.DeviceGroup, { foreignKey: 'ownerId', as: 'groups' });
+models.DeviceGroup.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
 
-// models.DeviceGroup.hasMany(models.Device, { foreignKey: 'groupId', as: 'devices' });
-// models.Device.belongsTo(models.DeviceGroup, { foreignKey: 'groupId', as: 'deviceGroup' });
-
-
-
-// // order  has many schedule
-// models.Device.hasMany(models.Order,{ foreignKey: 'deviceId', as: 'orders' })
-// models.Order.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+models.DeviceGroup.hasMany(models.Device, { foreignKey: 'groupId', as: 'devices' });
+models.Device.belongsTo(models.DeviceGroup, { foreignKey: 'groupId', as: 'deviceGroup' });
 
 
-// models.SchedulePackage.hasMany(models.Order, { foreignKey: 'packageId', as: 'orders' })
-// models.Order.belongsTo(models.SchedulePackage, { foreignKey: 'packageId', as: 'package' });
+
+// order  has many schedule
+models.Device.hasMany(models.Order,{ foreignKey: 'deviceId', as: 'orders' })
+models.Order.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
 
 
-// models.Owner.hasMany(models.SchedulePackage, { foreignKey: 'ownerId', as: 'schedulePackages' });
-// models.SchedulePackage.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+models.SchedulePackage.hasMany(models.Order, { foreignKey: 'packageId', as: 'orders' })
+models.Order.belongsTo(models.SchedulePackage, { foreignKey: 'packageId', as: 'package' });
 
 
-// models.Device.hasMany(models.ScheduleHistory, { foreignKey: 'deviceId', as: 'scheduleHistories' });
-// models.ScheduleHistory.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+models.Owner.hasMany(models.SchedulePackage, { foreignKey: 'ownerId', as: 'schedulePackages' });
+models.SchedulePackage.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+
+
+models.Device.hasMany(models.ScheduleHistory, { foreignKey: 'deviceId', as: 'scheduleHistories' });
+models.ScheduleHistory.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
 
 export default models;
 export { sequelize };

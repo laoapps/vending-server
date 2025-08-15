@@ -4,7 +4,7 @@ import { findRealDB } from '../services/userManagerService';
 import models from '../models';
 import { z } from 'zod';
 import { publishMqttMessage } from '../services/mqttService';
-import { Device } from '../models/device';
+
 
 // Validation schema for control device
 const controlDeviceSchema = z.object({
@@ -115,7 +115,7 @@ export const clearDeviceRule = async (req: Request, res: Response) => {
   const user = res.locals.user;
   try {
     console.log('clearDeviceRule000', deviceId, relay);
-    const device = await Device.findByPk(deviceId);
+    const device = await models.Device.findByPk(deviceId);
     console.log('clearDeviceRule111', device?.toJSON());
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });

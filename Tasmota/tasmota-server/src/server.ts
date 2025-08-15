@@ -3,8 +3,7 @@ import sequelize from './config/database';
 import { Umzug, SequelizeStorage } from 'umzug';
 import cron from 'node-cron';
 import { Op, WhereOptions } from 'sequelize';
-import { Order } from './models/order';
-import { Device } from './models/device';
+
 import WebSocket from 'ws';
 import { userClients, adminClients, ownerClients } from './services/wsService';
 import http from 'http';
@@ -17,7 +16,6 @@ import redis from './config/redis';
 import models from './models';
 
 const PORT = process.env.PORT || 3000;
-
 // const umzug = new Umzug({
 //   migrations: {
 //     glob: 'migrations/*.js',
@@ -45,14 +43,14 @@ async function recoverActiveOrders() {
         continue;
       }
 
-      const order = await Order.findByPk(orderData.orderId);
+      const order = await models.Order.findByPk(orderData.orderId);
       if (!order) {
         await redis.del(key);
         continue;
       }
 
       if (order.dataValues.completedTime) {
-        const device = await Device.findByPk(order.dataValues.deviceId)
+        const device = await models.Device.findByPk(order.dataValues.deviceId)
         if (device) {
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'OFF');
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
@@ -64,7 +62,7 @@ async function recoverActiveOrders() {
       }
 
       if (orderData.conditionType === 'energy_consumption') {
-        const device = await Device.findByPk(order.dataValues.deviceId)
+        const device = await models.Device.findByPk(order.dataValues.deviceId)
         if (device) {
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
           await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
@@ -119,7 +117,7 @@ async function startServer() {
               await publishMqttMessage(`cmnd/${order.data.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-              const ord = await Order.findByPk(order.data.orderId);
+              const ord = await models.Order.findByPk(order.data.orderId);
               if (ord) {
                 ord?.set('completedTime', new Date());
                 await ord?.save();
@@ -136,7 +134,7 @@ async function startServer() {
               await publishMqttMessage(`cmnd/${device.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
               // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-              const ord = await Order.findByPk(order.data.orderId);
+              const ord = await models.Order.findByPk(order.data.orderId);
               if (ord) {
                 ord?.set('completedTime', new Date());
                 await ord?.save();
@@ -154,7 +152,7 @@ async function startServer() {
           createdAt: { [Op.lte]: twentyFourHoursAgo },
         };
 
-        const deletedCount = await Order.destroy({
+        const deletedCount = await models.Order.destroy({
           where: whereCondition,
         });
         // const deletedCount = await Order.destroy({
