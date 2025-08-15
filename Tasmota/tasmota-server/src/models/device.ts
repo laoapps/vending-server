@@ -80,7 +80,7 @@ export function initDeviceModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Device',
-      tableName: 'Devices',   // ชื่อตารางที่จะสร้างใน DB
+      tableName: 'devices',   // ชื่อตารางที่จะสร้างใน DB
       freezeTableName: true,  // ไม่ให้ Sequelize pluralize
       timestamps: true, 
     }

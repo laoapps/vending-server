@@ -50,7 +50,7 @@ export function initNotificationModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Notification',
-      tableName: 'Notifications',
+      tableName: 'notifications',
     }
   );
   return Notification;

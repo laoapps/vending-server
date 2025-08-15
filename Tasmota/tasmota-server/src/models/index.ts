@@ -26,8 +26,8 @@ const models = {
 };
 
 // Define relationships
-// models.Owner.hasMany(models.Device, { foreignKey: 'ownerId', as: 'devices' });
-// models.Device.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+models.Device.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+models.Owner.hasMany(models.Device, { foreignKey: 'ownerId', as: 'devices' });
 
 // models.Owner.hasMany(models.DeviceGroup, { foreignKey: 'ownerId', as: 'groups' });
 // models.DeviceGroup.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
@@ -38,8 +38,9 @@ const models = {
 
 
 // // order  has many schedule
-// models.Device.hasMany(models.Order,{ foreignKey: 'deviceId', as: 'orders' })
-// models.Order.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+
+models.Device.hasMany(models.Order, { foreignKey: 'deviceId', as: 'orders' });
+models.Order.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' })
 
 
 // models.SchedulePackage.hasMany(models.Order, { foreignKey: 'packageId', as: 'orders' })

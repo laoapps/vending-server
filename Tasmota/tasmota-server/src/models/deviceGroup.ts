@@ -40,7 +40,7 @@ export function initDeviceGroupModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'DeviceGroup',
-      tableName: 'DeviceGroups',
+      tableName: 'devicegroups',
     }
   );
   return DeviceGroup;

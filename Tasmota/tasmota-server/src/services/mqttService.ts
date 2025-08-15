@@ -32,7 +32,7 @@ client.on('reconnect', () => {
   console.log('Attempting to reconnect to MQTT broker...');
 });
 
-client.on('error', (err) => {
+client.on('error', (err:any) => {
   console.error('MQTT error:', err);
 });
 
@@ -78,7 +78,7 @@ export const publishMqttMessage = async (topic: string, payload: string) => {
       reject(new Error('MQTT client is disconnected'));
       return;
     }
-    client.publish(topic, payload, { qos: 1 }, (err) => {
+    client.publish(topic, payload, { qos: 1 }, (err:any) => {
       if (err) {
         console.error(`Failed to publish to ${topic}:`, err);
         reject(err);
@@ -92,14 +92,14 @@ export const publishMqttMessage = async (topic: string, payload: string) => {
 
 // Subscribe to MQTT topic
 export const subscribeToTopic = (topic: string, callback: (receivedTopic: string, payload: Buffer) => void) => {
-  client.subscribe(topic, { qos: 1 }, (err) => {
+  client.subscribe(topic, { qos: 1 }, (err:any) => {
     if (err) {
       console.error(`Failed to subscribe to ${topic}:`, err);
     } else {
       console.log(`Subscribed to ${topic}`);
     }
   });
-  client.on('message', (receivedTopic, payload) => {
+  client.on('message', (receivedTopic:any, payload:any) => {
     if (receivedTopic.startsWith(topic.split('+')[0])) {
       console.log(`Received message on ${receivedTopic}: ${payload.toString()}`);
       callback(receivedTopic, payload);
@@ -145,6 +145,7 @@ const lwtCallback = async (receivedTopic: string, payload: Buffer) => {
 const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
   const tasmotaId = receivedTopic.split('/')[1];
 
+
   // Check Redis cache first
   const cachedDevice = await getDeviceFromCache(tasmotaId);
 
@@ -163,10 +164,6 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
   // Skip update if data hasn't changed
   if (cachedDevice && cachedDevice.energy === energy && cachedDevice.power === power) {
     console.log(`Device ${tasmotaId} sensor data unchanged in cache: energy=${energy}, power=${power}`);
-    return;
-  }
-  if (energy <= 0 || power <= 0) {
-    console.log(`Device ${tasmotaId} sensor data 0 in cache: energy=${energy}, power=${power}`);
     return;
   }
 

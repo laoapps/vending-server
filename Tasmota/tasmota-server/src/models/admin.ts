@@ -36,7 +36,7 @@ export function initAdminModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Admin',
-      tableName: 'Admins',
+      tableName: 'admins',
     }
   );
   return Admin;

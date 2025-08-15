@@ -36,7 +36,7 @@ export function initOwnerModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Owner',
-      tableName: 'Owners',
+      tableName: 'owners',
     }
   );
   return Owner;

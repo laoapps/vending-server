@@ -52,7 +52,7 @@ export function initSchedulePackageModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'SchedulePackage',
-      tableName: 'SchedulePackages',
+      tableName: 'schedulepackages',
     }
   );
   return SchedulePackage;
