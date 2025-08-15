@@ -85,7 +85,8 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    await sequelize.sync({ alter: true });
+    // await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: true });
     // await umzug.up();
     console.log('Database migrations applied successfully.');
 
