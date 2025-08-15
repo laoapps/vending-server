@@ -80,7 +80,8 @@ export function initDeviceModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'Device',
-      tableName: 'Devices',
+      tableName: 'devices',   
+      freezeTableName: true   
     }
   );
   return Device;
