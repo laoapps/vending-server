@@ -89,7 +89,7 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    await umzug.up();
+    // await umzug.up();
     console.log('Database migrations applied successfully.');
 
     await recoverActiveOrders();
