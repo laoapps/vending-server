@@ -1,14 +1,14 @@
 import { Op } from 'sequelize';
-import { Order } from '../models/order';
-import { Device } from '../models/device';
+
 import { publishMqttMessage, subscribeToTopic } from '../services/mqttService';
 import redis from '../config/redis';
 import { notifyStakeholders } from '../services/wsService';
+import models from '../models';
 
 export const startDeviceMonitoring = () => {
   subscribeToTopic('tele/+/SENSOR', async (topic, payload) => {
     const tasmotaId = topic.split('/')[1];
-    const device = await Device.findOne({ where: { tasmotaId } });
+    const device = await models.Device.findOne({ where: { tasmotaId } });
     if (!device) return;
 
     try {
@@ -32,7 +32,7 @@ export const startDeviceMonitoring = () => {
 
   subscribeToTopic('tele/+/LWT', async (topic, payload) => {
     const tasmotaId = topic.split('/')[1];
-    const device = await Device.findOne({ where: { tasmotaId } });
+    const device = await models.Device.findOne({ where: { tasmotaId } });
     if (!device) return;
 
     const status = payload.toString();
@@ -49,7 +49,7 @@ export const startDeviceMonitoring = () => {
 
   subscribeToTopic('tele/+/STATE', async (topic, payload) => {
     const tasmotaId = topic.split('/')[1];
-    const device = await Device.findOne({ where: { tasmotaId } });
+    const device = await models.Device.findOne({ where: { tasmotaId } });
     if (!device) return;
 
     try {
@@ -59,7 +59,7 @@ export const startDeviceMonitoring = () => {
       for (const key of orderKeys) {
         const orderData = JSON.parse((await redis.get(key)) || '{}');
         if (orderData.deviceId === device.dataValues.id) {
-          const order = await Order.findByPk(orderData.orderId);
+          const order = await models.Order.findByPk(orderData.orderId);
           if (!order || order.dataValues.completedTime) continue;
 
           if (powerState === 'OFF' && !order.dataValues.completedTime) {
@@ -78,10 +78,10 @@ export const startDeviceMonitoring = () => {
 };
 
 const stopOrder = async (orderId: number, reason: string) => {
-  const order = await Order.findByPk(orderId);
+  const order = await models.Order.findByPk(orderId);
   if (!order || order.dataValues.completedTime) return;
 
-  const device = await Device.findByPk(order.dataValues.deviceId);
+  const device = await models.Device.findByPk(order.dataValues.deviceId);
   if (device) {
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`, 'OFF');
     await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
@@ -94,10 +94,10 @@ const stopOrder = async (orderId: number, reason: string) => {
 };
 
 const handlePowerLoss = async (orderData: any) => {
-  const order = await Order.findByPk(orderData.orderId);
+  const order = await models.Order.findByPk(orderData.orderId);
   if (!order || order.dataValues.completedTime) return;
 
-  const device = await Device.findByPk(orderData.deviceId);
+  const device = await models.Device.findByPk(orderData.deviceId);
   if (!device) return;
 
   let compensation = 0;
