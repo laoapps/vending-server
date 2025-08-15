@@ -1,0 +1,94 @@
+
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">Manage Sub-Admin</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="epin-management-container">
+
+    <div class="item-card">
+
+      <div class="item-card-header">
+        <div class="left">
+          <a (click)="openManageSubadminCreate()" href="javascript:void(0)" class="item"><i class="fa-solid fa-circle-plus"></i> Create</a>
+          <a (click)="refreshList()" href="javascript:void(0)" class="item"><i class="fa-solid fa-rotate"></i> Refresh</a>
+        </div>
+        <div class="right">
+          <div class="input-group box-search">
+            <span class="input-group-text">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input [(ngModel)]="phonenumber" (keyup)="resetSearchList($event)" (keyup.enter)="searchList()" type="text" class="form-control" placeholder="Search">
+          </div>
+        </div>
+      </div>
+
+      <div class="item-card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="fw-bold">
+              <tr>
+                <td>#</td>
+                <td>Phone number</td>
+                <td>Provides</td>
+                <td>Action</td>
+              </tr>
+            </thead>
+            <tbody *ngFor="let list of lists; let i = index">
+              <tr>
+                <td>{{ i+1 }}</td>
+                <td>{{ list?.data?.phonenumber }}</td>
+                <td>
+                  <div *ngIf="list?.provides != undefined && list?.provides.length == 0" class="">No Provide</div>
+                  <div class="" *ngFor="let provide of list.provides; let provide_index = index">Machine: {{provide.machineId}} Imei: {{ provide.imei }} </div>
+                </td>
+                <td>
+                  <button (click)="deleteSubadmin(list)" class="btn-delete ms-1"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                  <button (click)="openManageSubadminInfo(list)" class="btn-delete ms-1"><i class="fa-solid fa-ellipsis"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="item-card-footer">
+        <div class="left">
+          <ul class="pagination">
+            <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'" >
+                <button (click)="manageListPage(btn.page)" class="page-link" >{{btn.name}}</button>
+            </li>
+          </ul>
+        </div>
+        <div class="right">
+
+          <div class="show-group">
+            <div class="left">Show</div>
+            <div class="right">
+              <select (change)="switchShowLimit($event)" class="form-select">
+                <option selected>{{ limit }}</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

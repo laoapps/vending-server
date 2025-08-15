@@ -1,0 +1,63 @@
+<ion-content>
+
+  <div class="header">
+    <div class="left">
+      <div class="section-1">
+        <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+      </div>
+      <div class="section-2">
+        <div class="main">generate CMCQR</div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="section-1">
+
+      </div>
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+
+        <div class="title">My {{ detail.type }}</div>
+        <div class="text">Scan for payment and receive money by {{ detail.type }}</div>
+
+        <div class="qr-container">
+          <img id="qr-img" class="qr-img" src="" alt="">
+        </div>
+
+      </ion-col>
+
+      
+      <ion-col size="12">
+
+        <div class="detail">
+          <div class=""></div>
+          <div class="left">
+            <div class="value">{{ detail.type }}</div>
+            <div class="text">TYPE</div>
+          </div>
+          <div class="center">
+            <div class="value">{{ detail.amount | number }} coin</div>
+            <div class="text">AMOUNT</div>
+          </div>
+          <div class="right">
+            <div class="value">{{ detail.options.coinname }}</div>
+            <div class="text">CURRENCY</div>
+          </div>
+          <div class=""></div>
+        </div>
+        
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+
+  <div class="footer">
+    <button (click)="close()" class="my-btn col-12">close</button>
+  </div>
+
+</ion-content>

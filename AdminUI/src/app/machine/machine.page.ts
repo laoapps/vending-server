@@ -264,11 +264,26 @@ export class MachinePage implements OnInit {
     return this.myMachineStatus.find(v => v['machineId'] == m)?.mstatus;
   }
   updateSetting(m: string) {
+    // const setting = this.settings[m];
+    // setting.adsList = setting.adsList?.split(',')
+    //   .map(item => item.trim())
+    //   .filter(item => item);
+    // console.log('setting0', setting);
+
     const setting = this.settings[m];
-    setting.adsList = setting.adsList?.split(',')
-      .map(item => item.trim())
-      .filter(item => item);
-    console.log('setting0', setting);
+
+    // ✅ เช็คก่อนว่าเป็น string จริงหรือไม่
+    if (typeof setting.adsList === 'string') {
+      setting.adsList = setting.adsList.split(',')
+        .map(item => item.trim())
+        .filter(item => item);
+    } else if (Array.isArray(setting.adsList)) {
+      // ถ้าเป็น Array อยู่แล้ว ให้ trim แต่ละรายการ
+      setting.adsList = setting.adsList.map(item => item.trim()).filter(item => item);
+    } else {
+      // ถ้าเป็น null/undefined หรืออย่างอื่น ให้เซ็ตเป็น array ว่าง
+      setting.adsList = [];
+    }
 
     const o = this._l.find(v => v.machineId == m);
     const oldData = JSON.stringify(o.data);
@@ -302,6 +317,23 @@ export class MachinePage implements OnInit {
 
       } else {
         console.log('update setting success !');
+
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+        ry.present();
+      })
+    })
+  }
+
+  exitMachine(m: string) {
+
+    this.apiService.exitAppMachine({ machineId: m }).subscribe(rx => {
+      console.log(rx);
+      if (!rx.status) {
+        console.log('Update setting failed restore old data');
+
+      } else {
+        console.log('update exit success !');
 
       }
       this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {

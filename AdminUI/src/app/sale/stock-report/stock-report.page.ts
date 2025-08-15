@@ -4,6 +4,7 @@ import { LoadVendingMachineStockReportProcess } from '../processes/loadVendingMa
 import { IENMessage } from 'src/app/models/base.model';
 import * as moment from 'moment';
 import * as momenttimezone from "moment-timezone";
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-stock-report',
@@ -46,11 +47,14 @@ export class StockReportPage implements OnInit, OnDestroy {
   ];
 
   constructor(
-    public apiService: ApiService
-  ) { 
+    public apiService: ApiService, private modalCtrl: ModalController,
+  ) {
     this.loadVendingMachineStockReportProcess = new LoadVendingMachineStockReportProcess(this.apiService);
   }
 
+  dismissModal() {
+    this.modalCtrl.dismiss();
+  }
 
   ngOnInit() {
     this.DOMs();
@@ -103,7 +107,7 @@ export class StockReportPage implements OnInit, OnDestroy {
   }
 
   process(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
         this.lists = [];
         this.display = false;
@@ -128,29 +132,29 @@ export class StockReportPage implements OnInit, OnDestroy {
 
         const run = await this.loadVendingMachineStockReportProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        
+
         this.lists = run.data[0].lists;
         this.count = run.data[0].count;
 
         if (this.count > 0) this.display = true;
         await this._renderTable();
-      
+
 
         resolve(IENMessage.success);
 
       } catch (error) {
         console.log(`error`, error.message);
         this.apiService.simpleMessage(error.message);
-        resolve(error.message); 
+        resolve(error.message);
       }
     });
   }
 
   private _renderTable(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
 
-        const loading = this.apiService.load.create({ message: 'Rendering...', duration:  15000 });
+        const loading = this.apiService.load.create({ message: 'Rendering...', duration: 15000 });
         (await loading).present();
         this.reloadElement = setInterval(async () => {
           clearInterval(this.reloadElement);
@@ -158,10 +162,10 @@ export class StockReportPage implements OnInit, OnDestroy {
           StockReportPage.tbbody = (document.querySelector('.tb-body') as HTMLElement);
           let tds: Array<HTMLDivElement> = [] as any;
           let tr: HTMLDivElement = undefined;
-          for(let i = 0; i < this.lists.length; i++) {
+          for (let i = 0; i < this.lists.length; i++) {
             if (tr == undefined) tr = document.createElement('tr');
-  
-            if (this.lists[i-1] != undefined && this.lists[i-1].position == this.lists[i].position) {
+
+            if (this.lists[i - 1] != undefined && this.lists[i - 1].position == this.lists[i].position) {
               const div = document.createElement('div');
               const detail = document.createElement('div');
               div.className = 'tb-body-item';
@@ -170,7 +174,7 @@ export class StockReportPage implements OnInit, OnDestroy {
               // detail.textContent = `Position ${this.lists[i].position} Date ${this.lists[i].time} Name ${this.lists[i].name} QTTY ${this.lists[i].qtty}`;
               detail.textContent = `Position ${this.lists[i].position} Date ${date} Name ${this.lists[i].name} Price ${this.lists[i].price} QTTY ${this.lists[i].qtty}`;
 
-              if (this.lists[i].refill == true)  {
+              if (this.lists[i].refill == true) {
                 div.style.background = '#2ECC71';
                 div.style.height = '5px';
                 div.style.borderRadius = '5px';
@@ -179,11 +183,11 @@ export class StockReportPage implements OnInit, OnDestroy {
               const td = document.createElement('td');
               td.appendChild(div);
               td.appendChild(detail);
-              
+
               tds.push(td);
-  
+
             } else {
-  
+
               tds.forEach(td => {
                 tr.appendChild(td);
               });
@@ -192,7 +196,7 @@ export class StockReportPage implements OnInit, OnDestroy {
               tr = undefined;
             }
 
-            if (i+1 == this.lists.length) {
+            if (i + 1 == this.lists.length) {
               (await loading).dismiss();
               resolve(IENMessage.success);
             }

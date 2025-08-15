@@ -1,0 +1,7 @@
+{
+  "name": "AdminUI",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

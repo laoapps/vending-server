@@ -5,8 +5,8 @@ export const environment = {
     wsurl: 'wss://vendingserviceapi.laoapps.com/zdm8',
     filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
 
-    // baseurl: 'https://tvending.khamvong',
-    // url: 'https://tvending.khamvong/zdm8',
-    // wsurl: 'wss://tvending.khamvong/zdm8',
+    // baseurl: 'https://tvending4.khamvong.com',
+    // url: 'https://tvending4.khamvong.com/zdm8',
+    // wsurl: 'wss://tvending4.khamvong.com/zdm8',
     // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/'
 };

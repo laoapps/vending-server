@@ -1,0 +1,63 @@
+<ion-content>
+
+  <div class="form-upload-container">
+    <div class="form-upload-left">
+
+      <div class="form-group">
+        <label for="">Title</label>
+        <input [(ngModel)]="title" type="text" placeholder="Enter title" class="form-control input-title">
+      </div>
+      <div class="form-group">
+        <label for="">Subtitle</label>
+        <textarea [(ngModel)]="subtitle" class="form-control input-subtitle" placeholder="Enter subtitle" name="" id="" cols="30" rows="5"></textarea>
+      </div>
+
+      <div class="line"></div>
+
+      <div *ngFor="let element of elements; let i = index" class="input-container">
+        <div class="form-group">
+          <label for="">Section</label>
+          <input type="text" placeholder="Enter title" class="form-control input-section">
+        </div>
+        <div class="form-group">
+          <label for="">Description</label>
+          <textarea class="form-control input-description" placeholder="Enter description" name="" id="" cols="30" rows="5"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="">Hight light</label>
+          <textarea class="form-control input-hight-light" placeholder="Enter hight light" name="" id="" cols="30" rows="5"></textarea>
+        </div>
+
+        <div class="line"></div>
+      </div>
+      
+      <div class="btn-control">
+        <a (click)="addElement()" href="javascript:void(0)" class="btn-add-content"><i class="fa-solid fa-plus"></i> Add Content</a>
+        <a *ngIf="elements != undefined && elements?.length > 0" (click)="removeElement()" href="javascript:void(0)" class="btn-add-content"><i class="fa-solid fa-minus"></i> Remove Content</a>
+      </div>
+
+    </div>
+    <div class="form-upload-right">
+
+      <div class="group-2">
+        <div class="form-group">
+          <label for="">File Name</label>
+          <div *ngIf="list?.file?.filename == undefined || list?.file?.filename == ''" class="text">No Data</div>
+          <div  *ngIf="list?.file?.filename != undefined && list?.file?.filename != ''" class="text">{{ list?.file?.filename }}</div>
+        </div>
+        <div class="form-group">
+          <label for="">File Size</label>
+          <div *ngIf="list?.file?.filesize == undefined || list?.file?.filesize == ''" class="text">No Data</div>
+          <div  *ngIf="list?.file?.filesize != undefined && list?.file?.filesize != ''" class="text">{{ list?.file?.filesize }}</div>
+        </div>
+      </div>
+
+      <div class="btn-control">
+        <a (click)="previewElement()" href="javascript:void(0)" class="btn-upload"><i class="fa-solid fa-file-lines"></i> preview</a>
+        <a (click)="close()" href="javascript:void(0)" class="btn-cancel"><i class="fa-regular fa-circle-xmark"></i> Cancel</a>
+      </div>
+
+    </div>
+  </div>
+
+</ion-content>

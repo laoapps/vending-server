@@ -120,6 +120,7 @@
                       <div style="float: left;"> <ion-icon name="cash-sharp"></ion-icon><ion-checkbox
                           [(ngModel)]="settings[p.machineId].allowCashIn"></ion-checkbox> </div>
 
+
                       <div style="float: left;"> <ion-icon name="snow-outline"></ion-icon> <ion-input type="number"
                           [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> </div>
                       <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input
@@ -165,10 +166,14 @@
                       <div style="float: right;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
                           class="custominput" type="text" label="version" placeholder="enter version"
                           [(ngModel)]="settings[p.machineId].versionId"></ion-input> </div>
+                      <div style="float: left;"> <ion-icon name="qr-code-outline"></ion-icon><ion-checkbox
+                          [(ngModel)]="settings[p.machineId].qrPayment"></ion-checkbox> </div>
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 
                     <ion-button (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
+                    <ion-button (click)="exitMachine(p.machineId)">Exit Machine</ion-button>
+
                     <td>
 
                     </td>

@@ -169,14 +169,14 @@ export class BillnotPaidPage implements OnInit {
           bankname: bankname
         }
         this.apiService.sendDropBill(paramsData).subscribe(async r => {
-          // console.log('response SendDrop', r);
           const response: any = r;
-          console.log('response', response.data.status);
+          // console.log('response', response.data.status);
           if (response?.data?.status === 1) {
             resolve(EMessage.succeeded);
           } else {
             resolve(EMessage.error);
           }
+
         })
       } catch (error) {
         console.log('error', error);
@@ -206,7 +206,14 @@ export class BillnotPaidPage implements OnInit {
                   handler: () => {
                     console.log('Confirm Okay');
                   }
-                }
+                },
+                // {
+                //   text: 'ສັ່ງເຄື່ອງຕົກ',
+                //   handler: () => {
+                //     // console.log('Confirm Okay');
+                //     this.SendDrop(transactionID,);
+                //   }
+                // },
               ]
             }).then(alert => {
               alert.present();

@@ -1,0 +1,88 @@
+<ion-content>
+
+
+  <div class="section-header">
+    <div class="title">Reports Drop</div>
+    <div class="sub-title">ນີ້ແມ່ນໜ້າລາຍງານວ່າເຄື່ອງນັ້ນຕົກແທ້ຫຼືບໍ່</div>
+
+  </div>
+
+  <div class="section-filter">
+    <div *ngIf="datetimeCustom == true" class="single-group">
+      <div class="form-group">
+        <label for="">Date (Special)</label>
+        <input [(ngModel)]="fromDate" type="date" class="form-control full">
+      </div>
+    </div>
+
+    <div *ngIf="moredatetimeCustom == true" class="single-group">
+      <div class="form-group">
+        <label for="">Date (From)</label>
+        <input [(ngModel)]="fromDate" type="date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="">Date (To)</label>
+        <input [(ngModel)]="toDate" type="date" class="form-control">
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-buttons">
+    <a (click)="process()" href="javascript:void(0)" class="item-process"><i class="fa-solid fa-arrows-rotate"></i>
+      Process</a>
+    <a (click)="displayDateTimeCustom()" href="javascript:void(0)" class="item active">Date/Time Custom</a>
+    <a (click)="displayMoreDateTimeCustom()" href="javascript:void(0)" class="item">More Date/Time Custom</a>
+  </div>
+
+  <div *ngIf="display == true" class="section-table">
+
+    <div class="btn-list">
+      <a *ngFor="let export of exportOptions; let i = index" href="javascript:void(0)" class="item">
+        <div class="icon">
+          <i class="{{ export.icon }}"></i>
+        </div>
+        <div class="text">{{ export.text }}</div>
+      </a>
+    </div>
+
+    <div class="sum-data">
+      <div class="group">
+        <div class="text">Machine</div>
+        <div class="value">{{ machineId }}</div>
+      </div>
+      <div class="group">
+        <div class="text">Date</div>
+        <div class="value">{{ currentdate }}</div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="fw-bold">
+          <tr>
+            <td>#</td>
+            <td>Machine</td>
+            <td>status</td>
+            <td>body</td>
+            <td>CreatedAt</td>
+          </tr>
+        </thead>
+        <tbody *ngFor="let sale of saleSumerizeList; let i = index">
+          <tr>
+            <td>{{ i+1 }}</td>
+            <td>{{ sale.machineId }}</td>
+            <td>{{ sale.status }}</td>
+            <td>{{ sale.body }}</td>
+            <td>{{ sale.updatedAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
+            <td>
+              <!-- <button (click)="view(sale)" class="btn btn-view">View</button> -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</ion-content>

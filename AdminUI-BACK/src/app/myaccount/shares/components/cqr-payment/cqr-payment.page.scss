@@ -1,0 +1,222 @@
+ion-content {
+    --ion-background-color: #EDEDED;
+}
+
+
+.header {
+    position: fixed;
+    top: 0; left: 0px; right: 0px;
+    display: flex;
+    justify-content: space-between;
+    height: 55px;
+    background: #A41D4F;
+    z-index: 99999999;
+
+
+    .left {
+        display: flex;
+
+        .section-1 {
+            line-height: 50px;
+            padding: 5px;
+
+            .btn-back {
+                text-decoration: none;
+                color: #fff;
+                width: 35px;
+                text-align: center;
+                transition: .2s;
+                width: 45px;
+                height: 45px;
+                border-radius: 50px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            
+        }
+
+        .section-2 {
+            line-height: 55px;
+            margin-left: 10px;
+            display: flex;
+            flex-direction: column;
+
+            .main {
+                color: #fff;
+                font-weight: bold;
+                font-size: 16px;
+            }
+        }
+    }
+
+    .right {
+        .section-1 {
+            line-height: 50px;
+            padding: 5px;
+            display: flex;
+
+            .btn-options {
+                text-decoration: none;
+                color: #fff;
+                width: 35px;
+                text-align: center;
+                transition: .2s;
+                width: 45px;
+                height: 45px;
+                border-radius: 50px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .btn-options:hover {
+                background: #A41D4F;
+            }
+        }
+    }
+}
+
+.space {
+    margin-top: 55px;
+}
+
+.form {
+
+    .title {
+        height: 30px;
+        line-height: 30px;
+        background: #fff;
+        color: #A41D4F;
+        padding: 0px 10px;
+        box-shadow: 0px 2px 2px rgba(0,0,0,.1);
+    }
+
+    .data {
+        padding: 0px 10px;
+
+        .text {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .value {
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+
+            .right {
+                font-size: 16px;
+                cursor: pointer;
+            }
+        }
+    }
+}
+
+.money-list {
+    display: flex;
+    overflow-x: auto;
+    padding: 0px 10px;
+
+    .item {
+        text-decoration: none;
+        background: #fff;
+        border: 1px solid #3333;
+        text-align: center;
+        margin: 0 5px;
+        color: #A41D4F;
+        padding: 5px;
+        border-radius: 5px;
+        font-size: 14px;
+        transition: .2s;
+        min-width: 100px;
+    }
+    .item:first-child {
+        margin-left: 0px;
+    }
+    .item:last-child {
+        margin-right: 0px;
+    }
+    .item:hover {
+        background: #f5f6f7;
+    }
+}
+.money-list::-webkit-scrollbar {
+    width: 0;
+}
+
+.footer {
+    position: absolute;
+    left: 10px; right: 10px; bottom: 10px;
+
+    .my-btn, .btn-confirm {
+        padding: 10px;
+        background: #A41D4F;
+        color: #fff;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid #3333;
+    }
+
+    .btn-back {
+        margin-top: 5px;
+        padding: 10px;
+        background: #fff;
+        color: #A41D4F;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid #3333;
+    }
+}
+
+.form-transfer, .form-description {
+    display: none;
+}
+.form-transfer.active, .form-description.active {
+    display: block;
+}
+
+.package {
+
+    .title {
+        height: 30px;
+        line-height: 30px;
+        background: #fff;
+        color: #A41D4F;
+        padding: 0px 10px;
+        box-shadow: 0px 2px 2px rgba(0,0,0,.1);
+    }
+
+    .group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-column-gap: 5px;
+        grid-row-gap: 5px;
+        padding: 10px;
+
+
+        .item {
+            .text {
+                font-size: 14px;
+                color: #888;
+            }
+    
+            .value {
+                font-size: 14px;
+                color: #333;
+                font-weight: bold;
+            }
+        }
+    }
+
+    .input-group-text {
+        color: #333;
+        background: #fff;
+        cursor: pointer;
+        transition: .2s;
+    }
+    .input-group-text:hover {
+        background: #e7e7e7;
+    }
+}

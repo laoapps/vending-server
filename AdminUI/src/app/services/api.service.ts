@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IMachineClientID, IMachineStatus, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IMachineClientID, IMachineStatus, IProductImage, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
@@ -153,6 +153,105 @@ export class ApiService {
             heightAuto: false
         });
     }
+
+    public async presentPhoneSecretDialog(): Promise<{ phoneNumber: string; secret: string } | null> {
+        const alert = await this.alert.create({
+            header: 'ป้อนข้อมูล',
+            inputs: [
+                {
+                    name: 'phoneNumber',
+                    type: 'tel',
+                    placeholder: 'เบอร์โทรศัพท์',
+                },
+                {
+                    name: 'secret',
+                    type: 'password',
+                    placeholder: 'รหัสลับ',
+                }
+            ],
+            buttons: [
+                {
+                    text: 'ยกเลิก',
+                    role: 'cancel',
+                },
+                {
+                    text: 'ตกลง',
+                    handler: (data) => {
+                        const secretLocal = localStorage.getItem('secretLocal');
+                        if (secretLocal) {
+                            if (data.phoneNumber) {
+                                return data; // ✅ ส่งข้อมูลกลับ
+                            } else {
+                                // ❌ ไม่กรอกให้แสดงข้อความ
+                                alert.message = 'กรุณากรอกให้ครบทุกช่อง';
+                                return false;
+                            }
+                        } else {
+                            if (data.phoneNumber && data.secret) {
+                                return data; // ✅ ส่งข้อมูลกลับ
+                            } else {
+                                // ❌ ไม่กรอกให้แสดงข้อความ
+                                alert.message = 'กรุณากรอกให้ครบทุกช่อง';
+                                return false;
+                            }
+                        }
+
+                    }
+                }
+            ]
+        });
+
+        await alert.present();
+
+        const result = await alert.onDidDismiss();
+        return result.role === 'cancel' ? null : result.data?.values ?? null;
+    }
+
+
+    public async presentAddProductDialog(name?: string, price?: string): Promise<{ name: string; price: string } | null> {
+        const alert = await this.alert.create({
+            header: 'ป้อนข้อมูล',
+            inputs: [
+                {
+                    name: 'name',
+                    type: 'text',
+                    placeholder: 'ຊື່ສິນຄ້າ',
+                    value: name
+                },
+                {
+                    name: 'price',
+                    type: 'number',
+                    placeholder: 'ລາຄາ',
+                    value: price
+                }
+            ],
+            buttons: [
+                {
+                    text: 'ຍົກເລີກ',
+                    role: 'cancel',
+                },
+                {
+                    text: 'ຕົກລົງ',
+                    handler: (data) => {
+                        if (data.name && data.price) {
+                            return data; // ✅ ส่งข้อมูลกลับ
+                        } else {
+                            // ❌ ไม่กรอกให้แสดงข้อความ
+                            alert.message = 'ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ';
+                            return false;
+                        }
+
+                    }
+                }
+            ]
+        });
+
+        await alert.present();
+
+        const result = await alert.onDidDismiss();
+        return result.role === 'cancel' ? null : result.data?.values ?? null;
+    }
+
     public alertConfirm(text: string) {
         const alert = Swal.fire({
             icon: 'question',
@@ -186,6 +285,8 @@ export class ApiService {
             r ? this.modal.dismiss({ data }) : null
         })
     }
+
+
     public updateOnlineStatus() {
         this.wsAlive.isAlive = this.checkOnlineStatus();
         console.log(this.wsAlive.time);
@@ -269,38 +370,67 @@ export class ApiService {
 
     super_listMachine() {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + '/super_listMachine', { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/super_listMachine', { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     refreshMachine(data: any) {
         const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
 
-        return this.http.post<IResModel>(this.url + '/refreshMachine', { token, data }, { headers: this.headerBase() });
+        return this.http.post<IResModel>(this.url + '/refreshMachine', { token, shopPhonenumber, secret, data }, { headers: this.headerBase() });
+    }
+
+
+    exitAppMachine(data: any) {
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+
+        return this.http.post<IResModel>(this.url + '/exitAppMachine', { token, shopPhonenumber, secret, data }, { headers: this.headerBase() });
     }
     resetCashing(data: any) {
-        return this.http.post<IResModel>(this.url + '/resetCashing', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post<IResModel>(this.url + '/resetCashing', payload, { headers: this.headerBase() });
     }
 
     listMachine(isActive = 'all') {
         const req = {
             ownerUuid: localStorage.getItem('lva_ownerUuid'),
             token: localStorage.getItem('lva_token'),
-            isActive
+            shopPhonenumber: localStorage.getItem('phoneNumberLocal'),
+            secret: localStorage.getItem('secretLocal'),
+            isActive,
+
         }
         return this.http.post<IResModel>(this.url + '/listMachine?isActive=' + isActive, req, { headers: this.headerBase() });
     }
     disableMachine(isActive, id: number) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive ? 'yes' : 'no'}`, { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/disableMachine?id=${id}&isActive=${isActive ? 'yes' : 'no'}`, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     updateMachine(o: IMachineClientID, id: number) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/updateMachine?id=${id}`, { token, data: o }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/updateMachine?id=${id}`, { token, shopPhonenumber, secret, data: o }, { headers: this.headerBase() });
     }
     updateMachineSetting(o: IMachineClientID, id: number) {
         const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
         console.log('update setting', o);
 
-        return this.http.post<IResModel>(this.url + `/updateMachineSetting?id=${id}`, { token, data: o }, { headers: this.headerBase() });
+        return this.http.post<IResModel>(this.url + `/updateMachineSetting?id=${id}`, { token, shopPhonenumber, secret, data: o }, { headers: this.headerBase() });
     }
     addMachine(o: IMachineClientID) {
         const token = localStorage.getItem('lva_token');
@@ -310,86 +440,178 @@ export class ApiService {
     }
     reportStock() {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + '/reportStock', { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/reportStock', { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     listSaleByMachine(machineId: string, isActive = 'all') {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}&isActive=${isActive}`, { token, }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/listSaleByMachine?machineId=${machineId}&isActive=${isActive}`, { token, shopPhonenumber, secret, }, { headers: this.headerBase() });
     }
     cloneSale(data: any) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/cloneSale`, { machineId: data.machineId, cloneMachineId: data.cloneMachineId, token: token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/cloneSale`, { machineId: data.machineId, cloneMachineId: data.cloneMachineId, token: token, shopPhonenumber: shopPhonenumber, secret: secret }, { headers: this.headerBase() });
     }
     // cloneMachineCUI
     cloneMahinceCUI(data: any) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/cloneMachineCUI`, { machineId: data.machineId, cloneMachineId: data.cloneMachineId, token: token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/cloneMachineCUI`, { machineId: data.machineId, cloneMachineId: data.cloneMachineId, token: token, shopPhonenumber: shopPhonenumber, secret: secret }, { headers: this.headerBase() });
     }
     listSale(isActive = 'all') {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + '/listSale?isActive=' + isActive, { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/listSale?isActive=' + isActive, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     updateSale(o: IVendingMachineSale) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + '/updateSale', { data: o, token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/updateSale', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     addSale(o: IVendingMachineSale) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + '/addSale', { data: o, token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/addSale', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     listProduct(isActive: string = 'all') {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + '/listProduct?isActive=' + isActive, { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/listProduct?isActive=' + isActive, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
+    }
+    listProductImages(isActive: string = 'all') {
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/listProductImages?isActive=' + isActive, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     disableProduct(isActive: boolean, id: number) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive ? 'yes' : 'no'}&id=${id}`, { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/disableProduct?isActive=${isActive ? 'yes' : 'no'}&id=${id}`, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     deleteProduct(id: number) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/deleteProduct?&id=${id}`, { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/deleteProduct?&id=${id}`, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     disableSale(isActive: boolean, id: number) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive ? 'yes' : 'no'}&id=${id}`, { token }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive ? 'yes' : 'no'}&id=${id}`, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     deleteSale(id: number) {
         const token = localStorage.getItem('lva_token');
-        return this.http.post<IResModel>(this.url + `/deleteSale?id=${id}`, { token, data: id }, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/deleteSale?id=${id}`, { token, data: id, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     addProduct(o: IStock) {
         console.log(o);
 
         const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
         if (!o.name || !o.price) { alert('Body is empty'); return null; }
-        return this.http.post<IResModel>(this.url + '/addProduct', { data: o, token }, { headers: this.headerBase() });
+        return this.http.post<IResModel>(this.url + '/addProduct', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
+    }
+
+    addProductImages(o: IProductImage) {
+        console.log(o);
+
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        if (!o.name || !o.price) { alert('Body is empty'); return null; }
+        return this.http.post<IResModel>(this.url + '/addProductImageSystem', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     readMachineSaleForAdmin(data: any) {
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
         return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin', data, { headers: this.headerBase() });
     }
     loadVendingMachineSaleBillReport(data: any) {
-        return this.http.post(this.url + '/loadVendingMachineSaleBillReport', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/loadVendingMachineSaleBillReport', payload, { headers: this.headerBase() });
     }
 
     loadVendingMachineDropReport(data: any) {
-        return this.http.post(this.url + '/loadVendingMachineDropPositionReport', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/loadVendingMachineDropPositionReport', payload, { headers: this.headerBase() });
     }
 
     loadVendingMachineBillNotPaid(data: any) {
-        return this.http.post(this.url + '/reportBillNotPaid', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/reportBillNotPaid', payload, { headers: this.headerBase() });
     }
 
     CheckBillPaidFromMmoney(data: any) {
-        return this.http.post(this.url + '/checkPaidMmoney', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/checkPaidMmoney', payload, { headers: this.headerBase() });
     }
 
     sendDropBill(data: any) {
-        return this.http.post(this.url + '/sendDropAdmin', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/sendDropAdmin', payload, { headers: this.headerBase() });
     }
 
     loadVendingMachineStockReport(data: any) {
-        return this.http.post(this.url + '/loadVendingMachineStockReport', data, { headers: this.headerBase() });
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/loadVendingMachineStockReport', payload, { headers: this.headerBase() });
     }
+
 
     getFreeProduct(position: number, id: number) {
         this.currentPaymentProvider = EPaymentProvider.mmoney;

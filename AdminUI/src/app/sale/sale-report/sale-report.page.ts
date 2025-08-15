@@ -144,11 +144,6 @@ export class SaleReportPage implements OnInit {
     });
   }
 
-  shouldHidePaymentRef(value: any): boolean {
-    return typeof value === 'string' && /^\d+$/.test(value);
-  }
-
-
   view(list: any): void {
     const props = {
       machineId: this.machineId,

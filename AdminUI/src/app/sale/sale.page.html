@@ -75,15 +75,15 @@
       <ion-col></ion-col>
       <ion-col></ion-col>
     </ion-row>
-    
-    
+
+
     <ion-row *ngFor="let p of _l">
-      <ion-img class="product_image"[src]="showImage(p.stock.image)" (click)="showProductList(p)"></ion-img>
+      <ion-img class="product_image" [src]="showImage(p.stock.image)" (click)="showProductList(p)"></ion-img>
       <ion-col><ion-label>{{p.id}}</ion-label></ion-col>
       <ion-col><ion-label>{{p.max}}</ion-label></ion-col>
       <ion-col><ion-label>{{p.position}}</ion-label></ion-col>
       <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
-      <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="save(p)" ></ion-toggle></ion-col>
+      <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="save(p)"></ion-toggle></ion-col>
       <ion-col><ion-label>{{p.stock.name}}</ion-label></ion-col>
       <ion-col><ion-label>{{p.stock.price|number}}</ion-label></ion-col>
       <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>

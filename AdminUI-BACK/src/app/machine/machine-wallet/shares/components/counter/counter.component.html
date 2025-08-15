@@ -1,0 +1,64 @@
+<!-- <div class="laab-transfer-container">
+  <div class="item-card">
+    <div class="item-card-header">
+      <div class="title">Counter</div>
+      <div class="text">Control cash by counter</div>
+    </div>
+    <div class="item-card-body">
+      
+      <div class="search-group">
+        <div class="form-group">
+          <label for="">Phone number <span class="text-danger">*</span></label>
+          <div class="input-group mb-3">
+            <input (keyup)="resetList($event)" [(ngModel)]="phonenumber" type="text" placeholder="Enter phone number" class="form-control">
+            <span class="input-group-text">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+            </span>
+          </div>
+        </div>
+        <button (click)="findList()" class="btn-validate"><i class="fa-solid fa-rotate"></i> Validate</button>
+
+      </div>
+
+      <div *ngIf="showTable == true" class="table-responsive mt-2">
+        <table class="table table-bordered table-hover">
+          <thead class="fw-bold">
+            <tr>
+              <td>Creator</td>
+              <td>Phone number</td>
+              <td>SMC</td>
+              <td>EPIN</td>
+              <td>Cash</td>
+              <td>Time</td>
+              <td>Action</td>
+            </tr>
+          </thead>
+          <tbody *ngFor="let list of lists; let i = index">
+            <tr>
+              <td>{{ list.uuid }}</td>
+              <td>{{ list.phonenumber }}</td>
+              <td>{{ list.SMC.detail.price | number }}</td>
+              <td>{{ list.EPIN.destination }}</td>
+              <td>{{ list.counter.cash.hash }}</td>
+              <td>{{ list.createdAt }}</td>
+              <td>
+                <a  *ngIf="list?.EPIN?.destination == ''" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
+                <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action">
+                  <span *ngIf="list?.counter?.cash == ''">Cash Out</span>
+                  <span *ngIf="list?.counter?.cash != ''">Already cashed out</span>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ul class="pagination">
+          <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'" >
+              <button (click)="manageListPage(btn.page)" class="page-link" >{{btn.name}}</button>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div> -->
