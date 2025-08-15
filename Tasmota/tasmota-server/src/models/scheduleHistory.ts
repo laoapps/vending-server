@@ -30,7 +30,6 @@ export function initScheduleHistoryModel(sequelize: Sequelize) {
       deviceId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'Devices', key: 'id' },
       },
       userUuid: {
         type: DataTypes.STRING,
