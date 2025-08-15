@@ -44,6 +44,7 @@ export function initOrderModel(sequelize: Sequelize) {
       deviceId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: { model: 'devices', key: 'id' },
       },
       packageId: {
         type: DataTypes.INTEGER,

@@ -18,22 +18,22 @@ import models from './models';
 
 const PORT = process.env.PORT || 3000;
 
-const umzug = new Umzug({
-  migrations: {
-    glob: 'migrations/*.js',
-    resolve: ({ name, path: migrationPath }) => {
-      const migration = require(migrationPath!);
-      return {
-        name,
-        up: async () => migration.up(sequelize.getQueryInterface(), sequelize.Sequelize),
-        down: async () => migration.down(sequelize.getQueryInterface(), sequelize.Sequelize),
-      };
-    },
-  },
-  context: sequelize.getQueryInterface(),
-  storage: new SequelizeStorage({ sequelize }),
-  logger: console,
-});
+// const umzug = new Umzug({
+//   migrations: {
+//     glob: 'migrations/*.js',
+//     resolve: ({ name, path: migrationPath }) => {
+//       const migration = require(migrationPath!);
+//       return {
+//         name,
+//         up: async () => migration.up(sequelize.getQueryInterface(), sequelize.Sequelize),
+//         down: async () => migration.down(sequelize.getQueryInterface(), sequelize.Sequelize),
+//       };
+//     },
+//   },
+//   context: sequelize.getQueryInterface(),
+//   storage: new SequelizeStorage({ sequelize }),
+//   logger: console,
+// });
 
 async function recoverActiveOrders() {
   try {
@@ -45,9 +45,11 @@ async function recoverActiveOrders() {
         continue;
       }
 
-      const order = await Order.findByPk(orderData.orderId, {
+      const order = await Order.findByPk(orderData.orderId
+        , {
         include: [{ model: models.Device, as: 'device' }, { model: models.SchedulePackage, as: 'package' }],
-      });
+      }
+    );
       if (!order) {
         await redis.del(key);
         continue;
