@@ -16,7 +16,7 @@ export class GenQrCodePage implements OnInit {
   currentColor: string = 'color-red';
   private colorInterval: any;
   countdown: string = '';
-  public pic_device = '../../../assets/icon/favicon.png'
+  public pic_device = '../../../assets/icon/iot.png'
   @Input() data:any
   @Input() ownerId:any
 
