@@ -12,7 +12,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding list-container">
+<ion-content class="ion-no-padding list-container">
   <ion-list *ngIf="schedulePackages.length > 0; else noData">
     <ion-item *ngFor="let item of schedulePackages; let i = index" lines="full" class="pageket-item">   
       <ion-label>

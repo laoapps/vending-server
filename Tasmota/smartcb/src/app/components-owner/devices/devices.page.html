@@ -14,7 +14,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding list-container">
+<ion-content class="ion-no-padding list-container">
   <ion-list *ngIf="devices.length > 0; else noData">
     <ion-item
       *ngFor="let item of devices; let i = index"
