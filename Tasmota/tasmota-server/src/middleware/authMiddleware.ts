@@ -10,7 +10,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   const adminKey = req.headers['x-admin-key'];
   // const isOwnerFunction = req.headers['x-owner'] === 'true';
   const isOwnerFunction = String(req.headers['x-owner']).toLowerCase() === 'true';
-  console.log('isOwnerFunction',isOwnerFunction, typeof(isOwnerFunction));
+  console.log('isOwnerFunction',isOwnerFunction, typeof(isOwnerFunction), req.headers['x-owner'], typeof(req.headers['x-owner']));
   
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
