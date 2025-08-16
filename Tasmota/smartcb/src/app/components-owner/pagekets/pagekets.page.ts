@@ -24,6 +24,9 @@ export class PageketsPage implements OnInit {
   load_data(){
     this.m.onLoading('')
     this.apiService.getSchedulePackages().subscribe((packages) => {
+      console.log('====================================');
+      console.log('packages',packages);
+      console.log('====================================');
       this.schedulePackages = packages;
       this.m.onDismiss();
     },error=>{

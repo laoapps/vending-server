@@ -30,7 +30,7 @@ export class ShowDevicesPage implements OnInit {
     this.m.onLoading('')
     let data = {
       ownerId:Number(this.data?.ownerId+''),
-      id:this.data?.devince
+      id:this.data?.deviceId
     }
     this.apiService.getDevicesBy(data).subscribe((r)=>{
       console.log('====================================');

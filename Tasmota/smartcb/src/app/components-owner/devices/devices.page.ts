@@ -82,7 +82,7 @@ export class DevicesPage implements OnInit {
   }
 
   onClick_add() {
-    this.m.showModal(AddDevicesPage).then((r) => {
+    this.m.showModal(AddDevicesPage,{title:'add'}).then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
@@ -109,6 +109,22 @@ export class DevicesPage implements OnInit {
         });
       }
     });
+  }
+
+  updateDevice(device: any) {
+    this.m
+      .showModal(AddDevicesPage, { data: device, title: 'edit' })
+      .then((r) => {
+        if (r) {
+          r.present();
+          r.onDidDismiss().then((res) => {
+            if (res.data.dismiss) {
+              this.devices = [];
+              this.load_data();
+            }
+          });
+        }
+      });
   }
 
   async deleteDevice(id: number) {

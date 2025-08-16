@@ -15,7 +15,7 @@
 </ion-header>
 
 <ion-content class="ion-no-padding list-container" *ngIf="page == 1">
-  <ion-list *ngIf="groups.length > 0; else noData">
+  <ion-list *ngIf="groups?.length > 0; else noData">
     <ion-item
       *ngFor="let item of groups; let i = index"
       lines="full"
@@ -23,7 +23,7 @@
     >
       <ion-label>
         <h2 class="name">{{ item.name }}</h2>
-        <p class="price">Devices: <strong>{{ item.devices.length}}</strong></p>
+        <p class="price">Devices: <strong>{{ item.devices?.length}}</strong></p>
       </ion-label>
 
       <ion-buttons slot="end" class="action-buttons">
