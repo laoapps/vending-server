@@ -99,3 +99,32 @@ export async function findRealDB(token: string): Promise<string> {
         }
     });
 }
+
+
+export async function validateHMVending(machineId: string,otp:string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+
+        if (machineId) {
+            const data = {
+                machineId,otp
+            };
+            const hmVendingUrl = process.env.hmVendingUrl;
+            axios
+                .post(hmVendingUrl || '', data, {
+                })
+                .then((r) => {
+                    const d = r.data;
+                    console.log('ownerUuid:', d);
+                    if (d.ownerUuid) {
+                        console.log('ownerUuid:', d.ownerUuid);
+                        resolve(d?.ownerUuid);
+                    } else {
+                        resolve('');
+                    }
+                })
+                .catch((e) => reject(e));
+        } else {
+            resolve('');
+        }
+    });
+}

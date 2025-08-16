@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
-import { findPhoneNumberByUuid, findRealDB } from '../services/userManagerService';
+import { findPhoneNumberByUuid, findRealDB, validateHMVending } from '../services/userManagerService';
 import models from '../models';
 import redis from '../config/redis';
 
@@ -60,5 +60,55 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+export const authHMVending = async (req: Request, res: Response, next: NextFunction) => {
+
+  const machineId = req.body['machineId'];
+  const otp = req.body['otp'];
+  if(!machineId||!otp){
+ res.status(401).json({ error: 'Invalid parameters' });
+    return;
+
+  }
+  const ownerUuid = await validateHMVending(machineId,otp);
+  if(!ownerUuid) {
+    res.status(401).json({ error: 'Invalid onwerUuid' });
+    return;
+  }
+  try {
+    // Check Redis cache
+    const cacheKey = `owner:${ownerUuid}`;
+    const cachedData = await redis.get(cacheKey);
+    let user: { uuid: string; role: string };
+
+    if (cachedData) {
+      user = JSON.parse(cachedData);
+    } else {
+
+      const phoneNumber = await findPhoneNumberByUuid(ownerUuid);
+      if (!phoneNumber) {
+         res.status(401).json({ error: 'Invalid ownerUuid or user not found' });
+         return;
+      }
+
+      const owner =  (await models.Owner.findOne({ where: { uuid: ownerUuid } }));
+      console.log('owner',owner);
+      if(!owner){
+            res.status(401).json({ error: ' owner not found' });
+
+        return;
+      }
+      let role = 'owner';
+      // Admin verification
+      user = { uuid:ownerUuid, role };
+      // Cache for 60 minutes (3600 seconds)
+      await redis.set(cacheKey, JSON.stringify(user), 'EX', 3600);
+    }
+    res.locals.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid ownerUuid' });
   }
 };

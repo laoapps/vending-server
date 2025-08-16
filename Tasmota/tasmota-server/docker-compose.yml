@@ -18,6 +18,7 @@ services:
       - SERVICE_NAME=SMARTCB
       - REDIS_URL=redis://tasmota-redis:6379
       - ADMINGAME_NOCNOC_UUID=3d55d7f0-b611-11ef-8c5b-dfe3a2fc2c00
+      - hmVendingUrl=https://vending-service-api5.laoapps.com/validateHMVending/zdm8
     depends_on:
       - tasmota-db
       - tasmota-redis

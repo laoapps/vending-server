@@ -16,6 +16,7 @@ export interface DeviceAttributes {
   groupId?: number;
   createdAt: Date;
   updatedAt: Date;
+  description?:any
 }
 
 // Update DeviceAssociations to use model types instead of attributes for better typing
@@ -72,6 +73,10 @@ export function initDeviceModel(sequelize: Sequelize) {
       },
       groupId: {
         type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      description: {
+        type: DataTypes.JSONB,
         allowNull: true,
       },
       createdAt: DataTypes.DATE,
