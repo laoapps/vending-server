@@ -64,6 +64,19 @@ Authorization: Bearer {{jwtToken}}
 
 }
 
+### test update devices
+PUT https://{{host}}/api/devices/1
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+x-owner: "true"
+
+{
+  "name": "number3",
+  "tasmotaId": "tongou_3B0900",
+  "zone": "test",
+  "groupId": 1
+}
+
 ### test clear device rule
 POST https://{{host}}/api/devices/clearDeviceRule
 Content-Type: application/json
