@@ -26,7 +26,7 @@ export class UserPage implements OnInit {
     // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
     {title:'Scan QR Code',icon: 'qr-code-outline'},
     {title:'Map',icon: 'map-outline',path:MapPage},
-    {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
+    // {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
     {title:'Register owner',icon: 'albums-outline'},
   ]
   constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
