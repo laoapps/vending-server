@@ -8,9 +8,7 @@ import redis from '../config/redis';
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1];
   const adminKey = req.headers['x-admin-key'];
-  // const isOwnerFunction = req.headers['x-owner'] === 'true';
-  const rawOwner = String(req.headers['x-owner'] || '').toLowerCase().replace(/['"]+/g, '');
-const isOwnerFunction = rawOwner === 'true';
+  const isOwnerFunction = req.headers['x-owner'] === 'true';
   console.log('isOwnerFunction',isOwnerFunction, typeof(isOwnerFunction), req.headers['x-owner'], typeof(req.headers['x-owner']));
   
   if (!token) {
@@ -33,6 +31,7 @@ const isOwnerFunction = rawOwner === 'true';
       }
 
       const owner =  (await models.Owner.findOne({ where: { uuid: validatedUuid } }));
+  console.log('owner',owner);
 
       let role = owner ? 'owner' : 'user';
       if(!isOwnerFunction){
