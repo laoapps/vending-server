@@ -68,7 +68,7 @@ Authorization: Bearer {{jwtToken}}
 PUT https://{{host}}/api/devices/1
 Content-Type: application/json
 Authorization: Bearer {{jwtToken}}
-x-owner: "true"
+x-owner: true
 
 {
   "name": "number3",
