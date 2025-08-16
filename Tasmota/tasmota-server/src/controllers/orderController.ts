@@ -262,11 +262,11 @@ export const payOrder = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Device not found' });
     }
 
-    if (!device?.dataValues?.energy) {
-      return res.status(404).json({ error: 'Device energy not found' });
-    }
+    // if (!device?.dataValues?.energy) {
+    //   return res.status(404).json({ error: 'Device energy not found' });
+    // }
 
-    console.log('payOrder==========222', device.dataValues.energy);
+    console.log('payOrder==========222', device?.dataValues?.energy);
 
 
     order.set('paidTime', new Date());

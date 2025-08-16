@@ -132,19 +132,22 @@ async function startServer() {
 
             }
           } else if (order.data.conditionType === 'energy_consumption') {
-            console.log('current_energy================', device.dataValues.energy);
-            const energy = device.energy || 0;
-            // if (energy >= schedulePackage.dataValues.conditionValue) {
-            if (energy >= order?.data?.conditionValue) {
-              await publishMqttMessage(`cmnd/${device.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
-              // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-              // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-              const ord = await models.Order.findByPk(order.data.orderId);
-              if (ord) {
-                ord?.set('completedTime', new Date());
-                await ord?.save();
-                await redis.del(key);
-                await notifyStakeholders(ord, 'Order completed due to time duration limit.');
+            console.log('current_energy================', device?.dataValues?.energy);
+            if (device?.dataValues?.energy) {
+
+              const energy = device.energy || 0;
+              // if (energy >= schedulePackage.dataValues.conditionValue) {
+              if (energy >= order?.data?.conditionValue) {
+                await publishMqttMessage(`cmnd/${device.tasmotaId}/POWER${order.data.relay || 1}`, 'OFF');
+                // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+                // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+                const ord = await models.Order.findByPk(order.data.orderId);
+                if (ord) {
+                  ord?.set('completedTime', new Date());
+                  await ord?.save();
+                  await redis.del(key);
+                  await notifyStakeholders(ord, 'Order completed due to time duration limit.');
+                }
               }
             }
           }
