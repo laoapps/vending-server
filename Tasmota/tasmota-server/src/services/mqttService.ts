@@ -32,7 +32,7 @@ client.on('reconnect', () => {
   console.log('Attempting to reconnect to MQTT broker...');
 });
 
-client.on('error', (err) => {
+client.on('error', (err: any) => {
   console.error('MQTT error:', err);
 });
 
@@ -78,7 +78,7 @@ export const publishMqttMessage = async (topic: string, payload: string) => {
       reject(new Error('MQTT client is disconnected'));
       return;
     }
-    client.publish(topic, payload, { qos: 1 }, (err) => {
+    client.publish(topic, payload, { qos: 1 }, (err: any) => {
       if (err) {
         console.error(`Failed to publish to ${topic}:`, err);
         reject(err);
@@ -92,14 +92,14 @@ export const publishMqttMessage = async (topic: string, payload: string) => {
 
 // Subscribe to MQTT topic
 export const subscribeToTopic = (topic: string, callback: (receivedTopic: string, payload: Buffer) => void) => {
-  client.subscribe(topic, { qos: 1 }, (err) => {
+  client.subscribe(topic, { qos: 1 }, (err: any) => {
     if (err) {
       console.error(`Failed to subscribe to ${topic}:`, err);
     } else {
       console.log(`Subscribed to ${topic}`);
     }
   });
-  client.on('message', (receivedTopic, payload) => {
+  client.on('message', (receivedTopic: any, payload: any) => {
     if (receivedTopic.startsWith(topic.split('+')[0])) {
       console.log(`Received message on ${receivedTopic}: ${payload.toString()}`);
       callback(receivedTopic, payload);
@@ -110,85 +110,92 @@ export const subscribeToTopic = (topic: string, callback: (receivedTopic: string
 // Callback for LWT - Update device status to online/offline
 const lwtCallback = async (receivedTopic: string, payload: Buffer) => {
   const tasmotaId = receivedTopic.split('/')[1];
+  try {
+    // Check Redis cache first
+    const cachedDevice = await getDeviceFromCache(tasmotaId);
+    if (cachedDevice && cachedDevice.status?.connection === payload.toString()) {
+      console.log(`Device ${tasmotaId} status unchanged in cache: ${payload.toString()}`);
+      return;
+    }
 
-  // Check Redis cache first
-  const cachedDevice = await getDeviceFromCache(tasmotaId);
-  if (cachedDevice && cachedDevice.status?.connection === payload.toString()) {
-    console.log(`Device ${tasmotaId} status unchanged in cache: ${payload.toString()}`);
+    // Update database
+    const device = await models.Device.findOne({ where: { tasmotaId } });
+    if (!device) {
+      console.log(`Device ${tasmotaId} not found in database`);
+      return;
+    }
+
+    const status = payload.toString();
+    const newStatus = status === 'Online' ? 'online' : 'offline';
+    await device.update({ status: { ...device.dataValues.status, connection: newStatus } });
+
+    // Update Redis cache
+    const updatedData = {
+      tasmotaId,
+      status: { ...device.dataValues.status, connection: newStatus },
+      energy: device.dataValues.energy,
+      power: device.dataValues.power,
+    };
+    await setDeviceInCache(tasmotaId, updatedData);
+
+    console.log(`Updated device ${tasmotaId} status to ${newStatus} in database and cache`);
+  } catch (error) {
+    console.error(`Error in LWT callback for device ${tasmotaId}:`, error);
     return;
   }
 
-  // Update database
-  const device = await models.Device.findOne({ where: { tasmotaId } });
-  if (!device) {
-    console.log(`Device ${tasmotaId} not found in database`);
-    return;
-  }
-
-  const status = payload.toString();
-  const newStatus = status === 'Online' ? 'online' : 'offline';
-  await device.update({ status: { ...device.dataValues.status, connection: newStatus } });
-
-  // Update Redis cache
-  const updatedData = {
-    tasmotaId,
-    status: { ...device.dataValues.status, connection: newStatus },
-    energy: device.dataValues.energy,
-    power: device.dataValues.power,
-  };
-  await setDeviceInCache(tasmotaId, updatedData);
-
-  console.log(`Updated device ${tasmotaId} status to ${newStatus} in database and cache`);
 };
 
 // Callback for SENSOR - Update device power and energy
 const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
   const tasmotaId = receivedTopic.split('/')[1];
-
-  // Check Redis cache first
-  const cachedDevice = await getDeviceFromCache(tasmotaId);
-
-  // Parse sensor data
-  let sensorData;
   try {
-    sensorData = JSON.parse(payload.toString());
+
+    // Check Redis cache first
+    const cachedDevice = await getDeviceFromCache(tasmotaId);
+
+    // Parse sensor data
+    let sensorData;
+    try {
+      sensorData = JSON.parse(payload.toString());
+    } catch (error) {
+      console.error(`Error parsing SENSOR data for device ${tasmotaId}:`, error);
+      return;
+    }
+
+    const energy = sensorData?.ENERGY?.Total || 0;
+    const power = sensorData?.ENERGY?.Power || 0;
+
+    // Skip update if data hasn't changed
+    if (cachedDevice && cachedDevice.energy === energy && cachedDevice.power === power) {
+      console.log(`Device ${tasmotaId} sensor data unchanged in cache: energy=${energy}, power=${power}`);
+      return;
+    }
+
+    // Update database
+    const device = await models.Device.findOne({ where: { tasmotaId } });
+    if (!device) {
+      console.log(`Device ${tasmotaId} not found in database`);
+      return;
+    }
+
+    await device.update({ energy, power });
+
+    // Update Redis cache
+    const updatedData = {
+      tasmotaId,
+      status: device.dataValues.status,
+      energy,
+      power,
+    };
+    await setDeviceInCache(tasmotaId, updatedData);
+
+    console.log(`Updated device ${tasmotaId} energy to ${energy} and power to ${power} in database and cache`);
   } catch (error) {
-    console.error(`Error parsing SENSOR data for device ${tasmotaId}:`, error);
+    console.error(`Error in SENSOR callback for device ${tasmotaId}:`, error);
     return;
   }
 
-  const energy = sensorData?.ENERGY?.Total || 0;
-  const power = sensorData?.ENERGY?.Power || 0;
-
-  // Skip update if data hasn't changed
-  if (cachedDevice && cachedDevice.energy === energy && cachedDevice.power === power) {
-    console.log(`Device ${tasmotaId} sensor data unchanged in cache: energy=${energy}, power=${power}`);
-    return;
-  }
-  if (energy <= 0 || power <= 0) {
-    console.log(`Device ${tasmotaId} sensor data 0 in cache: energy=${energy}, power=${power}`);
-    return;
-  }
-
-  // Update database
-  const device = await models.Device.findOne({ where: { tasmotaId } });
-  if (!device) {
-    console.log(`Device ${tasmotaId} not found in database`);
-    return;
-  }
-
-  await device.update({ energy, power });
-
-  // Update Redis cache
-  const updatedData = {
-    tasmotaId,
-    status: device.dataValues.status,
-    energy,
-    power,
-  };
-  await setDeviceInCache(tasmotaId, updatedData);
-
-  console.log(`Updated device ${tasmotaId} energy to ${energy} and power to ${power} in database and cache`);
 };
 
 // Optional: Function to get device data (cached or from database)

@@ -48,7 +48,7 @@ export function initScheduleHistoryModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'ScheduleHistory',
-      tableName: 'ScheduleHistories',
+      tableName: 'schedulehistories',
     }
   );
   return ScheduleHistory;

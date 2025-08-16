@@ -14,7 +14,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding list-container">
+<ion-content class="ion-no-padding list-container">
   <ion-list *ngIf="devices.length > 0; else noData">
     <ion-item
       *ngFor="let item of devices; let i = index"
@@ -30,7 +30,10 @@
       </ion-label>
 
       <ion-buttons slot="end" class="action-buttons">
-        <ion-button color="warning" fill="clear" (click)="setControlDevice(item?.id)">
+        <ion-button color="warning" fill="clear" (click)="updateDevice(item)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button color="secondary" fill="clear" (click)="setControlDevice(item?.id)">
           <ion-icon slot="icon-only" name="construct-outline"></ion-icon>
         </ion-button>
         <ion-button

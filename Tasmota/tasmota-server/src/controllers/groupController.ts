@@ -31,6 +31,7 @@ export const loadAllGroups = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch groups' });
   }
 };
+
 export const getGroups = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
@@ -70,6 +71,28 @@ export const updateGroup = async (req: Request, res: Response) => {
     }
 
     await group.update({ name, description });
+    res.json(group);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to update group' });
+  }
+};
+export const updateGroupPackage = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { description } = req.body; //{packages:[1,2,3]}
+  const user = res.locals.user;
+
+  try {
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    if (!owner) {
+      return res.status(403).json({ error: 'Only owners can update groups' });
+    }
+
+    const group = await models.DeviceGroup.findOne({ where: { id: parseInt(id), ownerId: owner.dataValues.id } });
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found or not owned' });
+    }
+
+    await group.update({ description });
     res.json(group);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to update group' });

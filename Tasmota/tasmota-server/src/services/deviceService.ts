@@ -21,7 +21,7 @@ const controlDeviceSchema = z.object({
 );
 
 export class DeviceService {
-  static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string, groupId?: number): Promise<Device> {
+  static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string, groupId?: number, description?:any): Promise<Device> {
     console.log('createDevice2');
 
     const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
@@ -35,6 +35,7 @@ export class DeviceService {
       zone,
       ownerId: owner.dataValues.id,
       groupId,
+      description,
       status: {},
     } as DeviceAttributes);
 

@@ -15,7 +15,7 @@ export class MapPage implements OnInit {
   map: Map;
   all_gorup:any = []
   StoreIcon = icon({
-    iconUrl: "assets/hangmi-icon/marker_store.png",
+    iconUrl: "assets/hangmi-icon/marker.png",
     iconSize: [25, 45],
     iconAnchor: [10, 41],
     popupAnchor: [3, -35],
@@ -32,6 +32,7 @@ export class MapPage implements OnInit {
     this.load_data();
     setTimeout(() => {
       this.loadMap_add();
+      this.change_map();
       // this.locatePosition();
       this.map.attributionControl.remove();
     }, 100);
@@ -104,6 +105,21 @@ export class MapPage implements OnInit {
         console.error('API load_all_group error:', error);
       }
     );
+  }
+
+  change_map() {
+    var baselayers = {
+      ຄ່າເລີ່ມຕົ້ນ: L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      ),
+      ດາວທຽມ: L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      ),
+    };
+
+    var overlays = {};
+    L.control.layers(baselayers, overlays).addTo(this.map);
+    baselayers['ຄ່າເລີ່ມຕົ້ນ'].addTo(this.map);
   }
   
 

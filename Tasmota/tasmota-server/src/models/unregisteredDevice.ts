@@ -48,7 +48,7 @@ export function initUnregisteredDeviceModel(sequelize: Sequelize) {
     {
       sequelize,
       modelName: 'UnregisteredDevice',
-      tableName: 'UnregisteredDevices',
+      tableName: 'unregistereddevices',
     }
   );
   return UnregisteredDevice;

@@ -116,38 +116,6 @@ export const testOrder = async (req: Request, res: Response) => {
   }
 };
 
-export const createOrderFromVending = async (req: Request, res: Response) => {
-  const { packageId, deviceId, relay = 1 } = req.body;
-  console.log('createOrderFromVending==========', req.body);
-  try {
-    const schedulePackage = await SchedulePackage.findByPk(packageId);
-    if (!schedulePackage) {
-      return res.status(404).json({ error: 'Package not found' });
-    }
-    const device = await models.Device.findByPk(deviceId);
-    if (!device) {
-      return res.status(404).json({ error: 'Device not found' });
-    }
-
-    const order = await models.Order.create({
-      uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      deviceId,
-      packageId,
-      userUuid: 'vending',
-      relay,
-    } as any);
-
-    const adminToken = process.env.ADMINGAME_NOCNOC_UUID || ''
-    console.log('adminToken', adminToken);
-    const qr = await generateQR(order.dataValues.id, schedulePackage.dataValues.price, adminToken);
-    console.log('createOrderFromVending==========111', qr);
-
-    // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
-    return res.json({ qr, data: { order } });
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
-  }
-};
 
 export const createOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
@@ -221,6 +189,24 @@ export const getOrderById = async (req: Request, res: Response) => {
   }
 };
 
+export const getOrderByIdHMVending = async (req: Request, res: Response) => {
+
+  const id = Number(req.params.id) || -1;
+
+  try {
+    const order = await models.Order.findOne({
+      where: {  id },
+    });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch order' });
+  }
+};
+
+
 export const payOrder = async (req: Request, res: Response) => {
   const { orderID, data } = req.body;
 
@@ -262,11 +248,11 @@ export const payOrder = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Device not found' });
     }
 
-    if (!device?.dataValues?.energy) {
-      return res.status(404).json({ error: 'Device energy not found' });
-    }
+    // if (!device?.dataValues?.energy) {
+    //   return res.status(404).json({ error: 'Device energy not found' });
+    // }
 
-    console.log('payOrder==========222', device.dataValues.energy);
+    console.log('payOrder==========222', device?.dataValues?.energy);
 
 
     order.set('paidTime', new Date());

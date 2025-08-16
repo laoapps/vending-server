@@ -9,6 +9,7 @@ export interface SchedulePackageAttributes {
   conditionValue: number;
   createdAt: Date;
   updatedAt: Date;
+  description?:any
 }
 
 export class SchedulePackage extends Model<SchedulePackageAttributes> {
@@ -46,13 +47,17 @@ export function initSchedulePackageModel(sequelize: Sequelize) {
         allowNull: false,
         defaultValue: 0,
       },
+      description: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
     },
     {
       sequelize,
       modelName: 'SchedulePackage',
-      tableName: 'SchedulePackages',
+      tableName: 'schedulepackages',
     }
   );
   return SchedulePackage;

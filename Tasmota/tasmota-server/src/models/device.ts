@@ -16,6 +16,7 @@ export interface DeviceAttributes {
   groupId?: number;
   createdAt: Date;
   updatedAt: Date;
+  description?:any
 }
 
 // Update DeviceAssociations to use model types instead of attributes for better typing
@@ -74,14 +75,19 @@ export function initDeviceModel(sequelize: Sequelize) {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      description: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
     },
     {
       sequelize,
       modelName: 'Device',
-      tableName: 'devices',   
-      freezeTableName: true   
+      tableName: 'devices',   // ชื่อตารางที่จะสร้างใน DB
+      freezeTableName: true,  // ไม่ให้ Sequelize pluralize
+      timestamps: true, 
     }
   );
   return Device;

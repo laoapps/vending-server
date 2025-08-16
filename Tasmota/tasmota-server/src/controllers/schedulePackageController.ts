@@ -53,6 +53,24 @@ export const findByOwnerID = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedule packages' });
   }
 };
+export const findByOwnerIDHMVending = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+
+
+  try {
+
+    const owner = await models.Owner.findOne({where:{uuid:user.uuid}});
+    const schedulePackages = await models.SchedulePackage.findAll({
+      where: { ownerId: owner?.dataValues.id }
+    });
+
+    console.log('findByOwnerID111', schedulePackages);
+
+    res.json(schedulePackages);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedule packages' });
+  }
+};
 
 export const getSchedulePackages = async (req: Request, res: Response) => {
   const user = res.locals.user;
