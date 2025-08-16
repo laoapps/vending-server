@@ -1147,6 +1147,22 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
+            router.post(this.path + "/validateHMVending",
+                async (req, res) => {
+                    try {
+                        const token = req.body.token;
+                        if (!token) {
+                            return res.send(PrintError("validateHMVending", {}, EMessage.notallowed, returnLog(req, res, true)));
+                        }
+                        const machineID = await this.findMachineIdToken(token);
+                        return res.send(PrintSucceeded('validateHMVending', machineID, EMessage.succeeded))
+                    } catch (error) {
+                        res.send(PrintError("validateHMVending", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            );
+
             router.post(this.path + "/exitAppMachine",
                 this.checkSuperAdmin,
 
