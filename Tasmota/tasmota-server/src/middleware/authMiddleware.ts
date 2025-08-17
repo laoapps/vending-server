@@ -9,8 +9,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   const token = req.headers.authorization?.split(' ')[1];
   const adminKey = req.headers['x-admin-key'];
   const isOwnerFunction = req.headers['x-owner'] === 'true';
-  console.log('isOwnerFunction',isOwnerFunction, typeof(isOwnerFunction), req.headers['x-owner'], typeof(req.headers['x-owner']));
-  
+  console.log('isOwnerFunction', isOwnerFunction, typeof (isOwnerFunction), req.headers['x-owner'], typeof (req.headers['x-owner']));
+
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
@@ -30,28 +30,28 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         return res.status(401).json({ error: 'Invalid token or user not found' });
       }
 
-      const owner =  (await models.Owner.findOne({ where: { uuid: validatedUuid } }));
-  console.log('owner',owner);
+      const owner = (await models.Owner.findOne({ where: { uuid: validatedUuid } }));
+      console.log('owner', owner);
 
       let role = owner ? 'owner' : 'user';
-      if(!isOwnerFunction){
+      if (!isOwnerFunction) {
         role = 'user';
       }
       // Admin verification
       if (adminKey === 'super-admin') {
         const admin = await models.Admin.findOne({ where: { uuid: validatedUuid } });
         if (!admin) {
-              const phoneNumber = await findPhoneNumberByUuid(validatedUuid);
-              console.log('Found phone number for UUID:', validatedUuid, 'Phone Number:', phoneNumber);
-              if (!phoneNumber) {
-                return res.status(400).json({ error: 'Phone number not found for this user' });
-              }
+          const phoneNumber = await findPhoneNumberByUuid(validatedUuid);
+          console.log('Found phone number for UUID:', validatedUuid, 'Phone Number:', phoneNumber);
+          if (!phoneNumber) {
+            return res.status(400).json({ error: 'Phone number not found for this user' });
+          }
           await models.Admin.create({ uuid: validatedUuid, phoneNumber } as any);
         }
         role = 'admin';
       }
 
-      user = { uuid:validatedUuid, role };
+      user = { uuid: validatedUuid, role };
       // Cache for 60 minutes (3600 seconds)
       await redis.set(cacheKey, JSON.stringify(user), 'EX', 3600);
     }
@@ -67,13 +67,13 @@ export const authHMVending = async (req: Request, res: Response, next: NextFunct
 
   const machineId = req.body['machineId'];
   const otp = req.body['otp'];
-  if(!machineId||!otp){
- res.status(401).json({ error: 'Invalid parameters' });
+  if (!machineId || !otp) {
+    res.status(401).json({ error: 'Invalid parameters' });
     return;
 
   }
-  const ownerUuid = await validateHMVending(machineId,otp);
-  if(!ownerUuid) {
+  const ownerUuid = await validateHMVending(machineId, otp);
+  if (!ownerUuid) {
     res.status(401).json({ error: 'Invalid onwerUuid' });
     return;
   }
@@ -89,20 +89,20 @@ export const authHMVending = async (req: Request, res: Response, next: NextFunct
 
       const phoneNumber = await findPhoneNumberByUuid(ownerUuid);
       if (!phoneNumber) {
-         res.status(401).json({ error: 'Invalid ownerUuid or user not found' });
-         return;
+        res.status(401).json({ error: 'Invalid ownerUuid or user not found' });
+        return;
       }
 
-      const owner =  (await models.Owner.findOne({ where: { uuid: ownerUuid } }));
-      console.log('owner',owner);
-      if(!owner){
-            res.status(401).json({ error: ' owner not found' });
+      const owner = (await models.Owner.findOne({ where: { uuid: ownerUuid } }));
+      console.log('owner', owner);
+      if (!owner) {
+        res.status(401).json({ error: ' owner not found' });
 
         return;
       }
       let role = 'owner';
       // Admin verification
-      user = { uuid:ownerUuid, role };
+      user = { uuid: ownerUuid, role };
       // Cache for 60 minutes (3600 seconds)
       await redis.set(cacheKey, JSON.stringify(user), 'EX', 3600);
     }

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '../config/env';
+import cryptojs from 'crypto-js';
 console.log('ENV:', env);
 export function findUuidByPhoneNumberOnUserManager(phoneNumber: string): Promise<any> {
   return new Promise<any>(async (resolve, reject) => {
@@ -105,8 +106,12 @@ export async function validateHMVending(machineId: string,otp:string): Promise<s
     return new Promise<string>((resolve, reject) => {
 
         if (machineId) {
-            const data = {
-                machineId,otp
+           
+            const token =cryptojs
+      .SHA256(machineId + otp)
+      .toString(cryptojs.enc.Hex);
+       const data = {
+                token
             };
             const hmVendingUrl = process.env.hmVendingUrl;
             axios
