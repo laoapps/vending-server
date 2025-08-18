@@ -156,14 +156,9 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const getOrders = async (req: Request, res: Response) => {
   const user = res.locals.user;
-  const offset = Number(req.body.offset) || 0;
-  const limit = Math.max(Number(req.body.limit), 5) || 10;
-
   try {
     const orders = await models.Order.findAll({
-      where: { userUuid: user.uuid },
-      limit,
-      offset,
+      where: { userUuid: user.uuid, completedTime: { [Op.eq]: '' } },
       order: [['createdAt', 'DESC']],
     });
     res.json(orders);
@@ -195,7 +190,7 @@ export const getOrderByIdHMVending = async (req: Request, res: Response) => {
 
   try {
     const order = await models.Order.findOne({
-      where: {  id },
+      where: { id },
     });
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
