@@ -90,12 +90,13 @@ export const updateDevice = async (req: Request, res: Response) => {
 export const deleteDevice = async (req: Request, res: Response) => {
   const { id } = req.params;
   const user = res.locals.user;
-
+  console.log('deleteDevice', id, user.role);
   try {
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can delete devices' });
     }
-    await DeviceService.deleteDevice(user.uuid, parseInt(id));
+    const a = await DeviceService.deleteDevice(user.uuid, parseInt(id));
+    console.log('deleteDevice111', a);
     res.json({ message: 'Device deleted' });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to delete device' });
@@ -123,6 +124,7 @@ export const controlDevice = async (req: Request, res: Response) => {
 export const controlDeviceByOrder = async (req: Request, res: Response) => {
   const { id } = req.params;
   const user = res.locals.user;
+  console.log('controlDeviceByOrder', id);
 
   try {
     if (!id) {
@@ -130,25 +132,34 @@ export const controlDeviceByOrder = async (req: Request, res: Response) => {
     }
 
     const orderData = JSON.parse((await redis.get(`activeOrder:${id}`)) || '{}');
+    console.log('controlDeviceByOrder111', orderData);
+
     if (!orderData.orderId) {
       await redis.del(`activeOrder:${id}`);
       return res.status(403).json({ error: 'order not found' });
     }
 
     const order = await models.Order.findByPk(orderData.orderId);
+    console.log('controlDeviceByOrder222', order);
+
     if (!order) {
       await redis.del(`activeOrder:${id}`);
       return res.status(403).json({ error: 'order not found2' });
     }
     const device = await models.Device.findByPk(order.dataValues.deviceId)
+    console.log('controlDeviceByOrder333', device);
+
     if (device) {
       if (!order.dataValues.completedTime) {
+        console.log('controlDeviceByOrder444');
+
         await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER${orderData.relay || 1}`, 'ON');
         res.json({ message: 'Command sent' });
-        return 
+        return
       }
     }
-    console.log('controlDevice222');
+    console.log('controlDeviceByOrder555');
+
     res.json({ message: 'Command not sent' });
   } catch (error) {
     if (error instanceof z.ZodError) {

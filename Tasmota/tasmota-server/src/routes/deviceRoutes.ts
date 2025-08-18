@@ -15,8 +15,8 @@ router.post('/control', authMiddleware, validate(controlDeviceSchema), controlDe
 router.post('/clearDeviceRule', authMiddleware, clearDeviceRule);
 
 
-router.post('/controlbyorder/:id', authMiddleware, validate(controlDeviceSchema), controlDeviceByOrder);
-router.post('/controlbyorder_hmvending/:id', authHMVending, validate(controlDeviceSchema), controlDeviceByOrder);
+router.post('/controlbyorder/:id', authMiddleware, controlDeviceByOrder);
+router.post('/controlbyorder_hmvending/:id', authHMVending, controlDeviceByOrder);
 
 
 
