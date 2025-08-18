@@ -2,9 +2,10 @@ import { Request, Response } from 'express';
 import models from '../models';
 
 import { Device, DeviceAssociations } from '../models/device';
+import { Op } from 'sequelize';
 type DeviceWithAssociations = Device & DeviceAssociations;
 export const createSchedulePackage = async (req: Request, res: Response) => {
-  const { name, price, conditionType, conditionValue } = req.body;
+  const { name, price, conditionType, conditionValue, description } = req.body;
   const user = res.locals.user;
 
   try {
@@ -27,6 +28,7 @@ export const createSchedulePackage = async (req: Request, res: Response) => {
       price,
       conditionType,
       conditionValue,
+      description
     } as any);
 
     res.json(schedulePackage);
@@ -53,19 +55,54 @@ export const findByOwnerID = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedule packages' });
   }
 };
-export const findByOwnerIDHMVending = async (req: Request, res: Response) => {
+
+export const findByPackageIDs = async (req: Request, res: Response) => {
   const user = res.locals.user;
-
-
+  const { packages } = req.body;
+  console.log('findByPackageIDs', packages);
   try {
 
+    if(!packages?.length){
+      return res.status(403).json({ error: 'body is empty!' });
+    }
+    const schedulePackages = await models.SchedulePackage.findAll({
+      where: { id: {[Op.in]: packages} }
+    });
+
+    console.log('findByPackageIDs111', schedulePackages);
+
+    res.json(schedulePackages);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedule packages' });
+  }
+};
+
+export const findByPackageIDsHMVending = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  const { packages } = req.body;
+  console.log('findByPackageIDsHMVending', packages);
+  try {
+    if(!packages?.length){
+      return res.status(403).json({ error: 'body is empty!' });
+    }
+    const schedulePackages = await models.SchedulePackage.findAll({
+      where: { id: {[Op.in]: packages} }
+    });
+    console.log('findByPackageIDsHMVending111', schedulePackages);
+    res.json(schedulePackages);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedule packages' });
+  }
+};
+
+export const findByOwnerIDHMVending = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  try {
     const owner = await models.Owner.findOne({where:{uuid:user.uuid}});
     const schedulePackages = await models.SchedulePackage.findAll({
       where: { ownerId: owner?.dataValues.id }
     });
-
     console.log('findByOwnerID111', schedulePackages);
-
     res.json(schedulePackages);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch schedule packages' });
@@ -74,7 +111,6 @@ export const findByOwnerIDHMVending = async (req: Request, res: Response) => {
 
 export const getSchedulePackages = async (req: Request, res: Response) => {
   const user = res.locals.user;
-
   try {
     let schedulePackages;
     if (user.role === 'admin') {
@@ -98,7 +134,7 @@ export const getSchedulePackages = async (req: Request, res: Response) => {
 
 export const updateSchedulePackage = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, price, conditionType, conditionValue } = req.body;
+  const { name, price, conditionType, conditionValue, description } = req.body;
   const user = res.locals.user;
 
   try {
@@ -120,7 +156,7 @@ export const updateSchedulePackage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid condition type' });
     }
 
-    await schedulePackage.update({ name, price, conditionType, conditionValue });
+    await schedulePackage.update({ name, price, conditionType, conditionValue, description });
     res.json(schedulePackage);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to update schedule package' });

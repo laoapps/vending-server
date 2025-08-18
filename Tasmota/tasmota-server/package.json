@@ -9,6 +9,7 @@
     "migrate:undo": "sequelize-cli db:migrate:undo"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.2",
     "axios": "^1.6.0",
     "cors": "^2.8.5",
     "cron": "^3.1.0",
