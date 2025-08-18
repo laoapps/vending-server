@@ -6,6 +6,8 @@ import { Op } from 'sequelize';
 type DeviceWithAssociations = Device & DeviceAssociations;
 export const createSchedulePackage = async (req: Request, res: Response) => {
   const { name, price, conditionType, conditionValue, description } = req.body;
+  console.log('createSchedulePackage',req.body, description);
+  
   const user = res.locals.user;
 
   try {
