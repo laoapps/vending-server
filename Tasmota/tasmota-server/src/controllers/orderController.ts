@@ -157,10 +157,17 @@ export const createOrder = async (req: Request, res: Response) => {
 export const getOrders = async (req: Request, res: Response) => {
   const user = res.locals.user;
   try {
+
+    const whereCondition: WhereOptions<any> = {
+      userUuid: user.uuid,
+      completedTime: { [Op.is]: null },
+    };
+
     const orders = await models.Order.findAll({
-      where: { userUuid: user.uuid, completedTime: { [Op.eq]: '' } },
+      where: whereCondition,
       order: [['createdAt', 'DESC']],
     });
+
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch orders' });

@@ -112,13 +112,12 @@ Authorization: Bearer {{jwtToken}}
 }
 
 ### Get Orders
-POST http://{{host}}/api/orders/list
+POST https://{{host}}/api/orders/list
 Content-Type: application/json
 Authorization: Bearer {{jwtToken}}
 
 {
-  "offset": 0,
-  "limit": 10
+
 }
 
 ### Get Order by ID
