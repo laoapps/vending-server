@@ -4040,7 +4040,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     listOnlineMachines(): any {
         return this.wsClient.map(async (v) => {
-            return {machine:this.findMachineId(v['machineId']),status:await readMachineStatus(v['machineId'])};  // v['machineId']
+            return {machine:this.findMachineId(v['machineId']),status:(await readMachineStatus(v['machineId']))};  // v['machineId']
         })
     }
     findOnlneMachine(machineId: string): any {
