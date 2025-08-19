@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: 'https://smartcb-api.laoapps.com/api',
+  serverFile:'https://filemanager-api.laoapps.com/api/v1/',
   wsUrl: 'wss://smartcb-api.laoapps.com',
   mqtt: {
     hostname: 'smartcb-api.laoapps.com',

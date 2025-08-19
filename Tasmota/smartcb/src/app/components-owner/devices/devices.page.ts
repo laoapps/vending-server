@@ -5,6 +5,7 @@ import { MqttClientService } from 'src/app/services/mqttClient.service';
 import { AddDevicesPage } from './add-devices/add-devices.page';
 import { AlertController } from '@ionic/angular';
 import { ControlDevicePage } from './control-device/control-device.page';
+import { PhotoProductService } from 'src/app/services/photo/photo-product.service';
 
 @Component({
   selector: 'app-devices',
@@ -15,12 +16,15 @@ import { ControlDevicePage } from './control-device/control-device.page';
 export class DevicesPage implements OnInit {
   devices: any[] = [];
   controlDevice = { id: -1, command: 'TOGGLE', relay: 1 }; // New state for device control
+  public image = '../../../assets/icon/image.png'
 
   constructor(
     public m: LoadingService,
     public apiService: ApiService,
     private mqttService: MqttClientService,
-    public alertController: AlertController
+    public alertController: AlertController,
+    public caching:PhotoProductService
+    
   ) {}
 
   ngOnInit() {
@@ -30,12 +34,26 @@ export class DevicesPage implements OnInit {
   load_data() {
     this.m.onLoading('');
     this.apiService.getDevices().subscribe(
-      (devices) => {
+      async (devices) => {
         console.log('====================================');
         console.log(devices);
         console.log('====================================');
         this.m.onDismiss();
         this.devices = devices;
+        if (this.devices?.length ) {
+          for (let i = 0; i < this.devices.length; i++) {
+            const e = this.devices[i];
+            for (let j = 0; j < e.description?.image.length; j++) {
+              const v = e.description?.image[j];
+              const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+              if (e?.pic?.length > 0) {
+                e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+              }else{
+                e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+              }
+            }
+          }
+        }
         this.devices.forEach((device) => {
           this.mqttService
             .subscribeToDevice(device.tasmotaId)
@@ -150,5 +168,13 @@ export class DevicesPage implements OnInit {
       ],
     });
     await alert.present();
+  }
+
+  return_pic(item){
+    if (item.pic?.length) {
+      return item?.pic[0]
+    }else{
+      return this.image
+    }
   }
 }

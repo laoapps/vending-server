@@ -3,6 +3,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { PayQrPage } from '../pay-qr/pay-qr.page';
 import { ShowPageketPage } from '../show-pageket/show-pageket.page';
+import { PhotoProductService } from 'src/app/services/photo/photo-product.service';
 
 @Component({
   selector: 'app-show-devices',
@@ -14,11 +15,14 @@ import { ShowPageketPage } from '../show-pageket/show-pageket.page';
 export class ShowDevicesPage implements OnInit {
   @Input() data:any
   devices: any[] = [];
+  public image = '../../../assets/icon/image.png'
 
-  constructor(public apiService: ApiService, public m: LoadingService) {}
+  constructor(public apiService: ApiService, public m: LoadingService,
+        public caching:PhotoProductService
+    
+  ) {}
 
   ngOnInit() {
-    // alert(this.data?.ownerId)
     this.load_data();
   }
 
@@ -32,12 +36,26 @@ export class ShowDevicesPage implements OnInit {
       ownerId:Number(this.data?.ownerId+''),
       id:this.data?.deviceId
     }
-    this.apiService.getDevicesBy(data).subscribe((r)=>{
+    this.apiService.getDevicesBy(data).subscribe(async (r)=>{
       console.log('====================================');
       console.log(r);
       console.log('====================================');
       this.m.onDismiss();
       this.devices = r
+      if (this.devices?.length ) {
+        for (let i = 0; i < this.devices.length; i++) {
+          const e = this.devices[i];
+          for (let j = 0; j < e.description?.image.length; j++) {
+            const v = e.description?.image[j];
+            const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+            if (e?.pic?.length > 0) {
+              e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+            }else{
+              e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+            }
+          }
+        }
+      }
     },(error)=>{
       this.m.onDismiss();
       this.m.alertError('load devices fail!!')
@@ -57,6 +75,14 @@ export class ShowDevicesPage implements OnInit {
         });
       }
     });
+  }
+
+  return_pic(item){
+    if (item.pic?.length) {
+      return item?.pic[0]
+    }else{
+      return this.image
+    }
   }
 
 }

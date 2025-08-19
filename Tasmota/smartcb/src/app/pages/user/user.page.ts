@@ -22,7 +22,7 @@ import { ListAllGroupsPage } from 'src/app/components-user/list-all-groups/list-
 })
 export class UserPage implements OnInit {
   public menus = [
-    // {title:'Histoy',icon: 'time-outline',path:HistoryPage},
+    {title:'Order',icon: 'time-outline',path:HistoryPage},
     // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
     {title:'Scan QR Code',icon: 'qr-code-outline'},
     {title:'Map',icon: 'map-outline',path:MapPage},

@@ -3,6 +3,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { AddPageketsPage } from './add-pagekets/add-pagekets.page';
 import { AlertController } from '@ionic/angular';
+import { PhotoProductService } from 'src/app/services/photo/photo-product.service';
 
 @Component({
   selector: 'app-pagekets',
@@ -12,9 +13,11 @@ import { AlertController } from '@ionic/angular';
 })
 export class PageketsPage implements OnInit {
   schedulePackages: any[] = [];
+  public image = '../../../assets/icon/image.png'
 
   constructor(public m: LoadingService, private apiService: ApiService,
-    public alertController: AlertController
+    public alertController: AlertController,
+    public caching:PhotoProductService
   ) {}
 
   ngOnInit() {
@@ -23,11 +26,25 @@ export class PageketsPage implements OnInit {
 
   load_data(){
     this.m.onLoading('')
-    this.apiService.getSchedulePackages().subscribe((packages) => {
+    this.apiService.getSchedulePackages().subscribe(async (packages) => {
       console.log('====================================');
       console.log('packages',packages);
       console.log('====================================');
       this.schedulePackages = packages;
+      if (this.schedulePackages?.length ) {
+        for (let i = 0; i < this.schedulePackages.length; i++) {
+          const e = this.schedulePackages[i];
+          for (let j = 0; j < e.description?.image.length; j++) {
+            const v = e.description?.image[j];
+            const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+            if (e?.pic?.length > 0) {
+              e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+            }else{
+              e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+            }
+          }
+        }
+      }
       this.m.onDismiss();
     },error=>{
       this.m.onDismiss();
@@ -91,5 +108,13 @@ export class PageketsPage implements OnInit {
         });
       }
     });
+  }
+
+  return_pic(item){
+    if (item.pic?.length) {
+      return item?.pic[0]
+    }else{
+      return this.image
+    }
   }
 }

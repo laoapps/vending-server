@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import * as L from 'leaflet';
 import { Map, tileLayer, marker, icon } from 'leaflet';
 import { Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation'
+import { UploadPictureService } from 'src/app/services/uploadPicture/upload-picture.service';
 @Component({
   selector: 'app-add-groups',
   templateUrl: './add-groups.page.html',
@@ -12,15 +13,26 @@ import { Geolocation } from '@capacitor/geolocation'
   standalone: false
 })
 export class AddGroupsPage implements OnInit {
-  // newGroup = { name: '' };
+  @Input() title:any
+  @Input() data:any
   newGroup = {
     name: '',
-    lat: '',
-    lng: ''
+    description:{
+      lat:'',
+      lng:'',
+      image: [],
+      packages:[]
+    }
   };
   map: Map;
   newMarker: any;
   currentPosition: any;
+  public image_ = "../../../../assets/icon/add-image.png"
+  public img_show:string | null = null;
+  public img_Url:string | null = null;
+  schedulePackages: any[] = [];
+  public page = 1
+
 
   myIcon = icon({
     iconUrl: "assets/hangmi-icon/marker.png",
@@ -55,43 +67,126 @@ export class AddGroupsPage implements OnInit {
     public apiService: ApiService,
     public m: LoadingService,
     public platform: Platform,
+    public upload:UploadPictureService
+    
   ) { }
 
   ngOnInit() {
-    setTimeout(() => {
-      this.loadMap_add();
-      this.locatePosition();
-      this.map.attributionControl.remove();
-    }, 100);
+ 
+  }
+  ionViewWillEnter() {
+    if (this.title == 'edit') {
+      console.log('====================================');
+      console.log(this.data);
+      console.log('====================================');
+      this.newGroup.name = this.data?.name
+      this.newGroup.description = this.data?.description
+      console.log('====================================');
+      console.log('newgroupd',this.newGroup.description);
+      console.log('package length',this.newGroup.description.packages);
+      console.log('====================================');
+      setTimeout(() => {
+        this.loadMap_add();
+        this.map_Position();
+        this.map.attributionControl.remove();
+      }, 300); // Increased delay to 300ms
+      if (this.data?.pic) {
+        this.img_show = this.data?.pic
+      }else{
+        this.img_show = ''
+      }
+      this.seleted = this.newGroup.description.packages
+      this.load_pageket();
 
-    // this.loadMap();
+    }else{
+      setTimeout(() => {
+        this.loadMap_add();
+        this.locatePosition();
+        this.map.attributionControl.remove();
+      }, 200);
+      this.load_pageket();
+    }
   }
 
-    dismiss(data: any = { dismiss: false }) {
+  dismiss(data: any = { dismiss: false }) {
     this.m.closeModal(data);
   }
 
+  load_pageket(){
+    this.m.onLoading('')
+    this.apiService.getSchedulePackages().subscribe(async (packages) => {
+      console.log('====================================');
+      console.log('packages',packages);
+      console.log('====================================');
+      this.schedulePackages = packages;
+      this.m.onDismiss();
+    },error=>{
+      this.m.onDismiss();
+      this.m.alertError('load pageket fail!!')
+    });
+  }
+
     addGroup() {
-      if (!this.newGroup.name || !this.newGroup.lat || !this.newGroup.lng) {
+      if (!this.newGroup.name || !this.newGroup.description.lat || !this.newGroup.description.lng || !this.img_Url || !this.newGroup.description.packages) {
         this.m.onAlert('please input field!!')
         return
       }
       this.m.onLoading('')
       let data = {
         name:this.newGroup.name,
-        description:{
-          lat:this.newGroup.lat,
-          lng:this.newGroup.lng
-        }
+        description:this.newGroup.description
       }
+      console.log('====================================');
+      console.log('data sent',data);
+      console.log('====================================');
+      // return
     this.apiService.createGroup(data).subscribe(() => {
       this.m.onDismiss();
-      this.newGroup = { name: '' ,lat:'', lng:''};
+      this.newGroup = { name: '' ,description:{
+        lat:'',
+        lng:'',
+        image: [],
+        packages:[]
+      }};
       this.dismiss({ dismiss: true });
     },error=>{
       this.m.onDismiss();
       this.m.alertError('add Groups fail!!')
     });
+  }
+
+  EditGroup(){
+    if (!this.newGroup.name || !this.newGroup.description.lat || !this.newGroup.description.lng || !this.newGroup.description.image || !this.newGroup.description.packages) {
+      this.m.onAlert('please input field!!')
+      return
+    }
+
+    if (this.img_Url) {
+      this.newGroup.description.image = [this.img_Url]
+    }
+    this.m.onLoading('')
+    let data = {
+      name:this.newGroup.name,
+      description:this.newGroup.description
+    }
+    
+    console.log('====================================');
+    console.log('data sent',data);
+    console.log('====================================');
+    // return
+  this.apiService.EditGroup(this.data.id,data).subscribe(() => {
+    this.m.onDismiss();
+    this.newGroup = { name: '' ,description:{
+      lat:'',
+      lng:'',
+      image: [],
+      packages:[]
+    }};
+    this.dismiss({ dismiss: true });
+  },error=>{
+    this.m.onDismiss();
+    this.m.alertError('add Groups fail!!')
+  });
   }
 
   loadMap_add() {
@@ -128,8 +223,8 @@ export class AddGroupsPage implements OnInit {
   locatePosition(){
     this.map.locate({ setView: true }).removeEventListener('locationfound').on('locationfound', async (e: any) => {
       console.log(e.latitude, e.longitude);
-      this.newGroup.lat = e.latitude
-      this.newGroup.lng = e.longitude
+      this.newGroup.description.lat = e.latitude
+      this.newGroup.description.lng = e.longitude
 
       // Remove old marker if exists
       if (this.currentPosition) {
@@ -150,12 +245,115 @@ export class AddGroupsPage implements OnInit {
         const position = event.target.getLatLng();
         console.log("New Lat:", position.lat, "New Lng:", position.lng);
         // You can store them if needed
-        this.newGroup.lat = position.lat;
-        this.newGroup.lng = position.lng;
+        this.newGroup.description.lat = position.lat;
+        this.newGroup.description.lng = position.lng;
       });
     });
 
   this.map.attributionControl.remove();
+  }
+
+
+  // =====================================open package
+  seleted = []
+  openPackageSelector(){
+    this.page = 2
+  }
+
+  toggleSelection(id: string, checked: boolean) {
+    console.log('====================================');
+    console.log('id',id);
+    console.log('====================================');
+    if (checked) {
+      this.seleted.push(id);
+    } else {
+      this.seleted = this.seleted.filter(x => x !== id);
+    }
+  }
+
+  close(){
+    if (this.newGroup.description.packages?.length || this.newGroup.description.packages?.length != this.seleted?.length) {
+      this.page = 1
+    }else{
+      this.seleted = []
+      this.page = 1
+    }
+    setTimeout(() => {
+      this.loadMap_add();
+      this.map_Position();
+      this.map.attributionControl.remove();
+    }, 300); // Increased delay to 300ms
+  }
+
+  Done(){
+    if (this.seleted.length <= 0) {
+      this.m.onAlert('please select package!!')
+      return 
+    }
+    this.newGroup.description.packages = this.seleted
+    this.page = 1
+    setTimeout(() => {
+      this.loadMap_add();
+      this.map_Position();
+      this.map.attributionControl.remove();
+    }, 300); // Increased delay to 300ms
+    console.log('====================================');
+    console.log('selected',this.seleted);
+    console.log('====================================');
+  }
+
+  map_Position(){
+      // Remove old marker if exists
+      if (this.currentPosition) {
+      this.map.removeLayer(this.currentPosition);
+    }
+
+    // Create draggable marker
+    this.currentPosition = marker([Number(this.newGroup.description.lat), Number(this.newGroup.description.lng)], {
+      icon: this.nowlocationIcon,
+      draggable: true
+    }).addTo(this.map);
+
+      // center map to this point
+    this.map.setView([Number(this.newGroup.description.lat),  Number(this.newGroup.description.lng)], 16);
+
+    // Popup
+    this.currentPosition.bindPopup('ທີ່ຢູ່ປັນຈຸບັນຂອງເຈົ້າ!', { closeButton: false }).openPopup();
+
+      // listen for drag end
+    this.currentPosition.on('dragend', (event: any) => {
+      const position = event.target.getLatLng();
+      console.log("New Lat:", position.lat, "New Lng:", position.lng);
+
+      this.newGroup.description.lat = position.lat;
+      this.newGroup.description.lng = position.lng;
+    });
+  }
+
+  // ================================== upload photo
+
+  triggerFileInput() {
+    document.getElementById('thumbnailInput')?.click();
+  }
+
+  clearThumbnail() {
+    this.img_show = null;
+    this.img_Url = null;
+    (document.getElementById('thumbnailInput') as HTMLInputElement).value = '';
+  }
+
+  async onThumbnailFileChange(e){
+    await this.upload.uploadImage(e);
+    setTimeout(() => {
+      if (this.upload.imgUrl && this.upload.imgBase64) {    
+        this.img_show = this.upload.imgBase64
+        this.img_Url = this.upload.imgUrl
+        console.log('====================================');
+        console.log(this.img_Url);
+        console.log(this.img_show);
+        console.log('====================================');
+      }
+    }, 200);
   }
 
   

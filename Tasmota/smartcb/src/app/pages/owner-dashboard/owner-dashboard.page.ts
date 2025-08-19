@@ -99,6 +99,8 @@ export class OwnerDashboardPage implements OnInit {
         this.newSchedulePackage.price,
         this.newSchedulePackage.conditionType,
         this.newSchedulePackage.conditionValue,
+        this.newSchedulePackage.conditionValue,
+        
       )
       .subscribe(
         () => {
@@ -139,7 +141,7 @@ export class OwnerDashboardPage implements OnInit {
     if (!this.newDevice.name || !this.newDevice.tasmotaId || !this.newDevice.zone || !this.newDevice.groupId) {
       return alert('empty!!!')
     }
-    this.apiService.createDevice(this.newDevice.name, this.newDevice.tasmotaId, this.newDevice.zone, this.newDevice.groupId).subscribe(() => {
+    this.apiService.createDevice(this.newDevice.name, this.newDevice.tasmotaId, this.newDevice.zone, this.newDevice.groupId,this.newDevice.groupId).subscribe(() => {
       this.loadData();
       this.newDevice = { name: '', tasmotaId: '', zone: '', groupId: -1 };
     });

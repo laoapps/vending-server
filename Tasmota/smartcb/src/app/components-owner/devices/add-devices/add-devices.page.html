@@ -16,6 +16,37 @@
     </ion-card-header>
 
     <ion-card-content>
+
+        <!-- Thumbnail Upload -->
+        <div class="thumbnail-section">
+        <ion-label>Select Thumbnail</ion-label>
+        <input
+          hidden
+          type="file"
+          accept="image/*"
+          id="thumbnailInput"
+          (change)="onThumbnailFileChange($event)"
+        />
+
+        <div *ngIf="img_show; else uploadBtn" class="thumbnail-preview">
+          <img [src]="img_show" alt="Thumbnail Preview" />
+          <ion-fab vertical="top" horizontal="end" slot="fixed">
+            <ion-fab-button size="small" color="danger" (click)="clearThumbnail()">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-fab-button>
+          </ion-fab>
+        </div>
+
+        <ng-template #uploadBtn >
+          <div style="display: flex;justify-content: center;align-items: center;">
+            <ion-button expand="block" shape="round" style="width: 50%;" (click)="triggerFileInput()">
+              <ion-icon slot="start" name="image-outline"></ion-icon>
+              Upload Thumbnail
+            </ion-button>
+          </div>
+        </ng-template>
+      </div>
+
       <ion-item class="input-item">
         <ion-label position="floating">Name</ion-label>
         <ion-input type="text" [(ngModel)]="newDevice.name"></ion-input>

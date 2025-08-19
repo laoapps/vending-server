@@ -71,31 +71,30 @@ export class MapPage implements OnInit {
               icon: this.StoreIcon,
             }).addTo(this.map);
     
-            newMarker.bindPopup(`Location: ${group_name}`);
-            newMarker.openPopup();
+            // newMarker.bindPopup(`Location: ${group_name}`);
+            // newMarker.openPopup();
+            newMarker.bindTooltip(`Location: ${group.name}`, { permanent: true }).openTooltip();
+
 
             (newMarker as any).groupData = group; // Store group data in marker
 
-          // Add click event listener to the marker
-          newMarker.on('click', () => {
-            // Access the group data when marker is clicked
-            const clickedGroup = (newMarker as any).groupData;
-            console.log('Clicked group:', clickedGroup);
-            // You can do something with clickedGroup here, e.g., display it, pass it to another function, etc.
-            // Example: alert(JSON.stringify(clickedGroup));
-            this.m.showModal(ShowDevicesPage, { data: clickedGroup }).then((r) => {
-                  if (r) {
-                    r.present();
-                    r.onDidDismiss().then((res) => {
-                      if (res.data.dismiss) {
-                      }
-                    });
-                  }
-                });
-          });
-
-
-
+            // Add click event listener to the marker
+            newMarker.on('click', () => {
+              // Access the group data when marker is clicked
+              const clickedGroup = (newMarker as any).groupData;
+              console.log('Clicked group:', clickedGroup);
+              // You can do something with clickedGroup here, e.g., display it, pass it to another function, etc.
+              // Example: alert(JSON.stringify(clickedGroup));
+              this.m.showModal(ShowDevicesPage, { data: clickedGroup }).then((r) => {
+                    if (r) {
+                      r.present();
+                      r.onDidDismiss().then((res) => {
+                        if (res.data.dismiss) {
+                        }
+                      });
+                    }
+                  });
+            });
           });
         }, 500);
       },

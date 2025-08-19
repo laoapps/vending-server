@@ -12,6 +12,7 @@ import { HomePage } from './home/home.page';
 import {UserSchedulesPage} from './pages/user-schedules/user-schedule.page'
 import {AdminReportsPage} from './pages/admin-reports/admin-reports.page';
 import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices/admin-unregistered-devices.page';
+import { IonicStorageModule } from '@ionic/storage-angular';
 @NgModule({
   declarations: [
     AppComponent,
@@ -28,7 +29,8 @@ import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices
     IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }),
     HttpClientModule,
     FormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    IonicStorageModule.forRoot(),
   ],
   bootstrap: [AppComponent]
 })

@@ -20,8 +20,8 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/auth/role`, this.getAuthHeaders());
   }
 
-  createDevice(name: string, tasmotaId: string, zone?: string, groupId?: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/devices`, { name, tasmotaId, zone, groupId }, this.getAuthHeaders());
+  createDevice(name: string, tasmotaId: string, zone?: string, groupId?: number,description?:any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices`, { name, tasmotaId, zone, groupId,description }, this.getAuthHeaders());
   }
 
   getDevices(): Observable<any> {
@@ -39,8 +39,8 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/owners/findByID`, this.getAuthHeaders());
   }
 
-  updateDevice(id: number, name: string, tasmotaId: string, zone?: string, groupId?: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/devices/${id}`, { name, tasmotaId, zone, groupId }, this.getAuthHeaders());
+  updateDevice(id: number, name: string, tasmotaId: string, zone?: string, groupId?: number,description?:any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/devices/${id}`, { name, tasmotaId, zone, groupId ,description}, this.getAuthHeaders());
   }
 
   deleteDevice(id: number): Observable<any> {
@@ -49,6 +49,12 @@ export class ApiService {
 
   controlDevice(deviceId: number, command: string, relay: number = 1): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices/control`, { deviceId, command, relay }, this.getAuthHeaders());
+  }
+  load_order(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/orders/list`, {}, this.getAuthHeaders());
+  }
+  controlbyorder(id:number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/devices/controlbyorder/${id}`, {}, this.getAuthHeaders());
   }
 
   assignDevice(deviceId: number, userPhoneNumber: string): Observable<any> {
@@ -60,6 +66,9 @@ export class ApiService {
   }
   createGroup(data): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups`, data, this.getAuthHeaders());
+  }
+  EditGroup(id:number,data:any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/groups/${id}`, data, this.getAuthHeaders());
   }
 
   getGroups(): Observable<any> {
@@ -98,11 +107,11 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/schedule-packages/apply-package`, { deviceId, packageId }, this.getAuthHeaders());
   }
 
-  createSchedulePackage(name: string, price: number, conditionType: string, conditionValue: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/schedule-packages`, { name, price, conditionType, conditionValue }, this.getAuthHeaders());
+  createSchedulePackage(name: string, price: number, conditionType: string, conditionValue: number, description:any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedule-packages`, { name, price, conditionType, conditionValue,description }, this.getAuthHeaders());
   }
-  editSchedulePackage(id:number,name: string, price: number, conditionType: string, conditionValue: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/schedule-packages/${id}`, { name, price, conditionType, conditionValue }, this.getAuthHeaders());
+  editSchedulePackage(id:number,name: string, price: number, conditionType: string, conditionValue: number, description:any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/schedule-packages/${id}`, { name, price, conditionType, conditionValue, description  }, this.getAuthHeaders());
   }
   // createSchedulePackage(name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
   //   return this.http.post(`${this.apiUrl}/schedule-packages`, { name, durationMinutes, powerConsumptionWatts, price }, this.getAuthHeaders());
@@ -113,6 +122,9 @@ export class ApiService {
   }
   schedulepackages(ownerID:number): Observable<any> {
     return this.http.get(`${this.apiUrl}/schedule-packages/findByOwnerID/${ownerID}`, this.getAuthHeaders());
+  }
+  findByPackageIDs(data:any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedule-packages/findByPackageIDs`,data, this.getAuthHeaders());
   }
 
   updateSchedulePackage(id: number, name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {

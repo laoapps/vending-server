@@ -21,26 +21,32 @@
       lines="full"
       class="pageket-item"
     >
+
+      <!-- Thumbnail on the left -->
+      <ion-avatar slot="start">
+        <img src="{{return_pic(item)}}" alt="" />
+      </ion-avatar>
+
       <ion-label>
         <h2 class="name">{{ item.name }}</h2>
         <p class="price">Devices: <strong>{{ item.devices?.length}}</strong></p>
       </ion-label>
 
       <ion-buttons slot="end" class="action-buttons">
-        <!-- <ion-button
+        <ion-button
           color="warning"
           fill="clear"
-          (click)="assignDeviceToGroup(item)"
+          (click)="EditSchedulePackage(item)"
         >
-          <ion-icon slot="icon-only" name="add-outline"></ion-icon>
-        </ion-button> -->
-        <ion-button
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <!-- <ion-button
           color="danger"
           fill="clear"
           (click)="deleteSchedulePackage(i)"
         >
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
+        </ion-button> -->
       </ion-buttons>
     </ion-item>
   </ion-list>

@@ -3,6 +3,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { AddGroupsPage } from './add-groups/add-groups.page';
 import { MqttClientService } from 'src/app/services/mqttClient.service';
+import { PhotoProductService } from 'src/app/services/photo/photo-product.service';
 
 @Component({
   selector: 'app-groups',
@@ -15,11 +16,13 @@ export class GroupsPage implements OnInit {
   devices: any[] = [];
   public page = 1;
   assignDevice = { groupId: -1, deviceId: -1 };
-
+  public image = '../../../assets/icon/image.png'
   constructor(
     public m: LoadingService,
     public apiService: ApiService,
-    private mqttService: MqttClientService
+    private mqttService: MqttClientService,
+    public caching:PhotoProductService
+    
   ) {}
 
   ngOnInit() {
@@ -30,11 +33,25 @@ export class GroupsPage implements OnInit {
   load_data() {
     this.m.onLoading('');
     this.apiService.getGroups().subscribe(
-      (groups) => {
+      async (groups) => {
         console.log('====================================');
         console.log('Groups loaded:', groups);
         console.log('====================================');
         this.groups = groups;
+        if (this.groups?.length ) {
+          for (let i = 0; i < this.groups.length; i++) {
+            const e = this.groups[i];
+            for (let j = 0; j < e.description?.image?.length; j++) {
+              const v = e.description?.image[j];
+              const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+              if (e?.pic?.length > 0) {
+                e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+              }else{
+                e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+              }
+            }
+          }
+        }
         this.m.onDismiss();
       },
       (error) => {
@@ -43,6 +60,8 @@ export class GroupsPage implements OnInit {
       }
     );
   }
+
+
 
   load_devices() {
     // this.m.onLoading('');
@@ -98,21 +117,8 @@ export class GroupsPage implements OnInit {
     this.m.closeModal(data);
   }
 
-  deleteSchedulePackage(id: number) {
-
-  }
-
-  assignDeviceToGroup(item) {
-    console.log('====================================');
-    console.log('Assigning device to group:', item);
-    console.log('====================================');
-    const a = JSON.parse(JSON.stringify(this.devices));
-    const b = a.filter((d) => d.groupId == item.id);
-    this.page = 2;
-  }
-
-  onClick_add() {
-    this.m.showModal(AddGroupsPage).then((r) => {
+  EditSchedulePackage(item){
+    this.m.showModal(AddGroupsPage,{title:'edit',data:item}).then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
@@ -123,5 +129,32 @@ export class GroupsPage implements OnInit {
         });
       }
     });
+  }
+
+  deleteSchedulePackage(id: number) {
+
+  }
+ 
+
+  onClick_add() {
+    this.m.showModal(AddGroupsPage,{title:'add'}).then((r) => {
+      if (r) {
+        r.present();
+        r.onDidDismiss().then((res) => {
+          if (res.data.dismiss) {
+            this.groups = [];
+            this.load_data();
+          }
+        });
+      }
+    });
+  }
+
+  return_pic(item){
+    if (item.pic?.length) {
+      return item?.pic[0]
+    }else{
+      return this.image
+    }
   }
 }

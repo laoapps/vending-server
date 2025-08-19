@@ -13,6 +13,9 @@
   <div class="main-top"></div>
   <div class="div-content">
     <div class="div-qr-code">
+      <ion-label *ngIf="data && ownerId">Devices number: {{data?.tasmotaId}}</ion-label>
+      <ion-label *ngIf="!data ">Devices: QR Owner devices</ion-label>
+      <!-- <ion-label *ngIf="data && ownerId">pagekets: {{data_pageket?.price | number}}</ion-label> -->
       <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;">
         <img src="{{qrcode_logo}}" alt="" >
       </div>
