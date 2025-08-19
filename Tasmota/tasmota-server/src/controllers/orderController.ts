@@ -50,9 +50,9 @@ export const testOrder = async (req: Request, res: Response) => {
     await order.save();
     // check if device isActive? return 'want to buy more?' : next
 
-    if (!device?.dataValues?.energy) {
-      return res.status(404).json({ error: 'Device energy not found' });
-    }
+    // if (!device?.dataValues?.energy) {
+    //   return res.status(404).json({ error: 'Device energy not found' });
+    // }
 
     // Clear existing rule and timer
     // await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
