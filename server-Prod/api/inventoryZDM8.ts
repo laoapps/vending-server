@@ -4554,10 +4554,10 @@ export class InventoryZDM8 implements IBaseClass {
                 res.command = d.command;
                 res.message = EMessage.machineCredit;
                 res.status = 1;
-                console.log(
-                    "creditMachine WS online machine",
-                    that.listOnlineMachines()
-                );
+                // console.log(
+                //     "creditMachine WS online machine",
+                //     that.listOnlineMachines()
+                // );
 
                 console.log(`TEST DER -->`, 8);
 
@@ -4826,10 +4826,10 @@ export class InventoryZDM8 implements IBaseClass {
             res.command = d.command;
             res.message = EMessage.machineCredit;
             res.status = 1;
-            console.log(
-                "creditMachine WS online machine",
-                that.listOnlineMachines()
-            );
+            // console.log(
+            //     "creditMachine WS online machine",
+            //     that.listOnlineMachines()
+            // );
 
             // console.log('FOUND ACK EXIST TRANSACTIONID', ack, d.transactionID);
 
@@ -6691,10 +6691,10 @@ export class InventoryZDM8 implements IBaseClass {
                             res.status = 1;
                             if (d.token) {
                                 const x = d.token as string;
-                                console.log(
-                                    " WS online machine",
-                                    this.listOnlineMachines()
-                                );
+                                // console.log(
+                                //     " WS online machine",
+                                //     this.listOnlineMachines()
+                                // );
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exit");
