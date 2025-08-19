@@ -139,6 +139,7 @@ import { LogActivity } from "../entities/logactivity.entity";
 import { checkGenerateCount } from "../services/laoqr.service";
 import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
 import { IProductImage } from "../models/sys.model";
+import { WarehouseFactory } from "../entities/warehouse.entity";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -1714,6 +1715,49 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
                 }
             });
+            router.post(this.path + "/updatewarehouse",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const d = req?.body?.data?.data;
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
+                        await ent.sync();
+                        const machine = await ent.findOne({ where: { machineId: m } });
+                        let result = {} as any;
+                        if(!machine) {
+                            result =await ent.create({machineId:m, data:d});
+                        }else{
+                            result =await machine.update('data', d);
+                        }
+                        res.send(PrintSucceeded("updatewarehouse",result , EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
+                    }
+            });
+            router.post(this.path + "/getwarehouse",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
+                        await ent.sync();
+                        const machine = await ent.findOne({ where: { machineId: m } });
+                        res.send(PrintSucceeded("updatewarehouse",machine , EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
+                    }
+            });
+
+            
 
             // Get Mmoney UserInof
             router.post(

@@ -23,3 +23,8 @@ export interface IProductImage extends IBase {
     price: number;
     description: any;
 }
+
+export interface IWarehouse extends IBase {
+    machineId: string;
+    data: any;
+}
