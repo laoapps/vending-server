@@ -4022,11 +4022,10 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
-    async listOnlineMachines(): Promise<Array<{ machine: string, status: any }>> {
-        const m = new Array<{ machine: string, status: any }>();
-        for (let index = 0; index < this.wsClient.length; index++) { m.push({ machine: this.wsClient[index]['machineId'], status: await readMachineStatus(this.wsClient[index]['machineId']) }); }
+    async listOnlineMachines(): Promise<Array<{ machine: any, status: any }>> {
+        const m = new Array<{ machine: any, status: any }>();
+        for (let index = 0; index < this.wsClient.length; index++) {m.push({machine: this.findMachineId(this.wsClient[index]['machineId']),status:await readMachineStatus(this.wsClient[index]['machineId'])});}
         return m;
-
     }
     findOnlneMachine(machineId: string): any {
         return this.wsClient.find((v) => {
