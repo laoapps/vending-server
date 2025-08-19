@@ -9,11 +9,104 @@
   </ion-toolbar>
 </ion-header>
 
+<ion-content class="ion-padding">
+  <ion-segment
+    class="mg_top"
+    mode="ios"
+    (ionChange)="segmentChanged($event)"
+    value="{{sel}}"
+  >
+    <ion-segment-button *ngFor="let item of choice" value="{{item}}">
+      <ion-label>{{item}}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">history</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-list *ngIf="sel == choice[0]">
+    <ion-item *ngFor="let item of order_active">
+      <ion-grid>
+        <ion-row class="row-main">
+          <ion-col size="12" size-md="2" class="col-id col-list">
+            <div class="label_id">ID: </div>
+            <div class="value">{{ item.id }}</div>
+          </ion-col>
+
+          <ion-col size="12" size-md="3" class="col-list">
+            <div class="label_id">Device:</div>
+            <div class="value">{{ item.deviceId }}</div>
+          </ion-col>
+
+          <ion-col size="12" size-md="3" class="col-list">
+            <div class="label_id">Package:</div>
+            <div class="value">{{ item.packageId }}</div>
+          </ion-col>
+
+          <ion-col size="12" size-md="4" class="times-col">
+            <div class="time-row">
+              <div>
+                <div class="label">Started</div>
+                <div class="value">{{ item.startedTime | date:'short' }}</div>
+              </div>
+              <div>
+                <div class="label">Completed</div>
+                <div class="value">{{ item.completedTime ? (item.completedTime | date:'short') : '-' }}</div>
+              </div>
+              <div>
+                <div class="label">Condition</div>
+                <div class="value">{{ item.conditionValue }}</div>
+              </div>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-item>
+  </ion-list>
+
+
+<!-- ================================================ choice 1 -->
+
+<ion-list *ngIf="sel == choice[1]">
+  <ion-item *ngFor="let item of order_no_active">
+    <ion-grid>
+      <ion-row class="row-main">
+        <ion-col size="12" size-md="2" class="col-id col-list">
+          <div class="label_id">ID: </div>
+          <div class="value">{{ item.id }}</div>
+        </ion-col>
+
+        <ion-col size="12" size-md="3" class="col-list">
+          <div class="label_id">Device:</div>
+          <div class="value">{{ item.deviceId }}</div>
+        </ion-col>
+
+        <ion-col size="12" size-md="3" class="col-list">
+          <div class="label_id">Package:</div>
+          <div class="value">{{ item.packageId }}</div>
+        </ion-col>
+
+        <ion-col size="12" size-md="4" class="times-col">
+          <div class="time-row">
+            <div>
+              <div class="label">Started</div>
+              <div class="value">{{ item.startedTime | date:'short' }}</div>
+            </div>
+            <div>
+              <div class="label">Completed</div>
+              <div class="value">{{ item.completedTime ? (item.completedTime | date:'short') : '-' }}</div>
+            </div>
+            <div>
+              <div class="label">Condition</div>
+              <div class="value">{{ item.conditionValue }}</div>
+            </div>
+          </div>
+        </ion-col>
+        <ion-col size="12" class="times-col">
+          <div class="time-row">
+            <ion-button>start</ion-button>
+            <ion-button (click)="onClick_detail(item)">detail</ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+</ion-list>
 </ion-content>

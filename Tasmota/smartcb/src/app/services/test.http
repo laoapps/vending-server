@@ -1,0 +1,9 @@
+POST https://smartcb-api.laoapps.com/api/orders/testneworder HTTP/1.1
+Content-Type: application/json
+token:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0Y2U0Mzg3MzBlNDA1YmNhYTg4YWUwNjQ4MGMwOGVkZGY2MWMzNDkwYzM5ZjUwOWIwOTcyMGZkNjkyMmMwYjA2OWMzNGIyZjZjYmY3YmVlMzM2MjkwZDViYzA4YTZiNmEzNzkwNjU3NzQ2YWJjNGNhZTFkNGUyYjJjMGI3YTQ3OTYiLCJwaG9uZU51bWJlciI6Iis4NTYyMDc2MTQzNTE1IiwidXVpZCI6IjVmOTMzMWUwLTM1MDctMTFlZi05NmM0LTk3ZmVjOWM4NzE0ZiIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc1NTMxNDQ0MSwiZXhwIjozNjAwMDAwMTc1NTMxNDQ0MH0.vRe5kgr5sMWL_A3KqH1lOedhZu0tgucmm12OzfQsbcY
+
+{
+    "packageId": 12,
+    "deviceId": 6,
+    "relay":1
+}

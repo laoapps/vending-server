@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
 import { LoadingService } from 'src/app/services/loading.service';
-
+import { DetailHistoryPage } from './detail-history/detail-history.page';
 @Component({
   selector: 'app-history',
   templateUrl: './history.page.html',
@@ -10,8 +10,10 @@ import { LoadingService } from 'src/app/services/loading.service';
 
 })
 export class HistoryPage implements OnInit {
-  order: any[] = [];
-
+  order_active: any[] = [];
+  order_no_active: any[] = [];
+  public sel = 'active';
+  public choice = ['active', 'no active'];
   constructor(public apiService: ApiService, public m: LoadingService) {}
 
 
@@ -19,8 +21,30 @@ export class HistoryPage implements OnInit {
     this.load_data();
   }
 
+  segmentChanged(e: any) {
+    this.sel = e.target.value;
+    this.order_active = []
+    this.order_no_active = []
+    this.load_data();
+  }
+
   dismiss(data: any = { dismiss: false }) {
     this.m.closeModal(data);
+  }
+
+  onClick_detail(item){
+    this.m.showModal(DetailHistoryPage,{data:item}).then((r) => {
+      if (r) {
+        r.present();
+        r.onDidDismiss().then((res) => {
+          if (res.data.dismiss) {
+            this.order_active = []
+            this.order_no_active = []
+            this.load_data();
+          }
+        });
+      }
+    });
   }
 
   load_data(){
@@ -29,7 +53,15 @@ export class HistoryPage implements OnInit {
       console.log('====================================');
       console.log('order',order);
       console.log('====================================');
-      this.order = order;
+      const list_order = order;
+      for (let i = 0; i < list_order.length; i++) {
+        const e = list_order[i];
+        if (!e.startedTime || e.startedTime != null) {
+          this.order_no_active.push(e)
+        }else{
+          this.order_active.push(e)
+        }
+      }
       // if (this.schedulePackages?.length ) {
       //   for (let i = 0; i < this.schedulePackages.length; i++) {
       //     const e = this.schedulePackages[i];
@@ -50,5 +82,19 @@ export class HistoryPage implements OnInit {
       this.m.alertError('load order fail!!')
     });
   }
+
+  formatDate(value?: string | number) {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return String(value);
+    // ຈັດຮູບແບບວັນທີ ແລະ ເວລາ
+    return d.toLocaleString();
+  }
+
+
+
+
+
+
 
 }
