@@ -1720,7 +1720,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(
                         PrintSucceeded(
                             "init",
-                            this.listOnlineMachines(),
+                            await this.listOnlineMachines(),
                             EMessage.succeeded
                             , returnLog(req, res)
                         )
@@ -4038,10 +4038,11 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
-    listOnlineMachines(): any {
-        return this.wsClient.map(async (v) => {
-            return {machine:this.findMachineId(v['machineId']),status:(await readMachineStatus(v['machineId']))};  // v['machineId']
-        })
+    async listOnlineMachines(): Promise<Array<{ machine: string, status: any }>> {
+        const m = new Array<{ machine: string, status: any }>();
+        for (let index = 0; index < this.wsClient.length; index++) {m.push({machine: this.wsClient[index]['machineId'],status:await readMachineStatus(this.wsClient[index]['machineId'])});}
+        return m;
+
     }
     findOnlneMachine(machineId: string): any {
         return this.wsClient.find((v) => {
