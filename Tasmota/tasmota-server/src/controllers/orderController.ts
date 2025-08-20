@@ -174,6 +174,30 @@ export const getOrders = async (req: Request, res: Response) => {
   }
 };
 
+export const getActiveOrdersByDeviceID = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  try {
+    const id = Number(req.params.id + '') || -1;
+    if (!id) {
+      return res.status(403).json({ error: 'id not found' })
+    }
+    const whereCondition: WhereOptions<any> = {
+      deviceId: id,
+      completedTime: { [Op.is]: null },
+      startedTime: { [Op.ne]: null },
+    };
+
+    const orders = await models.Order.findAll({
+      where: whereCondition,
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch orders' });
+  }
+};
+
 export const getOrderById = async (req: Request, res: Response) => {
   const user = res.locals.user;
   const id = Number(req.params.id) || -1;
@@ -354,6 +378,7 @@ export async function findActiveOrderIds() {
 
   return orderIds
 }
+
 export const findActiveOrderByDeviceId = async (deviceId: number = -1) => {
   const orderIds = await findActiveOrderIds()
   const whereCondition2: WhereOptions<any> = {
