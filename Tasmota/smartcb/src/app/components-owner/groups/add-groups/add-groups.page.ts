@@ -131,6 +131,8 @@ export class AddGroupsPage implements OnInit {
         this.m.onAlert('please input field!!')
         return
       }
+      this.newGroup.description.image = [this.img_Url]
+
       this.m.onLoading('')
       let data = {
         name:this.newGroup.name,

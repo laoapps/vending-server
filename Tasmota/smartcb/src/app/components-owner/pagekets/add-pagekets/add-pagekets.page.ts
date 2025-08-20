@@ -110,13 +110,15 @@ export class AddPageketsPage implements OnInit {
         if (
       !this.newSchedulePackage.name ||
       this.newSchedulePackage.price <= 0 ||
-      this.newSchedulePackage.conditionValue <= 0 || !this.img_Url
+      this.newSchedulePackage.conditionValue <= 0
     ) {
       this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
 
-    this.newSchedulePackage.description.image = [this.img_Url]
+    if (this.img_Url) {
+      this.newSchedulePackage.description.image = [this.img_Url]
+    }
 
 
     console.log('====================================');

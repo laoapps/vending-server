@@ -104,12 +104,15 @@ export class AddDevicesPage implements OnInit {
       !this.newDevice.name ||
       !this.newDevice.tasmotaId ||
       !this.newDevice.zone ||
-      !this.newDevice.groupId || !this.img_Url
+      !this.newDevice.groupId
     ) {
       this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
-    this.newDevice.description.image = [this.img_Url]
+
+    if (this.img_Url) {
+      this.newDevice.description.image = [this.img_Url]
+    }
 
     this.m.onLoading('')
     this.apiService.updateDevice(this.data.id, this.newDevice.name, this.newDevice.tasmotaId, this.newDevice.zone, this.newDevice.groupId,this.newDevice.description).subscribe((r) => {

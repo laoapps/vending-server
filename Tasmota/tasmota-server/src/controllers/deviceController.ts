@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { publishMqttMessage } from '../services/mqttService';
 import redis from '../config/redis';
 import { notifyStakeholders } from '../services/wsService';
+import { Op, WhereOptions } from 'sequelize';
 
 
 // Validation schema for control device
@@ -109,9 +110,33 @@ export const controlDevice = async (req: Request, res: Response) => {
     const input = controlDeviceSchema.parse(req.body);
     console.log('controlDevice111', input);
 
-    await DeviceService.controlDevice(input.deviceId, { command: input.command, relay: input.relay });
+    //check device is using in active order?
+    const whereCondition: WhereOptions<any> = {
+      deviceId: input.deviceId,
+      completedTime: { [Op.is]: null },
+      startedTime: { [Op.ne]: null },
+    };
+    const order = await models.Order.findOne({
+      where: whereCondition,
+      order: [['createdAt', 'DESC']],
+    });
+    if (order) {
+      console.log('controlDevice222');
+      const device = await models.Device.findByPk(input.deviceId);
+      if (device) {
+        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
+        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+      }
+      order.set('completedTime', new Date());
+      await order.save();
+      await redis.del(`activeOrder:${order.dataValues.id}`);
+      await notifyStakeholders(order, 'Order completed via MQTT');
+      return res.json({ message: 'Command sent and completed order' });
+    }
 
-    console.log('controlDevice222');
+
+    await DeviceService.controlDevice(input.deviceId, { command: input.command, relay: input.relay });
+    console.log('controlDevice333');
     res.json({ message: 'Command sent' });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -121,6 +146,7 @@ export const controlDevice = async (req: Request, res: Response) => {
     }
   }
 };
+
 export const controlDeviceByOrder = async (req: Request, res: Response) => {
   const { id } = req.params;
   const user = res.locals.user;

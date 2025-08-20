@@ -139,6 +139,7 @@ import { LogActivity } from "../entities/logactivity.entity";
 import { checkGenerateCount } from "../services/laoqr.service";
 import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
 import { IProductImage } from "../models/sys.model";
+import { WarehouseFactory } from "../entities/warehouse.entity";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -1720,7 +1721,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(
                         PrintSucceeded(
                             "init",
-                            this.listOnlineMachines(),
+                            await this.listOnlineMachines(),
                             EMessage.succeeded
                             , returnLog(req, res)
                         )
@@ -1729,6 +1730,47 @@ export class InventoryZDM8 implements IBaseClass {
                     console.log(error);
                     res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
                 }
+            });
+             router.post(this.path + "/updatewarehouse",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const d = req?.body?.data?.data;
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
+                        await ent.sync();
+                        const machine = await ent.findOne({ where: { machineId: m } });
+                        let result = {} as any;
+                        if(!machine) {
+                            result =await ent.create({machineId:m, data:d});
+                        }else{
+                            result =await machine.update('data', d);
+                        }
+                        res.send(PrintSucceeded("updatewarehouse",result , EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
+                    }
+            });
+            router.post(this.path + "/getwarehouse",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
+                        await ent.sync();
+                        const machine = await ent.findOne({ where: { machineId: m } });
+                        res.send(PrintSucceeded("updatewarehouse",machine , EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
+                    }
             });
 
             // Get Mmoney UserInof
@@ -4076,10 +4118,10 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
-    listOnlineMachines(): any {
-        return this.wsClient.map((v) => {
-            return this.findMachineId(v['machineId']);  // v['machineId']
-        })
+    async listOnlineMachines(): Promise<Array<{ machine: any, status: any }>> {
+        const m = new Array<{ machine: any, status: any }>();
+        for (let index = 0; index < this.wsClient.length; index++) {m.push({machine: this.findMachineId(this.wsClient[index]['machineId']),status:await readMachineStatus(this.wsClient[index]['machineId'])});}
+        return m;
     }
     findOnlneMachine(machineId: string): any {
         return this.wsClient.find((v) => {
@@ -4592,10 +4634,10 @@ export class InventoryZDM8 implements IBaseClass {
                 res.command = d.command;
                 res.message = EMessage.machineCredit;
                 res.status = 1;
-                console.log(
-                    "creditMachine WS online machine",
-                    that.listOnlineMachines()
-                );
+                // console.log(
+                //     "creditMachine WS online machine",
+                //     that.listOnlineMachines()
+                // );
 
                 console.log(`TEST DER -->`, 8);
 
@@ -4864,10 +4906,10 @@ export class InventoryZDM8 implements IBaseClass {
             res.command = d.command;
             res.message = EMessage.machineCredit;
             res.status = 1;
-            console.log(
-                "creditMachine WS online machine",
-                that.listOnlineMachines()
-            );
+            // console.log(
+            //     "creditMachine WS online machine",
+            //     that.listOnlineMachines()
+            // );
 
             // console.log('FOUND ACK EXIST TRANSACTIONID', ack, d.transactionID);
 
@@ -6754,10 +6796,10 @@ export class InventoryZDM8 implements IBaseClass {
                             res.status = 1;
                             if (d.token) {
                                 const x = d.token as string;
-                                console.log(
-                                    " WS online machine",
-                                    this.listOnlineMachines()
-                                );
+                                // console.log(
+                                //     " WS online machine",
+                                //     this.listOnlineMachines()
+                                // );
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exit");
