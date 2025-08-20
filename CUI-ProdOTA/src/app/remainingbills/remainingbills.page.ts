@@ -123,12 +123,16 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
 
+  processing: boolean = false;
 
   async retryProcessBillNew(transactionID: string, position: number, ownerUuid: string, trandID: string, human?: boolean) {
     console.log('transactionID', transactionID, 'position', position, 'ownerUuid', ownerUuid, 'trandID', trandID);
 
     console.log(`rrrrr`, this.r);
     console.log(`-->`, this.canclick);
+    if (this.processing) { return; } /// HERE 2/4
+    this.processing = true; /// HERE 3/4
+
     this.apiService.showLoading('waiting...', 5000);
 
     if (human == true) {
@@ -143,11 +147,15 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
           this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
             await this.loadBillLocal();
-            Toast.show({ text: 'Bill process deleted', duration: 'long' });
+            // Toast.show({ text: 'Bill process deleted', duration: 'long' });
 
             this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
               console.log('shippingcontrol');
-              Toast.show({ text: 'shippingcontrol' + JSON.stringify(r || {}) });
+              try {
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click Solot ${position} droped` });
+              } catch (err) {
+                Toast.show({ text: 'Faild save drop', duration: 'long' })
+              }
             }).catch(async (error) => {
               console.log('error shippingcontrol', error);
               Toast.show({ text: 'error shippingcontrol' + JSON.stringify(error || {}) });
@@ -214,6 +222,11 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       this.r = [];
       this.reloadDelivery(true);
       await this.apiService.soundSystemError();
+    }
+
+    finally {
+      // Code that runs regardless of try/catch outcome
+      this.processing = false; /// HERE 4/4
     }
 
     // if (this.canclick == true) {

@@ -937,7 +937,8 @@ export enum EMessage {
     notloggedinyet = "notloggedinyet",
     notsupport = "notsupport",
     billnotfound = "billnotfound",
-    confirmsucceeded = "confirmsucceeded"
+    confirmsucceeded = "confirmsucceeded",
+    openstock = "openstock"
 }
 export interface IBase {
     id?: number;
@@ -1022,6 +1023,7 @@ export interface IAlive {
     test: boolean;
     balance: number;
     data: any;
+    message?: string
 }
 
 export interface IClientId {

@@ -55,7 +55,7 @@ export enum IENMessage {
     notEnoughtCashBalance = 'not enought balance',
     success = 'success',
     parametersEmpty = 'parameters empty',
-    findLaoQRPaidFail = "findLaoQRPaidFail"
+    findLaoQRPaidFail = "findLaoQRPaidFail",
 }
 
 export enum ITabVendingSegement {

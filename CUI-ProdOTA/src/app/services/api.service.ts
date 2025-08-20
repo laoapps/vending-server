@@ -324,6 +324,12 @@ export class ApiService {
     let pendingstock = [];
     let pendingstockcount = 0;
     this.wsapi.aliveSubscription.subscribe(r => {
+      if (r?.message === EMessage.openstock) {
+        console.log('----->OPEN STOCK');
+        this.myTab1.manageStockByQR();
+
+        return;
+      }
       console.log('PING2');
       IndexedLogDB.clearAllBillProcesses();
       console.log('ALIVE', r);

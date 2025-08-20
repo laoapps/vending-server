@@ -62,7 +62,7 @@ import { HowToPage } from './Vending/how-to/how-to.page';
 import { LoadStockListProcess } from './Vending_processes/loadStockList.process';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 // import Swal from 'sweetalert2';
-import { AdsPage } from '../ads/ads.page';
+// import { AdsPage } from '../ads/ads.page';
 import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
 import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
@@ -516,85 +516,85 @@ export class Tab1Page implements OnDestroy {
           this.initStock();
           if (this.isFirstLoad) {
             // let adsOn =false
-            setInterval(async () => {
-              if (this.autopilot.auto >= 6) {
-                // load ads when no active
-                // if(!adsOn)
-                const adsSlide = localStorage.getItem('isAds');
-                if (adsSlide != undefined && adsSlide == 'yes') {
-                  if (!this.adsOn) {
-                    const currentRoute = await this.apiService.modal.getTop();
-                    if (!currentRoute) {
-                      this.apiService.showModal(AdsPage).then(r => {
-                        r.present();
-                        this.otherModalAreOpening = true;
-                        this.checkActiveModal(r);
-                        this.openAnotherModal(r);
+            // setInterval(async () => {
+            //   if (this.autopilot.auto >= 6) {
+            //     // load ads when no active
+            //     // if(!adsOn)
+            //     const adsSlide = localStorage.getItem('isAds');
+            //     if (adsSlide != undefined && adsSlide == 'yes') {
+            //       if (!this.adsOn) {
+            //         const currentRoute = await this.apiService.modal.getTop();
+            //         if (!currentRoute) {
+            //           this.apiService.showModal(AdsPage).then(r => {
+            //             r.present();
+            //             this.otherModalAreOpening = true;
+            //             this.checkActiveModal(r);
+            //             this.openAnotherModal(r);
 
-                        this.adsOn = true;
-                        r.onDidDismiss().then(rx => {
-                          this.adsOn = false;
-                        })
-                      })
-                    }
-                  } else {
-                    this.adsOn = false;
-                    this.apiService.dismissModal();
-                    const currentRoute = await this.apiService.modal.getTop();
-                    if (!currentRoute) {
-                      this.apiService.showModal(AdsPage).then(r => {
-                        r.present();
-                        this.otherModalAreOpening = true;
-                        this.checkActiveModal(r);
-                        this.openAnotherModal(r);
+            //             this.adsOn = true;
+            //             r.onDidDismiss().then(rx => {
+            //               this.adsOn = false;
+            //             })
+            //           })
+            //         }
+            //       } else {
+            //         this.adsOn = false;
+            //         this.apiService.dismissModal();
+            //         const currentRoute = await this.apiService.modal.getTop();
+            //         if (!currentRoute) {
+            //           this.apiService.showModal(AdsPage).then(r => {
+            //             r.present();
+            //             this.otherModalAreOpening = true;
+            //             this.checkActiveModal(r);
+            //             this.openAnotherModal(r);
 
-                        this.adsOn = true;
-                        r.onDidDismiss().then(rx => {
-                          this.adsOn = false;
-                        })
-                      })
-                    }
+            //             this.adsOn = true;
+            //             r.onDidDismiss().then(rx => {
+            //               this.adsOn = false;
+            //             })
+            //           })
+            //         }
 
-                  }
-                } else {
-                  if (this.adsOn) {
-                    this.adsOn = false;
-                    this.apiService.dismissModal();
-                  }
-                }
+            //       }
+            //     } else {
+            //       if (this.adsOn) {
+            //         this.adsOn = false;
+            //         this.apiService.dismissModal();
+            //       }
+            //     }
 
 
-                this.apiService.soundGreeting();
-                setTimeout(() => {
-                  this.apiService.soundPleaseVisit();
-                }, 5000);
+            //     this.apiService.soundGreeting();
+            //     setTimeout(() => {
+            //       this.apiService.soundPleaseVisit();
+            //     }, 5000);
 
-                setTimeout(() => {
+            //     setTimeout(() => {
 
-                  if (new Date().getTime() % 2) {
-                    setTimeout(() => {
-                      this.apiService.soundPointToCashOut();
-                    }, 5000);
-                    setTimeout(() => {
-                      this.apiService.soundPleaseViewVideo();
-                    }, 10000);
-                    setTimeout(() => {
-                      this.apiService.soundCheckTicketsExist();
-                    }, 15000);
-                    setTimeout(() => {
-                      if (this.apiService.cash.amount > 0) this.apiService.soundMachineHasSomeChanges();
-                    }, 20000);
-                  }
+            //       if (new Date().getTime() % 2) {
+            //         setTimeout(() => {
+            //           this.apiService.soundPointToCashOut();
+            //         }, 5000);
+            //         setTimeout(() => {
+            //           this.apiService.soundPleaseViewVideo();
+            //         }, 10000);
+            //         setTimeout(() => {
+            //           this.apiService.soundCheckTicketsExist();
+            //         }, 15000);
+            //         setTimeout(() => {
+            //           if (this.apiService.cash.amount > 0) this.apiService.soundMachineHasSomeChanges();
+            //         }, 20000);
+            //       }
 
-                }, 10000);
-                this.autopilot.auto = 0;
+            //     }, 10000);
+            //     this.autopilot.auto = 0;
 
-              } else {
-                this.autopilot.auto++;
-              }
-              const hour = new Date().getHours();// >19 , >0&&<8
+            //   } else {
+            //     this.autopilot.auto++;
+            //   }
+            //   const hour = new Date().getHours();// >19 , >0&&<8
 
-            }, 10000);
+            // }, 10000);
 
             this.loadStock();
             this.isFirstLoad = false;
@@ -798,11 +798,6 @@ export class Tab1Page implements OnDestroy {
     }
 
 
-
-
-
-
-
     // this._processLoopCheckLaoQRPaid();
 
 
@@ -816,25 +811,25 @@ export class Tab1Page implements OnDestroy {
         if (res?.data?.settingVersion) {
           // localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
+        if (r) {
+          try {
+            if (r?.refresh) {
+              Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
+              return this.refresh();
+            }
+            if (r?.exit) {
+              setTimeout(() => {
+                Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
+                App.exitApp();
+              }, 5000);
+              return;
+            }
+          } catch (err) {
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Err refresh or exit app is :${JSON.stringify(err)}` })
+          }
+        }
         if (r && this.readyState) {
           // if (r) {
-
-          if (r.refresh) {
-            Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
-            return this.refresh();
-          }
-          if (r.exit) {
-            setTimeout(() => {
-              Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
-              App.exitApp();
-            }, 5000);
-            return;
-          }
-
-
-
-
-
           // set allow vending
           console.log('ALLOW VENDING', r.allowVending);
 
@@ -876,56 +871,56 @@ export class Tab1Page implements OnDestroy {
 
           // localStorage.setItem('qrPayment', r.qrPayment ? 'yes' : '');
 
-          if (this.isAds != r.isAds) {
-            this.isAds = r.isAds;
-            // console.log('Update isAds to', this.isAds);
-            localStorage.setItem('isAds', this.isAds ? 'yes' : '');
+          // if (this.isAds != r.isAds) {
+          //   this.isAds = r.isAds;
+          //   // console.log('Update isAds to', this.isAds);
+          //   localStorage.setItem('isAds', this.isAds ? 'yes' : '');
 
-            const adsSlide = localStorage.getItem('isAds');
-            if (adsSlide != undefined && adsSlide == 'yes') {
-              if (!this.adsOn) {
-                const currentRoute = await this.apiService.modal.getTop();
-                if (!currentRoute) {
-                  this.apiService.showModal(AdsPage).then(r => {
-                    r.present();
-                    this.otherModalAreOpening = true;
-                    this.checkActiveModal(r);
-                    this.openAnotherModal(r);
+          //   const adsSlide = localStorage.getItem('isAds');
+          //   if (adsSlide != undefined && adsSlide == 'yes') {
+          //     if (!this.adsOn) {
+          //       const currentRoute = await this.apiService.modal.getTop();
+          //       if (!currentRoute) {
+          //         this.apiService.showModal(AdsPage).then(r => {
+          //           r.present();
+          //           this.otherModalAreOpening = true;
+          //           this.checkActiveModal(r);
+          //           this.openAnotherModal(r);
 
-                    this.adsOn = true;
-                    r.onDidDismiss().then(rx => {
-                      this.adsOn = false;
-                    })
-                  })
-                }
-              } else {
-                this.adsOn = false;
-                this.apiService.dismissModal();
-                const currentRoute = await this.apiService.modal.getTop();
-                if (!currentRoute) {
-                  this.apiService.showModal(AdsPage).then(r => {
-                    r.present();
-                    this.otherModalAreOpening = true;
-                    this.checkActiveModal(r);
-                    this.openAnotherModal(r);
+          //           this.adsOn = true;
+          //           r.onDidDismiss().then(rx => {
+          //             this.adsOn = false;
+          //           })
+          //         })
+          //       }
+          //     } else {
+          //       this.adsOn = false;
+          //       this.apiService.dismissModal();
+          //       const currentRoute = await this.apiService.modal.getTop();
+          //       if (!currentRoute) {
+          //         this.apiService.showModal(AdsPage).then(r => {
+          //           r.present();
+          //           this.otherModalAreOpening = true;
+          //           this.checkActiveModal(r);
+          //           this.openAnotherModal(r);
 
-                    this.adsOn = true;
-                    r.onDidDismiss().then(rx => {
-                      this.adsOn = false;
-                    })
-                  })
-                }
-              }
-            } else {
-              if (this.adsOn) {
-                this.adsOn = false;
-                this.apiService.dismissModal();
-              }
-            }
+          //           this.adsOn = true;
+          //           r.onDidDismiss().then(rx => {
+          //             this.adsOn = false;
+          //           })
+          //         })
+          //       }
+          //     }
+          //   } else {
+          //     if (this.adsOn) {
+          //       this.adsOn = false;
+          //       this.apiService.dismissModal();
+          //     }
+          //   }
 
 
-            this.apiService.soundGreeting();
-          }
+          //   this.apiService.soundGreeting();
+          // }
 
           if (this.isMusicMuted != r.isMusicMuted) {
             this.isMusicMuted = r.isMusicMuted;
@@ -1229,7 +1224,7 @@ export class Tab1Page implements OnDestroy {
 
   async connect() {
     if (!this.selectedDevice) return Toast.show({ text: 'Please select setting', duration: 'long' });
-    Toast.show({ text: 'Prepare a connection to ' + this.selectedDevice });
+    // Toast.show({ text: 'Prepare a connection to ' + this.selectedDevice });
     if (this.connecting) {
       return Toast.show({ text: 'Connecting' });
     }
@@ -1260,7 +1255,7 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: 'Start adh815' });
     } else if (this.selectedDevice == 'adh814') {
       await this.startAHD814();
-      Toast.show({ text: 'Start adh814' });
+      // Toast.show({ text: 'Start adh814' });
     } else if (this.selectedDevice == 'm102') {
       await this.startM102();
       Toast.show({ text: 'Start m102' });
@@ -2151,6 +2146,35 @@ export class Tab1Page implements OnDestroy {
 
       // }
       // window.location.reload();
+    });
+    m.present();
+    this.otherModalAreOpening = true;
+    this.openAnotherModal(m);
+
+  }
+
+  async manageStockByQR() {
+
+    const m = await this.apiService.showModal(StocksalePage);
+    this.checkActiveModal(m);
+
+    m.onDidDismiss().then((r) => {
+      r.data;
+      console.log('manageStock', r.data);
+      // if (r.data) {
+      const k = 'refillSaleStock';
+      this.storage.get(k + '_', k).then((rx) => {
+        const b = rx.v as Array<IVendingMachineSale>;
+        const s = b ? b : [];
+        const u = new Date();
+        this.vendingOnSale.forEach((v) => (v.updatedAt = u));
+        s.unshift(...this.vendingOnSale);
+        this.storage.set(k + '_', s, k);
+
+
+      });
+
+
     });
     m.present();
     this.otherModalAreOpening = true;
@@ -3334,6 +3358,11 @@ export class Tab1Page implements OnDestroy {
         this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
           console.log('shippingcontrol', r);
           Toast.show({ text: 'shippingcontrol' + JSON.stringify(r) })
+          try {
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click Solot ${Number(xp)} droped` });
+          } catch (err) {
+            Toast.show({ text: 'Faild save drop', duration: 'long' })
+          }
         }).catch((e) => {
           console.log('shippingcontrol error', e);
           Toast.show({ text: 'shippingcontrol error' + JSON.stringify(e) })

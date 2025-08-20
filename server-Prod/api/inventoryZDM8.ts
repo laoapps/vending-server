@@ -3630,9 +3630,47 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("reportClientLog", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
-
             )
 
+
+            router.post(this.path + '/openstock',
+                this.checkSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineToken = req.body.machineToken;
+                        const secret = req.body.secret;
+                        if (!machineToken || !secret) {
+                            return res.send(PrintError('openstock', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+
+                        const machineData = this.findMachineIdToken(machineToken);
+                        if (!machineData) {
+                            return res.send(PrintError('openstock', null, EMessage.machineNotExist, returnLog(req, res, true)));
+                        }
+                        const secretData = await this.readMachineSecret(machineData.machineId + '');
+                        if (secretData !== secret) {
+                            return res.send(PrintError('openstock', null, EMessage.notallowed, returnLog(req, res, true)));
+                        }
+                        console.log('----->secret :', secretData);
+
+                        const resD = {} as IResModel;
+                        resD.command = EMACHINE_COMMAND.ping;
+                        resD.message = EMessage.openstock;
+
+
+                        resD.status = 1;
+                        // resD.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                        this.sendWSToMachine(machineData.machineId, resD);
+
+
+                        return res.send(PrintSucceeded('openstock', machineData, EMessage.succeeded, returnLog(req, res, true)));
+
+                    } catch (error) {
+                        console.error('Error openstock is :', JSON.stringify(error));
+                        res.send(PrintError('openstock', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            )
 
             router.post(this.path + '/reportLogsTemp',
                 this.checkSuperAdmin,
@@ -6685,6 +6723,31 @@ export class InventoryZDM8 implements IBaseClass {
                         d = JSON.parse(ev.data.toString()) as IReqModel;
 
                         const res = {} as IResModel;
+                        // if (d.command == EMACHINE_COMMAND.login) {
+                        //     res.command = d.command;
+                        //     res.message = EMessage.loginok;
+                        //     res.status = 1;
+                        //     if (d.token) {
+                        //         const x = d.token as string;
+                        //         console.log(
+                        //             " WS online machine",
+                        //             this.listOnlineMachines()
+                        //         );
+                        //         let machineId = this.findMachineIdToken(x);
+
+                        //         if (!machineId) throw new Error("machine is not exit");
+                        //         ws["machineId"] = machineId.machineId;
+                        //         ws["clientId"] = uuid4();
+                        //         res.data = { clientId: ws["clientId"] };
+                        //         this.wsClient.push(ws);
+                        //         return ws.send(
+                        //             JSON.stringify(
+                        //                 PrintSucceeded(d.command, res, EMessage.succeeded, null)
+                        //             )
+                        //         );
+                        //     } else throw new Error(EMessage.MachineIdNotFound);
+                        // }
+
                         if (d.command == EMACHINE_COMMAND.login) {
                             res.command = d.command;
                             res.message = EMessage.loginok;
@@ -6701,7 +6764,13 @@ export class InventoryZDM8 implements IBaseClass {
                                 ws["machineId"] = machineId.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
-                                this.wsClient.push(ws);
+                                this.wsClient?.find((v, i) => {
+                                    if (v["machineId"] == machineId.machineId) {
+                                        v.close(0);
+                                        this.wsClient?.splice(i, 1);
+                                    }
+                                });
+                                this.wsClient?.push(ws);
                                 return ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
@@ -6980,6 +7049,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     adsSetting,
                                                     adsVersion,
                                                     settingVersion,
+                                                    secret: await this.readMachineSecret(machine + '')
 
                                                 },
                                                 EMessage.succeeded
@@ -7009,6 +7079,127 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
+
+    generateTimeBasedSecret(inputString: string, intervalSeconds = 300, offset = 0) {
+        const timestamp = Math.floor(Date.now() / 1000);
+        const timeSlot = Math.floor(timestamp / intervalSeconds) - offset;
+        const hmac = crypto.createHmac('sha256', inputString);
+        hmac.update(timeSlot.toString());
+        const secret = hmac.digest('hex');
+        return {
+            secret,
+            expiresAt: (timeSlot + 1) * intervalSeconds * 1000
+        };
+    }
+
+    // ADMIN_SECRET_KEY = '';
+
+    generateTimeBasedSecretComplex({
+        inputString = '',
+        intervalSeconds = 300,
+        offset = 0,
+        hashAlgorithm = 'sha256',
+        saltLength = 16,
+        includeMetadata = true,
+        pbkdf2Iterations = 10000,
+        entropyBytes = 32
+    } = {}) {
+        // Input validation
+        if (!inputString || typeof inputString !== 'string') {
+            throw new Error('inputString must be a non-empty string');
+        }
+        if (!Number.isInteger(intervalSeconds) || intervalSeconds <= 0) {
+            throw new Error('intervalSeconds must be a positive integer');
+        }
+        if (!['sha256', 'sha512', 'sha1'].includes(hashAlgorithm)) {
+            throw new Error('hashAlgorithm must be sha256, sha512, or sha1');
+        }
+        if (!Number.isInteger(pbkdf2Iterations) || pbkdf2Iterations < 1000) {
+            throw new Error('pbkdf2Iterations must be an integer >= 1000');
+        }
+        if (!Number.isInteger(entropyBytes) || entropyBytes < 16) {
+            throw new Error('entropyBytes must be an integer >= 16');
+        }
+
+        // Generate entropy sources
+        const salt = crypto.randomBytes(saltLength).toString('hex');
+        const nonce = uuid4(); // Generate a unique nonce
+        const entropySeed = crypto.randomBytes(entropyBytes).toString('hex');
+        const counter = crypto.randomInt(0, 1000000).toString(); // Additional random counter
+
+        // Calculate time slot with random perturbation (small, within 1 second)
+        const timestamp = Math.floor(Date.now() / 1000);
+        const perturbation = crypto.randomInt(0, 1000) / 1000; // 0 to 0.999 seconds
+        const timeSlot = Math.floor((timestamp + perturbation) / intervalSeconds) - offset;
+
+        // Derive HMAC key using PBKDF2
+        const derivedKey = crypto.pbkdf2Sync(
+            `${inputString}:${process.env.ADMIN_SECRET_KEY}`,
+            salt,
+            pbkdf2Iterations,
+            32, // 256-bit key
+            'sha256'
+        ).toString('hex');
+
+        // Inner HMAC: Combine time slot, nonce, and entropy seed
+        const innerHmac = crypto.createHmac('sha512', derivedKey);
+        innerHmac.update(`${timeSlot}: ${nonce}: ${entropySeed}: ${counter}`);
+        const innerDigest = innerHmac.digest('hex');
+
+        // Outer HMAC: Apply second layer with chosen algorithm
+        const outerHmac = crypto.createHmac(hashAlgorithm, derivedKey + salt);
+        outerHmac.update(innerDigest);
+        const secret = outerHmac.digest('hex');
+
+        // Prepare response
+        const result = {
+            secret,
+            expiresAt: (timeSlot + 1) * intervalSeconds * 1000,
+            salt,
+            nonce,
+            metadata: {}
+        };
+
+        // Include metadata if requested
+        if (includeMetadata) {
+            result.metadata = {
+                generatedAt: timestamp * 1000,
+                hashAlgorithm,
+                timeSlot,
+                version: '2.0.0', // Updated version
+                pbkdf2Iterations,
+                entropyBytes
+            };
+        }
+
+        return result;
+    }
+
+
+    async readMachineSecret(machineId: string) {
+        const now = Date.now();
+        let storedSecret = JSON.parse((await redisClient.get(`secret: ${machineId}`) + '' || '{}')) as { secret: string, expiresAt: number };
+        if (storedSecret && storedSecret.expiresAt > now) {
+            return storedSecret.secret;
+        }
+        storedSecret = this.generateTimeBasedSecret(machineId);
+        redisClient.set(`secret: ${machineId}`, JSON.stringify(storedSecret));
+        return storedSecret.secret;
+    }
+    async readAdminMachineSecret(machineId: string) {
+        const now = Date.now();
+        let storedSecret = JSON.parse((await redisClient.get(`secret: ${machineId}`) + '' || '{}')) as { secret: string, expiresAt: number };
+        if (storedSecret && storedSecret.expiresAt > now) {
+            return storedSecret.secret;
+        }
+        storedSecret = this.generateTimeBasedSecret(machineId);
+        redisClient.set(`secret: ${machineId}`, JSON.stringify(storedSecret));
+        return storedSecret.secret;
+    }
+
+
+
+
     sendWSMyMachine(machineId: string, resx: IResModel) {
         this.wsClient.forEach((v) => {
             const x = v["myMachineId"] as Array<string>;

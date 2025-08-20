@@ -122,6 +122,7 @@ services:
       - VENDING=true
       - PORT=9046
       - KIOSKLAABPORT=31224
+      - ADMIN_SECRET_KEY=sdsfdfmedfefijeidjisnnveefiefj
 
 
       - SERVICE_NAME=ADMINVENDINGSERVICE

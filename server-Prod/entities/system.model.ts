@@ -1043,7 +1043,8 @@ export enum EMessage {
     machineisdisabled = "machineisdisabled",
     machineNotExist = "machineNotExist",
     LaoQRCount = "LaoQRCount",
-    ListTransactionMmoneyCheck = "ListTransactionMmoneyCheck"
+    ListTransactionMmoneyCheck = "ListTransactionMmoneyCheck",
+    openstock = "openstock"
 }
 export interface IBase {
     id?: number;
@@ -1271,6 +1272,7 @@ export enum EMACHINE_COMMAND {
     CREDIT_LAAB_NOTE = 'CREDIT_LAAB_NOTE',
     login = 'login',
     ping = 'ping',
+    openStock = 'openStock',
     status = 'status',
     confirm = "confirm",
     note_credit = "note_credit",

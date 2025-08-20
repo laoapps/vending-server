@@ -172,7 +172,7 @@ export class VendingIndexServiceService {
 
       }
       console.log('vendingindex service  initADH814 Serial port initialized');
-      Toast.show({ text: 'vendingindex service  initADH814 Serial port initialized' });
+      // Toast.show({ text: 'vendingindex service  initADH814 Serial port initialized' });
       this.task = this.adh814;
       return resolve(this.adh814);
     });

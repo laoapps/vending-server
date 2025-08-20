@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
-import { EMACHINE_COMMAND, IAlive, IBillProcess, IClientId, IReqModel, IResModel, IVendingMachineBill, IVendingMachineSale } from './syste.model';
+import { EMACHINE_COMMAND, EMessage, IAlive, IBillProcess, IClientId, IReqModel, IResModel, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import * as cryptojs from 'crypto-js';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EventEmitter } from 'events';
@@ -131,7 +131,13 @@ export class WsapiService {
               // { command: "ping", production: this.production, balance: r,limiter,merchant,mymmachinebalance, mymlimiterbalance, setting ,mstatus,mymstatus,mymsetting,mymlimiter},
               // this.setting_allowCashIn = data.setting.allowCashIn;
               // this.setting_allowVending = data.setting.allowVending;
-              this.aliveSubscription.next({ test: data?.test, data, balance: Number(data.balance) } as IAlive);
+              if (res?.message == EMessage.openstock) {
+                this.aliveSubscription.next({ test: data?.test, data, balance: Number(data?.balance ?? '0'), message: EMessage.openstock } as IAlive);
+
+              } else {
+                this.aliveSubscription.next({ test: data?.test, data, balance: Number(data?.balance ?? '0') } as IAlive);
+
+              }
               break;
             case 'confirm':
               data.transactionID = res.transactionID;

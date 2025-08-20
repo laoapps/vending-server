@@ -3084,18 +3084,30 @@ export class InventoryLocker implements IBaseClass {
                 });
         });
     }
-    sendWSToMachine(machineId: string, resx: IResModel) {
-        console.log("wsclient", this.wsClient.length);
+    // sendWSToMachine(machineId: string, resx: IResModel) {
+    //     console.log("wsclient", this.wsClient.length);
 
-        this.wsClient.find((v) => {
-            const x = v["machineId"] as string;
-            console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
-            if (x && x == machineId) {
-                // yy.push(v);
-                console.log("WS SENDING machine id", x, v?.readyState);
-                v.send(JSON.stringify(resx));
-            }
-        });
+    //     this.wsClient.find((v) => {
+    //         const x = v["machineId"] as string;
+    //         console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
+    //         if (x && x == machineId) {
+    //             // yy.push(v);
+    //             console.log("WS SENDING machine id", x, v?.readyState);
+    //             v.send(JSON.stringify(resx));
+    //         }
+    //     });
+    // }
+
+
+    sendWSToMachine(machineId: string, resx: IResModel) {
+        // console.log("wsclient", this.wsClient.length);
+        const client = this.wsClient.find(v => v["machineId"] === machineId && v.readyState === WebSocket.OPEN);
+        if (client) {
+            client.send(JSON.stringify(resx));
+        }
+        if (!client) {
+            console.warn(`No online client found for machineId: ${machineId}`);
+        }
     }
     close() {
         this.wss.close();
