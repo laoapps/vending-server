@@ -62,10 +62,9 @@
       <div class="sub-title">Choose any ticket for receive your order</div>
     </div>
     <div class="laab-card-body">
+      <!-- (click)="retryProcessBillNew(s.transactionID+'',s.position,s.ownerUuid,s.bill.transactionID+'',true)" -->
 
-      <div *ngFor="let s of r; let i = index"
-        (click)="retryProcessBillNew(s.transactionID+'',s.position,s.ownerUuid,s.bill.transactionID+'',true)"
-        href="javascript:void(0)" class="item">
+      <div *ngFor="let s of r; let i = index" href="javascript:void(0)" class="item">
         <div class="content">
           <div class="icon">
             <img [src]="apiService?.imageList[findImage(getStock(s?.position)?.id)]" alt="">

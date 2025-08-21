@@ -128,6 +128,8 @@ export class Tab1Page implements OnDestroy {
 
   offlineMode: Boolean = true;
 
+  isOpenStock = false;
+
 
   // enableCashIn: boolean = false;
 
@@ -2109,9 +2111,11 @@ export class Tab1Page implements OnDestroy {
 
   async showQrAlert() {
     const m = await this.apiService.showModal(QrOpenStockPage);
-    m.onDidDismiss().then((r) => {
-    });
     m.present();
+    this.isOpenStock = true;
+    m.onDidDismiss().then((r) => {
+      this.isOpenStock = false;
+    });
 
   }
   async manageStock() {
@@ -2173,7 +2177,7 @@ export class Tab1Page implements OnDestroy {
 
   async manageStockByQR() {
 
-    const m = await this.apiService.showModal(StocksalePage);
+    const m = await this.apiService.showModal(StocksalePage, {}, true, 'customModalQRStock');
     this.checkActiveModal(m);
 
     m.onDidDismiss().then((r) => {

@@ -19,7 +19,7 @@ export class AppComponent {
   checkOnlineStatus: IAlive;
   uT = new Date();
   now = new Date();
-  version = '2';
+  version = '3';
   count = 6;
   machineuuid = this.apiService.machineuuid;
   t: any;

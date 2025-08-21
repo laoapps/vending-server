@@ -53,6 +53,7 @@
     "@types/big-integer": "^0.0.30",
     "@types/cryptojs": "^3.1.33",
     "@types/semver": "^7.5.8",
+    "angularx-qrcode": "^20.0.0",
     "axios": "^1.8.0",
     "big-integer": "^1.6.52",
     "bigint-crypto-utils": "^3.3.0",

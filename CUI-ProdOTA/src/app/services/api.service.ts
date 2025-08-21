@@ -341,6 +341,9 @@ export class ApiService {
 
         if (r?.message === EMessage.openstock) {
           console.log('----->OPEN STOCK');
+          if (this.myTab1.isOpenStock) {
+            this.closeModal();
+          }
           this.myTab1.manageStockByQR();
 
           return;
@@ -1384,6 +1387,7 @@ export class ApiService {
     // req.data.clientId = this.clientId.clientId;
     return this.http.post<IResModel>(this.url, req, {
       headers: this.headerBase(),
+
     });
   }
 

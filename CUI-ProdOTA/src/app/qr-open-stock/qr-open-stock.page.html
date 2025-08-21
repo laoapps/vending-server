@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<!-- <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>qrOpenStock</ion-title>
   </ion-toolbar>
@@ -10,4 +10,25 @@
       <ion-title size="large">qrOpenStock</ion-title>
     </ion-toolbar>
   </ion-header>
+</ion-content> -->
+
+
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>QR ສຳລັບເປີດໜ້າສະຕ໊ອກ</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="qr-container">
+    <!-- QR Code Canvas -->
+    <canvas #canvas></canvas>
+
+    <!-- ข้อมูล Object -->
+    <ion-card class="info-card" *ngIf="qrData">
+      <ion-card-header>
+        <ion-card-title>ສະແກນ QR ໃນ LAABX ເພື່ອເປີດໜ້າຈັດການສະຕ໊ອກ</ion-card-title>
+      </ion-card-header>
+    </ion-card>
+  </div>
 </ion-content>
