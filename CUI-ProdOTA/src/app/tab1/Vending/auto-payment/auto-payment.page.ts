@@ -378,7 +378,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             AutoPaymentPage.laabCardFooter.classList.add('active');
             this.loadBillWave();
 
+            console.log('LIST => :', list);
             if (!list) return resolve(await this._processLoopPayment());
+
 
             this.paymentmethod = list.value;
             this.paymentText = list.name;
@@ -386,7 +388,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             resolve(await this._processLoopDestroyLastest());
           }
 
-        }, 1000);
+        }, 500);
 
       } catch (error) {
         resolve(error.message);
@@ -419,7 +421,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
 
           }
-        }, 1000);
+        }, 500);
 
       } catch (error) {
         resolve(error.message);
