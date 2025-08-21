@@ -127,10 +127,14 @@ export const controlDevice = async (req: Request, res: Response) => {
         await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
         await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
       }
-      order.set('completedTime', new Date());
-      await order.save();
-      await redis.del(`activeOrder:${order.dataValues.id}`);
-      await notifyStakeholders(order, 'Order completed via MQTT');
+      if (input.command == 'OFF') {
+        order.set('completedTime', new Date());
+        const description = {closebyOwner:{ownerID:device?.dataValues.ownerId,date:new Date()}}
+        order.set('description', description);
+        await order.save();
+        await redis.del(`activeOrder:${order.dataValues.id}`);
+        await notifyStakeholders(order, 'Order completed via MQTT');
+      }
       return res.json({ message: 'Command sent and completed order' });
     }
 
