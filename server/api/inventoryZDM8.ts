@@ -4682,7 +4682,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     const params = ifError;
 
                                     console.log(`params error der`, params);
-                                    axios.post(LAAB_CoinTransfer, params).then(run_return => {
+                                    axios.post(LAAB_CoinTransfer, params,{timeout:3000}).then(run_return => {
                                         console.log(`return error 1`, run_return.data);
 
                                         // if transfer back fail database will save data log
@@ -5583,7 +5583,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             // console.log("MyQR", qr);
 
-            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17" } })
+            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17",timeout:3000 } })
                 .then((rx) => {
                     console.log("getMyMmoney", rx);
                     if (rx.status) {
@@ -6316,7 +6316,7 @@ export class InventoryZDM8 implements IBaseClass {
                     requestId: transactionID,
                     billNumber: transactionID
                 },
-                    { headers, httpsAgent: agent });
+                    { headers, httpsAgent: agent,timeout:3000 });
 
                 if (res.data.success) {
                     axios.post('https://vending-service-api5.laoapps.com', {
@@ -6327,7 +6327,7 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                     }, {
                         headers: {
-                            "Content-Type": 'application/json'
+                            "Content-Type": 'application/json',timeout:3000
                         }
                     }).then(async r => {
                         // console.log('=====>CONFIRM PAID', r.data);
@@ -6376,7 +6376,7 @@ export class InventoryZDM8 implements IBaseClass {
                 requestId: transactionID,
                 billNumber: transactionID
             },
-                { headers, httpsAgent: agent });
+                { headers, httpsAgent: agent,timeout:3000});
 
             // console.log('=====> CHECK MMONEY PAID', res.data);
             if (res.data.success) {
@@ -6389,7 +6389,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }, {
                     headers: {
-                        "Content-Type": 'application/json'
+                        "Content-Type": 'application/json',timeout:3000
                     }
                 }).then(async r => {
                     // console.log('=====>CONFIRM', r.data);
@@ -6475,7 +6475,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',timeout:3000
                 }
             }).then(r => {
                 // console.log('DATA confirmMmoneyCashin', r.data);
@@ -6512,7 +6512,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, params, {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',timeout:3000
                 }
             }).then(r => {
                 // console.log('DATA loginMmoney', url, r.data);
@@ -6568,7 +6568,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('IMMoneyRequestRes', data);
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',timeout:3000
                 }
             }).then(r => {
                 // console.log('DATA requestMmoneyCashin', r.data);
