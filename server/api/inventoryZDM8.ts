@@ -601,11 +601,13 @@ export class InventoryZDM8 implements IBaseClass {
                             let attempts = 0;
                             const maxAttempts = 3;
 
+                             const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
                             while (attempts < maxAttempts) {
                                 qr = await this.generateBillLaoQRPro(value, mId, owner, ownerPhone);
                                 if (qr?.status === 'OK') break;
                                 console.log('Attempt', attempts + 1, 'failed. Retrying...');
                                 attempts++;
+                                 await delay(500);
                             }
 
                             if (!qr || qr.status !== 'OK') {
