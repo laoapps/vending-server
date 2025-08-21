@@ -91,6 +91,7 @@ import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 import { IResModel } from '../services/syste.model';
 import { MapPage } from './smartcb/components-user/map/map.page';
 import { ListAllGroupsPage } from './smartcb/components-user/list-all-groups/list-all-groups.page';
+import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 
 @Component({
   selector: 'app-tab1',
@@ -185,6 +186,9 @@ export class Tab1Page implements OnDestroy {
   isRobotMuted = localStorage.getItem('isRobotMuted') ? true : false;
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
+
+  qrMode = localStorage.getItem('qrMode') ? true : false;
+
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
 
   selectMode: string = 'vending';
@@ -2102,7 +2106,21 @@ export class Tab1Page implements OnDestroy {
       ++this.manageStockCount;
     }, 1000);
   }
+
+  async showQrAlert() {
+    const m = await this.apiService.showModal(QrOpenStockPage);
+    m.onDidDismiss().then((r) => {
+    });
+    m.present();
+
+  }
   async manageStock() {
+    if (this.qrMode) {
+      if (this.apiService.secret) {
+        this.showQrAlert();
+      }
+      return;
+    }
     const x = prompt('password');
     console.log(x, this.getPassword());
 

@@ -243,6 +243,8 @@ export class ApiService {
 
   isRemainingBillsModalOpen: boolean = false;
 
+  secret?: string;
+
 
 
   localBalance: number = Number(localStorage.getItem('balanceLocal') ?? 0);
@@ -324,12 +326,6 @@ export class ApiService {
     let pendingstock = [];
     let pendingstockcount = 0;
     this.wsapi.aliveSubscription.subscribe(r => {
-      if (r?.message === EMessage.openstock) {
-        console.log('----->OPEN STOCK');
-        this.myTab1.manageStockByQR();
-
-        return;
-      }
       console.log('PING2');
       IndexedLogDB.clearAllBillProcesses();
       console.log('ALIVE', r);
@@ -338,6 +334,17 @@ export class ApiService {
       try {
         if (!r) return console.log('empty');
         console.log('ws alive subscription', that.cash, r);
+
+        this.secret = r?.data?.secret;
+        console.log('-----> SECRET :', this.secret);
+
+
+        if (r?.message === EMessage.openstock) {
+          console.log('----->OPEN STOCK');
+          this.myTab1.manageStockByQR();
+
+          return;
+        }
 
         that.cash.amount = r.balance;
         that.wsAlive.time = new Date();

@@ -30,6 +30,7 @@ export class SettingPage implements OnInit, OnDestroy {
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
   francisemode = localStorage.getItem('francisemode') ? true : false;
+  qrMode = localStorage.getItem('qrMode') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
   productFallLimit = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
@@ -75,6 +76,7 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('isMusicMuted', this.isMusicMuted ? 'yes' : '');
     localStorage.setItem('isAds', this.isAds ? 'yes' : '');
     localStorage.setItem('francisemode', this.francisemode ? 'yes' : '');
+    localStorage.setItem('qrMode', this.qrMode ? 'yes' : '');
     localStorage.setItem('musicVolume', this.musicVolume + '');
 
     localStorage.setItem('portName', this.portName);

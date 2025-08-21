@@ -184,6 +184,10 @@ const routes: Routes = [
     path: 'smart-cb-map',
     loadChildren: () => MapPageModule
   },
+  {
+    path: 'qr-open-stock',
+    loadChildren: () => import('./qr-open-stock/qr-open-stock.module').then( m => m.QrOpenStockPageModule)
+  },
 ];
 @NgModule({
   imports: [
