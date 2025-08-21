@@ -156,12 +156,22 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const getOrders = async (req: Request, res: Response) => {
   const user = res.locals.user;
+  const query = req.query['q']
   try {
 
-    const whereCondition: WhereOptions<any> = {
-      userUuid: user.uuid,
-      completedTime: { [Op.is]: null },
-    };
+    let whereCondition: WhereOptions<any> = {}
+    if (query == 'complete') {
+      whereCondition = {
+        userUuid: user.uuid,
+        completedTime: { [Op.ne]: null },
+      };
+    }else{
+      whereCondition = {
+        userUuid: user.uuid,
+        completedTime: { [Op.is]: null },
+      };
+    }
+
 
     const orders = await models.Order.findAll({
       where: whereCondition,

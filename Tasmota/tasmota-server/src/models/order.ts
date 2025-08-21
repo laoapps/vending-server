@@ -16,6 +16,7 @@ export interface OrderAttributes {
   data: any;
   relay: number;
   conditionValue: number;
+  description:any;
 }
 
 export interface OrderAssociations {
@@ -57,6 +58,10 @@ export function initOrderModel(sequelize: Sequelize) {
       paidTime: { type: DataTypes.DATE, allowNull: true },
       startedTime: { type: DataTypes.DATE, allowNull: true },
       completedTime: { type: DataTypes.DATE, allowNull: true },
+      description: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
       userUuid: DataTypes.STRING,
