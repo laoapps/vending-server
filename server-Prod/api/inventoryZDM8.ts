@@ -1731,7 +1731,7 @@ export class InventoryZDM8 implements IBaseClass {
                     res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
                 }
             });
-             router.post(this.path + "/updatewarehouse",
+            router.post(this.path + "/updatewarehouse",
                 this.checkSuperAdmin,
                 this.checkAdmin,
                 async (req, res) => {
@@ -1743,18 +1743,18 @@ export class InventoryZDM8 implements IBaseClass {
                         await ent.sync();
                         const machine = await ent.findOne({ where: { machineId: m } });
                         let result = {} as any;
-                        if(!machine) {
-                            result =await ent.create({machineId:m, data:d});
-                        }else{
-                            result =await machine.update('data', d);
+                        if (!machine) {
+                            result = await ent.create({ machineId: m, data: d });
+                        } else {
+                            result = await machine.update('data', d);
                         }
-                        res.send(PrintSucceeded("updatewarehouse",result , EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("updatewarehouse", result, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
                     }
-            });
+                });
             router.post(this.path + "/getwarehouse",
                 this.checkSuperAdmin,
                 this.checkAdmin,
@@ -1765,13 +1765,13 @@ export class InventoryZDM8 implements IBaseClass {
                         const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
                         await ent.sync();
                         const machine = await ent.findOne({ where: { machineId: m } });
-                        res.send(PrintSucceeded("updatewarehouse",machine , EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("updatewarehouse", machine, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
                     }
-            });
+                });
 
             // Get Mmoney UserInof
             router.post(
@@ -4120,7 +4120,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     async listOnlineMachines(): Promise<Array<{ machine: any, status: any }>> {
         const m = new Array<{ machine: any, status: any }>();
-        for (let index = 0; index < this.wsClient.length; index++) {m.push({machine: this.findMachineId(this.wsClient[index]['machineId']),status:await readMachineStatus(this.wsClient[index]['machineId'])});}
+        for (let index = 0; index < this.wsClient.length; index++) { m.push({ machine: this.findMachineId(this.wsClient[index]['machineId']), status: await readMachineStatus(this.wsClient[index]['machineId']) }); }
         return m;
     }
     findOnlneMachine(machineId: string): any {
@@ -4734,7 +4734,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     const params = ifError;
 
                                     console.log(`params error der`, params);
-                                    axios.post(LAAB_CoinTransfer, params,{timeout:3000}).then(run_return => {
+                                    axios.post(LAAB_CoinTransfer, params, { timeout: 10000 }).then(run_return => {
                                         console.log(`return error 1`, run_return.data);
 
                                         // if transfer back fail database will save data log
@@ -5635,7 +5635,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             // console.log("MyQR", qr);
 
-            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17",timeout:3000 } })
+            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17", timeout: 10000 } })
                 .then((rx) => {
                     console.log("getMyMmoney", rx);
                     if (rx.status) {
@@ -5706,7 +5706,7 @@ export class InventoryZDM8 implements IBaseClass {
                 .post<ILaoQRGenerateQRRes>(
                     "https://laabx-api.laoapps.com/api/v1/laab/genmmoneyqr_vending",
                     qr,
-                    { headers: { 'Content-Type': 'application/json' } }
+                    { headers: { 'Content-Type': 'application/json', timeout: 10000 } }
                 )
                 .then((rx) => {
                     console.log("generateBillLaoQRPro", rx.data);
@@ -6368,7 +6368,7 @@ export class InventoryZDM8 implements IBaseClass {
                     requestId: transactionID,
                     billNumber: transactionID
                 },
-                    { headers, httpsAgent: agent,timeout:3000 });
+                    { headers, httpsAgent: agent, timeout: 10000 });
 
                 if (res.data.success) {
                     axios.post('https://vending-service-api5.laoapps.com', {
@@ -6379,7 +6379,7 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                     }, {
                         headers: {
-                            "Content-Type": 'application/json',timeout:3000
+                            "Content-Type": 'application/json', timeout: 10000
                         }
                     }).then(async r => {
                         // console.log('=====>CONFIRM PAID', r.data);
@@ -6441,7 +6441,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }, {
                     headers: {
-                        "Content-Type": 'application/json',timeout:3000
+                        "Content-Type": 'application/json', timeout: 10000
                     }
                 }).then(async r => {
                     // console.log('=====>CONFIRM', r.data);
@@ -6527,7 +6527,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json',timeout:3000
+                    'Content-Type': 'application/json', timeout: 10000
                 }
             }).then(r => {
                 // console.log('DATA confirmMmoneyCashin', r.data);
@@ -6564,7 +6564,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, params, {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',timeout:3000
+                    'Content-Type': 'application/x-www-form-urlencoded', timeout: 10000
                 }
             }).then(r => {
                 // console.log('DATA loginMmoney', url, r.data);
@@ -6620,7 +6620,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('IMMoneyRequestRes', data);
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json',timeout:3000
+                    'Content-Type': 'application/json', timeout: 10000
                 }
             }).then(r => {
                 // console.log('DATA requestMmoneyCashin', r.data);
