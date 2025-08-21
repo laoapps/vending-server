@@ -6803,13 +6803,17 @@ export class InventoryZDM8 implements IBaseClass {
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exit");
-                                ws["machineId"] = machineId.machineId;
+                                ws["machineId"] = machineId?.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
                                 this.wsClient?.find((v, i) => {
-                                    if (v["machineId"] == machineId.machineId) {
-                                        v.close(0);
-                                        this.wsClient?.splice(i, 1);
+                                    if (v) {
+                                        if (v["machineId"] == machineId?.machineId) {
+                                            v?.close(0);
+                                            this.wsClient?.splice(i, 1);
+                                        }
+                                    } else {
+                                        this.wsClient.splice(i, 1);
                                     }
                                 });
                                 this.wsClient?.push(ws);

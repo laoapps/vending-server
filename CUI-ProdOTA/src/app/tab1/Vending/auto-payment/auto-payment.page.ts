@@ -479,6 +479,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
             // this.apiService.myTab1.clearStockAfterLAABGo();
             this.close();
             this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `ERR Generate QR :${JSON.stringify(response)}` })
             return resolve(IENMessage.success);
 
           }
@@ -541,6 +542,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           // this.apiService.myTab1.clearStockAfterLAABGo();
           this.close();
+          this.apiService.IndexedLogDB.addBillProcess({ errorData: `ERROR Generate QR :${JSON.stringify(error)}` })
           this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
           return resolve(IENMessage.success);
         });
