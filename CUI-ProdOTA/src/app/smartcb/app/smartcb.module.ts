@@ -51,7 +51,6 @@ import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
-    LoginPage,
     HomePage,
     AdminDashboardPage,
     OwnerDashboardPage,

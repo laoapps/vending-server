@@ -15,6 +15,6 @@ import { UserSchedulesPage } from './user-schedule.page';
     IonicModule,
     UserSchedulePageRoutingModule
   ],
-  // declarations: [UserSchedulePage]
+  declarations: [UserSchedulesPage]
 })
 export class UserSchedulePageModule {}

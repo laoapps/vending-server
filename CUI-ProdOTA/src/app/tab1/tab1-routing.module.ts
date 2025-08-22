@@ -202,22 +202,6 @@ const routes: Routes = [
   {
     path: 'auto-payment',
     loadChildren: () => AutoPaymentPageModule
-  },
-  {
-    path: 'user-schedules',
-    loadChildren: () => UserSchedulePageModule
-  },
-  {
-    path:'admin-unregistered-devices',
-    loadChildren: () => AdminUnregisteredDevicesPageModule
-  },
-  {
-    path: 'admin-reports',
-    loadChildren: () => AdminReportsPageModule
-  },
-  {
-    path:'smart-cb-login',
-    loadChildren: () => LoginPageModule
   }
 
 

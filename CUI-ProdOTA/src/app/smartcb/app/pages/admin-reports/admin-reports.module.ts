@@ -16,6 +16,6 @@ import { JsonPipe } from '@angular/common';
     AdminReportsPageRoutingModule,
     JsonPipe
   ],
-  // declarations: [AdminReportsPage]
+  declarations: [AdminReportsPage]
 })
 export class AdminReportsPageModule {}
