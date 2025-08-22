@@ -32,15 +32,9 @@ export class ApiService {
   //   return this.http.post(`${this.apiUrl}/devices/getDevicesBy`,data, this.getAuthHeaders());
   // }
 
-<<<<<<< HEAD
-  // orders(data): Observable<any> {
-  //   return this.http.post(`${this.apiUrl}/orders`,data, this.getAuthHeaders());
-  // }
-=======
   orders(data): Observable<any> {
     return this.http.post(`${this.apiUrl}/orders/hmvending`,data, this.getAuthHeaders());
   }
->>>>>>> 28ca5f25e34855b639dd799c29f9ee5b318d4426
   owners_detail(): Observable<any> {
     return this.http.get(`${this.apiUrl}/owners/findByID`, this.getAuthHeaders());
   }
