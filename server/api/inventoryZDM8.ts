@@ -6731,11 +6731,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 ws["machineId"] = machineId.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
-                                this.wsClient?.find((v, i) => {
+                                 this.wsClient?.find((v, i) => {
                                     if (v) {
                                         if (v["machineId"] == machineId?.machineId) {
-                                            v?.close(0);
-                                            this.wsClient?.splice(i, 1);
+                                            v?.close(1000);
                                             return true;
                                         }
                                     }
@@ -6774,11 +6773,11 @@ export class InventoryZDM8 implements IBaseClass {
                                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
                                                     ));
                                             }
-                                            else ws.close(0);
+                                            else ws.close(1000);
                                         })
                                         .catch((e) => {
                                             console.log("Error list machine adminlogin", e);
-                                            ws.close(0);
+                                            ws.close(1000);
                                         });
                                 }
                                 else {
@@ -6804,21 +6803,21 @@ export class InventoryZDM8 implements IBaseClass {
                                                                     PrintSucceeded(d.command, res, EMessage.succeeded, null)
                                                                 ));
                                                         }
-                                                        else ws.close(0);
+                                                        else ws.close(1000);
                                                     })
                                                     .catch((e) => {
                                                         console.log("Error list machine adminlogin2", e);
-                                                        ws.close(0);
+                                                        ws.close(1000);
                                                     });
                                             } catch (error) {
                                                 console.log(error);
-                                                ws.close(0)
+                                                ws.close(1000)
                                             }
 
                                         })
                                         .catch((e) => {
                                             console.log(e);
-                                            ws.close(0);
+                                            ws.close(1000);
                                         });
                                 }
 
