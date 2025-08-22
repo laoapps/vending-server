@@ -58,6 +58,7 @@ export class LoginPage implements OnInit {
     this.auth.login(data).subscribe(async (res:any) => {
       console.log('login res',res);
       if (res.status == 1) {
+        localStorage.setItem('phonenumber',a)
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('uuid', res.data.uuid);
         this.phonenumber = '';

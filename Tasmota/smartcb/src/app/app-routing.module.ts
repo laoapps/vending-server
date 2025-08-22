@@ -103,6 +103,14 @@ const routes: Routes = [
     path: 'list-all-groups',
     loadChildren: () => import('./components-user/list-all-groups/list-all-groups.module').then( m => m.ListAllGroupsPageModule)
   },
+  {
+    path: 'control-order',
+    loadChildren: () => import('./components-owner/control-order/control-order.module').then( m => m.ControlOrderPageModule)
+  },
+  {
+    path: 'order',
+    loadChildren: () => import('./components-user/order/order.module').then( m => m.OrderPageModule)
+  },
 
  
 ];

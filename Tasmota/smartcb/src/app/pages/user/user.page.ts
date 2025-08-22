@@ -13,6 +13,7 @@ import { ShowPageketPage } from 'src/app/components-user/show-pageket/show-pagek
 import { MapPage } from 'src/app/components-user/map/map.page';
 import { ApiService } from 'src/app/services/api.service';
 import { ListAllGroupsPage } from 'src/app/components-user/list-all-groups/list-all-groups.page';
+import { OrderPage } from 'src/app/components-user/order/order.page';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -22,16 +23,27 @@ import { ListAllGroupsPage } from 'src/app/components-user/list-all-groups/list-
 })
 export class UserPage implements OnInit {
   public menus = [
-    {title:'Order',icon: 'time-outline',path:HistoryPage},
+    {title:'Order',icon: 'time-outline',path:OrderPage},
     // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
     {title:'Scan QR Code',icon: 'qr-code-outline'},
     {title:'Map',icon: 'map-outline',path:MapPage},
     // {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
     {title:'Register owner',icon: 'albums-outline'},
   ]
+  phonenumber:any
   constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
 
   ngOnInit() {
+
+  }
+
+  ionViewWillEnter() {
+    const a = localStorage.getItem("phonenumber");
+      if (a) {
+        this.phonenumber = a.replace("+85620", "").replace(/(\d[ .-]?){6}$/, x => x.replace(/\d/g, 'x').substring(2, a.length)) + a.replace("+85620", "").substring(6, a.length)
+      } else {
+        this.m.alertError('alert_error.message_something_wrong');
+      }
   }
 
   logout(){
@@ -62,8 +74,8 @@ export class UserPage implements OnInit {
             this.m.onAlert('Register owner success!!')
           }
         },(error) => {
-          if (error?.error == 'Owner already registered') {
-            this.m.onAlert('already registered!!')
+          if (error?.error?.error == 'Owner already registered') {
+            this.m.onAlert('Already registered!!')
           }else{
             this.m.alertError('Register failed')
           }

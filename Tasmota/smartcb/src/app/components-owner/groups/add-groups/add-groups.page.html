@@ -83,7 +83,7 @@
       </ion-button>
       <ion-button *ngIf="title == 'edit'" expand="block" shape="round" color="warning" class="edit-button" (click)="EditGroup()">
         <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-        Add groups
+        Edit groups
       </ion-button>
     </ion-card-content>
   </ion-card>
@@ -111,8 +111,8 @@
     <ion-item *ngFor="let pkg of schedulePackages">
       <ion-checkbox
         slot="start"
-        [checked]="newGroup.description?.packages.includes(pkg.id)"
-        (ionChange)="toggleSelection(pkg.id, $event.detail.checked)">
+        [checked]="check_package(pkg?.id)"
+        (ionChange)="toggleSelection(pkg?.id, $event.detail.checked)">
       </ion-checkbox>
       <ion-label>
         <h2>ID: {{ pkg.id }}</h2>

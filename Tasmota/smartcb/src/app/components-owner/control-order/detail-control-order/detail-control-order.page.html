@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>List order control order owner</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-no-padding">
+  <ion-list>
+    <ion-item *ngFor="let item of order">
+      <ion-grid>
+        <ion-row class="row-main">
+          <ion-col size="12" size-md="2" class="col-id col-list">
+            <div class="label_id">ID: </div>
+            <div class="value">{{ item.id }}</div>
+          </ion-col>
+
+          <ion-col size="12" size-md="3" class="col-list">
+            <div class="label_id">Device:</div>
+            <div class="value">{{ item.deviceId }}</div>
+          </ion-col>
+
+          <ion-col size="12" size-md="3" class="col-list">
+            <div class="label_id">Package:</div>
+            <div class="value">{{ item.packageId }}</div>
+          </ion-col>
+
+          <ion-col size="12" size-md="4" class="times-col">
+            <div class="time-row">
+              <div>
+                <div class="label">Started</div>
+                <div class="value">{{item.startedTime ? (item.startedTime | date:'short') : '-' }}</div>
+              </div>
+              <div>
+                <div class="label">Completed</div>
+                <div class="value">{{ item.completedTime ? (item.completedTime | date:'short') : '-' }}</div>
+              </div>
+              <div>
+                <div class="label">Condition</div>
+                <div class="value">{{ item.conditionValue }}</div>
+              </div>
+            </div>
+          </ion-col>
+
+          <div class="time-row">
+            <ion-button (click)="onClick_control(item?.deviceId)">Start</ion-button>
+          </div>
+        </ion-row>
+      </ion-grid>
+    </ion-item>
+  </ion-list>
+</ion-content>

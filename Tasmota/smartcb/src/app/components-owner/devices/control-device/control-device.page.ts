@@ -51,7 +51,7 @@ export class ControlDevicePage implements OnInit {
               response
             );
             this.m.onDismiss();
-            this.m.alert_justOK('ontrol command sent successfully.');
+            this.m.alert_justOK('Control command sent successfully.');
             return;
           },
           (error) => {
