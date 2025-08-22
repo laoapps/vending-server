@@ -33,7 +33,7 @@ export class ApiService {
   }
 
   orders(data): Observable<any> {
-    return this.http.post(`${this.apiUrl}/orders`,data, this.getAuthHeaders());
+    return this.http.post(`${this.apiUrl}/orders/hmvending`,data, this.getAuthHeaders());
   }
   owners_detail(): Observable<any> {
     return this.http.get(`${this.apiUrl}/owners/findByID`, this.getAuthHeaders());
