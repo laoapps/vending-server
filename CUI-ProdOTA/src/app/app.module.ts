@@ -25,7 +25,7 @@ import {NgPipesModule} from 'ngx-pipes';
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,
     // NotifierModule,
      OrderModule,
-     NgPipesModule
+     NgPipesModule,
   ],
   providers: [ 
     // VideoPlayer,

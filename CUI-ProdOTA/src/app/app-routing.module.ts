@@ -190,7 +190,7 @@ const routes: Routes = [
   },
   {
     path: 'smartcb',
-    loadChildren: () => import('../app/smartcb/app/app.module').then( m => m.AppModule)
+    loadChildren: () => import('./smartcb/app/smartcb.module').then(m => m.SmartcbModule)
   },
 ];
 @NgModule({
