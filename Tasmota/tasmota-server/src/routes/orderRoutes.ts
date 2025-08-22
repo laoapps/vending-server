@@ -9,6 +9,7 @@ router.post('/', authMiddleware, createOrder); // Create order (user only)
 router.post('/hmvending', authHMVending, createOrder); // Create order (owner only) HMVENDING
 
 router.post('/list', authMiddleware, getOrders); // List user orders
+router.post('/listHMVending', authHMVending, getOrders); // List user orders
 router.post('/getActiveOrdersByDeviceID/:id', authMiddleware, getActiveOrdersByDeviceID); // for owner
 router.get('/:id', authMiddleware, getOrderById); // Get specific order (user only)
 router.get('/hmvending/:id', authHMVending, getOrderByIdHMVending); // Get specific order (HMVending only)
