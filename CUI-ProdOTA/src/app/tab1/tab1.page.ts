@@ -99,7 +99,7 @@ import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 export class Tab1Page implements OnDestroy {
   readyState = false;
   contact = localStorage.getItem('contact') || '55516321';
-
+  menus=[];
 
 
 

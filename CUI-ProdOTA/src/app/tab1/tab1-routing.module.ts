@@ -22,6 +22,10 @@ import { PlayGamesPageModule } from './Vending/play-games/play-games.module';
 import { OrderCartPageModule } from './Vending/order-cart/order-cart.module';
 import { OrderPaidPageModule } from './Vending/order-paid/order-paid.module';
 import { AutoPaymentPageModule } from './Vending/auto-payment/auto-payment.module';
+import { UserSchedulePageModule } from '../smartcb/app/pages/user-schedules/user-schedules.module';
+import { AdminUnregisteredDevicesPageModule } from '../smartcb/app/pages/admin-unregistered-devices/admin-unregistered-devices.module';
+import { AdminReportsPageModule } from '../smartcb/app/pages/admin-reports/admin-reports.module';
+import { LoginPageModule } from '../smartcb/app/auth/login/login.module';
 const routes: Routes = [
   // {
   //   path: '',
@@ -198,7 +202,24 @@ const routes: Routes = [
   {
     path: 'auto-payment',
     loadChildren: () => AutoPaymentPageModule
+  },
+  {
+    path: 'user-schedules',
+    loadChildren: () => UserSchedulePageModule
+  },
+  {
+    path:'admin-unregistered-devices',
+    loadChildren: () => AdminUnregisteredDevicesPageModule
+  },
+  {
+    path: 'admin-reports',
+    loadChildren: () => AdminReportsPageModule
+  },
+  {
+    path:'smart-cb-login',
+    loadChildren: () => LoginPageModule
   }
+
 
   
 ];

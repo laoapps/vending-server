@@ -14,7 +14,7 @@ import { QrCodeModule } from 'ng-qrcode';
 import { IonicStorageModule, Storage } from '@ionic/storage-angular';
 import { OrderModule } from 'ngx-order-pipe';
 
-
+import { JsonPipe } from '@angular/common';
 import {NgPipesModule} from 'ngx-pipes';
 
 // today
@@ -22,7 +22,7 @@ import {NgPipesModule} from 'ngx-pipes';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule,   IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }), AppRoutingModule,HttpClientModule,QrCodeModule,
+  imports: [BrowserModule,   IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }), AppRoutingModule,HttpClientModule,QrCodeModule,JsonPipe,
     // NotifierModule,
      OrderModule,
      NgPipesModule,
