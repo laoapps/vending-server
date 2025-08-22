@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { ControlOrderPage } from 'src/app/components-owner/control-order/control-order.page';
 import { DevicesPage } from 'src/app/components-owner/devices/devices.page';
 import { GenQrCodePage } from 'src/app/components-owner/gen-qr-code/gen-qr-code.page';
 import { GroupsPage } from 'src/app/components-owner/groups/groups.page';
@@ -19,6 +20,7 @@ export class OwnerPage implements OnInit {
     { title: 'Pagekets', icon: 'layers-outline', path: PageketsPage },
     { title: 'Devices', icon: 'hardware-chip-outline', path: DevicesPage },
     { title: 'Groups', icon: 'people-outline', path: GroupsPage },
+    { title: 'Control order', icon: 'time-outline', path: ControlOrderPage },
     { title: 'Gen Qr code owner', icon: 'qr-code-outline', path: GenQrCodePage },
     { title: 'Gen Qr code devices', icon: 'qr-code-outline', path: ListDevicesQrPage },
   ];

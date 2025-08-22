@@ -26,7 +26,8 @@
         <p class="price">Price: <strong>{{ item.price | number}}</strong></p>
         <p class="condition">
           Condition: <span class="condition-type">{{ item.conditionType }}</span> = 
-          <span class="condition-value">{{ item.conditionValue }}</span>
+          <span *ngIf="item.conditionType == 'time_duration'" class="condition-value">{{ item.conditionValue | number}} Minutes</span>
+          <span *ngIf="item.conditionType == 'energy_consumption'" class="condition-value">{{ item.conditionValue | number}} Kwh</span>
         </p>
       </ion-label>
 

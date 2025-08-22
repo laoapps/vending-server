@@ -95,7 +95,9 @@ export class AddGroupsPage implements OnInit {
       }else{
         this.img_show = ''
       }
-      this.seleted = this.newGroup.description.packages
+      if (this.newGroup.description.packages) {
+        this.seleted = this.newGroup.description.packages
+      }
       this.load_pageket();
 
     }else{
@@ -158,14 +160,15 @@ export class AddGroupsPage implements OnInit {
   }
 
   EditGroup(){
-    if (!this.newGroup.name || !this.newGroup.description.lat || !this.newGroup.description.lng || !this.newGroup.description.image || !this.newGroup.description.packages) {
+    if (this.img_Url) {
+      this.newGroup.description.image = [this.img_Url]
+    }
+    if (!this.newGroup.name || !this.newGroup.description.lat || !this.newGroup.description.image || !this.newGroup.description.lng || !this.newGroup.description.packages) {
       this.m.onAlert('please input field!!')
       return
     }
 
-    if (this.img_Url) {
-      this.newGroup.description.image = [this.img_Url]
-    }
+
     this.m.onLoading('')
     let data = {
       name:this.newGroup.name,
@@ -257,7 +260,7 @@ export class AddGroupsPage implements OnInit {
 
 
   // =====================================open package
-  seleted = []
+  seleted:any[] = []
   openPackageSelector(){
     this.page = 2
   }
@@ -265,6 +268,8 @@ export class AddGroupsPage implements OnInit {
   toggleSelection(id: string, checked: boolean) {
     console.log('====================================');
     console.log('id',id);
+    console.log('checked',checked);
+    console.log('seleted',typeof(this.seleted),this.seleted);
     console.log('====================================');
     if (checked) {
       this.seleted.push(id);
@@ -356,6 +361,14 @@ export class AddGroupsPage implements OnInit {
         console.log('====================================');
       }
     }, 200);
+  }
+
+  check_package(id){
+    if (this.newGroup.description?.packages?.includes(id)) {
+      return true
+    }else{
+      return false
+    }
   }
 
   

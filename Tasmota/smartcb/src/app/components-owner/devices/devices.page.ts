@@ -58,8 +58,14 @@ export class DevicesPage implements OnInit {
           this.mqttService
             .subscribeToDevice(device.tasmotaId)
             .subscribe((message) => {
+              console.log('====================================');
+              console.log('message',message);
+              console.log('====================================');
               try {
                 device.status = JSON.parse(message.payload.toString());
+                console.log('====================================');
+                console.log(message.payload.toString());
+                console.log('====================================');
               } catch (error) {
                 this.m.onDismiss();
                 // this.m.onAlert('Failed to parse message for device!!');

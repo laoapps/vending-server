@@ -62,14 +62,25 @@ export class AddPageketsPage implements OnInit {
   }
 
   async addSchedulePackage() {
-    if (
-      !this.newSchedulePackage.name ||
+    let change_value:any
+    if (!this.newSchedulePackage.name ||
       this.newSchedulePackage.price <= 0 ||
       this.newSchedulePackage.conditionValue <= 0 || !this.img_Url
     ) {
       this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
+    if (this.newSchedulePackage.price < 1000) {
+      this.m.onAlert('Please input price more than 1000 or equal 1000')
+      return;
+    }
+
+    if (this.newSchedulePackage.conditionType == 'energy_consumption') {
+      change_value = this.newSchedulePackage.conditionValue * 1000
+    }else{
+      change_value = this.newSchedulePackage.conditionValue
+    }
+
     this.newSchedulePackage.description.image = [this.img_Url]
     console.log('====================================');
     console.log(this.newSchedulePackage);
@@ -80,7 +91,7 @@ export class AddPageketsPage implements OnInit {
         this.newSchedulePackage.name,
         this.newSchedulePackage.price,
         this.newSchedulePackage.conditionType,
-        this.newSchedulePackage.conditionValue,
+        change_value,
         this.newSchedulePackage.description
       )
       .subscribe(
@@ -107,6 +118,8 @@ export class AddPageketsPage implements OnInit {
   }
 
   async editSchedulePackage(){
+    let change_value:any
+
         if (
       !this.newSchedulePackage.name ||
       this.newSchedulePackage.price <= 0 ||
@@ -115,6 +128,26 @@ export class AddPageketsPage implements OnInit {
       this.m.onAlert('Please fill in all fields with valid values.')
       return;
     }
+
+    if (this.newSchedulePackage.price < 1000) {
+      this.m.onAlert('Please input price more than 1000 or equal 1000')
+      return;
+    }
+
+    if (this.newSchedulePackage.conditionValue != this.data?.conditionValue) {
+      if (this.newSchedulePackage.conditionType == 'energy_consumption') {
+        change_value = this.newSchedulePackage.conditionValue * 1000
+      }else{
+        change_value = this.newSchedulePackage.conditionValue
+      }
+    }else{
+      if (this.newSchedulePackage.conditionType == 'energy_consumption') {
+        change_value = this.newSchedulePackage.conditionValue * 1000
+      }else{
+        change_value = this.newSchedulePackage.conditionValue
+      }
+    }
+
 
     if (this.img_Url) {
       this.newSchedulePackage.description.image = [this.img_Url]
@@ -134,7 +167,7 @@ export class AddPageketsPage implements OnInit {
         this.newSchedulePackage.name,
         this.newSchedulePackage.price,
         this.newSchedulePackage.conditionType,
-        this.newSchedulePackage.conditionValue,
+        change_value,
         this.newSchedulePackage.description
       )
       .subscribe(
