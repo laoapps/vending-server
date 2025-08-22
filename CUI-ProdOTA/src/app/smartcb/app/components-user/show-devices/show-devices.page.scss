@@ -1,0 +1,50 @@
+.list-container {
+	--background: #f8fafc;
+  
+	.pageket-item {
+	  border-radius: 12px;
+	  margin-bottom: 12px;
+	  background: #ffffff;
+	  box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.07);
+	//   --padding-start: 16px;
+	//   --padding-end: 16px;
+	}
+  
+	ion-label {
+	  .name {
+		font-weight: 700;
+		font-size: 1.25rem;
+		color: #222;
+		margin-bottom: 6px;
+	  }
+  
+	  .price {
+		font-size: 1rem;
+		color: #00695c;
+		margin-bottom: 4px;
+	  }
+  
+	  .condition {
+		font-size: 0.9rem;
+		color: #555;
+  
+		.condition-type {
+		  font-weight: 600;
+		  color: #00796b;
+		}
+  
+		.condition-value {
+		  font-weight: 600;
+		  color: #004d40;
+		}
+	  }
+	}
+  
+	.empty-state {
+	  text-align: center;
+	  margin-top: 100px;
+	  color: #999;
+	  font-size: 1.1rem;
+	  font-style: italic;
+	}
+  }

@@ -1,0 +1,129 @@
+<ion-content class="ion-padding" style="margin: 100px 20px;">
+
+  <ion-card >
+    <ion-card-header>
+      <ion-card-title class="ion-text-center">Welcome to Tasmota Control</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content >
+
+      <!-- Token Input -->
+      <ion-item *ngIf="!role">
+        <ion-label position="floating">Enter Token</ion-label>
+        <ion-input [(ngModel)]="token" type="text"></ion-input>
+      </ion-item>
+
+      <ion-button *ngIf="!role" expand="block" class="ion-margin-top" (click)="loadRole()">
+        ✅ Validate Token
+      </ion-button>
+
+      <ion-button *ngIf="role && role !== 'owner'" expand="block" color="secondary" class="ion-margin-top" (click)="registerOwner()">
+        📝 Register as Owner
+      </ion-button>
+
+      <!-- Admin Section -->
+      <!-- <ion-list *ngIf="role === 'admin'" class="ion-margin-top">
+        <ion-list-header>
+          <ion-label color="primary"><strong>Admin Menu</strong></ion-label>
+        </ion-list-header>
+
+        <ion-item button (click)="navigateTo('/admin-dashboard')">
+          <ion-label>📟 View All Devices</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="navigateTo('/admin-reports')">
+          <ion-label>📊 View Reports</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="navigateTo('/admin-unregistered-devices')">
+          <ion-label>⚙️ Manage Unregistered Devices</ion-label>
+        </ion-item>
+      </ion-list> -->
+
+      <!-- Owner Section -->
+      <!-- <ion-list *ngIf="role === 'owner'" class="ion-margin-top">
+        <ion-list-header>
+          <ion-label color="tertiary"><strong>Owner Menu</strong></ion-label>
+        </ion-list-header>
+
+        <ion-item button (click)="tomodal('owner')">
+          <ion-label>🔌 Manage Devices</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="navigateTo('/owner-reports')">
+          <ion-label>📈 View Reports</ion-label>
+        </ion-item>
+      </ion-list> -->
+
+      <!-- <ion-list *ngIf="role === 'owner'" class="owner-menu ion-margin-top">
+        <ion-list-header lines="full">
+          <ion-label class="menu-header">Owner Menu</ion-label>
+        </ion-list-header>
+      
+        <ion-item button detail="false" (click)="tomodal('owner')" class="menu-item">
+          <ion-icon name="hardware-chip-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>Manage Devices</ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+        </ion-item>
+      
+        <ion-item button detail="false" (click)="navigateTo('/owner-reports')" class="menu-item">
+          <ion-icon name="bar-chart-outline" slot="start" color="success"></ion-icon>
+          <ion-label>View Reports</ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+        </ion-item>
+      </ion-list> -->
+
+      <div class="ion-padding dashboard-container"  *ngIf="role === 'owner'">
+        <h1 class="dashboard-title">Owner Dashboard</h1>
+      
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <ion-card button (click)="tomodal('owner')" class="menu-card">
+                <ion-card-header class="card-header">
+                  <ion-icon name="hardware-chip-outline" class="menu-icon"></ion-icon>
+                  <div>Manage Devices</div>
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+      
+            <ion-col size="6">
+              <ion-card button (click)="navigateTo('/owner-reports')" class="menu-card">
+                <ion-card-header class="card-header">
+                  <ion-icon name="bar-chart-outline" class="menu-icon"></ion-icon>
+                  <div>View Reports</div>
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <div class="logout-container">
+          <ion-button expand="block" color="danger" shape="round" (click)="logout()">
+            <ion-icon name="log-out-outline" slot="start"></ion-icon>
+            Logout
+          </ion-button>
+        </div>
+      </div>
+      
+      
+
+      <!-- User Section -->
+      <ion-list *ngIf="role === 'user'" class="ion-margin-top">
+        <ion-list-header>
+          <ion-label color="success"><strong>User Menu</strong></ion-label>
+        </ion-list-header>
+
+        <ion-item button (click)="tomodal('user')">
+          <ion-label>📋 List Devices</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="navigateTo('/user-schedules')">
+          <ion-label>🕒 Subscribe to Schedules</ion-label>
+        </ion-item>
+      </ion-list>
+
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

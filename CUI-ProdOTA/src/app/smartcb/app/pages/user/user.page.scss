@@ -1,0 +1,249 @@
+// .menu-page {
+//     --background: #f4f6f8;
+//   }
+  
+//   .menu-card {
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     justify-content: center;
+//     height: 160px;
+//     text-align: center;
+//     border-radius: 16px;
+//     background: white;
+//     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+//     transition: transform 0.2s ease, box-shadow 0.2s ease;
+//   }
+  
+//   .menu-card:hover {
+//     transform: translateY(-5px);
+//     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+//   }
+  
+//   .menu-icon {
+//     font-size: 2.5rem;
+//     color: var(--ion-color-primary);
+//     margin-bottom: 10px;
+//   }
+  
+//   ion-card-title {
+//     font-size: 1rem;
+//     font-weight: bold;
+//     color: var(--ion-color-dark);
+//   }
+  
+
+// ======================================================
+
+// .menu-page {
+//   --background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+// }
+
+// .menu-grid {
+//   padding: 16px;
+// }
+
+// .menu-row {
+//   display: flex;
+//   flex-wrap: wrap;
+//   justify-content: center;
+// }
+
+// .menu-col {
+//   display: flex;
+//   justify-content: center;
+// }
+
+// .menu-card {
+//   background: rgba(255, 255, 255, 0.9);
+//   border-radius: 12px;
+//   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+//   transition: transform 0.3s ease, box-shadow 0.3s ease;
+//   overflow: hidden;
+//   margin: 8px;
+//   width: 100%;
+//   max-width: 200px;
+// }
+
+// .menu-card:hover {
+//   transform: translateY(-5px);
+//   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+// }
+
+// .card-content {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   padding: 16px;
+// }
+
+// .menu-icon {
+//   font-size: 32px;
+//   color: #4a90e2;
+//   margin-bottom: 8px;
+// }
+
+// .card-header {
+//   padding: 0;
+//   text-align: center;
+// }
+
+// .card-title {
+//   font-size: 1.1rem;
+//   color: #333;
+//   font-weight: 500;
+// }
+
+// =====================================
+
+// .profile-section {
+//   display: flex;
+//   align-items: center;
+//   padding: 16px;
+//   background: var(--ion-color-light);
+//   border-bottom: 1px solid var(--ion-color-medium);
+// }
+
+// .profile-avatar {
+//   width: 64px;
+//   height: 64px;
+//   margin-right: 12px;
+// }
+
+// .profile-info {
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// .user-name {
+//   margin: 0;
+//   font-size: 1.2rem;
+//   font-weight: 600;
+// }
+
+// .user-email {
+//   margin: 0;
+//   font-size: 0.9rem;
+//   color: var(--ion-color-medium);
+// }
+
+
+// .menu-grid {
+//   padding: 5px;
+// }
+
+// .menu-col {
+//   padding: 8px;
+// }
+
+// .menu-card {
+//   border-radius: 20px;
+//   box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+//   transition: transform 0.2s ease, box-shadow 0.2s ease;
+//   text-align: center;
+
+//   &:active {
+//     transform: scale(0.96);
+//   }
+// }
+
+// .card-content {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   padding: 10px;
+//   // padding: 24px 12px;
+// }
+
+// .icon-wrapper {
+//   background: var(--ion-color-light);
+//   border-radius: 50%;
+//   padding: 16px;
+//   margin-bottom: 12px;
+// }
+
+// .menu-icon {
+//   font-size: 1.8rem;
+//   color: var(--ion-color-primary);
+// }
+
+// .card-title {
+//   font-size: 0.9rem;
+//   font-weight: 600;
+//   color: var(--ion-color-dark);
+//   text-align: center;
+// }
+
+
+// ============================
+
+.menu-page {
+  --background: var(--ion-color-light);
+
+  .profile-card {
+    margin: 0;
+    border-radius: 0 0 1.5rem 1.5rem;
+    background: var(--ion-color-primary);
+    color: #fff;
+    box-shadow: none;
+  }
+
+  .profile-content {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .profile-avatar {
+    width: 64px;
+    height: 64px;
+    margin-right: 1rem;
+    border: 2px solid #fff;
+  }
+
+  .user-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .user-email {
+    font-size: 0.9rem;
+    opacity: 0.85;
+  }
+
+  .menu-grid {
+    padding: 1rem;
+  }
+
+  .menu-card {
+    border-radius: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+
+  .menu-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .menu-icon {
+    font-size: 2rem;
+    color: var(--ion-color-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .menu-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ion-color-dark);
+    margin: 0;
+  }
+}

@@ -1,0 +1,56 @@
+ion-content {
+    --background: #f4f6f9; // ພື້ນຫຼັງເບົາໆ
+  }
+  
+  ion-card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin: 20px auto;
+    max-width: 600px;
+  }
+  
+  ion-card-header {
+    background: var(--ion-color-primary);
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  ion-card-title {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  
+  ion-card-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+  }
+  
+  ion-card-content {
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 20px;
+  
+    p {
+      margin: 10px 0;
+      strong {
+        color: var(--ion-color-dark);
+        margin-right: 5px;
+      }
+    }
+  }
+  
+  /* ປັບປຸ່ມ back */
+  ion-back-button {
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    ion-card {
+      margin: 10px;
+    }
+  }
+  

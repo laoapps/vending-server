@@ -11,7 +11,7 @@ import { HttpClientModule } from '@angular/common/http';
 // import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { QrCodeModule } from 'ng-qrcode';
 // import { NotifierModule } from 'angular-notifier';
-import { Storage } from '@ionic/storage-angular';
+import { IonicStorageModule, Storage } from '@ionic/storage-angular';
 import { OrderModule } from 'ngx-order-pipe';
 
 
@@ -22,10 +22,11 @@ import {NgPipesModule} from 'ngx-pipes';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,QrCodeModule,
+  imports: [BrowserModule,   IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }), AppRoutingModule,HttpClientModule,QrCodeModule,
     // NotifierModule,
      OrderModule,
-     NgPipesModule
+     NgPipesModule,
+     IonicStorageModule.forRoot(),
   ],
   providers: [ 
     // VideoPlayer,

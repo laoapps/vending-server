@@ -1,0 +1,64 @@
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Admin Dashboard</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item-group>
+          <ion-item-divider>Owners</ion-item-divider>
+          <ion-item *ngFor="let owner of data.owners">
+            <ion-label>{{ owner.phoneNumber }} ({{ owner.uuid }})</ion-label>
+          </ion-item>
+        </ion-item-group>
+        <ion-item-group>
+          <ion-item-divider>Devices</ion-item-divider>
+          <ion-item *ngFor="let device of data.devices">
+            <ion-label>
+              <h2>{{ device.name }}</h2>
+              <p>Tasmota ID: {{ device.tasmotaId }}</p>
+              <p>Zone: {{ device.zone || 'N/A' }}</p>
+              <p>Group: {{ device.group?.name || 'N/A' }}</p>
+              <p>Owner: {{ device.owner.phoneNumber }}</p>
+              <p>Power: {{ device.power }} W</p>
+              <p>Energy: {{ device.energy }} kWh</p>
+              <p>Status: {{ device.status | json }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-item-group>
+        <ion-item-group>
+          <ion-item-divider>Groups</ion-item-divider>
+          <ion-item *ngFor="let group of data.groups">
+            <ion-label>
+              <h2>{{ group.name }}</h2>
+              <p>Owner: {{ group.owner.phoneNumber }}</p>
+              <p>Devices: {{ group.devices.length }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-item-group>
+        <ion-item-group>
+          <ion-item-divider>Schedules</ion-item-divider>
+          <ion-item *ngFor="let schedule of data.schedules">
+            <ion-label>
+              <h2>{{ schedule.device.name }}</h2>
+              <p>Type: {{ schedule.type }}</p>
+              <p>Cron: {{ schedule.cron || 'N/A' }}</p>
+              <p>Command: {{ schedule.command }}</p>
+              <p>Condition: {{ schedule.conditionType || 'N/A' }} {{ schedule.conditionValue || '' }}</p>
+              <p>Active: {{ schedule.active }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-item-group>
+        <ion-item-group>
+          <ion-item-divider>User Assignments</ion-item-divider>
+          <ion-item *ngFor="let ud of data.userDevices">
+            <ion-label>
+              <p>User UUID: {{ ud.userUuid }}</p>
+              <p>Device: {{ ud.device.name }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
