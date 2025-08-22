@@ -4,6 +4,7 @@ import { Map, tileLayer, marker, icon } from 'leaflet';
 import { ShowDevicesPage } from '../show-devices/show-devices.page';
 import { LoadingService } from '../../services/loading.service';
 import { ApiService } from '../../services/api.service';
+import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
 @Component({
   selector: 'app-map',
   templateUrl: './map.page.html',
@@ -25,7 +26,7 @@ export class MapPage implements OnInit {
   });
 
 
-  constructor(public apiService: ApiService, public m: LoadingService) {}
+  constructor(public apiService: ApiService, public m: LoadingService,public ApiVending: ApiVendingService,) {}
 
 
   ngOnInit() {
@@ -41,7 +42,7 @@ export class MapPage implements OnInit {
   load_data() {
     this.m.onLoading('');
   
-    this.apiService.load_all_group().subscribe(
+    this.ApiVending.load_all_group().subscribe(
       (response: any[]) => {
         console.log('Received groups:', response);
         this.m.onDismiss();

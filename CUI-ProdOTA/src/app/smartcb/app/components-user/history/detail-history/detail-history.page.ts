@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { LoadingService } from '../../../services/loading.service';
 import { PhotoProductService } from '../../../services/photo/photo-product.service';
+import { ApiVendingService } from '../../../services/api-for-vending/api-vending.service';
 
 @Component({
   selector: 'app-detail-history',
@@ -17,7 +18,9 @@ export class DetailHistoryPage implements OnInit {
   public image = '../../../assets/icon/image.png'
 
 
-  constructor(public apiService: ApiService, public m: LoadingService,
+  constructor(public apiService: ApiService,
+     public m: LoadingService,
+     public ApiVending:ApiVendingService,
     public caching:PhotoProductService
   ) {}
 
@@ -36,7 +39,7 @@ export class DetailHistoryPage implements OnInit {
     }
     console.log('data',data);
 
-    this.apiService.findByPackageIDs(data).subscribe(async (packages) => {
+    this.ApiVending.findByPackageIDs(data).subscribe(async (packages) => {
       // this.m.onDismiss();
       console.log('====================================');
       console.log('package',packages);
@@ -68,7 +71,7 @@ export class DetailHistoryPage implements OnInit {
       ownerId:Number(this.schedulePackages[0]?.ownerId+''),
       id:this.data?.deviceId
     }
-    this.apiService.getDevicesBy(data).subscribe(async (r)=>{
+    this.ApiVending.getDevicesBy(data).subscribe(async (r)=>{
       console.log('====================================');
       console.log(r);
       console.log('====================================');

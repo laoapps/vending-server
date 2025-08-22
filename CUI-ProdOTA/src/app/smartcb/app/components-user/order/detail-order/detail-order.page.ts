@@ -3,6 +3,7 @@ import { LoadingService } from '../../../services/loading.service';
 import { PhotoProductService } from '../../../services/photo/photo-product.service';
 import { MqttClientService } from '../../../services/mqttClient.service';
 import { ApiService } from '../../../services/api.service';
+import { ApiVendingService } from '../../../services/api-for-vending/api-vending.service';
 
 @Component({
   selector: 'app-detail-order',
@@ -19,6 +20,7 @@ export class DetailOrderPage implements OnInit {
 
   constructor(public apiService: ApiService, public m: LoadingService,
     public caching:PhotoProductService,    private mqttService: MqttClientService,
+    public ApiVending:ApiVendingService
   ) {}
 
 
@@ -36,7 +38,7 @@ export class DetailOrderPage implements OnInit {
     }
     console.log('data',data);
 
-    this.apiService.findByPackageIDs(data).subscribe(async (packages) => {
+    this.ApiVending.findByPackageIDs(data).subscribe(async (packages) => {
       // this.m.onDismiss();
       console.log('====================================');
       console.log('package',packages);
@@ -68,7 +70,7 @@ export class DetailOrderPage implements OnInit {
       ownerId:Number(this.schedulePackages[0]?.ownerId+''),
       id:this.data?.deviceId
     }
-    this.apiService.getDevicesBy(data).subscribe(async (r)=>{
+    this.ApiVending.getDevicesBy(data).subscribe(async (r)=>{
       console.log('====================================');
       console.log(r);
       console.log('====================================');

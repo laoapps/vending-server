@@ -10,7 +10,8 @@ import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices
 import { LoginPage } from './auth/login/login.page';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'user', pathMatch: 'full' },
+  // { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'home', component: HomePage },
   { path: 'login', component: LoginPage },
   { path: 'admin-dashboard', component: AdminDashboardPage },

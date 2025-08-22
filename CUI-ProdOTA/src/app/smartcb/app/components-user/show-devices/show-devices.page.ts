@@ -3,6 +3,7 @@ import { LoadingService } from '../../services/loading.service';
 import { ShowPageketPage } from '../show-pageket/show-pageket.page';
 import { PhotoProductService } from '../../services/photo/photo-product.service';
 import { ApiService } from '../../services/api.service';
+import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
 
 @Component({
   selector: 'app-show-devices',
@@ -17,7 +18,7 @@ export class ShowDevicesPage implements OnInit {
   public image = '../../../assets/icon/image.png'
 
   constructor(public apiService: ApiService, public m: LoadingService,
-        public caching:PhotoProductService
+      public caching:PhotoProductService,public ApiVending:ApiVendingService
     
   ) {}
 
@@ -35,7 +36,7 @@ export class ShowDevicesPage implements OnInit {
       ownerId:Number(this.data?.ownerId+''),
       id:this.data?.deviceId
     }
-    this.apiService.getDevicesBy(data).subscribe(async (r)=>{
+    this.ApiVending.getDevicesBy(data).subscribe(async (r)=>{
       console.log('====================================');
       console.log(r);
       console.log('====================================');

@@ -4,6 +4,7 @@ import { LoadingService } from '../../services/loading.service';
 import { PayQrPage } from '../pay-qr/pay-qr.page';
 import { PhotoProductService } from '../../services/photo/photo-product.service';
 import { ApiService } from '../../services/api.service';
+import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
 
 @Component({
   selector: 'app-show-pageket',
@@ -20,8 +21,8 @@ export class ShowPageketPage implements OnInit {
   public image = '../../../assets/icon/image.png'
 
   constructor(public m: LoadingService, private apiService: ApiService,
-    public alertController: AlertController,public caching:PhotoProductService
-    
+    public alertController: AlertController,public caching:PhotoProductService,
+    public ApiVending: ApiVendingService
   ) {}
 
   ngOnInit() {
@@ -38,7 +39,7 @@ export class ShowPageketPage implements OnInit {
     }
     console.log('data',data);
 
-    this.apiService.findByPackageIDs(data).subscribe(async (packages) => {
+    this.ApiVending.findByPackageIDs(data).subscribe(async (packages) => {
       this.m.onDismiss();
       this.schedulePackages = packages;
       if (this.schedulePackages?.length ) {
@@ -71,7 +72,7 @@ export class ShowPageketPage implements OnInit {
       deviceId:this.deviceId,
       relay:1
     }
-    this.apiService.orders(data).subscribe((r)=>{
+    this.ApiVending.orders(data).subscribe((r)=>{
       console.log('====================================');
       console.log('res',r);
       console.log('====================================');

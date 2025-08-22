@@ -28,13 +28,13 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/devices`, this.getAuthHeaders());
   }
   //user
-  getDevicesBy(data): Observable<any> {
-    return this.http.post(`${this.apiUrl}/devices/getDevicesBy`,data, this.getAuthHeaders());
-  }
+  // getDevicesBy(data): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/devices/getDevicesBy`,data, this.getAuthHeaders());
+  // }
 
-  orders(data): Observable<any> {
-    return this.http.post(`${this.apiUrl}/orders`,data, this.getAuthHeaders());
-  }
+  // orders(data): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/orders`,data, this.getAuthHeaders());
+  // }
   owners_detail(): Observable<any> {
     return this.http.get(`${this.apiUrl}/owners/findByID`, this.getAuthHeaders());
   }
@@ -53,23 +53,23 @@ export class ApiService {
   getActiveOrdersByDeviceID(id:number): Observable<any> {
     return this.http.post(`${this.apiUrl}/orders/getActiveOrdersByDeviceID/${id}`, {}, this.getAuthHeaders());
   }
-  load_order(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/orders/list`, {}, this.getAuthHeaders());
-  }
-  load_history(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/orders/list?q=complete`, {}, this.getAuthHeaders());
-  }
-  controlbyorder(id:number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/devices/controlbyorder/${id}`, {}, this.getAuthHeaders());
-  }
+  // load_order(): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/orders/list`, {}, this.getAuthHeaders());
+  // }
+  // load_history(): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/orders/list?q=complete`, {}, this.getAuthHeaders());
+  // }
+  // controlbyorder(id:number): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/devices/controlbyorder/${id}`, {}, this.getAuthHeaders());
+  // }
 
   assignDevice(deviceId: number, userPhoneNumber: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices/assign`, { deviceId, userPhoneNumber }, this.getAuthHeaders());
   }
   //user
-  load_all_group(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/groups/loadAll`, { }, this.getAuthHeaders());
-  }
+  // load_all_group(): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/groups/loadAll`, { }, this.getAuthHeaders());
+  // }
   createGroup(data): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups`, data, this.getAuthHeaders());
   }
@@ -123,12 +123,12 @@ export class ApiService {
   getSchedulePackages(): Observable<any> {
     return this.http.get(`${this.apiUrl}/schedule-packages`, this.getAuthHeaders());
   }
-  schedulepackages(ownerID:number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/schedule-packages/findByOwnerID/${ownerID}`, this.getAuthHeaders());
-  }
-  findByPackageIDs(data:any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/schedule-packages/findByPackageIDs`,data, this.getAuthHeaders());
-  }
+  // schedulepackages(ownerID:number): Observable<any> {
+  //   return this.http.get(`${this.apiUrl}/schedule-packages/findByOwnerID/${ownerID}`, this.getAuthHeaders());
+  // }
+  // findByPackageIDs(data:any): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/schedule-packages/findByPackageIDs`,data, this.getAuthHeaders());
+  // }
 
   updateSchedulePackage(id: number, name: string, durationMinutes?: number, powerConsumptionWatts?: number, price?: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/schedule-packages/${id}`, { name, durationMinutes, powerConsumptionWatts, price }, this.getAuthHeaders());

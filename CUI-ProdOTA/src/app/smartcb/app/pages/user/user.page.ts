@@ -11,6 +11,7 @@ import { ShowPageketPage } from '../../components-user/show-pageket/show-pageket
 import { ShowDevicesPage } from '../../components-user/show-devices/show-devices.page';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
+import { ListAllGroupsPage } from '../../components-user/list-all-groups/list-all-groups.page';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -22,10 +23,10 @@ export class UserPage implements OnInit {
   public menus = [
     {title:'Order',icon: 'time-outline',path:OrderPage},
     // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
-    {title:'Scan QR Code',icon: 'qr-code-outline'},
-    {title:'Map',icon: 'map-outline',path:MapPage},
-    // {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
-    {title:'Register owner',icon: 'albums-outline'},
+    // {title:'Scan QR Code',icon: 'qr-code-outline'},
+    // {title:'Map',icon: 'map-outline',path:MapPage},
+    {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
+    // {title:'Register owner',icon: 'albums-outline'},
   ]
   phonenumber:any
   constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
