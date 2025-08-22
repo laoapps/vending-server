@@ -40,6 +40,12 @@ ion-content{
     --background: #e0f7fa;
 }
 
+ion-input {
+  --padding-left: none;
+  --border: none;
+  --background-color: none
+}
+
 .loading-wraper {
     .loading-content {
       display: flex;

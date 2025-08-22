@@ -31,6 +31,11 @@ export class LoginPage implements OnInit {
   }
 
   async onClick_login(){
+    console.log('====================================');
+    console.log(this.phonenumber);
+    console.log(this.password);
+    console.log(this.isOwner);
+    console.log('====================================');
     if (!this.phonenumber  || !this.password) {
       this.m.onAlert('Please fill in all fields with valid values')
       return
@@ -101,12 +106,14 @@ export class LoginPage implements OnInit {
           this.isUser = false;
           localStorage.setItem('ownerHeader','true')
           this.load_owner_detail();
-          this.navigateTo('/owner')
+          // this.navigateTo('/owner')
+          this.router.navigate(['smartcb/owner'])
         }else{
           this.m.onDismiss()
           this.isOwner = false;
           this.isUser = false;
-          this.navigateTo('/user')
+          // this.navigateTo('/user')
+          this.router.navigate(['smartcb/user'])
 
         }
         

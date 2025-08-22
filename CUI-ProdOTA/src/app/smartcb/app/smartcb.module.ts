@@ -34,9 +34,9 @@
 // })
 // export class SmartcbModule {}
 
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { LoginPage } from './auth/login/login.page';
 import { HomePage } from './home/home.page';
@@ -44,6 +44,10 @@ import { AdminDashboardPage } from './pages/admin-dashboard/admin-dashboard.page
 import { OwnerDashboardPage } from './pages/owner-dashboard/owner-dashboard.page';
 import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
 import { SmartcbRoutingModule } from './smartcb-routing.module';
+import { HttpClientModule } from '@angular/common/http';
+import { RouteReuseStrategy } from '@angular/router';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -53,10 +57,15 @@ import { SmartcbRoutingModule } from './smartcb-routing.module';
     OwnerDashboardPage,
     UserDashboardPage
   ],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   imports: [
+    // BrowserModule,
     CommonModule,
-    IonicModule,
-    SmartcbRoutingModule
-  ]
+    IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }),
+    HttpClientModule,
+    SmartcbRoutingModule,
+    FormsModule,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // Already present, which is fine
 })
 export class SmartcbModule {}

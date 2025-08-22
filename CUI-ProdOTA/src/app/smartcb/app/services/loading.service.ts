@@ -25,11 +25,11 @@ export class LoadingService {
         {
           text: 'ok',
           handler: () => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('uuid');
-            localStorage.removeItem('id_owner');
-            localStorage.removeItem('ownerHeader');
-            this.router.navigate(['/login']);
+            // localStorage.removeItem('token');
+            // localStorage.removeItem('uuid');
+            // localStorage.removeItem('id_owner');
+            // localStorage.removeItem('ownerHeader');
+            this.router.navigate(['smartcb/login']);
           },
         },
       ],
