@@ -606,7 +606,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 if (qr?.status === 'OK') break;
                                 console.log('Attempt', attempts + 1, 'failed. Retrying...');
                                 attempts++;
-                                 await delay(500);
+                                await delay(500);
                             }
 
                             if (!qr || qr.status !== 'OK') {
@@ -6813,8 +6813,6 @@ export class InventoryZDM8 implements IBaseClass {
                                             v?.close(0);
                                             this.wsClient?.splice(i, 1);
                                         }
-                                    } else {
-                                        this.wsClient.splice(i, 1);
                                     }
                                 });
                                 this.wsClient?.push(ws);

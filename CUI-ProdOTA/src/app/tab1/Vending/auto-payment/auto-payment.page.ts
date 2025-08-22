@@ -339,56 +339,61 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        this.countdownBillTimer = setInterval(async () => {
-          this.countdownBill--;
-          if (this.countdownBill <= 0) {
-            clearInterval(this.countdownBillTimer);
-            this.countdownBill = 1;
+        this.countdownBillTimer = setTimeout(async () => {
+          // this.countdownBill--;
+          // if (this.countdownBill <= 0) {
+          //   clearInterval(this.countdownBillTimer);
+          //   this.countdownBill = 1;
 
-            if (this.apiService.cash.amount < this.getTotalSale.t) {
-
-              // AutoPaymentPage.laabqrimgElement.classList.add('active');
-              // AutoPaymentPage.btnLAABGo.classList.remove('active');
-
-              // let qrModel = {
-              //   type: 'CQR',
-              //   mode: 'COIN',
-              //   destination: this.apiService.laabuuid,
-              //   amount: Number(this.getTotalSale.t) - Number(this.apiService.cash.amount),
-              //   // amount: 100,
-              //   expire: '',
-              //   options: {
-              //     coinname: this.apiService.coinName,
-              //     name: this.apiService.name,
-              //   },
-              // };
-              // const qrcode = await new qrlogo({ logo: this.laabIcon, content: JSON.stringify(qrModel) }).getCanvas();
-              // if (AutoPaymentPage.laabqrimgElement) AutoPaymentPage.laabqrimgElement.src = qrcode.toDataURL();
-
-            } else {
-              // AutoPaymentPage.laabqrimgElement.classList.remove('active');
-              AutoPaymentPage.btnLAABGo.classList.add('active');
-            }
-
-            const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method' }).getCanvas();
-            if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
-
-            this.checkOrders(AutoPaymentPage.orderlistElement);
-            AutoPaymentPage.orderlistElement.className = 'order-list fit';
-            AutoPaymentPage.laabCardFooter.classList.add('active');
-            this.loadBillWave();
-
-            console.log('LIST => :', list);
-            if (!list) return resolve(await this._processLoopPayment());
+          //   if (this.apiService.cash.amount < this.getTotalSale.t) {
 
 
-            this.paymentmethod = list.value;
-            this.paymentText = list.name;
-            this.paymentLogo = list.image;
-            resolve(await this._processLoopDestroyLastest());
+          //   } else {
+          //     // AutoPaymentPage.laabqrimgElement.classList.remove('active');
+          //     AutoPaymentPage.btnLAABGo.classList.add('active');
+          //   }
+
+          //   const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method' }).getCanvas();
+          //   if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
+
+          //   this.checkOrders(AutoPaymentPage.orderlistElement);
+          //   AutoPaymentPage.orderlistElement.className = 'order-list fit';
+          //   AutoPaymentPage.laabCardFooter.classList.add('active');
+          //   this.loadBillWave();
+
+          //   if (!list) return resolve(await this._processLoopPayment());
+
+          //   this.paymentmethod = list.value;
+          //   this.paymentText = list.name;
+          //   this.paymentLogo = list.image;
+          //   resolve(await this._processLoopDestroyLastest());
+          // }
+
+
+          if (this.apiService.cash.amount < this.getTotalSale.t) {
+
+
+          } else {
+            // AutoPaymentPage.laabqrimgElement.classList.remove('active');
+            AutoPaymentPage.btnLAABGo.classList.add('active');
           }
 
-        }, 500);
+          const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method' }).getCanvas();
+          if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
+
+          this.checkOrders(AutoPaymentPage.orderlistElement);
+          AutoPaymentPage.orderlistElement.className = 'order-list fit';
+          AutoPaymentPage.laabCardFooter.classList.add('active');
+          this.loadBillWave();
+
+          if (!list) return resolve(await this._processLoopPayment());
+
+          this.paymentmethod = list.value;
+          this.paymentText = list.name;
+          this.paymentLogo = list.image;
+          resolve(await this._processLoopDestroyLastest());
+
+        }, 1000);
 
       } catch (error) {
         resolve(error.message);
@@ -401,27 +406,29 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       try {
 
         // loop generate
-        this.countdownPaymentTimer = setInterval(async () => {
-          this.countdownPayment--;
-          if (this.countdownPayment <= 0) {
-            clearInterval(this.countdownPaymentTimer);
-            this.countdownPayment = 5;
-
-            if (this.apiService.cash.amount >= this.getTotalSale.t) {
-              this.paymentmethod = IPaymentMethod.laab;
-              await this.laabAutoCashin();
-            }
-            else {
-
-              this.paymentmethod = IPaymentMethod.LaoQR;
-              this.paymentText = this.paymentList[0].name;
-              this.paymentLogo = this.paymentList[0].image;
-              this._processLoopDestroyLastest();
-            }
+        this.countdownPaymentTimer = setTimeout(async () => {
+          // this.countdownPayment--;
+          // if (this.countdownPayment <= 0) {
+          //   clearInterval(this.countdownPaymentTimer);
+          //   this.countdownPayment = 5;
 
 
+
+
+          // }
+
+          if (this.apiService.cash.amount >= this.getTotalSale.t) {
+            this.paymentmethod = IPaymentMethod.laab;
+            await this.laabAutoCashin();
           }
-        }, 500);
+          else {
+
+            this.paymentmethod = IPaymentMethod.LaoQR;
+            this.paymentText = this.paymentList[0].name;
+            this.paymentLogo = this.paymentList[0].image;
+            this._processLoopDestroyLastest();
+          }
+        }, 1000);
 
       } catch (error) {
         resolve(error.message);
