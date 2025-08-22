@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Detail history</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+
+<ion-content class="ion-padding">
+  <ion-card *ngIf="data">
+    <ion-card-header>
+      <ion-card-title>ID: {{ data.id }}</ion-card-title>
+      <p style="margin: 0;"><strong>Started Time:</strong> {{ data.startedTime ? (data.startedTime | date:'short') : '-' }}</p>
+      <p style="margin: 0;"><strong>Completed Time:</strong> {{ data.completedTime ? (data.completedTime | date:'short') : '-' }}</p>
+      <p style="margin: 0;"><strong>Condition:</strong> {{ data.conditionValue }}</p>
+    </ion-card-header>
+
+    <!-- detail package -->
+
+    <ion-card-content>
+      <ion-card-title>Detail package</ion-card-title>
+      <ion-avatar slot="start" *ngIf="schedulePackages.length">
+        <img src="{{return_pic(schedulePackages)}}" alt="" />
+      </ion-avatar>
+      <p><strong>PackageID:</strong> {{ data.packageId }}</p>
+      <p><strong>Name:</strong> {{ schedulePackages[0]?.name }}</p>
+      <p><strong>Price:</strong> {{ schedulePackages[0]?.price | number}}</p>
+      <p><strong>conditionType:</strong> {{ schedulePackages[0]?.conditionType }}</p>
+      <p><strong>conditionValue:</strong> {{ schedulePackages[0]?.conditionValue }}</p>
+    </ion-card-content>
+
+    <!-- detail devices -->
+
+    <ion-card-content style="padding-top: 0;">
+      <ion-card-title>Detail devices</ion-card-title>
+      <ion-avatar slot="start" *ngIf="devices.length">
+        <img src="{{return_pic(devices)}}" alt="" />
+      </ion-avatar>
+      <p><strong>DeviceId:</strong> {{ devices[0]?.id }}</p>
+      <p><strong>Name:</strong> {{ devices[0]?.name }}</p>
+      <p><strong>tasmotaId:</strong> {{ devices[0]?.tasmotaId }}</p>
+      <p><strong>zone:</strong> {{ devices[0]?.zone }}</p>
+      <p><strong>power:</strong> {{ devices[0]?.power ? (devices[0]?.power) : '-' }}</p>
+      <p><strong>energy:</strong> {{ devices[0]?.energy ? (devices[0]?.energy) : '-' }}</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

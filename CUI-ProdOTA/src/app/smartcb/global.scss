@@ -1,0 +1,191 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+// @import "@ionic/angular/css/palettes/dark.system.css";
+
+ion-content{
+    --background: #e0f7fa;
+}
+
+.loading-wraper {
+    .loading-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+            
+    //   .loader {
+    //     width: 25px;
+    //     height: 25px;
+    //     border-radius: 50%;
+    //     display: inline-block;
+    //     border-top: 2px solid var(--theme-icon-loadding2);
+    //     border-right: 2px solid transparent;
+    //     box-sizing: border-box;
+    //     animation: rotation 1s linear infinite;
+    //   }
+    //   .loader::after {
+    //     content: '';  
+    //     box-sizing: border-box;
+    //     position: absolute;
+    //     left: 0;
+    //     top: 0;
+    //     width: 25px;
+    //     height: 25px;
+    //     border-radius: 50%;
+    //     border-bottom: 2px solid var(--theme-icon-loadding1);
+    //     border-left: 2px solid transparent;
+    //   }
+    //   @keyframes rotation {
+    //     0% {
+    //       transform: rotate(0deg);
+    //     }
+    //     100% {
+    //       transform: rotate(360deg);
+    //     }
+    //   } 
+      
+
+      .loader {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-block;
+        border-top: 3px solid #000;
+        border-right: 3px solid transparent;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+      }
+      .loader::after {
+        content: '';  
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border-left: 3px solid var(--theme-bt);
+        border-bottom: 3px solid transparent;
+        animation: rotation 0.5s linear infinite reverse;
+      }
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      } 
+      
+          
+      // .loader {
+      //   transform: rotateZ(45deg);
+      //   perspective: 1000px;
+      //   border-radius: 50%;
+      //   width: 30px;
+      //   height: 30px;
+      //   color: #000;
+      // }
+      //   .loader:before,
+      //   .loader:after {
+      //     content: '';
+      //     display: block;
+      //     position: absolute;
+      //     top: 0;
+      //     left: 0;
+      //     width: inherit;
+      //     height: inherit;
+      //     border-radius: 50%;
+      //     transform: rotateX(70deg);
+      //     animation: 1s spin linear infinite;
+      //   }
+      //   .loader:after {
+      //     color: var(--theme-icon-loadding);
+      //     transform: rotateY(70deg);
+      //     animation-delay: .4s;
+      //   }
+
+      // @keyframes rotate {
+      //   0% {
+      //     transform: translate(-50%, -50%) rotateZ(0deg);
+      //   }
+      //   100% {
+      //     transform: translate(-50%, -50%) rotateZ(360deg);
+      //   }
+      // }
+
+      // @keyframes rotateccw {
+      //   0% {
+      //     transform: translate(-50%, -50%) rotate(0deg);
+      //   }
+      //   100% {
+      //     transform: translate(-50%, -50%) rotate(-360deg);
+      //   }
+      // }
+
+      // @keyframes spin {
+      //   0%,
+      //   100% {
+      //     box-shadow: .2em 0px 0 0px currentcolor;
+      //   }
+      //   12% {
+      //     box-shadow: .2em .2em 0 0 currentcolor;
+      //   }
+      //   25% {
+      //     box-shadow: 0 .2em 0 0px currentcolor;
+      //   }
+      //   37% {
+      //     box-shadow: -.2em .2em 0 0 currentcolor;
+      //   }
+      //   50% {
+      //     box-shadow: -.2em 0 0 0 currentcolor;
+      //   }
+      //   62% {
+      //     box-shadow: -.2em -.2em 0 0 currentcolor;
+      //   }
+      //   75% {
+      //     box-shadow: 0px -.2em 0 0 currentcolor;
+      //   }
+      //   87% {
+      //     box-shadow: .2em -.2em 0 0 currentcolor;
+      //   }
+      // }
+   
+    
+    
+    }
+  }

@@ -188,6 +188,10 @@ const routes: Routes = [
     path: 'qr-open-stock',
     loadChildren: () => import('./qr-open-stock/qr-open-stock.module').then( m => m.QrOpenStockPageModule)
   },
+  {
+    path: 'smartcb',
+    loadChildren: () => import('../app/smartcb/app/app.module').then( m => m.AppModule)
+  },
 ];
 @NgModule({
   imports: [

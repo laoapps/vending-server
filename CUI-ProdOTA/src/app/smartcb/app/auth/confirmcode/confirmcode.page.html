@@ -1,0 +1,42 @@
+<ion-content class="ion-padding">
+
+  <div style="margin-top: 15px;margin-left: 15px;">
+    <ion-icon (click)="backToSignUp()" color="dark" name="arrow-back-outline" style="font-size: 26px" ></ion-icon>
+  </div>
+
+<br><br>
+  <div align="center">
+    <ion-item lines="none" style="--background: transparent;">
+      <ion-label align="center" style="  font-family: Noto Sans Lao, sans-serif">Sent TOTP code to</ion-label>
+    </ion-item>
+    <ion-label>{{phonenumber}}</ion-label>
+  </div>
+
+<br>
+  <ion-row>
+    <ion-col>
+     
+      <div align="center">
+        <ion-input class="x" #otp1 required="true" maxLength="1" type="number" [(ngModel)]="OTP.first" (keyup)="otpController($event,otp2,'',1)"></ion-input>
+        <ion-input class="x" #otp2 required="true" maxLength="1" type="number" [(ngModel)]="OTP.second" (keyup)="otpController($event,otp3,otp1,2)"></ion-input>
+        <ion-input class="x" #otp3 required="true" maxLength="1" type="number" [(ngModel)]="OTP.third"  (keyup)="otpController($event,otp4,otp2,3)"></ion-input>
+        <ion-input class="x" #otp4 required="true" maxLength="1" type="number" [(ngModel)]="OTP.forth"  (keyup)="otpController($event,otp5,otp3,4)"></ion-input>
+        <ion-input class="x" #otp5  required="true" maxLength="1" type="number" [(ngModel)]="OTP.fifth" (keyup)="otpController($event,otp6,otp4,5)"></ion-input>
+        <ion-input class="x" #otp6  required="true" maxLength="1" type="number" [(ngModel)]="OTP.sixth" (keyup)="otpController($event,'',otp5,6)"></ion-input>
+      </div>
+
+    </ion-col>
+  </ion-row>
+
+  <br>
+  <div align="center" *ngIf="duration != 0">
+    <ion-label>please wait: <ion-text color="black">
+      {{duration}}
+    </ion-text> second</ion-label>
+  </div>
+  <br>
+  <div class="div-button">
+    <ion-button class="ion-button-class bt" shape="round" fill="solid"  expand="block" (click)="button_sendOTP()">confirm code</ion-button>
+  </div>
+</ion-content>
+
