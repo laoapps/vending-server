@@ -6812,6 +6812,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         if (v["machineId"] == machineId?.machineId) {
                                             v?.close(0);
                                             this.wsClient?.splice(i, 1);
+                                            return true;
                                         }
                                     }
                                 });

@@ -6731,6 +6731,15 @@ export class InventoryZDM8 implements IBaseClass {
                                 ws["machineId"] = machineId.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
+                                this.wsClient?.find((v, i) => {
+                                    if (v) {
+                                        if (v["machineId"] == machineId?.machineId) {
+                                            v?.close(0);
+                                            this.wsClient?.splice(i, 1);
+                                            return true;
+                                        }
+                                    }
+                                });
                                 this.wsClient.push(ws);
                                 return ws.send(
                                     JSON.stringify(
