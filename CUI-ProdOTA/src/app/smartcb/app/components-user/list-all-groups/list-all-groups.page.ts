@@ -31,7 +31,7 @@ export class ListAllGroupsPage implements OnInit {
       },
       (error) => {
         this.m.onDismiss();
-        this.m.alertError('load all_gorup fail!!');
+        this.m.alertError('load all gorup fail!!');
       }
     );
   }

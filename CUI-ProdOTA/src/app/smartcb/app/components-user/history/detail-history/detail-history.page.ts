@@ -15,7 +15,7 @@ export class DetailHistoryPage implements OnInit {
   @Input() data:any
   schedulePackages: any[] = [];
   devices: any[] = [];
-  public image = '../../../assets/icon/image.png'
+  public image = '../../../../../../assets/icon-smartcb/image.png'
 
 
   constructor(public apiService: ApiService,
