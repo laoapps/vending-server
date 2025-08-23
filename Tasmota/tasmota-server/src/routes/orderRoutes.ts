@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authHMVending, authMiddleware } from '../middleware/authMiddleware';
-import { createOrder, getOrders, getOrderById, payOrder, completeOrder, testOrder, getOrderByIdHMVending, getActiveOrdersByDeviceID } from '../controllers/orderController';
+import { createOrder, getOrders, getOrderById, payOrder, completeOrder, testOrder, getOrderByIdHMVending, getActiveOrdersByDeviceID, createOrderHMVending } from '../controllers/orderController';
 import { reactivateOrder } from '../controllers/reactivateOrderController';
 
 const router = Router();
