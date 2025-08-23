@@ -70,6 +70,7 @@ export const authHMVending = async (req: Request, res: Response, next: NextFunct
   // const machineId = req.body['machineId'];
   // const otp = req.body['otp'];
   console.log('authHMVending',machineId,otp);
+  console.log('authHMVending',req.headers);
   
   if (!machineId || !otp) {
     res.status(401).json({ error: 'Invalid parameters' });
