@@ -102,34 +102,82 @@ export async function findRealDB(token: string): Promise<string> {
 }
 
 
-export async function validateHMVending(machineId: string,otp:string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+// export async function validateHMVending(machineId: string, otp: string): Promise<string> {
+export async function validateHMVending(token: string): Promise<string> {
+//   if (!machineId) return '';
+  if (!token) return '';
 
-        if (machineId) {
-           
-            const token =cryptojs
-      .SHA256(machineId + otp)
-      .toString(cryptojs.enc.Hex);
-       const data = {
-                token
-            };
-            const hmVendingUrl = process.env.hmVendingUrl;
-            axios
-                .post(hmVendingUrl || '', data, {
-                })
-                .then((r) => {
-                    const d = r.data;
-                    console.log('ownerUuid:', d);
-                    if (d.ownerUuid) {
-                        console.log('ownerUuid:', d.ownerUuid);
-                        resolve(d?.ownerUuid);
-                    } else {
-                        resolve('');
-                    }
-                })
-                .catch((e) => reject(e));
-        } else {
-            resolve('');
-        }
+//   const token = cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex);
+  const data = { token };
+  const hmVendingUrl = process.env.hmVendingUrl;
+
+  if (!hmVendingUrl) {
+    console.error('hmVendingUrl is not defined');
+    return '';
+  }
+
+  try {
+    // const response = await axios.post(hmVendingUrl, data, { timeout: 10000 }); // 10s timeout
+    // https://vending-service-api5.laoapps.com/zdm8/validateHMVending
+    const response = await axios.post(hmVendingUrl, data, {
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 10000
     });
+
+    console.log('validateHMVending111',response);
+    console.log('validateHMVending222',response?.data?.data);
+    console.log('validateHMVending333',response?.data?.data?.ownerUuid);
+    
+    const d = response.data.data;
+
+    if (d?.ownerUuid) {
+      console.log('ownerUuid:', d.ownerUuid);
+      return d.ownerUuid;
+    } else {
+      return '';
+    }
+  } catch (err: any) {
+    if (err.response) {
+      // Server responded with a status code outside 2xx
+      console.error('Response error:', err.response.status, err.response.data);
+    } else if (err.request) {
+      // No response received
+      console.error('No response received:', err.request);
+    } else {
+      console.error('Request setup error:', err.message);
+    }
+    return '';
+  }
 }
+
+
+// export async function validateHMVending(machineId: string,otp:string): Promise<string> {
+//     return new Promise<string>((resolve, reject) => {
+
+//         if (machineId) {
+           
+//             const token =cryptojs
+//       .SHA256(machineId + otp)
+//       .toString(cryptojs.enc.Hex);
+//        const data = {
+//                 token
+//             };
+//             const hmVendingUrl = process.env.hmVendingUrl;
+//             axios
+//                 .post(hmVendingUrl || '', data, {})
+//                 .then((r) => {
+//                     const d = r.data;
+//                     console.log('ownerUuid:', d);
+//                     if (d.ownerUuid) {
+//                         console.log('ownerUuid:', d.ownerUuid);
+//                         resolve(d?.ownerUuid);
+//                     } else {
+//                         resolve('');
+//                     }
+//                 })
+//                 .catch((e) => reject(e));
+//         } else {
+//             resolve('');
+//         }
+//     });
+// }

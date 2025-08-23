@@ -17,7 +17,7 @@ router.post('/', authMiddleware, validate(createSchedulePackageSchema), createSc
 router.post('/findByPackageIDs', authMiddleware, findByPackageIDs);
 router.get('/findByOwnerID/:id', authMiddleware, findByOwnerID);
 router.get('/findByOwnerIDHMVending',authHMVending, findByOwnerIDHMVending);
-router.get('/findByPackageIDsHMVending',authHMVending, findByPackageIDsHMVending);
+router.post('/findByPackageIDsHMVending',authHMVending, findByPackageIDsHMVending);
 router.put('/:id', authMiddleware, validate(createSchedulePackageSchema), updateSchedulePackage);
 router.get('/', authMiddleware, getSchedulePackages);
 router.delete('/:id', authMiddleware, deleteSchedulePackage);

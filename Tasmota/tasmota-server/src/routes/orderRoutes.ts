@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { authHMVending, authMiddleware } from '../middleware/authMiddleware';
-import { createOrder, getOrders, getOrderById, payOrder, completeOrder, testOrder, getOrderByIdHMVending, getActiveOrdersByDeviceID } from '../controllers/orderController';
+import { createOrder, getOrders, getOrderById, payOrder, completeOrder, testOrder, getOrderByIdHMVending, getActiveOrdersByDeviceID, createOrderHMVending } from '../controllers/orderController';
 import { reactivateOrder } from '../controllers/reactivateOrderController';
 
 const router = Router();
 
 router.post('/', authMiddleware, createOrder); // Create order (user only)
-router.post('/hmvending', authHMVending, createOrder); // Create order (owner only) HMVENDING
+router.post('/hmvending', authHMVending, createOrderHMVending); // Create order (owner only) HMVENDING
 
 router.post('/list', authMiddleware, getOrders); // List user orders
 router.post('/listHMVending', authHMVending, getOrders); // List user orders
