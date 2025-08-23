@@ -126,10 +126,9 @@ export async function validateHMVending(token: string): Promise<string> {
 
     console.log('validateHMVending111',response);
     console.log('validateHMVending222',response?.data);
+    console.log('validateHMVending333',response?.data?.ownerUuid);
     
     const d = response.data;
-
-
 
     if (d?.ownerUuid) {
       console.log('ownerUuid:', d.ownerUuid);
