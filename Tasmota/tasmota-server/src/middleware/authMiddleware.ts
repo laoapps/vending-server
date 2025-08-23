@@ -81,6 +81,7 @@ export const authHMVending = async (req: Request, res: Response, next: NextFunct
   // }
   // const ownerUuid = await validateHMVending(machineId + '', otp + '');
   const ownerUuid = await validateHMVending(token + '');
+  
   if (!ownerUuid) {
     res.status(401).json({ error: 'Invalid onwerUuid' });
     return;

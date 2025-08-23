@@ -123,7 +123,13 @@ export async function validateHMVending(token: string): Promise<string> {
     headers: { 'Content-Type': 'application/json' },
     timeout: 10000
     });
+
+    console.log('validateHMVending111',response);
+    console.log('validateHMVending222',response?.data);
+    
     const d = response.data;
+
+
 
     if (d?.ownerUuid) {
       console.log('ownerUuid:', d.ownerUuid);
