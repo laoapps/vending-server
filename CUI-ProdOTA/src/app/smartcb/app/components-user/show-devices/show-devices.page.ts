@@ -15,7 +15,7 @@ import { ApiVendingService } from '../../services/api-for-vending/api-vending.se
 export class ShowDevicesPage implements OnInit {
   @Input() data:any
   devices: any[] = [];
-  public image = '../../../assets/icon/image.png'
+  public image = '../../../../../assets/icon-smartcb/image.png'
 
   constructor(public apiService: ApiService, public m: LoadingService,
       public caching:PhotoProductService,public ApiVending:ApiVendingService

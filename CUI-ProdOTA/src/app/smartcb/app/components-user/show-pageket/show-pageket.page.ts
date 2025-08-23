@@ -18,7 +18,7 @@ export class ShowPageketPage implements OnInit {
   @Input() data:any
   @Input() deviceId:any
   @Input() data_device:any
-  public image = '../../../assets/icon/image.png'
+  public image = '../../../../../assets/icon-smartcb/image.png'
 
   constructor(public m: LoadingService, private apiService: ApiService,
     public alertController: AlertController,public caching:PhotoProductService,

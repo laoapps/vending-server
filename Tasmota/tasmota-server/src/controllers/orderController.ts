@@ -117,6 +117,39 @@ export const testOrder = async (req: Request, res: Response) => {
 };
 
 
+export const createOrderHMVending = async (req: Request, res: Response) => {
+  const { packageId, deviceId, relay = 1 } = req.body;
+  const user = res.locals.user;
+  console.log('createOrderHMVending==========', req.body);
+
+  try {
+    const schedulePackage = await SchedulePackage.findByPk(packageId);
+    if (!schedulePackage) {
+      return res.status(404).json({ error: 'Package not found' });
+    }
+    const device = await models.Device.findByPk(deviceId);
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    const order = await models.Order.create({
+      uuid: `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      deviceId,
+      packageId,
+      userUuid: user.uuid,
+      relay,
+    } as any);
+
+    const token = req.headers.authorization?.split(' ')[1];
+    const qr = await generateQR(order.dataValues.id, schedulePackage.dataValues.price, 'vending');
+    console.log('createOrderHMVending==========111', qr);
+
+    // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
+    return res.json({ qr, data: { order } });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
+  }
+};
 export const createOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
@@ -162,11 +195,13 @@ export const getOrders = async (req: Request, res: Response) => {
     let whereCondition: WhereOptions<any> = {}
     if (query == 'complete') {
       whereCondition = {
+        startedTime: { [Op.ne]: null },
         userUuid: user.uuid,
         completedTime: { [Op.ne]: null },
       };
     }else{
       whereCondition = {
+        startedTime: { [Op.ne]: null },
         userUuid: user.uuid,
         completedTime: { [Op.is]: null },
       };

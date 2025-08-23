@@ -102,10 +102,12 @@ export async function findRealDB(token: string): Promise<string> {
 }
 
 
-export async function validateHMVending(machineId: string, otp: string): Promise<string> {
-  if (!machineId) return '';
+// export async function validateHMVending(machineId: string, otp: string): Promise<string> {
+export async function validateHMVending(token: string): Promise<string> {
+//   if (!machineId) return '';
+  if (!token) return '';
 
-  const token = cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex);
+//   const token = cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex);
   const data = { token };
   const hmVendingUrl = process.env.hmVendingUrl;
 
@@ -115,8 +117,18 @@ export async function validateHMVending(machineId: string, otp: string): Promise
   }
 
   try {
-    const response = await axios.post(hmVendingUrl, data, { timeout: 10000 }); // 10s timeout
-    const d = response.data;
+    // const response = await axios.post(hmVendingUrl, data, { timeout: 10000 }); // 10s timeout
+    // https://vending-service-api5.laoapps.com/zdm8/validateHMVending
+    const response = await axios.post(hmVendingUrl, data, {
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 10000
+    });
+
+    console.log('validateHMVending111',response);
+    console.log('validateHMVending222',response?.data?.data);
+    console.log('validateHMVending333',response?.data?.data?.ownerUuid);
+    
+    const d = response.data.data;
 
     if (d?.ownerUuid) {
       console.log('ownerUuid:', d.ownerUuid);

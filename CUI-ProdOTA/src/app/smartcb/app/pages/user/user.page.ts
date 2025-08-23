@@ -36,12 +36,14 @@ export class UserPage implements OnInit {
   }
 
   ionViewWillEnter() {
-    const a = localStorage.getItem("phonenumber");
-      if (a) {
-        this.phonenumber = a.replace("+85620", "").replace(/(\d[ .-]?){6}$/, x => x.replace(/\d/g, 'x').substring(2, a.length)) + a.replace("+85620", "").substring(6, a.length)
-      } else {
-        this.m.alertError('alert_error.message_something_wrong');
-      }
+    // localStorage.setItem('machineId','66660007')
+    // localStorage.setItem('otp','111111')
+    // const a = localStorage.getItem("phonenumber");
+    //   if (a) {
+    //     this.phonenumber = a.replace("+85620", "").replace(/(\d[ .-]?){6}$/, x => x.replace(/\d/g, 'x').substring(2, a.length)) + a.replace("+85620", "").substring(6, a.length)
+    //   } else {
+    //     this.m.alertError('alert_error.message_something_wrong');
+    //   }
   }
 
   logout(){

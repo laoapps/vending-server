@@ -45,7 +45,11 @@ export function generateQR(orderID: number, value: number, token: string): Promi
   return new Promise<any>(async (resolve, reject) => {
     try {
       const data = { orderID ,path: 'orders/pay', txnAmount: value }
-      const res = await axios.post("https://laabx-api.laoapps.com/api/v1/laab/genMmoneyQR_tasmota", data, { headers: { 'Content-Type': 'application/json', 'token': token } });
+      let vending:any = null
+      if(token=='vending'){
+        vending = 'true'
+      }
+      const res = await axios.post("https://laabx-api.laoapps.com/api/v1/laab/genMmoneyQR_tasmota", data, { headers: { 'Content-Type': 'application/json', 'token': token, 'vending': vending } });
       console.log('generateQR', res.data);
       if (res.data.status != 1) return reject({ errr: new Error(res.data) });
       resolve(res.data.data);
