@@ -176,6 +176,12 @@ export class WsapiService {
             // query all bills
             // query today refill
             // query all refill
+            case 'setMenus':
+              for (let index = 0; index < data?.menu?.length; index++) {
+                const element = data?.menu[index];
+                this.setMenu(element?.menu, element.status);
+              }
+            
             default:
               break;
           }
@@ -186,6 +192,9 @@ export class WsapiService {
       }
 
     }
+  }
+  setMenu(m: string, status: boolean) {
+    localStorage.setItem('menu-' + m, status ? 'true' : 'false');
   }
   send(data: IReqModel | IResModel) {
     const that = this;

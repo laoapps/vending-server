@@ -3870,4 +3870,23 @@ export class Tab1Page implements OnDestroy {
     console.log(`Row ${rowIndex}: Expected ${rowCount}, Actual ${actualCount}`);
     return '';
   }
+
+
+
+
+  showMenu(m:string){
+    if(m=='games'){
+       return this.findMenu(m);
+    }
+    if(m=='services'){
+       return this.findMenu(m);
+    }
+    if(m=='howto'){
+      return this.findMenu(m);
+    }
+  }
+  findMenu(m: string): boolean {
+    return localStorage.getItem('menu-' + m) == 'true' ? true : false;  
+  }
+  
 }
