@@ -65,19 +65,22 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
 export const authHMVending = async (req: Request, res: Response, next: NextFunction) => {
 
-  const machineId = req.headers['machineid'];
-  const otp = req.headers['otp'];
-  // const machineId = req.body['machineId'];
-  // const otp = req.body['otp'];
-  console.log('authHMVending',machineId,otp);
-  console.log('authHMVending',req.headers);
+  const token = req.headers['token'];
+  // const machineId = req.headers['machineid'];
+  // const otp = req.headers['otp'];
+  // console.log('authHMVending',machineId,otp);
+  console.log('authHMVending',token);
   
-  if (!machineId || !otp) {
+  if (!token) {
     res.status(401).json({ error: 'Invalid parameters' });
     return;
-
   }
-  const ownerUuid = await validateHMVending(machineId + '', otp + '');
+  // if (!machineId || !otp) {
+  //   res.status(401).json({ error: 'Invalid parameters' });
+  //   return;
+  // }
+  // const ownerUuid = await validateHMVending(machineId + '', otp + '');
+  const ownerUuid = await validateHMVending(token + '');
   if (!ownerUuid) {
     res.status(401).json({ error: 'Invalid onwerUuid' });
     return;
