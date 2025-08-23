@@ -110,14 +110,14 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
               status = 'Broken';
             }
           }
-
+          const d = machine?.data?machine?.data[0]:null;
           machines.push({
-            machineId: machine.machineId,
-            owner: machine.data[0].owner,
+            machineId: machine?.machineId,
+            owner: d?.owner,
             temperature,
             status,
             lastUpdate,
-            versionId: machine.data[0].versionId,
+            versionId: d?.versionId,
             device,
             data
           });
