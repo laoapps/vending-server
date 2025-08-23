@@ -42,7 +42,10 @@ export class OnlinemachinesPage implements OnInit,OnDestroy {
   }
 
   private loadData() {
-    this.http.get(this.apiUrl).subscribe((response: any) => {
+    const token = localStorage.getItem('token');
+    const shopPhonenumber = localStorage.getItem('shopPhonenumber');
+    const secret = localStorage.getItem('secretLocal');
+    this.http.post(this.apiUrl,{ token, shopPhonenumber, secret }).subscribe((response: any) => {
       const machines: MachineData[] = [];
       const uniqueMachines = new Map<string, any>();
 

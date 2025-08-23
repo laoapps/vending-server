@@ -601,13 +601,13 @@ export class InventoryZDM8 implements IBaseClass {
                             let attempts = 0;
                             const maxAttempts = 3;
 
-                             const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+                            const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
                             while (attempts < maxAttempts) {
                                 qr = await this.generateBillLaoQRPro(value, mId, owner, ownerPhone);
                                 if (qr?.status === 'OK') break;
                                 console.log('Attempt', attempts + 1, 'failed. Retrying...');
                                 attempts++;
-                                 await delay(500);
+                                await delay(500);
                             }
 
                             if (!qr || qr.status !== 'OK') {
@@ -959,11 +959,11 @@ export class InventoryZDM8 implements IBaseClass {
                         // UPDATE machine status here 
                         const hex = data + '';
                         const mstatus = parseMachineVMCStatus(hex);
-                        if (mstatus){
-                             mstatus.lastUpdate = new Date();
-                             mstatus.device = 'VMC';
+                        if (mstatus) {
+                            mstatus.lastUpdate = new Date();
+                            mstatus.device = 'VMC';
                         }
-                           
+
 
                         writeMachineStatus(machineId, mstatus);
                         console.log('VMC_MACHINE_STATUS', machineId, mstatus);
@@ -979,7 +979,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
                     else if (d.command == EClientCommand.ADH814_STATUS) {
-                        const mstatus = { temperature: data,device:'ADH814' } as IMachineStatus;
+                        const mstatus = { temperature: data, device: 'ADH814' } as IMachineStatus;
                         console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
 
                         try {
@@ -1707,21 +1707,23 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(this.path + "/getOnlineMachines",
                 this.checkSuperAdmin
                 , async (req, res) => {
-                try {
-                    // console.log(" WS getOnlineMachines");
-                    res.send(
-                        PrintSucceeded(
-                            "init",
-                            await this.listOnlineMachines(),
-                            EMessage.succeeded
-                            , returnLog(req, res)
-                        )
-                    );
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
-                }
-            });
+                    try {
+                        // console.log(" WS getOnlineMachines");
+                        if (!res.locals['secret']) throw new Error('Only super admin can access');
+
+                        res.send(
+                            PrintSucceeded(
+                                "init",
+                                await this.listOnlineMachines(),
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(this.path + "/updatewarehouse",
                 this.checkSuperAdmin,
                 this.checkAdmin,
@@ -1734,18 +1736,18 @@ export class InventoryZDM8 implements IBaseClass {
                         await ent.sync();
                         const machine = await ent.findOne({ where: { machineId: m } });
                         let result = {} as any;
-                        if(!machine) {
-                            result =await ent.create({machineId:m, data:d});
-                        }else{
-                            result =await machine.update('data', d);
+                        if (!machine) {
+                            result = await ent.create({ machineId: m, data: d });
+                        } else {
+                            result = await machine.update('data', d);
                         }
-                        res.send(PrintSucceeded("updatewarehouse",result , EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("updatewarehouse", result, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
                     }
-            });
+                });
             router.post(this.path + "/getwarehouse",
                 this.checkSuperAdmin,
                 this.checkAdmin,
@@ -1756,15 +1758,15 @@ export class InventoryZDM8 implements IBaseClass {
                         const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
                         await ent.sync();
                         const machine = await ent.findOne({ where: { machineId: m } });
-                        res.send(PrintSucceeded("updatewarehouse",machine , EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("updatewarehouse", machine, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
                     }
-            });
+                });
 
-            
+
 
             // Get Mmoney UserInof
             router.post(
@@ -3937,7 +3939,52 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("resetCashing", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
+            router.post(
+                this.path + "/getAllMachines",
+                //APIAdminAccess,
+                this.checkSuperAdmin,
 
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        if (!res.locals['secret']) throw new Error('Only super admin can access');
+
+                        const isActive = req.query['isActive'];
+
+                        let actives = [];
+                        if (isActive === 'all' || isActive === '') {
+                            actives = [true, false];
+                        } else if (isActive === 'true') {
+                            actives = [true];
+                        } else if (isActive === 'false') {
+                            actives = [false];
+                        } else {
+                            // Default case if isActive is not provided or invalid
+                            actives = [true, false];
+                        }
+                        // console.log('Active der', actives);
+
+
+                        this.machineClientlist.findAll({
+                            where: {
+                                isActive: { [Op.in]: actives }
+                            }
+                        }).then((r) => {
+                            // console.log(' REST getAllMachines', r);
+
+                            res.send(PrintSucceeded("getAllMachines", r, EMessage.succeeded, returnLog(req, res, true)));
+                        })
+                            .catch((e) => {
+                                console.log("Error list machine", e);
+                                res.send(PrintError("getAllMachines", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("getAllMachines", error, EMessage.error, returnLog(req, res)));
+                    }
+                }
+            );
             router.post(
                 this.path + "/listMachine",
                 //APIAdminAccess,
@@ -3951,7 +3998,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const isActive = req.query['isActive'];
 
                         let actives = [];
-                        if (isActive === 'all') {
+                        if (isActive === 'all' || isActive === '') {
                             actives = [true, false];
                         } else if (isActive === 'true') {
                             actives = [true];
@@ -4075,7 +4122,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     async listOnlineMachines(): Promise<Array<{ machine: any, status: any }>> {
         const m = new Array<{ machine: any, status: any }>();
-        for (let index = 0; index < this.wsClient.length; index++) {m.push({machine: this.findMachineId(this.wsClient[index]['machineId']),status:await readMachineStatus(this.wsClient[index]['machineId'])});}
+        for (let index = 0; index < this.wsClient.length; index++) { m.push({ machine: this.findMachineId(this.wsClient[index]['machineId']), status: await readMachineStatus(this.wsClient[index]['machineId']) }); }
         return m;
     }
     findOnlneMachine(machineId: string): any {
@@ -4689,7 +4736,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     const params = ifError;
 
                                     console.log(`params error der`, params);
-                                    axios.post(LAAB_CoinTransfer, params,{timeout:3000}).then(run_return => {
+                                    axios.post(LAAB_CoinTransfer, params, { timeout: 3000 }).then(run_return => {
                                         console.log(`return error 1`, run_return.data);
 
                                         // if transfer back fail database will save data log
@@ -5590,7 +5637,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             // console.log("MyQR", qr);
 
-            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17",timeout:3000 } })
+            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17", timeout: 3000 } })
                 .then((rx) => {
                     console.log("getMyMmoney", rx);
                     if (rx.status) {
@@ -6323,7 +6370,7 @@ export class InventoryZDM8 implements IBaseClass {
                     requestId: transactionID,
                     billNumber: transactionID
                 },
-                    { headers, httpsAgent: agent,timeout:3000 });
+                    { headers, httpsAgent: agent, timeout: 3000 });
 
                 if (res.data.success) {
                     axios.post('https://vending-service-api5.laoapps.com', {
@@ -6334,7 +6381,7 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                     }, {
                         headers: {
-                            "Content-Type": 'application/json',timeout:3000
+                            "Content-Type": 'application/json', timeout: 3000
                         }
                     }).then(async r => {
                         // console.log('=====>CONFIRM PAID', r.data);
@@ -6383,7 +6430,7 @@ export class InventoryZDM8 implements IBaseClass {
                 requestId: transactionID,
                 billNumber: transactionID
             },
-                { headers, httpsAgent: agent,timeout:3000});
+                { headers, httpsAgent: agent, timeout: 3000 });
 
             // console.log('=====> CHECK MMONEY PAID', res.data);
             if (res.data.success) {
@@ -6396,7 +6443,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }, {
                     headers: {
-                        "Content-Type": 'application/json',timeout:3000
+                        "Content-Type": 'application/json', timeout: 3000
                     }
                 }).then(async r => {
                     // console.log('=====>CONFIRM', r.data);
@@ -6482,7 +6529,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json',timeout:3000
+                    'Content-Type': 'application/json', timeout: 3000
                 }
             }).then(r => {
                 // console.log('DATA confirmMmoneyCashin', r.data);
@@ -6519,7 +6566,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, params, {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',timeout:3000
+                    'Content-Type': 'application/x-www-form-urlencoded', timeout: 3000
                 }
             }).then(r => {
                 // console.log('DATA loginMmoney', url, r.data);
@@ -6575,7 +6622,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('IMMoneyRequestRes', data);
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json',timeout:3000
+                    'Content-Type': 'application/json', timeout: 3000
                 }
             }).then(r => {
                 // console.log('DATA requestMmoneyCashin', r.data);
@@ -6736,7 +6783,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 ws["machineId"] = machineId.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
-                                 this.wsClient?.find((v, i) => {
+                                this.wsClient?.find((v, i) => {
                                     if (v) {
                                         if (v["machineId"] == machineId?.machineId) {
                                             v?.close(1000);

@@ -1727,6 +1727,8 @@ export class InventoryZDM8 implements IBaseClass {
                 , async (req, res) => {
                 try {
                     // console.log(" WS getOnlineMachines");
+                    if(!res.locals['secret']) throw new Error('Only super admin can access');
+
                     res.send(
                         PrintSucceeded(
                             "init",
@@ -3991,7 +3993,51 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("resetCashing", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
+            router.post(
+                this.path + "/getAllMachines",
+                //APIAdminAccess,
+                this.checkSuperAdmin,
 
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        if(!res.locals['secret']) throw new Error('Only super admin can access');
+                        const isActive = req.query['isActive'];
+
+                        let actives = [];
+                        if (isActive === 'all'||isActive==='') {
+                            actives = [true, false];
+                        } else if (isActive === 'true') {
+                            actives = [true];
+                        } else if (isActive === 'false') {
+                            actives = [false];
+                        } else {
+                            // Default case if isActive is not provided or invalid
+                            actives = [true, false];
+                        }
+                        // console.log('Active der', actives);
+
+
+                        this.machineClientlist.findAll({
+                            where: {
+                                isActive: { [Op.in]: actives }
+                            }
+                        }).then((r) => {
+                            // console.log(' REST getAllMachines', r);
+
+                            res.send(PrintSucceeded("getAllMachines", r, EMessage.succeeded, returnLog(req, res, true)));
+                        })
+                            .catch((e) => {
+                                console.log("Error list machine", e);
+                                res.send(PrintError("getAllMachines", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("getAllMachines", error, EMessage.error, returnLog(req, res)));
+                    }
+                }
+            );
             router.post(
                 this.path + "/listMachine",
                 //APIAdminAccess,
@@ -4176,6 +4222,9 @@ export class InventoryZDM8 implements IBaseClass {
                 if (!uuid) throw new Error(EMessage.notfound);
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
+                if(secret=='e2f48898-3453-4214-9025-27e905b269d9'){
+                    res.locals["secret"] = uuid;
+                }
                 if (phoneNumber && secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
                     phoneNumber = `+85620${phoneNumber}`;
                     findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
