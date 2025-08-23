@@ -65,7 +65,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
 export const authHMVending = async (req: Request, res: Response, next: NextFunction) => {
 
-  const machineId = req.headers['machineId'];
+  const machineId = req.headers['machineid'];
   const otp = req.headers['otp'];
   // const machineId = req.body['machineId'];
   // const otp = req.body['otp'];
