@@ -104,7 +104,7 @@ Authorization: Bearer {{jwtToken}}
 
 {
   "packageId": 5,
-  "deviceId": 2,
+  "deviceId": 3,
   "relay": 1
 }
 

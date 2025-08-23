@@ -140,7 +140,7 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
       relay,
     } as any);
 
-    const token = req.headers.authorization?.split(' ')[1];
+    // const token = req.headers.authorization?.split(' ')[1];
     const qr = await generateQR(order.dataValues.id, schedulePackage.dataValues.price, 'vending');
     console.log('createOrderHMVending==========111', qr);
 
