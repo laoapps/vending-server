@@ -61,18 +61,18 @@ export class OnlinemachinesPage implements OnInit,OnDestroy {
         const machine = item.machine;
         const status = item.status;
         const now = new Date();
-        const lastUpdate = new Date(status.t);
+        const lastUpdate = new Date(status?.t);
         const isOnline = (now.getTime() - lastUpdate.getTime()) / 1000 / 60 <= 5;
 
         machines.push({
           machineId: machine.machineId,
           owner: machine.data[0].owner,
-          temperature: status.b.temperature,
+          temperature: status?.b?.temperature,
           isOnline: isOnline,
-          lastUpdate: status.t,
+          lastUpdate: status?.t,
           versionId: machine.data[0].versionId,
-          device: machine.data[0].device || 'Unknown',
-          data: machine.data[0].data || {}
+          device: status?. b?.device || 'Unknown',
+          data: JSON.stringify(status?. b?.data) || '{}'
         });
       });
 
