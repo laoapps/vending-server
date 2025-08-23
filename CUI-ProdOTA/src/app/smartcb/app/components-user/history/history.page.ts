@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DetailHistoryPage } from './detail-history/detail-history.page';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
+import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
 @Component({
   selector: 'app-history',
   templateUrl: './history.page.html',
@@ -11,7 +12,9 @@ import { LoadingService } from '../../services/loading.service';
 })
 export class HistoryPage implements OnInit {
   list_order: any[] = [];
-  constructor(public apiService: ApiService, public m: LoadingService) {}
+  constructor(public apiService: ApiService, public m: LoadingService,
+        public ApiVending: ApiVendingService
+  ) {}
 
 
   ngOnInit() {
@@ -38,7 +41,7 @@ export class HistoryPage implements OnInit {
 
   load_data(){
     this.m.onLoading('')
-    this.apiService.load_history().subscribe(async (order) => {
+    this.ApiVending.load_history().subscribe(async (order) => {
       console.log('====================================');
       console.log('history',order);
       console.log('====================================');
@@ -74,7 +77,7 @@ export class HistoryPage implements OnInit {
 
   onClick_restart(id){
     this.m.onLoading('')
-    this.apiService.controlbyorder(id).subscribe(async (control) => {
+    this.ApiVending.controlbyorder(id).subscribe(async (control) => {
       console.log('====================================');
       console.log('control',control);
       console.log('====================================');

@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { UserSchedulesPage } from './user-schedule.page';
 
-import { UserSchedulePage } from './user-schedule.page';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: UserSchedulePage
+    component: UserSchedulesPage
   }
 ];
 

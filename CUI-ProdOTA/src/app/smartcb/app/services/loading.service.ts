@@ -29,7 +29,7 @@ export class LoadingService {
             // localStorage.removeItem('uuid');
             // localStorage.removeItem('id_owner');
             // localStorage.removeItem('ownerHeader');
-            this.router.navigate(['smartcb/login']);
+            this.router.navigate(['tabs/tab1']);
           },
         },
       ],

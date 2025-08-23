@@ -89,8 +89,6 @@ import { VideoCacheService } from '../video-cache.service';
 import { SettingPage } from '../setting/setting.page';
 import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 import { IResModel } from '../services/syste.model';
-import { MapPage } from './smartcb/components-user/map/map.page';
-import { ListAllGroupsPage } from './smartcb/components-user/list-all-groups/list-all-groups.page';
 import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 
 @Component({
@@ -101,7 +99,7 @@ import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 export class Tab1Page implements OnDestroy {
   readyState = false;
   contact = localStorage.getItem('contact') || '55516321';
-
+  menus=[];
 
 
 
@@ -239,15 +237,7 @@ export class Tab1Page implements OnDestroy {
     //   link: 'topupandservices'
     // }
   ]
-
-  public menus = [
-    // {title:'Histoy',icon: 'time-outline',path:HistoryPage},
-    // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
-    // { title: 'Scan QR Code', icon: 'qr-code-outline' },
-    { title: 'Map', icon: 'map-outline', path: MapPage },
-    { title: 'All groups', icon: 'receipt-outline', path: ListAllGroupsPage },
-    // { title: 'Register owner', icon: 'albums-outline' },
-  ]
+ 
   currentSegementTab: string = ITabVendingSegement.vending;
 
   autoShowMyOrderTimer: any = {} as any;

@@ -17,11 +17,10 @@ import { CustomloadingPageModule } from './customloading/customloading.module';
 import { AdsPageModule } from './ads/ads.module';
 import { FortunewheelPageModule } from './fortunewheel/fortunewheel.module';
 import { TestmotorPageModule } from './testmotor/testmotor.module';
-import { ListAllGroupsPageModule } from './tab1/smartcb/components-user/list-all-groups/list-all-groups.module';
-import { ShowDevicesPageModule } from './tab1/smartcb/components-user/show-devices/show-devices.module';
-import { ShowPageketPageModule } from './tab1/smartcb/components-user/show-pageket/show-pageket.module';
-import { PayQrPageModule } from './tab1/smartcb/components-user/pay-qr/pay-qr.module';
-import { MapPageModule } from './tab1/smartcb/components-user/map/map.module';
+import { UserSchedulePageModule } from './smartcb/app/pages/user-schedules/user-schedules.module';
+import { AdminUnregisteredDevicesPageModule } from './smartcb/app/pages/admin-unregistered-devices/admin-unregistered-devices.module';
+import { AdminReportsPageModule } from './smartcb/app/pages/admin-reports/admin-reports.module';
+import { LoginPageModule } from './smartcb/app/auth/login/login.module';
 
 const routes: Routes = [
   // {
@@ -165,26 +164,6 @@ const routes: Routes = [
     loadChildren: () => import('./close-stytem/close-stytem.module').then(m => m.CloseStytemPageModule)
   },
   {
-    path: 'smart-cb-list-all-group',
-    loadChildren: () => ListAllGroupsPageModule
-  },
-  {
-    path: 'smart-cb-show-devices',
-    loadChildren: () => ShowDevicesPageModule
-  },
-  {
-    path: 'smart-cb-show-package',
-    loadChildren: () => ShowPageketPageModule
-  },
-  {
-    path: 'smart-cb-pay-qr',
-    loadChildren: () => PayQrPageModule
-  },
-  {
-    path: 'smart-cb-map',
-    loadChildren: () => MapPageModule
-  },
-  {
     path: 'qr-open-stock',
     loadChildren: () => import('./qr-open-stock/qr-open-stock.module').then( m => m.QrOpenStockPageModule)
   },
@@ -192,6 +171,22 @@ const routes: Routes = [
     path: 'smartcb',
     loadChildren: () => import('./smartcb/app/smartcb.module').then(m => m.SmartcbModule)
   },
+    {
+    path: 'user-schedules',
+    loadChildren: () => UserSchedulePageModule
+  },
+  {
+    path:'admin-unregistered-devices',
+    loadChildren: () => AdminUnregisteredDevicesPageModule
+  },
+  {
+    path: 'admin-reports',
+    loadChildren: () => AdminReportsPageModule
+  },
+  {
+    path:'smart-cb-login',
+    loadChildren: () => LoginPageModule
+  }
 ];
 @NgModule({
   imports: [

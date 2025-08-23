@@ -4,6 +4,7 @@ import { DetailHistoryPage } from '../history/detail-history/detail-history.page
 import { DetailOrderPage } from './detail-order/detail-order.page';
 import { HistoryPage } from '../history/history.page';
 import { ApiService } from '../../services/api.service';
+import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
 
 @Component({
   selector: 'app-order',
@@ -16,7 +17,10 @@ export class OrderPage implements OnInit {
   order_no_active: any[] = [];
   public sel = 'active';
   public choice = ['active', 'no active'];
-  constructor(public apiService: ApiService, public m: LoadingService) {}
+  constructor(public apiService: ApiService, public m: LoadingService,
+    public ApiVending: ApiVendingService
+
+  ) {}
 
 
   ngOnInit() {
@@ -66,7 +70,7 @@ export class OrderPage implements OnInit {
 
   load_data(){
     this.m.onLoading('')
-    this.apiService.load_order().subscribe(async (order) => {
+    this.ApiVending.load_order().subscribe(async (order) => {
       console.log('====================================');
       console.log('order',order);
       console.log('====================================');
@@ -110,7 +114,7 @@ export class OrderPage implements OnInit {
 
   onClick_restart(id){
     this.m.onLoading('')
-    this.apiService.controlbyorder(id).subscribe(async (control) => {
+    this.ApiVending.controlbyorder(id).subscribe(async (control) => {
       console.log('====================================');
       console.log('control',control);
       console.log('====================================');

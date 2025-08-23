@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ShowDevicesPage } from '../show-devices/show-devices.page';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
+import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
 
 @Component({
   selector: 'app-list-all-groups',
@@ -12,7 +13,7 @@ import { LoadingService } from '../../services/loading.service';
 export class ListAllGroupsPage implements OnInit {
   all_gorup: any[] = [];
 
-  constructor(public apiService: ApiService, public m: LoadingService) {}
+  constructor(public ApiVending: ApiVendingService, public m: LoadingService) {}
 
   ngOnInit() {
     this.load_data();
@@ -20,7 +21,7 @@ export class ListAllGroupsPage implements OnInit {
 
   load_data() {
     this.m.onLoading('');
-    this.apiService.load_all_group().subscribe(
+    this.ApiVending.load_all_group().subscribe(
       (r) => {
         console.log('====================================');
         console.log(r);
