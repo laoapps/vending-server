@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 interface MachineData {
   machineId: string;
   owner: string;
@@ -25,8 +25,8 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   machines$: Observable<MachineData[]> = this.machinesSubject.asObservable();
   onlineMachines$: Observable<MachineData[]>;
   brokenMachines$: Observable<MachineData[]>;
-  private allMachinesUrl = 'https://vending-service-api5.laoapps.com/zdm8/getAllMachines';
-  private onlineMachinesUrl = 'https://vending-service-api5.laoapps.com/zdm8/getOnlineMachines';
+  private allMachinesUrl = environment.baseurl+'/getAllMachines';
+  private onlineMachinesUrl = environment.baseurl+'/getOnlineMachines';
   private previousMachines: Map<string, MachineData> = new Map(); // Store previous machine data
 
   int: NodeJS.Timeout;
