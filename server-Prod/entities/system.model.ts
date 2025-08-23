@@ -1351,7 +1351,9 @@ export interface IMachineStatus {
     machineIMEI: string;           // Machine ID (10 bytes as hex string)
     machineTemp: string;           // Machine temperature (8 bytes as hex string)
     machineHumidity?: string;      // Machine humidity (8 bytes, optional)
-    lastUpdate?: Date
+    lastUpdate?: Date,
+    device: string; // Device type (e.g., 'NV9USB', 'NV10USB', etc.)
+    data: any; // Additional data (optional)
 }
 
 export interface ILaoQRGenerateQRRes {

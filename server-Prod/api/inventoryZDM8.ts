@@ -958,8 +958,11 @@ export class InventoryZDM8 implements IBaseClass {
                         // UPDATE machine status here 
                         const hex = data + '';
                         const mstatus = parseMachineVMCStatus(hex);
-                        if (mstatus)
-                            mstatus.lastUpdate = new Date();
+                        if (mstatus){
+                             mstatus.lastUpdate = new Date();
+                             mstatus.device = 'VMC';
+                        }
+                           
 
                         writeMachineStatus(machineId, mstatus);
                         console.log('VMC_MACHINE_STATUS', machineId, mstatus);
@@ -975,7 +978,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
                     else if (d.command == EClientCommand.ADH814_STATUS) {
-                        const mstatus = { temperature: data } as IMachineStatus;
+                        const mstatus = { temperature: data,device:'ADH814' } as IMachineStatus;
                         console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
 
                         try {

@@ -231,6 +231,10 @@ const routes: Routes = [
   {
     path: 'imagesproduct',
     loadChildren: () => import('./imagesproduct/imagesproduct.module').then(m => m.ImagesproductPageModule)
+  },
+  {
+    path: 'onlinemachines',
+    loadChildren: () => import('./onlinemachines/onlinemachines.module').then( m => m.OnlinemachinesPageModule)
   }
 ];
 @NgModule({

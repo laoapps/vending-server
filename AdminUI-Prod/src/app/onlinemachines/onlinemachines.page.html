@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Vending Machine Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="light" (click)="refreshData()">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6" size-md="4" size-lg="3" *ngFor="let machine of machines$ | async">
+        <ion-card class="machine-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="cube-outline"></ion-icon> {{ machine.machineId }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p><ion-icon name="person-outline"></ion-icon> <strong>Owner:</strong> {{ machine.owner }}</p>
+            <p>
+              <ion-icon name="thermometer-outline"></ion-icon> 
+              <strong>Temperature:</strong> 
+              <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
+            </p>
+            <p>
+              <ion-icon [name]="machine.isOnline ? 'wifi-outline' : 'cloud-offline-outline'"></ion-icon> 
+              <strong>Status:</strong> 
+              <span [ngClass]="{'offline': !machine.isOnline}">{{ machine.isOnline ? 'Online' : 'Offline' }}</span>
+            </p>
+            <p><ion-icon name="time-outline"></ion-icon> <strong>Last Update:</strong> {{ machine.lastUpdate | date:'short' }}</p>
+            <p><ion-icon name="code-outline"></ion-icon> <strong>Version:</strong> {{ machine.versionId || 'N/A' }}</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
