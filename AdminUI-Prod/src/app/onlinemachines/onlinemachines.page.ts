@@ -25,8 +25,8 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   machines$: Observable<MachineData[]> = this.machinesSubject.asObservable();
   onlineMachines$: Observable<MachineData[]>;
   brokenMachines$: Observable<MachineData[]>;
-  private allMachinesUrl = environment.baseurl+'/getAllMachines';
-  private onlineMachinesUrl = environment.baseurl+'/getOnlineMachines';
+  private allMachinesUrl = environment.url+'/getAllMachines';
+  private onlineMachinesUrl = environment.url+'/getOnlineMachines';
   private previousMachines: Map<string, MachineData> = new Map(); // Store previous machine data
 
   int: NodeJS.Timeout;
