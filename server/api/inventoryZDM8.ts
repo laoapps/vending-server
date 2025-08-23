@@ -1704,7 +1704,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
-            router.get(this.path + "/getOnlineMachines",
+            router.post(this.path + "/getOnlineMachines",
                 this.checkSuperAdmin
                 , async (req, res) => {
                 try {
