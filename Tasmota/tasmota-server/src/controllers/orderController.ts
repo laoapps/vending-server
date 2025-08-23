@@ -195,11 +195,13 @@ export const getOrders = async (req: Request, res: Response) => {
     let whereCondition: WhereOptions<any> = {}
     if (query == 'complete') {
       whereCondition = {
+        startedTime: { [Op.ne]: null },
         userUuid: user.uuid,
         completedTime: { [Op.ne]: null },
       };
     }else{
       whereCondition = {
+        startedTime: { [Op.ne]: null },
         userUuid: user.uuid,
         completedTime: { [Op.is]: null },
       };
