@@ -162,7 +162,7 @@
         <ion-icon style="color: white;" name="logo-whatsapp"></ion-icon>
       </div>
     </a>
-    <a (click)="openSmartCB()" href="javascript:void(0)" class="item-blue control-menu menu-how-to active">
+    <a (click)="openHowToPage()" href="javascript:void(0)" class="item-blue control-menu menu-how-to active">
       <div class="text">ວິທີໃຊ້ງານ</div>
       <div class="icon">
         <ion-icon style="color: white;" name="videocam-outline"></ion-icon>
@@ -176,12 +176,12 @@
         <i class="fa-solid fa-layer-group"></i>
       </div>
     </a> -->
-    <a (click)="openGameServices()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+    <!-- <a (click)="openGameServices()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
       <div class="text">ຫຼີ້ນເກມ</div>
       <div class="icon">
         <ion-icon style="color: white;" name="game-controller-outline"></ion-icon>
       </div>
-    </a>
+    </a> -->
     <a href="javascript:void(0)" class="item-sea control-menu menu-tempurature active" (click)="openTestMotor()">
       <div class="text" *ngIf="_machineStatus?.status?.temp">{{_machineStatus?.status?.temp}}</div>
       <div class="text" *ngIf="!_machineStatus?.status?.temp">loading...</div>
