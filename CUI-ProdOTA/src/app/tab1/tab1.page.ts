@@ -90,6 +90,7 @@ import { SettingPage } from '../setting/setting.page';
 import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 import { IResModel } from '../services/syste.model';
 import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tab1',
@@ -99,7 +100,7 @@ import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 export class Tab1Page implements OnDestroy {
   readyState = false;
   contact = localStorage.getItem('contact') || '55516321';
-  menus=[];
+  menus = [];
 
 
 
@@ -237,7 +238,7 @@ export class Tab1Page implements OnDestroy {
     //   link: 'topupandservices'
     // }
   ]
- 
+
   currentSegementTab: string = ITabVendingSegement.vending;
 
   autoShowMyOrderTimer: any = {} as any;
@@ -431,7 +432,8 @@ export class Tab1Page implements OnDestroy {
     private vendingIndex: VendingIndexServiceService,
     private serialService: SerialServiceService,
     private dbService: DatabaseService,
-    private videoCacheService: VideoCacheService
+    private videoCacheService: VideoCacheService,
+    public router: Router
   ) {
 
     // this.refreshAllEveryHour();
@@ -3439,6 +3441,24 @@ export class Tab1Page implements OnDestroy {
         this.checkActiveModal(r);
 
       });
+  }
+
+  openSmartCB() {
+    this.router.navigate(['/smartcb'])
+    // this.apiService.modal
+    //   .create({
+    //     component: HowToPage,
+    //     componentProps: {},
+    //     cssClass: 'dialog-fullscreen',
+    //   })
+    //   .then((r) => {
+    //     r.present();
+    //     this.otherModalAreOpening = true;
+    //     this.openAnotherModal(r);
+    //     clearInterval(this.autoShowMyOrderTimer);
+    //     this.checkActiveModal(r);
+
+    //   });
   }
 
   openTestMotor() {

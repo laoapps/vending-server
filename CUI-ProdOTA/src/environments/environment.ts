@@ -22,7 +22,7 @@ export const environment = {
   filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
   apiUrl: 'https://smartcb-api.laoapps.com/api',
 
-  versionId: '1.1.6'
+  versionId: '2.1.1'
 };
 
 /*
