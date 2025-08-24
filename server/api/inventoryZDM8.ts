@@ -421,12 +421,25 @@ export class InventoryZDM8 implements IBaseClass {
                             if (v["clientId"] == clientId) return (loggedin = true);
                         });
                          if (!loggedin) {
-                             const resD = {
+
+                            const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
+                            if(ws){
+                                 ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
                                                 command: "ping",
                                                 production: this.production,
                                                 setting: { refresh: true }
-                                            } as any;
-                            this.sendWSToMachine( this.findMachineIdToken(d.token)?.machineId,resD)
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
+                                    )
+                                );
+                                console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
+                            }
                             throw new Error(EMessage.notloggedinyet);
                         }
                         else if (d.command == EClientCommand.list) {
