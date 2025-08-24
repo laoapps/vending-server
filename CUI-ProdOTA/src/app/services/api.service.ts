@@ -618,33 +618,39 @@ export class ApiService {
           let transactionList = [];
           for (let index = 0; index < pb.length; index++) {
             const element = pb[index];
-            this.IndexedDB.addBillProcess(element);
-            console.log('=====> PB ELEMENT :', element);
+            // console.log('=====> PB ELEMENT :', element);
             transactionList.push(element.transactionID);
-            // pdStock.push({ transactionID: element.transactionID, position: element.position });
-            // this.reconfirmStockNew([{ transactionID: element.transactionID, position: element.position }]);
           }
           // console.log('transactionList :', transactionList);
 
-          this.confirmBillPaid(transactionList).subscribe((r) => {
-            console.log('=====> CONFIRM BILL PAID :', r);
-            this.isDropStock = true;
-            if (pb.length) {
-              if (!this.isRemainingBillsModalOpen) {
-                this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-                  this.isRemainingBillsModalOpen = true;
-                  r.present();
-                  r.onDidDismiss().then(() => {
-                    this.isRemainingBillsModalOpen = false;
-                  }
-                  );
-                });
+          this.confirmBillPaid(transactionList).subscribe(async (r) => {
+            // console.log('=====> CONFIRM BILL PAID :', r);
+            if (r.status === 1) {
+
+              for (let index = 0; index < pb.length; index++) {
+                const element = pb[index];
+                await this.IndexedDB.addBillProcess(element);
               }
 
+              this.isDropStock = true;
+              if (pb.length) {
+                if (!this.isRemainingBillsModalOpen) {
+                  this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+                    this.isRemainingBillsModalOpen = true;
+                    r.present();
+                    r.onDidDismiss().then(() => {
+                      this.isRemainingBillsModalOpen = false;
+                    }
+                    );
+                  });
+                }
+
+              }
+
+              this.eventEmmiter.emit('delivery');
+              resolve(EMessage.succeeded);
             }
 
-            this.eventEmmiter.emit('delivery');
-            resolve(EMessage.succeeded);
           });
 
           // console.log('=====> PD STOCK :', pdStock);
