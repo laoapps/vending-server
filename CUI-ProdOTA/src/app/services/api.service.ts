@@ -595,7 +595,7 @@ export class ApiService {
     // this.initLocalHowToVideoPlayList();
   }
 
-
+  waitingForDelivery = false;
   async waitingDelivery(r: any, serial: ISerialService) {
     return new Promise<string>((resolve, reject) => {
       console.log('WAITING DELIVERY NEW :', r);
@@ -604,12 +604,15 @@ export class ApiService {
 
 
       try {
+
         if (r) {
           if (!this.isRemainingBillsModalOpen) {
             this.dismissModal();
             this.dismissModal();
           }
           this.dismissLoading();
+          if (this.waitingForDelivery) return;
+          this.waitingForDelivery = true;
           const pb = r ? r as Array<IBillProcess> : [] as Array<IBillProcess>;
           // console.log('=====> PB', pb);
 
@@ -661,6 +664,9 @@ export class ApiService {
         console.log('error waitingDelivery is:', error);
         this.IndexedLogDB.addBillProcess({ errorData: `Error waitingDelivery :${JSON.stringify(error)}` });
         resolve(EMessage.error)
+      }
+      finally {
+        this.waitingForDelivery = false;
       }
     })
 
