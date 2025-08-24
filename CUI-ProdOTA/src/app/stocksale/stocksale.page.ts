@@ -65,7 +65,7 @@ export class StocksalePage implements OnInit, OnDestroy {
     alert('Are you going to save sale to online');
     const p = prompt('please type 12345678');
     if (p == '12345678') {
-      await this.apiService.showLoading();
+      await this.apiService.showLoading('', 3000);
       const x = [];
       ApiService.vendingOnSale.forEach(v => {
         const e = JSON.parse(JSON.stringify(v));
@@ -89,7 +89,7 @@ export class StocksalePage implements OnInit, OnDestroy {
     alert('Are you going to recover sale from online');
     const p = prompt('please type 12345678');
     if (p == '12345678') {
-      await this.apiService.showLoading();
+      await this.apiService.showLoading('', 3000);
       this.apiService.recoverSale().subscribe(r => {
         console.log(r);
         if (r.status) {

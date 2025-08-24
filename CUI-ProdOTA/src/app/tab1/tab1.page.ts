@@ -3874,19 +3874,19 @@ export class Tab1Page implements OnDestroy {
 
 
 
-  showMenu(m:string){
-    if(m=='games'){
-       return this.findMenu(m);
+  showMenu(m: string) {
+    if (m == 'games') {
+      return this.findMenu(m);
     }
-    if(m=='services'){
-       return this.findMenu(m);
+    if (m == 'services') {
+      return this.findMenu(m);
     }
-    if(m=='howto'){
+    if (m == 'howto') {
       return this.findMenu(m);
     }
   }
   findMenu(m: string): boolean {
-    return localStorage.getItem('menu-' + m) == 'true' ? true : false;  
+    return localStorage.getItem('menu-' + m) == 'true' ? true : false;
   }
-  
+
 }
