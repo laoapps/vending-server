@@ -722,7 +722,7 @@ export function parseMachineVMCStatus(hexString: string): IMachineStatus {
         machineIMEI,
         machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
         machineHumidity, // Undefined if not present
-    };
+    } as any;
 }
 
 export function CheckMmoneyPaid(transactionID: string): Promise<{ status: number, message: any }> {

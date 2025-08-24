@@ -423,7 +423,7 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!loggedin) {
 
                             const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
-                            if(ws){
+                            if (ws) {
                                 //  ws?.send(
                                 //     JSON.stringify(
                                 //         PrintSucceeded(
@@ -1797,7 +1797,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
                         await ent.sync();
-                        const machine = await ent.findOne({ where: { machineId: m },order: [['createdAt', 'DESC']],offset: (page - 1), limit: limit });
+                        const machine = await ent.findOne({ where: { machineId: m }, order: [['createdAt', 'DESC']], offset: (page - 1), limit: limit });
                         res.send(PrintSucceeded("updatewarehouse", machine, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
@@ -4016,47 +4016,36 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
             router.post(
-                this.path + "/getAllMachines",
-                //APIAdminAccess,
+                this.path + '/getAllMachines',
                 this.checkSuperAdmin,
-
-                // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        if (!res.locals['secret']) throw new Error('Only super admin can access');
-                        const isActive = req.query['isActive'];
-
-                        let actives = [];
-                        if (isActive === 'all' || isActive === '') {
-                            actives = [true, false];
-                        } else if (isActive === 'true') {
-                            actives = [true];
-                        } else if (isActive === 'false') {
-                            actives = [false];
-                        } else {
-                            // Default case if isActive is not provided or invalid
-                            actives = [true, false];
+                        if (!res.locals['secret']) {
+                            throw new Error('Only super admin can access');
                         }
-                        // console.log('Active der', actives);
 
+                        const isActive = req.query['isActive']?.toString() || 'all';
+                        const actives = isActive === 'true' ? [true] : isActive === 'false' ? [false] : [true, false];
+                        const cacheKey = `machines:isActive:${isActive}`;
 
-                        this.machineClientlist.findAll({
-                            where: {
-                                isActive: { [Op.in]: actives }
-                            }
-                        }).then((r) => {
-                            // console.log(' REST getAllMachines', r);
+                        // Try to get data from Redis
+                        const cachedData = await redisClient.get(cacheKey);
+                        if (cachedData) {
+                            return res.send(PrintSucceeded('getAllMachines', JSON.parse(cachedData), EMessage.succeeded, returnLog(req, res, true)));
+                        }
 
-                            res.send(PrintSucceeded("getAllMachines", r, EMessage.succeeded, returnLog(req, res, true)));
-                        })
-                            .catch((e) => {
-                                console.log("Error list machine", e);
-                                res.send(PrintError("getAllMachines", e, EMessage.error, returnLog(req, res, true)));
-                            });
+                        // Fetch from database if cache miss
+                        const machines = await this.machineClientlist.findAll({
+                            where: { isActive: { [Op.in]: actives } },
+                        });
 
+                        // Store in Redis with 3-minute TTL (180 seconds)
+                        await redisClient.setEx(cacheKey, 180, JSON.stringify(machines));
+
+                        res.send(PrintSucceeded('getAllMachines', machines, EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("getAllMachines", error, EMessage.error, returnLog(req, res)));
+                        console.error('Error in getAllMachines:', error);
+                        res.send(PrintError('getAllMachines', error, EMessage.error, returnLog(req, res)));
                     }
                 }
             );

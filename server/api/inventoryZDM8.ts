@@ -420,11 +420,11 @@ export class InventoryZDM8 implements IBaseClass {
                         this.wsClient.find((v) => {
                             if (v["clientId"] == clientId) return (loggedin = true);
                         });
-                         if (!loggedin) {
+                        if (!loggedin) {
 
                             const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
-                            if(ws){
-                                   //  ws?.send(
+                            if (ws) {
+                                //  ws?.send(
                                 //     JSON.stringify(
                                 //         PrintSucceeded(
                                 //             "ping",
@@ -3963,48 +3963,36 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
             router.post(
-                this.path + "/getAllMachines",
-                //APIAdminAccess,
+                this.path + '/getAllMachines',
                 this.checkSuperAdmin,
-
-                // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        if (!res.locals['secret']) throw new Error('Only super admin can access');
-
-                        const isActive = req.query['isActive'];
-
-                        let actives = [];
-                        if (isActive === 'all' || isActive === '') {
-                            actives = [true, false];
-                        } else if (isActive === 'true') {
-                            actives = [true];
-                        } else if (isActive === 'false') {
-                            actives = [false];
-                        } else {
-                            // Default case if isActive is not provided or invalid
-                            actives = [true, false];
+                        if (!res.locals['secret']) {
+                            throw new Error('Only super admin can access');
                         }
-                        // console.log('Active der', actives);
 
+                        const isActive = req.query['isActive']?.toString() || 'all';
+                        const actives = isActive === 'true' ? [true] : isActive === 'false' ? [false] : [true, false];
+                        const cacheKey = `machines:isActive:${isActive}`;
 
-                        this.machineClientlist.findAll({
-                            where: {
-                                isActive: { [Op.in]: actives }
-                            }
-                        }).then((r) => {
-                            // console.log(' REST getAllMachines', r);
+                        // Try to get data from Redis
+                        const cachedData = await redisClient.get(cacheKey);
+                        if (cachedData) {
+                            return res.send(PrintSucceeded('getAllMachines', JSON.parse(cachedData), EMessage.succeeded, returnLog(req, res, true)));
+                        }
 
-                            res.send(PrintSucceeded("getAllMachines", r, EMessage.succeeded, returnLog(req, res, true)));
-                        })
-                            .catch((e) => {
-                                console.log("Error list machine", e);
-                                res.send(PrintError("getAllMachines", e, EMessage.error, returnLog(req, res, true)));
-                            });
+                        // Fetch from database if cache miss
+                        const machines = await this.machineClientlist.findAll({
+                            where: { isActive: { [Op.in]: actives } },
+                        });
 
+                        // Store in Redis with 3-minute TTL (180 seconds)
+                        await redisClient.setEx(cacheKey, 180, JSON.stringify(machines));
+
+                        res.send(PrintSucceeded('getAllMachines', machines, EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
-                        console.log(error);
-                        res.send(PrintError("getAllMachines", error, EMessage.error, returnLog(req, res)));
+                        console.error('Error in getAllMachines:', error);
+                        res.send(PrintError('getAllMachines', error, EMessage.error, returnLog(req, res)));
                     }
                 }
             );
@@ -4192,7 +4180,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (!uuid) throw new Error(EMessage.notfound);
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
-                if(secret=='e2f48898-3453-4214-9025-27e905b269d9'){
+                if (secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
                     res.locals["secret"] = secret;
                 }
                 if (phoneNumber && secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
