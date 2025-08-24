@@ -424,23 +424,23 @@ export class InventoryZDM8 implements IBaseClass {
 
                             const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
                             if(ws){
-                                 ws?.send(
-                                    JSON.stringify(
-                                        PrintSucceeded(
-                                            "ping",
-                                            {
-                                                command: "ping",
-                                                production: this.production,
-                                                setting: { refresh: true }
-                                            },
-                                            EMessage.succeeded,
-                                            null
-                                        )
-                                    )
-                                );
-                                console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
-                            }
-                            throw new Error(EMessage.notloggedinyet);
+                                   //  ws?.send(
+                                //     JSON.stringify(
+                                //         PrintSucceeded(
+                                //             "ping",
+                                //             {
+                                //                 command: "ping",
+                                //                 production: this.production,
+                                //                 setting: { refresh: true }
+                                //             },
+                                //             EMessage.succeeded,
+                                //             null
+                                //         )
+                                //     )
+                                // );
+                                // console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
+                                ws.close();
+                                console.log('close old connection and ask to re-login', this.findMachineIdToken(d.token)?.machineId);
                         }
                         else if (d.command == EClientCommand.list) {
                             const m = await machineClientIDEntity.findOne({
