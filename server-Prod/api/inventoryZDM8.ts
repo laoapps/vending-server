@@ -420,7 +420,15 @@ export class InventoryZDM8 implements IBaseClass {
                         this.wsClient.find((v) => {
                             if (v["clientId"] == clientId) return (loggedin = true);
                         });
-                        if (!loggedin) throw new Error(EMessage.notloggedinyet);
+                        if (!loggedin) {
+                             const resD = {
+                                                command: "ping",
+                                                production: this.production,
+                                                setting: { refresh: true }
+                                            } as any;
+                            this.sendWSToMachine( this.findMachineIdToken(d.token)?.machineId,resD)
+                            throw new Error(EMessage.notloggedinyet);
+                        }
                         else if (d.command == EClientCommand.list) {
                             const m = await machineClientIDEntity.findOne({
                                 where: {
@@ -958,11 +966,11 @@ export class InventoryZDM8 implements IBaseClass {
                         // UPDATE machine status here 
                         const hex = data + '';
                         const mstatus = parseMachineVMCStatus(hex);
-                        if (mstatus){
-                             mstatus.lastUpdate = new Date();
-                             mstatus.device = 'VMC';
+                        if (mstatus) {
+                            mstatus.lastUpdate = new Date();
+                            mstatus.device = 'VMC';
                         }
-                           
+
 
                         writeMachineStatus(machineId, mstatus);
                         console.log('VMC_MACHINE_STATUS', machineId, mstatus);
@@ -978,7 +986,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
                     else if (d.command == EClientCommand.ADH814_STATUS) {
-                        const mstatus = { temperature: data,device:'ADH814' } as IMachineStatus;
+                        const mstatus = { temperature: data, device: 'ADH814' } as IMachineStatus;
                         console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
 
                         try {
@@ -1725,23 +1733,23 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(this.path + "/getOnlineMachines",
                 this.checkSuperAdmin
                 , async (req, res) => {
-                try {
-                    // console.log(" WS getOnlineMachines");
-                    if(!res.locals['secret']) throw new Error('Only super admin can access');
+                    try {
+                        // console.log(" WS getOnlineMachines");
+                        if (!res.locals['secret']) throw new Error('Only super admin can access');
 
-                    res.send(
-                        PrintSucceeded(
-                            "init",
-                            await this.listOnlineMachines(),
-                            EMessage.succeeded
-                            , returnLog(req, res)
-                        )
-                    );
-                } catch (error) {
-                    console.log(error);
-                    res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
-                }
-            });
+                        res.send(
+                            PrintSucceeded(
+                                "init",
+                                await this.listOnlineMachines(),
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("init", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(this.path + "/updatewarehouse",
                 this.checkSuperAdmin,
                 this.checkAdmin,
@@ -1752,13 +1760,10 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
                         await ent.sync();
-                        const machine = await ent.findOne({ where: { machineId: m } });
+
                         let result = {} as any;
-                        if (!machine) {
-                            result = await ent.create({ machineId: m, data: d });
-                        } else {
-                            result = await machine.update('data', d);
-                        }
+
+                        result = await ent.create({ machineId: m, data: d });
                         res.send(PrintSucceeded("updatewarehouse", result, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
@@ -1772,10 +1777,12 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const m = req?.body?.data?.machineId;
+                        const page = req?.body?.data?.page || 1;
+                        const limit = req?.body?.data?.limit || 10;
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
                         await ent.sync();
-                        const machine = await ent.findOne({ where: { machineId: m } });
+                        const machine = await ent.findOne({ where: { machineId: m },order: [['createdAt', 'DESC']],offset: (page - 1), limit: limit });
                         res.send(PrintSucceeded("updatewarehouse", machine, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
@@ -4001,11 +4008,11 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 async (req, res) => {
                     try {
-                        if(!res.locals['secret']) throw new Error('Only super admin can access');
+                        if (!res.locals['secret']) throw new Error('Only super admin can access');
                         const isActive = req.query['isActive'];
 
                         let actives = [];
-                        if (isActive === 'all'||isActive==='') {
+                        if (isActive === 'all' || isActive === '') {
                             actives = [true, false];
                         } else if (isActive === 'true') {
                             actives = [true];
@@ -4222,7 +4229,7 @@ export class InventoryZDM8 implements IBaseClass {
                 if (!uuid) throw new Error(EMessage.notfound);
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
-                if(secret=='e2f48898-3453-4214-9025-27e905b269d9'){
+                if (secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
                     res.locals["secret"] = uuid;
                 }
                 if (phoneNumber && secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
