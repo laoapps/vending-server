@@ -5,6 +5,7 @@ import { ModalController } from '@ionic/angular';
 import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { Toast } from '@capacitor/toast';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-remainingbills',
@@ -146,6 +147,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         const device = localStorage.getItem('device') || 'VMC';
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
           this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
+             this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
             await this.loadBillLocal();
             // Toast.show({ text: 'Bill process deleted', duration: 'long' });
 
@@ -162,7 +164,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
               this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error shippingcontrol :${JSON.stringify(error)}` });
             });
 
-            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+           
 
             setTimeout(() => {
               this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
@@ -222,6 +224,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       this.r = [];
       this.reloadDelivery(true);
       await this.apiService.soundSystemError();
+      App.exitApp();
     }
 
     finally {
