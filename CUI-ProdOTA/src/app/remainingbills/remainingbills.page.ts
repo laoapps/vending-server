@@ -147,14 +147,14 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         const device = localStorage.getItem('device') || 'VMC';
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
           this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
-             this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
             await this.loadBillLocal();
             // Toast.show({ text: 'Bill process deleted', duration: 'long' });
 
             this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
               console.log('shippingcontrol');
               try {
-                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click Solot ${position} droped` });
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click Solot ${position} droped transactionID ${transactionID} trandID ${trandID}` });
               } catch (err) {
                 Toast.show({ text: 'Faild save drop', duration: 'long' })
               }
@@ -164,7 +164,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
               this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error shippingcontrol :${JSON.stringify(error)}` });
             });
 
-           
+
 
             setTimeout(() => {
               this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
