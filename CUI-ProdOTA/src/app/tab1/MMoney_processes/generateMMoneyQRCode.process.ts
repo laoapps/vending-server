@@ -75,7 +75,8 @@ export class GenerateMMoneyQRCodeProcess {
         return new Promise<any>(async (resolve, reject) => {
             try {
 
-                this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
+                this.apiService.buyMMoney(this.orders, this.amount, this.machineId).then(rx => {
+                    const r = rx.data;
                     const response: any = r;
                     console.log(`response generate MMoney`, response);
                     if (response.status != 1) {

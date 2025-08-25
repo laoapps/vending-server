@@ -117,7 +117,8 @@ export class VendingGoPage implements OnInit {
     console.log(this.orders, amount);
     this.apiService
       .buyLaoQR(this.orders, amount)
-      .subscribe((r) => {
+      .then((rx) => {
+        const r = rx.data;
         console.log(r);
         if (r.status) {
           this.bills = r.data as IVendingMachineBill;

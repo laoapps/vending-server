@@ -167,7 +167,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
             setTimeout(() => {
-              this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
+              this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
+                const r=rx.data;
                 // this.apiService.dismissLoading();
                 console.log(`vending on sale`, ApiService.vendingOnSale);
                 console.log('retryProcessBill', r);
@@ -284,7 +285,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       this.apiService.showLoading('', 30000);
       const isRemote = localStorage.getItem('remoteProcess');
       if (!isRemote) {
-        this.apiService.retryProcessBill(transactionID, position).subscribe(async r => {
+        this.apiService.retryProcessBill(transactionID, position).then(async rx => {
+          const r = rx.data;
           console.log(`vending on sale`, ApiService.vendingOnSale);
           console.log('retryProcessBill', r);
           if (r.status) {
@@ -323,7 +325,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         }
 
         try {
-          this.apiService.retryProcessBill(transactionID, position).subscribe(async r => {
+          this.apiService.retryProcessBill(transactionID, position).then(async rx => {
+            const r = rx.data;
             // this.apiService.dismissLoading();
             console.log(`vending on sale`, ApiService.vendingOnSale);
             console.log('retryProcessBill', r);

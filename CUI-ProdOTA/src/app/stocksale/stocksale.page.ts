@@ -30,7 +30,8 @@ export class StocksalePage implements OnInit, OnDestroy {
     // this.stock=apiService.stock;
   }
   ngOnDestroy(): void {
-    this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r => {
+    this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
+      const r = rx.data;
       console.log(r);
 
       if (r.status) {
@@ -72,7 +73,8 @@ export class StocksalePage implements OnInit, OnDestroy {
 
         x.push(e);
       })
-      this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r => {
+      this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
+        const r = rx.data;
         console.log(r);
 
         if (r.status) {
@@ -90,7 +92,8 @@ export class StocksalePage implements OnInit, OnDestroy {
     const p = prompt('please type 12345678');
     if (p == '12345678') {
       await this.apiService.showLoading('', 3000);
-      this.apiService.recoverSale().subscribe(r => {
+      this.apiService.recoverSale().then(rx => {
+        const r = rx.data;
         console.log(r);
         if (r.status) {
           ApiService.vendingOnSale.length = 0;
@@ -288,7 +291,8 @@ export class StocksalePage implements OnInit, OnDestroy {
       alert('ARE YOU SURE?')
       console.log('jsonText', JSON.parse(this.jsonText));
 
-      this.apiService.saveSale(JSON.parse(this.jsonText)).subscribe(r => {
+      this.apiService.saveSale(JSON.parse(this.jsonText)).then(rx => {
+        const r = rx.data;
         console.log('R', r);
 
       });

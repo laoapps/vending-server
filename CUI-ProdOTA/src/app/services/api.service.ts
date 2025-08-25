@@ -1,5 +1,6 @@
 import { Component, ComponentRef, Injectable, NgZone } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+// import { HttpClient, HttpHeaders } from '@angular/common/http';
+
 import {
   EClientCommand,
   EMessage,
@@ -289,7 +290,7 @@ export class ApiService {
   constructor(
     public controlMenuService: ControlMenuService,
 
-    public http: HttpClient,
+    // public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
     public modal: ModalController,
@@ -470,8 +471,9 @@ export class ApiService {
           }
         ]
       }
-      this.confirmDeductStock(params).subscribe(res_confirm => {
+      this.confirmDeductStock(params).then(rx => {
         try {
+          const res_confirm = rx.data;
           console.log(`confirm deduct stock`, res_confirm);
           if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
@@ -486,7 +488,8 @@ export class ApiService {
 
           // fix here
           if (!localStorage.getItem('debug')) {
-            this.saveSale(vsales).subscribe((r) => {
+            this.saveSale(vsales).then((rx) => {
+              const r = rx.data
               console.log(r);
               if (r.status) {
                 console.log(`save sale success`);
@@ -626,7 +629,8 @@ export class ApiService {
           }
           // console.log('transactionList :', transactionList);
 
-          this.confirmBillPaid(transactionList).subscribe(async (r) => {
+          this.confirmBillPaid(transactionList).then(async (rx) => {
+            const r = rx.data;
             // console.log('=====> CONFIRM BILL PAID :', r);
             if (r.status === 1) {
 
@@ -730,7 +734,8 @@ export class ApiService {
 
       // }
 
-      this.saveSale(vsales).subscribe((r) => {
+      this.saveSale(vsales).then((rx) => {
+        const r = rx.data;
         console.log(r);
         if (r.status) {
           console.log(`save sale success`);
@@ -772,7 +777,8 @@ export class ApiService {
     }
 
     try {
-      this.confirmDeductStock(params).subscribe(res_confirm => {
+      this.confirmDeductStock(params).then(rx => {
+        const res_confirm= rx.data;
         console.log(`return confirm deduct stock`, res_confirm);
         if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
@@ -790,7 +796,8 @@ export class ApiService {
         this.eventEmitter.emit('stockdeduct', x);
         if (!localStorage.getItem('debug')) {
 
-          this.saveSale(vsales).subscribe((r) => {
+          this.saveSale(vsales).then((rx) => {
+            const r = rx.data;
             console.log(r);
             if (r.status) {
               console.log(`save sale success`);
@@ -1083,12 +1090,16 @@ export class ApiService {
   private headerBase(): any {
     const token = localStorage.getItem('token');
     //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
-    var headers = new HttpHeaders();
-    headers.append('Access-Control-Allow-Origin', '*');
-    headers.append('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
-    headers.append('Accept', 'application/json');
-    headers.append('content-type', 'application/json');
+    // var headers = new HttpHeaders();
+    // headers.append('Access-Control-Allow-Origin', '*');
+    // headers.append('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
+    // headers.append('Accept', 'application/json');
+    // headers.append('content-type', 'application/json');
     //let options = new RequestOptions({ headers:headers})
+    const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  };
     return headers;
   }
   public async saveImage(id: number, base64: string, db = 'image') {
@@ -1151,7 +1162,7 @@ export class ApiService {
     });
   }
   initDemo() {
-    return this.http.get<IResModel>(
+    return axios.get<IResModel>(
       this.url + '/init?machineId=' + this.machineId.machineId,
       { headers: this.headerBase() }
     );
@@ -1169,7 +1180,7 @@ export class ApiService {
       .toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     console.log(`req der`, req);
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/machineSaleList?isActive=' + isActive,
       req,
       { headers: this.headerBase() }
@@ -1177,12 +1188,12 @@ export class ApiService {
   }
 
   loadOnlineMachine() {
-    return this.http.get<IResModel>(this.url + '/getOnlineMachines', {
+    return axios.get<IResModel>(this.url + '/getOnlineMachines', {
       headers: this.headerBase(),
     });
   }
   // loadDeliveryingBills() {
-  //   return this.http.post<IResModel>(
+  //   return axios.post<IResModel>(
   //     this.url + '/getDeliveryingBills',
   //     {
   //       token: cryptojs
@@ -1198,7 +1209,7 @@ export class ApiService {
     return this.IndexedDB.getBillProcesses();
   }
   loadDeliveryingBillsLocal() {
-    // return this.http.post<IResModel>(
+    // return axios.post<IResModel>(
     //   this.url + '/getDeliveryingBills',
     //   {
     //     token: cryptojs
@@ -1210,7 +1221,7 @@ export class ApiService {
     return this.IndexeLocaldDB.getBillProcesses();
   }
   getMMoneyUserInfo(phonenumber: string) {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + `/getMmoneyUserInfo?phonenumber=${phonenumber}`,
       {
         token: cryptojs
@@ -1221,7 +1232,7 @@ export class ApiService {
     );
   }
   saveSale(data: any) {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/saveMachineSale',
       {
         data,
@@ -1233,7 +1244,7 @@ export class ApiService {
     );
   }
   recoverSale() {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/readMachineSale',
       {
         token: cryptojs
@@ -1244,7 +1255,7 @@ export class ApiService {
     );
   }
   confirmDeductStock(data: any) {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/confirmMachineDeductStock',
       {
         data,
@@ -1256,18 +1267,18 @@ export class ApiService {
     );
   }
   loadPaidBills() {
-    return this.http.post<IResModel>(this.url + '/getPaidBills', {
+    return axios.post<IResModel>(this.url + '/getPaidBills', {
       headers: this.headerBase(),
     });
   }
   loadBills() {
-    return this.http.post<IResModel>(this.url + '/getBills', {
+    return axios.post<IResModel>(this.url + '/getBills', {
       headers: this.headerBase(),
     });
   }
   // if there is a new ads then remove the old ones 
   loadAds(existIds: Array<number>) {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/loadAds',
       {
         existIds,
@@ -1283,7 +1294,7 @@ export class ApiService {
   confirmBillPaid(transactionList: any) {
     console.log('confirmBillPaid', transactionList);
 
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/confirmPaidBill',
       {
         token: cryptojs
@@ -1298,7 +1309,7 @@ export class ApiService {
 
 
   retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/retryProcessBillNew?T=' + T + '&position=' + position,
       {
         token: cryptojs
@@ -1311,7 +1322,7 @@ export class ApiService {
     );
   }
   retryProcessBill(T: string, position: number) {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/retryProcessBill?T=' + T + '&position=' + position,
       {
         token: cryptojs
@@ -1323,7 +1334,7 @@ export class ApiService {
   }
   retryProcessBillLocal(T: string, position: number) {
     const p = { command: 'process', data: { slot: position }, transactionID: T };
-    return this.http.post<IResModel>('http://localhost:19006/', p, {
+    return axios.post<IResModel>('http://localhost:19006/', p, {
       headers: this.headerBase(),
     });
   }
@@ -1343,7 +1354,7 @@ export class ApiService {
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
-    return this.http.post<IResModel>(this.url, req, {
+    return axios.post<IResModel>(this.url, req, {
       headers: this.headerBase(),
     });
   }
@@ -1358,7 +1369,7 @@ export class ApiService {
     };
     console.log('checkPaidBill', body.data);
 
-    return this.http.post(
+    return axios.post(
       this.vending_server, body, {
       headers: this.headerBase()
     }
@@ -1367,7 +1378,7 @@ export class ApiService {
 
 
   checkCallbackMmoney() {
-    return this.http.post<IResModel>(
+    return axios.post<IResModel>(
       this.url + '/checkCallbackMMoney',
       {
         token: cryptojs
@@ -1397,7 +1408,7 @@ export class ApiService {
     // console.log('req', req);
 
     // req.data.clientId = this.clientId.clientId;
-    return this.http.post<IResModel>(this.url, req, {
+    return axios.post<IResModel>(this.url, req, {
       headers: this.headerBase(),
 
     });
@@ -1420,7 +1431,7 @@ export class ApiService {
     // console.log('req', req);
 
     // req.data.clientId = this.clientId.clientId;
-    return this.http.post<IResModel>(this.url, req, {
+    return axios.post<IResModel>(this.url, req, {
       headers: this.headerBase(),
     });
   }
@@ -1443,7 +1454,7 @@ export class ApiService {
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
-    return this.http.post<IResModel>(this.url + '/getFreeProduct', req, {
+    return axios.post<IResModel>(this.url + '/getFreeProduct', req, {
       headers: this.headerBase(),
     });
   }
@@ -2026,7 +2037,7 @@ export class ApiService {
     // req.data.clientId = this.clientId.clientId;
     const url = this.url + '/updateStatus';
     console.log(url + ` req der ` + JSON.stringify(req));
-    return this.http.post<IResModel>(url, req, {
+    return axios.post<IResModel>(url, req, {
       headers: this.headerBase(),
     });
   }

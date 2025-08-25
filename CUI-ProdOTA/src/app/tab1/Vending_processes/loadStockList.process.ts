@@ -121,8 +121,10 @@ export class LoadStockListProcess {
     private LoadProductList(message:any): Promise<any> {
         return new Promise<any> (async (resolve, reject) => {
             try {
-                this.apiService.loadVendingSale().subscribe(r => {
-                    const response: any = r;
+                this.apiService.loadVendingSale().then(rx => {
+
+
+                    const response: any = rx.data;
                     if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
                     console.log('LoadProductList response',response.data);

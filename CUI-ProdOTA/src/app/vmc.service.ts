@@ -73,7 +73,9 @@ export class VmcService implements ISerialService {
       // create API TO ACCEPT THIS 
       try {
 
-        this.apiservice.updateStatus({ data: b, transactionID: t, command: c }).subscribe(r => {
+        this.apiservice.updateStatus({ data: b, transactionID: t, command: c }).then(rx => {
+          const r = rx.data;
+
           console.log('vmc service send response', r);
           if (r.command === EMACHINE_COMMAND.CREDIT_NOTE) {
             if (r.transactionID) {

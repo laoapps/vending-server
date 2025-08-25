@@ -320,7 +320,8 @@ export class Tab1Page implements OnDestroy {
       const timeOut = this.queues.length;
       const that = this;
       setTimeout(() => {
-        that.apiService.updateStatus({ data: b, transactionID: t, command: c }).subscribe(r => {
+        that.apiService.updateStatus({ data: b, transactionID: t, command: c }).then(rx => {
+          const r = rx.data
           that.queues.shift();
           console.log('QUEUES', that.queues);
           console.log('vmc service send response', r);
@@ -1947,7 +1948,8 @@ export class Tab1Page implements OnDestroy {
   }
   initStock() {
     // if (this.vendingOnSale?.length) return;
-    this.apiService.loadVendingSale().subscribe((r) => {
+    this.apiService.loadVendingSale().then((rx) => {
+      const r =rx.data;
       try {
         console.log('initStock');
 
@@ -2082,7 +2084,8 @@ export class Tab1Page implements OnDestroy {
 
           resolve(IENMessage.success);
         } else {
-          this.apiService.recoverSale().subscribe((r) => {
+          this.apiService.recoverSale().then((rx) => {
+            const r= rx.data;
             // console.log(r);
             if (r.status) {
               ApiService.vendingOnSale.length = 0;
@@ -2243,7 +2246,9 @@ export class Tab1Page implements OnDestroy {
   //   })
   // }
   loadOnlineMachine() {
-    this.apiService.loadOnlineMachine().subscribe((r) => {
+    this.apiService.loadOnlineMachine().then((rx) => {
+      const r = rx.data;
+      
       console.log(r);
       if (r.status) {
         this.onlineMachines.push(...r.data);
@@ -2370,7 +2375,8 @@ export class Tab1Page implements OnDestroy {
     // if (x.stock.qtty <= 0) alert('Out Of order');
     this.apiService.showLoading();
     if (x.stock.price == 0) {
-      this.apiService.getFreeProduct(x.position, x.stock.id).subscribe((r) => {
+      this.apiService.getFreeProduct(x.position, x.stock.id).then((rx) => {
+        const r = rx.data;
         console.log(r);
         if (r.status) {
           this.apiService.toast
@@ -2407,7 +2413,8 @@ export class Tab1Page implements OnDestroy {
 
       this.apiService
         .buyLaoQR([x], amount)
-        .subscribe((r) => {
+        .then((rx) => {
+          const r = rx.data;
           console.log(r);
           if (r.status) {
             this.bills = r.data as IVendingMachineBill;
@@ -2536,7 +2543,8 @@ export class Tab1Page implements OnDestroy {
     console.log(this.orders, amount);
     this.apiService
       .buyLaoQR(this.orders, amount)
-      .subscribe((r) => {
+      .then((rx) => {
+        const r = rx.data;
         console.log(r);
         if (r.status) {
           this.bills = r.data as IVendingMachineBill;

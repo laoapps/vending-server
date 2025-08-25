@@ -7003,19 +7003,19 @@ export class InventoryZDM8 implements IBaseClass {
                 // console.log(" WS current connection is alive", ws["isAlive"]);
 
                 ws.onopen = (ev: Event) => {
-                    ws['isAlive'] = true;
-                    ws['lastMessage'] = Date.now();
+                    // ws['isAlive'] = true;
+                    // ws['lastMessage'] = Date.now();
 
-                    ws['tAlive'] = setInterval(() => {
-                        if (Date.now() - ws['lastMessage'] > 60000) {
-                            ws['isAlive'] = false;
-                            console.log('Terminating dead connection');
-                            ws.close();
-                        }
-                    }, 30000);
+                    // ws['tAlive'] = setInterval(() => {
+                    //     if (Date.now() - ws['lastMessage'] > 60000) {
+                    //         ws['isAlive'] = false;
+                    //         console.log('Terminating dead connection');
+                    //         ws.close();
+                    //     }
+                    // }, 30000);
                 };
                 ws.onclose = (ev: CloseEvent) => {
-                    if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
+                    // if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
                     this.wsClient = this.wsClient.filter((v) => v !== ws); // Remove from array
                     console.log('WebSocket closed:', ev.reason);
                 };

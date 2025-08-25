@@ -74,7 +74,8 @@ export class GenerateLaoQRCodeProcess {
                 console.log('=====>Amout2 :', this.amount);
 
 
-                this.apiService.buyLaoQR(this.orders, this.amount).subscribe(r => {
+                this.apiService.buyLaoQR(this.orders, this.amount).then(rx => {
+                    const r = rx.data;
                     const response: any = r;
                     console.log(`response generate LaoQR`, response);
                     if (response.status != 1) {
@@ -93,7 +94,8 @@ export class GenerateLaoQRCodeProcess {
     public async CheckLaoQRPaid(): Promise<{ status: number, message: any }> {
         return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
             try {
-                this.apiService.checkPaidBill().subscribe(r => {
+                this.apiService.checkPaidBill().then(rx=> {
+                    const r = rx.data;
 
                     const response: any = r;
                     console.log('response check LaoQR', response);
@@ -116,7 +118,8 @@ export class GenerateLaoQRCodeProcess {
     public async CheckCallbackMmoney(): Promise<{ status: number, message: any }> {
         return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
             try {
-                this.apiService.checkCallbackMmoney().subscribe(r => {
+                this.apiService.checkCallbackMmoney().then(rx => {
+                    const r = rx.data;
 
                     const response: any = r;
                     console.log('response CheckCallbackMmoney', response);
