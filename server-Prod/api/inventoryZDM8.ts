@@ -6989,13 +6989,13 @@ export class InventoryZDM8 implements IBaseClass {
                     ws['isAlive'] = true;
                     ws['lastMessage'] = Date.now();
 
-                    ws['tAlive'] = setInterval(() => {
-                        if (Date.now() - ws['lastMessage'] > 60000) {
-                            ws['isAlive'] = false;
-                            console.log('Terminating dead connection');
-                            ws.close();
-                        }
-                    }, 30000);
+                    // ws['tAlive'] = setInterval(() => {
+                    //     if (Date.now() - ws['lastMessage'] > 60000) {
+                    //         ws['isAlive'] = false;
+                    //         console.log('Terminating dead connection');
+                    //         ws.close();
+                    //     }
+                    // }, 30000);
                 };
                 ws.onclose = (ev: CloseEvent) => {
                     if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
