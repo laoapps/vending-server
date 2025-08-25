@@ -4,6 +4,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ApiService } from '../services/api.service';
+import { LogTempPage } from '../log-temp/log-temp.page';
 interface MachineData {
   machineId: string;
   owner: string;
@@ -31,7 +33,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
   int: NodeJS.Timeout;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,public apiService:ApiService) {
     // Initialize filtered observables with sorting
     this.onlineMachines$ = this.machines$.pipe(
       map(machines => machines.filter(machine => machine.status === 'Online').sort((a, b) => a.machineId.localeCompare(b.machineId)))
@@ -173,5 +175,14 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         alert('Error sending refresh command: ' + err.message);
       }
     }); 
+  }
+  showLogTemp(machineId: string) {
+    // Navigate to LogTempPage with machineId as parameter
+    // Assuming you have a router set up
+   this.apiService.modal.create({
+      component: LogTempPage,
+      componentProps: { machineId},
+      cssClass: 'custom-modal',
+      backdropDismiss: true}).then(modal => modal.present());
   }
 }

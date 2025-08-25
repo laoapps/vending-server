@@ -1,9 +1,145 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>logTemp</ion-title>
+    <ion-title>Temperature Report</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <div class="container">
+    <!-- Filter Section -->
+    <ion-card class="filter-card">
+      <ion-card-header>
+        <ion-card-title>Filter Report</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="floating">Machine ID</ion-label>
+          <ion-input 
+            [(ngModel)]="machineId" 
+            placeholder="e.g., 98606001"
+            type="text"
+            inputmode="numeric">
+          </ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="floating">From Date</ion-label>
+          <ion-datetime
+            presentation="date-time"
+            [(ngModel)]="fromDate"
+            (ionChange)="onFromDateChange($event)">
+          </ion-datetime>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="floating">To Date</ion-label>
+          <ion-datetime
+            presentation="date-time"
+            [(ngModel)]="toDate"
+            (ionChange)="onToDateChange($event)">
+          </ion-datetime>
+        </ion-item>
+        
+        <ion-button 
+          expand="block" 
+          (click)="fetchReportData()" 
+          [disabled]="isFormInvalid || loading"
+          class="fetch-button">
+          <ion-spinner name="crescent" *ngIf="loading" slot="start"></ion-spinner>
+          {{ loading ? 'Loading...' : 'Fetch Report' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
 
+    <!-- Selected Machine Info -->
+    <ion-card *ngIf="machineId" class="machine-info-card">
+      <ion-card-content>
+        <ion-chip color="primary">
+          <ion-icon name="hardware-chip"></ion-icon>
+          <ion-label>{{ machineId }}</ion-label>
+        </ion-chip>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Results Section -->
+    <ion-card class="results-card">
+      <ion-card-header>
+        <ion-card-title>
+          Temperature Logs
+          <ion-badge color="primary" *ngIf="reportData?.data?.count">
+            {{ reportData.data.count }} records
+          </ion-badge>
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Error State -->
+        <ion-item *ngIf="error" color="danger" lines="none">
+          <ion-icon name="alert-circle" slot="start"></ion-icon>
+          <ion-label class="ion-text-wrap">{{ error }}</ion-label>
+        </ion-item>
+
+        <!-- Empty State -->
+        <div *ngIf="reportData && reportData.data.rows.length === 0" class="empty-state">
+          <ion-icon name="thermometer" size="large" color="medium"></ion-icon>
+          <p>No temperature data found for the selected criteria.</p>
+        </div>
+
+        <!-- Data Table -->
+        <div *ngIf="reportData && reportData.data.rows.length > 0" class="table-container">
+          <ion-grid class="data-table">
+            <ion-row class="header-row">
+              <ion-col size="1.5">ID</ion-col>
+              <ion-col size="2.5">Created At</ion-col>
+              <ion-col size="2">Machine</ion-col>
+              <ion-col size="2">Device</ion-col>
+              <ion-col size="2">Temp (°C)</ion-col>
+              <ion-col size="2">UUID</ion-col>
+            </ion-row>
+            <ion-row 
+              *ngFor="let row of paginatedData; trackBy: trackByRowId" 
+              class="data-row">
+              <ion-col size="1.5">{{ row.id }}</ion-col>
+              <ion-col size="2.5">
+                <div class="date-cell">
+                  {{ formatDate(row.createdAt) }}
+                </div>
+              </ion-col>
+              <ion-col size="2">{{ row.machineId }}</ion-col>
+              <ion-col size="2">{{ row.mstatus?.device || 'N/A' }}</ion-col>
+              <ion-col size="2">
+                <ion-chip [color]="getTemperatureColor(row.mstatus?.temperature)">
+                  {{ row.mstatus?.temperature || 'N/A' }}
+                </ion-chip>
+              </ion-col>
+              <ion-col size="2" class="uuid-cell">{{ row.uuid }}</ion-col>
+            </ion-row>
+          </ion-grid>
+          
+          <!-- Pagination -->
+          <div class="pagination-container" *ngIf="totalPages > 1">
+            <ion-button 
+              fill="clear" 
+              (click)="previousPage()" 
+              [disabled]="currentPage === 1">
+              <ion-icon name="chevron-back" slot="icon-only"></ion-icon>
+            </ion-button>
+            
+            <ion-label>{{ currentPage }} of {{ totalPages }}</ion-label>
+            
+            <ion-button 
+              fill="clear" 
+              (click)="nextPage()" 
+              [disabled]="currentPage === totalPages">
+              <ion-icon name="chevron-forward" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>

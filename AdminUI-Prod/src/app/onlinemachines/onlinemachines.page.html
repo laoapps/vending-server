@@ -3,7 +3,7 @@
     <ion-title>Vending Machine Dashboard</ion-title>
     <ion-buttons slot="end">
       <ion-button color="light" (click)="refreshData()">
-        <ion-icon name="refresh"></ion-icon>
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -14,40 +14,73 @@
   <ion-grid>
     <ion-row>
       <ion-col size="12">
-        <h2>Online Machines</h2>
+        <ion-text color="dark">
+          <h2>Online Machines</h2>
+        </ion-text>
       </ion-col>
     </ion-row>
-    <ion-row>
-      <ion-col size="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines$ | async">
-        <ion-card [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
+    <ion-row class="machine-row">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines$ | async">
+        <ion-card class="machine-card" [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
-              <ion-icon name="cube-outline"></ion-icon> {{ machine.machineId }}
-              <span *ngIf="machine.lastUpdate" class="last-update">({{ machine.lastUpdate | date:'short' }})</span>
+              <ion-icon name="cube-outline"></ion-icon>
+              {{ machine.machineId }}
+              <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <p><ion-icon name="person-outline"></ion-icon> <strong>Owner:</strong> {{ machine.owner }}</p>
-            <p>
-              <ion-icon name="thermometer-outline"></ion-icon> 
-              <strong>Temperature:</strong> 
-              <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
-            </p>
-            <p>
-              <ion-icon name="wifi-outline"></ion-icon> 
-              <strong>Status:</strong> {{ machine.status }}
-            </p>
-            <p><ion-icon name="code-outline"></ion-icon> <strong>Version:</strong> {{ machine.versionId || 'N/A' }}</p>
-            <p><ion-icon name="hardware-chip-outline"></ion-icon> <strong>Device:</strong> {{ machine.device || 'Unknown' }}</p>
-            <p><ion-icon name="document-text-outline"></ion-icon> <strong>Data:</strong> {{ machine.data || '{}' }}</p>
-            <p>
-              <ion-button color="danger" (click)="exitApp(machine.machineId)">
-                <ion-icon name="refresh-circle-outline"></ion-icon> Exit App
-              </ion-button>
-              <ion-button color="warning" (click)="refreshMachine(machine.machineId)">
-                <ion-icon name="sync-circle-outline"></ion-icon> Refresh
-              </ion-button>
-            </p>
+            <ion-list lines="none">
+              <ion-item>
+                <ion-icon name="person-outline" slot="start"></ion-icon>
+                <ion-label><strong>Owner:</strong> {{ machine.owner }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="thermometer-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <strong>Temperature:</strong>
+                  <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="wifi-outline" slot="start"></ion-icon>
+                <ion-label><strong>Status:</strong> {{ machine.status }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="code-outline" slot="start"></ion-icon>
+                <ion-label><strong>Version:</strong> {{ machine.versionId || 'N/A' }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
+                <ion-label><strong>Device:</strong> {{ machine.device || 'Unknown' }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                <ion-label><strong>Data:</strong> {{ machine.data || '{}' }}</ion-label>
+              </ion-item>
+            </ion-list>
+            <ion-grid class="button-grid">
+              <ion-row>
+                <ion-col size="4">
+                  <ion-button expand="block" color="danger" (click)="exitApp(machine.machineId)">
+                    <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
+                    Exit
+                  </ion-button>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="warning" (click)="refreshMachine(machine.machineId)">
+                    <ion-icon slot="start" name="sync-circle-outline"></ion-icon>
+                    Refresh
+                  </ion-button>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
+                    <ion-icon slot="start" name="thermometer-outline"></ion-icon>
+                    Logs
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -58,34 +91,51 @@
   <ion-grid>
     <ion-row>
       <ion-col size="12">
-        <h2>Broken Machines</h2>
+        <ion-text color="dark">
+          <h2>Broken Machines</h2>
+        </ion-text>
       </ion-col>
     </ion-row>
-    <ion-row>
-      <ion-col size="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines$ | async">
-        <ion-card [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
+    <ion-row class="machine-row">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines$ | async">
+        <ion-card class="machine-card" [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
-              <ion-icon name="cube-outline"></ion-icon> {{ machine.machineId }}
-              <span *ngIf="machine.lastUpdate" class="last-update">({{ machine.lastUpdate | date:'short' }})</span>
+              <ion-icon name="cube-outline"></ion-icon>
+              {{ machine.machineId }}
+              <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <p><ion-icon name="person-outline"></ion-icon> <strong>Owner:</strong> {{ machine.owner }}</p>
-            <p>
-              <ion-icon name="thermometer-outline"></ion-icon> 
-              <strong>Temperature:</strong> 
-              <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
-            </p>
-            <p>
-              <ion-icon name="warning-outline"></ion-icon> 
-              <strong>Status:</strong> 
-              <span class="offline">{{ machine.status }}</span>
-            </p>
-            <p><ion-icon name="code-outline"></ion-icon> <strong>Version:</strong> {{ machine.versionId || 'N/A' }}</p>
-            <p><ion-icon name="hardware-chip-outline"></ion-icon> <strong>Device:</strong> {{ machine.device || 'Unknown' }}</p>
-            <p><ion-icon name="document-text-outline"></ion-icon> <strong>Data:</strong> {{ machine.data || '{}' }}</p>
-            
+            <ion-list lines="none">
+              <ion-item>
+                <ion-icon name="person-outline" slot="start"></ion-icon>
+                <ion-label><strong>Owner:</strong> {{ machine.owner }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="thermometer-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <strong>Temperature:</strong>
+                  <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="warning-outline" slot="start"></ion-icon>
+                <ion-label><strong>Status:</strong> <span class="offline">{{ machine.status }}</span></ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="code-outline" slot="start"></ion-icon>
+                <ion-label><strong>Version:</strong> {{ machine.versionId || 'N/A' }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
+                <ion-label><strong>Device:</strong> {{ machine.device || 'Unknown' }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                <ion-label><strong>Data:</strong> {{ machine.data || '{}' }}</ion-label>
+              </ion-item>
+            </ion-list>
           </ion-card-content>
         </ion-card>
       </ion-col>

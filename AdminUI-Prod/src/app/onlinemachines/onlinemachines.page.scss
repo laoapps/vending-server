@@ -1,69 +1,95 @@
 .warning {
-  color: orange;
-  font-weight: bold;
+  color: #f28c38; /* Vibrant orange for warnings */
+  font-weight: 600;
 }
 
 .offline {
-  color: red;
-  font-weight: bold;
+  color: #d32f2f; /* Vibrant red for offline status */
+  font-weight: 600;
 }
 
 .machine-card {
   height: 100%;
-  aspect-ratio: 1 / 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.machine-card:hover {
+  transform: translateY(-4px);
 }
 
 .online-card {
-  background-color: rgba(0, 128, 0, 0.1); /* Light green background */
-  border: 2px solid green;
+  background-color: #e6f4ea; /* Softer green background */
+  border-left: 4px solid #4caf50; /* Green accent */
 }
 
 .broken-card {
-  background-color: rgba(255, 0, 0, 0.1); /* Light red background */
-  border: 2px solid red;
+  background-color: #ffebee; /* Softer red background */
+  border-left: 4px solid #d32f2f; /* Red accent */
 }
 
 ion-card-header {
-  padding: 8px;
+  padding: 12px 16px;
+  background-color: #f5f5f5;
 }
 
 ion-card-title {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 1.1rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.last-update {
-  font-size: 12px;
-  color: #666;
-  margin-left: 8px;
+ion-badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
 }
 
 ion-card-content {
-  padding: 8px;
-  font-size: 14px;
+  padding: 12px 16px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-ion-card-content p {
-  margin: 6px 0;
+ion-list {
+  padding: 0;
+  margin: 0 -8px;
+}
+
+ion-item {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --min-height: 36px;
+  font-size: 0.9rem;
+}
+
+ion-label {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.button-grid {
+  margin-top: 12px;
 }
 
 ion-col {
   padding: 8px;
 }
 
+.machine-row {
+  margin: 0 -8px;
+}
+
 h2 {
-  padding: 16px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
+  padding: 16px 16px 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
 }

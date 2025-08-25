@@ -95,7 +95,9 @@ export class ApiService {
 
                 if (!r) return console.log('empty');
                 this.myMachineStatus.length = 0;
-                this.myMachineStatus.push(...r.data.mymstatus)
+                console.log('mstatus', r.data.mstatus);
+                const arr = Array.isArray(r.data.mstatus) ? r.data.mstatus : [r.data.mstatus];
+                this.myMachineStatus.push(...arr )
                 // console.log('ws alive subscription', r);
                 this.wsAlive.time = new Date();
                 this.wsAlive.isAlive = this.checkOnlineStatus();

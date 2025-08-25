@@ -276,7 +276,35 @@ export class Tab1Page implements OnDestroy {
 
   queues = new Array<{ data: any, command: string }>();
 
+
+
+  TIMEOUT_MS = 15 * 60 * 1000; // 900,000 ms
+
+  timeoutId: NodeJS.Timeout | null = null;
+
+  // Variable to track the last time sendStatus was called
+  lastCallTime: number | null = null
   sendStatus(b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) {
+    this.lastCallTime = Date.now();
+
+    // Clear any existing timeout
+    if (this.timeoutId !== null) {
+      clearTimeout(this.timeoutId);
+    }
+
+    // Set a new timeout
+    this.timeoutId = setTimeout(() => {
+      // Check if 15 minutes have passed since last call
+      if (this.lastCallTime && Date.now() - this.lastCallTime >= this.TIMEOUT_MS) {
+        console.log('No status sent for 15 minutes. Exiting app.');
+        App.exitApp();
+      }
+    }, this.TIMEOUT_MS);
+
+
+
+
+
     console.log('machine send', b, t, c);
     // Toast.show({ text: 'machine send' + b + ' ' + t + ' ' + c, duration: 'long' });
     // API TO SEND TO SERVER 
