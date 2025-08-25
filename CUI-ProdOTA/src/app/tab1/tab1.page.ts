@@ -833,7 +833,6 @@ export class Tab1Page implements OnDestroy {
     console.log('readyState ALIVE', this.readyState);
 
     this.WSAPIService.aliveSubscription.subscribe(async res => {
-
       try {
         this.lastUpdate = Date.now();
         console.log('----->ALIVE TAB1', JSON.stringify(res || {}));
@@ -847,7 +846,7 @@ export class Tab1Page implements OnDestroy {
               Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
               return this.refresh();
             }
-            if (r?.exit) {
+            if (r?.exit||!(this.serial&&!this.connecting)) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
                 App.exitApp();

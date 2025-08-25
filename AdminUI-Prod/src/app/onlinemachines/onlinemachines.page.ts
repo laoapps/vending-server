@@ -144,7 +144,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     const token = localStorage.getItem('token');
     const shopPhonenumber = localStorage.getItem('shopPhonenumber');
     const secret = localStorage.getItem('secretLocal');
-    this.http.post(environment.url + '/exitAppMachineAdmin', { secret, shopPhonenumber, token, machineId }).subscribe({
+    this.http.post(environment.url + '/exitAppMachineAdmin', { secret, shopPhonenumber, token,  data:{machineId}  }).subscribe({
       next: (res: any) => {
         if (res.status === 1) {
           alert('Exit app command sent successfully to machine ' + machineId);
@@ -162,7 +162,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     const token = localStorage.getItem('token');
     const shopPhonenumber = localStorage.getItem('shopPhonenumber');
     const secret = localStorage.getItem('secretLocal');
-    this.http.post(environment.url + '/refreshMachineAdmin', { secret, shopPhonenumber, token, machineId }).subscribe({
+    this.http.post(environment.url + '/refreshMachineAdmin', { secret, shopPhonenumber, token, data:{machineId} }).subscribe({
       next: (res: any) => {
         if (res.status === 1) {
           alert('Refresh command sent successfully to machine ' + machineId);

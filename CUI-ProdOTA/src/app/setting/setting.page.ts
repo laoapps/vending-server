@@ -8,6 +8,7 @@ import { IonicStorageService } from '../ionic-storage.service';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import { TestmotorPage } from '../testmotor/testmotor.page';
 import { ModalController } from '@ionic/angular';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-setting',
@@ -272,6 +273,9 @@ export class SettingPage implements OnInit, OnDestroy {
         resolve(error.message);
       }
     });
+  }
+  exit(){
+    App.exitApp();
   }
 
 }

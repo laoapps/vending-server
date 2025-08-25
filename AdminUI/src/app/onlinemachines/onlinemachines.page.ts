@@ -4,8 +4,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../environments/environment';
-
-
+import { ApiService } from '../services/api.service';
+import { LogTempPage } from '../log-temp/log-temp.page';
 interface MachineData {
   machineId: string;
   owner: string;
@@ -33,7 +33,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
   int: NodeJS.Timeout;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,public apiService:ApiService) {
     // Initialize filtered observables with sorting
     this.onlineMachines$ = this.machines$.pipe(
       map(machines => machines.filter(machine => machine.status === 'Online').sort((a, b) => a.machineId.localeCompare(b.machineId)))
@@ -111,8 +111,9 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
             }
           }
           const d = machine?.data?machine?.data[0]:null;
+
           machines.push({
-            machineId: machine?.machineId,
+            machineId: machine.machineId,
             owner: d?.owner,
             temperature,
             status,
@@ -138,5 +139,50 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         this.machinesSubject.next([]); // Reset to empty on error
       }
     });
+  }
+  exitApp(machineId: string) {
+    const token = localStorage.getItem('token');
+    const shopPhonenumber = localStorage.getItem('shopPhonenumber');
+    const secret = localStorage.getItem('secretLocal');
+    this.http.post(environment.url + '/exitAppMachineAdmin', { secret, shopPhonenumber, token,  data:{machineId}  }).subscribe({
+      next: (res: any) => {
+        if (res.status === 1) {
+          alert('Exit app command sent successfully to machine ' + machineId);
+        } else {
+          alert('Failed to send exit app command: ' + res.message);
+        }
+      },
+      error: (err) => {
+        console.error('Error sending exit app command:', err);
+        alert('Error sending exit app command: ' + err.message);
+      }
+    });
+  }
+  refreshMachine(machineId: string) {
+    const token = localStorage.getItem('token');
+    const shopPhonenumber = localStorage.getItem('shopPhonenumber');
+    const secret = localStorage.getItem('secretLocal');
+    this.http.post(environment.url + '/refreshMachineAdmin', { secret, shopPhonenumber, token, data:{machineId} }).subscribe({
+      next: (res: any) => {
+        if (res.status === 1) {
+          alert('Refresh command sent successfully to machine ' + machineId);
+        } else {
+          alert('Failed to send refresh command: ' + res.message);
+        }
+      },
+      error: (err) => {
+        console.error('Error sending refresh command:', err);
+        alert('Error sending refresh command: ' + err.message);
+      }
+    }); 
+  }
+  showLogTemp(machineId: string) {
+    // Navigate to LogTempPage with machineId as parameter
+    // Assuming you have a router set up
+   this.apiService.modal.create({
+      component: LogTempPage,
+      componentProps: { machineId},
+      cssClass: 'custom-modal',
+      backdropDismiss: true}).then(modal => modal.present());
   }
 }
