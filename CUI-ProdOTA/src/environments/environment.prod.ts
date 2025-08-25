@@ -17,5 +17,5 @@ export const environment = {
   // vending_server: 'https://tvending4.khamvong.com',
   // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
-  versionId: '1.1.9'
+  versionId: '1.1.12'
 };

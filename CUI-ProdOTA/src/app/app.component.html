@@ -1,7 +1,7 @@
 <ion-app (touchstart)="startActive()">
 
   <div class="statusbar">
-    {{machineuuid}} -- <ion-label>version:{{version}}23232</ion-label>
+    {{machineuuid}} -- <ion-label>version:{{version}}</ion-label>
     <ng-template [ngIf]="checkOnlineStatus.isAlive" [ngIfElse]="isOffline">
       <div>
         <ion-label>{{now|date:'YYYY-MM-dd HH:mm:ss'}}</ion-label><ion-icon name="time-sharp" color="primary"></ion-icon>
