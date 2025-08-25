@@ -371,7 +371,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const { token, transactionID } = d.data;
                             const machineId =
                                 this.findMachineIdToken(token)?.machineId;
-                            if (!machineId) throw new Error("machine is not exit");
+                            if (!machineId) throw new Error("machine is not exist");
                             this.getBillProcess(machineId, (b) => {
                                 const position = b.find(
                                     (v) => v.transactionID == transactionID
@@ -1193,7 +1193,49 @@ export class InventoryZDM8 implements IBaseClass {
                 }
 
             );
+            router.post(this.path + "/exitAppMachineAdmin",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const ws = this.wsClient.find(v => v['machineId'] === m);
+                        ws?.send(
+                            JSON.stringify(
+                                PrintSucceeded(
+                                    "ping",
+                                    {
+                                        command: "ping",
+                                        production: this.production,
+                                        balance: {},
+                                        limiter: {},
+                                        merchant: {},
+                                        mymmachinebalance: {},
+                                        mymlimiterbalance: {},
+                                        setting: { exit: true },
+                                        mstatus: {},
+                                        mymstatus: {},
+                                        mymsetting: {},
+                                        mymlimiter: {},
+                                        app_version: {},
+                                        pendingStock: {},
 
+                                        adsSetting: {},
+                                        adsVersion: {},
+                                        settingVersion: {},
+                                    },
+                                    EMessage.succeeded,
+                                    null
+                                )
+                            )
+                        );
+                        res.send(PrintSucceeded("exitMachineAdmin", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("exitMachineAdmin", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(this.path + "/exitAppMachine",
                 this.checkSuperAdmin,
 
@@ -1252,11 +1294,11 @@ export class InventoryZDM8 implements IBaseClass {
                             )
                         );
 
-                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("exitAppMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("exitAppMachine", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
 
@@ -1746,12 +1788,11 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
             router.post(this.path + "/getOnlineMachines",
-                this.checkSuperAdmin
-                , async (req, res) => {
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
                     try {
                         // console.log(" WS getOnlineMachines");
-                        if (!res.locals['secret']) throw new Error('Only super admin can access');
-
                         res.send(
                             PrintSucceeded(
                                 "init",
@@ -4018,11 +4059,10 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + '/getAllMachines',
                 this.checkSuperAdmin,
+                this.validateSuperAdmin,
+
                 async (req, res) => {
                     try {
-                        if (!res.locals['secret']) {
-                            throw new Error('Only super admin can access');
-                        }
 
                         const isActive = req.query['isActive']?.toString() || 'all';
                         const actives = isActive === 'true' ? [true] : isActive === 'false' ? [false] : [true, false];
@@ -4217,6 +4257,19 @@ export class InventoryZDM8 implements IBaseClass {
         } catch (error) {
             console.log(error);
 
+            res.status(400).end();
+        }
+    }
+    validateSuperAdmin(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log('validateSuperAdmin');
+            if (res.locals["secret"]) {
+                next();
+            } else {
+                throw new Error('You are not superadmin');
+            }   
+        } catch (error) {
+            console.log(error);
             res.status(400).end();
         }
     }
@@ -6871,7 +6924,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 // );
                                 let machineId = this.findMachineIdToken(x);
 
-                                if (!machineId) throw new Error("machine is not exit");
+                                if (!machineId) throw new Error("machine is not exist");
                                 ws["machineId"] = machineId?.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };

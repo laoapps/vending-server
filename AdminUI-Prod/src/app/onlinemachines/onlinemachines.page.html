@@ -40,6 +40,11 @@
             <p><ion-icon name="code-outline"></ion-icon> <strong>Version:</strong> {{ machine.versionId || 'N/A' }}</p>
             <p><ion-icon name="hardware-chip-outline"></ion-icon> <strong>Device:</strong> {{ machine.device || 'Unknown' }}</p>
             <p><ion-icon name="document-text-outline"></ion-icon> <strong>Data:</strong> {{ machine.data || '{}' }}</p>
+            <p>
+              <ion-button color="danger" (click)="exitApp(machine.machineId)">
+                <ion-icon name="refresh-circle-outline"></ion-icon> Exit App
+              </ion-button>
+            </p>
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -77,6 +82,7 @@
             <p><ion-icon name="code-outline"></ion-icon> <strong>Version:</strong> {{ machine.versionId || 'N/A' }}</p>
             <p><ion-icon name="hardware-chip-outline"></ion-icon> <strong>Device:</strong> {{ machine.device || 'Unknown' }}</p>
             <p><ion-icon name="document-text-outline"></ion-icon> <strong>Data:</strong> {{ machine.data || '{}' }}</p>
+            
           </ion-card-content>
         </ion-card>
       </ion-col>

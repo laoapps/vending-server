@@ -371,7 +371,7 @@ export class InventoryZDM8 implements IBaseClass {
                             const { token, transactionID } = d.data;
                             const machineId =
                                 this.findMachineIdToken(token)?.machineId;
-                            if (!machineId) throw new Error("machine is not exit");
+                            if (!machineId) throw new Error("machine is not exist");
                             this.getBillProcess(machineId, (b) => {
                                 const position = b.find(
                                     (v) => v.transactionID == transactionID
@@ -623,7 +623,6 @@ export class InventoryZDM8 implements IBaseClass {
                             let qr;
                             let attempts = 0;
                             const maxAttempts = 3;
-
                             const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
                             while (attempts < maxAttempts) {
                                 qr = await this.generateBillLaoQRPro(value, mId, owner, ownerPhone);
@@ -1176,6 +1175,67 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
+            router.post(this.path + "/validateHMVending",
+                async (req, res) => {
+                    try {
+                        const token = req.body.token;
+                        if (!token) {
+                            return res.send(PrintError("validateHMVending", {}, EMessage.notallowed, returnLog(req, res, true)));
+                        }
+                        const machineData = this.findMachineIdToken(token);
+                        if (!machineData) {
+                            return res.send(PrintError('validateHMVending', null, EMessage.machineNotExist, returnLog(req, res, true)));
+                        }
+                        return res.send(PrintSucceeded('validateHMVending', { 'ownerUuid': machineData?.ownerUuid }, EMessage.succeeded))
+                    } catch (error) {
+                        res.send(PrintError("validateHMVending", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            );
+            router.post(this.path + "/exitAppMachineAdmin",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const ws = this.wsClient.find(v => v['machineId'] === m);
+                        ws?.send(
+                            JSON.stringify(
+                                PrintSucceeded(
+                                    "ping",
+                                    {
+                                        command: "ping",
+                                        production: this.production,
+                                        balance: {},
+                                        limiter: {},
+                                        merchant: {},
+                                        mymmachinebalance: {},
+                                        mymlimiterbalance: {},
+                                        setting: { exit: true },
+                                        mstatus: {},
+                                        mymstatus: {},
+                                        mymsetting: {},
+                                        mymlimiter: {},
+                                        app_version: {},
+                                        pendingStock: {},
+
+                                        adsSetting: {},
+                                        adsVersion: {},
+                                        settingVersion: {},
+                                    },
+                                    EMessage.succeeded,
+                                    null
+                                )
+                            )
+                        );
+                        res.send(PrintSucceeded("exitMachineAdmin", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("exitMachineAdmin", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(this.path + "/exitAppMachine",
                 this.checkSuperAdmin,
 
@@ -1234,11 +1294,11 @@ export class InventoryZDM8 implements IBaseClass {
                             )
                         );
 
-                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("exitAppMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
-                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError("exitAppMachine", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
 
@@ -1728,12 +1788,11 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
             router.post(this.path + "/getOnlineMachines",
-                this.checkSuperAdmin
-                , async (req, res) => {
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
                     try {
                         // console.log(" WS getOnlineMachines");
-                        if (!res.locals['secret']) throw new Error('Only super admin can access');
-
                         res.send(
                             PrintSucceeded(
                                 "init",
@@ -1757,13 +1816,10 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
                         await ent.sync();
-                        const machine = await ent.findOne({ where: { machineId: m } });
+
                         let result = {} as any;
-                        if (!machine) {
-                            result = await ent.create({ machineId: m, data: d });
-                        } else {
-                            result = await machine.update('data', d);
-                        }
+
+                        result = await ent.create({ machineId: m, data: d });
                         res.send(PrintSucceeded("updatewarehouse", result, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
@@ -1777,10 +1833,12 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const m = req?.body?.data?.machineId;
+                        const page = req?.body?.data?.page || 1;
+                        const limit = req?.body?.data?.limit || 10;
                         const ownerUuid = res.locals["ownerUuid"] || "";
                         const ent = WarehouseFactory('warehouse_' + ownerUuid, dbConnection);
                         await ent.sync();
-                        const machine = await ent.findOne({ where: { machineId: m } });
+                        const machine = await ent.findOne({ where: { machineId: m }, order: [['createdAt', 'DESC']], offset: (page - 1), limit: limit });
                         res.send(PrintSucceeded("updatewarehouse", machine, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
@@ -1788,8 +1846,6 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("updatewarehouse", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
-
-
 
             // Get Mmoney UserInof
             router.post(
@@ -3690,9 +3746,47 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("reportClientLog", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
-
             )
 
+
+            router.post(this.path + '/openstock',
+                this.checkSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineToken = req.body.machineToken;
+                        const secret = req.body.secret;
+                        if (!machineToken || !secret) {
+                            return res.send(PrintError('openstock', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+
+                        const machineData = this.findMachineIdToken(machineToken);
+                        if (!machineData) {
+                            return res.send(PrintError('openstock', null, EMessage.machineNotExist, returnLog(req, res, true)));
+                        }
+                        const secretData = await this.readMachineSecret(machineData.machineId + '');
+                        if (secretData !== secret) {
+                            return res.send(PrintError('openstock', null, EMessage.notallowed, returnLog(req, res, true)));
+                        }
+                        console.log('----->secret :', secretData);
+
+                        const resD = {} as IResModel;
+                        resD.command = EMACHINE_COMMAND.ping;
+                        resD.message = EMessage.openstock;
+
+
+                        resD.status = 1;
+                        // resD.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                        this.sendWSToMachine(machineData.machineId, resD);
+
+
+                        return res.send(PrintSucceeded('openstock', machineData, EMessage.succeeded, returnLog(req, res, true)));
+
+                    } catch (error) {
+                        console.error('Error openstock is :', JSON.stringify(error));
+                        res.send(PrintError('openstock', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            )
 
             router.post(this.path + '/reportLogsTemp',
                 this.checkSuperAdmin,
@@ -3965,11 +4059,10 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(
                 this.path + '/getAllMachines',
                 this.checkSuperAdmin,
+                this.validateSuperAdmin,
+
                 async (req, res) => {
                     try {
-                        if (!res.locals['secret']) {
-                            throw new Error('Only super admin can access');
-                        }
 
                         const isActive = req.query['isActive']?.toString() || 'all';
                         const actives = isActive === 'true' ? [true] : isActive === 'false' ? [false] : [true, false];
@@ -4009,7 +4102,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const isActive = req.query['isActive'];
 
                         let actives = [];
-                        if (isActive === 'all' || isActive === '') {
+                        if (isActive === 'all') {
                             actives = [true, false];
                         } else if (isActive === 'true') {
                             actives = [true];
@@ -4167,6 +4260,19 @@ export class InventoryZDM8 implements IBaseClass {
             res.status(400).end();
         }
     }
+    validateSuperAdmin(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log('validateSuperAdmin');
+            if (res.locals["secret"]) {
+                next();
+            } else {
+                throw new Error('You are not superadmin');
+            }   
+        } catch (error) {
+            console.log(error);
+            res.status(400).end();
+        }
+    }
     checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
             console.log('checkSupAdmin');
@@ -4181,7 +4287,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // req['gamerUuid'] = gamerUuid;
                 res.locals["superadmin"] = uuid;
                 if (secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
-                    res.locals["secret"] = secret;
+                    res.locals["secret"] = uuid;
                 }
                 if (phoneNumber && secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
                     phoneNumber = `+85620${phoneNumber}`;
@@ -4750,7 +4856,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     const params = ifError;
 
                                     console.log(`params error der`, params);
-                                    axios.post(LAAB_CoinTransfer, params, { timeout: 3000 }).then(run_return => {
+                                    axios.post(LAAB_CoinTransfer, params, { timeout: 10000 }).then(run_return => {
                                         console.log(`return error 1`, run_return.data);
 
                                         // if transfer back fail database will save data log
@@ -5651,7 +5757,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             // console.log("MyQR", qr);
 
-            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17", timeout: 3000 } })
+            axios.post<any>("https://qr.mmoney.la/pro/VerifyMyQR", qr, { headers: { "Content-Type": "application/json", "lmm-key": "va157f35a50374ba3a07a5cfa1e7fd5d90e612fb50e3bca31661bf568dcaa5c17", timeout: 10000 } })
                 .then((rx) => {
                     console.log("getMyMmoney", rx);
                     if (rx.status) {
@@ -5714,7 +5820,7 @@ export class InventoryZDM8 implements IBaseClass {
                 "channel": `VENDING_` + channel, // Vending Machine 
                 "owner": "LAABX", // Merchant Name  LAABX
                 // "callbackurl": "https://tvending.khamvong.com"
-                "callbackurl": "https://vendingserviceapi.laoapps.com"
+                "callbackurl": "https://vending-service-api5.laoapps.com"
             }
             // console.log("LAOQR", qr);
 
@@ -5722,7 +5828,7 @@ export class InventoryZDM8 implements IBaseClass {
                 .post<ILaoQRGenerateQRRes>(
                     "https://laabx-api.laoapps.com/api/v1/laab/genmmoneyqr_vending",
                     qr,
-                    { headers: { 'Content-Type': 'application/json' } }
+                    { headers: { 'Content-Type': 'application/json', timeout: 10000 } }
                 )
                 .then((rx) => {
                     console.log("generateBillLaoQRPro", rx.data);
@@ -6384,7 +6490,7 @@ export class InventoryZDM8 implements IBaseClass {
                     requestId: transactionID,
                     billNumber: transactionID
                 },
-                    { headers, httpsAgent: agent, timeout: 3000 });
+                    { headers, httpsAgent: agent, timeout: 10000 });
 
                 if (res.data.success) {
                     axios.post('https://vending-service-api5.laoapps.com', {
@@ -6395,7 +6501,7 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                     }, {
                         headers: {
-                            "Content-Type": 'application/json', timeout: 3000
+                            "Content-Type": 'application/json', timeout: 10000
                         }
                     }).then(async r => {
                         // console.log('=====>CONFIRM PAID', r.data);
@@ -6444,7 +6550,7 @@ export class InventoryZDM8 implements IBaseClass {
                 requestId: transactionID,
                 billNumber: transactionID
             },
-                { headers, httpsAgent: agent, timeout: 3000 });
+                { headers, httpsAgent: agent });
 
             // console.log('=====> CHECK MMONEY PAID', res.data);
             if (res.data.success) {
@@ -6457,7 +6563,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }, {
                     headers: {
-                        "Content-Type": 'application/json', timeout: 3000
+                        "Content-Type": 'application/json', timeout: 10000
                     }
                 }).then(async r => {
                     // console.log('=====>CONFIRM', r.data);
@@ -6543,7 +6649,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json', timeout: 3000
+                    'Content-Type': 'application/json', timeout: 10000
                 }
             }).then(r => {
                 // console.log('DATA confirmMmoneyCashin', r.data);
@@ -6580,7 +6686,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             axios.post(url, params, {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded', timeout: 3000
+                    'Content-Type': 'application/x-www-form-urlencoded', timeout: 10000
                 }
             }).then(r => {
                 // console.log('DATA loginMmoney', url, r.data);
@@ -6636,7 +6742,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('IMMoneyRequestRes', data);
             axios.post(url, data, {
                 headers: {
-                    'Content-Type': 'application/json', timeout: 3000
+                    'Content-Type': 'application/json', timeout: 10000
                 }
             }).then(r => {
                 // console.log('DATA requestMmoneyCashin', r.data);
@@ -6781,6 +6887,31 @@ export class InventoryZDM8 implements IBaseClass {
                         d = JSON.parse(ev.data.toString()) as IReqModel;
 
                         const res = {} as IResModel;
+                        // if (d.command == EMACHINE_COMMAND.login) {
+                        //     res.command = d.command;
+                        //     res.message = EMessage.loginok;
+                        //     res.status = 1;
+                        //     if (d.token) {
+                        //         const x = d.token as string;
+                        //         console.log(
+                        //             " WS online machine",
+                        //             this.listOnlineMachines()
+                        //         );
+                        //         let machineId = this.findMachineIdToken(x);
+
+                        //         if (!machineId) throw new Error("machine is not exit");
+                        //         ws["machineId"] = machineId.machineId;
+                        //         ws["clientId"] = uuid4();
+                        //         res.data = { clientId: ws["clientId"] };
+                        //         this.wsClient.push(ws);
+                        //         return ws.send(
+                        //             JSON.stringify(
+                        //                 PrintSucceeded(d.command, res, EMessage.succeeded, null)
+                        //             )
+                        //         );
+                        //     } else throw new Error(EMessage.MachineIdNotFound);
+                        // }
+
                         if (d.command == EMACHINE_COMMAND.login) {
                             res.command = d.command;
                             res.message = EMessage.loginok;
@@ -6793,8 +6924,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 // );
                                 let machineId = this.findMachineIdToken(x);
 
-                                if (!machineId) throw new Error("machine is not exit");
-                                ws["machineId"] = machineId.machineId;
+                                if (!machineId) throw new Error("machine is not exist");
+                                ws["machineId"] = machineId?.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
                                 this.wsClient?.find((v, i) => {
@@ -6805,7 +6936,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         }
                                     }
                                 });
-                                this.wsClient.push(ws);
+                                this.wsClient?.push(ws);
                                 return ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
@@ -7084,6 +7215,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                     adsSetting,
                                                     adsVersion,
                                                     settingVersion,
+                                                    secret: await this.readMachineSecret(machine + '')
 
                                                 },
                                                 EMessage.succeeded
@@ -7113,6 +7245,127 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
+
+    generateTimeBasedSecret(inputString: string, intervalSeconds = 300, offset = 0) {
+        const timestamp = Math.floor(Date.now() / 1000);
+        const timeSlot = Math.floor(timestamp / intervalSeconds) - offset;
+        const hmac = crypto.createHmac('sha256', inputString);
+        hmac.update(timeSlot.toString());
+        const secret = hmac.digest('hex');
+        return {
+            secret,
+            expiresAt: (timeSlot + 1) * intervalSeconds * 1000
+        };
+    }
+
+    // ADMIN_SECRET_KEY = '';
+
+    generateTimeBasedSecretComplex({
+        inputString = '',
+        intervalSeconds = 300,
+        offset = 0,
+        hashAlgorithm = 'sha256',
+        saltLength = 16,
+        includeMetadata = true,
+        pbkdf2Iterations = 10000,
+        entropyBytes = 32
+    } = {}) {
+        // Input validation
+        if (!inputString || typeof inputString !== 'string') {
+            throw new Error('inputString must be a non-empty string');
+        }
+        if (!Number.isInteger(intervalSeconds) || intervalSeconds <= 0) {
+            throw new Error('intervalSeconds must be a positive integer');
+        }
+        if (!['sha256', 'sha512', 'sha1'].includes(hashAlgorithm)) {
+            throw new Error('hashAlgorithm must be sha256, sha512, or sha1');
+        }
+        if (!Number.isInteger(pbkdf2Iterations) || pbkdf2Iterations < 1000) {
+            throw new Error('pbkdf2Iterations must be an integer >= 1000');
+        }
+        if (!Number.isInteger(entropyBytes) || entropyBytes < 16) {
+            throw new Error('entropyBytes must be an integer >= 16');
+        }
+
+        // Generate entropy sources
+        const salt = crypto.randomBytes(saltLength).toString('hex');
+        const nonce = uuid4(); // Generate a unique nonce
+        const entropySeed = crypto.randomBytes(entropyBytes).toString('hex');
+        const counter = crypto.randomInt(0, 1000000).toString(); // Additional random counter
+
+        // Calculate time slot with random perturbation (small, within 1 second)
+        const timestamp = Math.floor(Date.now() / 1000);
+        const perturbation = crypto.randomInt(0, 1000) / 1000; // 0 to 0.999 seconds
+        const timeSlot = Math.floor((timestamp + perturbation) / intervalSeconds) - offset;
+
+        // Derive HMAC key using PBKDF2
+        const derivedKey = crypto.pbkdf2Sync(
+            `${inputString}:${process.env.ADMIN_SECRET_KEY}`,
+            salt,
+            pbkdf2Iterations,
+            32, // 256-bit key
+            'sha256'
+        ).toString('hex');
+
+        // Inner HMAC: Combine time slot, nonce, and entropy seed
+        const innerHmac = crypto.createHmac('sha512', derivedKey);
+        innerHmac.update(`${timeSlot}: ${nonce}: ${entropySeed}: ${counter}`);
+        const innerDigest = innerHmac.digest('hex');
+
+        // Outer HMAC: Apply second layer with chosen algorithm
+        const outerHmac = crypto.createHmac(hashAlgorithm, derivedKey + salt);
+        outerHmac.update(innerDigest);
+        const secret = outerHmac.digest('hex');
+
+        // Prepare response
+        const result = {
+            secret,
+            expiresAt: (timeSlot + 1) * intervalSeconds * 1000,
+            salt,
+            nonce,
+            metadata: {}
+        };
+
+        // Include metadata if requested
+        if (includeMetadata) {
+            result.metadata = {
+                generatedAt: timestamp * 1000,
+                hashAlgorithm,
+                timeSlot,
+                version: '2.0.0', // Updated version
+                pbkdf2Iterations,
+                entropyBytes
+            };
+        }
+
+        return result;
+    }
+
+
+    async readMachineSecret(machineId: string) {
+        const now = Date.now();
+        let storedSecret = JSON.parse((await redisClient.get(`secret: ${machineId}`) + '' || '{}')) as { secret: string, expiresAt: number };
+        if (storedSecret && storedSecret.expiresAt > now) {
+            return storedSecret.secret;
+        }
+        storedSecret = this.generateTimeBasedSecret(machineId);
+        redisClient.set(`secret: ${machineId}`, JSON.stringify(storedSecret));
+        return storedSecret.secret;
+    }
+    async readAdminMachineSecret(machineId: string) {
+        const now = Date.now();
+        let storedSecret = JSON.parse((await redisClient.get(`secret: ${machineId}`) + '' || '{}')) as { secret: string, expiresAt: number };
+        if (storedSecret && storedSecret.expiresAt > now) {
+            return storedSecret.secret;
+        }
+        storedSecret = this.generateTimeBasedSecret(machineId);
+        redisClient.set(`secret: ${machineId}`, JSON.stringify(storedSecret));
+        return storedSecret.secret;
+    }
+
+
+
+
     sendWSMyMachine(machineId: string, resx: IResModel) {
         this.wsClient.forEach((v) => {
             const x = v["myMachineId"] as Array<string>;
