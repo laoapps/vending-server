@@ -255,6 +255,8 @@ export class Tab1Page implements OnDestroy {
 
   otherModalAreOpening: boolean = false;
 
+  lastUpdate: number = Date.now();
+
   t: any;
   count = 7;
 
@@ -832,6 +834,7 @@ export class Tab1Page implements OnDestroy {
     this.WSAPIService.aliveSubscription.subscribe(async res => {
 
       try {
+        this.lastUpdate = Date.now();
         console.log('----->ALIVE TAB1', JSON.stringify(res || {}));
         const r = res?.data?.setting;
         if (res?.data?.settingVersion) {
@@ -2748,6 +2751,14 @@ export class Tab1Page implements OnDestroy {
             console.log('*****CHECK 30 SECOND');
 
             // that._processLoopCheckLaoQRPaid();
+            try {
+              const currentT = Date.now() - this.lastUpdate;
+              if (currentT >= 10 * 60 * 10000) {
+                App.exitApp();
+              }
+            } catch (error) {
+              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error check Online :${JSON.stringify(error)}` })
+            }
 
             if (this.processedQRPaid) return;
             this.processedQRPaid = true;
