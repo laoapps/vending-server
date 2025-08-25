@@ -25,6 +25,7 @@ services:
       - mqtt
     networks:
       - tasmota-net
+    restart: unless-stopped
 
   tasmota-db:
     image: postgres:15
@@ -33,7 +34,7 @@ services:
       - POSTGRES_PASSWORD=039153d3-9a68-444b-be96-10c6d1325197
       - POSTGRES_DB=tasmota
     ports:
-      -  31885:5432
+      - 31885:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -43,6 +44,7 @@ services:
       retries: 5
     networks:
       - tasmota-net
+    restart: unless-stopped
 
   mqtt:
     build:
@@ -53,16 +55,17 @@ services:
       - '31883:9001'
     volumes:
       - mqtt_data:/mosquitto/data
-      - ./mqtt/mosquitto.passwd:/mosquitto/config/passwd  # New: Mount the password file
+      - ./mqtt/mosquitto.passwd:/mosquitto/config/passwd
     networks:
       - tasmota-net
+    restart: unless-stopped
 
   tasmota-redis:
     image: redis:7
     ports:
-    - '6379:6379'
+      - '6379:6379'
     volumes:
-    - redis_data:/data
+      - redis_data:/data
     command: redis-server --save 900 1 --save 300 10 --save 60 10000 --appendonly yes --appendfsync everysec
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -71,6 +74,7 @@ services:
       retries: 5
     networks:
       - tasmota-net
+    restart: unless-stopped
 
 volumes:
   pgdata:
