@@ -7630,7 +7630,8 @@ export class InventoryZDM8 implements IBaseClass {
         this.wsClient.forEach((v) => {
             const x = v["machineId"] as string;
             // console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
-            if (x && x == machineId && v.readyState == WebSocket.OPEN) {
+            if (x && x == machineId && v.readyState == WebSocketServer
+                .OPEN) {
                 // yy.push(v);
                 // console.log("WS SENDING machine id", x, v?.readyState);
                 // console.log('=====> RES CONFIRMED', JSON.stringify(resx));
