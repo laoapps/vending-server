@@ -4370,7 +4370,7 @@ export class InventoryZDM8 implements IBaseClass {
                 next();
             } else {
                 throw new Error('You are not superadmin');
-            }   
+            }
         } catch (error) {
             console.log(error);
             res.status(400).end();
@@ -6965,25 +6965,36 @@ export class InventoryZDM8 implements IBaseClass {
                 // console.log(" WS current connection is alive", ws["isAlive"]);
 
                 ws.onopen = (ev: Event) => {
-                    // console.log(" WS open", ev);
-                };
+                    ws['isAlive'] = true;
+                    ws['lastMessage'] = Date.now();
 
-                // ws['isAlive'] = true;
-                ws.onclose = (ev: CloseEvent) => {
-                    this.wsClient.find((v, i) => {
-                        if (v === ws) {
-                            return this.wsClient.splice(i, 1);
+                    ws['tAlive'] = setInterval(() => {
+                        if (Date.now() - ws['lastMessage'] > 60000) {
+                            ws['isAlive'] = false;
+                            console.log('Terminating dead connection');
+                            ws.close();
                         }
-                    });
+                    }, 30000);
+                };
+                ws.onclose = (ev: CloseEvent) => {
+                    if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
+                    this.wsClient = this.wsClient.filter((v) => v !== ws); // Remove from array
+                    console.log('WebSocket closed:', ev.reason);
                 };
                 ws.onerror = (ev: Event) => {
                     console.log(" WS error", ev);
+                    ws.close(); // Close on error
                 };
 
                 //connection is up, let's add a simple simple event
                 ws.onmessage = async (ev: MessageEvent) => {
+                    ws['isAlive'] = true;
                     let d: IReqModel = {} as IReqModel;
-                    // ws['isAlive'] = true;
+                    ws['isAlive'] = true;
+                    ws['lastMessage'] = Date.now();
+                    //login first
+                    // add to wsClient only after login
+                    this.wsClient.push(ws);
                     try {
                         // console.log(" WS comming", ev.data.toString());
 
