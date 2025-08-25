@@ -577,20 +577,21 @@ export class InventoryZDM8 implements IBaseClass {
                             if (checkCountGen.status == 1) {
                                 const wsx = this.wsClient.filter(v => v['machineId'] === machineId.machineId);
                                 wsx.forEach(ws => {
-                                    ws?.send(
-                                        JSON.stringify(
-                                            PrintSucceeded(
-                                                "ping",
-                                                {
-                                                    command: "ping",
-                                                    production: this.production,
-                                                    setting: { refresh: true }
-                                                },
-                                                EMessage.succeeded,
-                                                null
+                                    if (ws.readyState === WebSocketServer.OPEN)
+                                        ws?.send(
+                                            JSON.stringify(
+                                                PrintSucceeded(
+                                                    "ping",
+                                                    {
+                                                        command: "ping",
+                                                        production: this.production,
+                                                        setting: { refresh: true }
+                                                    },
+                                                    EMessage.succeeded,
+                                                    null
+                                                )
                                             )
-                                        )
-                                    );
+                                        );
                                 })
                                 return res.send(PrintError(d.command, [], EMessage.LaoQRCount, null));
                             }
@@ -1119,37 +1120,38 @@ export class InventoryZDM8 implements IBaseClass {
 
                         const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         wsx.forEach(ws => {
-                            ws?.send(
-                                JSON.stringify(
-                                    PrintSucceeded(
-                                        "ping",
-                                        {
-                                            command: "ping",
-                                            production: this.production,
-                                            balance: {},
-                                            limiter: {},
-                                            merchant: {},
-                                            mymmachinebalance: {},
-                                            mymlimiterbalance: {},
-                                            setting: { refresh: true },
-                                            mstatus: {},
-                                            mymstatus: {},
-                                            mymsetting: {},
-                                            mymlimiter: {},
-                                            app_version: {},
-                                            pendingStock: {},
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { refresh: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
 
-                                            adsSetting: {},
-                                            adsVersion: {},
-                                            settingVersion: {},
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
 
-                                        },
-                                        EMessage.succeeded
-                                        ,
-                                        null
+                                            },
+                                            EMessage.succeeded
+                                            ,
+                                            null
+                                        )
                                     )
-                                )
-                            );
+                                );
                         })
 
 
@@ -1187,37 +1189,38 @@ export class InventoryZDM8 implements IBaseClass {
                         //     )
                         // );
                         wsx.forEach(ws => {
-                            ws?.send(
-                                JSON.stringify(
-                                    PrintSucceeded(
-                                        "ping",
-                                        {
-                                            command: "ping",
-                                            production: this.production,
-                                            balance: {},
-                                            limiter: {},
-                                            merchant: {},
-                                            mymmachinebalance: {},
-                                            mymlimiterbalance: {},
-                                            setting: { refresh: true },
-                                            mstatus: {},
-                                            mymstatus: {},
-                                            mymsetting: {},
-                                            mymlimiter: {},
-                                            app_version: {},
-                                            pendingStock: {},
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { refresh: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
 
-                                            adsSetting: {},
-                                            adsVersion: {},
-                                            settingVersion: {},
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
 
-                                        },
-                                        EMessage.succeeded
-                                        ,
-                                        null
+                                            },
+                                            EMessage.succeeded
+                                            ,
+                                            null
+                                        )
                                     )
-                                )
-                            );
+                                );
                         })
 
 
@@ -1255,35 +1258,36 @@ export class InventoryZDM8 implements IBaseClass {
                         const m = req?.body?.data?.machineId;
                         const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         wsx.forEach(ws => {
-                            ws?.send(
-                                JSON.stringify(
-                                    PrintSucceeded(
-                                        "ping",
-                                        {
-                                            command: "ping",
-                                            production: this.production,
-                                            balance: {},
-                                            limiter: {},
-                                            merchant: {},
-                                            mymmachinebalance: {},
-                                            mymlimiterbalance: {},
-                                            setting: { exit: true },
-                                            mstatus: {},
-                                            mymstatus: {},
-                                            mymsetting: {},
-                                            mymlimiter: {},
-                                            app_version: {},
-                                            pendingStock: {},
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { exit: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
 
-                                            adsSetting: {},
-                                            adsVersion: {},
-                                            settingVersion: {},
-                                        },
-                                        EMessage.succeeded,
-                                        null
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
                                     )
-                                )
-                            );
+                                );
                         })
 
                         res.send(PrintSucceeded("exitMachineAdmin", !!wsx, EMessage.succeeded, returnLog(req, res)));
@@ -1320,35 +1324,36 @@ export class InventoryZDM8 implements IBaseClass {
                         //     )
                         // );
                         wsx.forEach(ws => {
-                            ws?.send(
-                                JSON.stringify(
-                                    PrintSucceeded(
-                                        "ping",
-                                        {
-                                            command: "ping",
-                                            production: this.production,
-                                            balance: {},
-                                            limiter: {},
-                                            merchant: {},
-                                            mymmachinebalance: {},
-                                            mymlimiterbalance: {},
-                                            setting: { exit: true },
-                                            mstatus: {},
-                                            mymstatus: {},
-                                            mymsetting: {},
-                                            mymlimiter: {},
-                                            app_version: {},
-                                            pendingStock: {},
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { exit: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
 
-                                            adsSetting: {},
-                                            adsVersion: {},
-                                            settingVersion: {},
-                                        },
-                                        EMessage.succeeded,
-                                        null
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
                                     )
-                                )
-                            );
+                                );
                         })
 
 
@@ -3670,33 +3675,34 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 /// WS send to client directly
                                 // console.log('=====>S :', s);
-                                 wsx.forEach(ws=>{
-                                     ws?.send(
-                                    JSON.stringify(
-                                        PrintSucceeded(
-                                            "ping",
-                                            {
-                                                command: "ping",
-                                                production: this.production,
-                                                balance: r,
-                                                // limiter, merchant,
-                                                // mymmachinebalance, mymlimiterbalance,
-                                                setting: s,
-                                                //  mstatus, mymstatus,
-                                                // mymsetting,
-                                                // mymlimiter,
-                                                // app_version,
-                                                // pendingStock
-                                            },
-                                            EMessage.succeeded
-                                            ,
-                                            null
-                                        )
-                                    )
-                                );
+                                wsx.forEach(ws => {
+                                    if (ws.readyState === WebSocketServer.OPEN)
+                                        ws?.send(
+                                            JSON.stringify(
+                                                PrintSucceeded(
+                                                    "ping",
+                                                    {
+                                                        command: "ping",
+                                                        production: this.production,
+                                                        balance: r,
+                                                        // limiter, merchant,
+                                                        // mymmachinebalance, mymlimiterbalance,
+                                                        setting: s,
+                                                        //  mstatus, mymstatus,
+                                                        // mymsetting,
+                                                        // mymlimiter,
+                                                        // app_version,
+                                                        // pendingStock
+                                                    },
+                                                    EMessage.succeeded
+                                                    ,
+                                                    null
+                                                )
+                                            )
+                                        );
                                 })
 
-                               
+
                             })
                             .catch((e) => {
                                 console.log("Error updateMachineSetting", e);
