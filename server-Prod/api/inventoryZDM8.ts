@@ -6997,25 +6997,11 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
             wss.on("connection", (ws: WebSocket) => {
-                // console.log("WS ZDM8");
-                // console.log(" WS new connection ", ws.url);
 
-                // console.log(" WS current connection is alive", ws["isAlive"]);
 
                 ws.onopen = (ev: Event) => {
-                    // ws['isAlive'] = true;
-                    // ws['lastMessage'] = Date.now();
-
-                    // ws['tAlive'] = setInterval(() => {
-                    //     if (Date.now() - ws['lastMessage'] > 60000) {
-                    //         ws['isAlive'] = false;
-                    //         console.log('Terminating dead connection');
-                    //         ws.close();
-                    //     }
-                    // }, 30000);
                 };
                 ws.onclose = (ev: CloseEvent) => {
-                    // if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
                     this.wsClient = this.wsClient.filter((v) => v !== ws); // Remove from array
                     console.log('WebSocket closed:', ev.reason);
                 };
@@ -7380,16 +7366,14 @@ export class InventoryZDM8 implements IBaseClass {
                                 return;
                             } catch (error) {
                                 console.log((error));
-
                             }
-
-
                         }
                         console.log("WS CLOSE");
-                        ws.close();
+                        ws.close(1000);
                     } catch (error: any) {
                         console.log(" WS error", error);
                         ws.send(JSON.stringify(PrintError(d.command, [], error.message, null)));
+                        ws.close(1000);
                     }
                 };
             });
