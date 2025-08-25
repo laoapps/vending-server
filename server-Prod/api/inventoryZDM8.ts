@@ -1108,6 +1108,53 @@ export class InventoryZDM8 implements IBaseClass {
             //     // this.creditMachineMMoney(d);
             //     // res.send({ message: "wait", status: 1 });
             // });
+            router.post(this.path + "/refreshMachineAdmin",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+
+                        const ws = this.wsClient.find(v => v['machineId'] === m);
+                        ws?.send(
+                            JSON.stringify(
+                                PrintSucceeded(
+                                    "ping",
+                                    {
+                                        command: "ping",
+                                        production: this.production,
+                                        balance: {},
+                                        limiter: {},
+                                        merchant: {},
+                                        mymmachinebalance: {},
+                                        mymlimiterbalance: {},
+                                        setting: { refresh: true },
+                                        mstatus: {},
+                                        mymstatus: {},
+                                        mymsetting: {},
+                                        mymlimiter: {},
+                                        app_version: {},
+                                        pendingStock: {},
+
+                                        adsSetting: {},
+                                        adsVersion: {},
+                                        settingVersion: {},
+
+                                    },
+                                    EMessage.succeeded
+                                    ,
+                                    null
+                                )
+                            )
+                        );
+
+                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(this.path + "/refreshMachine",
                 this.checkSuperAdmin,
 
