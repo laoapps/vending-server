@@ -7032,7 +7032,7 @@ export class InventoryZDM8 implements IBaseClass {
                     ws['lastMessage'] = Date.now();
                     //login first
                     // add to wsClient only after login
-                    this.wsClient.push(ws);
+
                     try {
                         // console.log(" WS comming", ev.data.toString());
 
@@ -7088,7 +7088,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         }
                                     }
                                 });
-                                this.wsClient?.push(ws);
+                                this.wsClient.push(ws);
                                 return ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
