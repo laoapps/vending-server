@@ -1595,8 +1595,26 @@ export class InventoryZDM8 implements IBaseClass {
                                 }
                             }
 
-                            setImmediate(async () => {
-                                for (let index = 0; index < billPaid.length; index++) {
+                            // setImmediate(async () => {
+                                // for (let index = 0; index < billPaid.length; index++) {
+                                //     const element = billPaid[index];
+                                //     let ent = VendingMachineBillFactory(
+                                //         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
+                                //         dbConnection
+                                //     );
+                                //     const bill = await ent.findOne({
+                                //         where: { transactionID: element.bill.transactionID },
+                                //     });
+
+                                //     bill.paymentstatus = EPaymentStatus.delivered;
+                                //     bill.changed("paymentstatus", true);
+                                //     await bill.save();
+                                //     ent = null;
+
+                                // }
+                            // })
+
+                            for (let index = 0; index < billPaid.length; index++) {
                                     const element = billPaid[index];
                                     let ent = VendingMachineBillFactory(
                                         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
@@ -1612,7 +1630,6 @@ export class InventoryZDM8 implements IBaseClass {
                                     ent = null;
 
                                 }
-                            })
 
                             let billNotPaid = b.filter(
                                 (item) => !billPaid.some((a) => a.transactionID === item.transactionID)
@@ -6986,19 +7003,19 @@ export class InventoryZDM8 implements IBaseClass {
                 // console.log(" WS current connection is alive", ws["isAlive"]);
 
                 ws.onopen = (ev: Event) => {
-                    ws['isAlive'] = true;
-                    ws['lastMessage'] = Date.now();
+                    // ws['isAlive'] = true;
+                    // ws['lastMessage'] = Date.now();
 
-                    ws['tAlive'] = setInterval(() => {
-                        if (Date.now() - ws['lastMessage'] > 60000) {
-                            ws['isAlive'] = false;
-                            console.log('Terminating dead connection');
-                            ws.close();
-                        }
-                    }, 30000);
+                    // ws['tAlive'] = setInterval(() => {
+                    //     if (Date.now() - ws['lastMessage'] > 60000) {
+                    //         ws['isAlive'] = false;
+                    //         console.log('Terminating dead connection');
+                    //         ws.close();
+                    //     }
+                    // }, 30000);
                 };
                 ws.onclose = (ev: CloseEvent) => {
-                    if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
+                    // if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
                     this.wsClient = this.wsClient.filter((v) => v !== ws); // Remove from array
                     console.log('WebSocket closed:', ev.reason);
                 };
@@ -7015,7 +7032,7 @@ export class InventoryZDM8 implements IBaseClass {
                     ws['lastMessage'] = Date.now();
                     //login first
                     // add to wsClient only after login
-                    this.wsClient.push(ws);
+
                     try {
                         // console.log(" WS comming", ev.data.toString());
 
@@ -7071,7 +7088,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         }
                                     }
                                 });
-                                this.wsClient?.push(ws);
+                                this.wsClient.push(ws);
                                 return ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
