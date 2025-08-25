@@ -156,4 +156,22 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       }
     });
   }
+  refreshMachine(machineId: string) {
+    const token = localStorage.getItem('token');
+    const shopPhonenumber = localStorage.getItem('shopPhonenumber');
+    const secret = localStorage.getItem('secretLocal');
+    this.http.post(environment.url + '/refreshMachineAdmin', { secret, shopPhonenumber, token, machineId }).subscribe({
+      next: (res: any) => {
+        if (res.status === 1) {
+          alert('Refresh command sent successfully to machine ' + machineId);
+        } else {
+          alert('Failed to send refresh command: ' + res.message);
+        }
+      },
+      error: (err) => {
+        console.error('Error sending refresh command:', err);
+        alert('Error sending refresh command: ' + err.message);
+      }
+    }); 
+  }
 }
