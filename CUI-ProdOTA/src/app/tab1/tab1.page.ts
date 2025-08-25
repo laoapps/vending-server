@@ -1406,19 +1406,19 @@ export class Tab1Page implements OnDestroy {
         this.serial.getSerialEvents().subscribe(event => {
           try {
             console.log('zdm8 service event received: ' + JSON.stringify(event));
-            if (event.event === 'dataReceived') {
-              const rawData = event.data; // Assuming event.data contains the raw hex string
+            // if (event.event === 'dataReceived') {
+            // const rawData = event.data; // Assuming event.data contains the raw hex string
 
-              console.log('zdm service Received from device:', rawData);
-              const d = typeof rawData === 'object' ? JSON.stringify(rawData) : rawData;
-              Toast.show({ text: 'zdm service Received from device: ' + d, duration: 'long' });
-              // Process the Modbus response
-              const response = this.vendingIndex.zdm8.processModbusResponse(rawData);
-              if (response) {
-                console.log('Processed Modbus response:', response);
-              }
-              // Toast.show({ text: 'Processed Modbus response: ' + JSON.stringify(response), duration: 'long' });
-            }
+            // console.log('zdm service Received from device:', rawData);
+            // const d = typeof rawData === 'object' ? JSON.stringify(rawData) : rawData;
+            // Toast.show({ text: 'zdm service Received from device: ' + d, duration: 'long' });
+            // Process the Modbus response
+            // const response = this.vendingIndex.zdm8.processModbusResponse(rawData);
+            // if (response) {
+            //   console.log('Processed Modbus response:', response);
+            // }
+            // Toast.show({ text: 'Processed Modbus response: ' + JSON.stringify(response), duration: 'long' });
+            // }
           } catch (error: any) {
             console.error('Error processing event:', error);
             Toast.show({ text: 'Error processing event: ' + error.message });
