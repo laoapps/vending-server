@@ -149,7 +149,7 @@ export class LogTempPage implements OnInit, OnDestroy {
         secret,
         shopPhonenumber,
         token,
-        machineId: this.machineId.trim(),
+        data:{machineId: this.machineId.trim()},
         fromDate: this.formatDateForApi(this.fromDate),
         toDate: this.formatDateForApi(this.toDate)
       };
