@@ -7636,6 +7636,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // console.log('=====> RES CONFIRMED', JSON.stringify(resx));
 
                 v.send(JSON.stringify(resx));
+                return;
             }
         });
     }
