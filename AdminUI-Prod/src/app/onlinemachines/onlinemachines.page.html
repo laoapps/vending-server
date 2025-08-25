@@ -44,6 +44,9 @@
               <ion-button color="danger" (click)="exitApp(machine.machineId)">
                 <ion-icon name="refresh-circle-outline"></ion-icon> Exit App
               </ion-button>
+              <ion-button color="warning" (click)="refreshMachine(machine.machineId)">
+                <ion-icon name="sync-circle-outline"></ion-icon> Refresh
+              </ion-button>
             </p>
           </ion-card-content>
         </ion-card>

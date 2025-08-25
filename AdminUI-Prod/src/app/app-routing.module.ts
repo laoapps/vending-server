@@ -235,6 +235,10 @@ const routes: Routes = [
   {
     path: 'onlinemachines',
     loadChildren: () => import('./onlinemachines/onlinemachines.module').then( m => m.OnlinemachinesPageModule)
+  },
+  {
+    path: 'log-temp',
+    loadChildren: () => import('./log-temp/log-temp.module').then( m => m.LogTempPageModule)
   }
 ];
 @NgModule({
