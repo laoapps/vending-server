@@ -722,6 +722,8 @@ export function parseMachineVMCStatus(hexString: string): IMachineStatus {
         machineIMEI,
         machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
         machineHumidity, // Undefined if not present
+        device: 'VMC',
+        data: cleanHex,
     };
 }
 

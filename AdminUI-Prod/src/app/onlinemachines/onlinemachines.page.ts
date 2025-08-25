@@ -144,7 +144,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     const secret = localStorage.getItem('secretLocal');
     this.http.post(environment.url + '/exitAppMachineAdmin', { secret, shopPhonenumber, token, machineId }).subscribe({
       next: (res: any) => {
-        if (res.status === 'success') {
+        if (res.status === 1) {
           alert('Exit app command sent successfully to machine ' + machineId);
         } else {
           alert('Failed to send exit app command: ' + res.message);
