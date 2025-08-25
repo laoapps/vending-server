@@ -18,7 +18,12 @@ export class IndexerrorService extends Dexie {
 
   // เพิ่มข้อมูล BillProcess ลงใน IndexedDB
   async addBillProcess(billProcess: ILocalLog) {
-    return await this.billProcesses.add(billProcess);
+    try {
+      return await this.billProcesses.add(billProcess);
+    } catch (error) {
+      console.error('Failed to add bill process:', error);
+    }
+    
   }
 
   // ดึงข้อมูลทั้งหมด
@@ -35,7 +40,12 @@ export class IndexerrorService extends Dexie {
 
   // ลบข้อมูล BillProcess ตาม id
   async deleteBillProcess(id: number) {
-    return await this.billProcesses.delete(id);
+    try {
+      return await this.billProcesses.delete(id);
+    } catch (error) {
+      console.error('Failed to delete bill process:', error);
+    }
+    
   }
 
   // ลบข้อมูลทั้งหมดในตาราง billProcesses

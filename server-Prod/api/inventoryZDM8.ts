@@ -1595,8 +1595,26 @@ export class InventoryZDM8 implements IBaseClass {
                                 }
                             }
 
-                            setImmediate(async () => {
-                                for (let index = 0; index < billPaid.length; index++) {
+                            // setImmediate(async () => {
+                                // for (let index = 0; index < billPaid.length; index++) {
+                                //     const element = billPaid[index];
+                                //     let ent = VendingMachineBillFactory(
+                                //         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
+                                //         dbConnection
+                                //     );
+                                //     const bill = await ent.findOne({
+                                //         where: { transactionID: element.bill.transactionID },
+                                //     });
+
+                                //     bill.paymentstatus = EPaymentStatus.delivered;
+                                //     bill.changed("paymentstatus", true);
+                                //     await bill.save();
+                                //     ent = null;
+
+                                // }
+                            // })
+
+                            for (let index = 0; index < billPaid.length; index++) {
                                     const element = billPaid[index];
                                     let ent = VendingMachineBillFactory(
                                         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
@@ -1612,7 +1630,6 @@ export class InventoryZDM8 implements IBaseClass {
                                     ent = null;
 
                                 }
-                            })
 
                             let billNotPaid = b.filter(
                                 (item) => !billPaid.some((a) => a.transactionID === item.transactionID)
