@@ -81,7 +81,7 @@ CreateDatabase("")
       allowedHeaders: ['Content-Type', 'Authorization', 'x-capawesome-app-id'], // Allow common headers
       credentials: true // Allow cookies and credentials if needed
     }));
-
+    app.options('*', cors()); // Handle preflight for all routes
     // app.use(cors({
     //   origin: (origin, callback) => {
     //     // Allow requests with no origin (e.g., same-origin or mobile apps)

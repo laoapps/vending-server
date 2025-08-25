@@ -2756,28 +2756,31 @@ export class Tab1Page implements OnDestroy {
               if (currentT >= 10 * 60 * 10000) {
                 App.exitApp();
               }
+
+              if (this.processedQRPaid) return;
+              this.processedQRPaid = true;
+              await this._processLoopCheckLaoQRPaid();
+              this.processedQRPaid = false;
+
+              this.apiService.IndexedDB.getBillProcesses().then((r) => {
+                if (r.length > 0) {
+                  console.log('dropStock', r);
+                  this.apiService.isDropStock = true;
+
+                } else {
+                  console.log('out dropStock', r);
+                  this.apiService.isDropStock = false;
+                }
+              }).catch((e) => {
+                console.log('Error get dropStock from local', e);
+                this.apiService.isDropStock = false;
+              });
+
             } catch (error) {
               this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error check Online :${JSON.stringify(error)}` })
             }
 
-            if (this.processedQRPaid) return;
-            this.processedQRPaid = true;
-            await this._processLoopCheckLaoQRPaid();
-            this.processedQRPaid = false;
 
-            this.apiService.IndexedDB.getBillProcesses().then((r) => {
-              if (r.length > 0) {
-                console.log('dropStock', r);
-                this.apiService.isDropStock = true;
-
-              } else {
-                console.log('out dropStock', r);
-                this.apiService.isDropStock = false;
-              }
-            }).catch((e) => {
-              console.log('Error get dropStock from local', e);
-              this.apiService.isDropStock = false;
-            });
           }, 30000);
         });
         //5s
@@ -3210,43 +3213,50 @@ export class Tab1Page implements OnDestroy {
     console.log(`here`);
     this.apiService.loadDeliveryingBillsNew().then((r) => {
       console.log(`response showBills`, r);
-      if (r.length > 0) {
-        // this.apiService.dismissModal();
-        this.apiService.pb = r as Array<IBillProcess>;
-        if (this.apiService.pb.length) {
-          this.apiService.isDropStock = true;
-          if (!this.apiService.isRemainingBillsModalOpen) {
-            if (this.serial) {
-              this.apiService
-                .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
-                .then((r) => {
-                  this.apiService.isRemainingBillsModalOpen = true;
-                  r.present();
-                  r.onDidDismiss().then(() => {
-                    this.apiService.isRemainingBillsModalOpen = false;
-                  })
-                  this.otherModalAreOpening = true;
-                  this.openAnotherModal(r);
-                  clearInterval(this.autoShowMyOrderTimer);
-                  this.checkActiveModal(r);
-                });
-            } else {
-              Toast.show({
-                text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
-                duration: 'long',
-              })
+      try {
+        if (r.length > 0) {
+          // this.apiService.dismissModal();
+          this.apiService.pb = r as Array<IBillProcess>;
+          if (this.apiService.pb.length) {
+            this.apiService.isDropStock = true;
+            if (!this.apiService.isRemainingBillsModalOpen) {
+              if (this.serial) {
+                this.apiService
+                  .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
+                  .then((r) => {
+                    this.apiService.isRemainingBillsModalOpen = true;
+                    r.present();
+                    r.onDidDismiss().then(() => {
+                      this.apiService.isRemainingBillsModalOpen = false;
+                    })
+                    this.otherModalAreOpening = true;
+                    this.openAnotherModal(r);
+                    clearInterval(this.autoShowMyOrderTimer);
+                    this.checkActiveModal(r);
+                  });
+              } else {
+                Toast.show({
+                  text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
+                  duration: 'long',
+                })
+              }
             }
           }
-        }
 
-      } else {
-        this.apiService.isDropStock = false;
-        this.apiService.toast
-          .create({ message: '', duration: 5000 })
-          .then((r) => {
-            r.present();
-          });
+        } else {
+          this.apiService.isDropStock = false;
+          this.apiService.toast
+            .create({ message: '', duration: 5000 })
+            .then((r) => {
+              r.present();
+            });
+        }
+      } catch (error) {
+        console.log(`error`, error);
+        this.apiService.toast.create({ message: error.message, duration: 5000 }).then(r => { r.present(); });
+        
       }
+
     });
   }
 
