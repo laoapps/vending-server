@@ -140,6 +140,7 @@ import { checkGenerateCount } from "../services/laoqr.service";
 import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
 import { IProductImage } from "../models/sys.model";
 import { WarehouseFactory } from "../entities/warehouse.entity";
+import { SERVER_URL } from "../config/key";
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -5943,7 +5944,7 @@ export class InventoryZDM8 implements IBaseClass {
                 "channel": `VENDING_` + channel, // Vending Machine 
                 "owner": "LAABX", // Merchant Name  LAABX
                 // "callbackurl": "https://tvending.khamvong.com"
-                "callbackurl": "https://vending-service-api5.laoapps.com"
+                "callbackurl": SERVER_URL
             }
             // console.log("LAOQR", qr);
 
@@ -6616,7 +6617,7 @@ export class InventoryZDM8 implements IBaseClass {
                     { headers, httpsAgent: agent, timeout: 10000 });
 
                 if (res.data.success) {
-                    axios.post('https://vending-service-api5.laoapps.com', {
+                    axios.post(SERVER_URL, {
                         "command": "confirmLAOQR",
                         "data": {
                             "trandID": transactionID,
@@ -6678,7 +6679,7 @@ export class InventoryZDM8 implements IBaseClass {
             // console.log('=====> CHECK MMONEY PAID', res.data);
             if (res.data.success) {
                 // console.log('=====> CHECK MMONEY PAID', res.data);
-                axios.post('https://vending-service-api5.laoapps.com', {
+                axios.post(SERVER_URL, {
                     "command": "confirmLAOQR",
                     "data": {
                         "trandID": transactionID,

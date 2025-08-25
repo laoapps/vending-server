@@ -133,6 +133,7 @@ services:
       - name=SHAREHAPPINESS
 
       - NOCNOC_SERVER=
+      - SERVER_URL=https://vending-service-api5.laoapps.com
 
     ports:
       # - 51231:31231
