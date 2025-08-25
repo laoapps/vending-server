@@ -575,21 +575,23 @@ export class InventoryZDM8 implements IBaseClass {
 
                             const checkCountGen = await checkGenerateCount(machineId?.machineId);
                             if (checkCountGen.status == 1) {
-                                const ws = this.wsClient.find(v => v['machineId'] === machineId.machineId);
-                                ws?.send(
-                                    JSON.stringify(
-                                        PrintSucceeded(
-                                            "ping",
-                                            {
-                                                command: "ping",
-                                                production: this.production,
-                                                setting: { refresh: true }
-                                            },
-                                            EMessage.succeeded,
-                                            null
+                                const wsx = this.wsClient.filter(v => v['machineId'] === machineId.machineId);
+                                wsx.forEach(ws => {
+                                    ws?.send(
+                                        JSON.stringify(
+                                            PrintSucceeded(
+                                                "ping",
+                                                {
+                                                    command: "ping",
+                                                    production: this.production,
+                                                    setting: { refresh: true }
+                                                },
+                                                EMessage.succeeded,
+                                                null
+                                            )
                                         )
-                                    )
-                                );
+                                    );
+                                })
                                 return res.send(PrintError(d.command, [], EMessage.LaoQRCount, null));
                             }
 
@@ -1115,40 +1117,43 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const m = req?.body?.data?.machineId;
 
-                        const ws = this.wsClient.find(v => v['machineId'] === m);
-                        ws?.send(
-                            JSON.stringify(
-                                PrintSucceeded(
-                                    "ping",
-                                    {
-                                        command: "ping",
-                                        production: this.production,
-                                        balance: {},
-                                        limiter: {},
-                                        merchant: {},
-                                        mymmachinebalance: {},
-                                        mymlimiterbalance: {},
-                                        setting: { refresh: true },
-                                        mstatus: {},
-                                        mymstatus: {},
-                                        mymsetting: {},
-                                        mymlimiter: {},
-                                        app_version: {},
-                                        pendingStock: {},
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
+                        wsx.forEach(ws => {
+                            ws?.send(
+                                JSON.stringify(
+                                    PrintSucceeded(
+                                        "ping",
+                                        {
+                                            command: "ping",
+                                            production: this.production,
+                                            balance: {},
+                                            limiter: {},
+                                            merchant: {},
+                                            mymmachinebalance: {},
+                                            mymlimiterbalance: {},
+                                            setting: { refresh: true },
+                                            mstatus: {},
+                                            mymstatus: {},
+                                            mymsetting: {},
+                                            mymlimiter: {},
+                                            app_version: {},
+                                            pendingStock: {},
 
-                                        adsSetting: {},
-                                        adsVersion: {},
-                                        settingVersion: {},
+                                            adsSetting: {},
+                                            adsVersion: {},
+                                            settingVersion: {},
 
-                                    },
-                                    EMessage.succeeded
-                                    ,
-                                    null
+                                        },
+                                        EMessage.succeeded
+                                        ,
+                                        null
+                                    )
                                 )
-                            )
-                        );
+                            );
+                        })
 
-                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                        res.send(PrintSucceeded("refreshMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
@@ -1166,7 +1171,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // const w = ws.find(v=>v['clientId']);
                         // console.log(`----------->`, m);
 
-                        const ws = this.wsClient.find(v => v['machineId'] === m);
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         // ws.send(
                         //     JSON.stringify(
                         //         PrintSucceeded(
@@ -1181,40 +1186,42 @@ export class InventoryZDM8 implements IBaseClass {
                         //         )
                         //     )
                         // );
+                        wsx.forEach(ws => {
+                            ws?.send(
+                                JSON.stringify(
+                                    PrintSucceeded(
+                                        "ping",
+                                        {
+                                            command: "ping",
+                                            production: this.production,
+                                            balance: {},
+                                            limiter: {},
+                                            merchant: {},
+                                            mymmachinebalance: {},
+                                            mymlimiterbalance: {},
+                                            setting: { refresh: true },
+                                            mstatus: {},
+                                            mymstatus: {},
+                                            mymsetting: {},
+                                            mymlimiter: {},
+                                            app_version: {},
+                                            pendingStock: {},
 
-                        ws?.send(
-                            JSON.stringify(
-                                PrintSucceeded(
-                                    "ping",
-                                    {
-                                        command: "ping",
-                                        production: this.production,
-                                        balance: {},
-                                        limiter: {},
-                                        merchant: {},
-                                        mymmachinebalance: {},
-                                        mymlimiterbalance: {},
-                                        setting: { refresh: true },
-                                        mstatus: {},
-                                        mymstatus: {},
-                                        mymsetting: {},
-                                        mymlimiter: {},
-                                        app_version: {},
-                                        pendingStock: {},
+                                            adsSetting: {},
+                                            adsVersion: {},
+                                            settingVersion: {},
 
-                                        adsSetting: {},
-                                        adsVersion: {},
-                                        settingVersion: {},
-
-                                    },
-                                    EMessage.succeeded
-                                    ,
-                                    null
+                                        },
+                                        EMessage.succeeded
+                                        ,
+                                        null
+                                    )
                                 )
-                            )
-                        );
+                            );
+                        })
 
-                        res.send(PrintSucceeded("refreshMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+                        res.send(PrintSucceeded("refreshMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
@@ -1246,37 +1253,40 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const m = req?.body?.data?.machineId;
-                        const ws = this.wsClient.find(v => v['machineId'] === m);
-                        ws?.send(
-                            JSON.stringify(
-                                PrintSucceeded(
-                                    "ping",
-                                    {
-                                        command: "ping",
-                                        production: this.production,
-                                        balance: {},
-                                        limiter: {},
-                                        merchant: {},
-                                        mymmachinebalance: {},
-                                        mymlimiterbalance: {},
-                                        setting: { exit: true },
-                                        mstatus: {},
-                                        mymstatus: {},
-                                        mymsetting: {},
-                                        mymlimiter: {},
-                                        app_version: {},
-                                        pendingStock: {},
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
+                        wsx.forEach(ws => {
+                            ws?.send(
+                                JSON.stringify(
+                                    PrintSucceeded(
+                                        "ping",
+                                        {
+                                            command: "ping",
+                                            production: this.production,
+                                            balance: {},
+                                            limiter: {},
+                                            merchant: {},
+                                            mymmachinebalance: {},
+                                            mymlimiterbalance: {},
+                                            setting: { exit: true },
+                                            mstatus: {},
+                                            mymstatus: {},
+                                            mymsetting: {},
+                                            mymlimiter: {},
+                                            app_version: {},
+                                            pendingStock: {},
 
-                                        adsSetting: {},
-                                        adsVersion: {},
-                                        settingVersion: {},
-                                    },
-                                    EMessage.succeeded,
-                                    null
+                                            adsSetting: {},
+                                            adsVersion: {},
+                                            settingVersion: {},
+                                        },
+                                        EMessage.succeeded,
+                                        null
+                                    )
                                 )
-                            )
-                        );
-                        res.send(PrintSucceeded("exitMachineAdmin", !!ws, EMessage.succeeded, returnLog(req, res)));
+                            );
+                        })
+
+                        res.send(PrintSucceeded("exitMachineAdmin", !!wsx, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
@@ -1294,7 +1304,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // const w = ws.find(v=>v['clientId']);
                         // console.log(`----------->`, m);
 
-                        const ws = this.wsClient.find(v => v['machineId'] === m);
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         // ws.send(
                         //     JSON.stringify(
                         //         PrintSucceeded(
@@ -1309,39 +1319,41 @@ export class InventoryZDM8 implements IBaseClass {
                         //         )
                         //     )
                         // );
+                        wsx.forEach(ws => {
+                            ws?.send(
+                                JSON.stringify(
+                                    PrintSucceeded(
+                                        "ping",
+                                        {
+                                            command: "ping",
+                                            production: this.production,
+                                            balance: {},
+                                            limiter: {},
+                                            merchant: {},
+                                            mymmachinebalance: {},
+                                            mymlimiterbalance: {},
+                                            setting: { exit: true },
+                                            mstatus: {},
+                                            mymstatus: {},
+                                            mymsetting: {},
+                                            mymlimiter: {},
+                                            app_version: {},
+                                            pendingStock: {},
 
-
-                        ws?.send(
-                            JSON.stringify(
-                                PrintSucceeded(
-                                    "ping",
-                                    {
-                                        command: "ping",
-                                        production: this.production,
-                                        balance: {},
-                                        limiter: {},
-                                        merchant: {},
-                                        mymmachinebalance: {},
-                                        mymlimiterbalance: {},
-                                        setting: { exit: true },
-                                        mstatus: {},
-                                        mymstatus: {},
-                                        mymsetting: {},
-                                        mymlimiter: {},
-                                        app_version: {},
-                                        pendingStock: {},
-
-                                        adsSetting: {},
-                                        adsVersion: {},
-                                        settingVersion: {},
-                                    },
-                                    EMessage.succeeded,
-                                    null
+                                            adsSetting: {},
+                                            adsVersion: {},
+                                            settingVersion: {},
+                                        },
+                                        EMessage.succeeded,
+                                        null
+                                    )
                                 )
-                            )
-                        );
+                            );
+                        })
 
-                        res.send(PrintSucceeded("exitAppMachine", !!ws, EMessage.succeeded, returnLog(req, res)));
+
+
+                        res.send(PrintSucceeded("exitAppMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
@@ -3654,13 +3666,12 @@ export class InventoryZDM8 implements IBaseClass {
                                         , returnLog(req, res)
                                     )
                                 );
-                                const ws = this.wsClient.find(v => v['machineId'] === r?.machineId);
+                                const wsx = this.wsClient.filter(v => v['machineId'] === r?.machineId);
 
                                 /// WS send to client directly
                                 // console.log('=====>S :', s);
-
-
-                                ws?.send(
+                                 wsx.forEach(ws=>{
+                                     ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
@@ -3683,6 +3694,9 @@ export class InventoryZDM8 implements IBaseClass {
                                         )
                                     )
                                 );
+                                })
+
+                               
                             })
                             .catch((e) => {
                                 console.log("Error updateMachineSetting", e);
@@ -7507,7 +7521,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
 
     sendWS(clientId: string, resx: IResModel) {
-        this.wsClient.find((v) => {
+        this.wsClient.forEach((v) => {
             const x = v["clientId"] as string;
             // console.log("WS SENDING", x, x == clientId, v?.readyState);
             if (x && x == clientId) {
