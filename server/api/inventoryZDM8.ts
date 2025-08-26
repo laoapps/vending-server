@@ -7015,11 +7015,9 @@ export class InventoryZDM8 implements IBaseClass {
                     // }, 30000);
                 };
                 ws.onclose = (ev: CloseEvent) => {
-                   const ws = this.wsClient.filter((v) => v === ws);
+                    // if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
                     this.wsClient = this.wsClient.filter((v) => v !== ws); // Remove from array
-                    if(ws && ws.length>0)
-                    console.log('WebSocket closed: machineid',ws['machineId'],'lastmessage',ws['lastMessage'], ev.reason);
-                    console.log(" WS closed", ev.reason, this.wsClient.length);
+                    console.log('WebSocket closed:', ev.reason);
                 };
                 ws.onerror = (ev: Event) => {
                     console.log(" WS error", ev);
