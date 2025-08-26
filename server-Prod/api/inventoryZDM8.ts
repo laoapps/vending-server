@@ -7063,10 +7063,11 @@ export class InventoryZDM8 implements IBaseClass {
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exist");
-                                 this.wsClient?.find((v, i) => {
+                                 this.wsClient?.forEach((v, i) => {
                                     if (v) {
                                         if (v["machineId"] == machineId?.machineId) {
                                             v?.close(1000);
+                                            console.log(`Closed duplicate connection for machineId: ${machineId?.machineId}`);
                                             return true;
                                         }
                                     }
@@ -7076,6 +7077,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 res.data = { clientId: ws["clientId"] };
                                
                                 this.wsClient.push(ws);
+                                console.log(`Machine connected: ${machineId?.machineId}`);
                                 return ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
