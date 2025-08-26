@@ -214,18 +214,33 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         Toast.show({ text: 'serial not init for drop' })
         // await this.apiService.myTab1.connect();
         // this.apiService.reloadPage();
+
+        throw new Error('serial not init');
       }
 
     } catch (error) {
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error retryProcessBillNew :${JSON.stringify(error)}` });
       setTimeout(() => {
         this.apiService.dismissLoading();
-      }, 3000)
+      }, 3000);
+       setTimeout(() => {
+              this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
+                const r=rx.data;
+                // this.apiService.dismissLoading();
+                console.log(`vending on sale`, ApiService.vendingOnSale);
+                console.log('retryProcessBill', r);
+
+              }, (error) => {
+                this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
+              });
+            }, 2000);
       this.clearTimer();
       this.r = [];
       this.reloadDelivery(true);
       await this.apiService.soundSystemError();
-      App.exitApp();
+      await this.apiService.reloadPage();
+      await App.exitApp();
+      
     }
 
     finally {

@@ -817,6 +817,23 @@ export class Tab1Page implements OnDestroy {
             this.apiService.isDropStock = false;
             this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error get dropStock from local :${JSON.stringify(e)}` });
           });
+
+
+          this.lastCallTime = Date.now();
+
+          // Clear any existing timeout
+          if (this.timeoutId !== null) {
+            clearTimeout(this.timeoutId);
+          }
+
+          // Set a new timeout
+          this.timeoutId = setTimeout(() => {
+            // Check if 15 minutes have passed since last call
+            if (this.lastCallTime && Date.now() - this.lastCallTime >= this.TIMEOUT_MS) {
+              console.log('No status sent for 15 minutes. Exiting app.');
+              App.exitApp();
+            }
+          }, this.TIMEOUT_MS);
         }, 30000);
       } catch (error) {
         this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error _processLoopCheckLaoQRPaid :${JSON.stringify(error)}` });
@@ -846,7 +863,7 @@ export class Tab1Page implements OnDestroy {
               Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
               return this.refresh();
             }
-            if (r?.exit||!(this.serial&&!this.connecting)) {
+            if (r?.exit || !(this.serial && !this.connecting)) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
                 App.exitApp();
@@ -1948,7 +1965,7 @@ export class Tab1Page implements OnDestroy {
   initStock() {
     // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().then((rx) => {
-      const r =rx.data;
+      const r = rx.data;
       try {
         console.log('initStock');
 
@@ -2084,7 +2101,7 @@ export class Tab1Page implements OnDestroy {
           resolve(IENMessage.success);
         } else {
           this.apiService.recoverSale().then((rx) => {
-            const r= rx.data;
+            const r = rx.data;
             // console.log(r);
             if (r.status) {
               ApiService.vendingOnSale.length = 0;
@@ -2247,7 +2264,7 @@ export class Tab1Page implements OnDestroy {
   loadOnlineMachine() {
     this.apiService.loadOnlineMachine().then((rx) => {
       const r = rx.data;
-      
+
       console.log(r);
       if (r.status) {
         this.onlineMachines.push(...r.data);
@@ -2788,6 +2805,7 @@ export class Tab1Page implements OnDestroy {
             }
 
 
+
           }, 30000);
         });
         //5s
@@ -3261,7 +3279,7 @@ export class Tab1Page implements OnDestroy {
       } catch (error) {
         console.log(`error`, error);
         this.apiService.toast.create({ message: error.message, duration: 5000 }).then(r => { r.present(); });
-        
+
       }
 
     });
