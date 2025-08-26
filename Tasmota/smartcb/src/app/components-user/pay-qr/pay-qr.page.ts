@@ -23,7 +23,26 @@ export class PayQrPage implements OnInit {
   @Input() data_device:any
   @Input() data_pageket:any
 
+  cashesList: Array<any> = [
+    // {
+    //   image: `../../../../assets/logo/LAAB-logo.png`,
+    //   name: 'LAAB',
+    //   title: 'LAAB Wallet / Cash (optional)',
+    //   detail: 'Pay your order by using LAAB',
+    //   value: 'laab'
+    // },
+  ]
 
+  bankList: Array<any> = [
+    {
+      image: `../../../assets/logo/laoqr.png`,
+      name: 'Lao QR',
+      title: 'Lao QR (optional)',
+      detail: 'Pay your orders by using Lao QR One QRCode',
+      value: 'LaoQR'
+    }
+  ]
+  paymentList: Array<any> = [...this.cashesList, ...this.bankList];
 
   constructor(public apiService: ApiService, public m: LoadingService) {}
 
@@ -91,6 +110,10 @@ export class PayQrPage implements OnInit {
 
   pad(val: number): string {
     return val < 10 ? '0' + val : val.toString();
+  }
+
+  choosePaymentMethod(item){
+
   }
 
 }

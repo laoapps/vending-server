@@ -12,6 +12,9 @@ import { ShowDevicesPage } from '../../components-user/show-devices/show-devices
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { ListAllGroupsPage } from '../../components-user/list-all-groups/list-all-groups.page';
+import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
+import { PhotoProductService } from '../../services/photo/photo-product.service';
+import { HistoryPage } from '../../components-user/history/history.page';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -29,7 +32,14 @@ export class UserPage implements OnInit {
     // {title:'Register owner',icon: 'albums-outline'},
   ]
   phonenumber:any
-  constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
+  all_gorup: any[] = [];
+  devices: any[] = [];
+  public image = '../../../../../assets/icon-smartcb/image.png'
+
+
+  constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService,public ApiVending: ApiVendingService,
+    public caching:PhotoProductService
+  ) {}
 
   ngOnInit() {
 
@@ -44,11 +54,116 @@ export class UserPage implements OnInit {
     //   } else {
     //     this.m.alertError('alert_error.message_something_wrong');
     //   }
+    this.load_data();
   }
 
   logout(){
     this.m.logout();
   }
+
+  load_data() {
+    this.m.onLoading('');
+    this.ApiVending.load_all_group().subscribe(
+      async (r) => {
+        console.log('====================================');
+        console.log(r);
+        console.log('====================================');
+        this.m.onDismiss();
+        this.all_gorup = r;
+        this.load_data_device();
+        if (this.all_gorup?.length ) {
+          for (let i = 0; i < this.all_gorup.length; i++) {
+            const e = this.all_gorup[i];
+            for (let j = 0; j < e.description?.image.length; j++) {
+              const v = e.description?.image[j];
+              const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+              if (e?.pic?.length > 0) {
+                e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+              }else{
+                e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+              }
+            }
+          }
+        }
+      },
+      (error) => {
+        this.m.onDismiss();
+        this.m.alertError('load all gorup fail!!');
+      }
+    );
+  }
+
+  // load_data_device(){
+  //     this.m.onLoading('')
+  //     let data = {
+  //       ownerId:this.all_gorup[0]?.ownerId,
+  //       id:''
+  //     }
+  //     this.ApiVending.getDevicesBy(data).subscribe(async (r)=>{
+  //       console.log('====================================');
+  //       console.log(r);
+  //       console.log('====================================');
+  //       this.m.onDismiss();
+  //       this.devices = r
+  //       for (let i = 0; i < this.all_gorup.length; i++) {
+  //         const e = this.all_gorup[i];
+  //         e['data_device'] = r
+  //       }
+  //       if (this.devices?.length ) {
+  //         for (let i = 0; i < this.devices.length; i++) {
+  //           const e = this.devices[i];
+  //           for (let j = 0; j < e.description?.image.length; j++) {
+  //             const v = e.description?.image[j];
+  //             const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+  //             if (e?.pic?.length > 0) {
+  //               e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+  //             }else{
+  //               e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+  //             }
+  //           }
+  //         }
+  //       }
+  //     },(error)=>{
+  //       this.m.onDismiss();
+  //       this.m.alertError('load devices fail!!')
+  //     })
+  // }
+
+  async load_data_device() {
+    this.m.onLoading('');
+  
+    for (let group of this.all_gorup) {
+      let data = {
+        ownerId: group.ownerId,
+        id: ''
+      };
+  
+      try {
+        const devices: any = await this.ApiVending.getDevicesBy(data).toPromise();
+  
+        // Attach devices to this group
+        group['data_device'] = devices;
+  
+        // Process images
+        if (devices?.length) {
+          for (let device of devices) {
+            device.pic = device.pic || [];
+            for (let img of device.description?.image || []) {
+              const cached = await this.caching.saveCachingPhoto(img, new Date(device.updatedAt), device.id + '');
+              device.pic.push(JSON.parse(cached).v.replace('data:application/octet-stream', 'data:image/jpeg'));
+            }
+          }
+        }
+  
+      } catch (error) {
+        this.m.alertError(`Load devices failed for group ${group.ownerId}!`);
+        console.error(error);
+      }
+    }
+  
+    this.m.onDismiss();
+  }
+  
 
   onClick(item){
     if (item.title == 'Scan QR Code') {
@@ -131,6 +246,54 @@ export class UserPage implements OnInit {
     }else{
       this.m.alertError('Error Qr not found!!')
     }
+  }
+
+  return_pic(item){
+    if (item.pic?.length) {
+      return item?.pic[0]
+    }else{
+      return this.image
+    }
+  }
+
+  onClick_menu_sub(item,data){
+    console.log('====================================');
+    console.log(data);
+    console.log(item);
+    console.log('====================================');
+    this.m.showModal(ShowPageketPage,{data,deviceId:item.id,data_device:item},'dialog-fullscreen').then((r) => {
+      if (r) {
+        r.present();
+        r.onDidDismiss().then((res) => {
+          if (res.data.dismiss) {
+          }
+        });
+      }
+    });
+  }
+
+  openMenu_order(){
+    this.m.showModal(OrderPage,{},'dialog-fullscreen').then((r) => {
+      if (r) {
+        r.present();
+        r.onDidDismiss().then((res) => {
+          if (res.data.dismiss) {
+          }
+        });
+      }
+    });
+  }
+
+  openMenu_History(){
+    this.m.showModal(HistoryPage,{},'dialog-fullscreen').then((r) => {
+      if (r) {
+        r.present();
+        r.onDidDismiss().then((res) => {
+          if (res.data.dismiss) {
+          }
+        });
+      }
+    });
   }
 
 }

@@ -1,17 +1,29 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
+<!-- <ion-header>
+  <ion-toolbar>
+    <ion-title>Detail Order</ion-title>
+    <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+        <ion-icon
+          style="font-size: 42px; color: red"
+          name="close-outline"
+        ></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Detail Order</ion-title>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
 
 
 <ion-content class="ion-padding">
+  <div style="display: flex;flex-direction: row;justify-content: space-between;">
+    <div class="title">
+      Detail order
+    </div>
+    <div>
+      <ion-icon (click)="dismiss()" style="font-size: 42px;color: red;" name="close-outline"></ion-icon>
+    </div>
+  </div>
+
   <ion-card *ngIf="data">
     <ion-card-header>
       <ion-card-title>ID: {{ data.id }}</ion-card-title>

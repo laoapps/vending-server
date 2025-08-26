@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { OwnerDashboardPageRoutingModule } from './owner-dashboard-routing.module';
+import { ShowPackageQrPageRoutingModule } from './show-package-qr-routing.module';
 
-import { OwnerDashboardPage } from './owner-dashboard.page';
+import { ShowPackageQrPage } from './show-package-qr.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    OwnerDashboardPageRoutingModule
+    ShowPackageQrPageRoutingModule
   ],
-  // declarations: [OwnerDashboardPage]
+  declarations: [ShowPackageQrPage]
 })
-export class OwnerDashboardPageModule {}
+export class ShowPackageQrPageModule {}

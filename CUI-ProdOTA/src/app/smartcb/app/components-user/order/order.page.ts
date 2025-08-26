@@ -17,6 +17,7 @@ export class OrderPage implements OnInit {
   order_no_active: any[] = [];
   public sel = 'active';
   public choice = ['active', 'no active'];
+    public image = '../../../../../assets/icon-smartcb/image.png'
   constructor(public apiService: ApiService, public m: LoadingService,
     public ApiVending: ApiVendingService
 
@@ -39,7 +40,7 @@ export class OrderPage implements OnInit {
   }
 
   onClick_detail(item){
-    this.m.showModal(DetailOrderPage,{data:item}).then((r) => {
+    this.m.showModal(DetailOrderPage,{data:item},'dialog-fullscreen').then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
@@ -54,7 +55,7 @@ export class OrderPage implements OnInit {
   }
 
   click_history(){
-    this.m.showModal(HistoryPage).then((r) => {
+    this.m.showModal(HistoryPage,{},'dialog-fullscreen').then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
@@ -75,34 +76,14 @@ export class OrderPage implements OnInit {
       console.log('order',order);
       console.log('====================================');
       this.order_active = order;
-      // for (let i = 0; i < list_order.length; i++) {
-      //   const e = list_order[i];
-      //   if (!e.startedTime || e.startedTime == null) {
-      //     this.order_no_active.push(e)
-      //   }else{
-      //     this.order_active.push(e)
-      //   }
-      // }
-      // if (this.schedulePackages?.length ) {
-      //   for (let i = 0; i < this.schedulePackages.length; i++) {
-      //     const e = this.schedulePackages[i];
-      //     for (let j = 0; j < e.description?.image.length; j++) {
-      //       const v = e.description?.image[j];
-      //       const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
-      //       if (e?.pic?.length > 0) {
-      //         e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
-      //       }else{
-      //         e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
-      //       }
-      //     }
-      //   }
-      // }
       this.m.onDismiss();
     },error=>{
       this.m.onDismiss();
       this.m.alertError('load order fail!!')
     });
   }
+
+  
 
   formatDate(value?: string | number) {
     if (!value) return '-';

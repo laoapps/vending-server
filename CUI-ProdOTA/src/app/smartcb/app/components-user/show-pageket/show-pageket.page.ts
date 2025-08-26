@@ -18,7 +18,7 @@ export class ShowPageketPage implements OnInit {
   @Input() data:any
   @Input() deviceId:any
   @Input() data_device:any
-  public image = '../../../../../assets/icon-smartcb/image.png'
+  public image = '../../../../../assets/icon-smartcb/pricing.png'
 
   constructor(public m: LoadingService, private apiService: ApiService,
     public alertController: AlertController,public caching:PhotoProductService,
@@ -67,29 +67,16 @@ export class ShowPageketPage implements OnInit {
   }
 
   onClick(item){
-    let data = {
-      packageId:item.id,
-      deviceId:this.deviceId,
-      relay:1
-    }
-    this.ApiVending.orders(data).subscribe((r)=>{
-      console.log('====================================');
-      console.log('res',r);
-      console.log('====================================');
-      this.m.showModal(PayQrPage,{data:r?.qr.data,data_device:this.data_device | this.deviceId,data_pageket:item}).then((r) => {
-        if (r) {
-          r.present();
-          r.onDidDismiss().then((res) => {
-            if (res.data.dismiss) {
-            }
-          });
-        }
-      });
-    },(error)=>{
-      console.log('====================================');
-      console.log('error',error);
-      console.log('====================================');
-    })
+    this.m.showModal(PayQrPage,{data:item,data_device:this.data_device | this.deviceId,data_pageket:item},'dialog-fullscreen').then((r) => {
+      if (r) {
+        r.present();
+        r.onDidDismiss().then((res) => {
+          if (res.data.dismiss) {
+            this.dismiss(false)
+          }
+        });
+      }
+    });
   }
 
   return_pic(item){

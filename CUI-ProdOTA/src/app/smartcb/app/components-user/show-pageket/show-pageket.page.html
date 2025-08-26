@@ -1,43 +1,57 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
+<!-- <ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+        <ion-icon style="font-size: 42px;color: red;"  name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Show Pagekets</ion-title>
+    <ion-title>Show Package</ion-title>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
 <ion-content class="ion-padding list-container">
-  <ion-list *ngIf="schedulePackages.length > 0; else noData">
-    <ion-item *ngFor="let item of schedulePackages; let i = index" lines="full" class="pageket-item" (click)="onClick(item)">   
-      <ion-label>
-        <ion-avatar slot="start">
-          <img src="{{return_pic(item)}}" alt="" />
-        </ion-avatar>
-        <h2 class="name">{{ item.name }}</h2>
-        <p class="price">Price: <strong>{{ item.price | number}}</strong></p>
-        <p class="condition">
-          Condition: <span class="condition-type">{{ item.conditionType }}</span> = 
-          <span class="condition-value">{{ item.conditionValue }}</span>
-        </p>
-      </ion-label>
-
-      <!-- <ion-buttons slot="end" class="action-buttons">
-        <ion-button color="warning" fill="clear" (click)="openEditModal(item)">
-          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-        </ion-button>
-        <ion-button color="danger" fill="clear" (click)="deleteSchedulePackage(item?.id)">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons> -->
-    </ion-item>
-  </ion-list>
-
-  <ng-template #noData>
-    <div class="empty-state">
-      No pagekets found.
+  <div style="display: flex;flex-direction: row;justify-content: space-between;">
+    <div class="title">
+      Select Package
     </div>
-  </ng-template>
+    <div>
+      <ion-icon (click)="dismiss()" style="font-size: 42px;color: red;" name="close-outline"></ion-icon>
+    </div>
+  </div>
+  <ion-grid>
+    <ion-row *ngIf="schedulePackages.length > 0; else noData">
+      <ion-col 
+        size="6" 
+        size-sm="6" 
+        size-md="4" 
+        size-lg="3" 
+        size-xl="2" 
+        *ngFor="let item of schedulePackages; let i = index"
+      >
+        <ion-card (click)="onClick(item)" class="package-card">
+          <div class="package-img-wrapper">
+            <img [src]="return_pic(item)" alt="{{item.name}}" class="package-img" />
+          </div>
+          <ion-card-content>
+            <h2 class="package-name">{{ item.name }}</h2>
+            <p class="package-price">Price: <strong>{{ item.price | number }}</strong></p>
+            <p class="package-condition">
+              Condition: 
+              <span class="condition-type">{{ item.conditionType }}</span> = 
+              <span class="condition-value">{{ item.conditionValue }}</span>
+            </p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  
+    <ng-template #noData>
+      <ion-row>
+        <ion-col>
+          <p class="no-data-text">No packages available</p>
+        </ion-col>
+      </ion-row>
+    </ng-template>
+  </ion-grid>
+  
 </ion-content>

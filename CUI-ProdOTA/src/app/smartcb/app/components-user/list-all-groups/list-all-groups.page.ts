@@ -3,6 +3,7 @@ import { ShowDevicesPage } from '../show-devices/show-devices.page';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
+import { PhotoProductService } from '../../services/photo/photo-product.service';
 
 @Component({
   selector: 'app-list-all-groups',
@@ -13,7 +14,9 @@ import { ApiVendingService } from '../../services/api-for-vending/api-vending.se
 export class ListAllGroupsPage implements OnInit {
   all_gorup: any[] = [];
 
-  constructor(public ApiVending: ApiVendingService, public m: LoadingService) {}
+  constructor(public ApiVending: ApiVendingService, public m: LoadingService,
+    public caching:PhotoProductService
+  ) {}
 
   ngOnInit() {
     this.load_data();
@@ -22,12 +25,26 @@ export class ListAllGroupsPage implements OnInit {
   load_data() {
     this.m.onLoading('');
     this.ApiVending.load_all_group().subscribe(
-      (r) => {
+      async (r) => {
         console.log('====================================');
         console.log(r);
         console.log('====================================');
         this.m.onDismiss();
         this.all_gorup = r;
+        if (this.all_gorup?.length ) {
+          for (let i = 0; i < this.all_gorup.length; i++) {
+            const e = this.all_gorup[i];
+            for (let j = 0; j < e.description?.image.length; j++) {
+              const v = e.description?.image[j];
+              const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+              if (e?.pic?.length > 0) {
+                e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+              }else{
+                e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+              }
+            }
+          }
+        }
       },
       (error) => {
         this.m.onDismiss();

@@ -12,6 +12,7 @@ import { ApiVendingService } from '../../services/api-for-vending/api-vending.se
 })
 export class HistoryPage implements OnInit {
   list_order: any[] = [];
+      public image = '../../../../../assets/icon-smartcb/image.png'
   constructor(public apiService: ApiService, public m: LoadingService,
         public ApiVending: ApiVendingService
   ) {}
@@ -27,7 +28,7 @@ export class HistoryPage implements OnInit {
   }
 
   onClick_detail(item){
-    this.m.showModal(DetailHistoryPage,{data:item}).then((r) => {
+    this.m.showModal(DetailHistoryPage,{data:item},'dialog-fullscreen').then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {

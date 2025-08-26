@@ -10,6 +10,21 @@
 </ion-header>
 
 <ion-content>
+  <div class="title">
+    Option payment
+  </div>
+  <div class="item-list">
+    <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)"
+      href="javascript:void(0)" class="item active">
+      <div class="icon">
+        <img src="{{ list.image }}" alt="">
+      </div>
+      <div class="text">{{ list.name }}</div>
+    </a>
+
+  </div>
+
+  
   <div class="main-top"></div>
   <div class="div-content">
     <div class="div-qr-code">

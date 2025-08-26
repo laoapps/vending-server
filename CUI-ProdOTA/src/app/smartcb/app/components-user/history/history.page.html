@@ -1,23 +1,32 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
+<!-- <ion-header>
+  <ion-toolbar>
+    <ion-title>List order</ion-title>
+    <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+        <ion-icon
+          style="font-size: 42px; color: red"
+          name="close-outline"
+        ></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>History</ion-title>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
-<ion-content class="ion-no-padding">
-  <ion-list>
+<ion-content class="ion-padding">
+  <div style="display: flex;flex-direction: row;justify-content: space-between;">
+    <div class="title">
+      History order
+    </div>
+    <div>
+      <ion-icon (click)="dismiss()" style="font-size: 42px;color: red;" name="close-outline"></ion-icon>
+    </div>
+  </div>
+
     <ion-item *ngFor="let item of list_order" class="active-item">
       <ion-grid>
         <ion-row class="row-main">
-  
-          <!-- Wrap icon + ID/Device/Package together -->
           <ion-col size="6" >
-  
+            <img height="80px" width="80px" src="{{image}}" alt="">
             <div class="col-list">
               <div class="label_id">ID:</div>
               <div class="value">{{ item.id }}</div>
@@ -34,32 +43,35 @@
             </div>
           </ion-col>
           <ion-col size="6" class="info-flex">
-            <ion-icon name="time-outline" color="medium" style="font-size: 30px;"></ion-icon>
+            <ion-icon name="checkmark-circle" color="success" style="font-size: 50px;"></ion-icon>
           </ion-col>
-  
-          <!-- Times column -->
+          
           <ion-col size="12" size-md="6" class="times-col">
             <div class="time-row">
               <div>
                 <div class="label">Started</div>
-                <div class="value">{{ item.startedTime ? (item.startedTime | date:'short') : '-' }}</div>
-              </div>
-              <div>
-                <div class="label">Completed</div>
-                <div class="value">{{ item.completedTime ? (item.completedTime | date:'short') : '-' }}</div>
+                <div class="value_start">{{ item.startedTime ? (item.startedTime | date:'short') : '-' }}</div>
               </div>
             </div>
           </ion-col>
-  
-          <!-- Buttons -->
+
+          <ion-col size="12" size-md="6" class="times-col-completed">
+            <div class="time-row-completed">
+              <div>
+                <div class="label">Completed</div>
+                <!-- <div class="value">{{ item.completedTime ? (item.completedTime | date:'short') : '-' }}</div> -->
+                <div class="value_completed">{{ item.startedTime ? (item.startedTime | date:'short') : '-' }}</div>
+              </div>
+            </div>
+          </ion-col>
+
           <ion-col size="12" class="times-col">
             <div class="time-row">
-              <ion-button (click)="onClick_detail(item)">Detail</ion-button>
+              <ion-button class="btn-detail" (click)="onClick_detail(item)">Detail</ion-button>
             </div>
           </ion-col>
   
         </ion-row>
       </ion-grid>
     </ion-item>
-  </ion-list>
 </ion-content>

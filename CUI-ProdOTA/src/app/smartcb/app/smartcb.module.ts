@@ -39,10 +39,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { LoginPage } from './auth/login/login.page';
-import { HomePage } from './home/home.page';
 import { AdminDashboardPage } from './pages/admin-dashboard/admin-dashboard.page';
-import { OwnerDashboardPage } from './pages/owner-dashboard/owner-dashboard.page';
-import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
 import { SmartcbRoutingModule } from './smartcb-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { RouteReuseStrategy } from '@angular/router';
@@ -51,10 +48,7 @@ import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
-    HomePage,
     AdminDashboardPage,
-    OwnerDashboardPage,
-    UserDashboardPage
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   imports: [

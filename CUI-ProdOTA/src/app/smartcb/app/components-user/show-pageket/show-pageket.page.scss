@@ -1,50 +1,73 @@
-.list-container {
-	--background: #f8fafc;
+ion-toolbar{
+	--background: linear-gradient(to right, #43cea2, #185a9d);
+}
+.package-card {
+	cursor: pointer;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
   
-	.pageket-item {
-	  border-radius: 12px;
-	  margin-bottom: 12px;
-	  background: #ffffff;
-	  box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.07);
-	//   --padding-start: 16px;
-	//   --padding-end: 16px;
+	&:hover {
+	  transform: translateY(-3px);
+	  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	}
+  }
+  
+  .package-img-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 10px;
+	background: #f8f8f8;
+	border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .package-img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+  }
+  
+  .package-name {
+	font-size: 1rem;
+	font-weight: 600;
+	margin-bottom: 5px;
+  }
+  
+  .package-price {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: #27ae60; // green color for price
+	margin-bottom: 5px;
+  }
+  
+  .package-condition {
+	font-size: 0.85rem;
+	color: #666;
+  
+	.condition-type {
+	  font-weight: 500;
+	  color: #444;
 	}
   
-	ion-label {
-	  .name {
-		font-weight: 700;
-		font-size: 1.25rem;
-		color: #222;
-		margin-bottom: 6px;
-	  }
-  
-	  .price {
-		font-size: 1rem;
-		color: #00695c;
-		margin-bottom: 4px;
-	  }
-  
-	  .condition {
-		font-size: 0.9rem;
-		color: #555;
-  
-		.condition-type {
-		  font-weight: 600;
-		  color: #00796b;
-		}
-  
-		.condition-value {
-		  font-weight: 600;
-		  color: #004d40;
-		}
-	  }
+	.condition-value {
+	  font-weight: 600;
+	  color: #111;
 	}
+  }
   
-	.empty-state {
-	  text-align: center;
-	  margin-top: 100px;
-	  color: #999;
-	  font-size: 1.1rem;
-	  font-style: italic;
-	}
+  .no-data-text {
+	text-align: center;
+	color: #999;
+	font-size: 1rem;
+	margin-top: 20px;
+  }
+  
+  .list-container{
+	--background: linear-gradient(to right, #43cea2, #185a9d);
+  }
+  
+  .title {
+	font-size: 20px;
+	font-weight: bold;
+	color: #333;
+	text-transform: uppercase;
   }

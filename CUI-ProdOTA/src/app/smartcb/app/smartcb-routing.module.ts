@@ -1,9 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminDashboardPage } from './pages/admin-dashboard/admin-dashboard.page';
-import { OwnerDashboardPage } from './pages/owner-dashboard/owner-dashboard.page';
-import { UserDashboardPage } from './pages/user-dashboard/user-dashboard.page';
-import { HomePage } from './home/home.page';
 import { AdminReportsPage } from './pages/admin-reports/admin-reports.page';
 import { UserSchedulesPage } from './pages/user-schedules/user-schedule.page';
 import { AdminUnregisteredDevicesPage } from './pages/admin-unregistered-devices/admin-unregistered-devices.page';
@@ -12,11 +9,8 @@ import { LoginPage } from './auth/login/login.page';
 const routes: Routes = [
   { path: '', redirectTo: 'user', pathMatch: 'full' },
   // { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'home', component: HomePage },
   { path: 'login', component: LoginPage },
   { path: 'admin-dashboard', component: AdminDashboardPage },
-  { path: 'owner-dashboard', component: OwnerDashboardPage },
-  { path: 'user-dashboard', component: UserDashboardPage },
   { path: 'admin-reports', component: AdminReportsPage },
   { path: 'user-schedule', component: UserSchedulesPage },
   { path: 'admin-unregistered-devices', component: AdminUnregisteredDevicesPage },
@@ -111,6 +105,10 @@ const routes: Routes = [
   {
     path: 'order',
     loadChildren: () => import('./components-user/order/order.module').then( m => m.OrderPageModule)
+  },
+  {
+    path: 'show-package-qr',
+    loadChildren: () => import('./components-user/show-package-qr/show-package-qr.module').then( m => m.ShowPackageQrPageModule)
   },
 
  
