@@ -6548,6 +6548,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // 2.3 if transaction paid in redis and confirmed in redis like callback
 
                     ////
+                    // const ws = this.wsClient.find(v=>v.machineId == machineId);
 
                     resolve(res);
                     // this.setBillProces(bill.machineId, filteredB);
@@ -7078,9 +7079,6 @@ export class InventoryZDM8 implements IBaseClass {
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exist");
-                                ws["machineId"] = machineId?.machineId;
-                                ws["clientId"] = uuid4();
-                                res.data = { clientId: ws["clientId"] };
                                 this.wsClient?.find((v, i) => {
                                     if (v) {
                                         if (v["machineId"] == machineId?.machineId) {
@@ -7089,6 +7087,9 @@ export class InventoryZDM8 implements IBaseClass {
                                         }
                                     }
                                 });
+                                ws["machineId"] = machineId?.machineId;
+                                ws["clientId"] = uuid4();
+                                res.data = { clientId: ws["clientId"] };
                                 this.wsClient.push({ WebSocket: ws, machineId: ws["machineId"] });
                                 return ws.send(
                                     JSON.stringify(
