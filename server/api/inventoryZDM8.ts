@@ -181,7 +181,7 @@ export class InventoryZDM8 implements IBaseClass {
 
     ports = 31223;
     // clientResponse = new Array<IBillProcess>();
-    wsClient = new Array<{ WebSocket: WebSocket, machineId: string,clientId:string }>();
+    wsClient = new Array<WebSocket>();
     machineClientlist = MachineClientIDFactory(
         EEntity.machineclientid,
         dbConnection
@@ -419,11 +419,11 @@ export class InventoryZDM8 implements IBaseClass {
                         // console.log("Command", d);
 
                         this.wsClient.find((v) => {
-                            if (v.WebSocket["clientId"] == clientId) return (loggedin = true);
+                            if (v["clientId"] == clientId) return (loggedin = true);
                         });
                         if (!loggedin) {
 
-                            const ws = this.wsClient.find(v => v.WebSocket['machineId'] === this.findMachineIdToken(d.token)?.machineId);
+                            const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
                             if (ws) {
                                 //  ws?.send(
                                 //     JSON.stringify(
@@ -440,7 +440,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 //     )
                                 // );
                                 // console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
-                                ws.WebSocket.close();
+                                ws.close();
                                 console.log('close old connection and ask to re-login', this.findMachineIdToken(d.token)?.machineId);
                             }
                             throw new Error(EMessage.notloggedinyet);
@@ -576,10 +576,10 @@ export class InventoryZDM8 implements IBaseClass {
 
                             const checkCountGen = await checkGenerateCount(machineId?.machineId);
                             if (checkCountGen.status == 1) {
-                                const wsx = this.wsClient.filter(v => v.WebSocket['machineId'] === machineId.machineId);
+                                const wsx = this.wsClient.filter(v => v['machineId'] === machineId.machineId);
                                 wsx.forEach(ws => {
-                                    if (ws.WebSocket.readyState === WebSocketServer.OPEN)
-                                        ws?.WebSocket.send(
+                                    if (ws.readyState === WebSocketServer.OPEN)
+                                        ws?.send(
                                             JSON.stringify(
                                                 PrintSucceeded(
                                                     "ping",
@@ -1119,10 +1119,10 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const m = req?.body?.data?.machineId;
 
-                        const wsx = this.wsClient.filter(v => v.WebSocket['machineId'] === m);
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         wsx.forEach(ws => {
-                            if (ws.WebSocket.readyState === WebSocketServer.OPEN)
-                                ws?.WebSocket.send(
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
@@ -1174,7 +1174,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // const w = ws.find(v=>v['clientId']);
                         // console.log(`----------->`, m);
 
-                        const wsx = this.wsClient.filter(v => v.WebSocket['machineId'] === m);
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         // ws.send(
                         //     JSON.stringify(
                         //         PrintSucceeded(
@@ -1190,8 +1190,8 @@ export class InventoryZDM8 implements IBaseClass {
                         //     )
                         // );
                         wsx.forEach(ws => {
-                            if (ws.WebSocket.readyState === WebSocketServer.OPEN)
-                                ws?.WebSocket.send(
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
@@ -1257,10 +1257,10 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const m = req?.body?.data?.machineId;
-                        const wsx = this.wsClient.filter(v => v.WebSocket['machineId'] === m);
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         wsx.forEach(ws => {
-                            if (ws.WebSocket.readyState === WebSocketServer.OPEN)
-                                ws?.WebSocket.send(
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
@@ -1309,7 +1309,7 @@ export class InventoryZDM8 implements IBaseClass {
                         // const w = ws.find(v=>v['clientId']);
                         // console.log(`----------->`, m);
 
-                        const wsx = this.wsClient.filter(v => v.WebSocket['machineId'] === m);
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
                         // ws.send(
                         //     JSON.stringify(
                         //         PrintSucceeded(
@@ -1325,8 +1325,8 @@ export class InventoryZDM8 implements IBaseClass {
                         //     )
                         // );
                         wsx.forEach(ws => {
-                            if (ws.WebSocket.readyState === WebSocketServer.OPEN)
-                                ws?.WebSocket.send(
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
@@ -1596,40 +1596,40 @@ export class InventoryZDM8 implements IBaseClass {
                             }
 
                             // setImmediate(async () => {
-                            // for (let index = 0; index < billPaid.length; index++) {
-                            //     const element = billPaid[index];
-                            //     let ent = VendingMachineBillFactory(
-                            //         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
-                            //         dbConnection
-                            //     );
-                            //     const bill = await ent.findOne({
-                            //         where: { transactionID: element.bill.transactionID },
-                            //     });
+                                // for (let index = 0; index < billPaid.length; index++) {
+                                //     const element = billPaid[index];
+                                //     let ent = VendingMachineBillFactory(
+                                //         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
+                                //         dbConnection
+                                //     );
+                                //     const bill = await ent.findOne({
+                                //         where: { transactionID: element.bill.transactionID },
+                                //     });
 
-                            //     bill.paymentstatus = EPaymentStatus.delivered;
-                            //     bill.changed("paymentstatus", true);
-                            //     await bill.save();
-                            //     ent = null;
+                                //     bill.paymentstatus = EPaymentStatus.delivered;
+                                //     bill.changed("paymentstatus", true);
+                                //     await bill.save();
+                                //     ent = null;
 
-                            // }
+                                // }
                             // })
 
                             for (let index = 0; index < billPaid.length; index++) {
-                                const element = billPaid[index];
-                                let ent = VendingMachineBillFactory(
-                                    EEntity.vendingmachinebill + "_" + element['ownerUuid'],
-                                    dbConnection
-                                );
-                                const bill = await ent.findOne({
-                                    where: { transactionID: element.bill.transactionID },
-                                });
+                                    const element = billPaid[index];
+                                    let ent = VendingMachineBillFactory(
+                                        EEntity.vendingmachinebill + "_" + element['ownerUuid'],
+                                        dbConnection
+                                    );
+                                    const bill = await ent.findOne({
+                                        where: { transactionID: element.bill.transactionID },
+                                    });
 
-                                bill.paymentstatus = EPaymentStatus.delivered;
-                                bill.changed("paymentstatus", true);
-                                await bill.save();
-                                ent = null;
+                                    bill.paymentstatus = EPaymentStatus.delivered;
+                                    bill.changed("paymentstatus", true);
+                                    await bill.save();
+                                    ent = null;
 
-                            }
+                                }
 
                             let billNotPaid = b.filter(
                                 (item) => !billPaid.some((a) => a.transactionID === item.transactionID)
@@ -3689,13 +3689,13 @@ export class InventoryZDM8 implements IBaseClass {
                                         , returnLog(req, res)
                                     )
                                 );
-                                const wsx = this.wsClient.filter(v => v.WebSocket['machineId'] === r?.machineId);
+                                const wsx = this.wsClient.filter(v => v['machineId'] === r?.machineId);
 
                                 /// WS send to client directly
                                 // console.log('=====>S :', s);
                                 wsx.forEach(ws => {
-                                    if (ws.WebSocket.readyState === WebSocketServer.OPEN)
-                                        ws?.WebSocket.send(
+                                    if (ws.readyState === WebSocketServer.OPEN)
+                                        ws?.send(
                                             JSON.stringify(
                                                 PrintSucceeded(
                                                     "ping",
@@ -4182,7 +4182,7 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const m = req.body.machineId;
-                        const ws = this.wsClient.find(v => v.WebSocket['machineId'] == m);
+                        const ws = this.wsClient.find(v => v['machineId'] == m);
                         // const w = ws.find(v=>v['clientId']);
                         // console.log(`----------->`, m);
                         const resx = {} as IResModel;
@@ -4372,8 +4372,8 @@ export class InventoryZDM8 implements IBaseClass {
     }
     findOnlneMachine(machineId: string): any {
         return this.wsClient.find((v) => {
-            if (machineId == v.WebSocket['machineId']) {
-                return this.findMachineId(v.WebSocket['machineId']);
+            if (machineId == v['machineId']) {
+                return this.findMachineId(v['machineId']);
             } // v['machineId']
         })
     }
@@ -5122,7 +5122,7 @@ export class InventoryZDM8 implements IBaseClass {
                     console.log(`TEST DER ERROR -->`, 1);
 
                     // throw new Error(EMessage.MachineIdNotFound)
-                    ws.WebSocket.send(
+                    ws.send(
                         JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound, null))
                     );
                     return reject(new Error('Token not FOUND'));
@@ -5214,7 +5214,7 @@ export class InventoryZDM8 implements IBaseClass {
                     this.updateBillCash(bsi, machineId.machineId, d.transactionID);
                     await writeACKConfirmCashIn(machineId.machineId + '' + d.transactionID);
                     // that.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: d.transactionID })
-                    ws?.WebSocket.send(
+                    ws?.send(
                         JSON.stringify(
                             PrintSucceeded(d.command, res, EMessage.succeeded, null)
                         )
@@ -5245,7 +5245,7 @@ export class InventoryZDM8 implements IBaseClass {
                     //
                     const hn = hashnotes.find((v) => v.hash == d?.data + "");
                     if (hn == undefined || Object.entries(hn).length == 0) {
-                        ws?.WebSocket.send(
+                        ws?.send(
                             JSON.stringify(
                                 PrintError(d.command, [], EMessage.invalidBankNote + " 0", null)
                             )
@@ -5255,7 +5255,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // console.log("hn", hn);
                     const bn = this.notes.find((v) => v.value == hn?.value);
                     if (bn == undefined || Object.entries(bn).length == 0) {
-                        ws?.WebSocket.send(
+                        ws?.send(
                             JSON.stringify(PrintError(d.command, [], EMessage.invalidBankNote, null))
                         );
                         return;
@@ -5299,7 +5299,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 // const limiter = await readMachineLimiter(machineId.machineId);
 
                                 // that.updateBalance(machineId.machineId, { balance: balance || 0, limiter: setting.limiter, setting, confirmCredit: true, transactionID: bsi.transactionID })
-                                ws?.WebSocket.send(
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
                                     )
@@ -5317,7 +5317,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.updateInsuffBillCash(bsi);
                             }
 
-                            ws?.WebSocket.send(JSON.stringify(PrintError(d.command, [], error.message, null)));
+                            ws?.send(JSON.stringify(PrintError(d.command, [], error.message, null)));
                         });
 
                     // const requestor = this.requestors.find(v => v.transID == d.data.transID);
@@ -5325,7 +5325,7 @@ export class InventoryZDM8 implements IBaseClass {
                     // if (!requestor) throw new Error('Requestor is not exist');
                 } else {
                     // throw new Error(EMessage.MachineIdNotFound)
-                    ws?.WebSocket.send(
+                    ws?.send(
                         JSON.stringify(PrintError(d.command, [], EMessage.MachineIdNotFound, null))
                     );
                 }
@@ -6548,7 +6548,6 @@ export class InventoryZDM8 implements IBaseClass {
                     // 2.3 if transaction paid in redis and confirmed in redis like callback
 
                     ////
-                    // const ws = this.wsClient.find(v=>v.machineId == machineId);
 
                     resolve(res);
                     // this.setBillProces(bill.machineId, filteredB);
@@ -6998,28 +6997,13 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
             wss.on("connection", (ws: WebSocket) => {
-                // console.log("WS ZDM8");
-                // console.log(" WS new connection ", ws.url);
 
-                // console.log(" WS current connection is alive", ws["isAlive"]);
 
                 ws.onopen = (ev: Event) => {
-                    // ws['isAlive'] = true;
-                    // ws['lastMessage'] = Date.now();
-
-                    // ws['tAlive'] = setInterval(() => {
-                    //     if (Date.now() - ws['lastMessage'] > 60000) {
-                    //         ws['isAlive'] = false;
-                    //         console.log('Terminating dead connection');
-                    //         ws.close();
-                    //     }
-                    // }, 30000);
                 };
                 ws.onclose = (ev: CloseEvent) => {
-                    // if (ws['tAlive']) clearInterval(ws['tAlive']); // Clear this connection’s interval
-                    const machineIds = this.wsClient.filter((v) => v.WebSocket === ws)
-                    this.wsClient = this.wsClient.filter((v) => v.WebSocket !== ws); // Remove from array
-                    console.log('WebSocket closed:', machineIds.map(v => v.machineId), ev.reason);
+                    this.wsClient = this.wsClient.filter((v) => v !== ws); // Remove from array
+                    console.log('WebSocket closed:', ev.reason);
                 };
                 ws.onerror = (ev: Event) => {
                     console.log(" WS error", ev);
@@ -7079,10 +7063,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exist");
-                                this.wsClient?.find((v, i) => {
+                                 this.wsClient?.find((v, i) => {
                                     if (v) {
-                                        if (v.WebSocket["machineId"] == machineId?.machineId) {
-                                            v?.WebSocket.close(1000);
+                                        if (v["machineId"] == machineId?.machineId) {
+                                            v?.close(1000);
                                             return true;
                                         }
                                     }
@@ -7090,7 +7074,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 ws["machineId"] = machineId?.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
-                                this.wsClient.push({ WebSocket: ws, machineId: ws["machineId"],clientId: ws["clientId"] });
+                               
+                                this.wsClient.push(ws);
                                 return ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
@@ -7118,8 +7103,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 // console.log('admintoken owneruuid machines', m);
                                                 ws['myMachineId'] = m;
                                                 ws["clientId"] = uuid4();
-                                                this.wsClient.push({ WebSocket: ws, machineId: ws["machineId"],clientId: ws["clientId"] });
-
+                                                this.wsClient.push(ws);
                                                 ws.send(
                                                     JSON.stringify(
                                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)
@@ -7149,8 +7133,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                             redisClient.setEx('_admintoken_' + token, 60 * 60 * 24, ownerUuid);
                                                             ws['myMachineId'] = m;
                                                             ws["clientId"] = uuid4();
-                                                            this.wsClient.push({ WebSocket: ws, machineId: ws["machineId"],clientId: ws["clientId"] });
-
+                                                            this.wsClient.push(ws);
                                                             ws.send(
                                                                 JSON.stringify(
                                                                     PrintSucceeded(d.command, res, EMessage.succeeded, null)
@@ -7524,13 +7507,13 @@ export class InventoryZDM8 implements IBaseClass {
 
     sendWSMyMachine(machineId: string, resx: IResModel) {
         this.wsClient.forEach((v) => {
-            const x = v.WebSocket["myMachineId"] as Array<string>;
+            const x = v["myMachineId"] as Array<string>;
             // console.log("WS SENDING", x, x?.includes(machineId), v?.readyState);
-            if (x?.length && x?.includes(machineId) && v.WebSocket.readyState == WebSocketServer.OPEN) {
+            if (x?.length && x?.includes(machineId) && v.readyState == WebSocketServer.OPEN) {
                 // yy.push(v);
                 // console.log("WS SENDING", x, v?.readyState);
 
-                v.WebSocket.send(JSON.stringify(resx));
+                v.send(JSON.stringify(resx));
             }
         });
 
@@ -7649,14 +7632,14 @@ export class InventoryZDM8 implements IBaseClass {
         // console.log("wsclient", this.wsClient.length);
 
         this.wsClient.forEach((v) => {
-            const x = v.WebSocket["machineId"] as string;
+            const x = v["machineId"] as string;
             // console.log("WS SENDING id", x, machineId, x == machineId, v?.readyState);
-            if (x && x == machineId && v.WebSocket.readyState == WebSocketServer.OPEN) {
+            if (x && x == machineId && v.readyState == WebSocketServer.OPEN) {
                 // yy.push(v);
                 // console.log("WS SENDING machine id", x, v?.readyState);
                 // console.log('=====> RES CONFIRMED', JSON.stringify(resx));
 
-                v.WebSocket.send(JSON.stringify(resx));
+                v.send(JSON.stringify(resx));
                 return;
             }
         });
