@@ -50,7 +50,7 @@
         Option payment
       </div>
       <div class="item-list">
-        <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)"
+        <a *ngFor="let list of paymentList; let i = index"
           href="javascript:void(0)" class="item active">
           <div class="icon">
             <img src="{{ list.image }}" alt="">
@@ -82,7 +82,7 @@
       <div class="div-content">
         <div class="div-qr-code">
           <ion-label class="label_name">Devices number: {{data_device?.tasmotaId || data_device}}</ion-label>
-          <ion-label class="label_name">Pagekets: {{data_pageket?.price | number}}</ion-label>
+          <!-- <ion-label class="label_name">Pagekets: {{data_pageket?.price | number}}</ion-label> -->
           <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;margin-top: 15px;">
             <img src="{{qrcode_logo}}" alt="" >
           </div>
