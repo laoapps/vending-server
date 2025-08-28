@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content>
-  <div class="title">
+  <!-- <div class="title">
     Option payment
   </div>
   <div class="item-list">
@@ -22,22 +22,27 @@
       <div class="text">{{ list.name }}</div>
     </a>
 
-  </div>
+  </div> -->
 
   
   <div class="main-top"></div>
   <div class="div-content">
     <div class="div-qr-code">
-      <ion-label>devices number: {{data_device?.tasmotaId || data_device}}</ion-label>
-      <ion-label>pagekets: {{data_pageket?.price | number}}</ion-label>
+      <ion-label class="label_name">ໝາຍເຫດ: (ຫຼັງຈາກສະແກນຈ່າຍແລ້ວ ໃຫ້ເບີ່ງທີ່ Menu order)</ion-label>
+      <ion-label>Devices number: {{data_device?.tasmotaId || data_device}}</ion-label>
+      <ion-label>Pagekets: {{data_pageket?.price | number}}</ion-label>
+      <div *ngIf="isPayment == false" class="loader"></div>
       <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;">
         <img src="{{qrcode_logo}}" alt="" >
       </div>
 
       <div style="display: flex;flex-direction: row;">
-        <ion-label >currency:</ion-label>
-        <ion-label class="name-currency">LAK</ion-label>
+        <ion-label class="name-currency">LAO QR CODE</ion-label>
       </div>
+      <div *ngIf="isPayment == true"
+        style="margin-top: 15px;font-size: 18px;margin-bottom: -10px;font-weight: bold;" [ngClass]="currentColor">
+        ໜ້ານີ້ຈະປິດພາຍໃນ {{
+      countdownDestroy }} ວິນາທີ </div>
     </div>
   </div>
 </ion-content>

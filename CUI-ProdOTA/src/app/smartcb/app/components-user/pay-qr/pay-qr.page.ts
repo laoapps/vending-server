@@ -179,13 +179,4 @@ export class PayQrPage implements OnInit {
     return val < 10 ? '0' + val : val.toString();
   }
 
-  private loadBillWave() {
-    this.drawCircle = [];
-    for (let i = 0; i < 50; i++) {
-      const elm = document.createElement('div');
-      elm.className = 'shape';
-      this.drawCircle.push(elm);
-    }
-  }
-
 }

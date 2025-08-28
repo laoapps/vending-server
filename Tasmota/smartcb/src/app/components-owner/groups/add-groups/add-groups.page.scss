@@ -105,16 +105,17 @@ position: relative;
   position: relative;
   display: inline-block;
   width: 100%;
-  max-height: 200px;
+  // max-height: 200px;
+  height: 200px;
   overflow: hidden;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 
   img {
-    width: 20%;
-    height: auto;
+    width: 50%;
+    height: 200px;
     border-radius: 12px;
-    // object-fit: cover;
+    object-fit: cover;
   }
 
   ion-fab {

@@ -22,7 +22,10 @@ export class PayQrPage implements OnInit {
   @Input() data:any
   @Input() data_device:any
   @Input() data_pageket:any
-
+  isPayment: boolean = false;
+  countdownDestroy: number = 60;
+  countdownDestroyTimer: any = {} as any;
+  info_qr_code:any
   cashesList: Array<any> = [
     // {
     //   image: `../../../../assets/logo/LAAB-logo.png`,
@@ -47,17 +50,43 @@ export class PayQrPage implements OnInit {
   constructor(public apiService: ApiService, public m: LoadingService) {}
 
   ngOnInit() {
-    this.genQrcode();
+    this.load_qr();
+  }
+    ngOnDestroy(): void {
+    clearInterval(this.countdownDestroyTimer);
+    clearInterval(this.colorInterval);
   }
 
   dismiss(data: any = { dismiss: false }) {
     this.m.closeModal(data);
   }
 
+    load_qr(){
+    let data = {
+      packageId:this.data.id,
+      deviceId:this.data_device,
+      relay:1
+    }
+    console.log('====================================');
+    console.log('data sent',data);
+    console.log('====================================');
+    this.apiService.orders(data).subscribe((r)=>{
+      console.log('====================================');
+      console.log('res',r);
+      console.log('====================================');
+      this.info_qr_code = r.qr?.data
+      this.genQrcode();
+    },(error)=>{
+      console.log('====================================');
+      console.log('error',error);
+      console.log('====================================');
+    })
+  }
+
   genQrcode(){
     // this.load.onLoading('')
       let qrcode = new QrCodeWithLogo({
-        content: this.data.emv,
+        content: this.info_qr_code.emv,
         width: 250,
         logo: {
           src: this.pic_device,
@@ -72,10 +101,30 @@ export class PayQrPage implements OnInit {
       qrcode.getCanvas().then(canvas => {
         // this.load.onDismiss()
         this.qrcode_logo = canvas.toDataURL()
+          this.isPayment = true;
+          this.countdownDestroyTimer = setInterval(async () => {
+              this.countdownDestroy--;
+              this.startColorChange();
+              if (this.countdownDestroy <= 0) {
+                clearInterval(this.countdownDestroyTimer);
+                this.countdownDestroy = 60;
+                this.m.alert_justOK('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321').then(r=>{
+                  if (r) {
+                      this.close();
+                  }
+                });
+              }
+            }, 1000);
         // or do other things with image
       }).catch(e => {
         console.log(e);
       })
+  }
+
+    close(){
+    clearInterval(this.countdownDestroyTimer);
+    clearInterval(this.colorInterval);
+    this.m.closeModal({dismiss:true});
   }
 
   startCountdown() {

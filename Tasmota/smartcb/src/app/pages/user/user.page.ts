@@ -29,6 +29,7 @@ export class UserPage implements OnInit {
     {title:'Map',icon: 'map-outline',path:MapPage},
     // {title:'All groups',icon: 'receipt-outline',path:ListAllGroupsPage},
     {title:'Register owner',icon: 'albums-outline'},
+    // {title:'test',icon: 'albums-outline'},
   ]
   phonenumber:any
   constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService) {}
@@ -81,7 +82,12 @@ export class UserPage implements OnInit {
           }
         }
       );
-    }else{
+    }else if(item.title == 'test'){
+      this.m.alert_justOK('If you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321').then(r=>{
+      });
+    }
+    
+    else{
       this.m.showModal(item.path).then((r) => {
         if (r) {
           r.present();

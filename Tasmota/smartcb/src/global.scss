@@ -189,3 +189,186 @@ ion-content{
     
     }
   }
+
+
+//   .app-alert .alert-wrapper {
+//   animation: alertFadeIn 0.4s ease forwards;
+//   border: 2px solid #f4c430;
+//   border-radius: 12px;
+//   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
+//   overflow: hidden;
+//   max-width: 90%;
+// }
+
+// .app-alert .alert-head {
+//   background: #fff8e1;
+//   color: #f4c430;
+//   text-align: center;
+//   padding: 20px 10px;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+// }
+
+// .app-alert .alert-head::before {
+//   content: '⚠️';
+//   font-size: 48px;
+//   margin-bottom: 8px;
+//   animation: pulseIcon 1.5s infinite;
+// }
+
+// .app-alert .alert-head h2 {
+//   color: #d17b0f;
+//   font-size: 20px;
+//   margin: 0;
+//   font-weight: bold;
+// }
+
+// .app-alert .alert-message {
+//   font-size: 16px;
+//   color: #333;
+//   text-align: center;
+//   padding: 15px 15px;
+//   line-height: 1.6;
+//   white-space: pre-wrap;
+// }
+
+// .app-alert .alert-button-group {
+//   display: flex;
+//   justify-content: center;
+//   width: 100%;
+//   padding: 12px 0;
+//   background: #fff8e1;
+// }
+
+// .app-alert .alert-button-group button {
+//   border: 1px solid #f4c430;
+//   width: 45%;
+//   border-radius: 6px;
+//   margin-left: 3px;
+//   font-weight: bold;
+//   color: #d17b0f;
+//   background: white;
+//   transition: background 0.3s ease;
+// }
+
+// .app-alert .alert-button-group button:last-child {
+//   background: #f4c430;
+//   color: white;
+//   border: 1px solid #f4c430;
+// }
+
+// .app-alert .alert-button-group button:hover {
+//   filter: brightness(0.95);
+// }
+
+// .app-alert .alert-button-group span {
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+// }
+
+
+// ====================
+
+
+
+.app-alert .alert-wrapper {
+  animation: alertFadeIn 0.5s ease-out forwards;
+  border: 2px solid #3b82f6;
+  border-radius: 16px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  max-width: 85%;
+  background: #ffffff;
+}
+
+.app-alert .alert-head {
+  background: #eff6ff;
+  color: #3b82f6;
+  text-align: center;
+  padding: 24px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-alert .alert-head::before {
+  content: '⚠️';
+  font-size: 40px;
+  margin-bottom: 10px;
+  animation: pulseIcon 1.8s ease-in-out infinite;
+}
+
+.app-alert .alert-head h2 {
+  color: #1e40af;
+  font-size: 22px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.app-alert .alert-message {
+  font-size: 15px;
+  color: #1f2937;
+  text-align: center;
+  padding: 16px 20px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.app-alert .alert-button-group {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 16px 0;
+  background: #eff6ff;
+}
+
+.app-alert .alert-button-group button {
+  border: 1px solid #3b82f6;
+  width: 40%;
+  border-radius: 8px;
+  margin: 0 6px;
+  font-weight: 500;
+  color: #1e40af;
+  background: #ffffff;
+  padding: 10px 0;
+  transition: all 0.2s ease;
+}
+
+.app-alert .alert-button-group button:last-child {
+  background: #3b82f6;
+  color: #ffffff;
+  border: 1px solid #3b82f6;
+}
+
+.app-alert .alert-button-group button:hover {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+}
+
+.app-alert .alert-button-group span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes alertFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseIcon {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
