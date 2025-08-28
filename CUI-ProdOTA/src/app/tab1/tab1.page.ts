@@ -2170,13 +2170,13 @@ export class Tab1Page implements OnDestroy {
     const x = prompt('password');
     console.log(x, this.getPassword());
 
-    if (environment.production)
-      if (
-        !this.getPassword().endsWith(x?.substring(6)) ||
-        !x?.startsWith(this.machineId?.otp) ||
-        x?.length < 12
-      )
-        return;
+    // if (environment.production)
+    if (
+      !this.getPassword().endsWith(x?.substring(6)) ||
+      !x?.startsWith(this.machineId?.otp) ||
+      x?.length < 12
+    )
+      return;
     const m = await this.apiService.showModal(StocksalePage);
     this.checkActiveModal(m);
 

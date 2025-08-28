@@ -20,18 +20,6 @@
 <ion-header (click)="reloadAutoPayment()">
 
   <div class="box" [ngStyle]="apiService._cuiSetting.imgHeader">
-    <!-- <button (click)="resetCashing()">RRR</button> -->
-
-    <!-- <div class="warning-card">
-      <div class="creed"></div>
-      <div class="detail">
-        <div class="title">Vending Stuck</div>
-        <div class="text">Send your bill to <i class="fa-brands fa-whatsapp"></i> 20 55516321</div>
-        <div class="text">You can get product on counter when that verify your bill</div>
-      </div>
-    </div> -->
-
-
     <div>
       <img [src]="apiService._cuiSetting.imgLogo||hmLogo" (press)="holdCount()" (touchend)="endCount()"
         (click)="manageStock()" />
@@ -105,41 +93,12 @@
   </div>
 
 
-
-  <!-- <div class="tab-services-segment">
-    <a *ngFor="let list of segementList; let i = index" (click)="gotoAnotherSegment(list.link)" href="javascript:void(0)" class="item">{{ list.name }}</a>
-  </div> -->
-
 </ion-header>
 
 <ion-content (click)="reloadAutoPayment()" [scrollEvents]="true" (ionScroll)="toggleWebviewTab($event)"
   [fullscreen]="true" class="tab1-container">
 
-  <!-- <a (click)="showMyOrdersModal()" href="javascript:void(0)" class="btn-shopping-cart"><i class="fa-solid fa-cart-shopping"></i></a> -->
-
-  <!-- <ion-button (click)="sendStatusTest()"> SEND STATUS TEST</ion-button> -->
   <span class="btn-abs-list">
-    <!-- <a (click)="Disble()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
-      <div class="text">Disable </div>
-      <div class="icon">
-        <i class="fa-solid fa-cart-shopping"></i>
-      </div>
-    </a> -->
-    <!-- 
-    <a (click)="Enable()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
-      <div class="text">Enable </div>
-      <div class="icon">
-        <i class="fa-solid fa-cart-shopping"></i>
-      </div>
-    </a> -->
-
-    <!-- <a (click)="apiService.updateNewLocalBalance('1000')" href="javascript:void(0)"
-      class="item-deep-blue menu-shopping-cart">
-      <div class="text">TEST Balance </div>
-      <div class="icon">
-        <i class="fa-solid fa-cart-shopping"></i>
-      </div>
-    </a> -->
     <a *ngIf="apiService.isDropStock == true" (click)="showBills()" href="javascript:void(0)"
       class="item-deep-blue menu-shopping-cart attention-grabber">
       <div class="text">ເຄື່ອງບໍ່ທັນຕົກ</div>
@@ -162,7 +121,8 @@
         <ion-icon style="color: white;" name="logo-whatsapp"></ion-icon>
       </div>
     </a>
-    <a  *ngIf="showMenu('howto')" (click)="openHowToPage()" href="javascript:void(0)" class="item-blue control-menu menu-how-to active">
+    <a *ngIf="showMenu('howto')" (click)="openHowToPage()" href="javascript:void(0)"
+      class="item-blue control-menu menu-how-to active">
       <div class="text">ວິທີໃຊ້ງານ</div>
       <div class="icon">
         <ion-icon style="color: white;" name="videocam-outline"></ion-icon>
@@ -170,18 +130,20 @@
       </div>
 
     </a>
-    <a  *ngIf="showMenu('services')" (click)="openTopupAndServicePage()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+    <a *ngIf="showMenu('services')" (click)="openTopupAndServicePage()" href="javascript:void(0)"
+      class="item-red control-menu menu-how-to active">
       <div class="text">Topup & Services</div>
       <div class="icon">
         <i class="fa-solid fa-layer-group"></i>
       </div>
     </a>
-    <a  *ngIf="showMenu('games')" (click)="openGameServices()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+    <a *ngIf="showMenu('games')" (click)="openGameServices()" href="javascript:void(0)"
+      class="item-red control-menu menu-how-to active">
       <div class="text">ຫຼີ້ນເກມ</div>
       <div class="icon">
         <ion-icon style="color: white;" name="game-controller-outline"></ion-icon>
       </div>
-    </a> 
+    </a>
     <a href="javascript:void(0)" class="item-sea control-menu menu-tempurature active" (click)="openTestMotor()">
       <div class="text" *ngIf="_machineStatus?.status?.temp">{{_machineStatus?.status?.temp}}</div>
       <div class="text" *ngIf="!_machineStatus?.status?.temp">loading...</div>
