@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
@@ -10,29 +10,18 @@
 </ion-header>
 
 <ion-content>
-  <!-- <div class="title">
-    Option payment
-  </div>
-  <div class="item-list">
-    <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)"
-      href="javascript:void(0)" class="item active">
-      <div class="icon">
-        <img src="{{ list.image }}" alt="">
-      </div>
-      <div class="text">{{ list.name }}</div>
-    </a>
-
-  </div> -->
-
-  
   <div class="main-top"></div>
   <div class="div-content">
     <div class="div-qr-code">
       <ion-label class="label_name">ໝາຍເຫດ: (ຫຼັງຈາກສະແກນຈ່າຍແລ້ວ ໃຫ້ເບີ່ງທີ່ Menu order)</ion-label>
       <ion-label>Devices number: {{data_device?.tasmotaId || data_device}}</ion-label>
       <ion-label>Pagekets: {{data_pageket?.price | number}}</ion-label>
-      <div *ngIf="isPayment == false" class="loader"></div>
-      <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;">
+        <div class="bill-header">
+          <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
+            class="qr-img">
+          <div *ngIf="isPayment == false" class="loader"></div>
+        </div>
+      <div  style="display: flex;justify-content: center;">
         <img src="{{qrcode_logo}}" alt="" >
       </div>
 

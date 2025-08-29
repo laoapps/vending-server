@@ -110,7 +110,7 @@ const routes: Routes = [
   {
     path: 'order',
     loadChildren: () => import('./components-user/order/order.module').then( m => m.OrderPageModule)
-  },
+  }
 
  
 ];

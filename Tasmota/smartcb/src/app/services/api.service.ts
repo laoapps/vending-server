@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-
+import axios from 'axios';
 @Injectable({
   providedIn: 'root',
 })
@@ -31,10 +31,10 @@ export class ApiService {
   getDevicesBy(data): Observable<any> {
     return this.http.post(`${this.apiUrl}/devices/getDevicesBy`,data, this.getAuthHeaders());
   }
-
   orders(data): Observable<any> {
     return this.http.post(`${this.apiUrl}/orders`,data, this.getAuthHeaders());
   }
+
   owners_detail(): Observable<any> {
     return this.http.get(`${this.apiUrl}/owners/findByID`, this.getAuthHeaders());
   }

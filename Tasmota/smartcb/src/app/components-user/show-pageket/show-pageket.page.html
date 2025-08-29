@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
@@ -12,10 +12,10 @@
 <ion-content class="ion-padding list-container">
   <ion-list *ngIf="schedulePackages.length > 0; else noData">
     <ion-item *ngFor="let item of schedulePackages; let i = index" lines="full" class="pageket-item" (click)="onClick(item)">   
+      <ion-avatar slot="start">
+        <img src="{{return_pic(item)}}" alt="" />
+      </ion-avatar>
       <ion-label>
-        <ion-avatar slot="start">
-          <img src="{{return_pic(item)}}" alt="" />
-        </ion-avatar>
         <h2 class="name">{{ item.name }}</h2>
         <p class="price">Price: <strong>{{ item.price | number}}</strong></p>
         <p class="condition">
