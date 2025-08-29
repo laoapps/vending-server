@@ -32,6 +32,22 @@ export const loadAllGroups = async (req: Request, res: Response) => {
   }
 };
 
+export const getGroups_forAddDevice = async (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+      if (!owner) {
+        return res.status(403).json({ error: 'Owner not found' });
+      }
+      const groups = await models.DeviceGroup.findAll({
+        where: { ownerId: owner.dataValues.id },
+      });
+    res.json(groups);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch groups' });
+  }
+};
+
 export const getGroups = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
