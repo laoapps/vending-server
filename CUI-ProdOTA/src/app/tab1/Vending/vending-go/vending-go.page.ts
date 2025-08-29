@@ -113,7 +113,7 @@ export class VendingGoPage implements OnInit {
       (a, b) => a + b.stock.price * b.stock.qtty,
       0
     );
-    this.apiService.showLoading();
+    this.apiService.showLoading(null, 5000);
     console.log(this.orders, amount);
     this.apiService
       .buyLaoQR(this.orders, amount)

@@ -2389,7 +2389,7 @@ export class Tab1Page implements OnDestroy {
   buyLaoQR(x: IVendingMachineSale) {
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
-    this.apiService.showLoading();
+    this.apiService.showLoading(null, 5000);
     if (x.stock.price == 0) {
       this.apiService.getFreeProduct(x.position, x.stock.id).then((rx) => {
         const r = rx.data;
@@ -2555,7 +2555,7 @@ export class Tab1Page implements OnDestroy {
       0
     );
     // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
-    this.apiService.showLoading();
+    this.apiService.showLoading(null, 5000);
     console.log(this.orders, amount);
     this.apiService
       .buyLaoQR(this.orders, amount)
