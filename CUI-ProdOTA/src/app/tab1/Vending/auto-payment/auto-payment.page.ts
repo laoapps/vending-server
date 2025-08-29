@@ -454,13 +454,13 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         }
         console.log('START GENERATE LAOQR');
 
-        this.workload = this.apiService.load.create({ message: 'loading...' });
-        (await this.workload).present();
+        // this.workload = this.apiService.load.create({ message: 'loading...' });
+        // (await this.workload).present();
 
         clearInterval(this.countdownCheckGenQrResTimer);
         this.countdownCheckGenQrResTimer = setTimeout(async () => {
           clearInterval(this.countdownCheckGenQrResTimer);
-          (await this.workload).dismiss();
+          // (await this.workload).dismiss();
           clearInterval(this.countdownDestroyTimer);
           this.countdownDestroy = 60;
           if (AutoPaymentPage.message) AutoPaymentPage.message.close();
@@ -475,7 +475,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t).then(async rx => {
           const r = rx.data;
           clearInterval(this.countdownCheckGenQrResTimer);
-          (await this.workload).dismiss();
+          // (await this.workload).dismiss();
           const response: any = r;
 
           console.log(`response generate LaoQR`, response);
@@ -544,7 +544,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }, async error => {
           clearInterval(this.countdownCheckGenQrResTimer);
-          (await this.workload).dismiss();
+          // (await this.workload).dismiss();
           clearInterval(this.countdownDestroyTimer);
           this.countdownDestroy = 60;
           if (AutoPaymentPage.message) AutoPaymentPage.message.close();
@@ -589,13 +589,13 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         }
         console.log('START GENERATE POPUP QR');
 
-        this.workload = this.apiService.load.create({ message: 'loading...' });
-        (await this.workload).present();
+        // this.workload = this.apiService.load.create({ message: 'loading...' });
+        // (await this.workload).present();
 
         clearInterval(this.countdownCheckGenQrResTimer);
         this.countdownCheckGenQrResTimer = setTimeout(async () => {
           clearInterval(this.countdownCheckGenQrResTimer);
-          (await this.workload).dismiss();
+          // (await this.workload).dismiss();
           clearInterval(this.countdownDestroyTimer);
           this.countdownDestroy = 60;
           if (AutoPaymentPage.message) AutoPaymentPage.message.close();
@@ -610,7 +610,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         this.apiService.buyTopUpQR(this.parseorders, this.parseGetTotalSale.t).then(async rx => {
           const r = rx.data;
           clearInterval(this.countdownCheckGenQrResTimer);
-          (await this.workload).dismiss();
+          // (await this.workload).dismiss();
           const response: any = r;
 
           console.log(`response generate LaoQR`, response);
@@ -674,7 +674,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }, async error => {
           clearInterval(this.countdownCheckGenQrResTimer);
-          (await this.workload).dismiss();
+          // (await this.workload).dismiss();
           clearInterval(this.countdownDestroyTimer);
           this.countdownDestroy = 60;
           if (AutoPaymentPage.message) AutoPaymentPage.message.close();
@@ -1232,8 +1232,8 @@ class PaymentStation {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        this.workload = this.apiService.load.create({ message: 'loading...', duration: 5000 });
-        (await this.workload).present();
+        // this.workload = this.apiService.load.create({ message: 'loading...', duration: 5000 });
+        // (await this.workload).present();
 
         this.InitParams(params);
 
@@ -1252,11 +1252,11 @@ class PaymentStation {
         }
 
 
-        (await this.workload).dismiss();
+        // (await this.workload).dismiss();
         resolve(this.Commit());
 
       } catch (error) {
-        (await this.workload).dismiss();
+        // (await this.workload).dismiss();
         resolve(error.message);
       }
     });
@@ -1265,8 +1265,8 @@ class PaymentStation {
   public InitMMoney(params: IPaymentStation): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        this.workload = this.apiService.load.create({ message: 'loading...', duration: 5000 });
-        (await this.workload).present();
+        // this.workload = this.apiService.load.create({ message: 'loading...', duration: 5000 });
+        // (await this.workload).present();
         this.InitParams(params);
 
         const ValidateParams = this.ValidateParams();
@@ -1278,11 +1278,11 @@ class PaymentStation {
           resolve(null);
         }
 
-        (await this.workload).dismiss();
+        // (await this.workload).dismiss();
         resolve(this.Commit());
 
       } catch (error) {
-        (await this.workload).dismiss();
+        // (await this.workload).dismiss();
         resolve(error.message);
       }
     });

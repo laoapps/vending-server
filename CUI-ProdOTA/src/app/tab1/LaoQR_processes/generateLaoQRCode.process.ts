@@ -25,8 +25,8 @@ export class GenerateLaoQRCodeProcess {
     public Init(params: IGenerateLAOQRCode): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             try {
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
                 this.InitParams(params);
 
@@ -34,7 +34,7 @@ export class GenerateLaoQRCodeProcess {
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
                 const GenerateQRCode = await this.GenerateQRCode();
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
 
                 console.log(`zzzz LaoQR`, GenerateQRCode);
                 if (GenerateQRCode != IENMessage.success) {
@@ -94,7 +94,7 @@ export class GenerateLaoQRCodeProcess {
     public async CheckLaoQRPaid(): Promise<{ status: number, message: any }> {
         return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
             try {
-                this.apiService.checkPaidBill().then(rx=> {
+                this.apiService.checkPaidBill().then(rx => {
                     const r = rx.data;
 
                     const response: any = r;

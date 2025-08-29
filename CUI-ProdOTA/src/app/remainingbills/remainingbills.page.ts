@@ -134,7 +134,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     if (this.processing) { return; } /// HERE 2/4
     this.processing = true; /// HERE 3/4
 
-    this.apiService.showLoading('waiting...', 5000);
+    // this.apiService.showLoading('waiting...', 5000);
 
     if (human == true) {
       this.clearTimer();
@@ -168,7 +168,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
             setTimeout(() => {
               this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
-                const r=rx.data;
+                const r = rx.data;
                 // this.apiService.dismissLoading();
                 console.log(`vending on sale`, ApiService.vendingOnSale);
                 console.log('retryProcessBill', r);
@@ -221,26 +221,26 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     } catch (error) {
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error retryProcessBillNew :${JSON.stringify(error)}` });
       setTimeout(() => {
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
       }, 3000);
-       setTimeout(() => {
-              this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
-                const r=rx.data;
-                // this.apiService.dismissLoading();
-                console.log(`vending on sale`, ApiService.vendingOnSale);
-                console.log('retryProcessBill', r);
+      setTimeout(() => {
+        this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
+          const r = rx.data;
+          // this.apiService.dismissLoading();
+          console.log(`vending on sale`, ApiService.vendingOnSale);
+          console.log('retryProcessBill', r);
 
-              }, (error) => {
-                this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
-              });
-            }, 2000);
+        }, (error) => {
+          this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
+        });
+      }, 2000);
       this.clearTimer();
       this.r = [];
       this.reloadDelivery(true);
       await this.apiService.soundSystemError();
       await this.apiService.reloadPage();
       await App.exitApp();
-      
+
     }
 
     finally {
@@ -297,7 +297,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     // this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
 
     if (this.canclick == true) {
-      this.apiService.showLoading('', 30000);
+      // this.apiService.showLoading(null, 30000);
       const isRemote = localStorage.getItem('remoteProcess');
       if (!isRemote) {
         this.apiService.retryProcessBill(transactionID, position).then(async rx => {
@@ -330,7 +330,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           }
           this.apiService.simpleMessage(r.message);
           setTimeout(() => {
-            this.apiService.dismissLoading();
+            // this.apiService.dismissLoading();
           }, 3000)
         })
       }
@@ -395,13 +395,13 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             this.apiService.simpleMessage(r.message);
 
             setTimeout(() => {
-              this.apiService.dismissLoading();
+              // this.apiService.dismissLoading();
             }, 3000)
 
           });
         } catch (error) {
           setTimeout(() => {
-            this.apiService.dismissLoading();
+            // this.apiService.dismissLoading();
           }, 3000)
           this.clearTimer();
           this.r = [];

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authHMVending, authMiddleware } from '../middleware/authMiddleware';
 import { validate, createGroupSchema, assignDeviceToGroupSchema } from '../middleware/validationMiddleware';
-import { createGroup, getGroups, updateGroup, deleteGroup, assignDeviceToGroup, loadAllGroups } from '../controllers/groupController';
+import { createGroup, getGroups, updateGroup, deleteGroup, assignDeviceToGroup, loadAllGroups, getGroups_forAddDevice } from '../controllers/groupController';
 
 const router = Router();
 
@@ -12,7 +12,7 @@ router.post('/loadAll', authMiddleware, loadAllGroups);
 // router.post('/loadAll_', loadAllGroups);
 
 
-router.get('/', authMiddleware, getGroups);
+router.get('/', authMiddleware, getGroups_forAddDevice);
 router.post('/loadAllGroupsHMVending',authHMVending,getGroups);// for HMVENDING
 
 router.put('/:id', authMiddleware, validate(createGroupSchema), updateGroup);

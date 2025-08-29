@@ -2,6 +2,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export interface DeviceGroupAttributes {
   id: number;
+  isActive: boolean;
   name: string;
   ownerId: number;
   createdAt: Date;
@@ -21,6 +22,10 @@ export function initDeviceGroupModel(sequelize: Sequelize) {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+      },
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
       name: {
         type: DataTypes.STRING,

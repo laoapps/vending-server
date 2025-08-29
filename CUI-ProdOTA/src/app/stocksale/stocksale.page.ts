@@ -66,7 +66,7 @@ export class StocksalePage implements OnInit, OnDestroy {
     alert('Are you going to save sale to online');
     const p = prompt('please type 12345678');
     if (p == '12345678') {
-      await this.apiService.showLoading('', 3000);
+      // await this.apiService.showLoading(null, 3000);
       const x = [];
       ApiService.vendingOnSale.forEach(v => {
         const e = JSON.parse(JSON.stringify(v));
@@ -80,7 +80,7 @@ export class StocksalePage implements OnInit, OnDestroy {
         if (r.status) {
 
         }
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
         this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
           r.present();
         })
@@ -91,7 +91,7 @@ export class StocksalePage implements OnInit, OnDestroy {
     alert('Are you going to recover sale from online');
     const p = prompt('please type 12345678');
     if (p == '12345678') {
-      await this.apiService.showLoading('', 3000);
+      // await this.apiService.showLoading(null, 3000);
       this.apiService.recoverSale().then(rx => {
         const r = rx.data;
         console.log(r);
@@ -104,7 +104,7 @@ export class StocksalePage implements OnInit, OnDestroy {
 
           ApiService.vendingOnSale.push(...r.data)
         }
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
         this.apiService.toast.create({ message: r.message, duration: 200 }).then(r => {
           r.present();
         })

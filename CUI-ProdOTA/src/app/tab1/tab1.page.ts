@@ -2170,13 +2170,13 @@ export class Tab1Page implements OnDestroy {
     const x = prompt('password');
     console.log(x, this.getPassword());
 
-    if (environment.production)
-      if (
-        !this.getPassword().endsWith(x?.substring(6)) ||
-        !x?.startsWith(this.machineId?.otp) ||
-        x?.length < 12
-      )
-        return;
+    // if (environment.production)
+    if (
+      !this.getPassword().endsWith(x?.substring(6)) ||
+      !x?.startsWith(this.machineId?.otp) ||
+      x?.length < 12
+    )
+      return;
     const m = await this.apiService.showModal(StocksalePage);
     this.checkActiveModal(m);
 
@@ -2389,7 +2389,7 @@ export class Tab1Page implements OnDestroy {
   buyLaoQR(x: IVendingMachineSale) {
     if (!x) return alert('not found');
     // if (x.stock.qtty <= 0) alert('Out Of order');
-    this.apiService.showLoading();
+    // this.apiService.showLoading(null, 5000);
     if (x.stock.price == 0) {
       this.apiService.getFreeProduct(x.position, x.stock.id).then((rx) => {
         const r = rx.data;
@@ -2421,7 +2421,7 @@ export class Tab1Page implements OnDestroy {
         }
         setTimeout(() => {
           this.apiService.soundThankYou();
-          this.apiService.dismissLoading();
+          // this.apiService.dismissLoading();
         }, 3000);
       });
     } else {
@@ -2483,7 +2483,7 @@ export class Tab1Page implements OnDestroy {
               });
           }
           setTimeout(() => {
-            this.apiService.dismissLoading();
+            // this.apiService.dismissLoading();
           }, 1000);
         });
     }
@@ -2555,7 +2555,7 @@ export class Tab1Page implements OnDestroy {
       0
     );
     // console.log('ids', this.orders.map(v => { return { id: v.stock.id + '', position: v.position } }));
-    this.apiService.showLoading();
+    // this.apiService.showLoading(null, 5000);
     console.log(this.orders, amount);
     this.apiService
       .buyLaoQR(this.orders, amount)
@@ -2600,7 +2600,7 @@ export class Tab1Page implements OnDestroy {
           //   }
           // );
         }
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
         this.getTotalSale.q = 0;
         this.getTotalSale.t = 0;
         // this.orders = [];

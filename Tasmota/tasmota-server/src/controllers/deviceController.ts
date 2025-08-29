@@ -26,6 +26,14 @@ export const createDevice = async (req: Request, res: Response) => {
     }
     const device = await DeviceService.createDevice(user.uuid, name, tasmotaId, zone, groupId, description);
     console.log('createDevice4', device);
+    if (device?.dataValues?.id) {
+      // update isActive true group 
+      const update_re = await models.DeviceGroup.findByPk(groupId)
+      if (update_re?.dataValues?.id) {
+        update_re.set('isActive', true)
+        await update_re.save()
+      }
+    }
 
     // await models.UnregisteredDevice.destroy({ where: { tasmotaId } });
     res.json(device);
@@ -96,8 +104,25 @@ export const deleteDevice = async (req: Request, res: Response) => {
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can delete devices' });
     }
+
+    const device_re = await models.Device.findByPk(Number(id + ''))
+    if (!device_re) {
+      return res.status(403).json({ error: 'not found device' });
+    }
+
+    const groupId = device_re.dataValues.groupId
+
     const a = await DeviceService.deleteDevice(user.uuid, parseInt(id));
-    console.log('deleteDevice111', a);
+    console.log('deleteDevice111', a, groupId);
+    // update group isActive false if only this device using this group 
+    const countbyGroup = await models.Device.count({ where: { groupId } })
+    if (!countbyGroup) {
+      const group = await models.DeviceGroup.findByPk(groupId);
+      if (group) {
+        group.set('isActive',false)
+        await group.save()
+      }
+    }
     res.json({ message: 'Device deleted' });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to delete device' });
@@ -129,7 +154,7 @@ export const controlDevice = async (req: Request, res: Response) => {
       }
       if (input.command == 'OFF') {
         order.set('completedTime', new Date());
-        const description = {closebyOwner:{ownerID:device?.dataValues.ownerId,date:new Date()}}
+        const description = { closebyOwner: { ownerID: device?.dataValues.ownerId, date: new Date() } }
         order.set('description', description);
         await order.save();
         await redis.del(`activeOrder:${order.dataValues.id}`);
