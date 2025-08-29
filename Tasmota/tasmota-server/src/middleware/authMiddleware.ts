@@ -21,8 +21,11 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const cachedData = await redis.get(cacheKey);
     let user: { uuid: string; role: string };
 
-    if (cachedData) {
+    if (cachedData && isOwnerFunction && JSON.parse(cachedData)?.role == 'owner') {
       user = JSON.parse(cachedData);
+    }else if(cachedData && !isOwnerFunction){
+      user = JSON.parse(cachedData);
+      user.role = 'user'
     } else {
 
       const validatedUuid = await findRealDB(token);
@@ -30,8 +33,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         return res.status(401).json({ error: 'Invalid token or user not found' });
       }
 
-      const owner = (await models.Owner.findOne({ where: { uuid: validatedUuid } }));
-      console.log('owner444444444', owner,isOwnerFunction);
+      const owner = await models.Owner.findOne({ where: { uuid: validatedUuid } });
+      console.log('owner444444444', owner, isOwnerFunction);
 
       let role = owner ? 'owner' : 'user';
       if (!isOwnerFunction) {
@@ -69,8 +72,8 @@ export const authHMVending = async (req: Request, res: Response, next: NextFunct
   // const machineId = req.headers['machineid'];
   // const otp = req.headers['otp'];
   // console.log('authHMVending',machineId,otp);
-  console.log('authHMVending',token);
-  
+  console.log('authHMVending', token);
+
   if (!token) {
     res.status(401).json({ error: 'Invalid parameters' });
     return;
