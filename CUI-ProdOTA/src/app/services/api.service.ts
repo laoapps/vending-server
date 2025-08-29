@@ -613,7 +613,7 @@ export class ApiService {
             this.dismissModal();
             this.dismissModal();
           }
-          this.dismissLoading();
+          // this.dismissLoading();
           if (this.waitingForDelivery) return;
           this.waitingForDelivery = true;
           const pb = r ? r as Array<IBillProcess> : [] as Array<IBillProcess>;
@@ -778,7 +778,7 @@ export class ApiService {
 
     try {
       this.confirmDeductStock(params).then(rx => {
-        const res_confirm= rx.data;
+        const res_confirm = rx.data;
         console.log(`return confirm deduct stock`, res_confirm);
         if (res_confirm.status != 1) throw new Error(res_confirm.message);
 
@@ -1097,9 +1097,9 @@ export class ApiService {
     // headers.append('content-type', 'application/json');
     //let options = new RequestOptions({ headers:headers})
     const headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  };
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    };
     return headers;
   }
   public async saveImage(id: number, base64: string, db = 'image') {

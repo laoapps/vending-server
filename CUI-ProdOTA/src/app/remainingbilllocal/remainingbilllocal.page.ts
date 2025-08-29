@@ -111,7 +111,7 @@ export class RemainingbilllocalPage implements OnInit {
 
   async retryProcessBillNew(transactionID: string, position: number, human?: boolean) {
     console.log('transactionID', transactionID, 'position', position);
-    this.apiService.showLoading('waiting...', 5000);
+    // this.apiService.showLoading('waiting...', 5000);
 
     console.log(`rrrrr`, this.r);
     console.log(`-->`, this.canclick);
@@ -177,7 +177,7 @@ export class RemainingbilllocalPage implements OnInit {
 
     } catch (error) {
       setTimeout(() => {
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
       }, 3000)
       this.clearTimer();
       this.r = [];

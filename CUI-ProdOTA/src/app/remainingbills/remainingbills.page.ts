@@ -134,7 +134,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     if (this.processing) { return; } /// HERE 2/4
     this.processing = true; /// HERE 3/4
 
-    this.apiService.showLoading('waiting...', 5000);
+    // this.apiService.showLoading('waiting...', 5000);
 
     if (human == true) {
       this.clearTimer();
@@ -221,7 +221,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     } catch (error) {
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error retryProcessBillNew :${JSON.stringify(error)}` });
       setTimeout(() => {
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
       }, 3000);
       setTimeout(() => {
         this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
@@ -297,7 +297,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     // this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
 
     if (this.canclick == true) {
-      this.apiService.showLoading(null, 30000);
+      // this.apiService.showLoading(null, 30000);
       const isRemote = localStorage.getItem('remoteProcess');
       if (!isRemote) {
         this.apiService.retryProcessBill(transactionID, position).then(async rx => {
@@ -330,7 +330,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           }
           this.apiService.simpleMessage(r.message);
           setTimeout(() => {
-            this.apiService.dismissLoading();
+            // this.apiService.dismissLoading();
           }, 3000)
         })
       }
@@ -395,13 +395,13 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
             this.apiService.simpleMessage(r.message);
 
             setTimeout(() => {
-              this.apiService.dismissLoading();
+              // this.apiService.dismissLoading();
             }, 3000)
 
           });
         } catch (error) {
           setTimeout(() => {
-            this.apiService.dismissLoading();
+            // this.apiService.dismissLoading();
           }, 3000)
           this.clearTimer();
           this.r = [];
