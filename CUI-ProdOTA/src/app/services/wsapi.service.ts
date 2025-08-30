@@ -35,11 +35,13 @@ export class WsapiService implements OnDestroy {
   public billProcessSubscription = new BehaviorSubject<IBillProcess>(null);
   public waitingDelivery = new BehaviorSubject<IBillProcess>(null);
   public refreshSubscription = new BehaviorSubject<boolean>(false);
+  public wsalertSubscription = new BehaviorSubject<IAlive>(null);
+
 
   constructor(
     private cashingService: AppcachingserviceService,
     private indexedLogDB: IndexerrorService,
-  ) {}
+  ) { }
 
   ngOnDestroy(): void {
     this.disconnect();
@@ -116,6 +118,9 @@ export class WsapiService implements OnDestroy {
                 balance: Number(res.data?.balance ?? '0'),
                 message: res.message === EMessage.openstock ? EMessage.openstock : undefined,
               } as IAlive);
+              break;
+            case 'wsalert':
+              this.wsalertSubscription.next(res.data);
               break;
             case 'confirm':
               res.data.transactionID = res.transactionID;

@@ -1292,6 +1292,7 @@ export enum EMACHINE_COMMAND {
     logs = "logs",
     confirmOrder = "confirmOrder",
     resetCashing = "resetCashing",
+    wsalert = "wsalert",
 
 }
 

@@ -1163,6 +1163,31 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
+
+            router.post(this.path + '/wsalert',
+                async (req, res) => {
+                    try {
+                        const machinetoken = req.body?.machinetoken;
+                        if (!machinetoken) {
+                            return res.send(PrintError('wsalert', null, EMessage.bodyIsEmpty))
+                        }
+                        const data = req.body?.data;
+                        const machine = this.findMachineIdToken(machinetoken);
+                        if (!machine) {
+                            return res.send(PrintError('wsalert', null, EMessage.machineNotExist))
+                        }
+
+                        const resD = {} as IResModel;
+                        resD.command = EMACHINE_COMMAND.wsalert;
+                        // resD.message = EMessage.openstock;
+                        resD.data = data;
+                        this.sendWSToMachine(machine.machineId, resD)
+                    } catch (error) {
+                        res.send(PrintError('wsalert', error, EMessage.unknownError))
+                    }
+
+                }
+            )
             router.post(this.path + "/refreshMachine",
                 this.checkSuperAdmin,
 
@@ -1596,40 +1621,40 @@ export class InventoryZDM8 implements IBaseClass {
                             }
 
                             // setImmediate(async () => {
-                                // for (let index = 0; index < billPaid.length; index++) {
-                                //     const element = billPaid[index];
-                                //     let ent = VendingMachineBillFactory(
-                                //         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
-                                //         dbConnection
-                                //     );
-                                //     const bill = await ent.findOne({
-                                //         where: { transactionID: element.bill.transactionID },
-                                //     });
+                            // for (let index = 0; index < billPaid.length; index++) {
+                            //     const element = billPaid[index];
+                            //     let ent = VendingMachineBillFactory(
+                            //         EEntity.vendingmachinebill + "_" + element['ownerUuid'],
+                            //         dbConnection
+                            //     );
+                            //     const bill = await ent.findOne({
+                            //         where: { transactionID: element.bill.transactionID },
+                            //     });
 
-                                //     bill.paymentstatus = EPaymentStatus.delivered;
-                                //     bill.changed("paymentstatus", true);
-                                //     await bill.save();
-                                //     ent = null;
+                            //     bill.paymentstatus = EPaymentStatus.delivered;
+                            //     bill.changed("paymentstatus", true);
+                            //     await bill.save();
+                            //     ent = null;
 
-                                // }
+                            // }
                             // })
 
                             for (let index = 0; index < billPaid.length; index++) {
-                                    const element = billPaid[index];
-                                    let ent = VendingMachineBillFactory(
-                                        EEntity.vendingmachinebill + "_" + element['ownerUuid'],
-                                        dbConnection
-                                    );
-                                    const bill = await ent.findOne({
-                                        where: { transactionID: element.bill.transactionID },
-                                    });
+                                const element = billPaid[index];
+                                let ent = VendingMachineBillFactory(
+                                    EEntity.vendingmachinebill + "_" + element['ownerUuid'],
+                                    dbConnection
+                                );
+                                const bill = await ent.findOne({
+                                    where: { transactionID: element.bill.transactionID },
+                                });
 
-                                    bill.paymentstatus = EPaymentStatus.delivered;
-                                    bill.changed("paymentstatus", true);
-                                    await bill.save();
-                                    ent = null;
+                                bill.paymentstatus = EPaymentStatus.delivered;
+                                bill.changed("paymentstatus", true);
+                                await bill.save();
+                                ent = null;
 
-                                }
+                            }
 
                             let billNotPaid = b.filter(
                                 (item) => !billPaid.some((a) => a.transactionID === item.transactionID)
@@ -7063,7 +7088,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 let machineId = this.findMachineIdToken(x);
 
                                 if (!machineId) throw new Error("machine is not exist");
-                                 this.wsClient?.forEach((v, i) => {
+                                this.wsClient?.forEach((v, i) => {
                                     if (v) {
                                         if (v["machineId"] == machineId?.machineId) {
                                             v?.close(1000);
@@ -7075,7 +7100,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 ws["machineId"] = machineId?.machineId;
                                 ws["clientId"] = uuid4();
                                 res.data = { clientId: ws["clientId"] };
-                               
+
                                 this.wsClient.push(ws);
                                 console.log(`Machine connected: ${machineId?.machineId}`);
                                 return ws.send(
