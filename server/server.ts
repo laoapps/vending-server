@@ -25,13 +25,13 @@ import { ControlVersionAPI } from "./api/controlVersion";
 import dotenv from "dotenv";
 import { initBundle } from "./services/appupdate";
 import { initialize } from "./services/topup.service";
+import { createLogger, format, transports } from 'winston';
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
-const env = {"name":"SHAREHAPPINESS","version":"0.9.0","production":false,"resetdatabase" : false,"backendKey":"2d3e210c-1069-4b18-9dd7-a2ec70b57a06"};
-process.env.backendKey = process.env.backendKey||env.backendKey;
-process.env.production = process.env.production|| env.production+'';
-process.env.name = process.env.name|| env.name;
+process.env.backendKey = process.env.backendKey;
+process.env.production = process.env.production;
+process.env.name = process.env.name;
 process.env._image_path = path.join(__dirname, "..", "public");
 process.env._log_path = path.join(__dirname, "..", "logs");
 
@@ -82,6 +82,7 @@ CreateDatabase("")
       credentials: true // Allow cookies and credentials if needed
     }));
     app.options('*', cors()); // Handle preflight for all routes
+
     // app.use(cors({
     //   origin: (origin, callback) => {
     //     // Allow requests with no origin (e.g., same-origin or mobile apps)
@@ -248,6 +249,41 @@ CreateDatabase("")
     server.listen(process.env.PORT, async function () {
       console.log("HTTP listening on port " + process.env.PORT);
     });
+    // Global Express error handler
+    app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+      console.error('Express Error:', err.stack);
+      logIncident('Express Error', err); // Log to file
+      res.status(500).send(PrintError('server_error', err.message, EMessage.error));
+    });
+
+    // Enhance WebSocket error handling
+    wss1.on('error', (error) => {
+      console.error('WebSocket wss1 Error:', error);
+      logIncident('WebSocket wss1 Error', error);
+    });
+
+    wss2.on('error', (error) => {
+      console.error('WebSocket wss2 Error:', error);
+      logIncident('WebSocket wss2 Error', error);
+    });
+
+    wss3.on('error', (error) => {
+      console.error('WebSocket wss3 Error:', error);
+      logIncident('WebSocket wss3 Error', error);
+    });
+
+    // Handle uncaught exceptions to prevent crashes
+    process.on('uncaughtException', (error) => {
+      console.error('Uncaught Exception:', error);
+      logIncident('Uncaught Exception', error);
+      // Do not exit process to keep server running
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      logIncident('Unhandled Rejection', reason);
+      // Do not exit process
+    });
 
     process.on("exit", (code: number) => {
       console.log("exit code", code);
@@ -259,3 +295,29 @@ CreateDatabase("")
   .catch((e) => {
     console.log("ERROR CREATED DATABASE", e);
   });
+
+
+
+
+
+const logPath = process.env._log_path || path.join(__dirname, '..', 'logs');
+const logger = createLogger({
+  level: 'error',
+  format: format.combine(
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    format.json()
+  ),
+  transports: [
+    new transports.File({ filename: path.join(logPath, 'error.log') }),
+    new transports.Console()
+  ]
+});
+function logIncident(type: string, data: any) {
+  logger.error({
+    type,
+    message: data.message || 'No message provided',
+    stack: data.stack || 'No stack trace',
+    timestamp: new Date().toISOString(),
+    details: data
+  });
+}
