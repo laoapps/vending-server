@@ -7,6 +7,7 @@ import { DEVICE_CACHE_PREFIX, publishMqttMessage } from '../services/mqttService
 import { notifyStakeholders } from '../services/wsService';
 import { generateQR } from '../services/lakService';
 import models from '../models';
+import { WS_HMVending } from '../services/userManagerService';
 
 export const testOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
@@ -145,6 +146,11 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
     console.log('createOrderHMVending==========111', qr);
 
     // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
+
+    const token = req.headers['token'];
+    // save vending token for use in api pay, key name use orderID
+    await redis.setex(`orderID:${order.dataValues.id}`, 5 * 60, token+'');
+
     return res.json({ qr, data: { order } });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
@@ -372,6 +378,12 @@ export const payOrder = async (req: Request, res: Response) => {
     await redis.set(`activeOrder:${order.dataValues.id}`, JSON.stringify(orderDetails), 'EX', 24 * 60 * 60);
 
     console.log('payOrder==========333', `activeOrder:${order.dataValues.id}`);
+
+
+    const token = await redis.get(`orderID:${order.dataValues.id}`);
+    if(token){
+      await WS_HMVending(token,orderDetails)
+    }
 
     res.json({ message: 'Command sent', order });
   } catch (error) {

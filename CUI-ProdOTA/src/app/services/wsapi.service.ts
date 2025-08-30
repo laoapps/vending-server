@@ -35,7 +35,7 @@ export class WsapiService implements OnDestroy {
   public billProcessSubscription = new BehaviorSubject<IBillProcess>(null);
   public waitingDelivery = new BehaviorSubject<IBillProcess>(null);
   public refreshSubscription = new BehaviorSubject<boolean>(false);
-  public wsalertSubscription = new BehaviorSubject<IAlive>(null);
+  public wsalertSubscription = new BehaviorSubject<any>(null);
 
 
   constructor(

@@ -147,6 +147,44 @@ export async function validateHMVending(token: string): Promise<string> {
 }
 
 
+export async function WS_HMVending(token: string,order:any): Promise<string> {
+  if (!token) return '';
+  const data = {
+    machinetoken:token,data:{callback:'true',order}
+};
+  const hmVendingWSUrl = process.env.hmVendingWSUrl;
+  if (!hmVendingWSUrl) {
+    console.error('hmVendingWSUrl is not defined');
+    return '';
+  }
+  try {
+    const response = await axios.post(hmVendingWSUrl, data, {
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 10000
+    });
+
+    console.log('WS_HMVending',response);
+    
+    const d = response.data.data;
+    // if (d?.ownerUuid) {
+    //   console.log('ownerUuid:', d.ownerUuid);
+    //   return d.ownerUuid;
+    // } else {
+    //   return '';
+    // }
+    return d
+  } catch (err: any) {
+    if (err.response) {
+      console.error('Response error:', err.response.status, err.response.data);
+    } else if (err.request) {
+      console.error('No response received:', err.request);
+    } else {
+      console.error('Request setup error:', err.message);
+    }
+    return '';
+  }
+}
+
 // export async function validateHMVending(machineId: string,otp:string): Promise<string> {
 //     return new Promise<string>((resolve, reject) => {
 
