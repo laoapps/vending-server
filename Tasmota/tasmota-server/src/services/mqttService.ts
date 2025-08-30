@@ -33,7 +33,7 @@ client.on('reconnect', () => {
 });
 
 client.on('error', (err: any) => {
-  console.error('MQTT error:', err);
+  // console.error('MQTT error:', err);
 });
 
 client.on('close', () => {
