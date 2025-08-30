@@ -199,7 +199,7 @@ export const getOrders = async (req: Request, res: Response) => {
         userUuid: user.uuid,
         completedTime: { [Op.ne]: null },
       };
-    }else{
+    } else {
       whereCondition = {
         startedTime: { [Op.ne]: null },
         userUuid: user.uuid,
@@ -370,6 +370,8 @@ export const payOrder = async (req: Request, res: Response) => {
       relay: order.dataValues.relay || 1,
     };
     await redis.set(`activeOrder:${order.dataValues.id}`, JSON.stringify(orderDetails), 'EX', 24 * 60 * 60);
+
+    console.log('payOrder==========333', `activeOrder:${order.dataValues.id}`);
 
     res.json({ message: 'Command sent', order });
   } catch (error) {
