@@ -97,7 +97,7 @@ export class ApiService {
                 this.myMachineStatus.length = 0;
                 console.log('mstatus', r.data.mstatus);
                 const arr = Array.isArray(r.data.mstatus) ? r.data.mstatus : [r.data.mstatus];
-                this.myMachineStatus.push(...arr )
+                this.myMachineStatus.push(...arr)
                 // console.log('ws alive subscription', r);
                 this.wsAlive.time = new Date();
                 this.wsAlive.isAlive = this.checkOnlineStatus();
@@ -437,7 +437,7 @@ export class ApiService {
     addMachine(o: IMachineClientID) {
         const token = localStorage.getItem('lva_token');
         const shopPhonenumber = o.shopPhonenumber;
-        delete o.shopPhonenumber;
+        // delete o.shopPhonenumber;
         return this.http.post<IResModel>(this.url + '/addMachineNew', { data: o, token, shopPhonenumber }, { headers: this.headerBase() });
     }
     reportStock() {
