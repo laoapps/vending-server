@@ -436,9 +436,10 @@ export class ApiService {
     }
     addMachine(o: IMachineClientID) {
         const token = localStorage.getItem('lva_token');
+        const secret = localStorage.getItem('secretLocal');
         const shopPhonenumber = o.shopPhonenumber;
         // delete o.shopPhonenumber;
-        return this.http.post<IResModel>(this.url + '/addMachineNew', { data: o, token, shopPhonenumber }, { headers: this.headerBase() });
+        return this.http.post<IResModel>(this.url + '/addMachineNew', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     reportStock() {
         const token = localStorage.getItem('lva_token');
