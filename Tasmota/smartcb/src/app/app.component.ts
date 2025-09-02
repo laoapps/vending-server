@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-
+import { Capacitor } from '@capacitor/core';
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -7,5 +8,13 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class AppComponent {
-  constructor() {}
+  constructor() {
+    this.enableEdgeToEdge();
+  }
+
+  async enableEdgeToEdge() {
+  if (Capacitor.getPlatform() === 'android') {
+    await EdgeToEdge.enable();
+  }
+}
 }

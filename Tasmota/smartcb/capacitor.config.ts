@@ -4,7 +4,11 @@ const config: CapacitorConfig ={
   "appId": "com.laoapps.smartcb",
   "appName": "Tasmota Control",
   "webDir": "www",
-  "bundledWebRuntime": false
+   plugins: {
+    EdgeToEdge: {
+      backgroundColor: "#ffffff",
+    },
+  },
 }
 
 export default config;
