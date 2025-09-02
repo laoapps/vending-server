@@ -8,6 +8,7 @@ import { notifyStakeholders } from '../services/wsService';
 import { generateQR } from '../services/lakService';
 import models from '../models';
 import { WS_HMVending } from '../services/userManagerService';
+import { notilaabx_smartcb } from '../services/notificationService';
 
 export const testOrder = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
@@ -149,7 +150,7 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
 
     const token = req.headers['token'];
     // save vending token for use in api pay, key name use orderID
-    await redis.setex(`orderID:${order.dataValues.id}`, 5 * 60, token+'');
+    await redis.setex(`orderID:${order.dataValues.id}`, 5 * 60, token + '');
 
     return res.json({ qr, data: { order } });
   } catch (error) {
@@ -185,6 +186,9 @@ export const createOrder = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1];
     const qr = await generateQR(order.dataValues.id, schedulePackage.dataValues.price, token || '');
     console.log('createOrder==========111', qr);
+
+    // save user token for use in api pay, key name use orderID_laabxapp
+    await redis.setex(`orderID_laabxapp:${order.dataValues.id}`, 5 * 60, token + '');
 
     // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
     return res.json({ qr, data: { order } });
@@ -380,10 +384,19 @@ export const payOrder = async (req: Request, res: Response) => {
     console.log('payOrder==========333', `activeOrder:${order.dataValues.id}`);
 
 
-    const token = await redis.get(`orderID:${order.dataValues.id}`);
-    if(token){
-      await WS_HMVending(token,orderDetails)
+
+    const token_vending = await redis.get(`orderID:${order.dataValues.id}`);
+    if (token_vending) {
+      await WS_HMVending(token_vending, orderDetails)
     }
+
+    //======= axios noti laabx for send ws to client dismiss modal ========
+    const token_user = await redis.get(`orderID_laabxapp:${order.dataValues.id}`);
+    const datanoti = { callback: 'true', orderDetails }
+    const noti = await notilaabx_smartcb(datanoti, token_user || '')
+    console.log('notilaabx_smartcb000',noti);
+    
+
 
     res.json({ message: 'Command sent', order });
   } catch (error) {
