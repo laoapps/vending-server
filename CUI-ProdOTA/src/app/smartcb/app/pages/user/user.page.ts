@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import {
   BarcodeScanner,
   BarcodeFormat,
@@ -15,6 +15,7 @@ import { ListAllGroupsPage } from '../../components-user/list-all-groups/list-al
 import { ApiVendingService } from '../../services/api-for-vending/api-vending.service';
 import { PhotoProductService } from '../../services/photo/photo-product.service';
 import { HistoryPage } from '../../components-user/history/history.page';
+import { WsapiService } from 'src/app/services/wsapi.service';
 @Component({
   selector: 'app-user',
   templateUrl: './user.page.html',
@@ -22,7 +23,7 @@ import { HistoryPage } from '../../components-user/history/history.page';
   standalone: false,
 
 })
-export class UserPage implements OnInit {
+export class UserPage implements OnInit,OnDestroy {
   public menus = [
     {title:'Order',icon: 'time-outline',path:OrderPage},
     // {title:'Status',icon: 'information-circle-outline',path:StatusPage},
@@ -35,14 +36,36 @@ export class UserPage implements OnInit {
   all_gorup: any[] = [];
   devices: any[] = [];
   public image = '../../../../../assets/icon-smartcb/image.png'
+  private wsalertSubscription: { unsubscribe: () => void };
 
 
   constructor(public m: LoadingService,public router:Router,public alertController:AlertController,private apiService: ApiService,public ApiVending: ApiVendingService,
-    public caching:PhotoProductService
+    public caching:PhotoProductService,    public modalParent: ModalController,
+        public wsapi: WsapiService
   ) {}
+  ngOnDestroy(): void {
+        console.log('unsubscribe wsalertSubscription');
+    this.wsalertSubscription?.unsubscribe();
+  }
 
   ngOnInit() {
-
+        console.log('subscribe wsalertSubscription');
+    this.wsalertSubscription = this.wsapi.onWsAlert(async (r) => {
+      console.log('wsalert received:', r);
+      if (r) {
+        try {
+          console.log('wsalert processing:', r);
+          let topModal = await this.modalParent.getTop();
+          while (topModal) {
+            await topModal.dismiss();
+            topModal = await this.modalParent.getTop();
+          }
+          console.log('All modals dismissed');
+        } catch (error) {
+          console.error('Error dismissing modals:', error);
+        }
+      }
+    });
   }
 
   ionViewWillEnter() {
