@@ -12,11 +12,11 @@
 <ion-content class="ion-content">
   <div class="laab-card-footer">
 
-    <div style="text-align: right;">
+    <!-- <div style="text-align: right;">
         <ion-icon (click)="dismiss()" style="font-size: 42px;color: red;" name="close-outline"></ion-icon>
-      </div>
+      </div> -->
 
-    <!-- <div style="display: flex;flex-direction: row;justify-content: space-between;">
+    <div style="display: flex;flex-direction: row;justify-content: space-between;">
       <div class="title">
         Option payment
       </div>
@@ -32,10 +32,10 @@
         </div>
         <div class="text">{{ list.name }}</div>
       </a>
-    </div> -->
+    </div>
   
 
-<!--   
+  
     <div *ngIf="true" class="payment-list-right">
   
       <div class="bill-container">
@@ -51,7 +51,7 @@
   
         </div>
       </div>
-    </div> -->
+    </div>
   
     <!-- <div class="main-top"></div> -->
     <div class="div-content">
@@ -60,7 +60,7 @@
         <ion-label class="label_name">Devices number: {{data_device?.tasmotaId || data_device}} , Pagekets: {{data_pageket?.price | number}}</ion-label>
         <!-- <ion-label class="label_name"></ion-label> -->
         <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;margin-top: 15px;">
-          <img width="150px" height="150px" src="{{qrcode_logo}}" alt="" >
+          <img src="{{qrcode_logo}}" alt="" >
         </div>
   
         <div style="display: flex;flex-direction: row;margin-top: 15px;">
