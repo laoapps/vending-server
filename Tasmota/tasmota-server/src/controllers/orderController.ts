@@ -118,6 +118,31 @@ export const testOrder = async (req: Request, res: Response) => {
   }
 };
 
+export function checkDeviceUsing(deviceId: number): Promise<any> {
+  return new Promise<any>(async (resolve, reject) => {
+    try {
+      const orderKeys = await redis.keys('activeOrder:*');
+      const ordersData = await Promise.all(
+        orderKeys.map(async (key) => ({
+          key,
+          data: JSON.parse((await redis.get(key)) || '{}'),
+        }))
+      );
+      let activeOrder: any = null
+      for (const order of ordersData) {
+        if (order?.data?.deviceId == deviceId) {
+          activeOrder = order.data.deviceId
+          break;
+        }
+      }
+      console.log('activeOrder', activeOrder);
+      resolve(activeOrder)
+    } catch (error) {
+      console.log('checkDeviceUsingERROR',error);
+      resolve(null)
+    }
+  })
+}
 
 export const createOrderHMVending = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
@@ -125,6 +150,12 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
   console.log('createOrderHMVending==========', req.body);
 
   try {
+
+    const activeOrder = await checkDeviceUsing(deviceId)
+    if (activeOrder) {
+      return res.status(403).json({ error: 'device still using!' });
+    }
+
     const schedulePackage = await SchedulePackage.findByPk(packageId);
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
@@ -166,6 +197,13 @@ export const createOrder = async (req: Request, res: Response) => {
     if (user.role !== 'user') {
       return res.status(403).json({ error: 'Only users can create orders' });
     }
+
+    const activeOrder = await checkDeviceUsing(deviceId)
+    if (activeOrder) {
+      return res.status(403).json({ error: 'device still using!' });
+    }
+
+
     const schedulePackage = await SchedulePackage.findByPk(packageId);
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
@@ -394,8 +432,8 @@ export const payOrder = async (req: Request, res: Response) => {
     const token_user = await redis.get(`orderID_laabxapp:${order.dataValues.id}`);
     const datanoti = { callback: 'true', orderDetails }
     const noti = await notilaabx_smartcb(datanoti, token_user || '')
-    console.log('notilaabx_smartcb000',noti);
-    
+    console.log('notilaabx_smartcb000', noti);
+
 
 
     res.json({ message: 'Command sent', order });
