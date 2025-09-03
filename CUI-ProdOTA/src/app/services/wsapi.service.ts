@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { setWsHeartbeat } from 'ws-heartbeat/client';
-import { EMACHINE_COMMAND, EMessage, IAlive, IBillProcess, IClientId, IReqModel, IResModel, IVendingMachineBill, IVendingMachineSale } from './syste.model';
+import { EMACHINE_COMMAND, EMessage, IAlive, IBillProcess, IClientId, IReqModel, IResModel } from './syste.model';
 import * as cryptojs from 'crypto-js';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EventEmitter } from 'events';
@@ -20,14 +20,14 @@ export class WsapiService implements OnDestroy {
   private otp: string;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 10;
-  private reconnectDelay = 1000; // Start with 1 second
-  private maxReconnectDelay = 60000; // Max delay of 60 seconds
+  private reconnectDelay = 1000;
+  private maxReconnectDelay = 60000;
   private pingInterval: any = null;
   private connectionTimeout: any = null;
   private failureStartTime: number | null = null;
-  private maxFailureDuration = 300000; // 5 minutes in milliseconds
+  private maxFailureDuration = 300000;
 
-  private eventEmmiter = new EventEmitter();
+  private eventEmitter = new EventEmitter(); // Fixed typo
   public connectionStatus = new BehaviorSubject<string>('disconnected');
   public balanceUpdateSubscription = new BehaviorSubject<number>(0);
   public loginSubscription = new BehaviorSubject<IClientId>(null);
@@ -37,11 +37,10 @@ export class WsapiService implements OnDestroy {
   public refreshSubscription = new BehaviorSubject<boolean>(false);
   public wsalertSubscription = new BehaviorSubject<any>(null);
 
-
   constructor(
     private cashingService: AppcachingserviceService,
     private indexedLogDB: IndexerrorService,
-  ) { }
+  ) {}
 
   ngOnDestroy(): void {
     this.disconnect();
@@ -51,20 +50,16 @@ export class WsapiService implements OnDestroy {
     this.wsurl = url;
     this.machineId = machineId;
     this.otp = otp;
-
-    // Close existing WebSocket if it exists
     this.disconnect();
 
     this.connectionStatus.next('connecting');
     this.webSocket = new WebSocket(this.wsurl);
 
-    // Set up heartbeat for ping/pong
     setWsHeartbeat(this.webSocket, JSON.stringify({ command: EMACHINE_COMMAND.ping }), {
       pingInterval: 10000,
       pingTimeout: 15000
     });
 
-    // Connection timeout
     this.connectionTimeout = setTimeout(() => {
       if (this.webSocket?.readyState !== WebSocket.OPEN) {
         console.log('Connection timed out');
@@ -76,11 +71,10 @@ export class WsapiService implements OnDestroy {
       console.log('WebSocket connection opened');
       this.reconnectAttempts = 0;
       this.reconnectDelay = 1000;
-      this.failureStartTime = null; // Reset failure tracking on successful connection
+      this.failureStartTime = null;
       this.connectionStatus.next('connected');
       clearTimeout(this.connectionTimeout);
 
-      // Send login command
       this.send({
         command: EMACHINE_COMMAND.login,
         data: '',
@@ -120,11 +114,14 @@ export class WsapiService implements OnDestroy {
               } as IAlive);
               break;
             case 'wsalert':
-              this.wsalertSubscription.next(res.data);
+              console.log('wsalert', res.data);
+              this.wsalertSubscription.next(res?.data);
+              const t = this.eventEmitter.emit('wsalert', res?.data);
+              console.log('t', t);
               break;
             case 'confirm':
               res.data.transactionID = res.transactionID;
-              this.eventEmmiter.emit('billProcess', res.data);
+              this.eventEmitter.emit('billProcess', res.data);
               this.billProcessSubscription.next(res.data);
               break;
             case 'waitingt':
@@ -153,7 +150,6 @@ export class WsapiService implements OnDestroy {
         }
       } catch (error) {
         console.error('WebSocket message error', error);
-        // this.indexedLogDB.logError('WebSocket message parsing failed', error);
       }
     };
   }
@@ -166,19 +162,16 @@ export class WsapiService implements OnDestroy {
     const elapsedTime = Date.now() - this.failureStartTime;
     if (elapsedTime >= this.maxFailureDuration) {
       console.error('Connection failed for 5 minutes, exiting app');
-      // this.indexedLogDB.logError('WebSocket connection failed for 5 minutes, exiting app', { elapsedTime });
       try {
         App.exitApp();
       } catch (error) {
         console.error('Failed to exit app', error);
-        // this.indexedLogDB.logError('App.exitApp failed', error);
       }
       return;
     }
 
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.error('Max reconnection attempts reached');
-      // this.indexedLogDB.logError('WebSocket max reconnection attempts reached', { attempts: this.reconnectAttempts });
       return;
     }
 
@@ -218,7 +211,6 @@ export class WsapiService implements OnDestroy {
           this.webSocket.send(JSON.stringify(data));
         } else {
           console.error('Failed to send data, WebSocket not open');
-          // this.indexedLogDB.logError('WebSocket send failed', { data });
         }
       });
     }
@@ -240,7 +232,6 @@ export class WsapiService implements OnDestroy {
       } else if (waitAttempts >= maxWaitAttempts) {
         clearInterval(waitInterval);
         console.error('Wait for WebSocket connection timed out');
-        // this.indexedLogDB.logError('WebSocket connection wait timeout', { attempts: waitAttempts });
         this.scheduleReconnect();
       }
       waitAttempts++;
@@ -262,7 +253,6 @@ export class WsapiService implements OnDestroy {
         resolve(IENMessage.success);
       } catch (error) {
         console.error('Reset cashing error', error);
-        // this.indexedLogDB.logError('Reset cashing failed', error);
         resolve(error.message);
       }
     });
@@ -270,7 +260,21 @@ export class WsapiService implements OnDestroy {
 
   onBillProcess(cb: (data: any) => void): void {
     if (cb) {
-      this.eventEmmiter.on('billProcess', cb);
+      this.eventEmitter.on('billProcess', cb);
     }
+  }
+
+  onWsAlert(cb: (data: any) => void): { unsubscribe: () => void } {
+    if (cb) {
+      console.log('Registering wsalert listener', cb);
+      this.eventEmitter.on('wsalert', cb);
+      return {
+        unsubscribe: () => {
+          console.log('Unregistering wsalert listener', cb);
+          this.eventEmitter.removeListener('wsalert', cb);
+        },
+      };
+    }
+    return { unsubscribe: () => {} };
   }
 }

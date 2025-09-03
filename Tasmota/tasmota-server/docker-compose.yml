@@ -20,6 +20,7 @@ services:
       - ADMINGAME_NOCNOC_UUID=3d55d7f0-b611-11ef-8c5b-dfe3a2fc2c00
       - hmVendingUrl=https://vending-service-api5.laoapps.com/zdm8/validateHMVending
       - hmVendingWSUrl=https://vending-service-api5.laoapps.com/zdm8/wsalert
+      - NOTILAABX_URL=https://laab-notify.laoapps.com/api/v1/
     depends_on:
       - tasmota-db
       - tasmota-redis

@@ -92,9 +92,15 @@ export class PayQrPage implements OnInit {
       this.info_qr_code = r.qr?.data
       this.genQrcode();
     },(error)=>{
-      console.log('====================================');
-      console.log('error',error);
-      console.log('====================================');
+      if (error?.error?.error == 'device still using!') {
+        this.m.alert_justOK("Device still using").then(r=>{
+          if (r) {
+            this.m.closeModal({ dismiss: true });
+          }
+        })
+      }else{
+        this.m.alertError("Generate QR fail!!")
+      }
     })
   }
 
