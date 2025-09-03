@@ -118,32 +118,6 @@ export const testOrder = async (req: Request, res: Response) => {
   }
 };
 
-export function checkDeviceUsing(deviceId: number): Promise<any> {
-  return new Promise<any>(async (resolve, reject) => {
-    try {
-      const orderKeys = await redis.keys('activeOrder:*');
-      const ordersData = await Promise.all(
-        orderKeys.map(async (key) => ({
-          key,
-          data: JSON.parse((await redis.get(key)) || '{}'),
-        }))
-      );
-      let activeOrder: any = null
-      for (const order of ordersData) {
-        if (order?.data?.deviceId == deviceId) {
-          activeOrder = order.data.deviceId
-          break;
-        }
-      }
-      console.log('activeOrder', activeOrder);
-      resolve(activeOrder)
-    } catch (error) {
-      console.log('checkDeviceUsingERROR',error);
-      resolve(null)
-    }
-  })
-}
-
 export const createOrderHMVending = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
@@ -151,8 +125,8 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
 
   try {
 
-    const activeOrder = await checkDeviceUsing(deviceId)
-    if (activeOrder) {
+    const activeDevice = await redis.get(`deviceID:${deviceId}`)
+    if (activeDevice) {
       return res.status(403).json({ error: 'device still using!' });
     }
 
@@ -182,6 +156,8 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
     const token = req.headers['token'];
     // save vending token for use in api pay, key name use orderID
     await redis.setex(`orderID:${order.dataValues.id}`, 5 * 60, token + '');
+    // save deviceID for not allow other user create new order use this deivce
+    await redis.setex(`deviceID:${deviceId}`, 3 * 60, deviceId + '');
 
     return res.json({ qr, data: { order } });
   } catch (error) {
@@ -198,11 +174,10 @@ export const createOrder = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only users can create orders' });
     }
 
-    const activeOrder = await checkDeviceUsing(deviceId)
-    if (activeOrder) {
+    const activeDevice = await redis.get(`deviceID:${deviceId}`)
+    if (activeDevice) {
       return res.status(403).json({ error: 'device still using!' });
     }
-
 
     const schedulePackage = await SchedulePackage.findByPk(packageId);
     if (!schedulePackage) {
@@ -227,6 +202,8 @@ export const createOrder = async (req: Request, res: Response) => {
 
     // save user token for use in api pay, key name use orderID_laabxapp
     await redis.setex(`orderID_laabxapp:${order.dataValues.id}`, 5 * 60, token + '');
+    // save deviceID for not allow other user create new order use this deivce
+    await redis.setex(`deviceID:${deviceId}`, 3 * 60, deviceId + '');
 
     // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
     return res.json({ qr, data: { order } });
@@ -348,6 +325,14 @@ export const payOrder = async (req: Request, res: Response) => {
     }
     // close exist Order
     await closeActiveOrder(deviceId);
+
+    // update redis deviceID not use setex for block other user create new order with the device
+    const keyDevice = `deviceID:${deviceId}`;
+    const activeDevice = await redis.get(keyDevice)
+    if (activeDevice) {
+      await redis.del(keyDevice)
+      await redis.set(`deviceID:${deviceId}`, deviceId + '');
+    }
 
 
 

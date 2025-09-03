@@ -128,6 +128,13 @@ async function startServer() {
                 await ord?.save();
                 await redis.del(key);
                 await notifyStakeholders(ord, 'Order completed due to time duration limit.');
+
+                // delete redis deviceID after order complete for other user can create new order with the device
+                const keyDevice = `deviceID:${order.data.deviceId}`;
+                const activeDevice = await redis.get(keyDevice)
+                if (activeDevice) {
+                  await redis.del(keyDevice)
+                }
               }
 
             }
@@ -147,6 +154,13 @@ async function startServer() {
                   await ord?.save();
                   await redis.del(key);
                   await notifyStakeholders(ord, 'Order completed due to time duration limit.');
+
+                  // delete redis deviceID after order complete for other user can create new order with the device
+                  const keyDevice = `deviceID:${order.data.deviceId}`;
+                  const activeDevice = await redis.get(keyDevice)
+                  if (activeDevice) {
+                    await redis.del(keyDevice)
+                  }
                 }
               }
             }
