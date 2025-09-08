@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { IVendingMachineSale } from '../services/syste.model';
+import { IStock, IVendingMachineSale } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { SaleAddPage } from './sale-add/sale-add.page';
 import { SaleDetailsPage } from './sale-details/sale-details.page';
@@ -88,10 +88,10 @@ export class SalePage implements OnInit {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         if (r.data.s) {
-          console.log(`-->`, r.data);
 
           const base64 = r.data.s.stock.image;
           r.data.s.stock.image = r.data.s.stock.imageurl;
+          console.log(`-->addSale `, r.data.s);
           this.apiService.addSale(r.data.s)?.subscribe(rx => {
             console.log(`rx`, rx);
             console.log(`rx stock`, rx.data.stock);
@@ -101,7 +101,7 @@ export class SalePage implements OnInit {
             }
             this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
               ry.present();
-            })
+            });
 
           })
         }
@@ -110,7 +110,9 @@ export class SalePage implements OnInit {
   }
   edit(id: number | undefined) {
     const s = this._l.find(v => v.id == id);
-    if (!s) return alert('Not found')
+    // console.log('edit detail');
+
+    if (!s) return alert('Not found');
     this.apiService.showModal(SaleDetailsPage, { machineId: this.machineId, s, sales: this._l }).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
@@ -134,6 +136,95 @@ export class SalePage implements OnInit {
 
           })
         }
+      }).catch(e => {
+        console.log(e);
+
+      })
+    })
+  }
+
+  editProductDetail(id: number | undefined) {
+    const s = this._l.find(v => v.id == id);
+    // console.log('edit detail');
+
+    if (!s) return alert('Not found');
+    this.apiService.showModal(SaleDetailsPage, { machineId: this.machineId, s, sales: this._l }).then(ro => {
+      ro?.present();
+      ro?.onDidDismiss().then(r => {
+        if (r?.data?.s) {
+          // delete r?.data?.s?.stock?.image;
+          const sData: IVendingMachineSale = r?.data?.s as IVendingMachineSale;
+
+
+          console.log(`Data to save :${JSON.stringify(sData)}`);
+
+          this.apiService.disableSale(false, sData.id).subscribe(rx => {
+            console.log('Success');
+          })
+
+          this.apiService.deleteSale(s.id).subscribe(rx => {
+            console.log(rx);
+            if (rx.status) {
+              this._l.find((v, i) => {
+                if (v.id == s.id) {
+                  this._l.splice(i, 1);
+                  return true;
+                }
+                return false;
+              })
+            }
+          });
+
+          const params = {
+            price: Number(sData.stock.price),
+            image: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
+            name: sData.stock.name,
+            filename: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
+            imageurl: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
+            qtty: 1000,
+            isActive: true
+          } as IStock;
+          console.log('params', params);
+
+          let sSave: IVendingMachineSale = {} as IVendingMachineSale;
+          sSave.isActive = true;
+          sSave.machineId = sData.machineId;
+          sSave.max = sData.max;
+          sSave.position = sData.position;
+
+
+          this.apiService.addProduct(params)?.subscribe(rx => {
+            console.log(`----->rx data`, rx.data);
+            sSave.stock = JSON.parse(JSON.stringify(rx.data));
+            if (rx.status != 1) {
+              this.apiService.simpleMessage(IENMessage.addMachineFail);
+              return;
+            } else {
+              // rx.data.image = data.image;
+              // this._l.unshift(rx.data);
+              this.apiService.simpleMessage(IENMessage.success);
+            }
+            console.log(`Data to Add :${JSON.stringify(sSave)}`);
+            this.apiService.addSale(sSave)?.subscribe(rx => {
+              console.log(`rx`, rx);
+              console.log(`rx stock`, rx.data.stock);
+              if (rx.status) {
+                rx.data.stock.image = r?.data?.s?.stock?.image;
+                this._l.unshift(rx.data);
+              }
+              this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
+                ry.present();
+              })
+
+            })
+
+          },);
+
+
+
+
+        }
+
       }).catch(e => {
         console.log(e);
 

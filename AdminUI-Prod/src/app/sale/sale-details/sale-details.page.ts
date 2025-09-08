@@ -9,9 +9,9 @@ import { IVendingMachineSale } from 'src/app/services/syste.model';
 })
 export class SaleDetailsPage implements OnInit {
 
-  @Input()machineId='';
+  @Input() machineId = '';
   showImage: (p: string) => string;
-  @Input()s={} as IVendingMachineSale;
+  @Input() s = {} as IVendingMachineSale;
   loaded: boolean = false;
   imageSrc: string = '';
   constructor(public apiService: ApiService) {
@@ -25,7 +25,7 @@ export class SaleDetailsPage implements OnInit {
     this.apiService.closeModal()
   }
   save() {
-    this.apiService.disableSale(this.s.isActive,this.s.id).subscribe(rx => {
+    this.apiService.disableSale(this.s.isActive, this.s.id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
         // this._l.find((v, i) => {
@@ -41,6 +41,12 @@ export class SaleDetailsPage implements OnInit {
       })
 
     })
+    this.apiService.closeModal({ s: this.s })
+  }
+
+  saveChange() {
+    // console.log('S is :', this.s);
+
     this.apiService.closeModal({ s: this.s })
   }
 
