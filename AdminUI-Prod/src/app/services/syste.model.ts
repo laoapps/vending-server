@@ -813,6 +813,21 @@ export interface IMachineID extends IBase, IBC {
 }
 
 
+export interface IVendingSale {
+    position: number;
+    dropAt: string;
+    name: string;
+    qtty: number;
+    price: number;
+}
+
+export interface IFilteredData {
+    createdAt: string;
+    totalvalue: number;
+    vendingsales: IVendingSale[];
+}
+
+
 
 
 

@@ -140,6 +140,8 @@ import { checkGenerateCount } from "../services/laoqr.service";
 import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmoney.service";
 import { IProductImage } from "../models/sys.model";
 import { WarehouseFactory } from "../entities/warehouse.entity";
+import { uploadExcelMemory } from "../middlewares/upload.middleware";
+import { uploadExcelFile } from "../controllers/excel.controller";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -3259,6 +3261,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
                         const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
                         // console.log(' GET REPORT SALE ', machineId, fromDate.toString(), toDate.toString(), ownerUuid)
+
                         const run = await this.getReportSale(machineId, fromDate.toString(), toDate.toString(), ownerUuid);
                         const response = {
                             rows: run.rows,
@@ -3897,6 +3900,11 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             )
+
+            router.post(this.path + '/reportBilling', uploadExcelMemory.single('file'), this.checkSuperAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                this.authorizeSuperAdmin, uploadExcelFile);
 
             router.post(this.path + '/reportLogsTemp',
                 this.checkSuperAdmin,

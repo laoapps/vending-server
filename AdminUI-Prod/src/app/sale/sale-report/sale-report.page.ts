@@ -3,13 +3,20 @@ import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
 import { LoadVendingMachineSaleBillReportProcess } from '../processes/loadVendingMachineBillReport.process';
 import { SaleReportViewPage } from 'src/app/sale-report-view/sale-report-view.page';
+import { IFilteredData } from 'src/app/services/syste.model';
+
+
 
 @Component({
   selector: 'app-sale-report',
   templateUrl: './sale-report.page.html',
   styleUrls: ['./sale-report.page.scss'],
 })
+
+
 export class SaleReportPage implements OnInit {
+
+
 
   private loadVendingMachineSaleBillReportProcess: LoadVendingMachineSaleBillReportProcess;
 
@@ -32,6 +39,8 @@ export class SaleReportPage implements OnInit {
   sum_qtty: number = 0;
   sum_total: number = 0;
   paymentstatus: string = '';
+
+
 
   exportOptions: Array<any> = [
     {
@@ -69,6 +78,31 @@ export class SaleReportPage implements OnInit {
           }
         });
       });
+    });
+  }
+
+  async exportToExcel() {
+    const dataToexport = this.filterData(this.lists)
+    console.log('dataToexport ', dataToexport);
+    this.apiService.exportIVendingMachineReportSaleToExcel(dataToexport);
+
+
+  }
+
+
+  filterData(data: any[]): IFilteredData[] {
+    return data.map((item) => {
+      return {
+        createdAt: item.createdAt,
+        totalvalue: item.totalvalue,
+        vendingsales: item.vendingsales.map((v: any) => ({
+          position: v.position,
+          dropAt: v.dropAt,
+          name: v.stock.name,
+          qtty: v.stock.qtty,
+          price: v.stock.price,
+        })),
+      };
     });
   }
 
@@ -119,7 +153,9 @@ export class SaleReportPage implements OnInit {
         const run = await this.loadVendingMachineSaleBillReportProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
-        // console.log('=====> run', run);
+
+
+        console.log('=====> run', run.data[0].list);
 
 
         this.lists = run.data[0].lists;
@@ -127,7 +163,7 @@ export class SaleReportPage implements OnInit {
         this.saleDetailList = run.data[0].saleDetailList;
         this.saleSumerizeList = run.data[0].saleSumerizeList;
         if (this.count > 0) this.display = true;
-        console.log('=====> LIST :', this.lists.length, '=====>', this.lists);
+        // console.log('=====> LIST :', this.lists.length, '=====>', this.lists);
 
 
         console.log(`saleSumerizeList der`, this.saleSumerizeList.length, '=====>', this.saleSumerizeList);
