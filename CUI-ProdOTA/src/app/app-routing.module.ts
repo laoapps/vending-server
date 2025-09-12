@@ -186,6 +186,10 @@ const routes: Routes = [
   {
     path:'smart-cb-login',
     loadChildren: () => LoginPageModule
+  },
+  {
+    path: 'give-pop-up',
+    loadChildren: () => import('./give-pop-up/give-pop-up.module').then( m => m.GivePopUpPageModule)
   }
 ];
 @NgModule({
