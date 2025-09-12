@@ -5,7 +5,7 @@ import { SERVER_TIME_ZONE } from "../api/inventoryZDM8";
 import { VendingMachineBillFactory } from "../entities/vendingmachinebill.entity";
 import { EEntity, EPaymentStatus } from "../entities/system.model";
 import { dbConnection } from "../entities";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 
 
 export const uploadExcelFile = async (req: Request, res: Response) => {
@@ -61,9 +61,25 @@ export const uploadExcelFile = async (req: Request, res: Response) => {
         const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
 
         // console.log("✅ bankInMy:", bankInMy);
-        // console.log("❌ bankNotInMy:", bankNotInMy);
+        console.log("❌ bankNotInMy:", bankNotInMy);
         // console.log("✅ myInBank:", myInBank);
-        // console.log("❌ myNotInBank:", myNotInBank);
+        console.log("❌ myNotInBank:", myNotInBank);
+        for (let index = 0; index < bankNotInMy.length; index++) {
+            const element = bankNotInMy[index];
+            const transaction = element['ເລກທູລະກຳ'] ?? '';
+            console.log('transaction', transaction);
+
+            const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+            const res = await ent.findOne({
+                where: {
+                    transactionID: transaction
+                }
+            });
+            console.log('res :', res);
+
+
+
+        }
 
 
 
