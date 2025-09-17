@@ -2167,7 +2167,6 @@ export class Tab1Page implements OnDestroy {
     m.present();
     m.onDidDismiss().then((r) => {
     });
-
   }
   async manageStock() {
     if (this.qrMode) {
