@@ -74,9 +74,14 @@ Genmmoneyqr_market(data,order,store): Observable<any> {   // use domain in gatew
     let skip = localStorage.getItem('skip')
     let skip_store = localStorage.getItem('skip_store')
     let skip_tag = localStorage.getItem('skip_tag')
-
+    let vending = localStorage.getItem('vending')
+    console.log('headerBase_vending',vending);
+    
     if (skip == null) {
       skip = '0'
+    }
+    if (!vending) {
+      vending = ''
     }
     if (skip_tag == null) {
       skip_tag = '0'
@@ -89,7 +94,7 @@ Genmmoneyqr_market(data,order,store): Observable<any> {   // use domain in gatew
     // .set('authorization',authorization+'');
 
     const myheader = new HttpHeaders({ 'Content-Type': 'application/json' }).set('Access-Control-Allow-Origin', '*')
-      .set('token', this.token + '').set('skip', skip + '').set('skip_store', skip_store + '').set('skip_tag', skip_tag + '');
+      .set('token', this.token + '').set('skip', skip + '').set('skip_store', skip_store + '').set('skip_tag', skip_tag + '').set('vending', vending);
     return myheader;
   }
 }

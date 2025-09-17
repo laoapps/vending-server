@@ -19,7 +19,7 @@ export class PayQrPage implements OnInit {
   countdown: string = '';
   public pic_qr_payment = '../../../assets/icon-hm-store-vending/laoqr.png';
   @Input() data: any;
-  public menus:any
+  public menus: any
 
   info_qr_code: any;
   parseGetTotalSale: any = {} as any;
@@ -39,7 +39,7 @@ export class PayQrPage implements OnInit {
   ];
   paymentList: Array<any> = [...this.bankList];
 
-  constructor(public apiService: ApiService, public m: LoadingService,public modalParent:ModalController) {}
+  constructor(public apiService: ApiService, public m: LoadingService, public modalParent: ModalController) { }
 
   ngOnInit() {
     console.log('====================================');
@@ -164,30 +164,36 @@ export class PayQrPage implements OnInit {
       if (res.status) {
         const data = {
           "txnAmount": this.data.order?.totalValue,
-          "path":"order/updateLaabOrderPaid",
+          "path": "order/updateLaabOrderPaid",
         }
-        this.apiService.Genmmoneyqr_market(data,res?.data?.uuid,JSON.parse(localStorage.getItem('store'))?.uuid).subscribe((r)=>{
-          console.log('GenQr_market',r);
+
+        localStorage.setItem('vending', 'true')
+
+        this.apiService.Genmmoneyqr_market(data, res?.data?.uuid, JSON.parse(localStorage.getItem('store'))?.uuid).subscribe((r) => {
+          console.log('GenQr_market', r);
+
+          localStorage.removeItem('vending')
+          
           if (r.status == 1) {
             this.m.onDismiss();
             this.genQrcode(r.data?.data)
-          }else{
+          } else {
             this.m.onDismiss();
             this.m.alertError('ເກີດຂໍ້ຜິດພາດ...');
           }
-        },error=>{
-          console.log('Error',error);
+        }, error => {
+          console.log('Error', error);
           this.m.onDismiss();
           this.m.alertError('ເກີດຂໍ້ຜິດພາດ...');
         })
       } else {
         this.m.ontoast('crate order fail!!', 1000)
       }
-        this.m.onDismiss();
+      this.m.onDismiss();
     }, error => {
       this.m.ontoast('crate order fail!!', 1000)
       console.log(error);
-        this.m.onDismiss();
+      this.m.onDismiss();
     })
   }
 
