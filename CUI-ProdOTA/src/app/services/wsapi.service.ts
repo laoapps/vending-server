@@ -7,6 +7,8 @@ import { EventEmitter } from 'events';
 import { AppcachingserviceService } from './appcachingservice.service';
 import { IENMessage } from '../models/base.model';
 import { App } from '@capacitor/app';
+import { IndexerrorService } from '../indexerror.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -40,7 +42,7 @@ export class WsapiService implements OnDestroy {
   retry: any;
   constructor(
     private cashingService: AppcachingserviceService,
-    private indexedLogDB: IndexerrorService,
+    private IndexedLogDB: IndexerrorService,
   ) {}
 
   ngOnDestroy(): void {
