@@ -1,0 +1,78 @@
+
+
+<ion-content class="ion-padding">
+  <div style="display: flex;flex-direction: row;justify-content: space-between;">
+    <div class="title">
+      List ({{Detail_product?.primaryProduct?.product?.name}})
+    </div>
+    <div>
+      <ion-icon (click)="dismiss()" style="font-size: 42px;color: red;" name="close-outline"></ion-icon>
+    </div>
+  </div>
+
+  <div class="product-container">
+    <!-- <img class="product-image" src="{{Detail_product.pic}}" alt="Product Image"> -->
+    <img class="product-image" *ngIf="isProductSelected" src="{{selectedProduct?.pic || Detail_product?.pic || '../../../../../../../assets/icon-hm-store-vending/image.png'}}" alt="Product Image">
+    <img class="product-image" *ngIf="!isProductSelected" src="{{minPhoto || '../../../../../../../assets/icon-hm-store-vending/image.png'}}"/>
+    <p class="product-price">{{Detail_product?.average | number}} kip</p>
+    <p class="product-description">
+      {{Detail_product?.description?.des}}
+    </p>
+
+          <!-- prop and data zone *ngIf="PostP?.primaryProduct?.product?.moreDetail?.prop"-->
+          <!-- <div style="margin-top: 10px;" *ngIf="Detail_product?.secondaryProducts?.length">
+       
+            <ion-label class="text-color" style="margin-left: 15px;margin-right: 10px;color: #fff;font-size: 22px;">{{specProperty[0]}}</ion-label>
+            <ng-container *ngFor="let p of propData0"
+              [ngTemplateOutlet]="isAvailablePropData0(p) ?showData0 : showData02"
+              [ngTemplateOutletContext]="{p:p}"
+            ></ng-container>
+            <br>
+            <ng-template #showData0 let-p="p">
+              <ion-chip (click)="showImageByPropData0(p)" [id]="'first_'+p" [color]="getSelected0(p)">{{p}}</ion-chip>
+            </ng-template>
+            <ng-template #showData02 let-p="p">
+              <ion-chip  [id]="'first_'+p" color="medium">{{p}}</ion-chip>
+            </ng-template>
+   
+              <ion-label class="text-color" style="margin-left: 15px;margin-right: 10px;color: #fff;font-size: 22px;">{{specProperty[1]}}</ion-label>
+              <ng-container *ngFor="let p of propData1" [ngTemplateOutlet]="isAvailablePropData1(p) ?showData1 : showData12" [ngTemplateOutletContext]="{p:p}"></ng-container>
+              <ng-template #showData1 let-p="p">
+                <ion-chip (click)="showImageByPropData1(p)" [id]="'sec_'+p" [color]="getSelected1(p)">{{p}}</ion-chip>
+              </ng-template>
+              <ng-template #showData12 let-p="p">
+                <ion-chip [id]="'sec_'+p" color="medium">{{p}}</ion-chip>
+              </ng-template>  
+      
+
+            <div>
+              <div class="pd-name">{{selectedProduct?.product?.name}}</div>
+              <div class="pd-price" *ngIf="minMax">{{minMax}}</div>
+            </div>
+          </div> -->
+
+          <div class="alert-noti" *ngIf="showgetQty() && Detail_product.description?.visible==true">
+            <ion-label color="danger" *ngIf="!showtext()">ສິນຄ້າໂຕນີ້ໝົດແລ້ວ</ion-label>
+            <ion-label color="danger" *ngIf="showtext()">ກະລຸນາເລືອກຄຸນລັກສະນະສິນຄ້າ</ion-label>
+          </div>
+    
+          <div lines="none" *ngIf="Detail_product?.description?.visible==false">
+            <ion-label color="danger">ສິນຄ້າໂຕນີ້ໝົດແລ້ວ</ion-label>
+          </div>
+
+        <!-- Qty buttons -->
+        <div class="qty-container">
+          <ion-button fill="outline" shape="round" (click)="getQty('-')">
+            <ion-icon style="color: #fff;" name="remove-outline"></ion-icon>
+          </ion-button>
+          <span class="qty">{{qty}}</span>
+          <ion-button fill="outline" shape="round" (click)="getQty('+')">
+            <ion-icon style="color: #fff;" name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+
+    <ion-button expand="block" color="primary" class="add-to-cart" (click)="onClick_add_cart()">ADD TO CART</ion-button>
+    <!-- <ion-button expand="block" color="primary" class="add-to-cart" (click)="onClickBuy()">QR CODE TO BUY</ion-button> -->
+  </div>
+</ion-content>

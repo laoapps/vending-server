@@ -1,0 +1,371 @@
+ion-content{
+    --background: linear-gradient(135deg, #1e3c72, #2a5298); /* subtle gradient */
+    }
+
+.title {
+	font-size: 20px;
+	font-weight: bold;
+	color: #fff;
+	text-transform: uppercase;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+//   .menu-area {
+//     .food-item {
+//       border-radius: 16px;
+//       transition: all 0.3s ease;
+//       cursor: pointer;
+//       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+//       &:hover {
+//         transform: scale(1.02);
+//         box-shadow: 0 8px 30px rgba(74, 144, 226, 0.2);
+//       }
+//       .food-image {
+//         height: 250px;
+//         background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+//         display: flex;
+//         align-items: center;
+//         justify-content: center;
+//         font-size: 48px;
+//         color: #fff;
+//         position: relative;
+//         .nutrition {
+//           position: absolute;
+//           top: 10px;
+//           right: 10px;
+//           --background: #ff0000;
+//           --color: #fff;
+//           font-size: 16px;
+//         }
+//       }
+//       .food-name {
+//         font-size: 18px;
+//         font-weight: bold;
+//         margin: 5px 10px;
+//         display: flex;
+//         justify-content: center;
+//         align-items: center
+//       }
+//       .food-price {
+//         font-size: 16px;
+//         font-weight: bold;
+//         display: flex;
+//         justify-content: center;
+//         align-items: center
+//       }
+//     }
+//   }
+
+//   .add-card .food-image {
+//     // background: linear-gradient(135deg, #4ecdc4, #556270);
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+//     // height: 200px;
+//   }
+  
+//   .add-card {
+//     border: 2px dashed red;
+//     transition: all 0.3s ease;
+//   }
+  
+//   .add-card:hover {
+//     transform: scale(1.05);
+//     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+//   }
+
+  .image-add{
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #fff;
+    position: relative;
+    ion-icon{
+        padding-left: 10px;
+    }
+  }
+
+  .add-new{
+    font-size: 22px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  
+
+
+// //   ========================
+  
+// .delete-icon {
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+//     border: 2px solid #e74c3c;
+//     border-radius: 8px;
+//     width: 100%;
+//     height: 45px;
+//     cursor: pointer;
+//     transition: all 0.3s ease;
+//   }
+  
+//   .delete-icon ion-icon {
+//     font-size: 22px;
+//     color: #e74c3c;
+//   }
+  
+//   .delete-icon:hover {
+//     background: #e74c3c;
+//   }
+  
+//   .delete-icon:hover ion-icon {
+//     color: #fff;
+//   }
+
+
+//=======================================
+
+.menu-area {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  /* Card Style */
+  .food-item {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+    position: relative;
+    background: #fff;
+  }
+  
+//   .food-item:hover {
+//     transform: translateY(-6px);
+//     box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+//   }
+  
+  /* Image Style */
+  .food-image {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+  }
+  
+  .food-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  /* Add New Card */
+  .add-card {
+    border: 2px dashed #ff3b30;
+    background: linear-gradient(135deg, #fff8f8, #ffecec);
+    text-align: center;
+    transition: background 0.2s;
+  }
+  
+  .add-card:hover {
+    background: #ffe0e0;
+  }
+  
+  /* Food Info */
+  .food-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  
+  .food-price {
+    font-size: 22px;
+    font-weight: 600;
+    color: #e53935;
+    text-align: center;
+    display: block;
+    margin-bottom: 12px;
+  }
+  
+  /* Qty Control */
+  .qty-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    // margin-top: 12px;
+  }
+  
+  .qty-control ion-button {
+    --border-radius: 50%;
+    --background: #f5f5f5;
+    --color: #222;
+    --border-color: #ccc;
+    --border-width: 1px;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --padding-top: 6px;
+    --padding-bottom: 6px;
+    min-width: 36px;
+    height: 36px;
+    font-weight: bold;
+    font-size: 24px;
+  }
+  
+  .qty-control ion-button:hover {
+    --background: #e0e0e0;
+  }
+  
+  .qty-number {
+    min-width: 36px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 22px;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 4px 8px;
+    background: #fafafa;
+  }
+
+  
+
+/* Center wrapper */
+.delete-wrapper {
+    display: flex;
+    justify-content: center;  /* horizontal center */
+    align-items: center;      /* vertical center */
+    margin-top: 10px;
+  }
+  
+  /* Delete Icon */
+  .delete-icon-cart {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 0, 0, 0.12);
+    border-radius: 50%;
+    padding: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  
+  .delete-icon-cart ion-icon {
+    font-size: 26px;
+    color: red;
+    padding-left: 10px;
+  }
+  
+  .delete-icon-cart:hover {
+    background: rgba(255, 0, 0, 0.22);
+    transform: scale(1.1);
+  }
+
+
+
+
+//   ======================= ion-footer
+  
+
+/* Styling the footer to resemble a modern POS interface */
+ion-footer {
+    // background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
+    background: linear-gradient(135deg, #1e3c72, #2a5298); /* subtle gradient */
+
+    padding: 10px 0;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  /* Styling the toolbar for a clean look */
+  ion-toolbar {
+    --background: transparent;
+    padding: 0 10px;
+  }
+  
+  /* Grid and row styling for alignment and spacing */
+  ion-grid {
+    padding: 0;
+  }
+  
+  ion-row.footer-summary {
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  /* Column styling for text alignment and spacing */
+  ion-col.summary-text {
+    font-size: 24px;
+    font-family: 'Roboto', sans-serif;
+    color: #fff;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+  }
+  
+  ion-col.summary-text strong {
+    font-weight: 600;
+    color: #fff;
+    margin-left: 5px;
+  }
+  
+  /* Right-aligned column for total price */
+  ion-col[style*="text-align: right"] {
+    justify-content: flex-end;
+  }
+  
+  /* Button styling for a modern POS look */
+  ion-button.add-to-cart {
+    --background: #007bff;
+    --background-activated: #0056b3;
+    --border-radius: 8px;
+    --padding-start: 20px;
+    --padding-end: 20px;
+    margin: 10px 15px;
+    font-size: 22px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    height: 48px;
+    transition: all 0.3s ease;
+  }
+  
+  ion-button.add-to-cart:hover {
+    --background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  ion-button.add-to-cart:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Responsive adjustments for smaller screens */
+  @media (max-width: 576px) {
+    ion-col.summary-text {
+      font-size: 14px;
+      padding: 6px 10px;
+    }
+  
+    ion-button.add-to-cart {
+      font-size: 16px;
+      height: 42px;
+      margin: 8px 10px;
+    }
+  }
+  
+  ion-col.summary-text, ion-button.add-to-cart {
+    font-family: 'Noto Sans Lao', 'Roboto', sans-serif;
+  }

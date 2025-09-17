@@ -186,7 +186,11 @@ const routes: Routes = [
   {
     path:'smart-cb-login',
     loadChildren: () => LoginPageModule
-  }
+  },
+  {
+    path: 'HM-store-vending',
+    loadChildren: () => import('./hm-store-vending/app/app.module').then(m => m.AppModule)
+  },
 ];
 @NgModule({
   imports: [
