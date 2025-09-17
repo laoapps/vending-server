@@ -188,6 +188,10 @@ const routes: Routes = [
     loadChildren: () => LoginPageModule
   },
   {
+    path: 'HM-store-vending',
+    loadChildren: () => import('./hm-store-vending/app/app.module').then(m => m.AppModule)
+  },
+  {
     path: 'give-pop-up',
     loadChildren: () => import('./give-pop-up/give-pop-up.module').then( m => m.GivePopUpPageModule)
   }

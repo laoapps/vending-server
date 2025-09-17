@@ -1,0 +1,53 @@
+<ion-content class="phone-page" [fullscreen]="true">
+  <div style="display: flex;flex-direction: row;justify-content: space-between;">
+    <div class="title">
+      ກະລຸນາປ້ອນເບີໂທຂອງທ່ານ
+    </div>
+    <div>
+      <ion-icon (click)="dismiss()" style="font-size: 42px;color: red;" name="close-outline"></ion-icon>
+    </div>
+  </div>
+
+  <div class="card">
+    <!-- <h2 class="titles">Enter phone number</h2> -->
+
+    <form #f="ngForm" (ngSubmit)="submit()">
+      <label class="phone-field">
+        <span class="country-code">+85620</span>
+        <input
+          name="phone"
+          [(ngModel)]="phone"
+          required
+          minlength="8"
+          type="tel"
+          inputmode="tel"
+          maxlength="8"
+          placeholder="xxxx xxxx"
+          class="phone-input"
+        />
+      </label>
+
+      <div class="hint" *ngIf="f.submitted && !f.form.valid">
+        <div *ngIf="f.controls['phone']?.errors?.['required']">
+          Phone number is required.
+        </div>
+        <div *ngIf="f.controls['phone']?.errors?.['pattern']">
+          Digits only please.
+        </div>
+        <div *ngIf="f.controls['phone']?.errors?.['minlength']">
+          Too short.
+        </div>
+      </div>
+
+      <div class="actions">
+        <ion-button type="submit" expand="block" [disabled]="!f.form.valid">
+          Save
+        </ion-button>
+      </div>
+    </form>
+
+    <!-- <div class="preview" *ngIf="savedNumber">
+      Saved: <strong>{{ savedNumber }}</strong>
+    </div> -->
+  </div>
+</ion-content>
