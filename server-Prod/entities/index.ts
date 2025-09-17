@@ -196,7 +196,7 @@ export const CreateDatabase = (prefix: string) => {
                             dialect: "postgres",
                             pool: {
                                 min: 0,
-                                max: 5,
+                                max: 20,
                                 acquire: 30000,
                                 idle: 10000,
                             },
