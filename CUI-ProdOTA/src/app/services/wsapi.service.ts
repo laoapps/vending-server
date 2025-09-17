@@ -16,6 +16,8 @@ export class WsapiService implements OnDestroy {
   private webSocket: WebSocket | null = null;
   private machineId: string;
   private otp: string;
+  retries = 1;
+
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 10;
   private reconnectDelay = 1000;
@@ -35,14 +37,17 @@ export class WsapiService implements OnDestroy {
   public refreshSubscription = new BehaviorSubject<boolean>(false);
   public wsalertSubscription = new BehaviorSubject<any>(null);
 
+  retry: any;
   constructor(
     private cashingService: AppcachingserviceService,
+    private indexedLogDB: IndexerrorService,
   ) {}
 
   ngOnDestroy(): void {
     this.disconnect();
   }
 
+  int = null;
   connect(url: string, machineId: string, otp: string): void {
     this.wsurl = url;
     this.machineId = machineId;
@@ -52,15 +57,42 @@ export class WsapiService implements OnDestroy {
     this.connectionStatus.next('connecting');
     this.webSocket = new WebSocket(this.wsurl);
 
-    setWsHeartbeat(this.webSocket, JSON.stringify({ command: EMACHINE_COMMAND.ping }), {
-      pingInterval: 10000,
-      pingTimeout: 15000
-    });
+
+    clearInterval(this.retries);
+    this.retry = null;
+    // setWsHeartbeat(this.webSocket, '{"command":"ping"}', { pingInterval: 10000, pingTimeout: 15000 });
+    if (this.int) {
+      clearInterval(this.int);
+      this.int = null;
+    }
+    this.int = setInterval(async () => {
+      if (this.webSocket.readyState !== 1) {
+        console.log('websocket not ready');
+        return;
+      }
+      console.log('ping');
+      const allLogs = await this.IndexedLogDB.getAllErrorData();
+      // const settingVersion = localStorage.getItem('settingVersion') ?? 'NO';
+
+      this.send({
+        command: EMACHINE_COMMAND.ping, data: {
+          settingVersion: `${new Date().getTime()}`,
+          errorLog: allLogs,
+          clientVersion: environment.versionId || '0.0.0'
+        }, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
+      });
+    }, 10000);
+
+    // setWsHeartbeat(this.webSocket, JSON.stringify({ command: EMACHINE_COMMAND.ping }), {
+    //   pingInterval: 10000,
+    //   pingTimeout: 15000
+    // });
 
     this.connectionTimeout = setTimeout(() => {
       if (this.webSocket?.readyState !== WebSocket.OPEN) {
         console.log('Connection timed out');
         this.webSocket?.close();
+        this.IndexedLogDB.addBillProcess({ errorData: 'Connection timed out' })
       }
     }, 30000);
 
@@ -85,12 +117,14 @@ export class WsapiService implements OnDestroy {
 
     this.webSocket.onclose = (ev) => {
       console.log('WebSocket closed', ev);
+      this.IndexedLogDB.addBillProcess({ errorData: 'WebSocket closed' })
       this.connectionStatus.next('disconnected');
       this.scheduleReconnect();
     };
 
     this.webSocket.onerror = (ev) => {
       console.error('WebSocket error', ev);
+      this.IndexedLogDB.addBillProcess({ errorData: `WebSocket error ${JSON.stringify(ev)}` })
       this.connectionStatus.next('disconnected');
       this.webSocket?.close();
     };
@@ -272,6 +306,6 @@ export class WsapiService implements OnDestroy {
         },
       };
     }
-    return { unsubscribe: () => {} };
+    return { unsubscribe: () => { } };
   }
 }

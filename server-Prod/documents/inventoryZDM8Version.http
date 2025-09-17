@@ -58,7 +58,7 @@ Content-Type: application/json
 }
 
 ###
-POST https://tvending.khamvong.com/zdm8/reportBillNotPaid HTTP/1.1
+POST https://tvending4.khamvong.com/zdm8/reportBillNotPaid HTTP/1.1
 Content-Type: application/json
 
 {
@@ -75,9 +75,9 @@ POST https://vending-service-api5.laoapps.com/zdm8/reportClientLog HTTP/1.1
 Content-Type: application/json
 
 {
-    "machineId":"77755001",
+    "machineId":"55555002",
     "fromDate":"2025-09-01",
-    "toDate":"2025-09-04",
+    "toDate":"2025-09-13",
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0OTUzM2EwNmU3NjNkMzczYTVkMDZjNTZjOTYxOGM4OTI2ZGE2NTIyMDUzMGE3YmY0M2MxYzQ5MDIzNzg3MWJiZDc1NDNiZGJiODA4OWYwNzNiZTg3MzJkNGZmZDViOGZmYmQ0ODE5YTgyNWMyODE4ZmZjNzQ1ZTIzM2M1YzVlOTMiLCJwaG9uZU51bWJlciI6Iis4NTYyMDU2MzgxMDA5IiwidXVpZCI6Ijk4YzViZDQwLWUzNTMtMTFlZC1hYWQ3LTE1OWIxZjAyMzFmYiIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc0OTI2NzIwNywiZXhwIjozNjAwMDAwMTc0OTI2NzIxMH0.GpcrN08ZtwKzbguAV3EDtRKC45KM4OfNgfyv5S4A3iE"
 }
 
@@ -87,10 +87,19 @@ POST https://vending-service-api5.laoapps.com/zdm8/reportLogsTemp HTTP/1.1
 Content-Type: application/json
 
 {
-    "machineId":"54265001",
+    "machineId":"55555002",
     "fromDate":"2025-09-5",
-    "toDate":"2025-09-09",
+    "toDate":"2025-09-13",
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0OTUzM2EwNmU3NjNkMzczYTVkMDZjNTZjOTYxOGM4OTI2ZGE2NTIyMDUzMGE3YmY0M2MxYzQ5MDIzNzg3MWJiZDc1NDNiZGJiODA4OWYwNzNiZTg3MzJkNGZmZDViOGZmYmQ0ODE5YTgyNWMyODE4ZmZjNzQ1ZTIzM2M1YzVlOTMiLCJwaG9uZU51bWJlciI6Iis4NTYyMDU2MzgxMDA5IiwidXVpZCI6Ijk4YzViZDQwLWUzNTMtMTFlZC1hYWQ3LTE1OWIxZjAyMzFmYiIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc0OTI2NzIwNywiZXhwIjozNjAwMDAwMTc0OTI2NzIxMH0.GpcrN08ZtwKzbguAV3EDtRKC45KM4OfNgfyv5S4A3iE"
+}
+
+
+###
+POST https://tvending4.khamvong.com/zdm8/reportBilling HTTP/1.1
+Content-Type: application/json
+
+{
+
 }
 
 

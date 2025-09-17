@@ -91,6 +91,7 @@ import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 import { IResModel } from '../services/syste.model';
 import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 import { Router } from '@angular/router';
+import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
 
 @Component({
   selector: 'app-tab1',
@@ -2157,6 +2158,14 @@ export class Tab1Page implements OnDestroy {
     this.isOpenStock = true;
     m.onDidDismiss().then((r) => {
       this.isOpenStock = false;
+    });
+
+  }
+
+  async showTopup() {
+    const m = await this.apiService.showModal(GivePopUpPage);
+    m.present();
+    m.onDidDismiss().then((r) => {
     });
 
   }

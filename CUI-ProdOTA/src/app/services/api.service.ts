@@ -1307,6 +1307,14 @@ export class ApiService {
     );
   }
 
+  giveTopupOrRegisterLaabx(body: any) {
+    return axios.post(
+      'https://hangmistore-api.laoapps.com/api/v1/authUM/register4',
+      body,
+      { headers: this.headerBase() }
+    );
+  }
+
 
   retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
     return axios.post<IResModel>(
@@ -1458,6 +1466,9 @@ export class ApiService {
       headers: this.headerBase(),
     });
   }
+
+
+
   showLoading(message = 'loading...', t = 15000) {
     return new Promise((resolve, reject) => {
       this.load.create({ message, duration: t }).then((r) => {

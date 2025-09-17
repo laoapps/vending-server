@@ -1,0 +1,65 @@
+<ion-header [translucent]="true">
+</ion-header>
+
+<ion-content [fullscreen]="true" class="content">
+  <div class="main-container">
+    <!-- หัวข้อใหญ่ -->
+    <h1 class="main-title pulse">🎉 ຂອບໃຈທີ່ສັ່ງຊື້ສິນຂອງພວກເຂົາ 🎉</h1>
+
+    <!-- รายละเอียดรางวัล -->
+    <p class="reward-details">
+      ກະລຸນາປ້ອນໂທລະສັບເພື່ອລຸ້ນໂຊກ ແລະ ໂຫຼດແອັບຂອງພວກເຮົາເພື່ອຮັບຄະແນນ<br>
+      ພຽງແຕ່ປ້ອນເບີ 8 ໂຕເລກຂອງເຈົ້າກໍມີສິດລຸ້ນລາງວັນໃຫຍ່
+    </p>
+
+    <!-- รูปโฆษณา -->
+    <div class="ad-container">
+      <img src="../../assets/topup/bannertopup.jpeg" alt="โปรโมชั่นพิเศษ">
+
+    </div>
+
+    <!-- ช่องกรอกเบอร์โทร -->
+    <div class="phone-input-container">
+      <div class="phone-box" *ngFor="let num of phoneNumbers" [class.filled]="num !== ''">{{ num || '_' }}</div>
+    </div>
+
+    <!-- Keypad ตัวเลข -->
+    <div class="keypad">
+      <ng-container *ngFor="let row of numberRows">
+        <div class="keypad-row">
+          <button *ngFor="let n of row" (click)="onNumberClick(n)" class="key-button">{{ n }}</button>
+        </div>
+      </ng-container>
+      <div class="keypad-row">
+        <div class="keypad-spacer"></div>
+        <button (click)="onNumberClick('0')" class="key-button">0</button>
+        <button class="delete-btn key-button" (click)="onDelete()">⌫</button>
+      </div>
+    </div>
+
+    <!-- ปุ่มยืนยัน -->
+    <ion-button expand="block" color="danger" [disabled]="!isPhoneComplete()" (click)="submitPhone()">
+      ສົ່ງເບີໂທລະສັບເພື່ອຮັບໂຊກ
+    </ion-button>
+
+    <!-- หมายเหตุ -->
+    <p class="note">
+      ໝາຍເຫດ: ຫາກເບີໂທລະສັບຂແງທ່ານບໍ່ມີໃນລະບົບຂອງພວກເຮົາ<br>
+      <span class="highlight">ເຮົາຈະສ້າງບັນຊີ ແລະ ກະເປົາໃຫ້ອັດຕະໂນມັດ</span>
+    </p>
+
+    <!-- QR โหลดแอป -->
+    <div class="qr-container">
+      <div class="qr-item">
+        <img src="../../assets/logo/laab_android.png" alt="Download Android App">
+
+        <p>Android</p>
+      </div>
+      <div class="qr-item">
+        <img src="../../assets/logo/laab_ios.png" alt="Download iOS App">
+        <p>iOS</p>
+      </div>
+    </div>
+
+  </div>
+</ion-content>
