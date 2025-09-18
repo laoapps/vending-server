@@ -10,7 +10,6 @@ import { SettingPage } from './setting/setting.page';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { VendingIndexServiceService } from './vending-index-service.service';
 import { LiveupdateService } from './liveupdate.service';
-import { App } from '@capacitor/app';
 import { CloseStytemPage } from './close-stytem/close-stytem.page';
 
 

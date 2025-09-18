@@ -355,6 +355,8 @@ export class ApiService {
           return;
         }
 
+        this.checkIsDropStock();
+
         that.cash.amount = r.balance;
         that.wsAlive.time = new Date();
         that.wsAlive.isAlive = that.checkOnlineStatus();
@@ -601,6 +603,24 @@ export class ApiService {
     });
 
     // this.initLocalHowToVideoPlayList();
+  }
+
+
+  checkIsDropStock() {
+    this.loadDeliveryingBillsNew().then((r) => {
+      try {
+        if (r.length > 0) {
+          this.isDropStock = true
+        } else {
+          this.isDropStock = false;
+        }
+      } catch (error) {
+        console.log(`error`, error);
+        this.isDropStock = false;
+
+      }
+
+    });
   }
 
   waitingForDelivery = false;

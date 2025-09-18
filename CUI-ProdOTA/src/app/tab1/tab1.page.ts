@@ -2094,9 +2094,9 @@ export class Tab1Page implements OnDestroy {
           this.saleList.sort((a, b) => {
             if (a.position < b.position) return -1;
           });
-          setTimeout(() => {
-            this.showBills();
-          }, 10000);
+          // setTimeout(() => {
+          // this.showBills();
+          // }, 10000);
 
           resolve(IENMessage.success);
         } else {
@@ -2113,9 +2113,9 @@ export class Tab1Page implements OnDestroy {
               this.saleList.sort((a, b) => {
                 if (a.position < b.position) return -1;
               });
-              setTimeout(() => {
-                this.showBills();
-              }, 10000);
+              // setTimeout(() => {
+              //   this.showBills();
+              // }, 10000);
 
               this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
 
