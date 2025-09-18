@@ -90,6 +90,7 @@ import { Toast } from '@capacitor/toast';
 import { VendingIndexServiceService } from '../vending-index-service.service';
 import { IndexdblocalService } from './indexdblocal.service';
 import { IndexerrorService } from '../indexerror.service';
+import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
 
 @Injectable({
   providedIn: 'root',
@@ -285,6 +286,9 @@ export class ApiService {
 
   countErrorPay: number = 0;
 
+  allowTopUp = false;
+
+
 
   checkAppVersion: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(
@@ -334,6 +338,7 @@ export class ApiService {
 
       try {
         if (!r) return console.log('empty');
+        this.allowTopUp = r?.data?.setting?.isTopUp ?? false;
         console.log('ws alive subscription', that.cash, r);
 
         this.secret = r?.data?.secret;
@@ -640,18 +645,40 @@ export class ApiService {
               }
 
               this.isDropStock = true;
-              if (pb.length) {
-                if (!this.isRemainingBillsModalOpen) {
-                  this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-                    this.isRemainingBillsModalOpen = true;
-                    r.present();
-                    r.onDidDismiss().then(() => {
-                      this.isRemainingBillsModalOpen = false;
+              if (this.allowTopUp) {
+                const m = await this.showModal(GivePopUpPage);
+                m.present();
+                m.onDidDismiss().then((r) => {
+                  // console.log('-----> GO TO DROP');
+                  if (pb.length) {
+                    if (!this.isRemainingBillsModalOpen) {
+                      this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+                        this.isRemainingBillsModalOpen = true;
+                        r.present();
+                        r.onDidDismiss().then(() => {
+                          this.isRemainingBillsModalOpen = false;
+                        }
+                        );
+                      });
                     }
-                    );
-                  });
-                }
 
+                  }
+
+                });
+              } else {
+                if (pb.length) {
+                  if (!this.isRemainingBillsModalOpen) {
+                    this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+                      this.isRemainingBillsModalOpen = true;
+                      r.present();
+                      r.onDidDismiss().then(() => {
+                        this.isRemainingBillsModalOpen = false;
+                      }
+                      );
+                    });
+                  }
+
+                }
               }
 
               this.eventEmmiter.emit('delivery');

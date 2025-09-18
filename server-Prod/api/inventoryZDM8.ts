@@ -1271,7 +1271,10 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!machineData) {
                             return res.send(PrintError('validateHMVending', null, EMessage.machineNotExist, returnLog(req, res, true)));
                         }
-                        return res.send(PrintSucceeded('validateHMVending', { 'ownerUuid': machineData?.ownerUuid }, EMessage.succeeded))
+                        if (machineData.data?.length < 1) {
+                            return res.send(PrintError('validateHMVending', null, EMessage.notallowed, returnLog(req, res, true)));
+                        }
+                        return res.send(PrintSucceeded('validateHMVending', { 'ownerUuid': machineData?.ownerUuid, 'merchantId': machineData?.data[0]?.owner, 'mobileNo': machineData?.data[0]?.ownerPhone, 'channel': machineData?.data[0]?.imei }, EMessage.succeeded))
                     } catch (error) {
                         res.send(PrintError("validateHMVending", error, EMessage.error, returnLog(req, res, true)));
                     }
