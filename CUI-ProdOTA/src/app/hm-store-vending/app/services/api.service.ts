@@ -35,7 +35,7 @@ export class ApiService {
 
   selmany_store(param: any): Observable<any> {
     const header = this.headerBase();
-    return this.http.post(this.url_onlinestore + 'gstore_3apps/selmany_bystoretype/', param, { headers: header });
+    return this.http.post(this.url_onlinestore + 'gstore_3apps/selmany_bystoretype2/', param, { headers: header });
   }
 
   loadpost_bystoreuuid(data: any): Observable<any> {

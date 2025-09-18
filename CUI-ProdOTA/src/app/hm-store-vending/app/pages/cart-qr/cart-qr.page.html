@@ -1,0 +1,175 @@
+<ion-content class="ion-padding">
+  <div style="display: flex;flex-direction: row;justify-content: space-between;">
+    <div class="title">
+      ລາຍການກະຕ່າ
+    </div>
+    <div>
+      <ion-icon (click)="dismiss()" style="font-size: 42px;color: red;" name="close-outline"></ion-icon>
+    </div>
+  </div>
+
+  <ion-grid>
+    <ion-row class="menu-area">
+  <!-- Add New Card -->
+    <ion-col size="6" size-sm="6" size-md="4" size-lg="3" >
+      <ion-card class="food-item add-card" (click)="Click_AddNew()">
+        <ion-card-header class="image-add">
+          <ion-icon name="add" style="font-size: 90px; color: red;"></ion-icon>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-card-title class="add-new">ເພີ່ມເມນູ</ion-card-title>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+
+
+
+      <ion-col size="6" size-sm="6" size-md="4" size-lg="3"  *ngFor="let item of PostArray;let j=index">
+        <ion-card class="food-item" (click)="Click_DetailProduct(item)">
+          <ion-card-header class="food-image">
+            <img class="imgae-placeholder" src="{{item.pic}}" alt="">
+          </ion-card-header>
+          <ion-card-content>
+            <ion-card-title class="food-name">{{ item.primaryProduct?.product?.name }}</ion-card-title>
+            <ion-text class="food-price" color="danger">{{ item.total_price | number}} Kip</ion-text>
+
+                  <!-- Qty Control -->
+            <div class="qty-control" (click)="$event.stopPropagation()">
+              <ion-button size="small" fill="outline" (click)="getqty(0,j)">-</ion-button>
+              <span class="qty-number">{{item.qty}}</span>
+              <ion-button size="small" fill="outline" (click)="getqty(1,j)">+</ion-button>
+            </div>
+
+
+            <div class="delete-wrapper">
+              <div class="delete-icon-cart" (click)="Click_Delete(item)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </div>
+            </div>
+                     
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer style="height: 350px;">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="7.5" style="border-right: 1px solid #e0e0e0;">
+        <div class="list-left">
+          <div class="label_name_show">
+            ປ້ອນເບີໂທຂອງທ່ານ ຈະໄດ້ຮັບຄູ່ປ່ອງຈາກ LAABX ທ່ານສາມາດລຸ້ນໂຊກລາງວັນໃຫ່ຍຂອງພວກເຮົາ
+          </div>
+          <div class="card">
+            <form #f="ngForm">
+              <label class="phone-field">
+                <span class="country-code">+85620</span>
+                <input
+                  name="phone"
+                  [(ngModel)]="phone"
+                  required
+                  minlength="8"
+                  type="tel"
+                  inputmode="tel"
+                  maxlength="8"
+                  placeholder="xxxx xxxx"
+                  class="phone-input"
+                  (ngModelChange)="autoSubmit(f)"
+                />
+              </label>
+        
+              <div class="hint" *ngIf="f.submitted && !f.form.valid">
+                <div *ngIf="f.controls['phone']?.errors?.['required']">
+                  Phone number is required.
+                </div>
+                <div *ngIf="f.controls['phone']?.errors?.['pattern']">
+                  Digits only please.
+                </div>
+                <div *ngIf="f.controls['phone']?.errors?.['minlength']">
+                  Too short.
+                </div>
+              </div>
+        
+  
+            </form>
+            <!-- <div class="actions">
+              <ion-button type="submit" expand="block" [disabled]="!f.form.valid">
+                Save
+              </ion-button>
+            </div> -->
+          </div>
+        </div>
+
+        <div class="list-left-buttom">
+          <div style="margin: 10px;">
+            <div class="label_name_show">
+              ທ່ານສາມາດ ດາວໂຫລດໄດ້ທີ່ນີ້ LAABX ໄດ້ທີ່ດ້ານລຸ່ມນີ້ເລີຍ
+            </div>
+            <div class="div-qr-dowload">
+              <div class="div-in-playstore">
+                <div>
+                  <img class="image-playstore" src="{{pic_playstore}}" alt="">
+                </div>
+                <div class="div-logo-dowload">
+                  <img height="50px" width="50px" src="{{pic_qr_android}}" alt="">
+                </div>
+              </div>
+              <div class="div-in-playstore">
+                <div>
+                  <img class="image-playstore" src="{{pic_appstore}}" alt="">
+                </div>
+                <div class="div-logo-dowload">
+                  <img height="50px" width="50px" src="{{pic_qr_ios}}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-container">
+            <video #videoPlayer autoplay muted playsinline></video>
+          </div>
+        </div>
+
+
+
+      </ion-col>
+
+
+      <ion-col size="4.5">
+        <div class="bill-container">
+          <div *ngIf="isPayment == true" class="bill-wave-top">
+            <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+          </div>
+          <div class="bill-header">
+            <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
+              class="qr-img">
+            <div *ngIf="isPayment == false" class="loader"></div>
+    
+            <div class="total">{{ parseGetTotalSale.t | number }}</div>
+    
+          </div>
+        </div>
+        <div style="position: relative;">
+          <ion-label class="label_name" [ngStyle]="{'color': phone ? '#333' : '#fff'}">ຈໍານວນ ({{getTotalQty()}}): {{getTotalPrice() | number}} Kip</ion-label>
+          <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;margin-top: 15px;">
+            <img height="180px" width="180px" src="{{qrcode_logo}}" alt="" >
+          </div>
+          <div style="margin-top: 15px;">
+            <!-- <ion-label class="label_name">currency:</ion-label> -->
+            <ion-label class="label_name name-currency" [ngStyle]="{'color': phone ? '#333' : '#fff'}">LAO QR CODE</ion-label>
+          </div>
+          <div *ngIf="isPayment == true" class="label_name"
+          style="margin-top: 15px;font-size: 20px;margin-bottom: -10px;font-weight: bold;color: #fff;">
+          ໜ້ານີ້ຈະປິດພາຍໃນ {{
+          countdownDestroy }} ວິນາທີ </div>
+        </div>
+
+        <div *ngIf="phone">
+          <img class="image-show-background" height="100px" width="100px" src="{{pic_background}}" alt="">
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-footer>

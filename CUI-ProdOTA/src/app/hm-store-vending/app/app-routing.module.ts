@@ -16,16 +16,8 @@ const routes: Routes = [
     loadChildren: () => import('./pages/detail-product/detail-product.module').then( m => m.DetailProductPageModule)
   },
   {
-    path: 'pay-qr',
-    loadChildren: () => import('./pages/pay-qr/pay-qr.module').then( m => m.PayQrPageModule)
-  },
-  {
-    path: 'cart',
-    loadChildren: () => import('./pages/cart/cart.module').then( m => m.CartPageModule)
-  },
-  {
-    path: 'add-phonenumber',
-    loadChildren: () => import('./pages/add-phonenumber/add-phonenumber.module').then( m => m.AddPhonenumberPageModule)
+    path: 'cart-qr',
+    loadChildren: () => import('./pages/cart-qr/cart-qr.module').then( m => m.CartQrPageModule)
   },
 ];
 

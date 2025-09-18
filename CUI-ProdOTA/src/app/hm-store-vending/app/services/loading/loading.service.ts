@@ -146,7 +146,7 @@ export class LoadingService {
     });
   }
 
-  async alert_justOK(text: string): Promise<boolean> {
+  async alert_justOK(text: string,timeOut=15000): Promise<boolean> {
     return new Promise<boolean>(async (resolve, rejects) => {
       try {
         const alert = await this.alertController.create({
@@ -164,6 +164,9 @@ export class LoadingService {
           ],
         });
         await alert.present();
+        setTimeout(() => {
+          alert.dismiss();
+        }, timeOut);
       } catch (error) {
         rejects(error);
       }
