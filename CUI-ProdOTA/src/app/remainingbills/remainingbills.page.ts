@@ -20,7 +20,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   timer: any = {} as any;
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
   counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
-
+  private readonly RETRY_TIMEOUT_MS = 2000;
+  private deliveryBills: DeliveryBills[] = []; // Replace `this.r` with typed property
+  private readonly SUPPORTED_DEVICES = ['VMC', 'ZDM8', 'MT102', 'adh814'];
   @Input() r = new Array<IBillProcess>();
   @Input() serial: ISerialService;
   url = this.apiService.url;
@@ -103,12 +105,12 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     const position = this.r[this.r.length - 1].position;
 
     const ownerUuid = this.r[this.r.length - 1].ownerUuid
-    const trandID = this.r[this.r.length - 1].bill.transactionID;
+    const transID = this.r[this.r.length - 1].bill.transactionID;
 
-    console.log(`autoRetryProcessBill transactionID`, transactionID, `position`, position, `ownerUuid`, ownerUuid, `trandID`, trandID);
+    console.log(`autoRetryProcessBill transactionID`, transactionID, `position`, position, `ownerUuid`, ownerUuid, `trandID`, transID);
 
 
-    this.retryProcessBillNew(transactionID, position, ownerUuid, trandID + '');
+    this.retryProcessBillNew({ transactionID, position, ownerUuid, transID: transID + '' });
   }
 
   ngOnDestroy(): void {
@@ -126,168 +128,132 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   processing: boolean = false;
 
-  async retryProcessBillNew(transactionID: string, position: number, ownerUuid: string, trandID: string, human?: boolean) {
-    console.log('transactionID', transactionID, 'position', position, 'ownerUuid', ownerUuid, 'trandID', trandID);
+  async retryProcessBillNew(params: BillProcessParams): Promise<void> {
+    const { transactionID, position, ownerUuid, transID, human = false } = params;
 
-    console.log(`rrrrr`, this.r);
-    console.log(`-->`, this.canclick);
-    if (this.processing) { return; } /// HERE 2/4
-    this.processing = true; /// HERE 3/4
-
-    // this.apiService.showLoading('waiting...', 5000);
-
-    if (human == true) {
-      this.clearTimer();
+    if (this.processing) {
+      console.warn('Process already running');
+      return;
     }
 
+    this.processing = true;
+
     try {
-      if (this.serial) {
-        // const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '1') || 1;
-        const param = { slot: position, dropSensor: 1 };
-        const device = localStorage.getItem('device') || 'VMC';
-        if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
-          await this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-          this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
-            await this.loadBillLocal();
-            // Toast.show({ text: 'Bill process deleted', duration: 'long' });
-
-            this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
-              console.log('shippingcontrol');
-              try {
-                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click Solot ${position} droped transactionID ${transactionID} trandID ${trandID}` });
-              } catch (err) {
-                Toast.show({ text: 'Faild save drop', duration: 'long' })
-              }
-            }).catch(async (error) => {
-              console.log('error shippingcontrol', error);
-              Toast.show({ text: 'error shippingcontrol' + JSON.stringify(error || {}) });
-              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error shippingcontrol :${JSON.stringify(error)}` });
-            });
-
-
-
-            setTimeout(() => {
-              this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
-                const r = rx.data;
-                // this.apiService.dismissLoading();
-                console.log(`vending on sale`, ApiService.vendingOnSale);
-                console.log('retryProcessBill', r);
-
-              }, (error) => {
-                this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
-              });
-            }, 2000);
-
-
-
-            this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-              console.log('reload_ticket', reload_ticket);
-
-              this.r = reload_ticket;
-              console.log(`=====>here der`, this.r);
-
-              if (this.r != undefined && Object.entries(this.r).length == 0) {
-                localStorage.setItem('product_fall', '0');
-                this.clearTimer();
-                this.apiService, this.modal.dismiss();
-                return;
-              }
-
-              if (human == true) {
-                this.loadAutoFall();
-              }
-            });
-            this.apiService.soundThankYou();
-          }).catch((error) => {
-            console.log('Error deleteBillProcess', error);
-            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error deleteBillProcess :${JSON.stringify(error)}` });
-            this.loadBillLocal();
-          });
-
-        } else {
-          this.apiService.IndexedLogDB.addBillProcess({ errorData: 'Protocol has not been implemented yet!!!!' });
-          Toast.show({ text: 'Protocol has not been implemented yet!!!!', duration: 'long' });
-        }
-      } else {
-        console.log('serial not init');
-        this.apiService.IndexedLogDB.addBillProcess({ errorData: `serial not init` });
-        Toast.show({ text: 'serial not init for drop' })
-        // await this.apiService.myTab1.connect();
-        // this.apiService.reloadPage();
-
-        throw new Error('serial not init');
+      if (human) {
+        this.clearTimer();
       }
 
-    } catch (error) {
-      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error retryProcessBillNew :${JSON.stringify(error)}` });
-      setTimeout(() => {
-        // this.apiService.dismissLoading();
-      }, 3000);
-      setTimeout(() => {
-        this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
-          const r = rx.data;
-          // this.apiService.dismissLoading();
-          console.log(`vending on sale`, ApiService.vendingOnSale);
-          console.log('retryProcessBill', r);
+      if (!this.serial) {
+        throw new Error('Serial device not initialized');
+      }
 
-        }, (error) => {
-          this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
-        });
-      }, 2000);
-      this.clearTimer();
-      this.r = [];
-      this.reloadDelivery(true);
+      if (!this.SUPPORTED_DEVICES.includes(localStorage.getItem('device') || 'VMC')) {
+        throw new Error('Unsupported device protocol');
+      }
+
+      await this.handleSerialCommand(transactionID, position, transID);
+      await this.handleBillDeletion(transactionID);
+      await this.handleRetryAndUpdate(transactionID, position, ownerUuid, transID, human);
+      await this.reconfirmStock([{ transactionID, position }]);
+    } catch (error) {
+      await this.handleError(error, transactionID, position, ownerUuid, transID);
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  private async handleSerialCommand(transactionID: string, position: number, transID: string): Promise<void> {
+    const param = { slot: position, dropSensor: 1 };
+    try {
+      await this.serial!.command(EMACHINE_COMMAND.shippingcontrol, param, 1);
+      await this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Clicked slot ${position}, dropped transactionID ${transactionID}, transID ${transID}`,
+      });
+    } catch (error) {
+      await this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error in shippingcontrol: ${JSON.stringify(error)}`,
+      });
+      throw error;
+    }
+  }
+
+  private async handleBillDeletion(transactionID: string): Promise<void> {
+    try {
+      await this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+      await this.loadBillLocal();
+    } catch (error) {
+      await this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error deleting bill process: ${JSON.stringify(error)}`,
+      });
+      throw error;
+    }
+  }
+
+  private async handleRetryAndUpdate(
+    transactionID: string,
+    position: number,
+    ownerUuid: string,
+    transID: string,
+    human: boolean
+  ): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, this.RETRY_TIMEOUT_MS));
+    try {
+      const response = await this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, transID);
+      console.log('Retry result:', response.data);
+
+      const deliveryBills = await this.apiService.loadDeliveryingBillsNew();
+      this.deliveryBills = deliveryBills;
+
+      if (deliveryBills.length === 0) {
+        localStorage.setItem('product_fall', '0');
+        this.clearTimer();
+        this.modal.dismiss();
+        return;
+      }
+
+      if (human) {
+        this.loadAutoFall();
+      }
+
+      await this.apiService.soundThankYou();
+    } catch (error) {
+      await this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error retrying bill process: ${JSON.stringify(error)}`,
+      });
+      throw error;
+    }
+  }
+
+  private async handleError(
+    error: unknown,
+    transactionID: string,
+    position: number,
+    ownerUuid: string,
+    transID: string
+  ): Promise<void> {
+    await this.apiService.IndexedLogDB.addBillProcess({
+      errorData: `Error in retryProcessBillNew: ${JSON.stringify(error)}`,
+    });
+
+    if (error instanceof Error && error.message === 'Serial device not initialized') {
       await this.apiService.soundSystemError();
       await this.apiService.reloadPage();
       await App.exitApp();
-
+      return;
     }
 
-    finally {
-      // Code that runs regardless of try/catch outcome
-      this.processing = false; /// HERE 4/4
+    await new Promise((resolve) => setTimeout(resolve, this.RETRY_TIMEOUT_MS));
+    await this.retryProcessBillNew({ transactionID, position, ownerUuid, transID });
+  }
+
+  private async reconfirmStock(bills: { transactionID: string; position: number }[]): Promise<void> {
+    try {
+      await this.apiService.reconfirmStockNew(bills);
+    } catch (error) {
+      await this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error reconfirming stock: ${JSON.stringify(error)}`,
+      });
     }
-
-    // if (this.canclick == true) {
-    //   this.apiService.showLoading('', 3000);
-
-
-    //   this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-
-
-    //   this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
-    //     console.log(`vending on sale`, ApiService.vendingOnSale);
-    //     console.log('retryProcessBill', r);
-    //     if (r.status) {
-    //       this.apiService.soundThankYou()
-    //       this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
-    //         r.present();
-    //       });
-    //       let count: number = 0;
-    //       console.log(`lleng`, this.r);
-    //       if (this.r != undefined && Object.entries(this.r).length > 1) {
-    //         count = this.r.length - 1;
-    //       } else {
-    //         count = 0;
-    //       }
-
-    //       const i = this.r.findIndex(v => v.position == position);
-    //       this.r.splice(i, 1);
-    //       this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
-
-
-    //       if (count == 0) {
-    //         this.apiService, this.modal.dismiss();
-    //       }
-    //     } else {
-    //       await this.apiService.soundSystemError();
-    //     }
-    //     this.apiService.simpleMessage(r.message);
-    //     setTimeout(() => {
-    //       this.apiService.dismissLoading();
-    //     }, 3000)
-    //   })
-    // }
   }
 
   async retryProcessBill(transactionID: string, position: number, human?: boolean) {
@@ -629,4 +595,16 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     // this.apiService.reloadPage();
   }
 
+}
+interface BillProcessParams {
+  transactionID: string;
+  position: number;
+  ownerUuid: string;
+  transID: string; // Renamed from trandID for clarity
+  human?: boolean;
+}
+
+interface DeliveryBills {
+  // Define structure of delivery bills
+  [key: string]: any; // Replace with specific type
 }

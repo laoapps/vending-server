@@ -40,7 +40,7 @@ import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 // import Swal from "sweetalert2";
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
@@ -92,6 +92,8 @@ import { IndexdblocalService } from './indexdblocal.service';
 import { IndexerrorService } from '../indexerror.service';
 import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
 
+var REQUEST_TIME_OUT = 10000;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -132,7 +134,7 @@ export class ApiService {
         }, 5000);
         setTimeout(() => {
           this.soundPleaseViewVideo();
-        }, 10000);
+        }, REQUEST_TIME_OUT);
         setTimeout(() => {
           this.soundCheckTicketsExist();
         }, 15000);
@@ -141,7 +143,7 @@ export class ApiService {
         }, 20000);
       }
 
-    }, 10000);
+    }, REQUEST_TIME_OUT);
   }
   endProcessBillSound() {
     this.soundCompleted();
@@ -881,7 +883,7 @@ export class ApiService {
 
     setTimeout(async () => {
       window.location.reload();
-    }, 10000);
+    }, REQUEST_TIME_OUT);
   }
 
   reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
@@ -1211,10 +1213,10 @@ export class ApiService {
     // headers.append('Accept', 'application/json');
     // headers.append('content-type', 'application/json');
     //let options = new RequestOptions({ headers:headers})
-    const headers = {
+    const headers = new AxiosHeaders({
       'Accept': 'application/json',
       'Content-Type': 'application/json'
-    };
+    });
     return headers;
   }
   public async saveImage(id: number, base64: string, db = 'image') {
@@ -1279,7 +1281,7 @@ export class ApiService {
   initDemo() {
     return axios.get<IResModel>(
       this.url + '/init?machineId=' + this.machineId.machineId,
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
   loadVendingSale(isActive = 'yes') {
@@ -1298,13 +1300,13 @@ export class ApiService {
     return axios.post<IResModel>(
       this.url + '/machineSaleList?isActive=' + isActive,
       req,
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
 
   loadOnlineMachine() {
     return axios.get<IResModel>(this.url + '/getOnlineMachines', {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
   // loadDeliveryingBills() {
@@ -1315,7 +1317,7 @@ export class ApiService {
   //         .SHA256(this.machineId.machineId + this.machineId.otp)
   //         .toString(cryptojs.enc.Hex),x
   //     },
-  //     { headers: this.headerBase() }
+  //     { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
   //   );
   // }
 
@@ -1331,7 +1333,7 @@ export class ApiService {
     //       .SHA256(this.machineId.machineId + this.machineId.otp)
     //       .toString(cryptojs.enc.Hex),
     //   },
-    //   { headers: this.headerBase() }
+    //   { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     // );
     return this.IndexeLocaldDB.getBillProcesses();
   }
@@ -1343,7 +1345,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
   saveSale(data: any) {
@@ -1355,7 +1357,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
   recoverSale() {
@@ -1366,7 +1368,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
   confirmDeductStock(data: any) {
@@ -1378,17 +1380,17 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
   loadPaidBills() {
     return axios.post<IResModel>(this.url + '/getPaidBills', {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
   loadBills() {
     return axios.post<IResModel>(this.url + '/getBills', {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
   // if there is a new ads then remove the old ones 
@@ -1401,7 +1403,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
 
@@ -1418,7 +1420,7 @@ export class ApiService {
         machineId: this.machineId.machineId,
         transactionList: transactionList
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
 
@@ -1426,7 +1428,7 @@ export class ApiService {
     return axios.post(
       'https://hangmistore-api.laoapps.com/api/v1/authUM/register4',
       body,
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
 
@@ -1441,7 +1443,7 @@ export class ApiService {
         ownerUuid: ownerUuid,
         trandID: trandID
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
   retryProcessBill(T: string, position: number) {
@@ -1452,13 +1454,13 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
   retryProcessBillLocal(T: string, position: number) {
     const p = { command: 'process', data: { slot: position }, transactionID: T };
     return axios.post<IResModel>('http://localhost:19006/', p, {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
 
@@ -1478,7 +1480,7 @@ export class ApiService {
       .toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
 
@@ -1494,7 +1496,7 @@ export class ApiService {
 
     return axios.post(
       this.vending_server, body, {
-      headers: this.headerBase()
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT
     }
     );
   }
@@ -1509,7 +1511,7 @@ export class ApiService {
           .toString(cryptojs.enc.Hex),
         transactionID: localStorage.getItem('transactionID')
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
     );
   }
 
@@ -1532,7 +1534,7 @@ export class ApiService {
 
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
 
     });
   }
@@ -1555,7 +1557,7 @@ export class ApiService {
 
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
 
@@ -1578,7 +1580,7 @@ export class ApiService {
       .toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url + '/getFreeProduct', req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
 
@@ -2164,7 +2166,7 @@ export class ApiService {
     const url = this.url + '/updateStatus';
     console.log(url + ` req der ` + JSON.stringify(req));
     return axios.post<IResModel>(url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(),timeout:REQUEST_TIME_OUT,
     });
   }
 
