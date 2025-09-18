@@ -665,41 +665,55 @@ export class ApiService {
               }
 
               this.isDropStock = true;
-              if (this.allowTopUp) {
-                const m = await this.showModal(GivePopUpPage);
-                m.present();
-                m.onDidDismiss().then((r) => {
-                  // console.log('-----> GO TO DROP');
-                  if (pb.length) {
-                    if (!this.isRemainingBillsModalOpen) {
-                      this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-                        this.isRemainingBillsModalOpen = true;
-                        r.present();
-                        r.onDidDismiss().then(() => {
-                          this.isRemainingBillsModalOpen = false;
-                        }
-                        );
-                      });
+
+              if (pb.length) {
+                if (!this.isRemainingBillsModalOpen) {
+                  this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+                    this.isRemainingBillsModalOpen = true;
+                    r.present();
+                    r.onDidDismiss().then(() => {
+                      this.isRemainingBillsModalOpen = false;
                     }
-
-                  }
-
-                });
-              } else {
-                if (pb.length) {
-                  if (!this.isRemainingBillsModalOpen) {
-                    this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-                      this.isRemainingBillsModalOpen = true;
-                      r.present();
-                      r.onDidDismiss().then(() => {
-                        this.isRemainingBillsModalOpen = false;
-                      }
-                      );
-                    });
-                  }
-
+                    );
+                  });
                 }
+
               }
+              // if (this.allowTopUp) {
+              //   const m = await this.showModal(GivePopUpPage);
+              //   m.present();
+              //   m.onDidDismiss().then((r) => {
+              //     // console.log('-----> GO TO DROP');
+              //     if (pb.length) {
+              //       if (!this.isRemainingBillsModalOpen) {
+              //         this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+              //           this.isRemainingBillsModalOpen = true;
+              //           r.present();
+              //           r.onDidDismiss().then(() => {
+              //             this.isRemainingBillsModalOpen = false;
+              //           }
+              //           );
+              //         });
+              //       }
+
+              //     }
+
+              //   });
+              // } else {
+              //   if (pb.length) {
+              //     if (!this.isRemainingBillsModalOpen) {
+              //       this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+              //         this.isRemainingBillsModalOpen = true;
+              //         r.present();
+              //         r.onDidDismiss().then(() => {
+              //           this.isRemainingBillsModalOpen = false;
+              //         }
+              //         );
+              //       });
+              //     }
+
+              //   }
+              // }
 
               this.eventEmmiter.emit('delivery');
               resolve(EMessage.succeeded);
