@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, GestureController, IonModal, ModalController } from '@ionic/angular';
-import { PayQrPage } from '../pay-qr/pay-qr.page';
 import { PhotoProductService } from '../../services/photo/photo-product.service';
 import { LoadingService } from '../../services/loading/loading.service';
 import { ApiService } from '../../services/api.service';
@@ -144,15 +143,15 @@ export class DetailProductPage implements OnInit {
   }
 
   onClickBuy(){
-    this.m.showModal(PayQrPage,{Detail_product:this.Detail_product,qty:this.qty},'dialog-fullscreen').then((r) => {
-      if (r) {
-        r.present();
-        r.onDidDismiss().then((res) => {
-          if (res.data.dismiss) {
-          }
-        });
-      }
-    });
+    // this.m.showModal(PayQrPage,{Detail_product:this.Detail_product,qty:this.qty},'dialog-fullscreen').then((r) => {
+    //   if (r) {
+    //     r.present();
+    //     r.onDidDismiss().then((res) => {
+    //       if (res.data.dismiss) {
+    //       }
+    //     });
+    //   }
+    // });
   }
 
 

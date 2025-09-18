@@ -1,16 +1,11 @@
 import { Component } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import {
-  BarcodeScanner,
-  BarcodeFormat,
-} from '@capacitor-mlkit/barcode-scanning';
-import { DetailProductPage } from '../detail-product/detail-product.page';
-import { CartPage } from '../cart/cart.page';
 import { WsapiService } from 'src/app/services/wsapi.service';
 import { PhotoProductService } from '../../services/photo/photo-product.service';
 import { LoadingService } from '../../services/loading/loading.service';
 import { ApiService } from '../../services/api.service';
+import { CartQrPage } from '../cart-qr/cart-qr.page';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -171,7 +166,8 @@ export class HomePage {
   
 
   open_cart(){
-    this.m.showModal(CartPage,{},'dialog-fullscreen').then((r) => {
+    this.m.showModal(CartQrPage,{},'dialog-fullscreen').then((r) => {
+    // this.m.showModal(CartQrPage,{},'dialog-fullscreen').then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
@@ -239,7 +235,7 @@ export class HomePage {
   }
 
   logout(){
-    
+    this.router.navigate(['tabs/tab1']);
   }
 
   show_use(item) {
