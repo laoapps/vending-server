@@ -740,68 +740,122 @@ export class ApiService {
     }
   }
 
-  // public getVSales() {
-  //   return ApiService.vendingOnSale;
-  // }
+  reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
+      console.log(`ping pending stock`, trans);
 
-  reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>) {
-    const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
-    console.log(`ping pending stock`, trans);
-    const params = {
-      trans: trans
-    }
+      const params = {
+        trans: trans
+      }
 
-    try {
-      const vsales = ApiService.vendingOnSale;
-      // const x = vsales.find((v) => {
-      //   pendingStock.filter(item => {
-      //     if (v.position == item.position) {
-      //       if (v.stock.qtty > 0) {
-      //         v.stock.qtty--;
-      //       }
-      //       return true;
-      //     }
-      //   });
-      // });
+      try {
+        const vsales = ApiService.vendingOnSale;
 
-      const x = vsales.find((v) => {
-        for (let i = 0; i < pendingStock.length; i++) {
-          const item = pendingStock[i];
-          if (v.position == item.position) {
-            if (v.stock.qtty > 0) {
-              v.stock.qtty--;
-            }
-            return true;
+        // ตรวจสอบ stock ก่อนทำการลด
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (!vendingItem) {
+            throw new Error(`Item at position ${item.position} not found`);
+          }
+          if (vendingItem.stock.qtty <= 0) {
+            throw new Error(`Insufficient stock for position ${item.position}`);
           }
         }
-      });
-      this.eventEmitter.emit('stockdeduct', x);
-      // if (!localStorage.getItem('debug')) {
 
-
-      // }
-
-      this.saveSale(vsales).then((rx) => {
-        const r = rx.data;
-        console.log(r);
-        if (r.status) {
-          console.log(`save sale success`);
-        } else {
-          this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
-          this.simpleMessage(IENMessage.saveSaleFail);
+        // ลด stock ทุกรายการ
+        const updatedItems = [];
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (vendingItem && vendingItem.stock.qtty > 0) {
+            vendingItem.stock.qtty--;
+            updatedItems.push(vendingItem);
+          }
         }
-      });
 
-      console.log(`pending stock mode vendingOnSale-->`, vsales);
-      this.storage.set('saleStock', vsales, 'stock').then((r) => {
-        // that.deductOrderUpdate(x.position);
-      });
-    } catch (error) {
-      this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
-      console.log(error.message);
-      this.alertError(error.message);
-    }
+        // Emit event สำหรับทุกรายการที่อัปเดต
+        updatedItems.forEach(item => {
+          this.eventEmitter.emit('stockdeduct', item);
+        });
+
+        this.saveSale(vsales).then((rx) => {
+          const r = rx.data;
+          console.log(r);
+          if (r.status) {
+            console.log(`save sale success`);
+            this.storage.set('saleStock', vsales, 'stock').then((rr) => {
+              resolve(r);
+            }).catch(e => {
+              reject(e)
+            });
+          } else {
+            this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
+            this.simpleMessage(IENMessage.saveSaleFail);
+            reject(new Error('Save sale failed'));
+          }
+        }).catch(e => {
+          reject(e)
+        });
+
+      } catch (error) {
+        this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
+        console.log(error.message);
+        this.alertError(error.message);
+        reject(error)
+      }
+    })
   }
+
+  // reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>): Promise<any> {
+  //   return new Promise((resolve, reject) => {
+  //     const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
+  //     console.log(`ping pending stock`, trans);
+  //     const params = {
+  //       trans: trans
+  //     }
+
+  //     try {
+  //       const vsales = ApiService.vendingOnSale;
+  //       const x = vsales.find((v) => {
+  //         for (let i = 0; i < pendingStock.length; i++) {
+  //           const item = pendingStock[i];
+  //           if (v.position == item.position) {
+  //             if (v.stock.qtty > 0) {
+  //               v.stock.qtty--;
+  //             }
+  //             return true;
+  //           }
+  //         }
+  //       });
+  //       this.eventEmitter.emit('stockdeduct', x);
+
+  //       this.saveSale(vsales).then((rx) => {
+  //         const r = rx.data;
+  //         console.log(r);
+  //         if (r.status) {
+  //           console.log(`save sale success`);
+  //           this.storage.set('saleStock', vsales, 'stock').then((rr) => {
+  //             resolve(r);
+  //           }).catch(e => {
+  //             reject(e)
+  //           });
+  //         } else {
+  //           this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
+  //           this.simpleMessage(IENMessage.saveSaleFail);
+  //           reject(new Error('Save sale failed'));
+  //         }
+  //       }).catch(e => {
+  //         reject(e)
+  //       });
+
+  //     } catch (error) {
+  //       this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
+  //       console.log(error.message);
+  //       this.alertError(error.message);
+  //       reject(error)
+  //     }
+  //   })
+  // }
   async reloadPage() {
     Toast.show({ text: 'Before Reload', duration: 'long' });
     try {

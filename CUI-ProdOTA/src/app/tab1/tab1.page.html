@@ -170,7 +170,7 @@
     </ion-refresher>
 
 
-    <div *ngIf="apiService.allowTopUp == false">
+    <div *ngIf="true">
       <div *ngFor="let sl of saleList; index as i">
         <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
           <ion-item-divider class="item-header">
@@ -187,8 +187,7 @@
             <ion-item>
 
               <div *ngIf="sl.stock.price==0;else elsebuystock" id="my-product-img">
-                <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]"
-                  (click)="buyLaoQR(sl)">
+                <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]">
               </div>
 
               <ng-template id=" my-product-img" style="padding: 20px;" #elsebuystock>
@@ -217,10 +216,10 @@
     </div>
 
 
-    <div *ngIf="apiService.allowTopUp">
+    <div *ngIf="false">
       <div *ngFor="let sl of saleList; index as i">
         <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
-          <ion-item-divider class="item-header">
+          <ion-item-divider class="item-headerTopUp">
             <ion-label>
               <ion-badge style="font-size: 20px;">
                 {{sl.position+compensation}}#.
@@ -233,14 +232,13 @@
             </ion-item>
             <ion-item>
 
-              <div *ngIf="sl.stock.price==0;else elsebuystock" id="my-product-img">
-                <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]"
-                  (click)="buyLaoQR(sl)">
+              <div *ngIf="sl.stock.price==0;else elsebuystock" id="my-product-imgTopUp">
+                <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]">
               </div>
 
-              <ng-template id=" my-product-img" style="padding: 20px;" #elsebuystock>
+              <ng-template id="my-product-img" style="padding: 20px;" #elsebuystock>
                 <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]"
-                  (click)="addOrder(sl)">
+                  (click)="addOrderTopUp(sl)">
               </ng-template>
 
             </ion-item>
@@ -251,7 +249,7 @@
               </div>
               <ng-template #elsestock>
                 <label>
-                  <ion-icon name="pricetags-sharp" color="danger"></ion-icon>: {{sl.stock.price}} / <ion-icon
+                  <ion-icon name="pricetags-sharp" color="danger"></ion-icon>: {{sl.stock.price + 1000}} / <ion-icon
                     name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}
                 </label>
               </ng-template>

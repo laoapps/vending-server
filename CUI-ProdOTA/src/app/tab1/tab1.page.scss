@@ -643,6 +643,13 @@ ion-header {
     width: 88%;
 }
 
+
+
+.item-headerTopUp {
+    left: 6%;
+    width: 88%;
+}
+
 div.scrollmenu {
     display: -webkit-box;
     overflow-x: auto;
@@ -828,6 +835,16 @@ div.scrollmenu {
     }
 }
 
+
+#my-product-imgTopUp {
+    padding: 10px;
+
+    img {
+        width: 500px;
+        height: 500px;
+    }
+}
+
 .attention-grabber {
     animation: glowBlink 1.2s infinite;
     font-size: 32px;
@@ -943,3 +960,26 @@ div.scrollmenu {
     color: var(--ion-color-dark);
   }
   
+  
+  ion-card {
+  border: 5px solid #ff0000; // กรอบหนาสีแดง
+  border-radius: 10px; // มุมโค้งเล็กน้อยให้ดูสวยงาม
+  overflow: hidden; // ตรวจสอบให้เนื้อหาไม่ล้นออกนอกกรอบ
+  margin: 10px; // ระยะห่างระหว่างไอเท็ม
+}
+
+ion-item-divider {
+  background-color: #ff0000; // เปลี่ยนสีหัวข้อให้เข้ากับกรอบ
+  color: white; // ตัวอักษรขาวเพื่อความชัดเจน
+  padding: 5px;
+}
+
+#my-product-imgTopUp img {
+  width: 100%; // ปรับขนาดภาพให้เต็มกรอบ
+  height: auto; // รักษาสัดส่วนภาพ
+  object-fit: cover; // ครอบคลุมพื้นที่โดยไม่บิดเบี้ยว
+}
+
+ion-label {
+  font-size: 16px; // ปรับขนาดตัวอักษรให้เหมาะสม
+}

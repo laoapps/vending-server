@@ -194,6 +194,10 @@ const routes: Routes = [
   {
     path: 'give-pop-up',
     loadChildren: () => import('./give-pop-up/give-pop-up.module').then( m => m.GivePopUpPageModule)
+  },
+  {
+    path: 'auto-payment-top-up',
+    loadChildren: () => import('./auto-payment-top-up/auto-payment-top-up.module').then( m => m.AutoPaymentTopUpPageModule)
   }
 ];
 @NgModule({

@@ -10,21 +10,21 @@
 
   <ion-grid>
     <ion-row class="menu-area">
-  <!-- Add New Card -->
-    <ion-col size="6" size-sm="6" size-md="4" size-lg="3" >
-      <ion-card class="food-item add-card" (click)="Click_AddNew()">
-        <ion-card-header class="image-add">
-          <ion-icon name="add" style="font-size: 90px; color: red;"></ion-icon>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-card-title class="add-new">ເພີ່ມເມນູ</ion-card-title>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
+      <!-- Add New Card -->
+      <ion-col size="6" size-sm="6" size-md="4" size-lg="3">
+        <ion-card class="food-item add-card" (click)="Click_AddNew()">
+          <ion-card-header class="image-add">
+            <ion-icon name="add" style="font-size: 90px; color: red;"></ion-icon>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-card-title class="add-new">ເພີ່ມເມນູ</ion-card-title>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
 
 
 
-      <ion-col size="6" size-sm="6" size-md="4" size-lg="3"  *ngFor="let item of PostArray;let j=index">
+      <ion-col size="6" size-sm="6" size-md="4" size-lg="3" *ngFor="let item of PostArray;let j=index">
         <ion-card class="food-item" (click)="Click_DetailProduct(item)">
           <ion-card-header class="food-image">
             <img class="imgae-placeholder" src="{{item.pic}}" alt="">
@@ -33,7 +33,7 @@
             <ion-card-title class="food-name">{{ item.primaryProduct?.product?.name }}</ion-card-title>
             <ion-text class="food-price" color="danger">{{ item.total_price | number}} Kip</ion-text>
 
-                  <!-- Qty Control -->
+            <!-- Qty Control -->
             <div class="qty-control" (click)="$event.stopPropagation()">
               <ion-button size="small" fill="outline" (click)="getqty(0,j)">-</ion-button>
               <span class="qty-number">{{item.qty}}</span>
@@ -46,7 +46,7 @@
                 <ion-icon name="trash-outline"></ion-icon>
               </div>
             </div>
-                     
+
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -66,20 +66,10 @@
             <form #f="ngForm">
               <label class="phone-field">
                 <span class="country-code">+85620</span>
-                <input
-                  name="phone"
-                  [(ngModel)]="phone"
-                  required
-                  minlength="8"
-                  type="tel"
-                  inputmode="tel"
-                  maxlength="8"
-                  placeholder="xxxx xxxx"
-                  class="phone-input"
-                  (ngModelChange)="autoSubmit(f)"
-                />
+                <input name="phone" [(ngModel)]="phone" required minlength="8" type="tel" inputmode="tel" maxlength="8"
+                  placeholder="xxxx xxxx" class="phone-input" (ngModelChange)="autoSubmit(f)" />
               </label>
-        
+
               <div class="hint" *ngIf="f.submitted && !f.form.valid">
                 <div *ngIf="f.controls['phone']?.errors?.['required']">
                   Phone number is required.
@@ -91,8 +81,8 @@
                   Too short.
                 </div>
               </div>
-        
-  
+
+
             </form>
             <!-- <div class="actions">
               <ion-button type="submit" expand="block" [disabled]="!f.form.valid">
@@ -146,24 +136,26 @@
             <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
               class="qr-img">
             <div *ngIf="isPayment == false" class="loader"></div>
-    
+
             <div class="total">{{ parseGetTotalSale.t | number }}</div>
-    
+
           </div>
         </div>
         <div style="position: relative;">
-          <ion-label class="label_name" [ngStyle]="{'color': phone ? '#333' : '#fff'}">ຈໍານວນ ({{getTotalQty()}}): {{getTotalPrice() | number}} Kip</ion-label>
+          <ion-label class="label_name" [ngStyle]="{'color': phone ? '#333' : '#fff'}">ຈໍານວນ ({{getTotalQty()}}):
+            {{getTotalPrice() | number}} Kip</ion-label>
           <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;margin-top: 15px;">
-            <img height="180px" width="180px" src="{{qrcode_logo}}" alt="" >
+            <img height="180px" width="180px" src="{{qrcode_logo}}" alt="">
           </div>
           <div style="margin-top: 15px;">
             <!-- <ion-label class="label_name">currency:</ion-label> -->
-            <ion-label class="label_name name-currency" [ngStyle]="{'color': phone ? '#333' : '#fff'}">LAO QR CODE</ion-label>
+            <ion-label class="label_name name-currency" [ngStyle]="{'color': phone ? '#333' : '#fff'}">LAO QR
+              CODE</ion-label>
           </div>
           <div *ngIf="isPayment == true" class="label_name"
-          style="margin-top: 15px;font-size: 20px;margin-bottom: -10px;font-weight: bold;color: #fff;">
-          ໜ້ານີ້ຈະປິດພາຍໃນ {{
-          countdownDestroy }} ວິນາທີ </div>
+            style="margin-top: 15px;font-size: 20px;margin-bottom: -10px;font-weight: bold;color: #fff;">
+            ໜ້ານີ້ຈະປິດພາຍໃນ {{
+            countdownDestroy }} ວິນາທີ </div>
         </div>
 
         <div *ngIf="phone">

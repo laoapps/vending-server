@@ -91,6 +91,7 @@ import { CloseStytemPage } from '../close-stytem/close-stytem.page';
 import { IResModel } from '../services/syste.model';
 import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 import { Router } from '@angular/router';
+import { AutoPaymentTopUpPage } from '../auto-payment-top-up/auto-payment-top-up.page';
 
 @Component({
   selector: 'app-tab1',
@@ -2640,12 +2641,6 @@ export class Tab1Page implements OnDestroy {
   async addOrder(x: IVendingMachineSale) {
     try {
       this.autopilot.auto = 0;
-      // console.log(`allow vending`, this.allowVending);
-
-      // const localStorageValue = localStorage.getItem('allowVending') ?? '';
-      // const allowVending = localStorageValue === 'yes';
-
-
       if (!this.allowVending) {
         this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
           .then(modal => modal.present());
@@ -2660,7 +2655,6 @@ export class Tab1Page implements OnDestroy {
       console.log('ID', x);
       console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 
-      // this.apiService.showLoading('', 500);
 
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
       y.stock.qtty = 1;
@@ -2668,16 +2662,50 @@ export class Tab1Page implements OnDestroy {
       this.orders.unshift(y);
       console.log(`orders`, this.orders);
 
-      //  console.log('sum',this.getSummarizeOrder());
       this.getSummarizeOrder();
       // setTimeout(() => {
-      // this.apiService.dismissLoading();
       this.showMyOrdersModal();
     } catch (error) {
       console.log('error', error);
       alert(JSON.stringify(error));
     }
   }
+
+  async addOrderTopUp(x: IVendingMachineSale) {
+    try {
+      this.autopilot.auto = 0;
+      if (!this.allowVending) {
+        this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
+          .then(modal => modal.present());
+        return;
+      }
+
+      this.setActive();
+      if (!x) return alert('not found');
+      const ord = this.orders.filter((v) => v.position == x.position);
+      if (ord.length)
+        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
+      console.log('ID', x);
+      console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
+
+
+      const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
+      y.stock.qtty = 1;
+      y.stock.price = y.stock.price + 1000;
+      console.log('y', y);
+      this.orders.unshift(y);
+      console.log(`orders`, this.orders);
+
+      this.getSummarizeOrder();
+      // setTimeout(() => {
+      this.showMyOrdersTopUpModal();
+    } catch (error) {
+      console.log('error', error);
+      alert(JSON.stringify(error));
+    }
+  }
+
+
   addOrderTest(x: IVendingMachineSale) {
     try {
       this.autopilot.auto = 0;
@@ -2738,18 +2766,6 @@ export class Tab1Page implements OnDestroy {
 
   showMyOrdersModal() {
     try {
-      // timer check payment for any orders
-      // clearInterval(this.countdownCheckLaoQRPaidTimer);
-      // this.countdownCheckLaoQRPaidTimer = setInterval(async () => {
-      //   console.log('*****CHECK 5 SECOND');
-      //   // await this._processLoopCheckLaoQRPaid();
-
-      //   if (this.processedQRPaid) return;
-      //   this.processedQRPaid = true;
-      //   await this._processLoopCheckLaoQRPaid();
-      //   this.processedQRPaid = false;
-      // }, 5000);
-
       if (this.otherModalAreOpening == true) return;
       if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
       clearInterval(this.autoShowMyOrderTimer);
@@ -2829,6 +2845,91 @@ export class Tab1Page implements OnDestroy {
     }
 
   }
+
+
+  showMyOrdersTopUpModal() {
+    try {
+      if (this.otherModalAreOpening == true) return;
+      if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
+      clearInterval(this.autoShowMyOrderTimer);
+      this.autoShowMyOrdersCounter = 15;
+
+      // const component = OrderCartPage;
+      const component = AutoPaymentTopUpPage;
+      const props_data = {
+        orders: this.orders,
+        getTotalSale: this.getTotalSale
+      }
+      console.log('props_data', props_data);
+      const that = this;
+      this.apiService.modal.create({ component: AutoPaymentTopUpPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
+        r.present();
+        this.otherModalAreOpening = true;
+        // this.apiService.allModals.push(this.apiService.modal);
+        r.onDidDismiss().then(async cb => {
+          this.otherModalAreOpening = false;
+          AutoPaymentTopUpPage.message?.close();
+          AutoPaymentTopUpPage.message = undefined;
+          if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
+            // this.loadAutoShowMyOrders();
+          }
+
+
+
+
+
+          await this._processLoopCheckLaoQRPaid();
+          this.processedQRPaid = false;
+
+          clearInterval(this.countdownCheckLaoQRPaidTimer);
+          that.countdownCheckLaoQRPaidTimer = setInterval(async () => {
+            console.log('*****CHECK 30 SECOND');
+
+            // that._processLoopCheckLaoQRPaid();
+            try {
+              const currentT = Date.now() - this.lastUpdate;
+              if (currentT >= 10 * 60 * 10000) {
+                App.exitApp();
+              }
+
+              if (this.processedQRPaid) return;
+              this.processedQRPaid = true;
+              await this._processLoopCheckLaoQRPaid();
+              this.processedQRPaid = false;
+
+              this.apiService.IndexedDB.getBillProcesses().then((r) => {
+                if (r.length > 0) {
+                  console.log('dropStock', r);
+                  this.apiService.isDropStock = true;
+
+                } else {
+                  console.log('out dropStock', r);
+                  this.apiService.isDropStock = false;
+                }
+              }).catch((e) => {
+                console.log('Error get dropStock from local', e);
+                this.apiService.isDropStock = false;
+              });
+
+            } catch (error) {
+              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error check Online :${JSON.stringify(error)}` })
+            }
+
+
+
+          }, 30000);
+        });
+        //5s
+
+
+      });
+    } catch (error) {
+
+    }
+
+  }
+
+
   checkCartCount(position: number) {
     return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;
   }

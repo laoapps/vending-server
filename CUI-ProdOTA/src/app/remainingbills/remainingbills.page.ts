@@ -146,7 +146,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         const param = { slot: position, dropSensor: 1 };
         const device = localStorage.getItem('device') || 'VMC';
         if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
-          this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
+          await this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
           this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
             await this.loadBillLocal();
             // Toast.show({ text: 'Bill process deleted', duration: 'long' });
