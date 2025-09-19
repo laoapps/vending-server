@@ -342,8 +342,15 @@ export class ApiService {
         if (!r) return console.log('empty');
         this.allowTopUp = r?.data?.setting?.isTopUp ?? false;
         console.log('ws alive subscription', that.cash, r);
+        // console.log('message :', r?.message);
 
-        this.secret = r?.data?.secret;
+        if (r?.message === EMessage.clearLocalBill) {
+          console.log('----->clearLocalBill');
+          this.IndexedDB.clearBillProcesses();
+          return;
+
+        }
+        this.secret = r?.data?.secret ?? null;
         console.log('-----> SECRET :', this.secret);
 
 
@@ -355,12 +362,6 @@ export class ApiService {
           this.myTab1.manageStockByQR();
 
           return;
-        }
-
-        if (r?.message === EMessage.clearLocalBill) {
-          console.log('----->clearLocalBill');
-          this.IndexedDB.clearBillProcesses();
-
         }
 
         this.checkIsDropStock();

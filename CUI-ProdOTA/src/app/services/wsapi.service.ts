@@ -43,7 +43,7 @@ export class WsapiService implements OnDestroy {
   constructor(
     private cashingService: AppcachingserviceService,
     private IndexedLogDB: IndexerrorService,
-  ) {}
+  ) { }
 
   ngOnDestroy(): void {
     this.disconnect();
@@ -143,7 +143,9 @@ export class WsapiService implements OnDestroy {
                 test: res.data?.test,
                 data: res.data,
                 balance: Number(res.data?.balance ?? '0'),
-                message: res.message === EMessage.openstock ? EMessage.openstock : undefined,
+                // message: res.message === EMessage.openstock ? EMessage.openstock : undefined,
+                message: res.message ?? undefined,
+
               } as IAlive);
               break;
             case 'wsalert':

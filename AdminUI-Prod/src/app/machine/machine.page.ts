@@ -341,6 +341,23 @@ export class MachinePage implements OnInit {
       })
     })
   }
+
+  clearMachine(m: string) {
+
+    this.apiService.clearAppMachine({ machineId: m }).subscribe(rx => {
+      console.log(rx);
+      if (!rx.status) {
+        console.log('Update setting failed restore old data');
+
+      } else {
+        console.log('update exit success !');
+
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+        ry.present();
+      })
+    })
+  }
   new() {
     this.apiService.showModal(MachineAddPage).then(ro => {
       ro?.present();

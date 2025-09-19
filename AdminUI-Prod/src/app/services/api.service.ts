@@ -392,6 +392,15 @@ export class ApiService {
 
         return this.http.post<IResModel>(this.url + '/exitAppMachine', { token, shopPhonenumber, secret, data }, { headers: this.headerBase() });
     }
+
+    clearAppMachine(data: any) {
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+
+        return this.http.post<IResModel>(this.url + '/clearLocalBill', { token, shopPhonenumber, secret, data, machineId: data.machineId }, { headers: this.headerBase() });
+    }
+
     resetCashing(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');
