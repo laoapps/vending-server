@@ -569,7 +569,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             ent.create(bill).then((r) => {
                                 // console.log("SET transactionID by owner", ownerUuid);
-                                redisClient.setEx(qr.qrCode + EMessage.BillCreatedTemp, 60 * 3, ownerUuid);
+                                redisClient.setex(qr.qrCode + EMessage.BillCreatedTemp, 60 * 3, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else if (d.command == EClientCommand.buyLAOQR) {
@@ -671,7 +671,7 @@ export class InventoryZDM8 implements IBaseClass {
                             await ent.sync();
 
                             ent.create(bill).then(async (r) => {
-                                redisClient.setEx(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                redisClient.setex(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
                                 redisClient.save();
 
                                 let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
@@ -697,7 +697,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     createdAt: new Date()
                                 });
 
-                                redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                                redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else if (d.command == EClientCommand.buyTopUp) {
@@ -761,7 +761,7 @@ export class InventoryZDM8 implements IBaseClass {
                             await ent.sync();
 
                             ent.create(bill).then(async (r) => {
-                                redisClient.setEx(transactionID + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                redisClient.setex(transactionID + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
                                 redisClient.save();
 
                                 let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
@@ -787,7 +787,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     createdAt: new Date()
                                 });
 
-                                redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                                redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         }
@@ -902,7 +902,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         //     ent.create(bill).then(async (r) => {
 
-                        //         redisClient.setEx(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                        //         redisClient.setex(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
                         //         redisClient.save();
 
                         //         let resule = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
@@ -929,7 +929,7 @@ export class InventoryZDM8 implements IBaseClass {
                         //             createdAt: new Date()
                         //         });
 
-                        //         redisClient.setEx(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                        //         redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
 
 
                         //         res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
@@ -3857,7 +3857,7 @@ export class InventoryZDM8 implements IBaseClass {
                             count: run.count,
                             message: IENMessage.success
                         }
-                        redisClient.setEx(cksum, 60 * 1, JSON.stringify(response));
+                        redisClient.setex(cksum, 60 * 1, JSON.stringify(response));
                         return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log('reportClientLog :', error);
@@ -4007,7 +4007,7 @@ export class InventoryZDM8 implements IBaseClass {
                             count: run.count,
                             message: IENMessage.success
                         }
-                        redisClient.setEx(cksum, 60 * 1, JSON.stringify(response));
+                        redisClient.setex(cksum, 60 * 1, JSON.stringify(response));
                         return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log('reportLogsTemp :', error);
@@ -4063,7 +4063,7 @@ export class InventoryZDM8 implements IBaseClass {
                             count: run.count,
                             message: IENMessage.success
                         }
-                        redisClient.setEx(cksum, 60 * 1, JSON.stringify(response));
+                        redisClient.setex(cksum, 60 * 1, JSON.stringify(response));
                         return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log('reportLogsTemp :', error);
@@ -4201,7 +4201,7 @@ export class InventoryZDM8 implements IBaseClass {
                             }
 
                             const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
-                            redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                            redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
                             this.sendWSToMachine(bill.machineId, resD);
                             return res.send(PrintSucceeded("reportBillNotPaid", resD, EMessage.succeeded, returnLog(req, res)));
                         });
@@ -4326,7 +4326,7 @@ export class InventoryZDM8 implements IBaseClass {
                         });
 
                         // Store in Redis with 3-minute TTL (180 seconds)
-                        await redisClient.setEx(cacheKey, 180, JSON.stringify(machines));
+                        await redisClient.setex(cacheKey, 180, JSON.stringify(machines));
 
                         res.send(PrintSucceeded('getAllMachines', machines, EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
@@ -6471,7 +6471,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                     // ใช้ filter หลังจากยืนยันว่า trandList เป็นอาร์เรย์
                     const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
-                    redisClient.setEx(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                    redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
                     await DeleteTransactionToCheck(bill.machineId)
                     this.sendWSToMachine(bill?.machineId + "", res);
@@ -6832,7 +6832,7 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
                     const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
-                    redisClient.setEx(machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                    redisClient.setex(machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
                 }).catch(e => {
                     console.log('=====>CONFIRM ERROR', e);
                 })
@@ -7237,7 +7237,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                         if (ry) {
                                                             const m = ry.map(v => v.machineId);
                                                             // console.log('admintoken owneruuid machines', m);
-                                                            redisClient.setEx('_admintoken_' + token, 60 * 60 * 24, ownerUuid);
+                                                            redisClient.setex('_admintoken_' + token, 60 * 60 * 24, ownerUuid);
                                                             ws['myMachineId'] = m;
                                                             ws["clientId"] = uuid4();
                                                             this.wsClient.push(ws);

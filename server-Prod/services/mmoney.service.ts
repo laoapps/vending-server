@@ -35,7 +35,7 @@ export async function AddTransactionToCheck(machineID: string, transactionID: st
             console.log('Updated transaction list:', transactionList);
 
             // บันทึกกลับลง Redis
-            await redisClient.setEx(key, 60 * 5, JSON.stringify(transactionList));
+            await redisClient.setex(key, 60 * 5, JSON.stringify(transactionList));
 
             resolve({ status: 1, message: EMessage.succeeded });
         } catch (error) {
