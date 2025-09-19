@@ -36,7 +36,7 @@ export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort );
 // **** 1 ***
 // export const redisClient = redis.createClient({ url: process.env.REDIS_HOST + '' || 'redis://localhost:6379' });
 
-redisClient.connect();
+// redisClient.connect();
 
 
 export enum RedisKeys {
