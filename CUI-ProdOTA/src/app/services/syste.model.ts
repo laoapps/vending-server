@@ -938,7 +938,8 @@ export enum EMessage {
     notsupport = "notsupport",
     billnotfound = "billnotfound",
     confirmsucceeded = "confirmsucceeded",
-    openstock = "openstock"
+    openstock = "openstock",
+    clearLocalBill = "clearLocalBill"
 }
 export interface IBase {
     id?: number;

@@ -150,9 +150,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       if (!this.SUPPORTED_DEVICES.includes(localStorage.getItem('device') || 'VMC')) {
         throw new Error('Unsupported device protocol');
       }
-
-      await this.handleSerialCommand(transactionID, position, transID);
       await this.handleBillDeletion(transactionID);
+      await this.handleSerialCommand(transactionID, position, transID);
       await this.handleRetryAndUpdate(transactionID, position, ownerUuid, transID, human);
       await this.reconfirmStock([{ transactionID, position }]);
     } catch (error) {

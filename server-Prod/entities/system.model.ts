@@ -1044,7 +1044,8 @@ export enum EMessage {
     machineNotExist = "machineNotExist",
     LaoQRCount = "LaoQRCount",
     ListTransactionMmoneyCheck = "ListTransactionMmoneyCheck",
-    openstock = "openstock"
+    openstock = "openstock",
+    clearLocalBill = "clearLocalBill"
 }
 export interface IBase {
     id?: number;

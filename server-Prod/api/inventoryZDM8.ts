@@ -3904,6 +3904,73 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('openstock', error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
+            );
+
+
+            router.post(this.path + '/clearLocalBill',
+                this.checkSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId;
+                        if (!machineId) {
+                            return res.send(PrintError('clearLocalBill', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+
+                        const resD = {} as IResModel;
+                        resD.command = EMACHINE_COMMAND.ping;
+                        resD.message = EMessage.clearLocalBill;
+
+
+                        resD.status = 1;
+                        this.sendWSToMachine(machineId, resD);
+
+                        return res.send(PrintSucceeded('openstock', machineId, EMessage.succeeded, returnLog(req, res, true)));
+
+                    } catch (error) {
+                        console.error('Error openstock is :', JSON.stringify(error));
+                        res.send(PrintError('openstock', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+
+            router.post(this.path + '/openstock',
+                this.checkSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineToken = req.body.machineToken;
+                        const secret = req.body.secret;
+                        if (!machineToken || !secret) {
+                            return res.send(PrintError('openstock', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+
+                        const machineData = this.findMachineIdToken(machineToken);
+                        if (!machineData) {
+                            return res.send(PrintError('openstock', null, EMessage.machineNotExist, returnLog(req, res, true)));
+                        }
+                        const secretData = await this.readMachineSecret(machineData.machineId + '');
+                        if (secretData !== secret) {
+                            return res.send(PrintError('openstock', null, EMessage.notallowed, returnLog(req, res, true)));
+                        }
+                        console.log('----->secret :', secretData);
+
+                        const resD = {} as IResModel;
+                        resD.command = EMACHINE_COMMAND.ping;
+                        resD.message = EMessage.openstock;
+
+
+                        resD.status = 1;
+                        // resD.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                        this.sendWSToMachine(machineData.machineId, resD);
+
+
+                        return res.send(PrintSucceeded('openstock', machineData, EMessage.succeeded, returnLog(req, res, true)));
+
+                    } catch (error) {
+                        console.error('Error openstock is :', JSON.stringify(error));
+                        res.send(PrintError('openstock', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
             )
 
             router.post(this.path + '/reportBilling', uploadExcelMemory.single('file'), this.checkSuperAdmin,
