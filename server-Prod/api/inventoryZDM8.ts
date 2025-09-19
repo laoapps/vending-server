@@ -1498,24 +1498,10 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
-                        // console.log('start retryProcessBillNew');
-
-                        // console.log('BODY IS :', req.body);
-
                         const ownerUuid = req.body.ownerUuid;
                         const transactionID = req.body.trandID;
 
-
-                        // writeMachineLockDrop(res.locals["machineId"]?.machineId, 'true');
-
-
-
-
                         const position = Number(req.query["position"]);
-
-                        // console.log('position', position);
-
-
                         let ent = VendingMachineBillFactory(
                             EEntity.vendingmachinebill + "_" + ownerUuid,
                             dbConnection
@@ -1528,7 +1514,6 @@ export class InventoryZDM8 implements IBaseClass {
                             return res.send(PrintError("retryProcessBill", "bill not found", EMessage.billnotfound));
                         }
 
-                        // console.log('=====>BILL IS :', bill.dataValues);
 
                         const dataStock = JSON.parse(JSON.stringify(bill.dataValues.vendingsales));
 
@@ -1553,15 +1538,6 @@ export class InventoryZDM8 implements IBaseClass {
                                 ent = null;
                             }
                         }
-
-                        // console.log("อัปเดตข้อมูลทั้งหมด:", dataStock);
-
-
-
-
-                        // console.log('=====>dataStock IS :', dataStock);
-
-
 
                         res.send(
                             PrintSucceeded(
@@ -2919,6 +2895,116 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+
+            router.post(
+                this.path + "/saveMachineSaleAndDrop",
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+
+                        const dropPositionData = req.body.dropPositionData;
+
+                        const machineId = res.locals["machineId"];
+                        if (!machineId) throw new Error("machine is not exit");
+                        const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
+                        await sEnt.sync();
+
+
+                        const run = await sEnt.findOne({ order: [['id', 'desc']] });
+
+                        const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
+
+                        const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
+
+
+                        const list = new Array<IVendingMachineSale>();
+                        list.push(...d.data);
+                        list.forEach(v => v.machineId = machineId.machineId);
+                        if (run == null) {
+
+                            sEnt.create({
+                                data: list,
+                                hashM: sign,
+                                hashP: 'null'
+                            }).then(r => {
+
+                            }).catch(error => console.log(`save stock fail`));
+
+                        } else {
+
+                            sEnt.create({
+                                data: list,
+                                hashM: sign,
+                                hashP: run.hashM
+                            }).then(r => {
+
+                            }).catch(error => console.log(`save stock fail`));
+
+                        }
+
+                        if (dropPositionData) {
+                            try {
+                                const ownerUuid = dropPositionData.ownerUuid;
+                                const transactionID = dropPositionData.transactionID;
+
+                                const position = dropPositionData.position;
+                                let ent = VendingMachineBillFactory(
+                                    EEntity.vendingmachinebill + "_" + ownerUuid,
+                                    dbConnection
+                                );
+                                const bill = await ent.findOne({
+                                    where: { transactionID: transactionID },
+                                });
+
+                                if (!bill) {
+                                    // return res.send(PrintError("retryProcessBill", "bill not found", EMessage.billnotfound));
+                                }
+
+
+                                const dataStock = JSON.parse(JSON.stringify(bill.dataValues.vendingsales));
+
+                                const hasPosition = dataStock.some((item: any) => item.position === position);
+
+                                if (!hasPosition) {
+                                    console.log("ไม่พบ Position นี้");
+                                } else {
+                                    const items = dataStock.filter((item: any) => item.position === position && !item.dropAt);
+                                    if (items.length === 0) {
+                                        // console.log("มีทุกตัวแล้ว");
+                                    } else {
+                                        // สุ่มเลือกตัวหนึ่งจากรายการที่ยังไม่มี dropAt
+                                        const randomIndex = Math.floor(Math.random() * items.length);
+                                        const selectedItem = items[randomIndex];
+                                        selectedItem.dropAt = new Date().toISOString();
+                                        // console.log("อัปเดตข้อมูล:", selectedItem);
+
+                                        bill.vendingsales = dataStock;
+                                        bill.changed("vendingsales", true);
+                                        await bill.save();
+                                        ent = null;
+                                    }
+                                }
+                            } catch (err) {
+
+                            }
+                        }
+                        res.send(
+                            PrintSucceeded(
+                                "saveMachineSaleAndDrop",
+                                writeMachineSale(machineId.machineId, JSON.stringify(list)),
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/cloneMachineCUI",
                 this.checkSuperAdmin,

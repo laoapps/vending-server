@@ -830,56 +830,73 @@ export class ApiService {
     })
   }
 
-  // reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>): Promise<any> {
-  //   return new Promise((resolve, reject) => {
-  //     const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
-  //     console.log(`ping pending stock`, trans);
-  //     const params = {
-  //       trans: trans
-  //     }
+  reconfirmStockAndDrop(pendingStock: Array<{ transactionID: any, position: number }>, dropPositionData: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
+      console.log(`ping pending stock`, trans);
 
-  //     try {
-  //       const vsales = ApiService.vendingOnSale;
-  //       const x = vsales.find((v) => {
-  //         for (let i = 0; i < pendingStock.length; i++) {
-  //           const item = pendingStock[i];
-  //           if (v.position == item.position) {
-  //             if (v.stock.qtty > 0) {
-  //               v.stock.qtty--;
-  //             }
-  //             return true;
-  //           }
-  //         }
-  //       });
-  //       this.eventEmitter.emit('stockdeduct', x);
+      const params = {
+        trans: trans
+      }
 
-  //       this.saveSale(vsales).then((rx) => {
-  //         const r = rx.data;
-  //         console.log(r);
-  //         if (r.status) {
-  //           console.log(`save sale success`);
-  //           this.storage.set('saleStock', vsales, 'stock').then((rr) => {
-  //             resolve(r);
-  //           }).catch(e => {
-  //             reject(e)
-  //           });
-  //         } else {
-  //           this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
-  //           this.simpleMessage(IENMessage.saveSaleFail);
-  //           reject(new Error('Save sale failed'));
-  //         }
-  //       }).catch(e => {
-  //         reject(e)
-  //       });
+      try {
+        const vsales = ApiService.vendingOnSale;
 
-  //     } catch (error) {
-  //       this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
-  //       console.log(error.message);
-  //       this.alertError(error.message);
-  //       reject(error)
-  //     }
-  //   })
-  // }
+        // ตรวจสอบ stock ก่อนทำการลด
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (!vendingItem) {
+            throw new Error(`Item at position ${item.position} not found`);
+          }
+          if (vendingItem.stock.qtty <= 0) {
+            throw new Error(`Insufficient stock for position ${item.position}`);
+          }
+        }
+
+        // ลด stock ทุกรายการ
+        const updatedItems = [];
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (vendingItem && vendingItem.stock.qtty > 0) {
+            vendingItem.stock.qtty--;
+            updatedItems.push(vendingItem);
+          }
+        }
+
+        // Emit event สำหรับทุกรายการที่อัปเดต
+        updatedItems.forEach(item => {
+          this.eventEmitter.emit('stockdeduct', item);
+        });
+
+        this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {
+          const r = rx.data;
+          console.log(r);
+          if (r.status) {
+            console.log(`save sale success`);
+            this.storage.set('saleStock', vsales, 'stock').then((rr) => {
+              resolve(r);
+            }).catch(e => {
+              reject(e)
+            });
+          } else {
+            this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
+            this.simpleMessage(IENMessage.saveSaleFail);
+            reject(new Error('Save sale failed'));
+          }
+        }).catch(e => {
+          reject(e)
+        });
+
+      } catch (error) {
+        this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
+        console.log(error.message);
+        this.alertError(error.message);
+        reject(error)
+      }
+    })
+  }
+
+
   async reloadPage() {
     Toast.show({ text: 'Before Reload', duration: 'long' });
     try {
@@ -1368,6 +1385,21 @@ export class ApiService {
       { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
+
+  saveSaleAndDrop(data: any, dropPositionData: any) {
+    return axios.post<IResModel>(
+      this.url + '/saveMachineSaleAndDrop',
+      {
+        data,
+        dropPositionData: dropPositionData,
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+    );
+  }
+
   recoverSale() {
     return axios.post<IResModel>(
       this.url + '/readMachineSale',

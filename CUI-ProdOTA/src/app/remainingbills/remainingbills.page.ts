@@ -150,10 +150,16 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       if (!this.SUPPORTED_DEVICES.includes(localStorage.getItem('device') || 'VMC')) {
         throw new Error('Unsupported device protocol');
       }
+      const dropPositionData = {
+        ownerUuid: ownerUuid,
+        transactionID: transID,
+        position: position
+      };
       await this.handleBillDeletion(transactionID);
       await this.handleSerialCommand(transactionID, position, transID);
-      await this.handleRetryAndUpdate(transactionID, position, ownerUuid, transID, human);
-      await this.reconfirmStock([{ transactionID, position }]);
+      // await this.handleRetryAndUpdate(transactionID, position, ownerUuid, transID, human);
+      // await this.reconfirmStock([{ transactionID, position }]);
+      await this.reconfirmStockAndDrop([{ transactionID, position }], dropPositionData);
     } catch (error) {
       await this.handleError(error, transactionID, position, ownerUuid, transID);
     } finally {
@@ -248,6 +254,16 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   private async reconfirmStock(bills: { transactionID: string; position: number }[]): Promise<void> {
     try {
       await this.apiService.reconfirmStockNew(bills);
+    } catch (error) {
+      await this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error reconfirming stock: ${JSON.stringify(error)}`,
+      });
+    }
+  }
+
+  private async reconfirmStockAndDrop(bills: { transactionID: string; position: number }[], dropPositionData: any): Promise<void> {
+    try {
+      await this.apiService.reconfirmStockAndDrop(bills, dropPositionData);
     } catch (error) {
       await this.apiService.IndexedLogDB.addBillProcess({
         errorData: `Error reconfirming stock: ${JSON.stringify(error)}`,
