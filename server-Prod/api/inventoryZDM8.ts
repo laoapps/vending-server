@@ -423,9 +423,11 @@ export class InventoryZDM8 implements IBaseClass {
                         this.wsClient.find((v) => {
                             if (v["clientId"] == clientId) return (loggedin = true);
                         });
+                        const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
+                        if (ws) ws['lastAction'] = Date.now();
                         if (!loggedin) {
 
-                            const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
+
                             if (ws) {
                                 //  ws?.send(
                                 //     JSON.stringify(
@@ -7172,6 +7174,18 @@ export class InventoryZDM8 implements IBaseClass {
         });
 
     }
+    INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+    checkWebSocketInactivity(ws: WebSocket): void {
+        const lastActivity = ws['lastAction'] ?? Date.now(); // Use nullish coalescing for clarity
+        if (Date.now() - lastActivity > this.INACTIVITY_TIMEOUT_MS) {
+            try {
+                ws.close(1000, 'No activity for 10 minutes');
+                console.log('WebSocket closed due to inactivity for 10 minutes');
+            } catch (error) {
+                console.error('Error closing WebSocket:', error);
+            }
+        }
+    }
     initWs(wss: WebSocketServer.Server) {
         try {
             setWsHeartbeat(
@@ -7207,6 +7221,7 @@ export class InventoryZDM8 implements IBaseClass {
                     let d: IReqModel = {} as IReqModel;
                     ws['isAlive'] = true;
                     ws['lastMessage'] = Date.now();
+                    this.checkWebSocketInactivity(ws);
                     //login first
                     // add to wsClient only after login
 
