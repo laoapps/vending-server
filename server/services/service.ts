@@ -1,4 +1,4 @@
-import * as redis from 'redis';
+import Redis from 'ioredis';
 import axios from "axios";
 import { v4 as uuid4 } from 'uuid';
 import path from 'path';
@@ -29,13 +29,14 @@ console.log(`redis host`, redisHost, `redis port`, redisPort);
 // export const redisPort = process.env.REDIS_LOCAL_PORT ? Number(process.env.REDIS_LOCAL_PORT) : 6379;
 
 // **** 2 ***
-export const redisClient = redis.createClient({ url: 'redis://' + redisHost + ':' + redisPort });
+
+export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort );
 
 
 // **** 1 ***
 // export const redisClient = redis.createClient({ url: process.env.REDIS_HOST + '' || 'redis://localhost:6379' });
 
-redisClient.connect();
+// redisClient.connect();
 
 
 export enum RedisKeys {
@@ -323,7 +324,7 @@ export function findRealDB(token: string): Promise<string> {
     })
 }
 export function writeDoorDone(key: string, v: string) {
-    return redisClient.setEx(key + '_doordone_', 60 * 1, v);
+    return redisClient.setex(key + '_doordone_', 60 * 1, v);
 
 }
 export function readDoorDone(key: string) {
@@ -332,7 +333,7 @@ export function readDoorDone(key: string) {
 }
 
 export function writeActiveMmoneyUser(key: string, v: string) {
-    return redisClient.setEx(key + '_mmoneyuser_', 30, v);
+    return redisClient.setex(key + '_mmoneyuser_', 30, v);
 
 }
 export function readActiveMmoneyUser(key: string) {
@@ -440,7 +441,7 @@ export function writeMachineLimiterBalance(machineId: string, value: string) {
 
 // }
 export function writeACKConfirmCashIn(transactionID: string) {
-    return redisClient.setEx('_ack_confirm_CashIn_' + transactionID, 60 * 24 * 7, 'yes');
+    return redisClient.setex('_ack_confirm_CashIn_' + transactionID, 60 * 24 * 7, 'yes');
 }
 export function readACKConfirmCashIn(transactionID: string) {
     return redisClient.get('_ack_confirm_CashIn_' + transactionID);
@@ -723,7 +724,7 @@ export function parseMachineVMCStatus(hexString: string): IMachineStatus {
         machineTemp: machineTemp || "aaaaaaaaaaaaaaaa", // Default if missing
         machineHumidity, // Undefined if not present
         device: 'VMC',
-        data: cleanHex
+        data: cleanHex,
     };
 }
 

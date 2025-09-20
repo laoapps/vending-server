@@ -1044,7 +1044,8 @@ export enum EMessage {
     machineNotExist = "machineNotExist",
     LaoQRCount = "LaoQRCount",
     ListTransactionMmoneyCheck = "ListTransactionMmoneyCheck",
-    openstock="openstock"
+    openstock = "openstock",
+    clearLocalBill = "clearLocalBill"
 }
 export interface IBase {
     id?: number;
@@ -1272,6 +1273,7 @@ export enum EMACHINE_COMMAND {
     CREDIT_LAAB_NOTE = 'CREDIT_LAAB_NOTE',
     login = 'login',
     ping = 'ping',
+    openStock = 'openStock',
     status = 'status',
     confirm = "confirm",
     note_credit = "note_credit",
@@ -1291,6 +1293,7 @@ export enum EMACHINE_COMMAND {
     logs = "logs",
     confirmOrder = "confirmOrder",
     resetCashing = "resetCashing",
+    wsalert = "wsalert",
 
 }
 
@@ -1351,8 +1354,8 @@ export interface IMachineStatus {
     machineTemp: string;           // Machine temperature (8 bytes as hex string)
     machineHumidity?: string;      // Machine humidity (8 bytes, optional)
     lastUpdate?: Date,
-    device:string;
-    data: any;
+    device: string; // Device type (e.g., 'NV9USB', 'NV10USB', etc.)
+    data: any; // Additional data (optional)
 }
 
 export interface ILaoQRGenerateQRRes {
