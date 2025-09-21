@@ -7186,6 +7186,66 @@ export class InventoryZDM8 implements IBaseClass {
             }
         }
     }
+    confirmDrop(machineId: string,transactionID: string,position:number) {
+        return new Promise<IResModel>(async (resolve, reject) => {
+            try {
+                // implement later
+
+            }
+            catch (error) {
+                console.log(error);
+                reject(error);
+            }
+        });
+    }
+    saveMachineSale(machineId: string, data: any) {
+        return new Promise<void>(async (resolve, reject) => {
+            try {
+                const machine = this.checkMachineId(machineId);
+                const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machine.machineId, dbConnection);
+                await sEnt.sync();
+
+                // sign
+
+                const run = await sEnt.findOne({ order: [['id', 'desc']] });
+                // console.log(`run der`, run);
+
+                const calculate = laabHashService.CalculateHash(JSON.stringify(data));
+                // console.log(`calculate der`, calculate);
+                const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
+                // console.log(`sign der`, sign);
+                // console.log(`d data der`, d.data);
+                const list = new Array<IVendingMachineSale>();
+                list.push(...data);
+                list.forEach(v => v.machineId = machine.machineId);
+                if (run == null) {
+
+                    sEnt.create({
+                        data: list,
+                        hashM: sign,
+                        hashP: 'null'
+                    }).then(r => {
+                        console.log(`save sales success`);
+                    }).catch(error => console.log(`save stock fail`));
+
+                } else {
+
+                    sEnt.create({
+                        data: list,
+                        hashM: sign,
+                        hashP: run.hashM
+                    }).then(r => {
+                        // console.log(`save stock successxxx`);
+                    }).catch(error => console.log(`save stock fail`));
+
+                }
+            } catch (error) {
+                console.log(`save stock error`, error);
+            }
+            resolve()
+        });
+    }
+    
     initWs(wss: WebSocketServer.Server) {
         try {
             setWsHeartbeat(
@@ -7378,6 +7438,24 @@ export class InventoryZDM8 implements IBaseClass {
                                 let settingVersion = d?.data?.settingVersion;
                                 let adsVersion = d?.data?.adsVersion;
                                 let clientVersion = d?.data?.clientVersion;
+                                // data 
+                                let data = d?.data.data ?? [];
+                                for (let index = 0; index < data.length; index++) {
+                                    const element = data[index];
+                                    if (element.type === 'errorLog' && element.data && element.data.length > 0) {
+
+                                    } else if (element.type === 'tempLog' && element.data && element.data.length > 0) {
+
+                                    }
+                                    else if (element.type === 'confirmDrop' && element.data && element.data.length > 0) {
+                                       await this.confirmDrop(ws['machineId'],element.transactionID, element.data);
+
+                                    }
+                                    else if (element.type === 'saveSale' && element.data && element.data.length > 0) {
+                                       await this.saveMachineSale(ws['machineId'],element.data);
+                                    }
+                                }
+                                ///
                                 console.log(`----->MachineId :${ws['machineId']} clientVersion`, clientVersion);
 
 
