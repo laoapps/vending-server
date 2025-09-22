@@ -7440,7 +7440,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 let adsVersion = d?.data?.adsVersion;
                                 let clientVersion = d?.data?.clientVersion;
                                 // data 
-                                let data = d?.data.data ?? [];
+                                let data = d?.data?.data ?? [];
                                 const type = d['type']??'';
                                 if (type === 'errorLog' && data && data.length > 0) {
 
