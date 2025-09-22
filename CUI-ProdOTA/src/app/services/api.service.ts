@@ -9,6 +9,7 @@ import {
   IAlive,
   IBillProcess,
   IClientId,
+  IDropPositionData,
   IlogSerial,
   IMachineClientID,
   IMachineId,
@@ -748,6 +749,120 @@ export class ApiService {
 
   }
 
+  async manualDelivery(r: any, serial: ISerialService) {
+    return new Promise<string>((resolve, reject) => {
+      console.log('WAITING DELIVERY NEW :', r);
+
+      console.log('VENDING ON SALE :', ApiService.vendingOnSale);
+
+
+      try {
+
+        if (r) {
+          if (!this.isRemainingBillsModalOpen) {
+            this.dismissModal();
+            this.dismissModal();
+          }
+          // this.dismissLoading();
+          if (this.waitingForDelivery) return;
+          this.waitingForDelivery = true;
+          const pb = r ? r as Array<IBillProcess> : [] as Array<IBillProcess>;
+          // console.log('=====> PB', pb);
+
+          // console.log('=====> PB Length :', pb.length);
+          // const pdStock = [];
+          let transactionList = [];
+          for (let index = 0; index < pb.length; index++) {
+            const element = pb[index];
+            // console.log('=====> PB ELEMENT :', element);
+            transactionList.push(element.transactionID);
+          }
+
+          // console.log('transactionList :', transactionList);
+          this.confirmBillPaid(transactionList).then(async (rx) => {
+            const r = rx.data;
+            // console.log('=====> CONFIRM BILL PAID :', r);
+            if (r.status === 1) {
+
+              for (let index = 0; index < pb.length; index++) {
+                const element = pb[index];
+                await this.IndexedDB.addBillProcess(element);
+              }
+
+              this.isDropStock = true;
+
+              if (pb.length) {
+                if (!this.isRemainingBillsModalOpen) {
+                  this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+                    this.isRemainingBillsModalOpen = true;
+                    r.present();
+                    r.onDidDismiss().then(() => {
+                      this.isRemainingBillsModalOpen = false;
+                    }
+                    );
+                  });
+                }
+
+              }
+              // if (this.allowTopUp) {
+              //   const m = await this.showModal(GivePopUpPage);
+              //   m.present();
+              //   m.onDidDismiss().then((r) => {
+              //     // console.log('-----> GO TO DROP');
+              //     if (pb.length) {
+              //       if (!this.isRemainingBillsModalOpen) {
+              //         this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+              //           this.isRemainingBillsModalOpen = true;
+              //           r.present();
+              //           r.onDidDismiss().then(() => {
+              //             this.isRemainingBillsModalOpen = false;
+              //           }
+              //           );
+              //         });
+              //       }
+
+              //     }
+
+              //   });
+              // } else {
+              //   if (pb.length) {
+              //     if (!this.isRemainingBillsModalOpen) {
+              //       this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+              //         this.isRemainingBillsModalOpen = true;
+              //         r.present();
+              //         r.onDidDismiss().then(() => {
+              //           this.isRemainingBillsModalOpen = false;
+              //         }
+              //         );
+              //       });
+              //     }
+
+              //   }
+              // }
+
+              this.eventEmmiter.emit('delivery');
+              resolve(EMessage.succeeded);
+            }
+
+          });
+
+          // console.log('=====> PD STOCK :', pdStock);
+        } else {
+          resolve(EMessage.error);
+        }
+      } catch (error) {
+        console.log('error waitingDelivery is:', error);
+        this.IndexedLogDB.addBillProcess({ errorData: `Error waitingDelivery :${JSON.stringify(error)}` });
+        resolve(EMessage.error)
+      }
+      finally {
+        this.waitingForDelivery = false;
+      }
+    })
+
+
+  }
+
 
 
 
@@ -830,7 +945,7 @@ export class ApiService {
     })
   }
 
-  reconfirmStockAndDrop(pendingStock: Array<{ transactionID: any, position: number }>, dropPositionData: any): Promise<any> {
+  reconfirmStockAndDrop(pendingStock: Array<{ transactionID: any, position: number }>, dropPositionData: IDropPositionData): Promise<any> {
     return new Promise((resolve, reject) => {
       const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
       console.log(`ping pending stock`, trans);
@@ -867,25 +982,31 @@ export class ApiService {
         updatedItems.forEach(item => {
           this.eventEmitter.emit('stockdeduct', item);
         });
+        const sendWSMode = localStorage.getItem('sendWSMode') || 'true';
+        if (sendWSMode === 'true') {
+          this.saveSaleAnDropWS(vsales, dropPositionData);
+        } else {
+          this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {
+            const r = rx.data;
+            console.log(r);
+            if (r.status) {
+              console.log(`save sale success`);
+              this.storage.set('saleStock', vsales, 'stock').then((rr) => {
+                resolve(r);
+              }).catch(e => {
+                reject(e)
+              });
+            } else {
+              this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
+              this.simpleMessage(IENMessage.saveSaleFail);
+              reject(new Error('Save sale failed'));
+            }
+          }).catch(e => {
+            reject(e)
+          });
+        }
 
-        this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {
-          const r = rx.data;
-          console.log(r);
-          if (r.status) {
-            console.log(`save sale success`);
-            this.storage.set('saleStock', vsales, 'stock').then((rr) => {
-              resolve(r);
-            }).catch(e => {
-              reject(e)
-            });
-          } else {
-            this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
-            this.simpleMessage(IENMessage.saveSaleFail);
-            reject(new Error('Save sale failed'));
-          }
-        }).catch(e => {
-          reject(e)
-        });
+
 
       } catch (error) {
         this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
@@ -1386,7 +1507,7 @@ export class ApiService {
     );
   }
 
-  saveSaleAndDrop(data: any, dropPositionData: any) {
+  saveSaleAndDrop(data: any, dropPositionData: IDropPositionData) {
     return axios.post<IResModel>(
       this.url + '/saveMachineSaleAndDrop',
       {
@@ -1398,6 +1519,23 @@ export class ApiService {
       },
       { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
+  }
+  saveSaleAnDropWS(data: any, dropPosition: IDropPositionData) {
+    const res = {
+      command: 'ping',
+      type: 'saveSaleAnDrop',
+      data: {
+        data,
+        dropPosition,
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      ip: '',
+      time: new Date().toString(),
+    };
+    console.log(`saveSaleAnDropWS`, res);
+    this.wsapi.send(data);
   }
 
   recoverSale() {

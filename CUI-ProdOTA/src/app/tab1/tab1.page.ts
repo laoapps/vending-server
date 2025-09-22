@@ -3346,7 +3346,6 @@ export class Tab1Page implements OnDestroy {
   }
 
 
-
   showBills() {
     console.log(`here`);
     this.apiService.loadDeliveryingBillsNew().then((r) => {
@@ -3395,7 +3394,63 @@ export class Tab1Page implements OnDestroy {
 
       }
 
-    });
+    }).catch((e) => {
+      console.log(`error`, e  );
+      Toast.show({ text: 'Error showBills ' + JSON.stringify(e), duration: 'long'}); 
+    })
+  }
+   showBills2() {
+    console.log(`here`);
+    this.apiService.loadDeliveryingBillsNew().then((r) => {
+      console.log(`response showBills`, r);
+      try {
+        if (r.length > 0) {
+          // this.apiService.dismissModal();
+          this.apiService.pb = r as Array<IBillProcess>;
+          if (this.apiService.pb.length) {
+            this.apiService.isDropStock = true;
+            if (!this.apiService.isRemainingBillsModalOpen) {
+              if (this.serial) {
+                this.apiService
+                  .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
+                  .then((r) => {
+                    this.apiService.isRemainingBillsModalOpen = true;
+                    r.present();
+                    r.onDidDismiss().then(() => {
+                      this.apiService.isRemainingBillsModalOpen = false;
+                    })
+                    this.otherModalAreOpening = true;
+                    this.openAnotherModal(r);
+                    clearInterval(this.autoShowMyOrderTimer);
+                    this.checkActiveModal(r);
+                  });
+              } else {
+                Toast.show({
+                  text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
+                  duration: 'long',
+                })
+              }
+            }
+          }
+
+        } else {
+          this.apiService.isDropStock = false;
+          this.apiService.toast
+            .create({ message: '', duration: 5000 })
+            .then((r) => {
+              r.present();
+            });
+        }
+      } catch (error) {
+        console.log(`error`, error);
+        this.apiService.toast.create({ message: error.message, duration: 5000 }).then(r => { r.present(); });
+
+      }
+
+    }).catch((e) => {
+      console.log(`error`, e  );
+      Toast.show({ text: 'Error showBills ' + JSON.stringify(e), duration: 'long'}); 
+    })
   }
 
   public openStackCashOutPage(): Promise<any> {

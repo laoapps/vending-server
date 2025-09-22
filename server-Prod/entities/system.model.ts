@@ -2433,5 +2433,10 @@ export interface ILoadVendingMachineSaleBillReport {
     toDate: string,
     machineId: string
 }
+export interface IDropPositionData {
+    ownerUuid: string,
+    transactionID: string,
+    position: number
+}
 
 export interface ILoadVendingMachineStockReport extends ILoadVendingMachineSaleBillReport { }

@@ -99,9 +99,17 @@
   [fullscreen]="true" class="tab1-container">
 
   <span class="btn-abs-list">
-    <a *ngIf="apiService.isDropStock == true" (click)="showBills()" href="javascript:void(0)"
+    <!-- <a *ngIf="apiService.isDropStock == true" (click)="showBills()" href="javascript:void(0)"
       class="item-deep-blue menu-shopping-cart attention-grabber">
       <div class="text">ເຄື່ອງບໍ່ທັນຕົກ</div>
+      <div class="icon">
+        <ion-icon style="color: white;" name="cart-outline"></ion-icon>
+      </div>
+    </a> -->
+     <a 
+     (click)="showBills2()" href="javascript:void(0)"
+      class="item-deep-blue menu-shopping-cart attention-grabber">
+      <div class="text">ເຄື່ອງບໍ່ທັນຕົກ {{this.apiService.pb.length}}</div>
       <div class="icon">
         <ion-icon style="color: white;" name="cart-outline"></ion-icon>
       </div>

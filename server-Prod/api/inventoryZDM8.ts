@@ -80,6 +80,7 @@ import {
     ILoadVendingMachineStockReport,
     ILaoQRGenerateQRRes,
     IMachineStatus,
+    IDropPositionData,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import momenttz from "moment-timezone";
@@ -7186,7 +7187,7 @@ export class InventoryZDM8 implements IBaseClass {
             }
         }
     }
-    confirmDrop(machineId: string,transactionID: string,position:number) {
+    confirmDrop(machineId: string, transactionID: string, position: number) {
         return new Promise<IResModel>(async (resolve, reject) => {
             try {
                 // implement later
@@ -7245,7 +7246,7 @@ export class InventoryZDM8 implements IBaseClass {
             resolve()
         });
     }
-    
+
     initWs(wss: WebSocketServer.Server) {
         try {
             setWsHeartbeat(
@@ -7440,21 +7441,31 @@ export class InventoryZDM8 implements IBaseClass {
                                 let clientVersion = d?.data?.clientVersion;
                                 // data 
                                 let data = d?.data.data ?? [];
-                                for (let index = 0; index < data.length; index++) {
-                                    const element = data[index];
-                                    if (element.type === 'errorLog' && element.data && element.data.length > 0) {
+                                const type = d['type']??'';
+                                if (type === 'errorLog' && data && data.length > 0) {
 
-                                    } else if (element.type === 'tempLog' && element.data && element.data.length > 0) {
+                                } else if (type === 'TempLog' && data && data.length > 0) {
 
-                                    }
-                                    else if (element.type === 'confirmDrop' && element.data && element.data.length > 0) {
-                                       await this.confirmDrop(ws['machineId'],element.transactionID, element.data);
-
-                                    }
-                                    else if (element.type === 'saveSale' && element.data && element.data.length > 0) {
-                                       await this.saveMachineSale(ws['machineId'],element.data);
-                                    }
                                 }
+                                else if (type === 'ConfirmDrop' && data && data.length > 0) {
+                                    const dropPositionData = data.dropPositionData as IDropPositionData;
+                                    await this.confirmDrop(ws['machineId'], dropPositionData?.transactionID, dropPositionData?.position);
+
+                                }
+                                else if (type === 'SaveSaleAndDrop' && data &&data.length > 0) {
+                                    const dropPositionData = data.dropPositionData as IDropPositionData;
+                                    const saveSalve = data as Array<IVendingMachineSale>;
+                                    await this.saveMachineSale(ws['machineId'],saveSalve);
+                                    await this.confirmDrop(ws['machineId'], dropPositionData?.transactionID, dropPositionData?.position);
+
+                                }
+                                 else if (type === 'SaveSale' && data &&data.length > 0) {
+                                    const dropPositionData = data.dropPositionData as IDropPositionData;
+                                    const saveSalve = data as Array<IVendingMachineSale>;
+                                    await this.saveMachineSale(ws['machineId'],saveSalve);
+                                    
+                                }
+
                                 ///
                                 console.log(`----->MachineId :${ws['machineId']} clientVersion`, clientVersion);
 

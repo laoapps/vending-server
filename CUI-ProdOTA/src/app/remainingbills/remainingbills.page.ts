@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { EMACHINE_COMMAND, IBillProcess, ISerialService } from '../services/syste.model';
+import { EMACHINE_COMMAND, IBillProcess, IDropPositionData, ISerialService } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
 import { Tab1Page } from '../tab1/tab1.page';
@@ -150,25 +150,36 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       if (!this.SUPPORTED_DEVICES.includes(localStorage.getItem('device') || 'VMC')) {
         throw new Error('Unsupported device protocol');
       }
-      const dropPositionData = {
+      const dropPositionData: IDropPositionData = {
         ownerUuid: ownerUuid,
         transactionID: transID,
         position: position
       };
 
-      await this.handleBillDeletion(transactionID);
-      // Toast.show({ text: 'handleBillDeletion', duration: 'short' })
-      await this.handleSerialCommand(transactionID, position, transID);
-      // Toast.show({ text: 'handleSerialCommand', duration: 'short' })
-
-
-
-      await this.reconfirmStockAndDrop([{ transactionID, position }], dropPositionData);
-      // Toast.show({ text: 'reconfirmStockAndDrop', duration: 'short' })
-
-      await this.handleRetryAndUpdate(human);
-      // Toast.show({ text: 'handleRetryAndUpdate', duration: 'short' })
-
+      try {
+        await this.handleBillDeletion(transactionID);
+        Toast.show({ text: 'handleBillDeletion', duration: 'short' })
+      } catch (error) {
+        Toast.show({ text: 'Error handleBillDeletion ' + JSON.stringify(error || {}), duration: 'short' })
+      }
+      try {
+        await this.handleSerialCommand(transactionID, position, transID);
+        Toast.show({ text: 'handleSerialCommand', duration: 'short' })
+      } catch (error) {
+        Toast.show({ text: 'Error handleSerialCommand ' + JSON.stringify(error || {}), duration: 'short' })
+      }
+      try {
+        await this.reconfirmStockAndDrop([{ transactionID, position }], dropPositionData);
+        Toast.show({ text: 'reconfirmStockAndDrop', duration: 'short' })
+      } catch (error) {
+        Toast.show({ text: 'Error reconfirmStockAndDrop ' + JSON.stringify(error || {}), duration: 'short' })
+      }
+      try {
+        await this.handleRetryAndUpdate(human);
+        Toast.show({ text: 'handleRetryAndUpdate', duration: 'short' })
+      } catch (error) {
+        Toast.show({ text: 'Error handleRetryAndUpdate ' + JSON.stringify(error || {}), duration: 'short' })
+      }
     } catch (error) {
       await this.handleError(error, transactionID, position, ownerUuid, transID);
     } finally {
