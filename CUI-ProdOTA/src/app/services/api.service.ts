@@ -871,7 +871,7 @@ export class ApiService {
         updatedItems.forEach(item => {
           this.eventEmitter.emit('stockdeduct', item);
         });
-        const sendWSMode = localStorage.getItem('sendWSMode')||'no';
+        const sendWSMode = localStorage.getItem('sendWSMode')||'yes';
         if (sendWSMode === 'yes') {
           this.saveSaleAnDropWS(vsales, dropPositionData);
           resolve({ status: true, message: 'Save and drop initiated via WebSocket' });
