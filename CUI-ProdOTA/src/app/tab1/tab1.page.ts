@@ -2784,6 +2784,8 @@ export class Tab1Page implements OnDestroy {
       const that = this;
       this.apiService.modal.create({ component: AutoPaymentPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
         r.present();
+      console.log('present', r);
+
         this.otherModalAreOpening = true;
         // this.apiService.allModals.push(this.apiService.modal);
         r.onDidDismiss().then(async cb => {

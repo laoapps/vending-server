@@ -196,7 +196,7 @@ export class ApiService {
   ___PlayGamesPage: any
   ___OrderCartPage: any
   ___OrderPaidPage: any
-  ___AutoPaymentPage: any
+  // ___AutoPaymentPage: any
 
   backGroundMusicElement: HTMLAudioElement = {} as any;
   muteSound = false;
@@ -2306,28 +2306,28 @@ export class ApiService {
     // OrderCartPage
     // OrderPaidPage
 
-    this.___LaabGoPage?.dismiss();
-    this.___EpinCashOutPage?.dismiss();
-    this.___EpinShowCodePage?.dismiss();
-    this.___SmcListPage?.dismiss();
-    this.___LaabCashinShowCodePage?.dismiss();
-    this.___LaabCashoutPage?.dismiss();
-    this.___StackCashoutPage?.dismiss();
-    this.___MmoneyIosAndroidDownloadPage?.dismiss();
-    this.___TopupServicePage?.dismiss();
-    this.___TopupAndServicePage?.dismiss();
-    this.___PhonePaymentPage?.dismiss();
-    this.___VendingGoPage?.dismiss();
-    this.___HowToPage?.dismiss();
-    this.___MmoneyCashoutPage?.dismiss();
-    this.___HangmiStoreSegmentPage?.dismiss();
-    this.___HangmiFoodSegmentPage?.dismiss();
-    this.___TopupAndServiceSegmentPage?.dismiss();
-    this.___PlayGamesPage?.dismiss();
-    this.___OrderCartPage?.dismiss();
-    this.___OrderPaidPage?.dismiss();
-    this.___OrderPaidPage?.dismiss();
-    this.___AutoPaymentPage?.dismiss();
+    // this.___LaabGoPage?.dismiss();
+    // this.___EpinCashOutPage?.dismiss();
+    // this.___EpinShowCodePage?.dismiss();
+    // this.___SmcListPage?.dismiss();
+    // this.___LaabCashinShowCodePage?.dismiss();
+    // this.___LaabCashoutPage?.dismiss();
+    // this.___StackCashoutPage?.dismiss();
+    // this.___MmoneyIosAndroidDownloadPage?.dismiss();
+    // this.___TopupServicePage?.dismiss();
+    // this.___TopupAndServicePage?.dismiss();
+    // this.___PhonePaymentPage?.dismiss();
+    // this.___VendingGoPage?.dismiss();
+    // this.___HowToPage?.dismiss();
+    // this.___MmoneyCashoutPage?.dismiss();
+    // this.___HangmiStoreSegmentPage?.dismiss();
+    // this.___HangmiFoodSegmentPage?.dismiss();
+    // this.___TopupAndServiceSegmentPage?.dismiss();
+    // this.___PlayGamesPage?.dismiss();
+    // this.___OrderCartPage?.dismiss();
+    // this.___OrderPaidPage?.dismiss();
+    // this.___OrderPaidPage?.dismiss();
+    this.modal?.dismiss();
   }
   updateStatus(data: any) {
     const req = {} as IReqModel;
