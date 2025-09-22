@@ -1583,7 +1583,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             b.forEach((item) => {
                                 if (transactionList.includes(item.transactionID)) {
-                                    withTransaction.push(item);
+                                    // withTransaction.push(item);
                                 } else {
                                     // withoutTransaction.push(item);
                                 }

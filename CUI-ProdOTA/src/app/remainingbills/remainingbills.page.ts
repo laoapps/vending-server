@@ -155,31 +155,14 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         transactionID: transID,
         position: position
       };
-
-      try {
-        await this.handleBillDeletion(transactionID);
-        Toast.show({ text: 'handleBillDeletion', duration: 'short' })
-      } catch (error) {
-        Toast.show({ text: 'Error handleBillDeletion ' + JSON.stringify(error || {}), duration: 'short' })
-      }
-      try {
-        await this.handleSerialCommand(transactionID, position, transID);
-        Toast.show({ text: 'handleSerialCommand', duration: 'short' })
-      } catch (error) {
-        Toast.show({ text: 'Error handleSerialCommand ' + JSON.stringify(error || {}), duration: 'short' })
-      }
-      try {
-        await this.reconfirmStockAndDrop([{ transactionID, position }], dropPositionData);
-        Toast.show({ text: 'reconfirmStockAndDrop', duration: 'short' })
-      } catch (error) {
-        Toast.show({ text: 'Error reconfirmStockAndDrop ' + JSON.stringify(error || {}), duration: 'short' })
-      }
-      try {
-        await this.handleRetryAndUpdate(human);
-        Toast.show({ text: 'handleRetryAndUpdate', duration: 'short' })
-      } catch (error) {
-        Toast.show({ text: 'Error handleRetryAndUpdate ' + JSON.stringify(error || {}), duration: 'short' })
-      }
+      await this.handleBillDeletion(transactionID);
+      Toast.show({ text: 'handleBillDeletion', duration: 'short' })
+      await this.handleSerialCommand(transactionID, position, transID);
+      Toast.show({ text: 'handleSerialCommand', duration: 'short' })
+      await this.reconfirmStockAndDrop([{ transactionID, position }], dropPositionData);
+      Toast.show({ text: 'reconfirmStockAndDrop', duration: 'short' })
+      await this.handleRetryAndUpdate(human);
+      Toast.show({ text: 'handleRetryAndUpdate', duration: 'short' })
     } catch (error) {
       await this.handleError(error, transactionID, position, ownerUuid, transID);
     } finally {
@@ -261,7 +244,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, this.RETRY_TIMEOUT_MS));
+    // await new Promise((resolve) => setTimeout(resolve, this.RETRY_TIMEOUT_MS));
     await this.retryProcessBillNew({ transactionID, position, ownerUuid, transID });
   }
 

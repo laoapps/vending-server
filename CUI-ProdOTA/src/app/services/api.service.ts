@@ -982,8 +982,8 @@ export class ApiService {
         updatedItems.forEach(item => {
           this.eventEmitter.emit('stockdeduct', item);
         });
-        const sendWSMode = localStorage.getItem('sendWSMode') || 'true';
-        if (sendWSMode === 'true') {
+        const sendWSMode = localStorage.getItem('sendWSMode') || 'yes';
+        if (sendWSMode === 'yes') {
           this.saveSaleAnDropWS(vsales, dropPositionData);
         } else {
           this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {

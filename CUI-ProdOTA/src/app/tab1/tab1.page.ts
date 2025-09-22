@@ -858,6 +858,9 @@ export class Tab1Page implements OnDestroy {
         if (res?.data?.settingVersion) {
           // localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
+        if(res?.data?.sendWSMode){
+          localStorage.setItem('sendWSMode',res?.data?.sendWSMode?'yes':'no');
+        }
         if (r) {
           try {
             if (r?.refresh) {
