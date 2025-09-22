@@ -196,7 +196,7 @@ export class ApiService {
   ___PlayGamesPage: any
   ___OrderCartPage: any
   ___OrderPaidPage: any
-  // ___AutoPaymentPage: any
+  ___AutoPaymentPage: any
 
   backGroundMusicElement: HTMLAudioElement = {} as any;
   muteSound = false;
@@ -610,6 +610,7 @@ export class ApiService {
           });
         }
       });
+      this.eventEmmiter.emit('delivery',r?.bill?.vendingsales?.length);
     });
 
     // this.initLocalHowToVideoPlayList();
@@ -664,11 +665,11 @@ export class ApiService {
           }
 
           // console.log('transactionList :', transactionList);
-          this.IndexedDB.clearBillProcesses();
+          // this.IndexedDB.clearBillProcesses();
           this.confirmBillPaid(transactionList).then(async (rx) => {
-            const r = rx.data;
+            const ro = rx.data;
             // console.log('=====> CONFIRM BILL PAID :', r);
-            if (r.status === 1) {
+            if (ro.status === 1) {
 
               for (let index = 0; index < pb.length; index++) {
                 const element = pb[index];
@@ -726,7 +727,7 @@ export class ApiService {
               //   }
               // }
 
-              this.eventEmmiter.emit('delivery');
+              
               resolve(EMessage.succeeded);
             }
 
@@ -749,119 +750,7 @@ export class ApiService {
 
   }
 
-  async manualDelivery(r: any, serial: ISerialService) {
-    return new Promise<string>((resolve, reject) => {
-      console.log('WAITING DELIVERY NEW :', r);
-
-      console.log('VENDING ON SALE :', ApiService.vendingOnSale);
-
-
-      try {
-
-        if (r) {
-          if (!this.isRemainingBillsModalOpen) {
-            this.dismissModal();
-            this.dismissModal();
-          }
-          // this.dismissLoading();
-          if (this.waitingForDelivery) return;
-          this.waitingForDelivery = true;
-          const pb = r ? r as Array<IBillProcess> : [] as Array<IBillProcess>;
-          // console.log('=====> PB', pb);
-
-          // console.log('=====> PB Length :', pb.length);
-          // const pdStock = [];
-          let transactionList = [];
-          for (let index = 0; index < pb.length; index++) {
-            const element = pb[index];
-            // console.log('=====> PB ELEMENT :', element);
-            transactionList.push(element.transactionID);
-          }
-
-          // console.log('transactionList :', transactionList);
-          this.confirmBillPaid(transactionList).then(async (rx) => {
-            const r = rx.data;
-            // console.log('=====> CONFIRM BILL PAID :', r);
-            if (r.status === 1) {
-
-              for (let index = 0; index < pb.length; index++) {
-                const element = pb[index];
-                await this.IndexedDB.addBillProcess(element);
-              }
-
-              this.isDropStock = true;
-
-              if (pb.length) {
-                if (!this.isRemainingBillsModalOpen) {
-                  this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-                    this.isRemainingBillsModalOpen = true;
-                    r.present();
-                    r.onDidDismiss().then(() => {
-                      this.isRemainingBillsModalOpen = false;
-                    }
-                    );
-                  });
-                }
-
-              }
-              // if (this.allowTopUp) {
-              //   const m = await this.showModal(GivePopUpPage);
-              //   m.present();
-              //   m.onDidDismiss().then((r) => {
-              //     // console.log('-----> GO TO DROP');
-              //     if (pb.length) {
-              //       if (!this.isRemainingBillsModalOpen) {
-              //         this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-              //           this.isRemainingBillsModalOpen = true;
-              //           r.present();
-              //           r.onDidDismiss().then(() => {
-              //             this.isRemainingBillsModalOpen = false;
-              //           }
-              //           );
-              //         });
-              //       }
-
-              //     }
-
-              //   });
-              // } else {
-              //   if (pb.length) {
-              //     if (!this.isRemainingBillsModalOpen) {
-              //       this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
-              //         this.isRemainingBillsModalOpen = true;
-              //         r.present();
-              //         r.onDidDismiss().then(() => {
-              //           this.isRemainingBillsModalOpen = false;
-              //         }
-              //         );
-              //       });
-              //     }
-
-              //   }
-              // }
-
-              this.eventEmmiter.emit('delivery');
-              resolve(EMessage.succeeded);
-            }
-
-          });
-
-          // console.log('=====> PD STOCK :', pdStock);
-        } else {
-          resolve(EMessage.error);
-        }
-      } catch (error) {
-        console.log('error waitingDelivery is:', error);
-        this.IndexedLogDB.addBillProcess({ errorData: `Error waitingDelivery :${JSON.stringify(error)}` });
-        resolve(EMessage.error)
-      }
-      finally {
-        this.waitingForDelivery = false;
-      }
-    })
-
-
-  }
+  
 
 
 
@@ -982,9 +871,10 @@ export class ApiService {
         updatedItems.forEach(item => {
           this.eventEmitter.emit('stockdeduct', item);
         });
-        const sendWSMode = localStorage.getItem('sendWSMode') || 'yes';
+        const sendWSMode = localStorage.getItem('sendWSMode')||'no';
         if (sendWSMode === 'yes') {
           this.saveSaleAnDropWS(vsales, dropPositionData);
+          resolve({ status: true, message: 'Save and drop initiated via WebSocket' });
         } else {
           this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {
             const r = rx.data;
@@ -2306,28 +2196,28 @@ export class ApiService {
     // OrderCartPage
     // OrderPaidPage
 
-    // this.___LaabGoPage?.dismiss();
-    // this.___EpinCashOutPage?.dismiss();
-    // this.___EpinShowCodePage?.dismiss();
-    // this.___SmcListPage?.dismiss();
-    // this.___LaabCashinShowCodePage?.dismiss();
-    // this.___LaabCashoutPage?.dismiss();
-    // this.___StackCashoutPage?.dismiss();
-    // this.___MmoneyIosAndroidDownloadPage?.dismiss();
-    // this.___TopupServicePage?.dismiss();
-    // this.___TopupAndServicePage?.dismiss();
-    // this.___PhonePaymentPage?.dismiss();
-    // this.___VendingGoPage?.dismiss();
-    // this.___HowToPage?.dismiss();
-    // this.___MmoneyCashoutPage?.dismiss();
-    // this.___HangmiStoreSegmentPage?.dismiss();
-    // this.___HangmiFoodSegmentPage?.dismiss();
-    // this.___TopupAndServiceSegmentPage?.dismiss();
-    // this.___PlayGamesPage?.dismiss();
-    // this.___OrderCartPage?.dismiss();
-    // this.___OrderPaidPage?.dismiss();
-    // this.___OrderPaidPage?.dismiss();
-    this.modal?.dismiss();
+    this.___LaabGoPage?.dismiss();
+    this.___EpinCashOutPage?.dismiss();
+    this.___EpinShowCodePage?.dismiss();
+    this.___SmcListPage?.dismiss();
+    this.___LaabCashinShowCodePage?.dismiss();
+    this.___LaabCashoutPage?.dismiss();
+    this.___StackCashoutPage?.dismiss();
+    this.___MmoneyIosAndroidDownloadPage?.dismiss();
+    this.___TopupServicePage?.dismiss();
+    this.___TopupAndServicePage?.dismiss();
+    this.___PhonePaymentPage?.dismiss();
+    this.___VendingGoPage?.dismiss();
+    this.___HowToPage?.dismiss();
+    this.___MmoneyCashoutPage?.dismiss();
+    this.___HangmiStoreSegmentPage?.dismiss();
+    this.___HangmiFoodSegmentPage?.dismiss();
+    this.___TopupAndServiceSegmentPage?.dismiss();
+    this.___PlayGamesPage?.dismiss();
+    this.___OrderCartPage?.dismiss();
+    this.___OrderPaidPage?.dismiss();
+    this.___OrderPaidPage?.dismiss();
+    this.___AutoPaymentPage?.dismiss();
   }
   updateStatus(data: any) {
     const req = {} as IReqModel;

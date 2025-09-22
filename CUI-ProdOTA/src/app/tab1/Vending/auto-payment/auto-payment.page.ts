@@ -202,7 +202,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService
   ) {
-    // this.apiService.___AutoPaymentPage = this.modal;
+    this.apiService.___AutoPaymentPage = this.modal;
 
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
     this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
@@ -240,6 +240,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     // websocket check when process callback
     this.apiService.onDelivery(res_delivery => {
+      if(!res_delivery) return;
       this.orders = [];
       this.getTotalSale.q = 0;
       this.getTotalSale.t = 0;
