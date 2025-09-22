@@ -138,10 +138,10 @@ export class RemainingbilllocalPage implements OnInit {
             this.apiService.IndexeLocaldDB.deleteBillProcess(Number(transactionID));
             await this.loadBillLocal();
             this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-            this.apiService.loadDeliveryingBillsLocal().then(async reload_ticket => {
+            this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
               console.log('reload_ticket', reload_ticket);
 
-              this.r = reload_ticket;
+              const r = reload_ticket;
               console.log(`=====>here der`, this.r);
 
               if (this.r != undefined && Object.entries(this.r).length == 0) {
@@ -189,14 +189,14 @@ export class RemainingbilllocalPage implements OnInit {
 
 
   reloadDelivery(human: boolean) {
-    this.apiService.loadDeliveryingBillsLocal().then(async reload_ticket => {
+    this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
       // if (reload_ticket.status != 1) {
       //   this.cancelTimer();
       //   await this.apiService.soundSystemError();
       //   return;
       // }
 
-      this.r = reload_ticket;
+      const r = reload_ticket;
       console.log(`=====>here der`, this.r);
 
       if (this.r != undefined && Object.entries(this.r).length == 0) {
