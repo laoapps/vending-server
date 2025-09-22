@@ -1361,17 +1361,17 @@ export class ApiService {
 
     return this.IndexedDB.getBillProcesses();
   }
-  loadDeliveryingBillsLocal() {
-    // return axios.post<IResModel>(
-    //   this.url + '/getDeliveryingBills',
-    //   {
-    //     token: cryptojs
-    //       .SHA256(this.machineId.machineId + this.machineId.otp)
-    //       .toString(cryptojs.enc.Hex),
-    //   },
-    //   { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
-    // );
-    return this.IndexeLocaldDB.getBillProcesses();
+  loadDeliveryingBillsManual() {
+    return axios.post<IResModel>(
+      this.url + '/getDeliveryingBills',
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
+    );
+    // return this.IndexeLocaldDB.getBillProcesses();
   }
   getMMoneyUserInfo(phonenumber: string) {
     return axios.post<IResModel>(
@@ -1413,7 +1413,7 @@ export class ApiService {
   saveSaleAnDropWS(data: any, dropPosition: IDropPositionData) {
     const res = {
       command: 'ping',
-      type: 'saveSaleAnDrop',
+      type: 'aveSaleAnDrop',
       data: {
         data,
         dropPosition,

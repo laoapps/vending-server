@@ -2137,14 +2137,13 @@ export class Tab1Page implements OnDestroy {
     this.openAnotherModal(m);
 
   }
-  // loadPaidBills() {
-  //   this.apiService.loadPaidBills().subscribe(r => {
-  //     console.log(r);
-  //     if (r.status) {
-  //       this.vendingBillPaid.push(...r.data);
-  //     }
-  //   })
-  // }
+  loadPaidBills() {
+    this.apiService.loadPaidBills().then(re => {
+      const r = re.data;
+      console.log(`Load paid bills`,JSON.stringify(r||{}));
+      Toast.show({ text: `Load paid bills ${r.data.length}` });
+    })
+  }
   // loadBills() {
   //   this.apiService.loadBills().subscribe(r => {
   //     console.log(r);
