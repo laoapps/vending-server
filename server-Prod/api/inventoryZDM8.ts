@@ -4204,7 +4204,94 @@ export class InventoryZDM8 implements IBaseClass {
                 }
 
             )
+            router.post(this.path + '/checkRemainingBills',
+                // this.checkSuperAdmin,
 
+                // this.checkAdmin,
+                this.checkMachineIdToken.bind(this),
+
+                async (req, res) => {
+                    try {
+                        const machineId = res.locals["machineId"]?.machineId
+                        let m = await machineClientIDEntity.findOne({
+                            where: { machineId: res.locals["machineId"]?.machineId },
+                        });
+                        m = JSON.parse(JSON.stringify(m));
+                        const ownerUuid = m?.ownerUuid || "";
+
+                        const ent = VendingMachineBillFactory(
+                            EEntity.vendingmachinebill + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        const bill = await ent.findOne({
+                            where: {
+                                paymentstatus: EPaymentStatus.paid,
+                                machineId,
+                                createdAt: {
+                                    [Op.gte]: momenttz().tz('UTC').subtract(15, 'minutes').toDate(),
+                                },
+                            },
+                        });
+                        // console.log('=====>BILL IS :', bill);
+
+                        if (!bill) {
+                            return res.send(PrintError("reportBillNotPaid", [], EMessage.notfound, returnLog(req, res, true)));
+                        }
+
+                        // console.log('=====>machineId', bill.machineId);
+
+                        this.getBillProcess(bill.machineId, async (b) => {
+                            bill.vendingsales.forEach((v, i) => {
+                                v.stock.image = "";
+                                b.push({
+                                    ownerUuid,
+                                    position: v.position,
+                                    bill: bill.toJSON(),
+                                    transactionID: getNanoSecTime(),
+                                });
+                            });
+
+                            await bill.save();
+                            // console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
+
+                            // WebSocket response
+                            const resD = {} as IResModel;
+                            resD.command = EMACHINE_COMMAND.waitingt;
+                            resD.message = EMessage.waitingt;
+                            resD.status = 1;
+                            resD.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                            this.setBillProces(bill.machineId, b);
+                            await redisClient.del(transactionID + EMessage.BillCreatedTemp);
+                            let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
+                            // let trandList: Array<any> = JSON.parse(resule);
+                            // const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+
+                            let trandList: Array<any> = [];
+                            try {
+                                const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                                if (!Array.isArray(parsedData)) {
+                                    console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                                    trandList = [];
+                                } else {
+                                    trandList = parsedData;
+                                }
+                            } catch (error) {
+                                console.error('JSON parse error:', error.message);
+                                trandList = [];
+                            }
+
+                            const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+                            redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                            this.sendWSToMachine(bill.machineId, resD);
+                            return res.send(PrintSucceeded("reportBillNotPaid", resD, EMessage.succeeded, returnLog(req, res)));
+                        });
+                    } catch (error) {
+                        console.log('reportBillNotPaid :', error);
+                        res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
 
             router.post(this.path + '/sendDropAdmin',
                 this.checkSuperAdmin,
@@ -7441,7 +7528,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 let clientVersion = d?.data?.clientVersion;
                                 // data 
                                 let data = d?.data?.data ?? [];
-                                const type = d['type']??'';
+                                const type = d['type'] ?? '';
                                 if (type === 'errorLog' && data && data.length > 0) {
 
                                 } else if (type === 'TempLog' && data && data.length > 0) {
@@ -7452,18 +7539,18 @@ export class InventoryZDM8 implements IBaseClass {
                                     await this.confirmDrop(ws['machineId'], dropPositionData?.transactionID, dropPositionData?.position);
 
                                 }
-                                else if (type === 'SaveSaleAndDrop' && data &&data.length > 0) {
+                                else if (type === 'SaveSaleAndDrop' && data && data.length > 0) {
                                     const dropPositionData = data.dropPositionData as IDropPositionData;
                                     const saveSalve = data as Array<IVendingMachineSale>;
-                                    await this.saveMachineSale(ws['machineId'],saveSalve);
+                                    await this.saveMachineSale(ws['machineId'], saveSalve);
                                     await this.confirmDrop(ws['machineId'], dropPositionData?.transactionID, dropPositionData?.position);
 
                                 }
-                                 else if (type === 'SaveSale' && data &&data.length > 0) {
+                                else if (type === 'SaveSale' && data && data.length > 0) {
                                     const dropPositionData = data.dropPositionData as IDropPositionData;
                                     const saveSalve = data as Array<IVendingMachineSale>;
-                                    await this.saveMachineSale(ws['machineId'],saveSalve);
-                                    
+                                    await this.saveMachineSale(ws['machineId'], saveSalve);
+
                                 }
 
                                 ///
