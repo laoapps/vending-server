@@ -2137,12 +2137,23 @@ export class Tab1Page implements OnDestroy {
     this.openAnotherModal(m);
 
   }
+  processLoadedPaidBills = false;
   loadPaidBills() {
-    this.apiService.loadPaidBills().then(re => {
+    if(this.processLoadedPaidBills) return;
+    this.processLoadedPaidBills=true;
+    this.apiService.loadPaidBills().then(async re => {
       const r = re.data;
       console.log(`Load paid bills`,JSON.stringify(r||{}));
-      Toast.show({ text: `Load paid bills ${r.data.length}` });
-    })
+      Toast.show({ text: `Load paid bills ${r.data.length}` ,duration: 'short'});
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
+    }).catch(er=>{
+      console.log(er);
+      Toast.show({ text: `Load paid bills error ${er.message}` });
+    }).finally(()=>{
+      console.log('finally');
+      Toast.show({ text: `Load paid bills finally`  , duration: 'short'});
+      this.processLoadedPaidBills=false;
+    });
   }
   // loadBills() {
   //   this.apiService.loadBills().subscribe(r => {
