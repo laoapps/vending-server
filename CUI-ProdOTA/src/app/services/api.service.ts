@@ -610,7 +610,7 @@ export class ApiService {
           });
         }
       });
-      this.eventEmmiter.emit('delivery',r?.bill?.vendingsales?.length);
+      this.eventEmmiter.emit('delivery', r?.bill?.vendingsales?.length);
     });
 
     // this.initLocalHowToVideoPlayList();
@@ -661,7 +661,7 @@ export class ApiService {
           for (let index = 0; index < pb.length; index++) {
             const element = pb[index];
             // console.log('=====> PB ELEMENT :', element);
-            if(transactionList.includes(element.transactionID))continue;
+            if (transactionList.includes(element.transactionID)) continue;
             transactionList.push(element.transactionID);
           }
 
@@ -674,6 +674,8 @@ export class ApiService {
 
               for (let index = 0; index < pb.length; index++) {
                 const element = pb[index];
+                const trandID = await this.IndexedDB.getBillProcessByTransactionID(element.transactionID);
+                if (trandID) continue;
                 await this.IndexedDB.addBillProcess(element);
               }
 
@@ -728,7 +730,7 @@ export class ApiService {
               //   }
               // }
 
-              
+
               resolve(EMessage.succeeded);
             }
 
@@ -751,7 +753,7 @@ export class ApiService {
 
   }
 
-  
+
 
 
 
@@ -872,7 +874,7 @@ export class ApiService {
         updatedItems.forEach(item => {
           this.eventEmitter.emit('stockdeduct', item);
         });
-        const sendWSMode = localStorage.getItem('sendWSMode')||'yes';
+        const sendWSMode = localStorage.getItem('sendWSMode') || 'yes';
         if (sendWSMode === 'yes') {
           this.saveSaleAnDropWS(vsales, dropPositionData);
           resolve({ status: true, message: 'Save and drop initiated via WebSocket' });
@@ -1370,7 +1372,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
     // return this.IndexeLocaldDB.getBillProcesses();
   }
