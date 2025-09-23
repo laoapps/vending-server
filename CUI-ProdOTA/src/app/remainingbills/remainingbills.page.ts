@@ -133,8 +133,11 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
       let err = null;
       const { transactionID, position, ownerUuid, transID, human = false } = params;
+       const x = setTimeout(() => {
+          this.apiService.reloadPage();
+        }, 1000*20);
       try {
-
+       
 
         if (this.processing) {
           console.warn('Process already running');
@@ -172,11 +175,13 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       } catch (error) {
         err = await this.handleError(error, transactionID, position, ownerUuid, transID);
       } finally {
+        clearTimeout(x);
         this.processing = false;
         if (err) {
           reject(err);
         } else
           resolve();
+
       }
     });
 
@@ -374,7 +379,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.clearTimer();
   }
   reload() {
-    // this.apiService.reloadPage();
+    this.apiService.reloadPage();
   }
 
 }
