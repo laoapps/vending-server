@@ -1455,12 +1455,13 @@ export class ApiService {
     );
   }
   loadPaidBills() {
-    
-    return axios.post<IResModel>(this.url + '/getPaidBills',{
+    const r = {
         token: cryptojs
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
-      }, {
+      };
+    console.log('loadPaidBills', r);
+    return axios.post<IResModel>(this.url + '/getPaidBills',r, {
       headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }

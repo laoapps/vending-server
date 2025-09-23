@@ -1448,6 +1448,8 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.vendingmachinebillpaid + "_" + ownerUuid,
                             dbConnection
                         );
+                        await entx.sync();
+
                         entx
                             .findAll({
                                 where: {
@@ -1501,6 +1503,8 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.vendingmachinebill + "_" + ownerUuid,
                             dbConnection
                         );
+                        await entx.sync();
+
                         entx
                             .findAll({ where: { machineId } })
                             .then((r) => {
@@ -1531,6 +1535,8 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.vendingmachinebill + "_" + ownerUuid,
                             dbConnection
                         );
+                        await ent.sync();
+
                         const bill = await ent.findOne({
                             where: { transactionID: transactionID },
                         });
@@ -1651,6 +1657,8 @@ export class InventoryZDM8 implements IBaseClass {
                                     EEntity.vendingmachinebill + "_" + element['ownerUuid'],
                                     dbConnection
                                 );
+                                await ent.sync();
+
                                 const bill = await ent.findOne({
                                     where: { transactionID: element.bill.transactionID },
                                 });
@@ -1856,6 +1864,8 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.vendingmachinebillpaid + "_" + ownerUuid,
                             dbConnection
                         );
+                        await entx.sync();
+
                         entx
                             .findAll()
                             .then((r) => {
@@ -1886,6 +1896,8 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.vendingmachinebill + "_" + ownerUuid,
                             dbConnection
                         );
+                        await entx.sync();
+
                         entx
                             .findAll()
                             .then((r) => {
@@ -2979,6 +2991,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     EEntity.vendingmachinebill + "_" + ownerUuid,
                                     dbConnection
                                 );
+                                await ent.sync();
                                 const bill = await ent.findOne({
                                     where: { transactionID: transactionID },
                                 });
@@ -4247,6 +4260,7 @@ export class InventoryZDM8 implements IBaseClass {
                             EEntity.vendingmachinebill + "_" + ownerUuid,
                             dbConnection
                         );
+                        await ent.sync();
                         const bill = await ent.findOne({
                             where: { transactionID },
                         });
@@ -6335,6 +6349,7 @@ export class InventoryZDM8 implements IBaseClass {
                     EEntity.vendingmachinebill + "_" + ownerUuid,
                     dbConnection
                 );
+                await ent.sync();
                 const bill = await ent.findOne({
                     where: { qr },
                 });
@@ -6512,6 +6527,7 @@ export class InventoryZDM8 implements IBaseClass {
                     EEntity.vendingmachinebill + "_" + ownerUuid,
                     dbConnection
                 );
+                await ent.sync();
                 const bill = await ent.findOne({
                     where: { transactionID },
                 });
@@ -7133,6 +7149,7 @@ export class InventoryZDM8 implements IBaseClass {
                     EEntity.vendingmachinebill + "_" + ownerUuid,
                     dbConnection
                 );
+                await ent.sync();
                 const bill = await ent.findOne({
                     where: { qr: qr },
                 });
@@ -8017,6 +8034,7 @@ export class InventoryZDM8 implements IBaseClass {
             }
         }
         const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+        await ent.sync();
         const res = await ent.findAndCountAll(condition);
         return res;
     }
