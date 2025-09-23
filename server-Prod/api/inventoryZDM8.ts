@@ -1439,11 +1439,12 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
-                        const m = await machineClientIDEntity.findOne({
-                            where: { machineId: res.locals["machineId"]?.machineId },
-                        });
-                        const ownerUuid = m?.ownerUuid || "";
-                        const machineId = m?.machineId;
+                        const ownerUuid = res.locals['machineId']?.ownerUuid || "";
+                        // console.log('ownerUuid :', ownerUuid);
+
+                        const machineId = res.locals['machineId']?.machineId;
+                        // console.log('machineId :', machineId);
+
                         const entx = VendingMachineBillFactory(
                             EEntity.vendingmachinebillpaid + "_" + ownerUuid,
                             dbConnection
@@ -1461,14 +1462,14 @@ export class InventoryZDM8 implements IBaseClass {
                                 order: [['createdAt', 'DESC']],
                             })
                             .then((r) => {
-                                this.getBillProcess(m.machineId, (b) => {
+                                this.getBillProcess(machineId, (b) => {
                                     console.log("getPaidBills length", r.length, b.map(v => v.bill)?.length);
                                     console.log("getPaidBills", r.map(v => { return { t: v.transactionID, paymentstatus: v.paymentstatus } }), b.map(v => v.bill)?.length);
                                     const resx = {} as IResModel;
                                     resx.command = EMACHINE_COMMAND.waitingt;
                                     resx.message = EMessage.waitingt;
                                     resx.status = 1;
-                                    resx.data = b.filter((v) => v.ownerUuid == ownerUuid&&v?.bill?.paymentstatus==EPaymentStatus.paid);
+                                    resx.data = b.filter((v) => v.ownerUuid == ownerUuid && v?.bill?.paymentstatus == EPaymentStatus.paid);
                                     this.sendWSToMachine(machineId, resx);
                                     res.send(
                                         PrintSucceeded(
