@@ -2146,6 +2146,13 @@ export class Tab1Page implements OnDestroy {
       console.log(`Load paid bills`,JSON.stringify(r||{}));
       Toast.show({ text: `Load paid bills ${r?.data?.length}` ,duration: 'short'});
       
+      if(!r.data.length){
+        this.showBills();
+      }
+       
+
+
+
       await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
     }).catch(er=>{
       console.log(er);
