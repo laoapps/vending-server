@@ -80,6 +80,7 @@ import {
     ILoadVendingMachineStockReport,
     ILaoQRGenerateQRRes,
     IMachineStatus,
+    IDropPositionData,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import momenttz from "moment-timezone";
@@ -423,9 +424,11 @@ export class InventoryZDM8 implements IBaseClass {
                         this.wsClient.find((v) => {
                             if (v["clientId"] == clientId) return (loggedin = true);
                         });
+                        const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
+                        if (ws) ws['lastAction'] = Date.now();
                         if (!loggedin) {
 
-                            const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
+
                             if (ws) {
                                 //  ws?.send(
                                 //     JSON.stringify(
@@ -1447,10 +1450,32 @@ export class InventoryZDM8 implements IBaseClass {
                         );
                         entx
                             .findAll({
-                                where: { machineId, paymentstatus: EPaymentStatus.paid },
+                                where: {
+                                    machineId, paymentstatus: EPaymentStatus.paid, createdAt: {
+                                        [Op.gte]: momenttz().tz('UTC').subtract(15, 'minutes').toDate(),
+                                        [Op.lte]: momenttz().tz('UTC').toDate(),
+                                    },
+                                },
+                                order: [['createdAt', 'DESC']],
                             })
                             .then((r) => {
-                                res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded, returnLog(req, res)));
+                                this.getBillProcess(m.machineId, (b) => {
+                                    console.log("getPaidBills length", r.length, b.map(v => v.bill)?.length);
+                                    console.log("getPaidBills", r.map(v => { return { t: v.transactionID, paymentstatus: v.paymentstatus } }), b.map(v => v.bill)?.length);
+                                    const resx = {} as IResModel;
+                                    resx.command = EMACHINE_COMMAND.waitingt;
+                                    resx.message = EMessage.waitingt;
+                                    resx.status = 1;
+                                    resx.data = b.filter((v) => v.ownerUuid == ownerUuid&&v?.bill?.paymentstatus==EPaymentStatus.paid);
+                                    this.sendWSToMachine(machineId, resx);
+                                    res.send(
+                                        PrintSucceeded(
+                                            "getPaidBills",
+                                            EMessage.succeeded, resx.data, returnLog(req, res)
+                                        )
+                                    );
+                                });
+                                // res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded, returnLog(req, res)));
                             })
                             .catch((e) => {
                                 res.send(PrintError("init", e, EMessage.error, returnLog(req, res, true)));
@@ -7172,6 +7197,78 @@ export class InventoryZDM8 implements IBaseClass {
         });
 
     }
+    INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+    checkWebSocketInactivity(ws: WebSocket): void {
+        const lastActivity = ws['lastAction'] ?? Date.now(); // Use nullish coalescing for clarity
+        if (Date.now() - lastActivity > this.INACTIVITY_TIMEOUT_MS) {
+            try {
+                ws.close(1000, 'No activity for 10 minutes');
+                console.log('WebSocket closed due to inactivity for 10 minutes');
+            } catch (error) {
+                console.error('Error closing WebSocket:', error);
+            }
+        }
+    }
+    confirmDrop(machineId: string, transactionID: string, position: number) {
+        return new Promise<IResModel>(async (resolve, reject) => {
+            try {
+                // implement later
+
+            }
+            catch (error) {
+                console.log(error);
+                reject(error);
+            }
+        });
+    }
+    saveMachineSale(machineId: string, data: any) {
+        return new Promise<void>(async (resolve, reject) => {
+            try {
+                const machine = this.checkMachineId(machineId);
+                const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machine.machineId, dbConnection);
+                await sEnt.sync();
+
+                // sign
+
+                const run = await sEnt.findOne({ order: [['id', 'desc']] });
+                // console.log(`run der`, run);
+
+                const calculate = laabHashService.CalculateHash(JSON.stringify(data));
+                // console.log(`calculate der`, calculate);
+                const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
+                // console.log(`sign der`, sign);
+                // console.log(`d data der`, d.data);
+                const list = new Array<IVendingMachineSale>();
+                list.push(...data);
+                list.forEach(v => v.machineId = machine.machineId);
+                if (run == null) {
+
+                    sEnt.create({
+                        data: list,
+                        hashM: sign,
+                        hashP: 'null'
+                    }).then(r => {
+                        console.log(`save sales success`);
+                    }).catch(error => console.log(`save stock fail`));
+
+                } else {
+
+                    sEnt.create({
+                        data: list,
+                        hashM: sign,
+                        hashP: run.hashM
+                    }).then(r => {
+                        // console.log(`save stock successxxx`);
+                    }).catch(error => console.log(`save stock fail`));
+
+                }
+            } catch (error) {
+                console.log(`save stock error`, error);
+            }
+            resolve()
+        });
+    }
+
     initWs(wss: WebSocketServer.Server) {
         try {
             setWsHeartbeat(
@@ -7207,6 +7304,7 @@ export class InventoryZDM8 implements IBaseClass {
                     let d: IReqModel = {} as IReqModel;
                     ws['isAlive'] = true;
                     ws['lastMessage'] = Date.now();
+                    this.checkWebSocketInactivity(ws);
                     //login first
                     // add to wsClient only after login
 
@@ -7363,6 +7461,34 @@ export class InventoryZDM8 implements IBaseClass {
                                 let settingVersion = d?.data?.settingVersion;
                                 let adsVersion = d?.data?.adsVersion;
                                 let clientVersion = d?.data?.clientVersion;
+                                // data 
+                                let data = d?.data?.data ?? [];
+                                const type = d['type'] ?? '';
+                                if (type === 'errorLog' && data && data.length > 0) {
+
+                                } else if (type === 'TempLog' && data && data.length > 0) {
+
+                                }
+                                else if (type === 'ConfirmDrop' && data && data.length > 0) {
+                                    const dropPositionData = data.dropPositionData as IDropPositionData;
+                                    await this.confirmDrop(ws['machineId'], dropPositionData?.transactionID, dropPositionData?.position);
+
+                                }
+                                else if (type === 'SaveSaleAndDrop' && data && data.length > 0) {
+                                    const dropPositionData = data.dropPositionData as IDropPositionData;
+                                    const saveSalve = data as Array<IVendingMachineSale>;
+                                    await this.saveMachineSale(ws['machineId'], saveSalve);
+                                    await this.confirmDrop(ws['machineId'], dropPositionData?.transactionID, dropPositionData?.position);
+
+                                }
+                                else if (type === 'SaveSale' && data && data.length > 0) {
+                                    const dropPositionData = data.dropPositionData as IDropPositionData;
+                                    const saveSalve = data as Array<IVendingMachineSale>;
+                                    await this.saveMachineSale(ws['machineId'], saveSalve);
+
+                                }
+
+                                ///
                                 console.log(`----->MachineId :${ws['machineId']} clientVersion`, clientVersion);
 
 

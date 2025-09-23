@@ -9,6 +9,7 @@ import {
   IAlive,
   IBillProcess,
   IClientId,
+  IDropPositionData,
   IlogSerial,
   IMachineClientID,
   IMachineId,
@@ -609,6 +610,7 @@ export class ApiService {
           });
         }
       });
+      this.eventEmmiter.emit('delivery',r?.bill?.vendingsales?.length);
     });
 
     // this.initLocalHowToVideoPlayList();
@@ -663,11 +665,11 @@ export class ApiService {
           }
 
           // console.log('transactionList :', transactionList);
-          this.IndexedDB.clearBillProcesses();
+          // this.IndexedDB.clearBillProcesses();
           this.confirmBillPaid(transactionList).then(async (rx) => {
-            const r = rx.data;
+            const ro = rx.data;
             // console.log('=====> CONFIRM BILL PAID :', r);
-            if (r.status === 1) {
+            if (ro.status === 1) {
 
               for (let index = 0; index < pb.length; index++) {
                 const element = pb[index];
@@ -725,7 +727,7 @@ export class ApiService {
               //   }
               // }
 
-              this.eventEmmiter.emit('delivery');
+              
               resolve(EMessage.succeeded);
             }
 
@@ -747,6 +749,8 @@ export class ApiService {
 
 
   }
+
+  
 
 
 
@@ -830,7 +834,7 @@ export class ApiService {
     })
   }
 
-  reconfirmStockAndDrop(pendingStock: Array<{ transactionID: any, position: number }>, dropPositionData: any): Promise<any> {
+  reconfirmStockAndDrop(pendingStock: Array<{ transactionID: any, position: number }>, dropPositionData: IDropPositionData): Promise<any> {
     return new Promise((resolve, reject) => {
       const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
       console.log(`ping pending stock`, trans);
@@ -867,25 +871,32 @@ export class ApiService {
         updatedItems.forEach(item => {
           this.eventEmitter.emit('stockdeduct', item);
         });
+        const sendWSMode = localStorage.getItem('sendWSMode')||'yes';
+        if (sendWSMode === 'yes') {
+          this.saveSaleAnDropWS(vsales, dropPositionData);
+          resolve({ status: true, message: 'Save and drop initiated via WebSocket' });
+        } else {
+          this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {
+            const r = rx.data;
+            console.log(r);
+            if (r.status) {
+              console.log(`save sale success`);
+              this.storage.set('saleStock', vsales, 'stock').then((rr) => {
+                resolve(r);
+              }).catch(e => {
+                reject(e)
+              });
+            } else {
+              this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
+              this.simpleMessage(IENMessage.saveSaleFail);
+              reject(new Error('Save sale failed'));
+            }
+          }).catch(e => {
+            reject(e)
+          });
+        }
 
-        this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {
-          const r = rx.data;
-          console.log(r);
-          if (r.status) {
-            console.log(`save sale success`);
-            this.storage.set('saleStock', vsales, 'stock').then((rr) => {
-              resolve(r);
-            }).catch(e => {
-              reject(e)
-            });
-          } else {
-            this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
-            this.simpleMessage(IENMessage.saveSaleFail);
-            reject(new Error('Save sale failed'));
-          }
-        }).catch(e => {
-          reject(e)
-        });
+
 
       } catch (error) {
         this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
@@ -1350,17 +1361,17 @@ export class ApiService {
 
     return this.IndexedDB.getBillProcesses();
   }
-  loadDeliveryingBillsLocal() {
-    // return axios.post<IResModel>(
-    //   this.url + '/getDeliveryingBills',
-    //   {
-    //     token: cryptojs
-    //       .SHA256(this.machineId.machineId + this.machineId.otp)
-    //       .toString(cryptojs.enc.Hex),
-    //   },
-    //   { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
-    // );
-    return this.IndexeLocaldDB.getBillProcesses();
+  loadDeliveryingBillsManual() {
+    return axios.post<IResModel>(
+      this.url + '/getDeliveryingBills',
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
+    );
+    // return this.IndexeLocaldDB.getBillProcesses();
   }
   getMMoneyUserInfo(phonenumber: string) {
     return axios.post<IResModel>(
@@ -1386,7 +1397,7 @@ export class ApiService {
     );
   }
 
-  saveSaleAndDrop(data: any, dropPositionData: any) {
+  saveSaleAndDrop(data: any, dropPositionData: IDropPositionData) {
     return axios.post<IResModel>(
       this.url + '/saveMachineSaleAndDrop',
       {
@@ -1398,6 +1409,23 @@ export class ApiService {
       },
       { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
+  }
+  saveSaleAnDropWS(data: any, dropPosition: IDropPositionData) {
+    const res = {
+      command: 'ping',
+      type: 'aveSaleAnDrop',
+      data: {
+        data,
+        dropPosition,
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      ip: '',
+      time: new Date().toString(),
+    };
+    console.log(`saveSaleAnDropWS`, res);
+    this.wsapi.send(data);
   }
 
   recoverSale() {

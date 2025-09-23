@@ -1011,7 +1011,8 @@ export enum EClientCommand {
     paidLAAB = 'paidLAAB',
     buyLAOQR = "buyLAOQR",
     buyTopUp = "buyTopUp",
-    MACHINE_STATAUS = "MACHINE_STATAUS"
+    MACHINE_STATAUS = "MACHINE_STATAUS",
+    SaveSaleAndDrop = "SaveSaleAndDrop"
 }
 export interface IMachineId {
     machineId: string;
@@ -1150,5 +1151,9 @@ export interface IBankNote {
     channel: number;
     image: string;
 }
-
+export interface IDropPositionData {
+    ownerUuid: string,
+    transactionID: string,
+    position: number
+}
 // Example usage

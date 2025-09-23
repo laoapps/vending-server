@@ -98,7 +98,7 @@ export class GenerateLaoQRCodeProcess {
                     const r = rx.data;
 
                     const response: any = r;
-                    console.log('response check LaoQR', response);
+                    console.log('response check LaoQR', JSON.stringify(response));
 
                     if (response.status != 1) return resolve({ status: 0, message: IENMessage.findLaoQRPaidFail });
                     this.laoQRCode = response.data as IVendingMachineBill;

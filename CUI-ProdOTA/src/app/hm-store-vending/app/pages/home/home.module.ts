@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
-import { register } from 'swiper/element/bundle';
-register();
+// import { register } from 'swiper/element/bundle';
+// register();
 
 @NgModule({
   imports: [
