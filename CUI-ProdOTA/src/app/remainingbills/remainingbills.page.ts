@@ -126,7 +126,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
 
-  processing: boolean = false;
+  // processing: boolean = false;
 
   async retryProcessBillNew(params: BillProcessParams): Promise<void> {
     return new Promise(async (resolve, reject) => {
@@ -134,11 +134,11 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       const { transactionID, position, ownerUuid, transID, human = false } = params;
       let reloadTimer: NodeJS.Timeout | null = null;
       try {
-        if (this.processing) {
-          console.warn('Process already running');
-          throw new Error('Process already running');
-        }
-        this.processing = true;
+        // if (this.processing) {
+        //   console.warn('Process already running');
+        //   throw new Error('Process already running');
+        // }
+        // this.processing = true;
         reloadTimer = setTimeout(() => {
           this.apiService.reloadPage();
         }, 20000);
@@ -170,10 +170,10 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
       } catch (error) {
         err = await this.handleError(error, transactionID, position, ownerUuid, transID);
-        this.processing = false;
+        // this.processing = false;
 
       } finally {
-        this.processing = false;
+        // this.processing = false;
         if (reloadTimer) {
           clearTimeout(reloadTimer);
         }
