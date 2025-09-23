@@ -147,11 +147,13 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         }
 
         if (!this.serial) {
-          throw new Error('Serial device not initialized');
+
+          return reject(new Error('Serial device not initialized'));
         }
 
         if (!this.SUPPORTED_DEVICES.includes(localStorage.getItem('device') || 'VMC')) {
-          throw new Error('Unsupported device protocol');
+
+          return reject(new Error('Unsupported device protocol'));
         }
         const dropPositionData: IDropPositionData = {
           ownerUuid: ownerUuid,
@@ -242,7 +244,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           localStorage.setItem('product_fall', '0');
           this.clearTimer();
           this.modal.dismiss();
-          throw new Error('No delivery bills found');
+          Toast.show({ text: 'All bills processed 0', duration: 'short' });
+          return resolve();
         }
 
         if (human) {
