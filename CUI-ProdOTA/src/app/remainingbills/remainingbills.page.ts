@@ -179,6 +179,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         }
 
         if (err) {
+          Toast.show({ text: 'Error: ' + JSON.stringify(err), duration: 'long' });
           reject(err);
         } else
           resolve();
