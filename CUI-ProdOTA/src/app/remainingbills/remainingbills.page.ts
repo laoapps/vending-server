@@ -368,7 +368,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.apiService.modal.dismiss();
   }
   clearTimer() {
-    if(this)
+    if(this.timer)
     clearInterval(this.timer);
   }
   cancelTimer() {

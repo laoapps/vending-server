@@ -62,7 +62,7 @@ export class DatabaseService {
     try {
       const query = `SELECT * FROM items;`;
       console.log('Executing query:', this.db);
-      const result = await this.db!.query(query);
+      const result = await this.db?.query(query);
       return new Promise((resolve, reject) => {
         resolve((result.values || []).map(item => ({
           id: item.id,

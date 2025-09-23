@@ -321,7 +321,7 @@ export class Tab1Page implements OnDestroy {
       const timeOut = this.queues.length;
       const that = this;
       setTimeout(() => {
-        that.apiService.updateStatus({ data: b, transactionID: t, command: c }).then(rx => {
+        that.apiService.updateStatus({ data: b, transactionID: t, command: c }).then(async rx => {
           const r = rx.data
           that.queues.shift();
           console.log('QUEUES', that.queues);
@@ -331,7 +331,7 @@ export class Tab1Page implements OnDestroy {
             if (r.transactionID) {
               const x = that.creditPending.find(v => v.transactionID === r.transactionID);
               if (x) {
-                that.deleteCredit(x.id);
+                await that.deleteCredit(x.id);
                 that.creditPending = that.creditPending.filter(v => v.transactionID !== r.transactionID);
                 // Toast.show({ text: 'Delete credit' + JSON.stringify(x), duration: 'long' });
               }
