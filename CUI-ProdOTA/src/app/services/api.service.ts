@@ -1460,7 +1460,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       };
-    console.log('loadPaidBills', r);
+    console.log('loadPaidBills',JSON.stringify(r));
     return axios.post<IResModel>(this.url + '/getPaidBills',r, {
       headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });

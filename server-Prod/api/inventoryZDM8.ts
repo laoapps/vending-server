@@ -1474,7 +1474,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     res.send(
                                         PrintSucceeded(
                                             "getPaidBills",
-                                            EMessage.succeeded, resx.data, returnLog(req, res)
+                                             resx.data,EMessage.succeeded, returnLog(req, res)
                                         )
                                     );
                                 });
