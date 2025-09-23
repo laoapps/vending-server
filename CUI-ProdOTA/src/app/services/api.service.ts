@@ -661,6 +661,7 @@ export class ApiService {
           for (let index = 0; index < pb.length; index++) {
             const element = pb[index];
             // console.log('=====> PB ELEMENT :', element);
+            if(transactionList.includes(element.transactionID))continue;
             transactionList.push(element.transactionID);
           }
 

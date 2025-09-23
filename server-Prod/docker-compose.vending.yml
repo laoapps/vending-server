@@ -4,6 +4,7 @@ services:
     image: redis
     restart: always
     container_name: vending-redis-service5
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
     #port:
     networks:
       - venderserverservice5
