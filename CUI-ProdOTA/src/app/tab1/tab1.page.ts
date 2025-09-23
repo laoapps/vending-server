@@ -2681,7 +2681,7 @@ export class Tab1Page implements OnDestroy {
           if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
             // this.loadAutoShowMyOrders();
           }
-          await this._processLoopCheckLaoQRPaid();
+          // await this._processLoopCheckLaoQRPaid();
           
 
           
@@ -2724,7 +2724,7 @@ export class Tab1Page implements OnDestroy {
           if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
             // this.loadAutoShowMyOrders();
           }
-          await this._processLoopCheckLaoQRPaid();
+          // await this._processLoopCheckLaoQRPaid();
           
 
           
