@@ -1465,7 +1465,11 @@ export class ApiService {
     });
   }
   loadBills() {
-    return axios.post<IResModel>(this.url + '/getBills', {
+    return axios.post<IResModel>(this.url + '/getBills',{
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      }, {
       headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
@@ -1571,7 +1575,11 @@ export class ApiService {
     console.log('checkPaidBill', body.data);
 
     return axios.post(
-      this.vending_server, body, {
+      this.vending_server, {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      }, {
       headers: this.headerBase(), timeout: REQUEST_TIME_OUT
     }
     );
