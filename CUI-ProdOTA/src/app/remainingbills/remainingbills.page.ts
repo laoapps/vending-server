@@ -231,6 +231,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         this.deliveryBills = deliveryBills;
 
         if (deliveryBills.length === 0) {
+          this.apiService.pb = [];
           localStorage.setItem('product_fall', '0');
           this.clearTimer();
           this.modal.dismiss();
