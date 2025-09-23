@@ -106,13 +106,13 @@
         <ion-icon style="color: white;" name="cart-outline"></ion-icon>
       </div>
     </a> -->
-    <a (click)="loadPaidBills()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
-      <div class="text" style="color: red;">ເຄື່ອງບໍ່ທັນຕົກ </div>
+    <a (click)="loadPaidBills()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart"> who?
+      <div class="text" style="color: black;">ເຄື່ອງບໍ່ທັນຕົກ </div>
       <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">
         {{this.apiService.pb.length}}
       </ion-badge>
       <div class="icon">
-        <ion-icon style="color: red;" name="cart-outline"></ion-icon>
+        <ion-icon style="color: black;" name="cart-outline"></ion-icon>
       </div>
     </a>
     <a *ngIf="getTotalSale?.q > 0 == true" (click)="showMyOrdersModal()" href="javascript:void(0)"
