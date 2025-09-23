@@ -170,11 +170,14 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
       } catch (error) {
         err = await this.handleError(error, transactionID, position, ownerUuid, transID);
+        this.processing = false;
+
       } finally {
+        this.processing = false;
         if (reloadTimer) {
           clearTimeout(reloadTimer);
         }
-        this.processing = false;
+
         if (err) {
           reject(err);
         } else
@@ -368,8 +371,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.apiService.modal.dismiss();
   }
   clearTimer() {
-    if(this.timer)
-    clearInterval(this.timer);
+    if (this.timer)
+      clearInterval(this.timer);
   }
   cancelTimer() {
     this.counter = 0;
