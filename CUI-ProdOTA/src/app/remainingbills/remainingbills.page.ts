@@ -282,7 +282,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       }
 
       // await new Promise((resolve) => setTimeout(resolve, this.RETRY_TIMEOUT_MS));
-      await this.retryProcessBillNew({ transactionID, position, ownerUuid, transID });
+      // await this.retryProcessBillNew({ transactionID, position, ownerUuid, transID });
       resolve();
     });
 
