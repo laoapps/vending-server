@@ -240,7 +240,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     // websocket check when process callback
     this.apiService.onDelivery(res_delivery => {
-      if(!res_delivery) return;
+      if (!res_delivery) return;
       this.orders = [];
       this.getTotalSale.q = 0;
       this.getTotalSale.t = 0;

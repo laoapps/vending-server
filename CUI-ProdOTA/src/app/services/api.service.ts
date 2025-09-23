@@ -643,7 +643,7 @@ export class ApiService {
 
 
       try {
-
+        this.myTab1.clearStockAfterLAABGo();
         if (r) {
           if (!this.isRemainingBillsModalOpen) {
             this.dismissModal();
@@ -1456,21 +1456,21 @@ export class ApiService {
   }
   loadPaidBills() {
     const r = {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      };
-    console.log('loadPaidBills',JSON.stringify(r));
-    return axios.post<IResModel>(this.url + '/getPaidBills',r, {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+    console.log('loadPaidBills', JSON.stringify(r));
+    return axios.post<IResModel>(this.url + '/getPaidBills', r, {
       headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
   loadBills() {
-    return axios.post<IResModel>(this.url + '/getBills',{
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      }, {
+    return axios.post<IResModel>(this.url + '/getBills', {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    }, {
       headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
@@ -1577,10 +1577,10 @@ export class ApiService {
 
     return axios.post(
       this.vending_server, {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      }, {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    }, {
       headers: this.headerBase(), timeout: REQUEST_TIME_OUT
     }
     );
