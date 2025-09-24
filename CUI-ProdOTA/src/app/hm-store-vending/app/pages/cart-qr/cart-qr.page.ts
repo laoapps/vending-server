@@ -309,9 +309,14 @@ export class CartQrPage implements OnInit {
         cart.splice(index, 1); // ລົບ item ອອກ
         localStorage.setItem('cart', JSON.stringify(cart));
         console.log('Updated cart:', cart);
-        this.load_data();
-        this.m.updateCartCount();
-        this.selldelivery();
+        if (cart.length != 0) {
+          this.load_data();
+          this.m.updateCartCount();
+          this.selldelivery();  
+        }else{
+          this.m.updateCartCount();
+          this.m.closeModal({dismiss:false})
+        }
       } else {
         console.warn('Item not found in cart');
       }
