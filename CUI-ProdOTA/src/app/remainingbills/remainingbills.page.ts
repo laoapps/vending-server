@@ -49,15 +49,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    try {
-      await this.loadBillLocal();
-      this.loadAutoFall();
-      // console.log('R', this.r);
-      // console.log(`here`);
-      await this.apiService.soundPleaseSelect();
-    } catch (error) {
-      this.loadAutoFall();
-    }
+
 
 
   }
@@ -285,8 +277,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         return;
       }
 
-      // await new Promise((resolve) => setTimeout(resolve, this.RETRY_TIMEOUT_MS));
-      // await this.retryProcessBillNew({ transactionID, position, ownerUuid, transID });
+
+
       resolve();
     });
 
@@ -326,33 +318,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
 
-  reloadDelivery(human: boolean) {
-    this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-      // if (reload_ticket.status != 1) {
-      //   this.cancelTimer();
-      //   await this.apiService.soundSystemError();
-      //   return;
-      // }
-
-      this.r = reload_ticket;
-      console.log(`=====>here der`, this.r);
-
-      if (this.r != undefined && Object.entries(this.r).length == 0) {
-        localStorage.setItem('product_fall', '0');
-        this.clearTimer();
-        this.apiService, this.modal.dismiss();
-        return;
-      }
-
-      if (human == true) {
-        this.loadAutoFall();
-      }
-    }).catch(async error => {
-      this.cancelTimer();
-
-      await this.apiService.soundSystemError();
-    });
-  }
+ 
 
   getPrice() {
     return this.r.find(item => item)
