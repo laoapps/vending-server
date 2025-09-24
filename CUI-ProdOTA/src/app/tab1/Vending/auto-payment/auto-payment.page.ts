@@ -263,6 +263,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     this.parseGetTotalSale = local.sum;
     this.orders = local.orders;
     this.getTotalSale = local.sum;
+    if(this.parseGetTotalSale.q>10){
+      this.apiService.reloadPage();
+    }
   }
 
 

@@ -109,7 +109,6 @@ export class AppComponent {
         this.count = 6;
         console.log('re count');
         if (this.t) {
-          // clearTimeout(this.t);
           this.t = null;
         }
       }, 1500);

@@ -257,6 +257,7 @@ export class Tab1Page implements OnDestroy {
   otherModalAreOpening: boolean = false;
 
   lastUpdate: number = Date.now();
+  lastAction: number = Date.now();
 
   t: any;
   count = 7;
@@ -267,7 +268,7 @@ export class Tab1Page implements OnDestroy {
   private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
 
 
-  processedQRPaid=false;
+  processedQRPaid = false;
 
 
   private creditPending: ICreditData[] = [];
@@ -468,7 +469,7 @@ export class Tab1Page implements OnDestroy {
     public router: Router
   ) {
 
-    // this.refreshAllEveryHour();
+    this.refreshAllEveryHour();
 
     this.autopilot = this.apiService.autopilot;
     const that = this;
@@ -545,7 +546,7 @@ export class Tab1Page implements OnDestroy {
           // this.loadSaleList();
           this.initStock();
           if (this.isFirstLoad) {
-            
+
 
             this.loadStock();
             this.isFirstLoad = false;
@@ -733,8 +734,8 @@ export class Tab1Page implements OnDestroy {
         if (res?.data?.settingVersion) {
           // localStorage.setItem('settingVersion', res?.data?.settingVersion);
         }
-        if(res?.data?.sendWSMode){
-          localStorage.setItem('sendWSMode',res?.data?.sendWSMode?'yes':'no');
+        if (res?.data?.sendWSMode) {
+          localStorage.setItem('sendWSMode', res?.data?.sendWSMode ? 'yes' : 'no');
         }
         if (r) {
           try {
@@ -1092,13 +1093,8 @@ export class Tab1Page implements OnDestroy {
   async checkLiveUpdate(version: string) {
     try {
       this.liveUpdateService.checkForUpdates(version).then(async (res) => {
-        // if (res == undefined) {
-        //   this.apiService.reloadPage();
-        // }
+
         console.log('checkForUpdates', res);
-        // setInterval(() => {
-        //   App.exitApp();
-        // }, 20000);
 
       }).catch((e) => {
         // this.apiService.reloadPage();
@@ -1827,21 +1823,38 @@ export class Tab1Page implements OnDestroy {
   // }
 
   refreshAllEveryHour() {
-    const hour = 60 * 60 * 1000;
+    const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
     this.refreshAll = setInterval(() => {
-      this.refreshAllCounter++;
-      if (this.refreshAllCounter == hour) {
+      const now = Date.now();
+      if (now - this.lastUpdate >= tenMinutes || (now - this.lastAction >= tenMinutes)) {
         clearInterval(this.refreshAll);
         this.refreshAllCounter = 0;
-        // window.location.reload();
+        this.lastUpdate = now; // Update lastUpdate to current time
         this.apiService.reloadPage();
       }
-    }, 1000);
+    }, 1000 * 60); // Check every minutes
   }
   refresh() {
     // window.location.reload();
     this.apiService.reloadPage();
   }
+  forceReload() {
+  this.count++;
+  if (!this.t) {
+    this.t = setTimeout(() => {
+      this.count = 0;
+      this.t = null;
+    }, 2000);
+  }
+  if (this.count >= 6) {
+    this.apiService.reloadPage();
+    this.count = 0;
+    if (this.t) {
+      clearTimeout(this.t);
+      this.t = null;
+    }
+  }
+}
   initStock() {
     // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().then((rx) => {
@@ -2139,28 +2152,28 @@ export class Tab1Page implements OnDestroy {
   }
   processLoadedPaidBills = false;
   loadPaidBills() {
-    if(this.processLoadedPaidBills) return;
-    this.processLoadedPaidBills=true;
+    if (this.processLoadedPaidBills) return;
+    this.processLoadedPaidBills = true;
     this.apiService.loadPaidBills().then(async re => {
       const r = re.data;
-      console.log(`Load paid bills`,JSON.stringify(r||{}));
-      Toast.show({ text: `Load paid bills ${r?.data?.length}` ,duration: 'short'});
-      
-      if(!r.data.length){
+      console.log(`Load paid bills`, JSON.stringify(r || {}));
+      Toast.show({ text: `Load paid bills ${r?.data?.length}`, duration: 'short' });
+
+      if (!r.data.length) {
         this.showBills();
       }
-       
+
 
 
 
       await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
-    }).catch(er=>{
+    }).catch(er => {
       console.log(er);
       Toast.show({ text: `Load paid bills error ${er.message}` });
-    }).finally(()=>{
+    }).finally(() => {
       console.log('finally');
-      Toast.show({ text: `Load paid bills finally`  , duration: 'short'});
-      this.processLoadedPaidBills=false;
+      Toast.show({ text: `Load paid bills finally`, duration: 'short' });
+      this.processLoadedPaidBills = false;
     });
   }
   // loadBills() {
@@ -2537,6 +2550,7 @@ export class Tab1Page implements OnDestroy {
 
   async addOrder(x: IVendingMachineSale) {
     try {
+      this.lastAction = Date.now();
       this.autopilot.auto = 0;
       if (!this.allowVending) {
         this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
@@ -2570,6 +2584,7 @@ export class Tab1Page implements OnDestroy {
 
   async addOrderTopUp(x: IVendingMachineSale) {
     try {
+      this.lastAction = Date.now();
       this.autopilot.auto = 0;
       if (!this.allowVending) {
         this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
@@ -2605,6 +2620,7 @@ export class Tab1Page implements OnDestroy {
 
   addOrderTest(x: IVendingMachineSale) {
     try {
+      this.lastAction = Date.now();
       this.autopilot.auto = 0;
       // console.log(`allow vending`, this.allowVending);
       const vending = localStorage.getItem('allowVending') ?? '';
@@ -2677,7 +2693,7 @@ export class Tab1Page implements OnDestroy {
       const that = this;
       this.apiService.modal.create({ component: AutoPaymentPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
         r.present();
-      console.log('props_data', r);
+        console.log('props_data', r);
 
         this.otherModalAreOpening = true;
         // this.apiService.allModals.push(this.apiService.modal);
@@ -2690,9 +2706,9 @@ export class Tab1Page implements OnDestroy {
             // this.loadAutoShowMyOrders();
           }
           // await this._processLoopCheckLaoQRPaid();
-          
 
-          
+
+
         });
         //5s
 
@@ -2733,9 +2749,9 @@ export class Tab1Page implements OnDestroy {
             // this.loadAutoShowMyOrders();
           }
           // await this._processLoopCheckLaoQRPaid();
-          
 
-          
+
+
         });
         //5s
 
@@ -3213,41 +3229,41 @@ export class Tab1Page implements OnDestroy {
       }
 
     }).catch((e) => {
-      console.log(`error`, e  );
-      Toast.show({ text: 'Error showBills ' + JSON.stringify(e), duration: 'long'}); 
+      console.log(`error`, e);
+      Toast.show({ text: 'Error showBills ' + JSON.stringify(e), duration: 'long' });
     })
   }
-   async showBills2() {
+  async showBills2() {
     console.log(`here`);
-        try {
-          
-          if (this.processedQRPaid) return;
-          this.processedQRPaid = true;
-          
-          // await this._processLoopCheckLaoQRPaid();
-          // this.apiService.IndexedDB.getBillProcesses().then((r) => {
-          //   if (r.length > 0) {
-          //     console.log('dropStock', r);
-          //     this.apiService.isDropStock = true;
-          //     Toast.show({ text: 'Please dropStock', duration: 'long' });
-          //   } else {
-          //     console.log('out dropStock', r);
-          //     this.apiService.isDropStock = false;
-          //     Toast.show({ text: 'No dropStock', duration: 'long' });
-          //   }
-          // }).catch((e) => {
-          //   console.log('Error get dropStock from local', e);
-          //   this.apiService.isDropStock = false;
-          //   this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error get dropStock from local :${JSON.stringify(e)}` });
-          //   Toast.show({ text: 'Error get dropStock from local ' + JSON.stringify(e), duration: 'long' });
-          // });
-      } catch (error) {
-        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error _processLoopCheckLaoQRPaid :${JSON.stringify(error)}` });
-        Toast.show({ text: 'Error _processLoopCheckLaoQRPaid ' + JSON.stringify(error), duration: 'long' });
-      }finally{
-        await  new Promise((resolve, reject) => {setTimeout(() => resolve(true), 2000)});
-        this.processedQRPaid = false;
-      }
+    try {
+
+      if (this.processedQRPaid) return;
+      this.processedQRPaid = true;
+
+      // await this._processLoopCheckLaoQRPaid();
+      // this.apiService.IndexedDB.getBillProcesses().then((r) => {
+      //   if (r.length > 0) {
+      //     console.log('dropStock', r);
+      //     this.apiService.isDropStock = true;
+      //     Toast.show({ text: 'Please dropStock', duration: 'long' });
+      //   } else {
+      //     console.log('out dropStock', r);
+      //     this.apiService.isDropStock = false;
+      //     Toast.show({ text: 'No dropStock', duration: 'long' });
+      //   }
+      // }).catch((e) => {
+      //   console.log('Error get dropStock from local', e);
+      //   this.apiService.isDropStock = false;
+      //   this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error get dropStock from local :${JSON.stringify(e)}` });
+      //   Toast.show({ text: 'Error get dropStock from local ' + JSON.stringify(e), duration: 'long' });
+      // });
+    } catch (error) {
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error _processLoopCheckLaoQRPaid :${JSON.stringify(error)}` });
+      Toast.show({ text: 'Error _processLoopCheckLaoQRPaid ' + JSON.stringify(error), duration: 'long' });
+    } finally {
+      await new Promise((resolve, reject) => { setTimeout(() => resolve(true), 2000) });
+      this.processedQRPaid = false;
+    }
   }
 
   public openStackCashOutPage(): Promise<any> {
@@ -3545,7 +3561,7 @@ export class Tab1Page implements OnDestroy {
     }
     // else {
     //   if (!this.t) {
-    //     this.t = setTimeout(() => {
+    //     this.t = setTimeout(() => {`
     //       this.count = 6;
     //       console.log('re count');
     //       if (this.t) {
