@@ -106,7 +106,19 @@
         <ion-icon style="color: white;" name="cart-outline"></ion-icon>
       </div>
     </a> -->
-    <a (click)="loadPaidBills()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart"> who?
+    <ion-content>
+      <div class="card-container">
+        <div class="card" [class.flipped]="isFlipped">
+          <div class="card-face front">
+            <h2>1</h2>
+          </div>
+          <div class="card-face back">
+            <img src="https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif" alt="GIF" />
+          </div>
+        </div>
+      </div>
+    </ion-content>
+    <a (click)="loadPaidBills()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
       <div class="text" style="color: black;">ເຄື່ອງບໍ່ທັນຕົກ </div>
       <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">
         {{this.apiService.pb.length}}
