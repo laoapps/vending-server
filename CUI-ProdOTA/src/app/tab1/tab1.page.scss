@@ -2,6 +2,53 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&family=Shippori+Mincho+B1:wght@800&display=swap');
 
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  perspective: 1000px; /* 3D effect */
+}
+
+.card {
+  width: 200px;
+  height: 300px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s; /* Flip animation duration */
+}
+
+.card.flipped {
+  transform: rotateY(180deg); /* Flip to back face */
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Hide back face when not visible */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border: 2px solid #333;
+  border-radius: 10px;
+}
+
+.front {
+  transform: rotateY(0deg); /* Front face */
+}
+
+.back {
+  transform: rotateY(180deg); /* Back face */
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensure GIF fits the card */
+  border-radius: 10px;
+}
 
 .repair-container {
     position: absolute;

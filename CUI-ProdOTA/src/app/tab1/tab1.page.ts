@@ -92,7 +92,7 @@ import { IResModel } from '../services/syste.model';
 import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 import { Router } from '@angular/router';
 import { AutoPaymentTopUpPage } from '../auto-payment-top-up/auto-payment-top-up.page';
-
+import { interval, Subscription } from 'rxjs';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -102,7 +102,8 @@ export class Tab1Page implements OnDestroy {
   readyState = false;
   contact = localStorage.getItem('contact') || '55516321';
   menus = [];
-
+  isFlipped = false;
+  private subscription: Subscription;
 
 
   serial: ISerialService;
@@ -668,6 +669,12 @@ export class Tab1Page implements OnDestroy {
   }
 
   async ngOnInit() {
+    this.subscription = interval(5000).subscribe(() => {
+
+      this.isFlipped = !this.isFlipped;
+      console.log('Init isFlipped :', this.isFlipped);
+
+    });
 
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
@@ -1080,11 +1087,16 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.refreshAll);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
 
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      console.log('ngOnDestroy isFlipped :', this.isFlipped);
 
+    }
     if (this.serial) {
       this.serial?.close();
       console.log('serial closed');
     }
+
   }
 
 
@@ -1839,22 +1851,22 @@ export class Tab1Page implements OnDestroy {
     this.apiService.reloadPage();
   }
   forceReload() {
-  this.count++;
-  if (!this.t) {
-    this.t = setTimeout(() => {
+    this.count++;
+    if (!this.t) {
+      this.t = setTimeout(() => {
+        this.count = 0;
+        this.t = null;
+      }, 2000);
+    }
+    if (this.count >= 6) {
+      this.apiService.reloadPage();
       this.count = 0;
-      this.t = null;
-    }, 2000);
-  }
-  if (this.count >= 6) {
-    this.apiService.reloadPage();
-    this.count = 0;
-    if (this.t) {
-      clearTimeout(this.t);
-      this.t = null;
+      if (this.t) {
+        clearTimeout(this.t);
+        this.t = null;
+      }
     }
   }
-}
   initStock() {
     // if (this.vendingOnSale?.length) return;
     this.apiService.loadVendingSale().then((rx) => {
