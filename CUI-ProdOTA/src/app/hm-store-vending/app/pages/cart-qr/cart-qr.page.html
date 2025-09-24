@@ -35,13 +35,13 @@
 
             <!-- Qty Control -->
             <div class="qty-control" (click)="$event.stopPropagation()">
-              <ion-button size="small" fill="outline" (click)="getqty(0,j)">-</ion-button>
+              <ion-button size="small" fill="outline" [disabled]="function_check_phonenumber()" (click)="getqty(0,j)">-</ion-button>
               <span class="qty-number">{{item.qty}}</span>
-              <ion-button size="small" fill="outline" (click)="getqty(1,j)">+</ion-button>
+              <ion-button size="small" fill="outline" [disabled]="function_check_phonenumber()" (click)="getqty(1,j)">+</ion-button>
             </div>
 
 
-            <div class="delete-wrapper">
+            <div class="delete-wrapper" *ngIf="phone.length !== 8">
               <div class="delete-icon-cart" (click)="Click_Delete(item)">
                 <ion-icon name="trash-outline"></ion-icon>
               </div>
@@ -54,7 +54,7 @@
   </ion-grid>
 </ion-content>
 
-<ion-footer style="height: 350px;">
+<ion-footer style="height: 350px;" *ngIf="PostArray?.length">
   <ion-grid>
     <ion-row>
       <ion-col size="7.5" style="border-right: 1px solid #e0e0e0;">
@@ -62,11 +62,12 @@
           <div class="label_name_show">
             ປ້ອນເບີໂທຂອງທ່ານ ຈະໄດ້ຮັບຄູ່ປ່ອງຈາກ LAABX ທ່ານສາມາດລຸ້ນໂຊກລາງວັນໃຫ່ຍຂອງພວກເຮົາ
           </div>
+          <div style="color: red;font-size: 16px;font-weight: bold;">(ຫຼັງຈາກທ່ານໄດ້ປ້ອນເບີໂທແລ້ວ ບໍ່ສາມາດລືບ ຫຼື ເພີ່ມຈໍານວນເມນູໄດ້..)</div>
           <div class="card">
             <form #f="ngForm">
               <label class="phone-field">
                 <span class="country-code">+85620</span>
-                <input name="phone" [(ngModel)]="phone" required minlength="8" type="tel" inputmode="tel" maxlength="8"
+                <input [disabled]="function_check_phonenumber()" name="phone" [(ngModel)]="phone" required minlength="8" type="tel" inputmode="tel" maxlength="8"
                   placeholder="xxxx xxxx" class="phone-input" (ngModelChange)="autoSubmit(f)" />
               </label>
 
@@ -84,11 +85,6 @@
 
 
             </form>
-            <!-- <div class="actions">
-              <ion-button type="submit" expand="block" [disabled]="!f.form.valid">
-                Save
-              </ion-button>
-            </div> -->
           </div>
         </div>
 
@@ -128,23 +124,25 @@
 
 
       <ion-col size="4.5">
+        <div *ngIf="isPayment == false && phone?.length !== 8" >
+          <div class="ion-text-center ion-align-items-center question-show-qr">ກະລຸນາປ້ອນເບີໂທຂອງທ່ານກ່ອນ ແລ້ວຈະສະແດງ QR Payment</div>
+        </div>
         <div class="bill-container">
-          <div *ngIf="isPayment == true" class="bill-wave-top">
+          <!-- <div *ngIf="isPayment == true && phone" class="bill-wave-top">
             <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
-          </div>
+          </div> -->
           <div class="bill-header">
             <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
               class="qr-img">
-            <div *ngIf="isPayment == false" class="loader"></div>
-
+            <div *ngIf="isPayment == false && phone?.length === 8" class="loader"></div>
             <div class="total">{{ parseGetTotalSale.t | number }}</div>
-
           </div>
         </div>
-        <div style="position: relative;">
+
+        <div style="position: relative;" *ngIf="qrcode_logo">
           <ion-label class="label_name" [ngStyle]="{'color': phone ? '#333' : '#fff'}">ຈໍານວນ ({{getTotalQty()}}):
             {{getTotalPrice() | number}} Kip</ion-label>
-          <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;margin-top: 15px;">
+          <div style="display: flex;justify-content: center;margin-top: 15px;">
             <img height="180px" width="180px" src="{{qrcode_logo}}" alt="">
           </div>
           <div style="margin-top: 15px;">
@@ -158,7 +156,7 @@
             countdownDestroy }} ວິນາທີ </div>
         </div>
 
-        <div *ngIf="phone">
+        <div *ngIf="phone?.length === 8">
           <img class="image-show-background" height="100px" width="100px" src="{{pic_background}}" alt="">
         </div>
       </ion-col>

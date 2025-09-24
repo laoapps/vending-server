@@ -42,7 +42,7 @@ export class CartQrPage implements OnInit {
   ) { }
 
   ngAfterViewInit() {
-    const player = this.videoPlayer.nativeElement;
+    const player = this.videoPlayer?.nativeElement;
 
     // set first video
     player.src = this.videos[this.currentIndex];
@@ -61,7 +61,7 @@ export class CartQrPage implements OnInit {
       return
     }else{
       this.load_data();
-      this.selldelivery()
+      // this.selldelivery()
     }
     console.log('====================================');
     console.log(this.PostArray);
@@ -73,7 +73,18 @@ export class CartQrPage implements OnInit {
     console.log(this.phone);
     console.log('====================================');
     if (this.phone?.length === 8 && form.valid) {
+      console.log('====================================');
+      console.log('ni der');
+      console.log('====================================');
       this.selldelivery();
+    }
+  }
+
+  function_check_phonenumber(){
+    if (!this.phone || this.phone?.length !== 8) {
+      return false
+    }else{
+      return true
     }
   }
 
@@ -310,12 +321,13 @@ export class CartQrPage implements OnInit {
         localStorage.setItem('cart', JSON.stringify(cart));
         console.log('Updated cart:', cart);
         if (cart.length != 0) {
+          clearInterval(this.countdownDestroyTimer);
           this.load_data();
           this.m.updateCartCount();
-          this.selldelivery();  
         }else{
           this.m.updateCartCount();
           this.m.closeModal({dismiss:false})
+          clearInterval(this.countdownDestroyTimer);
         }
       } else {
         console.warn('Item not found in cart');
@@ -344,7 +356,7 @@ export class CartQrPage implements OnInit {
   
   
         localStorage.setItem('cart', JSON.stringify(newcart));
-        this.selldelivery();
+        // this.selldelivery();
       } else {
         if (this.PostArray[product_index].qty <= 1) {
           return;
@@ -366,7 +378,7 @@ export class CartQrPage implements OnInit {
           }
         }
         localStorage.setItem('cart', JSON.stringify(newcart));
-        this.selldelivery();
+        // this.selldelivery();
       }
     }
 
@@ -405,9 +417,9 @@ export class CartQrPage implements OnInit {
     isfast = false;
     sumprice = 0
     selldelivery() {
-      if (this.isPayment == true) {
-        this.isPayment = false
-      }
+      // if (this.isPayment == true) {
+      //   this.isPayment = false
+      // }
       clearInterval(this.countdownDestroyTimer);
       if (!this.PostArray.length) {
         this.m.ontoast('ກະລຸນາເພີ່ມສິນຄ້າທີ່ຈະຊີ້ກ່ອນ', 1500); return;

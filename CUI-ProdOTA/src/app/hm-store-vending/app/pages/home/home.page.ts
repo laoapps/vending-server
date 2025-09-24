@@ -55,6 +55,7 @@ export class HomePage {
   }
 
   ionViewWillEnter() {
+    localStorage.removeItem('cart');
     this.m.updateCartCount();
     this.load_many_store();
   }
@@ -154,14 +155,17 @@ export class HomePage {
       // Different store → clear cart
       localStorage.removeItem('cart');
     }
+
+    const a = JSON.parse(JSON.stringify(item))
+    a.pic = ''
   
     // Common logic
-    localStorage.setItem('store',JSON.stringify(item))
-    this.currentCategory = item;
+    localStorage.setItem('store',JSON.stringify(a))
+    this.currentCategory = a;
     this.skip = 0;
     this.post_list = [];
     this.m.updateCartCount();
-    this.load_menu_detail(item);
+    this.load_menu_detail(a);
   }
   
 
