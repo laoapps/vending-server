@@ -50,7 +50,15 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
 
-
+     try {
+      await this.loadBillLocal();
+      this.loadAutoFall();
+      // console.log('R', this.r);
+      // console.log(`here`);
+      await this.apiService.soundPleaseSelect();
+    } catch (error) {
+      this.loadAutoFall();
+    }
 
   }
 
