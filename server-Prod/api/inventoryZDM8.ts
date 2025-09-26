@@ -443,7 +443,9 @@ export class InventoryZDM8 implements IBaseClass {
                                     )
                                 );
                                 console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
-                                ws.close(1000,'not login yet');
+                                setTimeout(() => {
+                                    ws.close(1000,'not login yet');
+                                }, 100);
                                 console.log('close old connection and ask to re-login', this.findMachineIdToken(d.token)?.machineId);
                             }
                             throw new Error(EMessage.notloggedinyet);
