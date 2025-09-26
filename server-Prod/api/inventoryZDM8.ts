@@ -427,8 +427,6 @@ export class InventoryZDM8 implements IBaseClass {
                         const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
                         if (ws) ws['lastAction'] = Date.now();
                         if (!loggedin) {
-
-
                             if (ws) {
                                  ws?.send(
                                     JSON.stringify(
