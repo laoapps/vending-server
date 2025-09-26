@@ -422,13 +422,13 @@ export class InventoryZDM8 implements IBaseClass {
                         // console.log("Command", d);
 
                         this.wsClient.forEach((v) => {
-                            if (v["clientId"] == clientId) {return loggedin = true};
+                            if (v["clientId"] == clientId) { return loggedin = true };
                         });
                         const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
                         if (ws) ws['lastAction'] = Date.now();
                         if (!loggedin) {
                             if (ws) {
-                                 ws?.send(
+                                ws?.send(
                                     JSON.stringify(
                                         PrintSucceeded(
                                             "ping",
@@ -444,7 +444,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                                 console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
                                 setTimeout(() => {
-                                    ws.close(1000,'not login yet');
+                                    ws.close(1000, 'not login yet');
                                 }, 100);
                                 console.log('close old connection and ask to re-login', this.findMachineIdToken(d.token)?.machineId);
                             }
@@ -1474,7 +1474,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     res.send(
                                         PrintSucceeded(
                                             "getPaidBills",
-                                             resx.data,EMessage.succeeded, returnLog(req, res)
+                                            resx.data, EMessage.succeeded, returnLog(req, res)
                                         )
                                     );
                                 });
@@ -7216,16 +7216,23 @@ export class InventoryZDM8 implements IBaseClass {
 
     }
     INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
-    checkWebSocketInactivity(ws: WebSocket): void {
-        const lastActivity = ws['lastAction'] ?? Date.now(); // Use nullish coalescing for clarity
-        if (Date.now() - lastActivity > this.INACTIVITY_TIMEOUT_MS) {
-            try {
-                ws.close(1000, 'No activity for 10 minutes');
-                console.log('WebSocket closed due to inactivity for 10 minutes');
-            } catch (error) {
-                console.error('Error closing WebSocket:', error);
+    checkWebSocketInactivity(ws: WebSocket) {
+        return new Promise<boolean>((resolve, reject) => {
+            const lastActivity = ws['lastAction'] ?? Date.now(); // Use nullish coalescing for clarity
+            if (Date.now() - lastActivity > this.INACTIVITY_TIMEOUT_MS) {
+                try {
+                    ws.close(1000, 'No activity for 10 minutes');
+                    console.log('WebSocket closed due to inactivity for 10 minutes');
+                    resolve(true);
+                } catch (error) {
+                    console.error('Error closing WebSocket:', error);
+                    resolve(true);
+                }
+            }else{
+                resolve(false);
             }
-        }
+        });
+
     }
     confirmDrop(machineId: string, transactionID: string, position: number) {
         return new Promise<IResModel>(async (resolve, reject) => {
@@ -7322,11 +7329,12 @@ export class InventoryZDM8 implements IBaseClass {
                     let d: IReqModel = {} as IReqModel;
                     ws['isAlive'] = true;
                     ws['lastMessage'] = Date.now();
-                    this.checkWebSocketInactivity(ws);
                     //login first
                     // add to wsClient only after login
 
                     try {
+                        const inactivityChecked = await this.checkWebSocketInactivity(ws);
+                        if (inactivityChecked) return;
                         // console.log(" WS comming", ev.data.toString());
 
                         d = JSON.parse(ev.data.toString()) as IReqModel;
