@@ -7333,8 +7333,24 @@ export class InventoryZDM8 implements IBaseClass {
                     // add to wsClient only after login
 
                     try {
-                        const inactivityChecked = await this.checkWebSocketInactivity(ws);
-                        if (inactivityChecked) return;
+                        // const inactivityChecked = await this.checkWebSocketInactivity(ws);
+                        // if (inactivityChecked) {
+                        //      ws?.send(
+                        //             JSON.stringify(
+                        //                 PrintSucceeded(
+                        //                     "ping",
+                        //                     {
+                        //                         command: "ping",
+                        //                         production: this.production,
+                        //                         setting: { refresh: true }
+                        //                     },
+                        //                     EMessage.succeeded,
+                        //                     null
+                        //                 )
+                        //             )
+                        //         );
+                        //     return ws?.close(1000, 'No activity for 10 minutes');
+                        // };
                         // console.log(" WS comming", ev.data.toString());
 
                         d = JSON.parse(ev.data.toString()) as IReqModel;
