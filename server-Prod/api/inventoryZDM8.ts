@@ -421,8 +421,8 @@ export class InventoryZDM8 implements IBaseClass {
                         // })
                         // console.log("Command", d);
 
-                        this.wsClient.find((v) => {
-                            if (v["clientId"] == clientId) return (loggedin = true);
+                        this.wsClient.forEach((v) => {
+                            if (v["clientId"] == clientId) {return loggedin = true};
                         });
                         const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
                         if (ws) ws['lastAction'] = Date.now();
@@ -430,22 +430,22 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                             if (ws) {
-                                //  ws?.send(
-                                //     JSON.stringify(
-                                //         PrintSucceeded(
-                                //             "ping",
-                                //             {
-                                //                 command: "ping",
-                                //                 production: this.production,
-                                //                 setting: { refresh: true }
-                                //             },
-                                //             EMessage.succeeded,
-                                //             null
-                                //         )
-                                //     )
-                                // );
-                                // console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
-                                ws.close();
+                                 ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                setting: { refresh: true }
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
+                                    )
+                                );
+                                console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
+                                ws.close(1000,'not login yet');
                                 console.log('close old connection and ask to re-login', this.findMachineIdToken(d.token)?.machineId);
                             }
                             throw new Error(EMessage.notloggedinyet);
@@ -7373,7 +7373,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.wsClient?.forEach((v, i) => {
                                     if (v) {
                                         if (v["machineId"] == machineId?.machineId) {
-                                            v?.close(1000);
+                                            v?.close(1000, 'Duplicate connection');
                                             console.log(`Closed duplicate connection for machineId: ${machineId?.machineId}`);
                                             return true;
                                         }
