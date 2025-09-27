@@ -515,7 +515,7 @@ export class InventoryLocker implements IBaseClass {
                             ent.create(bill).then((r) => {
                                 console.log("SET transactionID by owner", ownerUuid);
 
-                                redisClient.setEx(transactionID + "--_", 60 * 15, ownerUuid);
+                                redisClient.setex(transactionID + "--_", 60 * 15, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else {
@@ -2912,7 +2912,7 @@ export class InventoryLocker implements IBaseClass {
                                                         if (ry) {
                                                             const m = ry.map(v => v.machineId);
                                                             // console.log('admintoken owneruuid machines', m);
-                                                            redisClient.setEx('_admintoken_' + token, 60 * 60 * 24, ownerUuid);
+                                                            redisClient.setex('_admintoken_' + token, 60 * 60 * 24, ownerUuid);
                                                             ws['myMachineId'] = m;
                                                             ws["clientId"] = uuid4();
                                                             this.wsClient.push(ws);

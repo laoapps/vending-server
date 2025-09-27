@@ -1,18 +1,19 @@
-import * as redis from 'redis';
+import Redis from 'ioredis';
 import axios from "axios";
 import { v4 as uuid4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 import crypto, { hash } from 'crypto';
-import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel, IMachineStatus } from '../entities/system.model';
+import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel, IMachineStatus, IVendingEventLog, EEntity } from '../entities/system.model';
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { Request, Response } from 'express';
-import { logEntity } from '../entities';
+import { dbConnection, logEntity, vendingMachineEntity } from '../entities';
 import { MachineSaleFactory } from '../entities/machinesale.entity';
 import https from 'https';
 import { hashSync } from 'bcryptjs';
+import { VendingEventLogFactory } from '../entities/vendingevents.entity';
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
@@ -29,13 +30,14 @@ console.log(`redis host`, redisHost, `redis port`, redisPort);
 // export const redisPort = process.env.REDIS_LOCAL_PORT ? Number(process.env.REDIS_LOCAL_PORT) : 6379;
 
 // **** 2 ***
-export const redisClient = redis.createClient({ url: 'redis://' + redisHost + ':' + redisPort });
+
+export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort );
 
 
 // **** 1 ***
 // export const redisClient = redis.createClient({ url: process.env.REDIS_HOST + '' || 'redis://localhost:6379' });
 
-redisClient.connect();
+// redisClient.connect();
 
 
 export enum RedisKeys {
@@ -269,6 +271,43 @@ export function validateTokenOnUserManager(token: string): Promise<any> {
     });
 }
 
+export function setVendingEvent(event: string, data: IVendingEventLog): Promise<boolean> {
+    return new Promise<boolean>(async (resolve, reject) => {
+        try {
+            redisClient.set(event, JSON.stringify(data));
+            await vendingMachineEntity.create(data); 
+            resolve(true);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function getVendingEvent(event: string): Promise<IVendingEventLog> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            redisClient.get(event, (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result ? JSON.parse(result) : null);
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function listVendingEventLogs(machineId:string,date:number,month:number,year:number, offset = 0, limit = 100): Promise<{ rows: IVendingEventLog[], count: number }> {
+    return new Promise<{ rows: IVendingEventLog[], count: number }>(async (resolve, reject) => {
+        try {
+            const r = await vendingMachineEntity.findAndCountAll({ where: { machineId,date,month,year }, order: [['createdAt', 'DESC']], limit, offset });
+            resolve(r);
+        }catch (error) {
+            reject(error);
+        }
+    })
+}
+
 
 export function generateTokenOnUserManager(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
@@ -323,7 +362,7 @@ export function findRealDB(token: string): Promise<string> {
     })
 }
 export function writeDoorDone(key: string, v: string) {
-    return redisClient.setEx(key + '_doordone_', 60 * 1, v);
+    return redisClient.setex(key + '_doordone_', 60 * 1, v);
 
 }
 export function readDoorDone(key: string) {
@@ -332,7 +371,7 @@ export function readDoorDone(key: string) {
 }
 
 export function writeActiveMmoneyUser(key: string, v: string) {
-    return redisClient.setEx(key + '_mmoneyuser_', 30, v);
+    return redisClient.setex(key + '_mmoneyuser_', 30, v);
 
 }
 export function readActiveMmoneyUser(key: string) {
@@ -440,7 +479,7 @@ export function writeMachineLimiterBalance(machineId: string, value: string) {
 
 // }
 export function writeACKConfirmCashIn(transactionID: string) {
-    return redisClient.setEx('_ack_confirm_CashIn_' + transactionID, 60 * 24 * 7, 'yes');
+    return redisClient.setex('_ack_confirm_CashIn_' + transactionID, 60 * 24 * 7, 'yes');
 }
 export function readACKConfirmCashIn(transactionID: string) {
     return redisClient.get('_ack_confirm_CashIn_' + transactionID);

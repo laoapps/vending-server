@@ -9,6 +9,7 @@ import {
   IAlive,
   IBillProcess,
   IClientId,
+  IDropPositionData,
   IlogSerial,
   IMachineClientID,
   IMachineId,
@@ -40,7 +41,7 @@ import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 // import Swal from "sweetalert2";
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
@@ -90,6 +91,9 @@ import { Toast } from '@capacitor/toast';
 import { VendingIndexServiceService } from '../vending-index-service.service';
 import { IndexdblocalService } from './indexdblocal.service';
 import { IndexerrorService } from '../indexerror.service';
+import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
+
+var REQUEST_TIME_OUT = 10000;
 
 @Injectable({
   providedIn: 'root',
@@ -131,7 +135,7 @@ export class ApiService {
         }, 5000);
         setTimeout(() => {
           this.soundPleaseViewVideo();
-        }, 10000);
+        }, REQUEST_TIME_OUT);
         setTimeout(() => {
           this.soundCheckTicketsExist();
         }, 15000);
@@ -140,7 +144,7 @@ export class ApiService {
         }, 20000);
       }
 
-    }, 10000);
+    }, REQUEST_TIME_OUT);
   }
   endProcessBillSound() {
     this.soundCompleted();
@@ -285,6 +289,9 @@ export class ApiService {
 
   countErrorPay: number = 0;
 
+  allowTopUp = false;
+
+
 
   checkAppVersion: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(
@@ -334,9 +341,17 @@ export class ApiService {
 
       try {
         if (!r) return console.log('empty');
+        this.allowTopUp = r?.data?.setting?.isTopUp ?? false;
         console.log('ws alive subscription', that.cash, r);
+        // console.log('message :', r?.message);
 
-        this.secret = r?.data?.secret;
+        if (r?.message === EMessage.clearLocalBill) {
+          console.log('----->clearLocalBill');
+          this.IndexedDB.clearBillProcesses();
+          return;
+
+        }
+        this.secret = r?.data?.secret ?? null;
         console.log('-----> SECRET :', this.secret);
 
 
@@ -349,6 +364,8 @@ export class ApiService {
 
           return;
         }
+
+        this.checkIsDropStock();
 
         that.cash.amount = r.balance;
         that.wsAlive.time = new Date();
@@ -593,9 +610,28 @@ export class ApiService {
           });
         }
       });
+      this.eventEmmiter.emit('delivery', r?.bill?.vendingsales?.length);
     });
 
     // this.initLocalHowToVideoPlayList();
+  }
+
+
+  checkIsDropStock() {
+    this.loadDeliveryingBillsNew().then((r) => {
+      try {
+        if (r.length > 0) {
+          this.isDropStock = true
+        } else {
+          this.isDropStock = false;
+        }
+      } catch (error) {
+        console.log(`error`, error);
+        this.isDropStock = false;
+
+      }
+
+    });
   }
 
   waitingForDelivery = false;
@@ -607,7 +643,7 @@ export class ApiService {
 
 
       try {
-
+        this.myTab1.clearStockAfterLAABGo();
         if (r) {
           if (!this.isRemainingBillsModalOpen) {
             this.dismissModal();
@@ -625,21 +661,26 @@ export class ApiService {
           for (let index = 0; index < pb.length; index++) {
             const element = pb[index];
             // console.log('=====> PB ELEMENT :', element);
+            if (transactionList.includes(element.transactionID)) continue;
             transactionList.push(element.transactionID);
           }
-          // console.log('transactionList :', transactionList);
 
+          // console.log('transactionList :', transactionList);
+          // this.IndexedDB.clearBillProcesses();
           this.confirmBillPaid(transactionList).then(async (rx) => {
-            const r = rx.data;
+            const ro = rx.data;
             // console.log('=====> CONFIRM BILL PAID :', r);
-            if (r.status === 1) {
+            if (ro.status === 1) {
 
               for (let index = 0; index < pb.length; index++) {
                 const element = pb[index];
+                const trandID = await this.IndexedDB.getBillProcessByTransactionID(element.transactionID);
+                if (trandID) continue;
                 await this.IndexedDB.addBillProcess(element);
               }
 
               this.isDropStock = true;
+
               if (pb.length) {
                 if (!this.isRemainingBillsModalOpen) {
                   this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
@@ -653,8 +694,43 @@ export class ApiService {
                 }
 
               }
+              // if (this.allowTopUp) {
+              //   const m = await this.showModal(GivePopUpPage);
+              //   m.present();
+              //   m.onDidDismiss().then((r) => {
+              //     // console.log('-----> GO TO DROP');
+              //     if (pb.length) {
+              //       if (!this.isRemainingBillsModalOpen) {
+              //         this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+              //           this.isRemainingBillsModalOpen = true;
+              //           r.present();
+              //           r.onDidDismiss().then(() => {
+              //             this.isRemainingBillsModalOpen = false;
+              //           }
+              //           );
+              //         });
+              //       }
 
-              this.eventEmmiter.emit('delivery');
+              //     }
+
+              //   });
+              // } else {
+              //   if (pb.length) {
+              //     if (!this.isRemainingBillsModalOpen) {
+              //       this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+              //         this.isRemainingBillsModalOpen = true;
+              //         r.present();
+              //         r.onDidDismiss().then(() => {
+              //           this.isRemainingBillsModalOpen = false;
+              //         }
+              //         );
+              //       });
+              //     }
+
+              //   }
+              // }
+
+
               resolve(EMessage.succeeded);
             }
 
@@ -682,6 +758,8 @@ export class ApiService {
 
 
 
+
+
   public onDelivery(cb: (data: any) => void) {
     if (cb) {
       this.eventEmmiter.on('delivery', cb);
@@ -693,68 +771,146 @@ export class ApiService {
     }
   }
 
-  // public getVSales() {
-  //   return ApiService.vendingOnSale;
-  // }
+  reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
+      console.log(`ping pending stock`, trans);
 
-  reconfirmStockNew(pendingStock: Array<{ transactionID: any, position: number }>) {
-    const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
-    console.log(`ping pending stock`, trans);
-    const params = {
-      trans: trans
-    }
+      const params = {
+        trans: trans
+      }
 
-    try {
-      const vsales = ApiService.vendingOnSale;
-      // const x = vsales.find((v) => {
-      //   pendingStock.filter(item => {
-      //     if (v.position == item.position) {
-      //       if (v.stock.qtty > 0) {
-      //         v.stock.qtty--;
-      //       }
-      //       return true;
-      //     }
-      //   });
-      // });
+      try {
+        const vsales = ApiService.vendingOnSale;
 
-      const x = vsales.find((v) => {
-        for (let i = 0; i < pendingStock.length; i++) {
-          const item = pendingStock[i];
-          if (v.position == item.position) {
-            if (v.stock.qtty > 0) {
-              v.stock.qtty--;
-            }
-            return true;
+        // ตรวจสอบ stock ก่อนทำการลด
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (!vendingItem) {
+            throw new Error(`Item at position ${item.position} not found`);
+          }
+          if (vendingItem.stock.qtty <= 0) {
+            throw new Error(`Insufficient stock for position ${item.position}`);
           }
         }
-      });
-      this.eventEmitter.emit('stockdeduct', x);
-      // if (!localStorage.getItem('debug')) {
 
-
-      // }
-
-      this.saveSale(vsales).then((rx) => {
-        const r = rx.data;
-        console.log(r);
-        if (r.status) {
-          console.log(`save sale success`);
-        } else {
-          this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
-          this.simpleMessage(IENMessage.saveSaleFail);
+        // ลด stock ทุกรายการ
+        const updatedItems = [];
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (vendingItem && vendingItem.stock.qtty > 0) {
+            vendingItem.stock.qtty--;
+            updatedItems.push(vendingItem);
+          }
         }
-      });
 
-      console.log(`pending stock mode vendingOnSale-->`, vsales);
-      this.storage.set('saleStock', vsales, 'stock').then((r) => {
-        // that.deductOrderUpdate(x.position);
-      });
-    } catch (error) {
-      this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
-      console.log(error.message);
-      this.alertError(error.message);
-    }
+        // Emit event สำหรับทุกรายการที่อัปเดต
+        updatedItems.forEach(item => {
+          this.eventEmitter.emit('stockdeduct', item);
+        });
+
+        this.saveSale(vsales).then((rx) => {
+          const r = rx.data;
+          console.log(r);
+          if (r.status) {
+            console.log(`save sale success`);
+            this.storage.set('saleStock', vsales, 'stock').then((rr) => {
+              resolve(r);
+            }).catch(e => {
+              reject(e)
+            });
+          } else {
+            this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
+            this.simpleMessage(IENMessage.saveSaleFail);
+            reject(new Error('Save sale failed'));
+          }
+        }).catch(e => {
+          reject(e)
+        });
+
+      } catch (error) {
+        this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
+        console.log(error.message);
+        this.alertError(error.message);
+        reject(error)
+      }
+    })
   }
+
+  reconfirmStockAndDrop(pendingStock: Array<{ transactionID: any, position: number }>, dropPositionData: IDropPositionData): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const trans: Array<any> = pendingStock.filter(item => item?.transactionID && item?.position);
+      console.log(`ping pending stock`, trans);
+
+      const params = {
+        trans: trans
+      }
+
+      try {
+        const vsales = ApiService.vendingOnSale;
+
+        // ตรวจสอบ stock ก่อนทำการลด
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (!vendingItem) {
+            throw new Error(`Item at position ${item.position} not found`);
+          }
+          if (vendingItem.stock.qtty <= 0) {
+            throw new Error(`Insufficient stock for position ${item.position}`);
+          }
+        }
+
+        // ลด stock ทุกรายการ
+        const updatedItems = [];
+        for (const item of pendingStock) {
+          const vendingItem = vsales.find(v => v.position === item.position);
+          if (vendingItem && vendingItem.stock.qtty > 0) {
+            vendingItem.stock.qtty--;
+            updatedItems.push(vendingItem);
+          }
+        }
+
+        // Emit event สำหรับทุกรายการที่อัปเดต
+        updatedItems.forEach(item => {
+          this.eventEmitter.emit('stockdeduct', item);
+        });
+        const sendWSMode = localStorage.getItem('sendWSMode') || 'no';
+        if (sendWSMode === 'yes') {
+          this.saveSaleAnDropWS(vsales, dropPositionData);
+          resolve({ status: true, message: 'Save and drop initiated via WebSocket' });
+        } else {
+          this.saveSaleAndDrop(vsales, dropPositionData).then((rx) => {
+            const r = rx.data;
+            console.log(r);
+            if (r.status) {
+              console.log(`save sale success`);
+              this.storage.set('saleStock', vsales, 'stock').then((rr) => {
+                resolve(r);
+              }).catch(e => {
+                reject(e)
+              });
+            } else {
+              this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
+              this.simpleMessage(IENMessage.saveSaleFail);
+              reject(new Error('Save sale failed'));
+            }
+          }).catch(e => {
+            reject(e)
+          });
+        }
+
+
+
+      } catch (error) {
+        this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(error)}` });
+        console.log(error.message);
+        this.alertError(error.message);
+        reject(error)
+      }
+    })
+  }
+
+
   async reloadPage() {
     Toast.show({ text: 'Before Reload', duration: 'long' });
     try {
@@ -766,7 +922,7 @@ export class ApiService {
 
     setTimeout(async () => {
       window.location.reload();
-    }, 10000);
+    }, REQUEST_TIME_OUT);
   }
 
   reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
@@ -1096,10 +1252,10 @@ export class ApiService {
     // headers.append('Accept', 'application/json');
     // headers.append('content-type', 'application/json');
     //let options = new RequestOptions({ headers:headers})
-    const headers = {
+    const headers = new AxiosHeaders({
       'Accept': 'application/json',
       'Content-Type': 'application/json'
-    };
+    });
     return headers;
   }
   public async saveImage(id: number, base64: string, db = 'image') {
@@ -1164,7 +1320,7 @@ export class ApiService {
   initDemo() {
     return axios.get<IResModel>(
       this.url + '/init?machineId=' + this.machineId.machineId,
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
   loadVendingSale(isActive = 'yes') {
@@ -1183,13 +1339,13 @@ export class ApiService {
     return axios.post<IResModel>(
       this.url + '/machineSaleList?isActive=' + isActive,
       req,
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
 
   loadOnlineMachine() {
     return axios.get<IResModel>(this.url + '/getOnlineMachines', {
-      headers: this.headerBase(),
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
   // loadDeliveryingBills() {
@@ -1200,7 +1356,7 @@ export class ApiService {
   //         .SHA256(this.machineId.machineId + this.machineId.otp)
   //         .toString(cryptojs.enc.Hex),x
   //     },
-  //     { headers: this.headerBase() }
+  //     { headers: this.headerBase(),timeout:REQUEST_TIME_OUT }
   //   );
   // }
 
@@ -1208,17 +1364,17 @@ export class ApiService {
 
     return this.IndexedDB.getBillProcesses();
   }
-  loadDeliveryingBillsLocal() {
-    // return axios.post<IResModel>(
-    //   this.url + '/getDeliveryingBills',
-    //   {
-    //     token: cryptojs
-    //       .SHA256(this.machineId.machineId + this.machineId.otp)
-    //       .toString(cryptojs.enc.Hex),
-    //   },
-    //   { headers: this.headerBase() }
-    // );
-    return this.IndexeLocaldDB.getBillProcesses();
+  loadDeliveryingBillsManual() {
+    return axios.post<IResModel>(
+      this.url + '/getDeliveryingBills',
+      {
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+    );
+    // return this.IndexeLocaldDB.getBillProcesses();
   }
   getMMoneyUserInfo(phonenumber: string) {
     return axios.post<IResModel>(
@@ -1228,7 +1384,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
   saveSale(data: any) {
@@ -1240,9 +1396,41 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
+
+  saveSaleAndDrop(data: any, dropPositionData: IDropPositionData) {
+    return axios.post<IResModel>(
+      this.url + '/saveMachineSaleAndDrop',
+      {
+        data,
+        dropPositionData: dropPositionData,
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+    );
+  }
+  saveSaleAnDropWS(data: any, dropPosition: IDropPositionData) {
+    const res = {
+      command: 'ping',
+      type: 'aveSaleAnDrop',
+      data: {
+        data,
+        dropPosition,
+        token: cryptojs
+          .SHA256(this.machineId.machineId + this.machineId.otp)
+          .toString(cryptojs.enc.Hex),
+      },
+      ip: '',
+      time: new Date().toString(),
+    };
+    console.log(`saveSaleAnDropWS`, res);
+    this.wsapi.send(data);
+  }
+
   recoverSale() {
     return axios.post<IResModel>(
       this.url + '/readMachineSale',
@@ -1251,7 +1439,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
   confirmDeductStock(data: any) {
@@ -1263,17 +1451,27 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
   loadPaidBills() {
-    return axios.post<IResModel>(this.url + '/getPaidBills', {
-      headers: this.headerBase(),
+    const r = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+    console.log('loadPaidBills', JSON.stringify(r));
+    return axios.post<IResModel>(this.url + '/getPaidBills', r, {
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
   loadBills() {
     return axios.post<IResModel>(this.url + '/getBills', {
-      headers: this.headerBase(),
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    }, {
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
   // if there is a new ads then remove the old ones 
@@ -1286,7 +1484,7 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
 
@@ -1303,7 +1501,7 @@ export class ApiService {
         machineId: this.machineId.machineId,
         transactionList: transactionList
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
 
@@ -1311,7 +1509,7 @@ export class ApiService {
     return axios.post(
       'https://hangmistore-api.laoapps.com/api/v1/authUM/register4',
       body,
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
 
@@ -1326,7 +1524,7 @@ export class ApiService {
         ownerUuid: ownerUuid,
         trandID: trandID
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
   retryProcessBill(T: string, position: number) {
@@ -1337,13 +1535,13 @@ export class ApiService {
           .SHA256(this.machineId.machineId + this.machineId.otp)
           .toString(cryptojs.enc.Hex),
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
   retryProcessBillLocal(T: string, position: number) {
     const p = { command: 'process', data: { slot: position }, transactionID: T };
     return axios.post<IResModel>('http://localhost:19006/', p, {
-      headers: this.headerBase(),
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
 
@@ -1363,7 +1561,7 @@ export class ApiService {
       .toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
 
@@ -1378,8 +1576,12 @@ export class ApiService {
     console.log('checkPaidBill', body.data);
 
     return axios.post(
-      this.vending_server, body, {
-      headers: this.headerBase()
+      this.vending_server, {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    }, {
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT
     }
     );
   }
@@ -1394,18 +1596,33 @@ export class ApiService {
           .toString(cryptojs.enc.Hex),
         transactionID: localStorage.getItem('transactionID')
       },
-      { headers: this.headerBase() }
+      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
     );
   }
 
 
-  buyLaoQR(ids: Array<IVendingMachineSale>, value: number) {
+  buyLaoQR(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
+
     this.currentPaymentProvider = EPaymentProvider.laoqr;
     const req = {} as IReqModel;
     req.command = EClientCommand.buyLAOQR;
+    let orderBill = [];
+    // console.log('-----> ids :', ids);
+    if (phone) {
+      for (let index = 0; index < ids.length; index++) {
+        const element = ids[index];
+        orderBill.push({ value: element.stock.price });
+      }
+    };
+
+    console.log('----->element :', orderBill);
+
+
     req.data = {
       ids,
       value,
+      phone,
+      orderBill,
       clientId: this.clientId.clientId,
     };
     req.ip;
@@ -1417,7 +1634,7 @@ export class ApiService {
 
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
 
     });
   }
@@ -1440,7 +1657,7 @@ export class ApiService {
 
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
 
@@ -1463,7 +1680,7 @@ export class ApiService {
       .toString(cryptojs.enc.Hex);
     // req.data.clientId = this.clientId.clientId;
     return axios.post<IResModel>(this.url + '/getFreeProduct', req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
 
@@ -2049,7 +2266,7 @@ export class ApiService {
     const url = this.url + '/updateStatus';
     console.log(url + ` req der ` + JSON.stringify(req));
     return axios.post<IResModel>(url, req, {
-      headers: this.headerBase(),
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
     });
   }
 

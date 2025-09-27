@@ -10,10 +10,10 @@ export function checkGenerateCount(machineId: string): Promise<{ status: number,
                 return resolve({ status: 1, message: 'LaoQR count exceeded' });
 
             }
-            redisClient.setEx(machineId + EMessage.ListTransaction, 20, (Number(LaoQRCount) + 1) + '');
+            redisClient.setex(machineId + EMessage.ListTransaction, 20, (Number(LaoQRCount) + 1) + '');
             resolve({ status: 0, message: 'LaoQR count updated' });
         } else {
-            redisClient.setEx(machineId + EMessage.ListTransaction, 20, '1');
+            redisClient.setex(machineId + EMessage.ListTransaction, 20, '1');
             resolve({ status: 0, message: 'LaoQR count initialized' });
         }
     });

@@ -1,0 +1,213 @@
+<ion-content class="auto-payment-page">
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+
+      </div>
+    </div>
+
+    <div class="laab-card-body">
+
+      <div class="order-list">
+
+        <div (click)="close()" class="item-buymore">
+          <div class="icon">
+            <ion-icon style="font-size:90px;color: white;" name="add"></ion-icon>
+          </div>
+        </div>
+
+        <div *ngFor="let order of parseorders; let i = index" href="javascript:void(0)" class="item">
+          <div class="content">
+            <div class="icon">
+              <img [src]="apiService?.imageList[order.stock.image]" alt="">
+            </div>
+            <div class="detail">
+              <div class="position">Position #{{ order?.position }}</div>
+              <div class="name">{{ order?.stock?.name }}</div>
+              <div class="price">{{ order?.stock?.price | number }}</div>
+            </div>
+            <a (click)="removeOrder(i)" href="javascript:void(0)" class="btn-epin">
+              <!-- <i class="fa-solid fa-trash-can"></i> -->
+              <ion-icon style="font-size:30px;color: gray;align-items: center;" name="trash"></ion-icon>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="laab-card-footer">
+      <div class="payment-list">
+        <div *ngIf="true" class="payment-list-left">
+
+          <div class="list-left">
+            <div class="label_name_show">
+              ປ້ອນເບີໂທຂອງທ່ານ ຈະໄດ້ຮັບຄູ່ປ່ອງຈາກ LAABX ທ່ານສາມາດລຸ້ນໂຊກລາງວັນໃຫ່ຍຂອງພວກເຮົາ
+            </div>
+            <div class="card">
+              <form #f="ngForm">
+                <label class="phone-field">
+                  <span class="country-code">+85620</span>
+                  <input name="phone" [(ngModel)]="phone" required minlength="8" type="tel" inputmode="tel"
+                    maxlength="8" placeholder="xxxx xxxx" class="phone-input" (ngModelChange)="autoSubmit(f)" />
+                </label>
+
+                <div class="hint" *ngIf="f.submitted && !f.form.valid">
+                  <div *ngIf="f.controls['phone']?.errors?.['required']">
+                    ປ້ອນເບີໂທຂອງເຈົ້າ.
+                  </div>
+                  <div *ngIf="f.controls['phone']?.errors?.['pattern']">
+                    ເບີໂທລະສັບຕ້ອງເປັນຕົວເລກເທົ່ານັ້ນ.
+                  </div>
+                  <div *ngIf="f.controls['phone']?.errors?.['minlength']">
+                    ເບີໂທລະສັບຕ້ອງມີ 8 ຕົວອັກສອນ.
+                  </div>
+                </div>
+              </form>
+            </div>
+
+          </div>
+
+
+          <div class="list-left-buttom">
+            <div style="margin: 10px;">
+              <div class="label_name_show">
+                ທ່ານສາມາດ ດາວໂຫລດໄດ້ທີ່ນີ້ LAABX ໄດ້ທີ່ດ້ານລຸ່ມນີ້ເລີຍ
+              </div>
+              <div class="div-qr-dowload">
+                <div class="div-in-playstore">
+                  <div>
+                    <img class="image-playstore" src="{{pic_playstore}}" alt="">
+                  </div>
+                  <div class="div-logo-dowload">
+                    <img height="50px" width="50px" src="{{pic_qr_android}}" alt="">
+                  </div>
+                </div>
+                <div class="div-in-playstore">
+                  <div>
+                    <img class="image-playstore" src="{{pic_appstore}}" alt="">
+                  </div>
+                  <div class="div-logo-dowload">
+                    <img height="50px" width="50px" src="{{pic_qr_ios}}" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="video-container">
+              <video #videoPlayer autoplay muted playsinline></video>
+            </div>
+          </div>
+
+
+
+          <div class="marquee-container" [ngStyle]="_style">
+            <!-- ซ้าย: GIF คงที่ -->
+            <div class="marquee-left">
+              <img src="../../assets/logo/Mee.gif" alt="payment-gif" />
+            </div>
+
+            <!-- ขวา: ข้อความเลื่อน -->
+            <div class="marquee-right">
+              <div class="marquee-content">
+                <p class="warningText">
+                  💳 English: Please do not close this window. If you have made a payment, it will be completed within
+                  60
+                  seconds.
+                  📞 For support, call or WhatsApp +8562055516321 if you did not receive the product.
+                </p>
+                <p class="warningText">
+                  💳 Lao: ກະລຸນາຢ່າປິດຫນ້າຈໍນີ້ ຖ້າຈ່າຍເງິນແລ້ວ ຈະດຳເນີນການໃນ 60 ວິນາທີ.
+                  📞 WhatsApp +8562055516321 ຖ້າບໍ່ໄດ້ຮັບສິນຄ້າ.
+                </p>
+                <p class="warningText">
+                  💳 Thai: กรุณาอย่าปิดหน้านี้ หากชำระเงินแล้ว ระบบจะดำเนินการใน 60 วินาที.
+                  📞 โทรหรือ WhatsApp +8562055516321 หากไม่ได้รับสินค้า.
+                </p>
+                <p class="warningText">
+                  💳 Vietnamese: Vui lòng không đóng cửa sổ này. Nếu đã thanh toán, quá trình sẽ hoàn tất trong 60 giây.
+                  📞 Gọi hoặc WhatsApp +8562055516321 nếu không nhận được sản phẩm.
+                </p>
+                <p class="warningText">
+                  💳 Chinese: 请不要关闭此窗口。如果您已付款，系统将在60秒内完成处理。
+                  📞 如未收到商品，请拨打电话或WhatsApp +8562055516321。
+                </p>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div *ngIf="true" class="payment-list-right">
+
+          <div class="bill-container" [ngStyle]="_style">
+            <div *ngIf="isPayment == true" class="bill-wave-top">
+              <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+            </div>
+            <div class="bill-header">
+              <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
+                class="qr-img">
+              <div *ngIf="isPayment == false" class="loader"></div>
+
+              <div class="total"
+                style="margin-top: 15px;font-size: 40px;font-weight: bold;color: black;background-color: white; padding: 8px;">
+                {{ parseGetTotalSale.t | number }}</div>
+              <div *ngIf="isPayment == true"
+                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
+                ໜ້ານີ້ຈະປິດພາຍໃນ {{
+                countdownDestroy }} ວິນາທີ </div>
+            </div>
+            <div *ngIf="isPayment == false" class="bill-body">
+
+              <div class="line"></div>
+
+              <div class="group">
+                <div class="text"
+                  style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
+                  SubQTTY</div>
+                <div class="value"
+                  style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
+                  {{ parseGetTotalSale.q | number }}</div>
+              </div>
+
+            </div>
+            <div *ngIf="isPayment == true" class="bill-body">
+
+              <div class="line"></div>
+              <div class="group">
+                <div class="text">{{ paymentText }}</div>
+                <div class="value">{{ billDate | date: 'yyyy-MM-dd HH:MM:SS':'+7' }}</div>
+              </div>
+              <div class="line"></div>
+
+              <div class="group">
+                <div class="text">SubQTTY</div>
+                <div class="value">{{ parseGetTotalSale.q | number }}</div>
+              </div>
+              <div class="group">
+                <div class="text">Subtotal</div>
+                <div class="value">{{ parseGetTotalSale.t | number }}</div>
+              </div>
+
+            </div>
+            <div class="bill-footer">
+              <div class="text">Found any problem call {{contact}}</div>
+            </div>
+            <div *ngIf="isPayment == true" class="bill-wave-bottom">
+              <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

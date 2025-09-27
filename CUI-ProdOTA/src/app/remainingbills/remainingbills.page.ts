@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { EMACHINE_COMMAND, IBillProcess, ISerialService } from '../services/syste.model';
+import { EMACHINE_COMMAND, IBillProcess, IDropPositionData, ISerialService } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
 import { Tab1Page } from '../tab1/tab1.page';
@@ -20,7 +20,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   timer: any = {} as any;
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
   counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
-
+  private readonly RETRY_TIMEOUT_MS = 2000;
+  private deliveryBills: DeliveryBills[] = []; // Replace `this.r` with typed property
+  private readonly SUPPORTED_DEVICES = ['VMC', 'ZDM8', 'MT102', 'adh814'];
   @Input() r = new Array<IBillProcess>();
   @Input() serial: ISerialService;
   url = this.apiService.url;
@@ -47,16 +49,16 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    try {
+
+     try {
       await this.loadBillLocal();
       this.loadAutoFall();
-      console.log('R', this.r);
-      console.log(`here`);
+      // console.log('R', this.r);
+      // console.log(`here`);
       await this.apiService.soundPleaseSelect();
     } catch (error) {
       this.loadAutoFall();
     }
-
 
   }
 
@@ -103,12 +105,12 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     const position = this.r[this.r.length - 1].position;
 
     const ownerUuid = this.r[this.r.length - 1].ownerUuid
-    const trandID = this.r[this.r.length - 1].bill.transactionID;
+    const transID = this.r[this.r.length - 1].bill.transactionID;
 
-    console.log(`autoRetryProcessBill transactionID`, transactionID, `position`, position, `ownerUuid`, ownerUuid, `trandID`, trandID);
+    // console.log(`autoRetryProcessBill transactionID`, transactionID, `position`, position, `ownerUuid`, ownerUuid, `trandID`, transID);
 
 
-    this.retryProcessBillNew(transactionID, position, ownerUuid, trandID + '');
+    this.retryProcessBillNew({ transactionID, position, ownerUuid, transID: transID + '' });
   }
 
   ngOnDestroy(): void {
@@ -124,477 +126,207 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
 
-  processing: boolean = false;
+  // processing: boolean = false;
 
-  async retryProcessBillNew(transactionID: string, position: number, ownerUuid: string, trandID: string, human?: boolean) {
-    console.log('transactionID', transactionID, 'position', position, 'ownerUuid', ownerUuid, 'trandID', trandID);
-
-    console.log(`rrrrr`, this.r);
-    console.log(`-->`, this.canclick);
-    if (this.processing) { return; } /// HERE 2/4
-    this.processing = true; /// HERE 3/4
-
-    // this.apiService.showLoading('waiting...', 5000);
-
-    if (human == true) {
-      this.clearTimer();
-    }
-
-    try {
-      if (this.serial) {
-        // const dropSensor = Number(localStorage.getItem('dropSensor') + '' || '1') || 1;
-        const param = { slot: position, dropSensor: 1 };
-        const device = localStorage.getItem('device') || 'VMC';
-        if (device == 'VMC' || device == 'ZDM8' || device == 'MT102' || device == 'adh814') {
-          this.apiService.IndexedDB.deleteBillProcess(Number(transactionID)).then(async () => {
-            this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-            await this.loadBillLocal();
-            // Toast.show({ text: 'Bill process deleted', duration: 'long' });
-
-            this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
-              console.log('shippingcontrol');
-              try {
-                this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click Solot ${position} droped transactionID ${transactionID} trandID ${trandID}` });
-              } catch (err) {
-                Toast.show({ text: 'Faild save drop', duration: 'long' })
-              }
-            }).catch(async (error) => {
-              console.log('error shippingcontrol', error);
-              Toast.show({ text: 'error shippingcontrol' + JSON.stringify(error || {}) });
-              this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error shippingcontrol :${JSON.stringify(error)}` });
-            });
-
-
-
-            setTimeout(() => {
-              this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
-                const r = rx.data;
-                // this.apiService.dismissLoading();
-                console.log(`vending on sale`, ApiService.vendingOnSale);
-                console.log('retryProcessBill', r);
-
-              }, (error) => {
-                this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
-              });
-            }, 2000);
-
-
-
-            this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-              console.log('reload_ticket', reload_ticket);
-
-              this.r = reload_ticket;
-              console.log(`=====>here der`, this.r);
-
-              if (this.r != undefined && Object.entries(this.r).length == 0) {
-                localStorage.setItem('product_fall', '0');
-                this.clearTimer();
-                this.apiService, this.modal.dismiss();
-                return;
-              }
-
-              if (human == true) {
-                this.loadAutoFall();
-              }
-            });
-            this.apiService.soundThankYou();
-          }).catch((error) => {
-            console.log('Error deleteBillProcess', error);
-            this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error deleteBillProcess :${JSON.stringify(error)}` });
-            this.loadBillLocal();
-          });
-
-        } else {
-          this.apiService.IndexedLogDB.addBillProcess({ errorData: 'Protocol has not been implemented yet!!!!' });
-          Toast.show({ text: 'Protocol has not been implemented yet!!!!', duration: 'long' });
+  async retryProcessBillNew(params: BillProcessParams): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      let err = null;
+      const { transactionID, position, ownerUuid, transID, human = false } = params;
+      let reloadTimer: NodeJS.Timeout | null = null;
+      try {
+        // if (this.processing) {
+        //   console.warn('Process already running');
+        //   throw new Error('Process already running');
+        // }
+        // this.processing = true;
+        reloadTimer = setTimeout(() => {
+          this.apiService.reloadPage();
+        }, 20000);
+        if (human) {
+          this.clearTimer();
         }
-      } else {
-        console.log('serial not init');
-        this.apiService.IndexedLogDB.addBillProcess({ errorData: `serial not init` });
-        Toast.show({ text: 'serial not init for drop' })
-        // await this.apiService.myTab1.connect();
-        // this.apiService.reloadPage();
 
-        throw new Error('serial not init');
+        if (!this.serial) {
+
+          return reject(new Error('Serial device not initialized'));
+        }
+
+        if (!this.SUPPORTED_DEVICES.includes(localStorage.getItem('device') || 'VMC')) {
+
+          return reject(new Error('Unsupported device protocol'));
+        }
+        const dropPositionData: IDropPositionData = {
+          ownerUuid: ownerUuid,
+          transactionID: transID,
+          position: position
+        };
+
+        await this.handleBillDeletion(transactionID);
+        Toast.show({ text: 'handleBillDeletion', duration: 'short' })
+        await this.handleSerialCommand(transactionID, position, transID);
+        Toast.show({ text: 'handleSerialCommand', duration: 'short' })
+        this.reconfirmStockAndDrop([{ transactionID, position }], dropPositionData);
+        Toast.show({ text: 'reconfirmStockAndDrop', duration: 'short' })
+        this.handleRetryAndUpdate(human);
+        Toast.show({ text: 'handleRetryAndUpdate', duration: 'short' })
+
+      } catch (error) {
+        err = await this.handleError(error, transactionID, position, ownerUuid, transID);
+        // this.processing = false;
+
+      } finally {
+        // this.processing = false;
+        if (reloadTimer) {
+          clearTimeout(reloadTimer);
+        }
+
+        if (err) {
+          Toast.show({ text: 'Error: ' + JSON.stringify(err), duration: 'long' });
+          reject(err);
+        } else
+          resolve();
+
       }
+    });
 
-    } catch (error) {
-      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error retryProcessBillNew :${JSON.stringify(error)}` });
-      setTimeout(() => {
-        // this.apiService.dismissLoading();
-      }, 3000);
-      setTimeout(() => {
-        this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).then(async rx => {
-          const r = rx.data;
-          // this.apiService.dismissLoading();
-          console.log(`vending on sale`, ApiService.vendingOnSale);
-          console.log('retryProcessBill', r);
 
-        }, (error) => {
-          this.apiService.IndexedLogDB.addBillProcess({ errorData: `error retryProcessBillNew :${JSON.stringify(error)}` });
+  }
+
+  private async handleSerialCommand(transactionID: string, position: number, transID: string): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      const param = { slot: position, dropSensor: 1 };
+      try {
+        await this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1);
+        await this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Clicked slot ${position}, dropped transactionID ${transactionID}, transID ${transID}`,
         });
-      }, 2000);
-      this.clearTimer();
-      this.r = [];
-      this.reloadDelivery(true);
-      await this.apiService.soundSystemError();
-      await this.apiService.reloadPage();
-      await App.exitApp();
-
-    }
-
-    finally {
-      // Code that runs regardless of try/catch outcome
-      this.processing = false; /// HERE 4/4
-    }
-
-    // if (this.canclick == true) {
-    //   this.apiService.showLoading('', 3000);
+        resolve();
+      } catch (error) {
+        await this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Error in shippingcontrol: ${JSON.stringify(error)}`,
+        });
+        reject(error);
+      }
+    });
 
 
-    //   this.apiService.reconfirmStockNew([{ transactionID: transactionID, position: position }]);
-
-
-    //   this.apiService.retryProcessBillNew(transactionID, position, ownerUuid, trandID).subscribe(async r => {
-    //     console.log(`vending on sale`, ApiService.vendingOnSale);
-    //     console.log('retryProcessBill', r);
-    //     if (r.status) {
-    //       this.apiService.soundThankYou()
-    //       this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
-    //         r.present();
-    //       });
-    //       let count: number = 0;
-    //       console.log(`lleng`, this.r);
-    //       if (this.r != undefined && Object.entries(this.r).length > 1) {
-    //         count = this.r.length - 1;
-    //       } else {
-    //         count = 0;
-    //       }
-
-    //       const i = this.r.findIndex(v => v.position == position);
-    //       this.r.splice(i, 1);
-    //       this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
-
-
-    //       if (count == 0) {
-    //         this.apiService, this.modal.dismiss();
-    //       }
-    //     } else {
-    //       await this.apiService.soundSystemError();
-    //     }
-    //     this.apiService.simpleMessage(r.message);
-    //     setTimeout(() => {
-    //       this.apiService.dismissLoading();
-    //     }, 3000)
-    //   })
-    // }
   }
 
-  async retryProcessBill(transactionID: string, position: number, human?: boolean) {
-
-    console.log(`rrrrr`, this.r);
-    console.log(`-->`, this.canclick);
-    // this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
-
-    if (this.canclick == true) {
-      // this.apiService.showLoading(null, 30000);
-      const isRemote = localStorage.getItem('remoteProcess');
-      if (!isRemote) {
-        this.apiService.retryProcessBill(transactionID, position).then(async rx => {
-          const r = rx.data;
-          console.log(`vending on sale`, ApiService.vendingOnSale);
-          console.log('retryProcessBill', r);
-          if (r.status) {
-            this.apiService.soundThankYou()
-            this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
-              r.present();
-            });
-            let count: number = 0;
-            console.log(`lleng`, this.r);
-            if (this.r != undefined && Object.entries(this.r).length > 1) {
-              count = this.r.length - 1;
-            } else {
-              count = 0;
-            }
-
-            const i = this.r.findIndex(v => v.position == position);
-            this.r.splice(i, 1);
-
-            if (count == 0) {
-              this.apiService, this.modal.dismiss();
-            }
-            // this.apiService.modal.dismiss();
-            // this.apiService.myTab1.reshowBills(count);
-          } else {
-            await this.apiService.soundSystemError();
-          }
-          this.apiService.simpleMessage(r.message);
-          setTimeout(() => {
-            // this.apiService.dismissLoading();
-          }, 3000)
-        })
+  private async handleBillDeletion(transactionID: string): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await this.apiService.IndexedDB.deleteBillProcess(Number(transactionID));
+        await this.loadBillLocal();
+        resolve();
+      } catch (error) {
+        await this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Error deleting bill process: ${JSON.stringify(error)}`,
+        });
+        reject(error);
       }
-      else {
-        if (human == true) {
-          this.clearTimer();
-        }
-
-        try {
-          this.apiService.retryProcessBill(transactionID, position).then(async rx => {
-            const r = rx.data;
-            // this.apiService.dismissLoading();
-            console.log(`vending on sale`, ApiService.vendingOnSale);
-            console.log('retryProcessBill', r);
-            if (r.status) {
-              this.apiService.soundThankYou()
-              this.apiService.toast.create({ message: r.message, duration: 3000 }).then(r => {
-                r.present();
-              });
-              try {
-
-                this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-
-                  // if (reload_ticket.status != 1) {
-                  //   this.cancelTimer();
-                  //   await this.apiService.soundSystemError();
-                  //   return;
-                  // }
-
-                  this.r = reload_ticket;
-                  console.log(`=====>here der`, this.r);
-
-                  if (this.r != undefined && Object.entries(this.r).length == 0) {
-                    localStorage.setItem('product_fall', '0');
-                    this.clearTimer();
-                    this.apiService, this.modal.dismiss();
-                    return;
-                  }
-
-                  if (human == true) {
-                    this.loadAutoFall();
-                  }
-
-                });
-              } catch (error) {
-                console.log(`error eiei`, error.message);
-                this.cancelTimer();
-                await this.apiService.soundSystemError();
-              }
-
-            } else {
-              this.counter = 0;
-              this.canclick = true;
-              localStorage.setItem('product_fall', '0');
-              this.clearTimer();
-              this.r = [];
-              this.reloadDelivery(true);
-              await this.apiService.soundSystemError();
-            }
+    });
 
 
-            this.apiService.simpleMessage(r.message);
-
-            setTimeout(() => {
-              // this.apiService.dismissLoading();
-            }, 3000)
-
-          });
-        } catch (error) {
-          setTimeout(() => {
-            // this.apiService.dismissLoading();
-          }, 3000)
-          this.clearTimer();
-          this.r = [];
-          this.reloadDelivery(true);
-          await this.apiService.soundSystemError();
-        }
-      }
-
-
-
-      // if (this.counter == this.counterLimit) {
-      //   this.timer = setInterval(() => {
-      //     this.counter--;
-      //     localStorage.setItem('product_fall', this.counter.toString());
-      //     if (this.counter <= 0) {
-      //       clearInterval(this.timer);
-      //       this.canclick = true;
-      //       localStorage.setItem('product_fall', '0');
-      //     }
-      //   }, 1000);
-      // }
-
-
-
-      // if (this.counter == 0) {
-
-      //   localStorage.setItem('product_fall', this.counterLimit.toString());
-      //   this.counter = this.counterLimit;
-
-
-      //   this.canclick = false;
-
-
-      //   if (this.counter >= 4) {
-      //     this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
-      //       // this.apiService.dismissLoading();
-      //       console.log(`vending on sale`, ApiService.vendingOnSale);
-      //       console.log('retryProcessBill',r);
-      //       if(r.status){
-      //         this.apiService.soundThankYou()
-      //         this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
-      //           r.present();
-      //         });
-
-      //         this.apiService.loadDeliveryingBills().subscribe(async reload_ticket => {
-      //           if (reload_ticket.status != 1) {
-      //             this.cancelTimer();
-      //             await this.apiService.soundSystemError();
-      //             return;
-      //           }
-
-      //           this.r = reload_ticket.data;
-      //           console.log(`here der`, this.r);
-
-      //           if (this.r != undefined && Object.entries(this.r).length == 0) {
-      //             localStorage.setItem('product_fall', '0');
-      //             this.clearTimer();
-      //             this.apiService,this.modal.dismiss();
-      //             return;
-      //           }
-
-      //         }, async error => {
-      //           this.cancelTimer();
-      //           await this.apiService.soundSystemError();
-      //         });
-
-      //       } else{
-      //         this.counter = 0;
-      //         this.canclick = true;
-      //         localStorage.setItem('product_fall', '0');
-      //         this.clearTimer();
-      //         await this.apiService.soundSystemError();
-      //       }
-
-
-      //       this.apiService.simpleMessage(r.message);
-
-      //       setTimeout(()=>{
-      //         this.apiService.dismissLoading();
-      //       },3000)
-
-      //     }, async error => {
-      //       setTimeout(()=>{
-      //         this.apiService.dismissLoading();
-      //       },3000)
-      //       this.clearTimer();
-      //       await this.apiService.soundSystemError();
-      //     }); 
-      //   }
-      //   else 
-      //   {
-      //     this.canclick = false;
-      //   }
-
-      // }
-    }
   }
-  // remote
-  // retryProcessBill(transactionID:string,position:number){
-  //   if (this.canclick == true) {
-  //     this.apiService.showLoading('',30000);
-  //     this.apiService.retryProcessBill(transactionID,position).subscribe(async r=>{
-  //       console.log(`vending on sale`, ApiService.vendingOnSale);
-  //       console.log('retryProcessBill',r);
-  //       if(r.status){
-  //         this.apiService.soundThankYou()
-  //         this.apiService.toast.create({message:r.message,duration:3000}).then(r=>{
-  //           r.present();
-  //         });
-  //         let count: number = 0;
-  //         console.log(`lleng`, this.r);
-  //         if (this.r != undefined && Object.entries(this.r).length > 1) {
-  //           count = this.r.length - 1;
-  //         } else {
-  //           count = 0;
-  //         }
-  //         const i=this.r.findIndex(v=>v.position==position);
-  //         this.r.splice(i,1);
 
-  //         if (this.r != undefined && this.r.length == 0) {
-  //           this.apiService,this.modal.dismiss();
-  //         }
-  //         // this.apiService.modal.dismiss();
-  //         // this.apiService.myTab1.reshowBills(count);
-  //       } else{
-  //         await this.apiService.soundSystemError();
-  //       }
-  //       this.apiService.simpleMessage(r.message);
-  //       setTimeout(()=>{
-  //         this.apiService.dismissLoading();
-  //       },3000)
+  private async handleRetryAndUpdate(
 
-  //     }); 
-  //   }
-  // }
+    human: boolean
+  ): Promise<void> {
+    // await new Promise((resolve) => setTimeout(resolve, this.RETRY_TIMEOUT_MS));
+    return new Promise(async (resolve, reject) => {
+      try {
+        const deliveryBills = await this.apiService.loadDeliveryingBillsNew();
+        this.deliveryBills = deliveryBills;
 
-  // reloadDelivery(human: boolean) {
-  //   this.apiService.loadDeliveryingBillsNew().subscribe(async reload_ticket => {
+        if (deliveryBills.length === 0) {
+          this.apiService.pb = [];
+          localStorage.setItem('product_fall', '0');
+          this.clearTimer();
+          this.modal.dismiss();
+          Toast.show({ text: 'All bills processed 0', duration: 'short' });
+          return resolve();
+        }
 
-  //     if (reload_ticket.status != 1) {
-  //       this.cancelTimer();
-  //       await this.apiService.soundSystemError();
-  //       return;
-  //     }
+        if (human) {
+          this.loadAutoFall();
+        }
 
-  //     this.r = reload_ticket.data;
-  //     console.log(`=====>here der`, this.r);
+        await this.apiService.soundThankYou();
+        resolve();
+      } catch (error) {
+        await this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Error retrying bill process: ${JSON.stringify(error)}`,
+        });
+        reject(error);
+      }
+    });
 
-  //     if (this.r != undefined && Object.entries(this.r).length == 0) {
-  //       localStorage.setItem('product_fall', '0');
-  //       this.clearTimer();
-  //       this.apiService, this.modal.dismiss();
-  //       return;
-  //     }
 
-  //     if (human == true) {
-  //       this.loadAutoFall();
-  //     }
+  }
 
-  //   }, async error => {
-  //     this.cancelTimer();
+  private async handleError(
+    error: unknown,
+    transactionID: string,
+    position: number,
+    ownerUuid: string,
+    transID: string
+  ): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      await this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error in retryProcessBillNew: ${JSON.stringify(error)}`,
+      });
 
-  //     await this.apiService.soundSystemError();
-  //   });
-  // }
-
-  reloadDelivery(human: boolean) {
-    this.apiService.loadDeliveryingBillsNew().then(async reload_ticket => {
-      // if (reload_ticket.status != 1) {
-      //   this.cancelTimer();
-      //   await this.apiService.soundSystemError();
-      //   return;
-      // }
-
-      this.r = reload_ticket;
-      console.log(`=====>here der`, this.r);
-
-      if (this.r != undefined && Object.entries(this.r).length == 0) {
-        localStorage.setItem('product_fall', '0');
-        this.clearTimer();
-        this.apiService, this.modal.dismiss();
+      if (error instanceof Error && error.message === 'Serial device not initialized') {
+        await this.apiService.soundSystemError();
+        await this.apiService.reloadPage();
+        await App.exitApp();
+        reject(new Error('Serial device not initialized'));
         return;
       }
 
-      if (human == true) {
-        this.loadAutoFall();
-      }
-    }).catch(async error => {
-      this.cancelTimer();
 
-      await this.apiService.soundSystemError();
+
+      resolve();
     });
+
+
   }
+
+  private async reconfirmStock(bills: { transactionID: string; position: number }[]): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await this.apiService.reconfirmStockNew(bills);
+        resolve();
+      } catch (error) {
+        await this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Error reconfirming stock: ${JSON.stringify(error)}`,
+        });
+        reject(error);
+      }
+    });
+
+  }
+
+  private async reconfirmStockAndDrop(bills: { transactionID: string; position: number }[], dropPositionData: any): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await this.apiService.reconfirmStockAndDrop(bills, dropPositionData);
+        resolve();
+      } catch (error) {
+        await this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Error reconfirming stock: ${JSON.stringify(error)}`,
+        });
+        reject(error);
+      }
+    });
+
+
+  }
+
+
+
+ 
 
   getPrice() {
     return this.r.find(item => item)
@@ -617,7 +349,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.apiService.modal.dismiss();
   }
   clearTimer() {
-    clearInterval(this.timer);
+    if (this.timer)
+      clearInterval(this.timer);
   }
   cancelTimer() {
     this.counter = 0;
@@ -626,7 +359,19 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.clearTimer();
   }
   reload() {
-    // this.apiService.reloadPage();
+    this.apiService.reloadPage();
   }
 
+}
+interface BillProcessParams {
+  transactionID: string;
+  position: number;
+  ownerUuid: string;
+  transID: string; // Renamed from trandID for clarity
+  human?: boolean;
+}
+
+interface DeliveryBills {
+  // Define structure of delivery bills
+  [key: string]: any; // Replace with specific type
 }

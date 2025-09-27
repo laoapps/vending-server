@@ -7,17 +7,17 @@ import { AlertController, IonContent, LoadingController, ModalController, Platfo
 })
 export class LoadingService {
   constructor(public loadingCtrl: LoadingController,
-    public modal:ModalController,
-    public toast:ToastController,
-    public alertController:AlertController,
-    public router:Router
-  ) {}
+    public modal: ModalController,
+    public toast: ToastController,
+    public alertController: AlertController,
+    public router: Router
+  ) { }
 
   load: any;
-  gettoast:any;
+  gettoast: any;
   cartCount = 0;
 
-  async logout(){
+  async logout() {
     const alert = await this.alertController.create({
       header: 'Confirm logout',
       message: 'Are you sure you want logout?',
@@ -38,7 +38,7 @@ export class LoadingService {
     await alert.present();
   }
 
-  async ontoast(txt:string,time:number) {
+  async ontoast(txt: string, time: number) {
     const toast = await this.toast.create({
       message: txt,
       duration: time,
@@ -50,14 +50,14 @@ export class LoadingService {
     toast.present();
   }
 
-  async ontoast_fix(txt:string) {
-      this.gettoast = await this.toast.create({
+  async ontoast_fix(txt: string) {
+    this.gettoast = await this.toast.create({
       message: txt,
       position: 'bottom',
       mode: 'ios',
       color: 'dark'
     });
-      this.gettoast.present();
+    this.gettoast.present();
   }
 
   async onDismiss_toast() {
@@ -81,10 +81,10 @@ export class LoadingService {
   }
 
 
-  async onAlert(text:any){
+  async onAlert(text: any) {
     const alert = await this.alertController.create({
       header: 'Alert',
-      cssClass:'app-alert',
+      cssClass: 'app-alert',
       backdropDismiss: false,
       message: text,
       buttons: ['Ok']
@@ -94,7 +94,7 @@ export class LoadingService {
   async onAlert2(title: string, text: string) {
     const alert = await this.alertController.create({
       header: title,
-      cssClass:'app-alert',
+      cssClass: 'app-alert',
       backdropDismiss: false,
       message: text,
       buttons: ['Ok']
@@ -102,11 +102,11 @@ export class LoadingService {
 
     await alert.present();
   }
-  
-  async alertError(text:any){
+
+  async alertError(text: any) {
     const alert = await this.alertController.create({
       header: 'Error',
-      cssClass:'app-alert',
+      cssClass: 'app-alert',
       backdropDismiss: false,
       message: text,
       buttons: ['Ok']
@@ -119,7 +119,7 @@ export class LoadingService {
       try {
         const alert = await this.alertController.create({
           header: "Alert",
-          cssClass:'app-alert',
+          cssClass: 'app-alert',
           backdropDismiss: false,
           message: text,
           buttons: [
@@ -146,12 +146,12 @@ export class LoadingService {
     });
   }
 
-  async alert_justOK(text: string): Promise<boolean> {
+  async alert_justOK(text: string, timeOut = 15000): Promise<boolean> {
     return new Promise<boolean>(async (resolve, rejects) => {
       try {
         const alert = await this.alertController.create({
           header: "Alert",
-          cssClass:'app-alert',
+          cssClass: 'app-alert',
           backdropDismiss: false,
           message: text,
           buttons: [
@@ -164,6 +164,10 @@ export class LoadingService {
           ],
         });
         await alert.present();
+        setTimeout(() => {
+          alert.dismiss();
+          resolve(true)
+        }, timeOut);
       } catch (error) {
         rejects(error);
       }
@@ -187,19 +191,19 @@ export class LoadingService {
   // }
 
   async showModal(component: any, d: any = {}, cssClass: string = '') {
-  try {
-    return await this.modal.create({ 
-      component,
-      componentProps: d,
-      cssClass: cssClass || 'full-modal',
-      backdropDismiss:false
-    });
-  } catch (error) {
-    console.log('ERROR', error);
-    this.toast.create({ message: 'Error' }).then(r => r.present());
-    return null;
+    try {
+      return await this.modal.create({
+        component,
+        componentProps: d,
+        cssClass: cssClass || 'full-modal',
+        backdropDismiss: true
+      });
+    } catch (error) {
+      console.log('ERROR', error);
+      this.toast.create({ message: 'Error' }).then(r => r.present());
+      return null;
+    }
   }
-}
 
   closeModal(data: any = null) {
     this.modal.getTop().then(r => {

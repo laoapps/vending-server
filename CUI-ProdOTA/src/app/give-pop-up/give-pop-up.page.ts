@@ -56,9 +56,13 @@ export class GivePopUpPage implements OnInit {
 
       }).catch(err => {
         console.log('err submitPhone :', err);
+
       });
+      this.apiService.dismissModal();
+
     } catch (error) {
       console.log('error submitPhone :', error);
+      this.apiService.dismissModal();
 
     }
   }

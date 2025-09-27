@@ -418,7 +418,7 @@ class CreateBill {
                 const run = await this.vendingMachineBillEntity.create(this.bill);
                 if (!run) return resolve(IENMessage.commitFail);
 
-                // redisClient.setEx(this.transactionID + '--_', 60 * 15, this.ownerUuid);
+                // redisClient.setex(this.transactionID + '--_', 60 * 15, this.ownerUuid);
 
 
                 // key -> expire -> data
@@ -426,7 +426,7 @@ class CreateBill {
                 const key: string = qr + EMessage.BillCreatedTemp;
                 const expire: number = 60 * 15;
                 const data: string = this.ownerUuid;
-                redisClient.setEx(key, expire, data);
+                redisClient.setex(key, expire, data);
 
 
 

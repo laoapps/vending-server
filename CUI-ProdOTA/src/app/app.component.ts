@@ -10,7 +10,6 @@ import { SettingPage } from './setting/setting.page';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { VendingIndexServiceService } from './vending-index-service.service';
 import { LiveupdateService } from './liveupdate.service';
-import { App } from '@capacitor/app';
 import { CloseStytemPage } from './close-stytem/close-stytem.page';
 
 
@@ -23,7 +22,7 @@ export class AppComponent {
   checkOnlineStatus: IAlive;
   uT = new Date();
   now = new Date();
-  version = '15';
+  version = '21';
   count = 6;
   machineuuid = this.apiService.machineuuid;
   t: any;
@@ -110,7 +109,6 @@ export class AppComponent {
         this.count = 6;
         console.log('re count');
         if (this.t) {
-          // clearTimeout(this.t);
           this.t = null;
         }
       }, 1500);

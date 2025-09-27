@@ -44,6 +44,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
   questionIcon: string = `../../../../assets/logo/question-logo.png`;
 
+  gifImage: string = `../../../../assets/logo/scanqr.gif`;
+
+
   // DOMS
   static orderlistElement: HTMLDivElement;
   static messageCount: HTMLDivElement;
@@ -240,6 +243,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
     // websocket check when process callback
     this.apiService.onDelivery(res_delivery => {
+      if (!res_delivery) return;
       this.orders = [];
       this.getTotalSale.q = 0;
       this.getTotalSale.t = 0;
@@ -262,6 +266,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     this.parseGetTotalSale = local.sum;
     this.orders = local.orders;
     this.getTotalSale = local.sum;
+    if (this.parseGetTotalSale.q > 10) {
+      this.apiService.reloadPage();
+    }
   }
 
 
