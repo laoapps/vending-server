@@ -3512,20 +3512,11 @@ export class Tab1Page implements OnDestroy {
 
   openSmartCB() {
     this.router.navigate(['/smartcb'])
-    // this.apiService.modal
-    //   .create({
-    //     component: HowToPage,
-    //     componentProps: {},
-    //     cssClass: 'dialog-fullscreen',
-    //   })
-    //   .then((r) => {
-    //     r.present();
-    //     this.otherModalAreOpening = true;
-    //     this.openAnotherModal(r);
-    //     clearInterval(this.autoShowMyOrderTimer);
-    //     this.checkActiveModal(r);
+  }
 
-    //   });
+
+  openHMStoreVending() {
+    this.router.navigate(['/HM-store-vending'])
   }
 
   openTestMotor() {

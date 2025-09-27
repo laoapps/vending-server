@@ -155,7 +155,15 @@
       class="item-red control-menu menu-how-to active">
       <div class="text">SMARTCB</div>
       <div class="icon">
-        <i class="fa-solid fa-layer-group"></i>
+        <ion-icon style="color: white;" name="hardware-chip-outline"></ion-icon>
+      </div>
+    </a>
+
+    <a *ngIf="isFranciseMode" (click)="openHMStoreVending()" href="javascript:void(0)"
+      class="item-green control-menu menu-how-to active">
+      <div class="text">HM Store</div>
+      <div class="icon">
+        <ion-icon style="color: white;" name="storefront-outline"></ion-icon>
       </div>
     </a>
     <a *ngIf="showMenu('games')" (click)="openGameServices()" href="javascript:void(0)"
@@ -191,7 +199,7 @@
     </ion-refresher>
 
 
-    <div *ngIf="true">
+    <div *ngIf="apiService.allowTopUp == false">
       <div *ngFor="let sl of saleList; index as i">
         <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
           <ion-item-divider class="item-header">
@@ -213,7 +221,7 @@
 
               <ng-template id=" my-product-img" style="padding: 20px;" #elsebuystock>
                 <img style="width: 200px;height:300px" [src]="apiService?.imageList[sl.stock.image]"
-                  (click)="addOrderTopUp(sl)">
+                  (click)="addOrder(sl)">
 
 
               </ng-template>
@@ -239,7 +247,7 @@
     </div>
 
 
-    <div *ngIf="false">
+    <div *ngIf="apiService.allowTopUp == true">
       <div *ngFor="let sl of saleList; index as i">
         <div *ngIf="sl.stock.qtty-checkCartCount(sl.position)>0" style="float:left">
           <ion-item-divider class="item-headerTopUp">

@@ -44,6 +44,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
 
   parseorders: Array<any> = [];
+  defaultPhone: string = '55516321';
   parseGetTotalSale: any = {} as any;
 
   lists: Array<any> = [];
@@ -371,7 +372,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           this.paymentmethod = list.value;
           this.paymentText = list.name;
           this.paymentLogo = list.image;
-          resolve(await this._processLoopDestroyLastest());
+          resolve(await this._processLoopDestroyLastest(this.defaultPhone));
 
         }, 1000);
 
@@ -396,7 +397,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
             this.paymentmethod = IPaymentMethod.LaoQR;
             this.paymentText = this.paymentList[0].name;
             this.paymentLogo = this.paymentList[0].image;
-            this._processLoopDestroyLastest();
+            this._processLoopDestroyLastest(this.defaultPhone);
           }
         }, 1000);
 
@@ -838,7 +839,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           resolve(IENMessage.success);
         } else if (this.paymentmethod == IPaymentMethod.LaoQR) {
           this.paymentText = 'Lao QR';
-          resolve(await this._processLoopDestroyLastest());
+          resolve(await this._processLoopDestroyLastest(this.defaultPhone));
           resolve(IENMessage.success);
         } else if (this.paymentmethod == IPaymentMethod.popupQR) {
           this.paymentText = 'Popup QR';

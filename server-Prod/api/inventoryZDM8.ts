@@ -7285,7 +7285,7 @@ export class InventoryZDM8 implements IBaseClass {
                     console.error('Error closing WebSocket:', error);
                     resolve(true);
                 }
-            }else{
+            } else {
                 resolve(false);
             }
         });
