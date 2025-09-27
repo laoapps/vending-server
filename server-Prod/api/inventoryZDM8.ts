@@ -421,31 +421,31 @@ export class InventoryZDM8 implements IBaseClass {
                         // })
                         // console.log("Command", d);
 
-                        this.wsClient.find((v) => {
-                            if (v["clientId"] == clientId) return (loggedin = true);
+                        this.wsClient.forEach((v) => {
+                            if (v["clientId"] == clientId) { return loggedin = true };
                         });
                         const ws = this.wsClient.find(v => v['machineId'] === this.findMachineIdToken(d.token)?.machineId);
                         if (ws) ws['lastAction'] = Date.now();
                         if (!loggedin) {
-
-
                             if (ws) {
-                                //  ws?.send(
-                                //     JSON.stringify(
-                                //         PrintSucceeded(
-                                //             "ping",
-                                //             {
-                                //                 command: "ping",
-                                //                 production: this.production,
-                                //                 setting: { refresh: true }
-                                //             },
-                                //             EMessage.succeeded,
-                                //             null
-                                //         )
-                                //     )
-                                // );
-                                // console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
-                                ws.close();
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                setting: { refresh: true }
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
+                                    )
+                                );
+                                console.log('send refresh to machine', this.findMachineIdToken(d.token)?.machineId);
+                                setTimeout(() => {
+                                    ws.close(1000, 'not login yet');
+                                }, 100);
                                 console.log('close old connection and ask to re-login', this.findMachineIdToken(d.token)?.machineId);
                             }
                             throw new Error(EMessage.notloggedinyet);
@@ -7273,16 +7273,23 @@ export class InventoryZDM8 implements IBaseClass {
 
     }
     INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
-    checkWebSocketInactivity(ws: WebSocket): void {
-        const lastActivity = ws['lastAction'] ?? Date.now(); // Use nullish coalescing for clarity
-        if (Date.now() - lastActivity > this.INACTIVITY_TIMEOUT_MS) {
-            try {
-                ws.close(1000, 'No activity for 10 minutes');
-                console.log('WebSocket closed due to inactivity for 10 minutes');
-            } catch (error) {
-                console.error('Error closing WebSocket:', error);
+    checkWebSocketInactivity(ws: WebSocket) {
+        return new Promise<boolean>((resolve, reject) => {
+            const lastActivity = ws['lastAction'] ?? Date.now(); // Use nullish coalescing for clarity
+            if (Date.now() - lastActivity > this.INACTIVITY_TIMEOUT_MS) {
+                try {
+                    ws.close(1000, 'No activity for 10 minutes');
+                    console.log('WebSocket closed due to inactivity for 10 minutes');
+                    resolve(true);
+                } catch (error) {
+                    console.error('Error closing WebSocket:', error);
+                    resolve(true);
+                }
+            }else{
+                resolve(false);
             }
-        }
+        });
+
     }
     confirmDrop(machineId: string, transactionID: string, position: number) {
         return new Promise<IResModel>(async (resolve, reject) => {
@@ -7379,11 +7386,28 @@ export class InventoryZDM8 implements IBaseClass {
                     let d: IReqModel = {} as IReqModel;
                     ws['isAlive'] = true;
                     ws['lastMessage'] = Date.now();
-                    this.checkWebSocketInactivity(ws);
                     //login first
                     // add to wsClient only after login
 
                     try {
+                        // const inactivityChecked = await this.checkWebSocketInactivity(ws);
+                        // if (inactivityChecked) {
+                        //      ws?.send(
+                        //             JSON.stringify(
+                        //                 PrintSucceeded(
+                        //                     "ping",
+                        //                     {
+                        //                         command: "ping",
+                        //                         production: this.production,
+                        //                         setting: { refresh: true }
+                        //                     },
+                        //                     EMessage.succeeded,
+                        //                     null
+                        //                 )
+                        //             )
+                        //         );
+                        //     return ws?.close(1000, 'No activity for 10 minutes');
+                        // };
                         // console.log(" WS comming", ev.data.toString());
 
                         d = JSON.parse(ev.data.toString()) as IReqModel;
@@ -7430,7 +7454,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 this.wsClient?.forEach((v, i) => {
                                     if (v) {
                                         if (v["machineId"] == machineId?.machineId) {
-                                            v?.close(1000);
+                                            v?.close(1000, 'Duplicate connection');
                                             console.log(`Closed duplicate connection for machineId: ${machineId?.machineId}`);
                                             return true;
                                         }
