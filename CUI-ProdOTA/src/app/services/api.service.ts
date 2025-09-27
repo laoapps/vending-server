@@ -1601,13 +1601,28 @@ export class ApiService {
   }
 
 
-  buyLaoQR(ids: Array<IVendingMachineSale>, value: number) {
+  buyLaoQR(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
+
     this.currentPaymentProvider = EPaymentProvider.laoqr;
     const req = {} as IReqModel;
     req.command = EClientCommand.buyLAOQR;
+    let orderBill = [];
+    // console.log('-----> ids :', ids);
+    if (phone) {
+      for (let index = 0; index < ids.length; index++) {
+        const element = ids[index];
+        orderBill.push({ value: element.stock.price });
+      }
+    };
+
+    console.log('----->element :', orderBill);
+
+
     req.data = {
       ids,
       value,
+      phone,
+      orderBill,
       clientId: this.clientId.clientId,
     };
     req.ip;

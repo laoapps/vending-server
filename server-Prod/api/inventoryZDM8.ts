@@ -578,6 +578,7 @@ export class InventoryZDM8 implements IBaseClass {
                         } else if (d.command == EClientCommand.buyLAOQR) {
                             const sale = d.data.ids as Array<IVendingMachineSale>;
                             const machineId = this.findMachineIdToken(d.token);
+                            const phoneNumber = d?.data?.phone;
 
                             const checkCountGen = await checkGenerateCount(machineId?.machineId);
                             if (checkCountGen.status == 1) {
@@ -699,6 +700,14 @@ export class InventoryZDM8 implements IBaseClass {
                                     transactionID: bill.transactionID,
                                     createdAt: new Date()
                                 });
+
+                                if (phoneNumber) {
+                                    redisClient.setex(r.transactionID + EMessage.TransactionPhone, 60 * 15, JSON.stringify({
+                                        phone: phoneNumber,
+                                        orderBill: d?.data?.orderBill
+                                    }));
+                                    redisClient.save();
+                                }
 
                                 redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
@@ -1474,7 +1483,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     res.send(
                                         PrintSucceeded(
                                             "getPaidBills",
-                                             resx.data,EMessage.succeeded, returnLog(req, res)
+                                            resx.data, EMessage.succeeded, returnLog(req, res)
                                         )
                                     );
                                 });
@@ -6544,6 +6553,8 @@ export class InventoryZDM8 implements IBaseClass {
                     return resolve(null); // Add return to stop execution
                 }
 
+                // bill.vendingsales.length;
+
                 // Update bill properties
                 bill.paymentstatus = EPaymentStatus.paid;
                 bill.changed("paymentstatus", true);
@@ -6603,6 +6614,52 @@ export class InventoryZDM8 implements IBaseClass {
 
                     await DeleteTransactionToCheck(bill.machineId)
                     this.sendWSToMachine(bill?.machineId + "", res);
+
+
+                    setImmediate(async () => {
+                        try {
+                            let resultPhone: any = {};
+
+                            try {
+                                const redisData = await redisClient.get(transactionID + EMessage.TransactionPhone);
+                                if (redisData) {
+                                    try {
+                                        resultPhone = JSON.parse(redisData);
+                                    } catch (jsonErr) {
+                                        console.warn("Redis JSON parse error:", jsonErr);
+                                        resultPhone = {};
+                                    }
+                                }
+                            } catch (redisErr) {
+                                console.warn("Redis unavailable:", redisErr);
+                                resultPhone = {};
+                            }
+
+                            if (resultPhone?.phone) {
+                                const phone = "+85620" + resultPhone.phone;
+                                const body = {
+                                    name: phone,
+                                    phoneNumber: phone,
+                                    username: phone,
+                                    password: "1234567890", // อย่าใช้ plain number เป็น password ถ้าไม่จำเป็น
+                                    googleToken: { phoneNumber: phone, otp: "111111" },
+                                    orderBill: resultPhone?.orderBill ?? [],
+                                    trandID: transactionID,
+                                };
+
+                                const url = "https://hangmistore-api.laoapps.com/api/v1/authUM/register4";
+
+                                try {
+                                    await axios.post(url, body, { timeout: 10000 }); // กัน server ช้า
+                                } catch (apiErr) {
+                                    console.error("API request failed:", apiErr.message);
+                                }
+                            }
+                        } catch (errorTopUp) {
+                            console.error("Unexpected error give topup:", errorTopUp);
+                        }
+                    });
+
 
                     return resolve(bill); // Add return to stop callback execution
                 });

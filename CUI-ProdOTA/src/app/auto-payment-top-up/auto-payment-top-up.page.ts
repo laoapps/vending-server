@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AutoPaymentPage } from '../tab1/Vending/auto-payment/auto-payment.page';
 import { IENMessage } from '../models/base.model';
 import { GenerateMMoneyQRCodeProcess } from '../tab1/MMoney_processes/generateMMoneyQRCode.process';
@@ -29,6 +29,20 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
   // @Input() serial: ISerialService;
 
+  public pic_playstore = '../../assets/images/playstoredownload.png';
+  public pic_qr_android = '../../assets/logo/laab_android.png';
+  public pic_appstore = '../../assets/images/icon-appstore-download.png';
+  public pic_qr_ios = '../../assets/logo/laab_ios.png';
+
+
+  @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
+  videos: string[] = [
+    '../../assets/videos/promotion.mp4'
+  ];
+
+  currentIndex = 0;
+
+
   parseorders: Array<any> = [];
   parseGetTotalSale: any = {} as any;
 
@@ -49,6 +63,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
     'background-image': 'url(' + this.banner + ')',
     'background-size': 'contain', // or '50%', 'auto 80%', etc.
     'background-position': 'center',
+    // 'filter': 'blur(5px)'
     // 'background-repeat': 'no-repeat' // Add this to prevent tiling
   }
   // DOMS
@@ -179,6 +194,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   paymentOptions: Array<any> = [...this.ewalletOptionList];
 
   paymentCheck: Array<any> = [...this.ewalletCheckList];
+  phone: string = '';
 
 
   private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
@@ -194,6 +210,21 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
     this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
 
+  }
+
+  ngAfterViewInit() {
+    const player = this.videoPlayer?.nativeElement;
+
+    // set first video
+    player.src = this.videos[this.currentIndex];
+    player.play();
+
+    // when one video ends, play the next
+    player.onended = () => {
+      this.currentIndex = (this.currentIndex + 1) % this.videos.length;
+      player.src = this.videos[this.currentIndex];
+      player.play();
+    };
   }
 
   async ngOnInit() {
@@ -302,7 +333,16 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   }
 
 
+  async autoSubmit(form: any) {
 
+    if (this.phone?.length === 8 && form.valid) {
+      clearInterval(this.countdownDestroyTimer);
+      this.countdownDestroy = 60;
+      this._processLoopDestroyLastest(this.phone);
+      // await this.loadCountDownBillNew();
+      // this.selldelivery();
+    }
+  }
 
 
   loadCountDownBillNew(list?: any): Promise<any> {
@@ -369,7 +409,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
 
 
-  private _processLoopDestroyLastest(): Promise<any> {
+  private _processLoopDestroyLastest(phone?: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
@@ -395,7 +435,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }, 60000);
 
-        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t).then(async rx => {
+        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t, phone).then(async rx => {
           const r = rx.data;
           clearInterval(this.countdownCheckGenQrResTimer);
           const response: any = r;
