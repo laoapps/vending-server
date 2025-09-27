@@ -49,6 +49,9 @@ import {
     readMachineSettingVersion,
     readMachineAds,
     generateChecksum,
+    listVendingEventLogs,
+    getVendingEvent,
+    setVendingEvent,
 } from "../services/service";
 import {
     EClientCommand,
@@ -81,6 +84,8 @@ import {
     ILaoQRGenerateQRRes,
     IMachineStatus,
     IDropPositionData,
+    EVendingEvent,
+    IVendingEventLog,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import momenttz from "moment-timezone";
@@ -473,6 +478,9 @@ export class InventoryZDM8 implements IBaseClass {
                                     res.send(PrintError("listSale", e, EMessage.error, null));
                                 });
                         } else if (d.command == EClientCommand.buyMMoney) {
+
+
+
                             // console.log(" buyMMoney" + d.data.value);
                             const sale = d.data.ids as Array<IVendingMachineSale>; // item id
                             const machineId = this.findMachineIdToken(d.token);
@@ -575,7 +583,18 @@ export class InventoryZDM8 implements IBaseClass {
                                 redisClient.setex(qr.qrCode + EMessage.BillCreatedTemp, 60 * 3, ownerUuid);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
+                            const event: IVendingEventLog = {
+                                machineId: machineId.machineId,
+                                event: EVendingEvent.selling,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                                data: { data: bill, time: new Date() },//[{time, position, product, price,ip,data}
+                                date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                                month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                                year: momenttz().tz(SERVER_TIME_ZONE).year()
+                            };
+                            await setVendingEvent(EVendingEvent.selling, event);
                         } else if (d.command == EClientCommand.buyLAOQR) {
+
+
                             const sale = d.data.ids as Array<IVendingMachineSale>;
                             const machineId = this.findMachineIdToken(d.token);
                             const phoneNumber = d?.data?.phone;
@@ -710,6 +729,15 @@ export class InventoryZDM8 implements IBaseClass {
                                 }
 
                                 redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                                const event: IVendingEventLog = {
+                                    machineId: machineId?.machineId,
+                                    event: EVendingEvent.selling,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                                    data: { data: bill, time: new Date() },//[{time, position, product, price,ip,data}
+                                    date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                                    month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                                    year: momenttz().tz(SERVER_TIME_ZONE).year()
+                                };
+                                await setVendingEvent(EVendingEvent.selling, event);
                                 res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else if (d.command == EClientCommand.buyTopUp) {
@@ -1690,6 +1718,15 @@ export class InventoryZDM8 implements IBaseClass {
                             // console.log('*****billNotPaid', billNotPaid);
                             this.setBillProces(machineId, billNotPaid);
 
+                            const event: IVendingEventLog = {
+                                machineId: machineId,
+                                event: EVendingEvent.selling,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                                data: { data: billPaid, time: new Date() },//[{time, position, product, price,ip,data}
+                                date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                                month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                                year: momenttz().tz(SERVER_TIME_ZONE).year()
+                            };
+                            await setVendingEvent(EVendingEvent.selling, event);
 
                         });
 
@@ -2014,6 +2051,42 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+            router.post(this.path + "/listVendingEventLogs", this.checkAdmin, this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const date = Number(req.query["date"]) || momenttz().tz('UTC').date();
+                        const month = Number(req.query["month"]) || momenttz().tz('UTC').month() + 1;
+                        const year = Number(req.query["year"]) || momenttz().tz('UTC').year();
+                        const page = Number(req.query["page"]) || 1;
+                        const limit = Number(req.query["limit"]) || 100;
+                        const offset = (page - 1) * limit;
+                        // console.log('getVendingEventLog', date, month, year, page, limit, offset);
+                        const r = await listVendingEventLogs(ownerUuid, date, month, year, offset, limit);
+                        res.send(PrintSucceeded("getVendingEventLog", r, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("getVendingEventLog", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+            router.post(this.path + "/getVendingEventLog", this.checkAdmin, this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const event = req.query["event"] + '' || '';
+                        if (!event) return res.send(PrintError("getVendingEventLog", 'id is required', EMessage.error, returnLog(req, res, true)));
+                        getVendingEvent(event).then(r => {
+                            res.send(PrintSucceeded("getVendingEventLog", r, EMessage.succeeded, returnLog(req, res)));
+                        }).catch(e => {
+                            console.log(e);
+                            res.send(PrintError("getVendingEventLog", e, EMessage.error, returnLog(req, res, true)));
+                        })
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("getVendingEventLog", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
             router.post(
                 this.path + "/addProduct",
                 this.checkSuperAdmin,
@@ -2927,7 +3000,15 @@ export class InventoryZDM8 implements IBaseClass {
                         }
 
                         // console.log(`----> machine id der`, machineId.machineId);
-
+                        const event: IVendingEventLog = {
+                            machineId: machineId.machineId,
+                            event: EVendingEvent.updating_stock,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                            data: { data: list, time: new Date() },//[{time, position, product, price,ip,data}
+                            date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                            month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                            year: momenttz().tz(SERVER_TIME_ZONE).year()
+                        };
+                        await setVendingEvent(EVendingEvent.updating_stock, event);
                         res.send(
                             PrintSucceeded(
                                 "saveMachineSale",
@@ -3038,6 +3119,25 @@ export class InventoryZDM8 implements IBaseClass {
 
                             }
                         }
+
+                        const event: IVendingEventLog = {
+                            machineId: machineId.machineId,
+                            event: EVendingEvent.updating_stock,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                            data: { data: list, time: new Date() },//[{time, position, product, price,ip,data}
+                            date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                            month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                            year: momenttz().tz(SERVER_TIME_ZONE).year()
+                        };
+                        await setVendingEvent(EVendingEvent.updating_stock, event);
+                        const event2: IVendingEventLog = {
+                            machineId: machineId.machineId,
+                            event: EVendingEvent.dropConfirm,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                            data: { data: dropPositionData, time: new Date() },//[{time, position, product, price,ip,data}
+                            date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                            month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                            year: momenttz().tz(SERVER_TIME_ZONE).year()
+                        };
+                        await setVendingEvent(EVendingEvent.dropConfirm, event2);
                         res.send(
                             PrintSucceeded(
                                 "saveMachineSaleAndDrop",
@@ -6661,6 +6761,17 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
 
+
+
+                    const event: IVendingEventLog = {
+                        machineId: bill?.machineId,
+                        event: EVendingEvent.sold,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                        data: { data: bill, time: new Date() },//[{time, position, product, price,ip,data}
+                        date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                        month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                        year: momenttz().tz(SERVER_TIME_ZONE).year()
+                    };
+                    await setVendingEvent(EVendingEvent.sold, event);
                     return resolve(bill); // Add return to stop callback execution
                 });
 
@@ -7296,6 +7407,15 @@ export class InventoryZDM8 implements IBaseClass {
             try {
                 // implement later
 
+                const event: IVendingEventLog = {
+                    machineId: machineId,
+                    event: EVendingEvent.dropConfirm,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                    data: { data: { transactionID, position }, time: new Date() },//[{time, position, product, price,ip,data}
+                    date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                    month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                    year: momenttz().tz(SERVER_TIME_ZONE).year()
+                };
+                await setVendingEvent(EVendingEvent.dropConfirm, event);
             }
             catch (error) {
                 console.log(error);
@@ -7344,6 +7464,15 @@ export class InventoryZDM8 implements IBaseClass {
                     }).catch(error => console.log(`save stock fail`));
 
                 }
+                const event: IVendingEventLog = {
+                    machineId: machineId,
+                    event: EVendingEvent.updating_stock,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                    data: { data: list, time: new Date() },//[{time, position, product, price,ip,data}
+                    date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                    month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                    year: momenttz().tz(SERVER_TIME_ZONE).year()
+                };
+                await setVendingEvent(EVendingEvent.updating_stock, event);
             } catch (error) {
                 console.log(`save stock error`, error);
             }
