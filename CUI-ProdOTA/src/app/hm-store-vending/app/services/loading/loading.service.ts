@@ -166,6 +166,7 @@ export class LoadingService {
         await alert.present();
         setTimeout(() => {
           alert.dismiss();
+          resolve(true)
         }, timeOut);
       } catch (error) {
         rejects(error);

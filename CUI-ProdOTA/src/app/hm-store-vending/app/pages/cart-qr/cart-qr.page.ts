@@ -170,6 +170,7 @@ export class CartQrPage implements OnInit {
             "txnAmount": i.order?.totalValue,
             "path":"order/updateLaabOrderPaid",
           }
+          localStorage.setItem('vending','true')
           this.apiService.Genmmoneyqr_market(data,res?.data?.uuid,JSON.parse(localStorage.getItem('store'))?.uuid).subscribe((r)=>{
             console.log('GenQr_market',r);
             if (r.status == 1) {
@@ -238,6 +239,8 @@ export class CartQrPage implements OnInit {
                 )
                 .then((r) => {
                   if (r) {
+                    this.isPayment = false
+                    this.phone = ""
                     this.close();
                   }
                 });
@@ -250,6 +253,7 @@ export class CartQrPage implements OnInit {
     }
 
     async close() {
+      localStorage.removeItem('vending')
       clearInterval(this.countdownDestroyTimer);
       this.m.closeModal({ dismiss: true });
       let topModal = await this.modalParent.getTop();
