@@ -96,26 +96,26 @@
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.25);
   // margin-bottom: 25px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
+  // transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
   position: relative;
   overflow: hidden;
 }
 
-.top-header::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 10%, transparent 40%);
-  animation: rotateLight 6s linear infinite;
-}
+// .top-header::before {
+//   content: "";
+//   position: absolute;
+//   top: -50%;
+//   left: -50%;
+//   width: 200%;
+//   height: 200%;
+//   background: radial-gradient(circle, rgba(255,255,255,0.2) 10%, transparent 40%);
+//   animation: rotateLight 6s linear infinite;
+// }
 
-@keyframes rotateLight {
-  0% { transform: rotate(0deg);}
-  100% { transform: rotate(360deg);}
-}
+// @keyframes rotateLight {
+//   0% { transform: rotate(0deg);}
+//   100% { transform: rotate(360deg);}
+// }
 
 // .top-header:hover {
 //   transform: translateY(-7px);
@@ -145,13 +145,13 @@
   font-weight: bold;
   text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
   text-align: center;
-  animation: fadeInTitle 1.5s ease forwards;
+  // animation: fadeInTitle 1.5s ease forwards;
 }
 
-@keyframes fadeInTitle {
-  0% { opacity: 0; transform: translateY(-10px);}
-  100% { opacity: 1; transform: translateY(0);}
-}
+// @keyframes fadeInTitle {
+//   0% { opacity: 0; transform: translateY(-10px);}
+//   100% { opacity: 1; transform: translateY(0);}
+// }
 
 //===========================================
 /* Buttons container */
@@ -170,13 +170,13 @@
   --padding-end: 8px;
   --background: rgba(255,255,255,0.2);
   border-radius: 50%;
-  transition: transform 0.2s ease, background 0.3s ease;
+  // transition: transform 0.2s ease, background 0.3s ease;
 }
 
-.header-buttons ion-button:hover {
-  background: rgba(255,255,255,0.4);
-  transform: scale(1.2);
-}
+// .header-buttons ion-button:hover {
+//   background: rgba(255,255,255,0.4);
+//   transform: scale(1.2);
+// }
 
 
 
@@ -255,12 +255,12 @@
     text-align: center;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease;
+    // transition: transform 0.2s ease;
   }
 
-  .sub-card:hover {
-    transform: translateY(-4px);
-  }
+  // .sub-card:hover {
+  //   transform: translateY(-4px);
+  // }
 
   .sub-image {
     width: 80%;

@@ -94,17 +94,32 @@ export class UserPage implements OnInit,OnDestroy {
         this.m.onDismiss();
         this.all_gorup = r;
         this.load_data_device();
-        if (this.all_gorup?.length ) {
+        // if (this.all_gorup?.length ) {
+        //   for (let i = 0; i < this.all_gorup.length; i++) {
+        //     const e = this.all_gorup[i];
+        //     for (let j = 0; j < e.description?.image.length; j++) {
+        //       const v = e.description?.image[j];
+        //       const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
+        //       if (e?.pic?.length > 0) {
+        //         e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
+        //       }else{
+        //         e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
+        //       }
+        //     }
+        //   }
+        // }
+        if (this.all_gorup?.length) {
           for (let i = 0; i < this.all_gorup.length; i++) {
             const e = this.all_gorup[i];
-            for (let j = 0; j < e.description?.image.length; j++) {
-              const v = e.description?.image[j];
+        
+            const imageTasks = e.description?.image.map(async (v: string) => {
               const aa = await this.caching.saveCachingPhoto(v, new Date(e.updatedAt), e.id + '');
-              if (e?.pic?.length > 0) {
-                e.pic.push(JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg'))
-              }else{
-                e['pic'] = [JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg')]
-              }
+              return JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg');
+            });
+        
+            if (imageTasks?.length) {
+              const pics = await Promise.all(imageTasks);
+              e.pic = [...(e.pic || []), ...pics];
             }
           }
         }
