@@ -20,7 +20,6 @@ export class PayQrPage implements OnInit {
   private colorInterval: any;
   countdown: string = '';
   public pic_device = '../../../../../assets/icon-smartcb/laoqr.png'
-  @Input() data:any
   @Input() data_device:any
   @Input() data_pageket:any
 
@@ -78,8 +77,8 @@ export class PayQrPage implements OnInit {
 
   load_qr(){
     let data = {
-      packageId:this.data.id,
-      deviceId:this.data_device,
+      packageId:this.data_pageket?.id,
+      deviceId:this.data_device?.id,
       relay:1
     }
     console.log('====================================');

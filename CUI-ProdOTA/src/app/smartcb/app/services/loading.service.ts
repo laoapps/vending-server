@@ -191,6 +191,7 @@ export class LoadingService {
       component,
       componentProps: d,
       cssClass: cssClass || 'full-modal',
+      backdropDismiss:false
     });
   } catch (error) {
     console.log('ERROR', error);

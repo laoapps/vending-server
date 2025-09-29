@@ -33,6 +33,13 @@ export class ApiVendingService {
     };
   }
 
+  findAllActiveDevices(): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/orders/findAllActiveDevices`,
+      {},
+      this.getAuthHeaders()
+    );
+  }
   load_all_group(): Observable<any> {
     return this.http.post(
       `${this.apiUrl}/groups/loadAllGroupsHMVending`,

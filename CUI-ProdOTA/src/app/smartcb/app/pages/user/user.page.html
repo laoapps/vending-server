@@ -73,6 +73,9 @@
 <!-- ===================================== -->
 
 <ion-content class="ion-padding groups-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content refreshingSpinner="circles"> </ion-refresher-content>
+  </ion-refresher>
     <!-- Top Header -->
     <div class="top-header">
       <img src="../../../../../assets/icon/logo.png" alt="Logo" class="logo" />
@@ -109,8 +112,8 @@
           <div class="group-header">
             <img [src]="return_pic(group)" alt="Group Image" class="group-image" />
             <div class="group-info">
-              <h2 class="group-title">{{ group.name }}</h2>
-              <ion-label>ສະຖານທີ: {{group.name}}
+              <h2 class="group-title">{{ group?.name }}</h2>
+              <ion-label>ສະຖານທີ: {{group?.name}}
               </ion-label>
             </div>
           </div>
@@ -120,12 +123,15 @@
             <ion-row class="ion-justify-content-start">
               <ion-col 
                 size="6" size-sm="6" size-md="4" size-lg="3" size-xl="2" 
-                *ngFor="let sub of group?.data_device">
+                *ngFor="let device of group?.data_device">
                 
-                <ion-card class="sub-card" button (click)="onClick_menu_sub(sub,group)">
-                  <img [src]="return_pic(sub)" alt="Sub Image" class="sub-image" />
+                <ion-card class="sub-card" button (click)="onClick_menu_sub(device,group)">
+                  <div class="image-wrapper">
+                    <img [src]="return_pic(device)" alt="Sub Image" class="sub-image" />
+                    <span class="using-badge" *ngIf="device?.using">Using now</span>
+                  </div>
                   <ion-card-content>
-                    <p class="sub-title">{{ sub.name }}</p>
+                    <p class="sub-title">{{ device?.name }}</p>
                   </ion-card-content>
                 </ion-card>
 
