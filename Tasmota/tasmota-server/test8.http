@@ -65,6 +65,15 @@ Authorization: Bearer {{jwtToken}}
 
 }
 
+### test findAllActiveDevices
+POST https://{{host}}/api/orders/findAllActiveDevices
+Content-Type: application/json
+token: 96fd8df2fe85122f48a71a0b63d3d8e547522e10b91936550965698b69d49609
+
+{
+  
+}
+
 ### test update devices
 POST https://{{host}}/api/schedule-packages/findByPackageIDsHMVending
 Content-Type: application/json

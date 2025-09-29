@@ -145,15 +145,19 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
   try {
 
     const activeDevice = await redis.get(`deviceID:${deviceId}`)
+    console.log('createOrderHMVending==========000', activeDevice);
+    
     if (activeDevice) {
       return res.status(403).json({ error: 'device still using!' });
     }
 
     const schedulePackage = await SchedulePackage.findByPk(packageId);
+    console.log('schedulePackage', schedulePackage);
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
     }
     const device = await models.Device.findByPk(deviceId);
+    console.log('device', device);
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });
     }
@@ -179,6 +183,8 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
 
     return res.json({ qr, data: { order } });
   } catch (error) {
+    console.log('createOrderHMVendingERROR',error);
+    
     res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
   }
 };
