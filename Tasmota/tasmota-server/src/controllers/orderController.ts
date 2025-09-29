@@ -137,6 +137,30 @@ export const findAllActiveDevices = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message || 'Failed to findAllActiveDevices' });
   }
 };
+
+export const deleteActiveDevice = async (req: Request, res: Response) => {
+  console.log('deleteActiveDevice==========');
+  try {
+    const { deviceID } = req.body
+    if (deviceID) {
+      redis.del(`deviceID:${deviceID}`)
+    } else {
+      const keys = await redis.keys("deviceID:*");
+      for (const key of keys) {
+        const value = await redis.get(key);
+        console.log(key, value);
+        if (value) {
+          redis.del(key)
+        }
+      }
+    }
+
+    return res.json({ status: 1 });
+  } catch (error) {
+    console.log('deleteActiveDeviceERROR==========');
+    res.status(500).json({ error: (error as Error).message || 'Failed to findAllActiveDevices' });
+  }
+};
 export const createOrderHMVending = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
@@ -146,7 +170,7 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
 
     const activeDevice = await redis.get(`deviceID:${deviceId}`)
     console.log('createOrderHMVending==========000', activeDevice);
-    
+
     if (activeDevice) {
       return res.status(403).json({ error: 'device still using!' });
     }
@@ -183,8 +207,8 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
 
     return res.json({ qr, data: { order } });
   } catch (error) {
-    console.log('createOrderHMVendingERROR',error);
-    
+    console.log('createOrderHMVendingERROR', error);
+
     res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
   }
 };
