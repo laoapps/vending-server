@@ -5,6 +5,9 @@
       <ion-button color="light" (click)="refreshData()">
         <ion-icon slot="icon-only" name="refresh"></ion-icon>
       </ion-button>
+      <ion-button color="light" (click)="toggleAllSecrets()">
+        <ion-icon slot="icon-only" [name]="showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -25,17 +28,21 @@
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="cube-outline"></ion-icon>
-              {{ machine.machineId }}
+              <span *ngIf="machine.showSecrets && showAllSecrets">{{ machine.machineId }}</span>
+              <span *ngIf="!machine.showSecrets || !showAllSecrets">****</span>
               <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
+              <ion-button fill="clear" size="small" (click)="toggleMachineSecrets(machine)">
+                <ion-icon slot="icon-only" [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </ion-button>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-list lines="none">
-              <ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
                 <ion-icon name="person-outline" slot="start"></ion-icon>
                 <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
               </ion-item>
-              <ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
                 <ion-icon name="key-outline" slot="start"></ion-icon>
                 <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
               </ion-item>
@@ -118,17 +125,21 @@
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="cube-outline"></ion-icon>
-              {{ machine.machineId }}
+              <span *ngIf="machine.showSecrets && showAllSecrets">{{ machine.machineId }}</span>
+              <span *ngIf="!machine.showSecrets || !showAllSecrets">****</span>
               <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
+              <ion-button fill="clear" size="small" (click)="toggleMachineSecrets(machine)">
+                <ion-icon slot="icon-only" [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </ion-button>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-list lines="none">
-              <ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
                 <ion-icon name="person-outline" slot="start"></ion-icon>
                 <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
               </ion-item>
-              <ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
                 <ion-icon name="key-outline" slot="start"></ion-icon>
                 <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
               </ion-item>
