@@ -118,6 +118,50 @@ export const testOrder = async (req: Request, res: Response) => {
   }
 };
 
+export const findAllActiveDevices = async (req: Request, res: Response) => {
+  console.log('findAllActiveDevices==========');
+  try {
+
+    let data: any = []
+    const keys = await redis.keys("deviceID:*");
+    for (const key of keys) {
+      const value = await redis.get(key);
+      console.log(key, value);
+      if (value) {
+        const a = JSON.parse(value)
+        data.push({ key: key, value: a.deviceId, time: a.time, paid: a.paid ? a.paid : false })
+      }
+    }
+
+    return res.json({ data });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to findAllActiveDevices' });
+  }
+};
+
+export const deleteActiveDevice = async (req: Request, res: Response) => {
+  console.log('deleteActiveDevice==========');
+  try {
+    const { deviceID } = req.body
+    if (deviceID) {
+      redis.del(`deviceID:${deviceID}`)
+    } else {
+      const keys = await redis.keys("deviceID:*");
+      for (const key of keys) {
+        const value = await redis.get(key);
+        console.log(key, value);
+        if (value) {
+          redis.del(key)
+        }
+      }
+    }
+
+    return res.json({ status: 1 });
+  } catch (error) {
+    console.log('deleteActiveDeviceERROR==========');
+    res.status(500).json({ error: (error as Error).message || 'Failed to findAllActiveDevices' });
+  }
+};
 export const createOrderHMVending = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
@@ -126,15 +170,19 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
   try {
 
     const activeDevice = await redis.get(`deviceID:${deviceId}`)
+    console.log('createOrderHMVending==========000', activeDevice);
+
     if (activeDevice) {
       return res.status(403).json({ error: 'device still using!' });
     }
 
     const schedulePackage = await SchedulePackage.findByPk(packageId);
+    console.log('schedulePackage', schedulePackage);
     if (!schedulePackage) {
       return res.status(404).json({ error: 'Package not found' });
     }
     const device = await models.Device.findByPk(deviceId);
+    console.log('device', device);
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });
     }
@@ -156,10 +204,13 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
     // save vending token for use in api pay, key name use orderID
     await redis.setex(`orderID:${order.dataValues.id}`, 5 * 60, token + '');
     // save deviceID for not allow other user create new order use this deivce
-    await redis.setex(`deviceID:${deviceId}`, 3 * 60, deviceId + '');
+    const active_device_data = { deviceId, time: new Date() }
+    await redis.setex(`deviceID:${deviceId}`, 3 * 60, JSON.stringify(active_device_data));
 
     return res.json({ qr, data: { order } });
   } catch (error) {
+    console.log('createOrderHMVendingERROR', error);
+
     res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
   }
 };
@@ -202,7 +253,8 @@ export const createOrder = async (req: Request, res: Response) => {
     // save user token for use in api pay, key name use orderID_laabxapp
     await redis.setex(`orderID_laabxapp:${order.dataValues.id}`, 5 * 60, token + '');
     // save deviceID for not allow other user create new order use this deivce
-    await redis.setex(`deviceID:${deviceId}`, 3 * 60, deviceId + '');
+    const active_device_data = { deviceId, time: new Date() }
+    await redis.setex(`deviceID:${deviceId}`, 3 * 60, JSON.stringify(active_device_data));
 
     // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
     return res.json({ qr, data: { order } });
@@ -330,7 +382,9 @@ export const payOrder = async (req: Request, res: Response) => {
     const activeDevice = await redis.get(keyDevice)
     if (activeDevice) {
       await redis.del(keyDevice)
-      await redis.set(`deviceID:${deviceId}`, deviceId + '');
+      const active_device_data = { deviceId, time: new Date(), paid: true }
+      await redis.set(`deviceID:${deviceId}`, JSON.stringify(active_device_data));
+      // await redis.set(`deviceID:${deviceId}`, deviceId + '');
     }
 
 
