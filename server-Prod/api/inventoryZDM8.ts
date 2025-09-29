@@ -710,7 +710,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     trandList = [];
                                 }
 
-                                if (trandList.length >= 1) {
+                                if (trandList.length >= 5) {
                                     console.log('REMOVE FIRST TRAND');
                                     trandList.splice(0, 1);
                                 }

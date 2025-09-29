@@ -60,38 +60,86 @@ export class HomePage {
     this.load_many_store();
   }
 
+  // async loadcategory() {
+  //   localStorage.setItem('skip_tag', '1')
+  //   this.m.onLoading('');
+  //   // this.profile.cat_selmany_apptype({type:'onlinestore'}).subscribe(async res => {
+  //   this.apiService.cat_selmany().subscribe(async res => {
+  //     console.log('res', res);
+  //     this.cat_list = res.data.rows
+  //     for (let index = 0; index < this.cat_list.length; index++) {
+  //       const element = this.cat_list[index];
+  //       const aa = await this.caching.saveCachingPhoto(element?.image.pic[0], new Date(element?.updatedAt), element?.id + '');
+  //       element['pic'] = JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg');
+  //       if (element.name == 'ໝາກໄມ້' || element.name == 'ຜັກ') {
+  //         element['category'] = 'Fruits'
+  //       } else if (element.name == 'ອາຫານ' || element.name == 'ຜັດ' || element.name == 'ອາຫານທອດ' || element.name == 'ອາຫານຍໍາ' || element.name == 'ປະເພດຕໍາ' || element.name == 'ຕົ້ມ') {
+  //         element['category'] = 'Foods'
+  //       } else if (element.name = 'ເຄື່ອງດື່ມ') {
+  //         element['category'] = 'Drinks'
+  //       } else {
+  //         element['category'] = 'Store'
+  //       }
+  //     }
+  //     setTimeout(() => {
+  //       this.m.onDismiss();
+  //     }, 100);
+  //     console.log(this.cat_list);
+  //   }, errr => {
+  //     setTimeout(() => {
+  //       this.m.onDismiss();
+  //     }, 100);
+  //     console.log('load tag error', errr);
+  //   })
+  // }
+
   async loadcategory() {
-    localStorage.setItem('skip_tag', '1')
+    localStorage.setItem('skip_tag', '1');
     this.m.onLoading('');
-    // this.profile.cat_selmany_apptype({type:'onlinestore'}).subscribe(async res => {
+  
     this.apiService.cat_selmany().subscribe(async res => {
       console.log('res', res);
-      this.cat_list = res.data.rows
-      for (let index = 0; index < this.cat_list.length; index++) {
-        const element = this.cat_list[index];
-        const aa = await this.caching.saveCachingPhoto(element?.image.pic[0], new Date(element?.updatedAt), element?.id + '');
-        element['pic'] = JSON.parse(aa).v.replace('data:application/octet-stream', 'data:image/jpeg');
-        if (element.name == 'ໝາກໄມ້' || element.name == 'ຜັກ') {
-          element['category'] = 'Fruits'
-        } else if (element.name == 'ອາຫານ' || element.name == 'ຜັດ' || element.name == 'ອາຫານທອດ' || element.name == 'ອາຫານຍໍາ' || element.name == 'ປະເພດຕໍາ' || element.name == 'ຕົ້ມ') {
-          element['category'] = 'Foods'
-        } else if (element.name = 'ເຄື່ອງດື່ມ') {
-          element['category'] = 'Drinks'
+      this.cat_list = res.data.rows;
+  
+      // ສ້າງວຽກທັງໝົດເປັນ array
+      const tasks = this.cat_list.map(async (element: any) => {
+        const aa = await this.caching.saveCachingPhoto(
+          element?.image.pic[0],
+          new Date(element?.updatedAt),
+          element?.id + ''
+        );
+  
+        element['pic'] = JSON.parse(aa).v.replace(
+          'data:application/octet-stream',
+          'data:image/jpeg'
+        );
+  
+        if (['ໝາກໄມ້', 'ຜັກ'].includes(element.name)) {
+          element['category'] = 'Fruits';
+        } else if (
+          ['ອາຫານ', 'ຜັດ', 'ອາຫານທອດ', 'ອາຫານຍໍາ', 'ປະເພດຕໍາ', 'ຕົ້ມ'].includes(element.name)
+        ) {
+          element['category'] = 'Foods';
+        } else if (element.name === 'ເຄື່ອງດື່ມ') {
+          element['category'] = 'Drinks';
         } else {
-          element['category'] = 'Store'
+          element['category'] = 'Store';
         }
-      }
-      setTimeout(() => {
-        this.m.onDismiss();
-      }, 100);
+  
+        return element;
+      });
+  
+      // ລໍຖ້າໃຫ້ວຽກທັງໝົດສໍາເລັດ
+      this.cat_list = await Promise.all(tasks);
+  
+      this.m.onDismiss();
       console.log(this.cat_list);
     }, errr => {
-      setTimeout(() => {
-        this.m.onDismiss();
-      }, 100);
+      this.m.onDismiss();
       console.log('load tag error', errr);
-    })
+    });
   }
+  
 
   async load_many_store() {
     this.m.onLoading('');

@@ -20,11 +20,6 @@ export class PhotoProductService {
     
     if (x) {
       const y = JSON.parse(x); //{v,d}
-      // console.log(y);
-      // console.log(d);
-      
-      
-
       if (new Date(y.d).getTime() != d.getTime()) {
         const w = await this.getBase64ImageFromUrl(k);
 
