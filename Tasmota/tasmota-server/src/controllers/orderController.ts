@@ -128,7 +128,8 @@ export const findAllActiveDevices = async (req: Request, res: Response) => {
       const value = await redis.get(key);
       console.log(key, value);
       if (value) {
-        data.push({ key: key, value: value })
+        const a = JSON.parse(value)
+        data.push({ key: key, value: a.deviceId, time: a.time, paid: a.paid ? a.paid : false })
       }
     }
 
@@ -203,7 +204,8 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
     // save vending token for use in api pay, key name use orderID
     await redis.setex(`orderID:${order.dataValues.id}`, 5 * 60, token + '');
     // save deviceID for not allow other user create new order use this deivce
-    await redis.setex(`deviceID:${deviceId}`, 3 * 60, deviceId + '');
+    const active_device_data = { deviceId, time: new Date() }
+    await redis.setex(`deviceID:${deviceId}`, 3 * 60, JSON.stringify(active_device_data));
 
     return res.json({ qr, data: { order } });
   } catch (error) {
@@ -251,7 +253,8 @@ export const createOrder = async (req: Request, res: Response) => {
     // save user token for use in api pay, key name use orderID_laabxapp
     await redis.setex(`orderID_laabxapp:${order.dataValues.id}`, 5 * 60, token + '');
     // save deviceID for not allow other user create new order use this deivce
-    await redis.setex(`deviceID:${deviceId}`, 3 * 60, deviceId + '');
+    const active_device_data = { deviceId, time: new Date() }
+    await redis.setex(`deviceID:${deviceId}`, 3 * 60, JSON.stringify(active_device_data));
 
     // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());
     return res.json({ qr, data: { order } });
@@ -379,7 +382,9 @@ export const payOrder = async (req: Request, res: Response) => {
     const activeDevice = await redis.get(keyDevice)
     if (activeDevice) {
       await redis.del(keyDevice)
-      await redis.set(`deviceID:${deviceId}`, deviceId + '');
+      const active_device_data = { deviceId, time: new Date(), paid: true }
+      await redis.set(`deviceID:${deviceId}`, JSON.stringify(active_device_data));
+      // await redis.set(`deviceID:${deviceId}`, deviceId + '');
     }
 
 

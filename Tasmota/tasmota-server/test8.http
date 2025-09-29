@@ -76,10 +76,10 @@ token: 96fd8df2fe85122f48a71a0b63d3d8e547522e10b91936550965698b69d49609
 ### test deleteActiveDevice
 POST https://{{host}}/api/orders/deleteActiveDevice
 Content-Type: application/json
-token: 96fd8df2fe85122f48a71a0b63d3d8e547522e10b91936550965698b69d49609
+Authorization: Bearer {{jwtToken}}
 
 {
-  "deviceID":null
+  "deviceID":4
 }
 
 ### test update devices
