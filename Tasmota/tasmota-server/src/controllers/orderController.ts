@@ -118,6 +118,25 @@ export const testOrder = async (req: Request, res: Response) => {
   }
 };
 
+export const findAllActiveDevices = async (req: Request, res: Response) => {
+  console.log('findAllActiveDevices==========');
+  try {
+
+    let data: any = []
+    const keys = await redis.keys("deviceID:*");
+    for (const key of keys) {
+      const value = await redis.get(key);
+      console.log(key, value);
+      if (value) {
+        data.push({ key: key, value: value })
+      }
+    }
+
+    return res.json({ data });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to findAllActiveDevices' });
+  }
+};
 export const createOrderHMVending = async (req: Request, res: Response) => {
   const { packageId, deviceId, relay = 1 } = req.body;
   const user = res.locals.user;
