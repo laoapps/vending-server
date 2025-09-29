@@ -20,7 +20,7 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines$ | async">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines">
         <ion-card class="machine-card" [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
@@ -79,6 +79,12 @@
                     Logs
                   </ion-button>
                 </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
+                    <ion-icon slot="start" name="laptop-outline"></ion-icon>
+                    My Account
+                  </ion-button>
+                </ion-col>
               </ion-row>
             </ion-grid>
           </ion-card-content>
@@ -97,7 +103,7 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines$ | async">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines">
         <ion-card class="machine-card" [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
@@ -135,7 +141,7 @@
                 <ion-icon name="document-text-outline" slot="start"></ion-icon>
                 <ion-label><strong>Data:</strong> {{ machine.data || '{}' }}</ion-label>
               </ion-item>
-               <ion-item>
+              <ion-item>
                 <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
                   <ion-icon slot="start" name="thermometer-outline"></ion-icon>
                   Logs
