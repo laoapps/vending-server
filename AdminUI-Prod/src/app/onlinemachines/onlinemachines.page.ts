@@ -12,6 +12,7 @@ import { FindMyEpinPage } from '../find-my-epin/find-my-epin.page';
 import { AdvertisementPage } from '../superadmin/advertisement/advertisement.page';
 import { VersionControlPage } from '../version-control/version-control.page';
 import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
+import { SettingsModalPage } from '../settings-modal/settings-modal/settings-modal.page';
 
 interface MachineData {
   machineId: string;
@@ -22,6 +23,9 @@ interface MachineData {
   versionId: string;
   device: string;
   data: string;
+  otp: string;
+  settings: any;
+  showSecrets?: boolean; // Track visibility for each machine
 }
 
 @Component({
@@ -35,6 +39,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   private allMachinesUrl = `${environment.url}/getAllMachines`;
   private onlineMachinesUrl = `${environment.url}/getOnlineMachines`;
   private intervalId: NodeJS.Timeout;
+  showAllSecrets: boolean = true; // Global toggle for all secrets
 
   constructor(public apiService: ApiService) {}
 
@@ -58,7 +63,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       const secret = localStorage.getItem('secretLocal');
       const payload = { secret, shopPhonenumber, token };
 
-      // Fetch data concurrently with Axios
       const [allMachinesResponse, onlineMachinesResponse] = await Promise.all([
         axios.post(this.allMachinesUrl, payload),
         axios.post(this.onlineMachinesUrl, payload),
@@ -68,14 +72,12 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       const onlineMachinesMap = new Map<string, any>();
       const now = new Date();
 
-      // Build map of online machines
       onlineMachinesResponse.data.data
         ?.filter((item: any) => item && item.machine)
         .forEach((item: any) => {
           onlineMachinesMap.set(item.machine.machineId, item);
         });
 
-      // Process all machines
       allMachinesResponse.data.data.forEach((machine: any) => {
         const onlineData = onlineMachinesMap.get(machine.machineId);
         let status: 'Online' | 'Broken' = 'Broken';
@@ -100,17 +102,19 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
         machines.push({
           machineId: machine.machineId,
-          owner: d?.owner || 'Unknown',
+          owner: d?.ownerPhone ? String(d.ownerPhone) : 'Unknown',
           temperature,
           status,
           lastUpdate,
           versionId: d?.versionId || 'N/A',
           device,
           data,
+          otp: machine.otp || 'N/A',
+          settings: d || {},
+          showSecrets: true, // Default to showing secrets
         });
       });
 
-      // Sort and assign machines
       machines.sort((a, b) => a.machineId.localeCompare(b.machineId));
       this.onlineMachines = machines.filter((m) => m.status === 'Online');
       this.brokenMachines = machines.filter((m) => m.status === 'Broken');
@@ -119,6 +123,20 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       this.onlineMachines = [];
       this.brokenMachines = [];
     }
+  }
+
+  // Toggle all secrets globally
+  toggleAllSecrets() {
+    this.showAllSecrets = !this.showAllSecrets;
+    this.onlineMachines.forEach((machine) => (machine.showSecrets = this.showAllSecrets));
+    this.brokenMachines.forEach((machine) => (machine.showSecrets = this.showAllSecrets));
+    console.log(`All machines secrets visibility: ${this.showAllSecrets}`);
+  }
+
+  // Toggle secrets for a single machine
+  toggleMachineSecrets(machine: MachineData) {
+    machine.showSecrets = !machine.showSecrets;
+    console.log(`Machine ${machine.machineId} secrets visibility: ${machine.showSecrets}`);
   }
 
   async exitApp(machineId: string) {
@@ -178,24 +196,36 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       .then((modal) => modal.present());
   }
 
-  manage(owner: string, i: number = 1) {
-    console.log('Manage action for owner:', this.onlineMachines);
+  showSettings(settings: any) {
+    this.apiService.modal
+      .create({
+        component: SettingsModalPage,
+        componentProps: { settings },
+        cssClass: 'custom-modal',
+        backdropDismiss: true,
+      })
+      .then((modal) => modal.present());
+  }
 
-    const pages = [
-      null,
-      MyaccountPage,
-      MachinePage,
-      ProductsPage,
-      SalePage,
-      EpinAdminPage,
-      FindMyEpinPage,
-      AdvertisementPage,
-      VersionControlPage,
-      ImagesproductPage,
-    ];
+  manage(phoneNumber: string, i: number = 1) {
+    console.log('Manage action for owner:', phoneNumber, phoneNumber.slice(-8));
+    localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
+    this.apiService.router.navigate(['/tabs/tab1']);
+    // const pages = [
+    //   null,
+    //   MyaccountPage,
+    //   MachinePage,
+    //   ProductsPage,
+    //   SalePage,
+    //   EpinAdminPage,
+    //   FindMyEpinPage,
+    //   AdvertisementPage,
+    //   VersionControlPage,
+    //   ImagesproductPage,
+    // ];
 
-    if (pages[i]) {
-      this.apiService.showModal(pages[i], {}).then((r) => r?.present());
-    }
+    // if (pages[i]) {
+    //   this.apiService.showModal(pages[i], {}).then((r) => r?.present());
+    // }
   }
 }

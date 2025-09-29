@@ -33,7 +33,11 @@
             <ion-list lines="none">
               <ion-item>
                 <ion-icon name="person-outline" slot="start"></ion-icon>
-                <ion-label><strong>Owner:</strong> {{ machine.owner }}</ion-label>
+                <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="key-outline" slot="start"></ion-icon>
+                <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="thermometer-outline" slot="start"></ion-icon>
@@ -48,15 +52,15 @@
               </ion-item>
               <ion-item>
                 <ion-icon name="code-outline" slot="start"></ion-icon>
-                <ion-label><strong>Version:</strong> {{ machine.versionId || 'N/A' }}</ion-label>
+                <ion-label><strong>Version:</strong> {{ machine.versionId }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
-                <ion-label><strong>Device:</strong> {{ machine.device || 'Unknown' }}</ion-label>
+                <ion-label><strong>Device:</strong> {{ machine.device }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>Data:</strong> {{ machine.data || '{}' }}</ion-label>
+                <ion-label><strong>Data:</strong> {{ machine.data }}</ion-label>
               </ion-item>
             </ion-list>
             <ion-grid class="button-grid">
@@ -83,6 +87,12 @@
                   <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
                     <ion-icon slot="start" name="laptop-outline"></ion-icon>
                     My Account
+                  </ion-button>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
+                    <ion-icon slot="start" name="settings-outline"></ion-icon>
+                    Settings
                   </ion-button>
                 </ion-col>
               </ion-row>
@@ -116,7 +126,11 @@
             <ion-list lines="none">
               <ion-item>
                 <ion-icon name="person-outline" slot="start"></ion-icon>
-                <ion-label><strong>Owner:</strong> {{ machine.owner }}</ion-label>
+                <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="key-outline" slot="start"></ion-icon>
+                <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="thermometer-outline" slot="start"></ion-icon>
@@ -131,20 +145,26 @@
               </ion-item>
               <ion-item>
                 <ion-icon name="code-outline" slot="start"></ion-icon>
-                <ion-label><strong>Version:</strong> {{ machine.versionId || 'N/A' }}</ion-label>
+                <ion-label><strong>Version:</strong> {{ machine.versionId }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
-                <ion-label><strong>Device:</strong> {{ machine.device || 'Unknown' }}</ion-label>
+                <ion-label><strong>Device:</strong> {{ machine.device }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>Data:</strong> {{ machine.data || '{}' }}</ion-label>
+                <ion-label><strong>Data:</strong> {{ machine.data }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
                   <ion-icon slot="start" name="thermometer-outline"></ion-icon>
                   Logs
+                </ion-button>
+              </ion-item>
+              <ion-item>
+                <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
+                  <ion-icon slot="start" name="settings-outline"></ion-icon>
+                  Settings
                 </ion-button>
               </ion-item>
             </ion-list>

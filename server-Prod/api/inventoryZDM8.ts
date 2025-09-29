@@ -4709,7 +4709,7 @@ export class InventoryZDM8 implements IBaseClass {
         const m = new Array<{ machine: any, status: any }>();
         for (let index = 0; index < this.wsClient.length; index++) { m.push({ machine: this.findMachineId(this.wsClient[index]['machineId']), status: await readMachineStatus(this.wsClient[index]['machineId']) }); }
         return m;
-    }
+    } 
     findOnlneMachine(machineId: string): any {
         return this.wsClient.find((v) => {
             if (machineId == v['machineId']) {
