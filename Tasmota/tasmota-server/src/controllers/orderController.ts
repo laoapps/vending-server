@@ -147,8 +147,7 @@ export const createOrderHMVending = async (req: Request, res: Response) => {
       relay,
     } as any);
 
-    // const token = req.headers.authorization?.split(' ')[1];
-    const qr = await generateQR(order.dataValues.id, schedulePackage.dataValues.price, 'vending');
+    const qr = await generateQR(order.dataValues.id, schedulePackage.dataValues.price, req.headers['token'] + '', true);
     console.log('createOrderHMVending==========111', qr);
 
     // await redis.setex(`qr:${qr}`, 5 * 60, order.dataValues.id.toString());

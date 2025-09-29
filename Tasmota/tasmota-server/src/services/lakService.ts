@@ -41,12 +41,12 @@ export function updateLAXUserBalance(data: any, token: string): Promise<any> {
     }
   });
 }
-export function generateQR(orderID: number, value: number, token: string): Promise<any> {
+export function generateQR(orderID: number, value: number, token: string, fromvending: boolean=false): Promise<any> {
   return new Promise<any>(async (resolve, reject) => {
     try {
-      const data = { orderID ,path: 'orders/pay', txnAmount: value }
-      let vending:any = null
-      if(token=='vending'){
+      const data = { orderID, path: 'orders/pay', txnAmount: value }
+      let vending: any = null
+      if (fromvending == true) {
         vending = 'true'
       }
       const res = await axios.post("https://laabx-api.laoapps.com/api/v1/laab/genMmoneyQR_tasmota", data, { headers: { 'Content-Type': 'application/json', 'token': token, 'vending': vending } });
