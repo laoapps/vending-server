@@ -337,6 +337,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   async autoSubmit(form: any) {
 
     if (this.phone?.length === 8 && form.valid) {
+
       clearInterval(this.countdownDestroyTimer);
       this.countdownDestroy = 60;
       this._processLoopDestroyLastest(this.phone);
