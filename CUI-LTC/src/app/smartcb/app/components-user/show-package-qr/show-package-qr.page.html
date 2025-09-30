@@ -1,0 +1,131 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" class="icon-smartcb" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Show Pagekets</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding list-container">
+  <ion-grid>
+    <ion-row *ngIf="schedulePackages.length > 0; else noData">
+      <ion-col 
+        size="6" 
+        size-sm="6" 
+        size-md="4" 
+        size-lg="3" 
+        size-xl="2" 
+        *ngFor="let item of schedulePackages; let i = index"
+      >
+        <ion-card (click)="onClick(item)" class="package-card">
+          <div class="package-img-wrapper">
+            <img [src]="return_pic(item)" alt="{{item.name}}" class="package-img" />
+          </div>
+          <ion-card-content>
+            <h2 class="package-name">{{ item.name }}</h2>
+            <p class="package-price">Price: <strong>{{ item.price | number }}</strong></p>
+            <p class="package-condition">
+              Condition: 
+              <span class="condition-type">{{ item.conditionType }}</span> = 
+              <span class="condition-value">{{ item.conditionValue }}</span>
+            </p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  
+    <ng-template #noData>
+      <ion-row>
+        <ion-col>
+          <p class="no-data-text">No packages available</p>
+        </ion-col>
+      </ion-row>
+    </ng-template>
+
+    <div class="laab-card-footer">
+      <div class="title">
+        Option payment
+      </div>
+      <div class="item-list">
+        <a *ngFor="let list of paymentList; let i = index"
+          href="javascript:void(0)" class="item active">
+          <div class="icon">
+            <img src="{{ list.image }}" alt="">
+          </div>
+          <div class="text">{{ list.name }}</div>
+        </a>
+      </div>
+    
+  
+    
+      <div *ngIf="true" class="payment-list-right">
+    
+        <div class="bill-container">
+          <div *ngIf="isPayment == true" class="bill-wave-top">
+            <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+          </div>
+          <div class="bill-header">
+            <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
+              class="qr-img">
+            <div *ngIf="isPayment == false" class="loader"></div>
+    
+            <div class="total">{{ parseGetTotalSale.t | number }}</div>
+    
+          </div>
+        </div>
+      </div>
+    
+      <!-- <div class="main-top"></div> -->
+      <div class="div-content">
+        <div class="div-qr-code">
+          <ion-label class="label_name">Devices number: {{data_device?.tasmotaId || data_device}}</ion-label>
+          <!-- <ion-label class="label_name">Pagekets: {{data_pageket?.price | number}}</ion-label> -->
+          <div *ngIf="qrcode_logo" style="display: flex;justify-content: center;margin-top: 15px;">
+            <img src="{{qrcode_logo}}" alt="" >
+          </div>
+    
+          <div style="display: flex;flex-direction: row;margin-top: 15px;">
+            <ion-label class="label_name">currency:</ion-label>
+            <ion-label class="label_name name-currency">LAO QR CODE</ion-label>
+          </div>
+          <div *ngIf="isPayment == true"
+          style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;">
+          ໜ້ານີ້ຈະປິດພາຍໃນ {{
+          countdownDestroy }} ວິນາທີ </div>
+        </div>
+      </div>
+    </div>
+    <div class="marquee-container">
+      <div class="marquee-content">
+        <p>
+          💳 English: Please do not close this window. If you have made a payment, it will be completed within 60
+          seconds.
+          📞 For support, call or WhatsApp +8562055516321 if you did not receive the product.
+        </p>
+        <p>
+          💳 Lao: ກະລຸນາຢ່າປິດຫນ້າຈໍນີ້ ຖ້າຈ່າຍເງິນແລ້ວ ຈະດຳເນີນການໃນ 60 ວິນາທີ.
+          📞 WhatsApp +8562055516321 ຖ້າບໍ່ໄດ້ຮັບສິນຄ້າ.
+        </p>
+        <p>
+          💳 Thai: กรุณาอย่าปิดหน้านี้ หากชำระเงินแล้ว ระบบจะดำเนินการใน 60 วินาที.
+          📞 โทรหรือ WhatsApp +8562055516321 หากไม่ได้รับสินค้า.
+        </p>
+        <p>
+          💳 Vietnamese: Vui lòng không đóng cửa sổ này. Nếu đã thanh toán, quá trình sẽ hoàn tất trong 60 giây.
+          📞 Gọi hoặc WhatsApp +8562055516321 nếu không nhận được sản phẩm.
+        </p>
+        <p>
+          💳 Chinese: 请不要关闭此窗口。如果您已付款，系统将在60秒内完成处理。
+          📞 如未收到商品，请拨打电话或WhatsApp +8562055516321。
+        </p>
+      </div>
+    </div>
+  </ion-grid>
+
+
+ 
+  
+</ion-content>

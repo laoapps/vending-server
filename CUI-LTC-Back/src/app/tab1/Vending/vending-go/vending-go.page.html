@@ -1,0 +1,54 @@
+<ion-content>
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">Pay Method</div>
+      <div class="sub-title">Choose your payment options</div>
+
+      <!-- <div class="cash-balance">{{ apiService.cash.amount | number }}</div> -->
+    </div>
+    <div class="laab-card-body">
+      <!-- LAO -->
+      <a (click)="buyManyMMoney()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-mmoney-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/mmoney-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">M-Money Go</div>
+          <div class="sub-title">Pay your order by M-Money QR Code {{ total | number }}</div>
+        </div>
+      </a>
+      <a (click)="laabGo()" href="javascript:void(0)" class="btn-option control-menu menu-cashout-laab-account active">
+        <div class="left">
+          <div class="icon">
+            <img class="img-box" src="../../../../assets/logo/LAAB-logo.png" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="title">LAAB Go</div>
+          <div class="sub-title">Pay your order {{ total | number }}</div>
+        </div>
+      </a>
+
+    </div>
+
+
+
+
+
+    
+
+
+  </div>
+
+</ion-content>

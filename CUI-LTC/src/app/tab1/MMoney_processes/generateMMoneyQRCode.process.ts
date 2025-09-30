@@ -27,8 +27,8 @@ export class GenerateMMoneyQRCodeProcess {
         return new Promise<any>(async (resolve, reject) => {
             try {
 
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
                 this.InitParams(params);
 
@@ -38,7 +38,7 @@ export class GenerateMMoneyQRCodeProcess {
                 const GenerateQRCode = await this.GenerateQRCode();
                 console.log(`zzzz`, GenerateQRCode);
                 // if (GenerateQRCode != IENMessage.success) throw new Error(GenerateQRCode);
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
 
                 if (GenerateQRCode != IENMessage.success) {
                     // this.apiService.toast.create({ message: GenerateQRCode, duration: 3000 }).then(toast => toast.present());
@@ -50,7 +50,7 @@ export class GenerateMMoneyQRCodeProcess {
                 resolve(this.Commit());
 
             } catch (error) {
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
                 resolve(error.message);
             }
         });
@@ -75,7 +75,8 @@ export class GenerateMMoneyQRCodeProcess {
         return new Promise<any>(async (resolve, reject) => {
             try {
 
-                this.apiService.buyMMoney(this.orders, this.amount, this.machineId).subscribe(r => {
+                this.apiService.buyMMoney(this.orders, this.amount, this.machineId).then(rx => {
+                    const r = rx.data;
                     const response: any = r;
                     console.log(`response generate MMoney`, response);
                     if (response.status != 1) {

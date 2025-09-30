@@ -29,13 +29,16 @@
 
 <ion-content>
 
-  <iframe src="https://giphy.com/embed/0eEWDd8oEj6VCgMtbG" width="150" height="150" frameBorder="0"
-    class="giphy-embed hand-click active" allowFullScreen sandbox="allow-scripts"></iframe>
+  <!-- <iframe src="https://giphy.com/embed/0eEWDd8oEj6VCgMtbG" width="150" height="150" frameBorder="0"
+    class="giphy-embed hand-click active" allowFullScreen sandbox="allow-scripts"></iframe> -->
 
   <div (click)="closeToolTip()" class="tooltip-background active">
     <span class="item">
-      <div class="title"><i class="fa-solid fa-ticket"></i> Select Ticket</div>
-      <div class="sub-title">Please select your ticket that will process and drop product</div>
+      <div class="title"><i class="fa-solid fa-ticket"></i> ຖ້າເຄື່ອງບໍ່ຕົກພາຍໃນ 10ວິນາທີ ໂທ 55516321</div>
+      <div class="sub-title">
+        <p>If you do not receive the product, please call 55516321. <br> 如果您没有收到商品，请致电 55516321。<br> Nếu
+          bạn không nhận được hàng, vui lòng gọi 55516321.</p>
+      </div>
       <div class="control">
         <div class=""></div>
         <div class="right">
@@ -57,15 +60,27 @@
         </a> -->
       </div>
     </div>
+    <div *ngIf="apiService.allowTopUp" class="row-container">
+      <div class="video-container">
+        <video #videoPlayer autoplay muted playsinline></video>
+      </div>
+      <div class="image-container">
+        <img src="../../assets/topup/bannertopup.jpeg" alt="Preview" />
+      </div>
+    </div>
+
     <div class="laab-card-header">
       <div class="title">Tickets</div>
       <div class="sub-title">Choose any ticket for receive your order</div>
     </div>
+    <!-- <div>test</div> -->
+
+
+
+
     <div class="laab-card-body">
 
-      <div *ngFor="let s of r; let i = index"
-        (click)="retryProcessBillNew(s.transactionID+'',s.position,s.ownerUuid,s.bill.transactionID+'',true)"
-        href="javascript:void(0)" class="item">
+      <div *ngFor="let s of r; let i = index" href="javascript:void(0)" class="item">
         <div class="content">
           <div class="icon">
             <img [src]="apiService?.imageList[findImage(getStock(s?.position)?.id)]" alt="">

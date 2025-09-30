@@ -11,6 +11,7 @@ import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { VendingIndexServiceService } from './vending-index-service.service';
 import { LiveupdateService } from './liveupdate.service';
 import { CloseStytemPage } from './close-stytem/close-stytem.page';
+import { IdleService } from './services/idle.service';
 
 
 @Component({
@@ -48,7 +49,8 @@ export class AppComponent {
     private platform: Platform,
     public vendingIndex: VendingIndexServiceService,
     private liveUpdateService: LiveupdateService,
-    private debugService: DebugService
+    private debugService: DebugService,
+    private idleService: IdleService
   ) {
     this.debugService.addDebugMessage('App initialized');
     this.platform.ready().then(() => {

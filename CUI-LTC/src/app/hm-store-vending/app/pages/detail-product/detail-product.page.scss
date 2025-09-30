@@ -1,0 +1,81 @@
+.product-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .product-image {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .product-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  
+  .product-price {
+    font-size: 28px;
+    // color: var(--ion-color-primary);
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  
+  .product-description {
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+  
+  .add-to-cart {
+    font-size: 16px;
+    --border-radius: 8px;
+  }
+
+  .alert-noti{
+    margin: 20px 0px;
+    font-size: 22px;
+  }
+
+
+
+  ion-content{
+    --background: linear-gradient(135deg, #1e3c72, #2a5298); /* subtle gradient */
+    // --background: linear-gradient(135deg, #0f2027, #2c5364);
+    }
+
+.title {
+	font-size: 20px;
+	font-weight: bold;
+	color: #fff;
+	text-transform: uppercase;
+  }
+
+  .qty-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px 0;
+    padding: 10px;
+  }
+  
+  .qty {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 12px;
+    color: #fff;
+  }
+
+  ion-chip{
+    font-size: 22px;
+    color: #fff;
+    padding: 30px;
+  }
+  

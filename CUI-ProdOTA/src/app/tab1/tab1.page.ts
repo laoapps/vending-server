@@ -102,8 +102,6 @@ export class Tab1Page implements OnDestroy {
   readyState = false;
   contact = localStorage.getItem('contact') || '55516321';
   menus = [];
-  isFlipped = false;
-  private subscription: Subscription;
 
 
   serial: ISerialService;
@@ -121,7 +119,7 @@ export class Tab1Page implements OnDestroy {
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial;
 
-  adsList: any = localStorage.getItem('adsList') || [];
+  // adsList: any = localStorage.getItem('adsList') || [];
 
   connecting = false;
 
@@ -188,7 +186,7 @@ export class Tab1Page implements OnDestroy {
 
   isRobotMuted = localStorage.getItem('isRobotMuted') ? true : false;
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
-  isAds = localStorage.getItem('isAds') ? true : false;
+  // isAds = localStorage.getItem('isAds') ? true : false;
 
   qrMode = localStorage.getItem('qrMode') ? true : false;
 
@@ -466,7 +464,7 @@ export class Tab1Page implements OnDestroy {
     private vendingIndex: VendingIndexServiceService,
     private serialService: SerialServiceService,
     private dbService: DatabaseService,
-    private videoCacheService: VideoCacheService,
+    // private videoCacheService: VideoCacheService,
     public router: Router
   ) {
 
@@ -686,14 +684,6 @@ export class Tab1Page implements OnDestroy {
   }
 
   async ngOnInit() {
-    this.subscription = interval(5000).subscribe(() => {
-
-      this.isFlipped = !this.isFlipped;
-      console.log('Init isFlipped :', this.isFlipped);
-
-    });
-
-
 
 
     // window.addEventListener('beforeunload', async (event) => {
@@ -945,37 +935,37 @@ export class Tab1Page implements OnDestroy {
           //   this.checkLiveUpdate(r.versionId);
           // }
 
-          if (this.areArraysDifferentUnordered(this.adsList ?? [], r.adsList ?? [])) {
-            try {
-              const result = this.getReplacements(this.adsList ?? [], r.adsList ?? []);
-              this.adsList = r.adsList;
-              localStorage.setItem('adsList', JSON.stringify(this.adsList));
-              console.log('Update adsList to', this.adsList);
+          // if (this.areArraysDifferentUnordered(this.adsList ?? [], r.adsList ?? [])) {
+          //   try {
+          //     const result = this.getReplacements(this.adsList ?? [], r.adsList ?? []);
+          //     this.adsList = r.adsList;
+          //     localStorage.setItem('adsList', JSON.stringify(this.adsList));
+          //     console.log('Update adsList to', this.adsList);
 
-              console.log('result', result);
-              if (result.remove.length > 0) {
-                // this.apiService.removeAds(result.remove);
-                for (let index = 0; index < result.remove.length; index++) {
-                  const element = result.remove[index];
-                  await this.videoCacheService.deleteCachedVideo(element);
-                  console.log('remove ads', element);
+          //     console.log('result', result);
+          //     if (result.remove.length > 0) {
+          //       // this.apiService.removeAds(result.remove);
+          //       for (let index = 0; index < result.remove.length; index++) {
+          //         const element = result.remove[index];
+          //         await this.videoCacheService.deleteCachedVideo(element);
+          //         console.log('remove ads', element);
 
-                }
-              }
-              if (result.add.length > 0) {
-                // this.apiService.addAds(result.add);
-                for (let index = 0; index < result.add.length; index++) {
-                  const element = result.add[index];
-                  await this.videoCacheService.getCachedVideoBase64(element);
-                  console.log('add ads', element);
-                }
-              }
+          //       }
+          //     }
+          //     if (result.add.length > 0) {
+          //       // this.apiService.addAds(result.add);
+          //       for (let index = 0; index < result.add.length; index++) {
+          //         const element = result.add[index];
+          //         await this.videoCacheService.getCachedVideoBase64(element);
+          //         console.log('add ads', element);
+          //       }
+          //     }
 
-            } catch (error) {
-              console.log('Error getReplacements', error);
-            }
+          //   } catch (error) {
+          //     console.log('Error getReplacements', error);
+          //   }
 
-          }
+          // }
 
           if (this.selectedDevice == 'VMC') {
             // set allow cashIn
@@ -1107,11 +1097,11 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.refreshAll);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
 
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      console.log('ngOnDestroy isFlipped :', this.isFlipped);
+    // if (this.subscription) {
+    //   this.subscription.unsubscribe();
+    //   console.log('ngOnDestroy isFlipped :', this.isFlipped);
 
-    }
+    // }
     if (this.serial) {
       this.serial?.close();
       console.log('serial closed');

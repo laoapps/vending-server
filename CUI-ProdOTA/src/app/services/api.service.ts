@@ -92,6 +92,7 @@ import { VendingIndexServiceService } from '../vending-index-service.service';
 import { IndexdblocalService } from './indexdblocal.service';
 import { IndexerrorService } from '../indexerror.service';
 import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
+import { VideoCacheService } from '../video-cache.service';
 
 var REQUEST_TIME_OUT = 10000;
 
@@ -246,6 +247,11 @@ export class ApiService {
 
   isDropStock: boolean = false;
 
+  isAds: boolean = false;
+
+  adsList: any = localStorage.getItem('adsList') || [];
+
+
   isRemainingBillsModalOpen: boolean = false;
 
   secret?: string;
@@ -291,7 +297,24 @@ export class ApiService {
 
   allowTopUp = false;
 
+  areArraysDifferentUnordered(arr1: string[], arr2: string[]): boolean {
+    if (arr1.length !== arr2.length) return true;
 
+    const sorted1 = [...arr1].sort();
+    const sorted2 = [...arr2].sort();
+
+    return !sorted1.every((val, idx) => val === sorted2[idx]);
+  }
+
+  getReplacements(a1: string[], a2: string[]) {
+    a1 = Array.isArray(a1) ? a1 : [];
+    a2 = Array.isArray(a2) ? a2 : [];
+
+    const removed = a1.filter(value => !a2.includes(value));
+    const added = a2.filter(value => !a1.includes(value));
+
+    return { remove: removed, add: added };
+  }
 
   checkAppVersion: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(
@@ -308,8 +331,13 @@ export class ApiService {
     public IndexeLocaldDB: IndexdblocalService,
     public IndexedLogDB: IndexerrorService,
     public load: LoadingController,
-    public alert: AlertController
+    public alert: AlertController,
+    private videoCacheService: VideoCacheService,
+
   ) {
+
+
+
 
 
     if (!localStorage.getItem('remoteProcess')) localStorage.setItem('remoteProcess', 'yes');
@@ -333,7 +361,7 @@ export class ApiService {
 
     let pendingstock = [];
     let pendingstockcount = 0;
-    this.wsapi.aliveSubscription.subscribe(r => {
+    this.wsapi.aliveSubscription.subscribe(async r => {
       console.log('PING2');
       IndexedLogDB.clearAllBillProcesses();
       console.log('ALIVE', r);
@@ -341,7 +369,11 @@ export class ApiService {
 
       try {
         if (!r) return console.log('empty');
+        const rSetting = r?.data?.setting;
+
         this.allowTopUp = r?.data?.setting?.isTopUp ?? false;
+        this.isAds = r?.data?.setting?.isAds ?? false;
+
         console.log('ws alive subscription', that.cash, r);
         // console.log('message :', r?.message);
 
@@ -351,6 +383,7 @@ export class ApiService {
           return;
 
         }
+
         this.secret = r?.data?.secret ?? null;
         console.log('-----> SECRET :', this.secret);
 
@@ -363,6 +396,39 @@ export class ApiService {
           this.myTab1.manageStockByQR();
 
           return;
+        }
+
+
+        if (this.areArraysDifferentUnordered(this.adsList ?? [], rSetting.adsList ?? [])) {
+          try {
+            const result = this.getReplacements(this.adsList ?? [], rSetting.adsList ?? []);
+            this.adsList = rSetting.adsList;
+            localStorage.setItem('adsList', JSON.stringify(this.adsList));
+            console.log('Update adsList to', this.adsList);
+
+            console.log('result', result);
+            if (result.remove.length > 0) {
+              // this.apiService.removeAds(result.remove);
+              for (let index = 0; index < result.remove.length; index++) {
+                const element = result.remove[index];
+                await this.videoCacheService.deleteCachedVideo(element);
+                console.log('remove ads', element);
+
+              }
+            }
+            if (result.add.length > 0) {
+              // this.apiService.addAds(result.add);
+              for (let index = 0; index < result.add.length; index++) {
+                const element = result.add[index];
+                await this.videoCacheService.getCachedVideoBase64(element);
+                console.log('add ads', element);
+              }
+            }
+
+          } catch (error) {
+            console.log('Error getReplacements', error);
+          }
+
         }
 
         this.checkIsDropStock();

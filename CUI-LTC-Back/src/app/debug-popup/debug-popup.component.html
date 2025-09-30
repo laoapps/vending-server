@@ -1,0 +1,21 @@
+<ion-card
+  *ngIf="isVisible"
+  class="debug-popup"
+  [ngStyle]="{'top.px': position.y, 'left.px': position.x}"
+  (mousedown)="startDrag($event)"
+  (touchstart)="startDrag($event)"
+>
+  <ion-card-header>
+    <ion-card-title>Debug Console</ion-card-title>
+    <ion-button fill="clear" class="close-btn" (click)="closePopup()">
+      <ion-icon name="close"></ion-icon>
+    </ion-button>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-item *ngFor="let message of debugMessages">
+        {{ message }}
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+</ion-card>

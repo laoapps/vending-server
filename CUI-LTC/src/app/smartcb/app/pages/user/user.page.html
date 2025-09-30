@@ -1,0 +1,146 @@
+<!-- <ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon class="icon_logout" slot="icon-only" name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Menu</ion-title>
+  </ion-toolbar>
+</ion-header> -->
+
+<!-- <ion-content class="ion-no-padding menu-page">
+  <ion-card class="profile-card">
+    <ion-card-content class="profile-content">
+      <ion-avatar class="profile-avatar">
+        <img src="../../../../../assets/icon-smartcb/user-profile.png" alt="User Avatar" />
+      </ion-avatar>
+      <div class="profile-info">
+        <h2 class="user-name">{{ phonenumber }}</h2>
+        <p class="user-email">Standard User</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-grid class="menu-grid">
+    <ion-row>
+      <ion-col size="6" *ngFor="let item of menus">
+        <ion-card class="menu-card" button (click)="onClick(item)">
+          <ion-card-content class="menu-card-content">
+            <ion-icon [name]="item.icon" class="menu-icon"></ion-icon>
+            <h3 class="menu-title">{{ item.title }}</h3>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content> -->
+
+<!-- <ion-content>
+  <ion-grid>
+    <ion-row class="ion-justify-content-cneter">
+      <ion-col size="12" *ngFor="let item of all_gorup; let i = index">
+        <ion-card class="card-all">
+          <div class="div-in-card-group">
+            <img width="100px" height="100px" src="{{return_pic(item)}}" alt="">
+            <ion-card-content>
+              <ion-label>
+                {{item.name}}
+              </ion-label>
+            </ion-card-content>
+          </div>
+
+          <ion-grid>
+            <ion-row class="ion-justify-content-cneter">
+              <ion-col size="12" size-sm="6" size-md="4" size-lg="3" size-xl="2" *ngFor="let item of all_gorup; let i = index">
+                <ion-card>
+                  <img src="{{return_pic(item)}}" alt="">
+                  <ion-card-content>
+                    <ion-label>
+                      {{item.name}}
+                    </ion-label>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content> -->
+
+<!-- ===================================== -->
+
+<ion-content class="ion-padding groups-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content refreshingSpinner="circles"> </ion-refresher-content>
+  </ion-refresher>
+    <!-- Top Header -->
+    <div class="top-header">
+      <img src="../../../../../assets/icon/logo.png" alt="Logo" class="logo" />
+      <h1 class="app-title">HM smartCB</h1>
+    </div>
+
+    <span class="btn-abs-list"  >
+      <a (click)="openMenu_History()" href="javascript:void(0)" class="item-purple control-menu menu-how-to active">
+        <div class="text">History order</div>
+        <div class="icon">
+          <ion-icon style="color: white;" name="list-outline"></ion-icon>
+        </div>
+      </a>
+      <a (click)="openMenu_order()" href="javascript:void(0)" class="item-blue control-menu menu-how-to active">
+        <div class="text">Menu order</div>
+        <div class="icon">
+          <ion-icon style="color: white;" name="grid-outline"></ion-icon>
+        </div>
+      </a>
+
+      <a (click)="logout()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+        <div class="text">Back to Vending</div>
+        <div class="icon">
+          <ion-icon style="color: white;" name="power-outline"></ion-icon>
+        </div>
+      </a>
+    </span>
+
+  <ion-grid>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="12" *ngFor="let group of all_gorup">
+        <!-- Main Group Card -->
+        <ion-card class="group-card">
+          <div class="group-header">
+            <img [src]="return_pic(group)" alt="Group Image" class="group-image" />
+            <div class="group-info">
+              <h2 class="group-title">{{ group?.name }}</h2>
+              <ion-label>ສະຖານທີ: {{group?.name}}
+              </ion-label>
+            </div>
+          </div>
+
+          <!-- Sub Items Grid -->
+          <ion-grid>
+            <ion-row class="ion-justify-content-start">
+              <ion-col 
+                size="6" size-sm="6" size-md="4" size-lg="3" size-xl="2" 
+                *ngFor="let device of group?.data_device">
+                
+                <ion-card class="sub-card" button (click)="onClick_menu_sub(device,group)">
+                  <div class="image-wrapper">
+                    <img [src]="return_pic(device)" alt="Sub Image" class="sub-image" />
+                    <span class="using-badge" *ngIf="device?.using">Using now</span>
+                  </div>
+                  <ion-card-content>
+                    <p class="sub-title">{{ device?.name }}</p>
+                  </ion-card-content>
+                </ion-card>
+
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

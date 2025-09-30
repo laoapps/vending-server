@@ -1,0 +1,167 @@
+.laab-card {
+    margin: 10px;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    // background: #EE3124;
+    background: rgb(255,255,255);
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(238,49,36,0.7161239495798319) 0%, rgba(214,43,31,1) 100%, rgba(255,255,255,1) 100%);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+    padding: 10px;
+    overflow: hidden;
+
+    .laab-card-options {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+
+       .right {
+            .btn-close-modal {
+                color: #fff;
+                text-decoration: none;
+            }
+       }
+    }
+
+    .laab-card-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: start;
+        color: #fff;
+
+        .title {
+            font-size: 35px;
+            font-weight: bold;
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        .cash-balance {
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 30px;
+            letter-spacing: 4px;
+            font-weight: 300;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+
+            span {
+                font-size: 14px;
+                display: flex;
+                position: relative;
+                padding-left: 10px;
+                top: 3px;
+            }
+        }
+
+
+
+    }
+    .laab-card-body {
+        margin-top: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: scroll;
+        max-height: 500px;
+        min-height: 500px;
+        padding-bottom: 75px;
+ 
+        .btn-option {
+            gap: 15px;
+
+            // background: rgb(255,255,255);
+            // background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,161,161,1) 0%, rgba(238,49,36,1) 100%, rgba(255,255,255,1) 100%);
+
+            background: rgb(255,255,255);
+            background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,161,161,1) 0%, rgba(238,49,36,1) 100%, rgba(255,255,255,1) 100%);
+
+            // background: rgb(255,255,255);
+            // background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(238,49,36,1) 0%, rgba(255,161,161,1) 100%, rgba(255,255,255,1) 100%);
+            
+            min-height: 140px;
+            max-height: 140px;
+
+            border-radius: 8px;
+            padding: 10px;
+            text-decoration: none;
+            box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+            transition: .2s;
+            overflow: hidden;
+
+            .left {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100px;
+                
+                .icon {
+                    img {
+                        width: 200px;
+                        height: 50px;
+                    }
+
+                    .img-box {
+                        width: 200px;
+                        height: 100px;
+                    }
+                }
+            } 
+
+            .right {
+                display: flex;
+                flex-direction: column;
+
+                .title {
+                    font-weight: bold;
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #fff;
+        
+                }
+
+                .sub-title {
+                    font-size: 14px;
+                    font-weight: 300;
+                    color: #fff;
+                }
+
+                .stack-cashout-comming-soon {
+                    background: #F7DC6F;
+                    color: #333;
+                    font-size: 12px;
+                    padding: 0px 5px;
+                    border-radius: 5px;
+                    width: 100px;
+                    text-align: center;
+                }
+            }
+        }
+        .btn-option:hover {
+            // background: rgb(255,255,255);
+            // background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgb(255, 197, 120) 0%, rgb(248, 113, 109) 100%, rgba(255,255,255,1) 100%);
+
+            // background: rgb(255,255,255);
+            // background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,102,102,1) 0%, rgba(226,15,0,1) 100%, rgba(255,255,255,1) 100%);
+        
+            background: rgb(255,255,255);
+            background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,102,102,1) 0%, rgba(226,15,0,1) 100%, rgba(255,255,255,1) 100%);
+
+            // background: #f5f6f7;
+
+            // background: rgb(255,255,255);
+            //     background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(226,15,0,1) 0%, rgba(255,102,102,1) 100%, rgba(255,255,255,1) 100%);
+
+        }
+    }
+    .laab-card-body::-webkit-scrollbar {
+        height: 0;
+        width: 0;
+    }
+}

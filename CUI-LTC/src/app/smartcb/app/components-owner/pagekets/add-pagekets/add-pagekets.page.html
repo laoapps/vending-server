@@ -1,0 +1,104 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>add pagekets</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-no-padding">
+  <ion-card class="form-card">
+    <ion-card-header>
+      <ion-card-title class="title">Create Pageket</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <!-- <div>
+        <ion-label position="floating">Select Thumbnail</ion-label>
+        <input
+          class="form-control"
+          accept="image/jpeg,image/png"
+          type="file"
+          id="bg_add"
+          (change)="onThumbnailFileChange($event)"
+        />
+        <div *ngIf="img_show" class="mt-2">
+          <img [src]="img_show" alt="Thumbnail Preview" class="img_bg" style="max-width: 100%; max-height: 200px;" />
+        <ion-button style="cursor: pointer;text-transform: none;" (click)="clearThumbnail()">Delete Thumbnail</ion-button>
+        </div>
+      </div> -->
+
+      <!-- Thumbnail Upload -->
+      <div class="thumbnail-section">
+        <ion-label>Select Thumbnail</ion-label>
+        <input
+          hidden
+          type="file"
+          accept="image/*"
+          id="thumbnailInput"
+          (change)="onThumbnailFileChange($event)"
+        />
+
+        <div *ngIf="img_show; else uploadBtn" class="thumbnail-preview">
+          <img [src]="img_show" alt="Thumbnail Preview" />
+          <ion-fab vertical="top" horizontal="end" slot="fixed">
+            <ion-fab-button size="small" color="danger" (click)="clearThumbnail()">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-fab-button>
+          </ion-fab>
+        </div>
+
+        <ng-template #uploadBtn >
+          <div style="display: flex;justify-content: center;align-items: center;">
+            <ion-button expand="block" shape="round" style="width: 50%;" (click)="triggerFileInput()">
+              <ion-icon slot="start" name="image-outline"></ion-icon>
+              Upload Thumbnail
+            </ion-button>
+          </div>
+        </ng-template>
+      </div>
+
+      <ion-item class="input-item">
+        <ion-label position="floating">Name</ion-label>
+        <ion-input type="text" [(ngModel)]="newSchedulePackage.name"></ion-input>
+      </ion-item>
+
+      <ion-item class="input-item">
+        <ion-label position="floating">Price (kip)</ion-label>
+        <ion-input type="number" [(ngModel)]="newSchedulePackage.price"></ion-input>
+      </ion-item>
+
+      <ion-item class="input-item">
+        <ion-label>Condition Type</ion-label>
+        <ion-select [(ngModel)]="newSchedulePackage.conditionType" interface="popover" placeholder="Select Type">
+          <ion-select-option value="time_duration">Time Duration</ion-select-option>
+          <ion-select-option value="energy_consumption">Energy Consumption</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item class="input-item" *ngIf="newSchedulePackage.conditionType == 'time_duration'">
+        <ion-label position="floating">Condition Value (Minutes)</ion-label>
+        <ion-input type="number" [(ngModel)]="newSchedulePackage.conditionValue"></ion-input>
+      </ion-item>
+
+      <ion-item class="input-item" *ngIf="newSchedulePackage.conditionType == 'energy_consumption'">
+        <ion-label position="floating">Condition Value (Kwh)</ion-label>
+        <ion-input type="number" [(ngModel)]="newSchedulePackage.conditionValue"></ion-input>
+      </ion-item>
+
+      <ion-button *ngIf="title == 'add'" expand="block" shape="round" color="primary" class="add-button" (click)="addSchedulePackage()">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Add Pageket
+      </ion-button>
+      <ion-button *ngIf="title == 'edit'" expand="block" shape="round" color="warning" class="add-button" (click)="editSchedulePackage()">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Edit Pageket
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+

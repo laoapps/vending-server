@@ -1,0 +1,142 @@
+<ion-content>
+
+  <div *ngIf="showPhonenumberPage == true" class="phone-payment-phonenumber-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">Phone Payment</div>
+      <div class="sub-title">{{ subtitle }}</div>
+
+    </div>
+    <div class="laab-card-body">
+      <div class="cash-balance">{{ apiService.cash.amount | number }}</div>
+     <div class="balance-text">{{ phonenumber }}</div>
+     <div class="number-list">
+      <div class="left">
+        <a *ngFor="let list of numberList; let i = index" (click)="processDigits(list)" href="javascript:void(0)" class="item">{{ list }}</a>
+        <div class=""></div>
+        <a (click)="processDigits('0')" href="javascript:void(0)" class="item">0</a>
+        <div class=""></div>
+      </div>
+      <div class="right">
+        <a (click)="deleteDigits()" href="javascript:void(0)" class="item"><i class="fa-solid fa-trash-can"></i> Delete</a>
+        <a (click)="next()" href="javascript:void(0)" class="item"><i class="fa-solid fa-arrow-right"></i> Next</a>
+
+      </div>
+    </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="showPaymentPage == true" class="phone-payment-payment-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="back()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">Phone Payment</div>
+      <div class="sub-title">{{ subtitle }}</div>
+
+
+      <div class="list-display">
+        <div class="left">
+          <div class="logo">
+            <img src="{{ currentImage }}" alt="">
+          </div>
+        </div>
+        <div class="right">
+          <div class="form-group">
+            <div class="item">
+              <div class="text">Vending Balance</div>
+              <div class="value"><i class="fa-solid fa-wallet"></i> {{ apiService.cash.amount | number }}</div>
+            </div>
+            <div class="item">
+              <div class="text">Phone Number</div>
+              <div class="value"><i class="fa-solid fa-mobile-screen-button"></i> {{ phonenumber }}</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="item">
+              <div class="text">Amount</div>
+              <div class="value"><i class="fa-solid fa-money-bill-transfer"></i> {{ amount | number }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="laab-card-body">
+
+      <div class="money-list">
+        <a *ngFor="let list of moneyList; let i = index" (click)="selectAmount(list)" href="javascript:void(0)" class="item">{{ list }}</a>
+      </div>
+
+    </div>
+
+    <div class="laab-card-footer">
+      <div class="btn-options">
+        <div class=""></div>
+        <div class=""></div>
+        <a (click)="openCustomAmountPage()" href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-keyboard" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">Custome</div>
+            <div class="sub-text">custome payment amount </div>
+          </div>
+        </a>
+        <a (click)="confirm()" href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Confirm</div>
+            <div class="sub-text">confirm phone payment</div>
+          </div>
+          <div class="right">
+            <i class="fa-solid fa-circle-check" style="color: #fff;"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="showCustomAmountPage == true" class="phone-payment-phonenumber-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="closeCustomAmountPage()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+
+    <div class="laab-card-body">
+     <div class="balance-text">{{ customAmount }}</div>
+     <div class="number-list">
+      <div class="left">
+        <a *ngFor="let list of customAmountNumberList; let i = index" (click)="processCustomAmountDigits(list)" href="javascript:void(0)" class="item">{{ list }}</a>
+        <div class=""></div>
+        <a (click)="processCustomAmountDigits('0')" href="javascript:void(0)" class="item">0</a>
+        <div class=""></div>
+      </div>
+      <div class="right">
+        <a (click)="deleteCustomDigits()" href="javascript:void(0)" class="item"><i class="fa-solid fa-trash-can"></i> Delete</a>
+        <a (click)="confirmCustomAmount()" href="javascript:void(0)" class="item"><i class="fa-solid fa-arrow-right"></i> Confirm</a>
+
+      </div>
+    </div>
+    </div>
+
+  </div>
+
+</ion-content>

@@ -75,7 +75,8 @@ export class GetMMoneyUserInfoProccess {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                this.apiService.getMMoneyUserInfo(this.phonenumber).subscribe(r => {
+                this.apiService.getMMoneyUserInfo(this.phonenumber).then(rx => {
+                    const r = rx.data;
                     const response: any = r;
                     console.log(`response`, response);
                     if (response.status == 1 && response.data.responseCode != '0000' || response.status != 1) return resolve(IENMessage.notFoundYourMMoneyAccount);

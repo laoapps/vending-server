@@ -1,0 +1,125 @@
+.form-card {
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #222;
+  padding: 8px 0;
+}
+
+.input-item {
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+  margin-top: 12px;
+  border-radius: 12px;
+  --background: #f8f9fa;
+}
+
+ion-select {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.add-button {
+  margin-top: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+
+//  ================map
+
+.profile-box img{
+  width: 130px;
+  height: 130px;
+}
+.img-fluid {
+max-width: 100%;
+height: auto;
+}
+.rounded-circle {
+border-radius: 50% !important;
+}
+.icon-l{
+font-size: larger;
+margin-right: 5px;
+}
+.cell-class{
+border-color: rgb(231, 231, 231); 
+border-width: 0px 1px 0px 0px; 
+border-style:solid; 
+}
+.b-top{
+border-color: rgb(231, 231, 231); 
+border-width: 1px 0px 0px 0px; 
+border-style:solid; 
+}
+.border{
+border-radius: 10px;
+border: 1px solid #DEDEDE;
+margin-bottom: 15px;
+border-bottom: 2px solid var(--ion-color-primary);
+
+}
+.icon{
+font-size: xx-large;
+}
+.back-icon{
+font-size: x-large;
+}
+.card-title{
+font-size: larger;
+font-weight: bold;
+}
+
+// * {
+// // "BoonHome",
+// font-family: "Noto Sans Lao", "saysettha OT" !important;
+// }
+
+.mylo {
+// background-color: #ffffff;
+position: absolute;
+bottom: 230px;
+right: 0px;
+z-index: 9999;
+}
+
+.map {
+position: relative;
+}
+
+
+// =============================
+
+
+.thumbnail-section {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.thumbnail-preview {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-height: 200px;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+
+  ion-fab {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+  }
+}

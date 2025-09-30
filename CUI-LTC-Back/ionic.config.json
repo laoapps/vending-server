@@ -1,0 +1,12 @@
+{
+  "name": "CUI",
+  "integrations": {
+    "capacitor": {
+      "server": {
+        "cleartext": true
+      }
+    }
+  },
+  "type": "angular",
+  "innerHTMLTemplatesEnabled": true
+}

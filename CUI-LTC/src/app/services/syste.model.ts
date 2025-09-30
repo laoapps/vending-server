@@ -937,7 +937,9 @@ export enum EMessage {
     notloggedinyet = "notloggedinyet",
     notsupport = "notsupport",
     billnotfound = "billnotfound",
-    confirmsucceeded = "confirmsucceeded"
+    confirmsucceeded = "confirmsucceeded",
+    openstock = "openstock",
+    clearLocalBill = "clearLocalBill"
 }
 export interface IBase {
     id?: number;
@@ -1009,7 +1011,8 @@ export enum EClientCommand {
     paidLAAB = 'paidLAAB',
     buyLAOQR = "buyLAOQR",
     buyTopUp = "buyTopUp",
-    MACHINE_STATAUS = "MACHINE_STATAUS"
+    MACHINE_STATAUS = "MACHINE_STATAUS",
+    SaveSaleAndDrop = "SaveSaleAndDrop"
 }
 export interface IMachineId {
     machineId: string;
@@ -1022,6 +1025,7 @@ export interface IAlive {
     test: boolean;
     balance: number;
     data: any;
+    message?: string
 }
 
 export interface IClientId {
@@ -1147,5 +1151,9 @@ export interface IBankNote {
     channel: number;
     image: string;
 }
-
+export interface IDropPositionData {
+    ownerUuid: string,
+    transactionID: string,
+    position: number
+}
 // Example usage

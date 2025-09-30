@@ -44,7 +44,6 @@
     </div>
 
     <div class="laab-card-footer">
-
       <div class="payment-list">
         <div *ngIf="true" class="payment-list-left">
 
@@ -60,7 +59,44 @@
 
           </div>
           <!-- src/app/components/payment-message/payment-message.component.html -->
+
           <div class="marquee-container">
+            <!-- ซ้าย: GIF คงที่ -->
+            <div class="marquee-left">
+              <img src="../../../../assets/logo/Mee.gif" alt="payment-gif" />
+            </div>
+
+            <!-- ขวา: ข้อความเลื่อน -->
+            <div class="marquee-right">
+              <div class="marquee-content">
+                <p>
+                  💳 English: Please do not close this window. If you have made a payment, it will be completed within
+                  60
+                  seconds.
+                  📞 For support, call or WhatsApp +8562055516321 if you did not receive the product.
+                </p>
+                <p>
+                  💳 Lao: ກະລຸນາຢ່າປິດຫນ້າຈໍນີ້ ຖ້າຈ່າຍເງິນແລ້ວ ຈະດຳເນີນການໃນ 60 ວິນາທີ.
+                  📞 WhatsApp +8562055516321 ຖ້າບໍ່ໄດ້ຮັບສິນຄ້າ.
+                </p>
+                <p>
+                  💳 Thai: กรุณาอย่าปิดหน้านี้ หากชำระเงินแล้ว ระบบจะดำเนินการใน 60 วินาที.
+                  📞 โทรหรือ WhatsApp +8562055516321 หากไม่ได้รับสินค้า.
+                </p>
+                <p>
+                  💳 Vietnamese: Vui lòng không đóng cửa sổ này. Nếu đã thanh toán, quá trình sẽ hoàn tất trong 60 giây.
+                  📞 Gọi hoặc WhatsApp +8562055516321 nếu không nhận được sản phẩm.
+                </p>
+                <p>
+                  💳 Chinese: 请不要关闭此窗口。如果您已付款，系统将在60秒内完成处理。
+                  📞 如未收到商品，请拨打电话或WhatsApp +8562055516321。
+                </p>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- <div class="marquee-container">
             <div class="marquee-content">
               <p>
                 💳 English: Please do not close this window. If you have made a payment, it will be completed within 60
@@ -84,7 +120,7 @@
                 📞 如未收到商品，请拨打电话或WhatsApp +8562055516321。
               </p>
             </div>
-          </div>
+          </div> -->
 
 
           <!-- <div class="title" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false"

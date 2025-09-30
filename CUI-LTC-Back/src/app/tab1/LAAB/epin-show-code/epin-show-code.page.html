@@ -1,0 +1,27 @@
+<ion-content>
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <!-- <div class="title">EPIN cash out</div> -->
+      <!-- <div class="sub-title">Receive cash by using LAAB EPIN service</div> -->
+
+    </div>
+    <div class="laab-card-body">
+      <div class="qr-container">
+        <img id="qr-img" class="qr-img" src="" alt="">
+      </div>
+      <div class="code-text">{{ code }}</div>
+
+    </div>
+
+  </div>
+
+</ion-content>

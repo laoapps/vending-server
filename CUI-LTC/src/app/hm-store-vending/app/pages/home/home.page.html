@@ -1,0 +1,103 @@
+<ion-content class="ion-padding store-page">
+
+
+  <span class="btn-abs-list"  >
+    <a (click)="open_cart()" href="javascript:void(0)" class="item-blue control-menu menu-how-to active">
+      <div class="text">Go to Cart</div>
+      <div class="icon">
+        <ion-icon style="color: white;" name="cart-outline"></ion-icon>
+        <ion-badge *ngIf="m.cartCount > 0" color="danger" class="cart-badge">{{ m.cartCount }}</ion-badge>
+      </div>
+    </a>
+
+    <a (click)="logout()" href="javascript:void(0)" class="item-red control-menu menu-how-to active">
+      <div class="text">Back to Vending</div>
+      <div class="icon">
+        <ion-icon style="color: white;" name="power-outline"></ion-icon>
+      </div>
+    </a>
+  </span>
+
+  <!-- Top Header -->
+  <div class="top-header">
+    <img src="../../../../../assets/icon-hm-store-vending/logo.png" alt="Logo" class="logo" />
+    <h1 class="app-title">HM store vending</h1>
+  </div>
+
+  <!-- Category Tabs -->
+  <!-- <ion-segment [(ngModel)]="selectedCategory" scrollable class="category-segment">
+    <ion-segment-button *ngFor="let cat of categories" [value]="cat">
+      {{ cat }}
+    </ion-segment-button>
+  </ion-segment> -->
+
+  <div>
+    <div class="store-title">
+      All store
+    </div>
+    <swiper-container
+    #swipper
+    slides-per-view="4"
+    pagination="false"
+    Mousewheel="true"
+    [spaceBetween]="15"
+    [pagination]="{clickable:true,dynamicBullets:true}"
+    >
+      <swiper-slide *ngFor="let item of List_store" class="store-item" >
+        <div class="swiper-zoom-container" style="display: flex;flex-direction: column;padding-top: 5px;" [class.selected]="show_use(item)" (click)="onClick_select_store(item)">
+          <img class="image-page" src="{{item?.pic || '../../../../../../../assets/icon-hm-store-vending/image.png'}}" alt="" />
+          <ion-label class="name-currency">{{item.name}}</ion-label>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+  </div>
+
+  <!-- Product Grid -->
+  <!-- <ion-grid>
+    <ion-row>
+      <ion-col size="6" size-sm="6" size-md="4" size-lg="3" size-xl="2"
+        *ngFor="let item of filteredProducts()">
+        <ion-card class="product-card" button (click)="Click_DetailProduct(item)">
+          <img src="{{item.pic}}" alt="{{item.name}}" class="product-image" />
+          <ion-card-content>
+            <p class="product-title">{{ item.name }}</p>
+            <p class="product-price">{{ item.price | number}} kip</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid> -->
+
+    <!-- Category Title -->
+    <div class="category-title">
+     (ຮ້ານທີ່ທ່ານເລືອກ) {{ currentCategory?.name }}
+    </div>
+
+  <ion-grid>
+    <ion-row class="menu-area">
+      <ion-col size="6" size-sm="6" size-md="4" size-lg="3" *ngFor="let item of post_list">
+        <ion-card class="food-item" (click)="Click_DetailProduct(item)">
+          <ion-card-header class="food-image">
+            <img class="imgae-placeholder" src="{{item.pic}}" alt="">
+            <ion-badge class="nutrition">20%</ion-badge>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-card-title class="food-name">{{ item.primaryProduct?.product?.name }}</ion-card-title>
+            <!-- <p class="food-desc">{{ item.description?.des }}</p> -->
+            <ion-text class="food-price" color="danger">{{ item.average | number}} Kip</ion-text>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Floating Cart Button -->
+  <!-- <span class="btn-abs-list">
+    <a href="javascript:void(0)" class="item-green menu-shopping-cart" (click)="openCart()">
+      <div class="text">Cart ({{ cart.length }})</div>
+      <div class="icon">
+        <ion-icon style="color: #333333;" name="cart-outline"></ion-icon>
+      </div>
+    </a>
+  </span> -->
+</ion-content>
