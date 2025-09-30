@@ -280,8 +280,9 @@
               </div>
               <ng-template #elsestock>
                 <label>
-                  <ion-icon name="pricetags-sharp" color="danger"></ion-icon>: {{sl.stock.price + 1000}} / <ion-icon
-                    name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}
+                  <ion-icon name="pricetags-sharp" color="danger"></ion-icon>:
+                  {{calculateTicketValue([{value:sl.stock.price}])}}
+                  / <ion-icon name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}
                 </label>
               </ng-template>
 

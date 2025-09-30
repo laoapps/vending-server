@@ -668,6 +668,23 @@ export class Tab1Page implements OnDestroy {
     }, 5000);
   }
 
+
+  calculateTicketValue(items: [{ value: number }], maxVal: number = 100000) {
+    let ticketValue = 0;
+
+    for (const item of items) {
+      let contribution = 1000; // Base contribution
+      if (item.value > maxVal) {
+        // Calculate additional contribution based on ranges
+        const extraRanges = Math.ceil((item.value - maxVal) / maxVal);
+        contribution += extraRanges * 1000;
+      }
+      ticketValue += contribution + item.value;
+    }
+
+    return ticketValue;
+  }
+
   async ngOnInit() {
     this.subscription = interval(5000).subscribe(() => {
 
@@ -675,6 +692,9 @@ export class Tab1Page implements OnDestroy {
       console.log('Init isFlipped :', this.isFlipped);
 
     });
+
+
+
 
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
@@ -2615,7 +2635,9 @@ export class Tab1Page implements OnDestroy {
 
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
       y.stock.qtty = 1;
-      y.stock.price = y.stock.price + 1000;
+      // y.stock.price = y.stock.price + 1000;
+      y.stock.price = this.calculateTicketValue([{ value: y.stock.price }]);
+
       console.log('y', y);
       this.orders.unshift(y);
       console.log(`orders`, this.orders);
@@ -3517,6 +3539,13 @@ export class Tab1Page implements OnDestroy {
 
   openHMStoreVending() {
     this.router.navigate(['/HM-store-vending'])
+  }
+
+  openTestFuture() {
+
+    this.apiService.showModal(RemainingbillsPage).then(r => {
+      r.present();
+    });
   }
 
   openTestMotor() {

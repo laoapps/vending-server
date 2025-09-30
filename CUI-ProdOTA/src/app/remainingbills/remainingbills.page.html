@@ -60,12 +60,25 @@
         </a> -->
       </div>
     </div>
+    <div *ngIf="apiService.allowTopUp" class="row-container">
+      <div class="video-container">
+        <video #videoPlayer autoplay muted playsinline></video>
+      </div>
+      <div class="image-container">
+        <img src="../../assets/topup/bannertopup.jpeg" alt="Preview" />
+      </div>
+    </div>
+
     <div class="laab-card-header">
       <div class="title">Tickets</div>
       <div class="sub-title">Choose any ticket for receive your order</div>
     </div>
-    <div class="laab-card-body">
+    <!-- <div>test</div> -->
 
+
+
+
+    <div class="laab-card-body">
 
       <div *ngFor="let s of r; let i = index" href="javascript:void(0)" class="item">
         <div class="content">
