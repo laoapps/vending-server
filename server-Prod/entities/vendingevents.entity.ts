@@ -38,15 +38,15 @@ export let VendingEventLogFactory = (name: string, con: Sequelize): any => {
             type: DataTypes.JSONB
         },
         date: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.INTEGER, // Changed from NUMBER to INTEGER
             allowNull: false,
         },
         month: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.INTEGER, // Changed from NUMBER to INTEGER
             allowNull: false,
         },
         year: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.INTEGER, // Changed from NUMBER to INTEGER
             allowNull: false,
         }
     } as ModelAttributes<VendingEventLogModel>;
