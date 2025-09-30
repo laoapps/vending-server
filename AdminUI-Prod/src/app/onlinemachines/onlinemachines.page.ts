@@ -1,11 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
+import axios from 'axios';
 import { environment } from '../../environments/environment';
 import { ApiService } from '../services/api.service';
 import { LogTempPage } from '../log-temp/log-temp.page';
+import { MyaccountPage } from '../myaccount/myaccount.page';
+import { MachinePage } from '../machine/machine.page';
+import { ProductsPage } from '../products/products.page';
+import { SalePage } from '../sale/sale.page';
+import { EpinAdminPage } from '../epin-admin/epin-admin.page';
+import { FindMyEpinPage } from '../find-my-epin/find-my-epin.page';
+import { AdvertisementPage } from '../superadmin/advertisement/advertisement.page';
+import { VersionControlPage } from '../version-control/version-control.page';
+import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
+import { SettingsModalPage } from '../settings-modal/settings-modal/settings-modal.page';
+
 interface MachineData {
   machineId: string;
   owner: string;
@@ -15,6 +23,9 @@ interface MachineData {
   versionId: string;
   device: string;
   data: string;
+  otp: string;
+  settings: any;
+  showSecrets?: boolean; // Track visibility for each machine
 }
 
 @Component({
@@ -23,166 +34,198 @@ interface MachineData {
   styleUrls: ['./onlinemachines.page.scss'],
 })
 export class OnlinemachinesPage implements OnInit, OnDestroy {
-  private machinesSubject = new BehaviorSubject<MachineData[]>([]);
-  machines$: Observable<MachineData[]> = this.machinesSubject.asObservable();
-  onlineMachines$: Observable<MachineData[]>;
-  brokenMachines$: Observable<MachineData[]>;
-  private allMachinesUrl = environment.url+'/getAllMachines';
-  private onlineMachinesUrl = environment.url+'/getOnlineMachines';
-  private previousMachines: Map<string, MachineData> = new Map(); // Store previous machine data
+  onlineMachines: MachineData[] = [];
+  brokenMachines: MachineData[] = [];
+  private allMachinesUrl = `${environment.url}/getAllMachines`;
+  private onlineMachinesUrl = `${environment.url}/getOnlineMachines`;
+  private intervalId: NodeJS.Timeout;
+  showAllSecrets: boolean = true; // Global toggle for all secrets
 
-  int: NodeJS.Timeout;
-
-  constructor(private http: HttpClient,public apiService:ApiService) {
-    // Initialize filtered observables with sorting
-    this.onlineMachines$ = this.machines$.pipe(
-      map(machines => machines.filter(machine => machine.status === 'Online').sort((a, b) => a.machineId.localeCompare(b.machineId)))
-    );
-    this.brokenMachines$ = this.machines$.pipe(
-      map(machines => machines.filter(machine => machine.status === 'Broken').sort((a, b) => a.machineId.localeCompare(b.machineId)))
-    );
-  }
+  constructor(public apiService: ApiService) {}
 
   ngOnInit() {
     this.loadData();
-    this.int = setInterval(() => {
-      this.loadData();
-    }, 30000);
+    this.intervalId = setInterval(() => this.loadData(), 30000);
   }
 
-  ngOnDestroy(): void {
-    clearInterval(this.int);
+  ngOnDestroy() {
+    clearInterval(this.intervalId);
   }
 
-  refreshData() {
-    this.loadData();
+  async refreshData() {
+    await this.loadData();
   }
 
-  private loadData() {
-    const token = localStorage.getItem('token');
-    const shopPhonenumber = localStorage.getItem('shopPhonenumber');
-    const secret = localStorage.getItem('secretLocal');
+  private async loadData() {
+    try {
+      const token = localStorage.getItem('token');
+      const shopPhonenumber = '';
+      const secret = localStorage.getItem('secretLocal');
+      const payload = { secret, shopPhonenumber, token };
 
-    forkJoin([
-      this.http.post(this.allMachinesUrl, { secret, shopPhonenumber, token }),
-      this.http.post(this.onlineMachinesUrl, { secret, shopPhonenumber, token })
-    ]).subscribe({
-      next: ([allMachinesResponse, onlineMachinesResponse]: [any, any]) => {
-        const machines: MachineData[] = [];
-        const onlineMachinesMap = new Map<string, any>();
-        const now = new Date(); // Use current time dynamically
+      const [allMachinesResponse, onlineMachinesResponse] = await Promise.all([
+        axios.post(this.allMachinesUrl, payload),
+        axios.post(this.onlineMachinesUrl, payload),
+      ]);
 
-        // Build map of online machines by machineId
-        onlineMachinesResponse.data
-          .filter((item: any) => item && item.machine)
-          .forEach((item: any) => {
-            onlineMachinesMap.set(item.machine.machineId, item);
-          });
+      const machines: MachineData[] = [];
+      const onlineMachinesMap = new Map<string, any>();
+      const now = new Date();
 
-        // Process all machines
-        allMachinesResponse.data.forEach((machine: any) => {
-          const onlineData = onlineMachinesMap.get(machine.machineId);
-          const previousMachine = this.previousMachines.get(machine.machineId);
-          let status: 'Online' | 'Broken' = 'Broken';
-          let lastUpdate: string | undefined = previousMachine?.lastUpdate;
-          let temperature: number | undefined = previousMachine?.temperature;
-          let device: string = previousMachine?.device || 'Unknown';
-          let data: string = previousMachine?.data || '{}';
-
-          if (onlineData && onlineData.status && onlineData.status.t) {
-            const lastUpdateTime = new Date(onlineData.status.t);
-            const minutesDiff = (now.getTime() - lastUpdateTime.getTime()) / 1000 / 60;
-            if (minutesDiff <= 5) {
-              status = 'Online';
-              lastUpdate = onlineData.status.t;
-              temperature = onlineData.status.b.temperature;
-              device = onlineData.status.b.device || 'Unknown';
-              data = JSON.stringify(onlineData.status.b.data || {}) || '{}';
-            } else {
-              // Machine was online but last update is older than 5 minutes
-              status = 'Broken';
-            }
-          } else if (previousMachine && previousMachine.status === 'Online') {
-            // Machine was previously online but is missing from onlineMachinesResponse
-            const lastUpdateTime = previousMachine.lastUpdate ? new Date(previousMachine.lastUpdate) : null;
-            const minutesDiff = lastUpdateTime ? (now.getTime() - lastUpdateTime.getTime()) / 1000 / 60 : Infinity;
-            if (minutesDiff > 5) {
-              status = 'Broken';
-            }
-          }
-          const d = machine?.data?machine?.data[0]:null;
-
-          machines.push({
-            machineId: machine.machineId,
-            owner: d?.owner,
-            temperature,
-            status,
-            lastUpdate,
-            versionId: d?.versionId,
-            device,
-            data
-          });
+      onlineMachinesResponse.data.data
+        ?.filter((item: any) => item && item.machine)
+        .forEach((item: any) => {
+          onlineMachinesMap.set(item.machine.machineId, item);
         });
 
-        // Sort machines by machineId for consistent order
-        machines.sort((a, b) => a.machineId.localeCompare(b.machineId));
+      allMachinesResponse.data.data.forEach((machine: any) => {
+        const onlineData = onlineMachinesMap.get(machine.machineId);
+        let status: 'Online' | 'Broken' = 'Broken';
+        let lastUpdate: string | undefined;
+        let temperature: number | undefined;
+        let device = 'Unknown';
+        let data = '{}';
 
-        // Update previous machines map
-        this.previousMachines.clear();
-        machines.forEach(machine => this.previousMachines.set(machine.machineId, machine));
+        if (onlineData && onlineData.status && onlineData.status.t) {
+          const lastUpdateTime = new Date(onlineData.status.t);
+          const minutesDiff = (now.getTime() - lastUpdateTime.getTime()) / 1000 / 60;
+          if (minutesDiff <= 5) {
+            status = 'Online';
+            lastUpdate = onlineData.status.t;
+            temperature = onlineData.status.b.temperature;
+            device = onlineData.status.b.device || 'Unknown';
+            data = JSON.stringify(onlineData.status.b.data || {}) || '{}';
+          }
+        }
 
-        // Emit updated machines
-        this.machinesSubject.next(machines);
-      },
-      error: (err) => {
-        console.error('Error loading data:', err);
-        this.machinesSubject.next([]); // Reset to empty on error
-      }
-    });
+        const d = machine?.data?.[0] || null;
+
+        machines.push({
+          machineId: machine.machineId,
+          owner: d?.ownerPhone ? String(d.ownerPhone) : 'Unknown',
+          temperature,
+          status,
+          lastUpdate,
+          versionId: d?.versionId || 'N/A',
+          device,
+          data,
+          otp: machine.otp || 'N/A',
+          settings: d || {},
+          showSecrets: true, // Default to showing secrets
+        });
+      });
+
+      machines.sort((a, b) => a.machineId.localeCompare(b.machineId));
+      this.onlineMachines = machines.filter((m) => m.status === 'Online');
+      this.brokenMachines = machines.filter((m) => m.status === 'Broken');
+    } catch (err) {
+      console.error('Error loading data:', err);
+      this.onlineMachines = [];
+      this.brokenMachines = [];
+    }
   }
-  exitApp(machineId: string) {
-    const token = localStorage.getItem('token');
-    const shopPhonenumber = localStorage.getItem('shopPhonenumber');
-    const secret = localStorage.getItem('secretLocal');
-    this.http.post(environment.url + '/exitAppMachineAdmin', { secret, shopPhonenumber, token,  data:{machineId}  }).subscribe({
-      next: (res: any) => {
-        if (res.status === 1) {
-          alert('Exit app command sent successfully to machine ' + machineId);
-        } else {
-          alert('Failed to send exit app command: ' + res.message);
-        }
-      },
-      error: (err) => {
-        console.error('Error sending exit app command:', err);
-        alert('Error sending exit app command: ' + err.message);
-      }
-    });
+
+  // Toggle all secrets globally
+  toggleAllSecrets() {
+    this.showAllSecrets = !this.showAllSecrets;
+    this.onlineMachines.forEach((machine) => (machine.showSecrets = this.showAllSecrets));
+    this.brokenMachines.forEach((machine) => (machine.showSecrets = this.showAllSecrets));
+    console.log(`All machines secrets visibility: ${this.showAllSecrets}`);
   }
-  refreshMachine(machineId: string) {
-    const token = localStorage.getItem('token');
-    const shopPhonenumber = localStorage.getItem('shopPhonenumber');
-    const secret = localStorage.getItem('secretLocal');
-    this.http.post(environment.url + '/refreshMachineAdmin', { secret, shopPhonenumber, token, data:{machineId} }).subscribe({
-      next: (res: any) => {
-        if (res.status === 1) {
-          alert('Refresh command sent successfully to machine ' + machineId);
-        } else {
-          alert('Failed to send refresh command: ' + res.message);
-        }
-      },
-      error: (err) => {
-        console.error('Error sending refresh command:', err);
-        alert('Error sending refresh command: ' + err.message);
-      }
-    }); 
+
+  // Toggle secrets for a single machine
+  toggleMachineSecrets(machine: MachineData) {
+    machine.showSecrets = !machine.showSecrets;
+    console.log(`Machine ${machine.machineId} secrets visibility: ${machine.showSecrets}`);
   }
+
+  async exitApp(machineId: string) {
+    try {
+      const token = localStorage.getItem('token');
+      const shopPhonenumber = '';
+      const secret = localStorage.getItem('secretLocal');
+      const response = await axios.post(`${environment.url}/exitAppMachineAdmin`, {
+        secret,
+        shopPhonenumber,
+        token,
+        data: { machineId },
+      });
+
+      if (response.data.status === 1) {
+        alert(`Exit app command sent successfully to machine ${machineId}`);
+      } else {
+        alert(`Failed to send exit app command: ${response.data.message}`);
+      }
+    } catch (err: any) {
+      console.error('Error sending exit app command:', err);
+      alert(`Error sending exit app command: ${err.message}`);
+    }
+  }
+
+  async refreshMachine(machineId: string) {
+    try {
+      const token = localStorage.getItem('token');
+      const shopPhonenumber = '';
+      const secret = localStorage.getItem('secretLocal');
+      const response = await axios.post(`${environment.url}/refreshMachineAdmin`, {
+        secret,
+        shopPhonenumber,
+        token,
+        data: { machineId },
+      });
+
+      if (response.data.status === 1) {
+        alert(`Refresh command sent successfully to machine ${machineId}`);
+      } else {
+        alert(`Failed to send refresh command: ${response.data.message}`);
+      }
+    } catch (err: any) {
+      console.error('Error sending refresh command:', err);
+      alert(`Error sending refresh command: ${err.message}`);
+    }
+  }
+
   showLogTemp(machineId: string) {
-    // Navigate to LogTempPage with machineId as parameter
-    // Assuming you have a router set up
-   this.apiService.modal.create({
-      component: LogTempPage,
-      componentProps: { machineId},
-      cssClass: 'custom-modal',
-      backdropDismiss: true}).then(modal => modal.present());
+    this.apiService.modal
+      .create({
+        component: LogTempPage,
+        componentProps: { machineId },
+        cssClass: 'custom-modal',
+        backdropDismiss: true,
+      })
+      .then((modal) => modal.present());
+  }
+
+  showSettings(settings: any) {
+    this.apiService.modal
+      .create({
+        component: SettingsModalPage,
+        componentProps: { settings },
+        cssClass: 'custom-modal',
+        backdropDismiss: true,
+      })
+      .then((modal) => modal.present());
+  }
+
+  manage(phoneNumber: string, i: number = 1) {
+    console.log('Manage action for owner:', phoneNumber, phoneNumber.slice(-8));
+    localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
+    this.apiService.router.navigate(['/tabs/tab1']);
+    // const pages = [
+    //   null,
+    //   MyaccountPage,
+    //   MachinePage,
+    //   ProductsPage,
+    //   SalePage,
+    //   EpinAdminPage,
+    //   FindMyEpinPage,
+    //   AdvertisementPage,
+    //   VersionControlPage,
+    //   ImagesproductPage,
+    // ];
+
+    // if (pages[i]) {
+    //   this.apiService.showModal(pages[i], {}).then((r) => r?.present());
+    // }
   }
 }

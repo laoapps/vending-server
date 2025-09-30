@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { ShowDevicesPageRoutingModule } from './show-devices-routing.module';
+import { SettingsModalPageRoutingModule } from './settings-modal-routing.module';
 
-import { ShowDevicesPage } from './show-devices.page';
+import { SettingsModalPage } from './settings-modal.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ShowDevicesPageRoutingModule
+    SettingsModalPageRoutingModule
   ],
-  declarations: [ShowDevicesPage]
+  declarations: [SettingsModalPage]
 })
-export class ShowDevicesPageModule {}
+export class SettingsModalPageModule {}

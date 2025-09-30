@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authHMVending, authMiddleware } from '../middleware/authMiddleware';
-import { createOrder, getOrders, getOrderById, payOrder, completeOrder, testOrder, getOrderByIdHMVending, getActiveOrdersByDeviceID, createOrderHMVending } from '../controllers/orderController';
+import { createOrder, getOrders, getOrderById, payOrder, completeOrder, testOrder, getOrderByIdHMVending, getActiveOrdersByDeviceID, createOrderHMVending, findAllActiveDevices, deleteActiveDevice } from '../controllers/orderController';
 import { reactivateOrder } from '../controllers/reactivateOrderController';
 
 const router = Router();
@@ -20,5 +20,7 @@ router.post('/reactivate', authMiddleware, reactivateOrder); // Reactivate order
 
 
 router.post('/testneworder', authMiddleware, testOrder); // Create order (user only)
+router.post('/findAllActiveDevices', findAllActiveDevices); 
+router.post('/deleteActiveDevice', authMiddleware, deleteActiveDevice); 
 
 export default router;

@@ -5,6 +5,9 @@
       <ion-button color="light" (click)="refreshData()">
         <ion-icon slot="icon-only" name="refresh"></ion-icon>
       </ion-button>
+      <ion-button color="light" (click)="toggleAllSecrets()">
+        <ion-icon slot="icon-only" [name]="showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -20,20 +23,28 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines$ | async">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines">
         <ion-card class="machine-card" [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="cube-outline"></ion-icon>
-              {{ machine.machineId }}
+              <span *ngIf="machine.showSecrets && showAllSecrets">{{ machine.machineId }}</span>
+              <span *ngIf="!machine.showSecrets || !showAllSecrets">****</span>
               <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
+              <ion-button fill="clear" size="small" (click)="toggleMachineSecrets(machine)">
+                <ion-icon slot="icon-only" [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </ion-button>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-list lines="none">
-              <ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
                 <ion-icon name="person-outline" slot="start"></ion-icon>
-                <ion-label><strong>Owner:</strong> {{ machine.owner }}</ion-label>
+                <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
+              </ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
+                <ion-icon name="key-outline" slot="start"></ion-icon>
+                <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="thermometer-outline" slot="start"></ion-icon>
@@ -48,15 +59,15 @@
               </ion-item>
               <ion-item>
                 <ion-icon name="code-outline" slot="start"></ion-icon>
-                <ion-label><strong>Version:</strong> {{ machine.versionId || 'N/A' }}</ion-label>
+                <ion-label><strong>Version:</strong> {{ machine.versionId }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
-                <ion-label><strong>Device:</strong> {{ machine.device || 'Unknown' }}</ion-label>
+                <ion-label><strong>Device:</strong> {{ machine.device }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>Data:</strong> {{ machine.data || '{}' }}</ion-label>
+                <ion-label><strong>Data:</strong> {{ machine.data }}</ion-label>
               </ion-item>
             </ion-list>
             <ion-grid class="button-grid">
@@ -79,6 +90,18 @@
                     Logs
                   </ion-button>
                 </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
+                    <ion-icon slot="start" name="laptop-outline"></ion-icon>
+                    My Account
+                  </ion-button>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
+                    <ion-icon slot="start" name="settings-outline"></ion-icon>
+                    Settings
+                  </ion-button>
+                </ion-col>
               </ion-row>
             </ion-grid>
           </ion-card-content>
@@ -97,20 +120,28 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines$ | async">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines">
         <ion-card class="machine-card" [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="cube-outline"></ion-icon>
-              {{ machine.machineId }}
+              <span *ngIf="machine.showSecrets && showAllSecrets">{{ machine.machineId }}</span>
+              <span *ngIf="!machine.showSecrets || !showAllSecrets">****</span>
               <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
+              <ion-button fill="clear" size="small" (click)="toggleMachineSecrets(machine)">
+                <ion-icon slot="icon-only" [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </ion-button>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-list lines="none">
-              <ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
                 <ion-icon name="person-outline" slot="start"></ion-icon>
-                <ion-label><strong>Owner:</strong> {{ machine.owner }}</ion-label>
+                <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
+              </ion-item>
+              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
+                <ion-icon name="key-outline" slot="start"></ion-icon>
+                <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="thermometer-outline" slot="start"></ion-icon>
@@ -125,20 +156,26 @@
               </ion-item>
               <ion-item>
                 <ion-icon name="code-outline" slot="start"></ion-icon>
-                <ion-label><strong>Version:</strong> {{ machine.versionId || 'N/A' }}</ion-label>
+                <ion-label><strong>Version:</strong> {{ machine.versionId }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
-                <ion-label><strong>Device:</strong> {{ machine.device || 'Unknown' }}</ion-label>
+                <ion-label><strong>Device:</strong> {{ machine.device }}</ion-label>
               </ion-item>
               <ion-item>
                 <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>Data:</strong> {{ machine.data || '{}' }}</ion-label>
+                <ion-label><strong>Data:</strong> {{ machine.data }}</ion-label>
               </ion-item>
-               <ion-item>
+              <ion-item>
                 <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
                   <ion-icon slot="start" name="thermometer-outline"></ion-icon>
                   Logs
+                </ion-button>
+              </ion-item>
+              <ion-item>
+                <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
+                  <ion-icon slot="start" name="settings-outline"></ion-icon>
+                  Settings
                 </ion-button>
               </ion-item>
             </ion-list>

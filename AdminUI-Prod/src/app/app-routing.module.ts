@@ -239,6 +239,10 @@ const routes: Routes = [
   {
     path: 'log-temp',
     loadChildren: () => import('./log-temp/log-temp.module').then( m => m.LogTempPageModule)
+  },
+  {
+    path: 'settings-modal',
+    loadChildren: () => import('./settings-modal/settings-modal/settings-modal.module').then( m => m.SettingsModalPageModule)
   }
 ];
 @NgModule({

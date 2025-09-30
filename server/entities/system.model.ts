@@ -1045,7 +1045,8 @@ export enum EMessage {
     LaoQRCount = "LaoQRCount",
     ListTransactionMmoneyCheck = "ListTransactionMmoneyCheck",
     openstock = "openstock",
-    clearLocalBill = "clearLocalBill"
+    clearLocalBill = "clearLocalBill",
+    TransactionPhone = "TransactionPhone",
 }
 export interface IBase {
     id?: number;
@@ -2395,7 +2396,8 @@ export enum EEntity {
     bundle = "bundle",
     Clientlog = "Clientlog",
     LogsTemp = "LogsTemp",
-    ProductImage = "ProductImage"
+    ProductImage = "ProductImage",
+    vendingevents = "vendingevents"
 }
 
 export interface ISaveMachineSaleReport {
@@ -2437,6 +2439,36 @@ export interface IDropPositionData {
     ownerUuid: string,
     transactionID: string,
     position: number
+}
+
+export enum EVendingEvent {
+    selling = "selling",
+    sold = "sold",
+    updating_stock = "updating_stock",
+    dropConfirm = "dropConfirm",
+
+    total_sale_today = "total_sale_today",
+    
+    no_sale = "no_sale",
+
+    machine_offline = "machine_offline",
+    machine_is_online = "machine_is_online",
+
+    retry_delivery = "retry_delivery",
+
+    restart = "restart",
+    refresh = "refresh",
+    
+}
+
+
+export interface IVendingEventLog extends IBase {
+    machineId: string;
+    event: EVendingEvent;// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+    data: any;//[{time, position, product, price,ip,data}]
+    date:number;
+    month:number;
+    year:number;
 }
 
 export interface ILoadVendingMachineStockReport extends ILoadVendingMachineSaleBillReport { }

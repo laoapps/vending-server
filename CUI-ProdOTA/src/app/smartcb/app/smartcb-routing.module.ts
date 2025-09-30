@@ -67,10 +67,6 @@ const routes: Routes = [
     loadChildren: () => import('./components-user/history/history.module').then( m => m.HistoryPageModule)
   },
   {
-    path: 'show-devices',
-    loadChildren: () => import('./components-user/show-devices/show-devices.module').then( m => m.ShowDevicesPageModule)
-  },
-  {
     path: 'show-pageket',
     loadChildren: () => import('./components-user/show-pageket/show-pageket.module').then( m => m.ShowPageketPageModule)
   },
@@ -87,16 +83,8 @@ const routes: Routes = [
     loadChildren: () => import('./components-user/pay-qr/pay-qr.module').then( m => m.PayQrPageModule)
   },
   {
-    path: 'map',
-    loadChildren: () => import('./components-user/map/map.module').then( m => m.MapPageModule)
-  },
-  {
     path: 'confirmcode',
     loadChildren: () => import('./auth/confirmcode/confirmcode.module').then( m => m.ConfirmcodePageModule)
-  },
-  {
-    path: 'list-all-groups',
-    loadChildren: () => import('./components-user/list-all-groups/list-all-groups.module').then( m => m.ListAllGroupsPageModule)
   },
   {
     path: 'control-order',

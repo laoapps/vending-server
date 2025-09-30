@@ -26,6 +26,7 @@ import { BundleFactory, BundleStatic } from "./appupdate.entity";
 import { ClientlogFactory, ClientlogStatic } from "./clientlog.entity";
 import { LogsTempFactory, LogsTempStatic } from "./logstemp.entity";
 import { ProductImageFactory, ProductImageStatic } from "./productimage.entity";
+import { VendingEventLogFactory, VendingEventLogStatic } from "./vendingevents.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -56,6 +57,8 @@ export let ProductImageEntity: ProductImageStatic;
 export let vendingWallet: VendingWalletStatic;
 export let epinshortcodeEntity: EPINShortCodeStatic;
 export let subadminEntity: SubadminStatic;
+export let vendingMachineEntity: VendingEventLogStatic;
+
 
 
 //
@@ -64,8 +67,13 @@ export let BundleEntity: BundleStatic;
 
 export const initDB = async () => {
 
+    vendingMachineEntity = VendingEventLogFactory(EEntity.vendingevents, dbConnection);
+    vendingMachineEntity.sync().then(r => {
+        console.log('vendingMachineEntity synced', r);
+    }); 
 
     console.log(`BundleEntity sync`);
+    
     BundleEntity = BundleFactory(EEntity.bundle, dbConnection);
     BundleEntity.sync().then(r => {
         console.log('BundleEntity synced', r);
@@ -196,7 +204,7 @@ export const CreateDatabase = (prefix: string) => {
                             dialect: "postgres",
                             pool: {
                                 min: 0,
-                                max: 5,
+                                max: 20,
                                 acquire: 30000,
                                 idle: 10000,
                             },

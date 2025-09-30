@@ -15,9 +15,8 @@ import { ApiVendingService } from '../../services/api-for-vending/api-vending.se
 })
 export class ShowPageketPage implements OnInit {
   schedulePackages: any[] = [];
-  @Input() data:any
-  @Input() deviceId:any
-  @Input() data_device:any
+  @Input() group:any
+  @Input() device:any
   public image = '../../../../../assets/icon-smartcb/pricing.png'
 
   constructor(public m: LoadingService, private apiService: ApiService,
@@ -27,15 +26,20 @@ export class ShowPageketPage implements OnInit {
 
   ngOnInit() {
     console.log('====================================');
-    console.log(this.data);
+    console.log(this.group);
     console.log('====================================');
     this.load_data();
   }
 
+  ngOnDestroy() {
+    this.m.closeModal({dismiss:true});
+  }
+
+
   load_data(){
     this.m.onLoading('')
     let data = {
-      packages:this.data?.description?.packages
+      packages:this.group?.description?.packages
     }
     console.log('data',data);
 
@@ -62,12 +66,12 @@ export class ShowPageketPage implements OnInit {
     });
   }
 
-  dismiss(data: any = { dismiss: false }) {
+  dismiss(data: any = { dismiss: true }) {
     this.m.closeModal(data);
   }
 
   onClick(item){
-    this.m.showModal(PayQrPage,{data:item,data_device:this.data_device | this.deviceId,data_pageket:item},'dialog-fullscreen').then((r) => {
+    this.m.showModal(PayQrPage,{data_device:this.device,data_pageket:item},'dialog-fullscreen').then((r) => {
       if (r) {
         r.present();
         r.onDidDismiss().then((res) => {
