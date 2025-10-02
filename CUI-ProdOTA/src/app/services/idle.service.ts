@@ -7,7 +7,7 @@ import { ApiService } from './api.service';
 })
 export class IdleService {
     private idleTimer: any;
-    private idleTime = 60000; // 1 นาที
+    private idleTime = 30000; // 1 นาที
     private adsModal: HTMLIonModalElement | null = null;
 
     constructor(
