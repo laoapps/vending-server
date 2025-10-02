@@ -70,10 +70,10 @@ export const initDB = async () => {
     vendingMachineEntity = VendingEventLogFactory(EEntity.vendingevents, dbConnection);
     vendingMachineEntity.sync().then(r => {
         console.log('vendingMachineEntity synced', r);
-    }); 
+    });
 
     console.log(`BundleEntity sync`);
-    
+
     BundleEntity = BundleFactory(EEntity.bundle, dbConnection);
     BundleEntity.sync().then(r => {
         console.log('BundleEntity synced', r);
@@ -82,25 +82,34 @@ export const initDB = async () => {
 
 
     laabHashService = new LAABHashService();
-    DoorPaymentFactory(EEntity.DoorPayment, dbConnection).sync().then(() => {
+    doorPaymentEntity = DoorPaymentFactory(EEntity.DoorPayment, dbConnection);
+
+    doorPaymentEntity.sync().then(() => {
         console.log(`DoorPayment sync`);
-        doorPaymentEntity = DoorPaymentFactory(EEntity.DoorPayment, dbConnection);
     });
-    DoorFactory(EEntity.Door, dbConnection).sync().then(() => {
+
+    doorEntity = DoorFactory(EEntity.Door, dbConnection);
+
+    doorEntity.sync().then(() => {
         console.log(`Door sync`);
-        doorEntity = DoorFactory(EEntity.Door, dbConnection);
     });
-    LogActivityFactory(EEntity.logactivity, dbConnection).sync().then(() => {
+
+    logEntity = LogActivityFactory(EEntity.logactivity, dbConnection);
+
+    logEntity.sync().then(() => {
         console.log(`vending wallet sync`);
-        logEntity = LogActivityFactory(EEntity.logactivity, dbConnection);
     });
-    DropLogActivityFactory(EEntity.droplogactivity, dbConnection).sync().then(() => {
+
+    dropLogEntity = DropLogActivityFactory(EEntity.droplogactivity, dbConnection);
+
+    dropLogEntity.sync().then(() => {
         console.log(`vending wallet sync`);
-        dropLogEntity = DropLogActivityFactory(EEntity.droplogactivity, dbConnection);
     });
-    VendingVersionFactory(EEntity.vendingVersion, dbConnection).sync().then(() => {
+
+    vendingVersionEntity = VendingVersionFactory(EEntity.vendingVersion, dbConnection);
+
+    vendingVersionEntity.sync().then(() => {
         console.log(`vending version sync`);
-        vendingVersionEntity = VendingVersionFactory(EEntity.vendingVersion, dbConnection);
     });
 
 
