@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { EMACHINE_COMMAND, IBillProcess, IDropPositionData, ISerialService } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
@@ -17,6 +17,23 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   canclick: boolean = false;
   errorClick: number = 0;
 
+
+  @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
+  videos: string[] = [
+    '../../assets/videos/promotion.mp4'
+  ];
+
+  banner = '../../assets/topup/bannertopup.jpeg';
+  _style = {
+    'background-image': 'url(' + this.banner + ')',
+    'background-size': 'contain', // or '50%', 'auto 80%', etc.
+    'background-position': 'center',
+    // 'filter': 'blur(5px)'
+    // 'background-repeat': 'no-repeat' // Add this to prevent tiling
+  }
+
+  currentIndex = 0;
+
   timer: any = {} as any;
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
   counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
@@ -27,6 +44,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   @Input() serial: ISerialService;
   url = this.apiService.url;
   lists: Array<any> = [];
+
   constructor(public apiService: ApiService, private modal: ModalController) {
 
   }
@@ -50,7 +68,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
 
-     try {
+    try {
       await this.loadBillLocal();
       this.loadAutoFall();
       // console.log('R', this.r);
@@ -60,6 +78,22 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       this.loadAutoFall();
     }
 
+  }
+
+
+  ngAfterViewInit() {
+    const player = this.videoPlayer?.nativeElement;
+
+    // set first video
+    player.src = this.videos[this.currentIndex];
+    player.play();
+
+    // when one video ends, play the next
+    player.onended = () => {
+      this.currentIndex = (this.currentIndex + 1) % this.videos.length;
+      player.src = this.videos[this.currentIndex];
+      player.play();
+    };
   }
 
   loadAutoFall() {
@@ -326,7 +360,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
 
- 
+
 
   getPrice() {
     return this.r.find(item => item)

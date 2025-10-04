@@ -25,8 +25,8 @@ export class GenerateLaoQRCodeProcess {
     public Init(params: IGenerateLAOQRCode): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             try {
-                this.workload = this.apiService.load.create({ message: 'loading...' });
-                (await this.workload).present();
+                // this.workload = this.apiService.load.create({ message: 'loading...' });
+                // (await this.workload).present();
 
                 this.InitParams(params);
 
@@ -34,7 +34,7 @@ export class GenerateLaoQRCodeProcess {
                 if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
                 const GenerateQRCode = await this.GenerateQRCode();
-                (await this.workload).dismiss();
+                // (await this.workload).dismiss();
 
                 console.log(`zzzz LaoQR`, GenerateQRCode);
                 if (GenerateQRCode != IENMessage.success) {
@@ -74,7 +74,8 @@ export class GenerateLaoQRCodeProcess {
                 console.log('=====>Amout2 :', this.amount);
 
 
-                this.apiService.buyLaoQR(this.orders, this.amount).subscribe(r => {
+                this.apiService.buyLaoQR(this.orders, this.amount).then(rx => {
+                    const r = rx.data;
                     const response: any = r;
                     console.log(`response generate LaoQR`, response);
                     if (response.status != 1) {
@@ -93,10 +94,11 @@ export class GenerateLaoQRCodeProcess {
     public async CheckLaoQRPaid(): Promise<{ status: number, message: any }> {
         return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
             try {
-                this.apiService.checkPaidBill().subscribe(r => {
+                this.apiService.checkPaidBill().then(rx => {
+                    const r = rx.data;
 
                     const response: any = r;
-                    console.log('response check LaoQR', response);
+                    console.log('response check LaoQR', JSON.stringify(response));
 
                     if (response.status != 1) return resolve({ status: 0, message: IENMessage.findLaoQRPaidFail });
                     this.laoQRCode = response.data as IVendingMachineBill;
@@ -116,7 +118,8 @@ export class GenerateLaoQRCodeProcess {
     public async CheckCallbackMmoney(): Promise<{ status: number, message: any }> {
         return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
             try {
-                this.apiService.checkCallbackMmoney().subscribe(r => {
+                this.apiService.checkCallbackMmoney().then(rx => {
+                    const r = rx.data;
 
                     const response: any = r;
                     console.log('response CheckCallbackMmoney', response);

@@ -1,0 +1,64 @@
+<ion-content>
+
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left">
+
+        <div class="status-list">
+          <!-- <div class="form-check form-switch">
+            <input (change)="toggleAutoFullScreen()" class="form-check-input" type="checkbox" id="auto-full-screen">
+            <label class="form-check-label" for="auto-full-screen">Auto full screen</label>
+          </div> -->
+          <div class="form-check form-switch">
+            <input (change)="toggleAutoPlayVideo()" class="form-check-input" type="checkbox" id="auto-play-video">
+            <label class="form-check-label" for="auto-play-video">Auto play video</label>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">How To</div>
+      <div class="sub-title">All video will guide you how to use the vending function</div>
+    </div>
+    <div class="laab-card-body">
+      <div class="left">
+
+        <div class="main-display">
+          <!-- controls controlsList="nodownload noplaybackrate" -->
+          <video id="how-to-player" class="how-to-player" src="" preload="metadata" controls controlsList="nodownload noplaybackrate" ></video>
+          <img id="how-to-player-cover"  class="how-to-player-cover active" src="../../../../assets/video-how-to/howto1-cover.png" alt="">
+          <div class="title">{{ currentPlay.title }}</div>
+          <div class="sub-title">{{ currentPlay.subtitle }}</div>
+        </div>
+
+      </div>
+      <div class="right">
+        <div class="main-list">
+          <a *ngFor="let list of lists; let i = index;" (click)="selectCurrentPlay(list.id)" href="javascript:void(0)" class="item">
+            <div class="left">
+              <!-- <video src="{{ list.video }}"  preload="metadata"></video> -->
+              <!-- <video src="asd"  preload="metadata"></video> -->
+              <img class="list-cover" src="{{ list.cover }}" alt="">
+            </div>
+            <div class="right">
+              <div class="title">{{ list.title }}</div>
+              <div class="sub-title">{{ list.subtitle }}</div>
+            </div>
+          </a>
+          
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  
+</ion-content>

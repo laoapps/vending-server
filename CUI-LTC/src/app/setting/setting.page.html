@@ -71,8 +71,15 @@
       <ion-checkbox [(ngModel)]="francisemode"></ion-checkbox>
     </ion-item>
     <ion-item>
+      <ion-label>QR Mode</ion-label>
+      <ion-checkbox [(ngModel)]="qrMode"></ion-checkbox>
+    </ion-item>
+    <ion-item>
       <ion-label>Offline Mode</ion-label>
       <ion-checkbox [(ngModel)]="offlineMode"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-button (click)="exit()">EXIT APP</ion-button>
     </ion-item>
     <ion-item>
       <ion-button (click)="save()">SAVE</ion-button>

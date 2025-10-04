@@ -1,0 +1,39 @@
+<ion-content id="test">
+
+  <div class="laab-card" id="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">SMC List</div>
+      <div class="sub-title">view all smart contract list</div>
+    </div>
+    <div class="laab-card-body" id="smc-list-scroll">
+      <a *ngFor="let list of lists; let i = index" (click)="createEPIN(list)" href="javascript:void(0)" class="item">
+        <div class="circle-left"></div>
+        <div class="content">
+          <div class="icon">EPIN</div>
+          <div class="detail">
+            <div class="text">Smart contract coin wallet coupon</div>
+            <div class="price">{{ list.amount.remain_amount | number }}</div>
+            <a href="javascript:void(0)" class="btn-epin">Cash out</a>
+          </div>
+        </div>
+        <div class="circle-right"></div>
+      </a>
+    </div>
+    
+  </div>
+
+
+
+
+
+</ion-content>
+
+

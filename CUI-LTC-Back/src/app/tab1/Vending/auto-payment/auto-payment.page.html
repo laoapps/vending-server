@@ -1,0 +1,186 @@
+<ion-content class="auto-payment-page">
+
+  <div class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <!-- <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a> -->
+      </div>
+    </div>
+
+    <div class="laab-card-body">
+
+      <div class="order-list">
+
+        <div (click)="close()" class="item-buymore">
+          <div class="icon">
+            <!-- <i class="fa-solid fa-plus"></i> -->
+            <ion-icon style="font-size:90px;color: white;" name="add"></ion-icon>
+          </div>
+        </div>
+
+        <div *ngFor="let order of parseorders; let i = index" href="javascript:void(0)" class="item">
+          <!-- <div *ngFor="let order of lists; let i = index" href="javascript:void(0)" class="item"> -->
+          <div class="content">
+            <div class="icon">
+              <img [src]="apiService?.imageList[order.stock.image]" alt="">
+            </div>
+            <div class="detail">
+              <div class="position">Position #{{ order?.position }}</div>
+              <div class="name">{{ order?.stock?.name }}</div>
+              <div class="price">{{ order?.stock?.price | number }}</div>
+            </div>
+            <a (click)="removeOrder(i)" href="javascript:void(0)" class="btn-epin">
+              <!-- <i class="fa-solid fa-trash-can"></i> -->
+              <ion-icon style="font-size:30px;color: gray;align-items: center;" name="trash"></ion-icon>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="laab-card-footer">
+
+      <div class="payment-list">
+        <div *ngIf="true" class="payment-list-left">
+
+          <div class="title">Payment Options</div>
+          <div class="item-list">
+            <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)"
+              href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+
+          </div>
+          <!-- src/app/components/payment-message/payment-message.component.html -->
+          <div class="marquee-container">
+            <div class="marquee-content">
+              <p>
+                💳 English: Please do not close this window. If you have made a payment, it will be completed within 60
+                seconds.
+                📞 For support, call or WhatsApp +8562055516321 if you did not receive the product.
+              </p>
+              <p>
+                💳 Lao: ກະລຸນາຢ່າປິດຫນ້າຈໍນີ້ ຖ້າຈ່າຍເງິນແລ້ວ ຈະດຳເນີນການໃນ 60 ວິນາທີ.
+                📞 WhatsApp +8562055516321 ຖ້າບໍ່ໄດ້ຮັບສິນຄ້າ.
+              </p>
+              <p>
+                💳 Thai: กรุณาอย่าปิดหน้านี้ หากชำระเงินแล้ว ระบบจะดำเนินการใน 60 วินาที.
+                📞 โทรหรือ WhatsApp +8562055516321 หากไม่ได้รับสินค้า.
+              </p>
+              <p>
+                💳 Vietnamese: Vui lòng không đóng cửa sổ này. Nếu đã thanh toán, quá trình sẽ hoàn tất trong 60 giây.
+                📞 Gọi hoặc WhatsApp +8562055516321 nếu không nhận được sản phẩm.
+              </p>
+              <p>
+                💳 Chinese: 请不要关闭此窗口。如果您已付款，系统将在60秒内完成处理。
+                📞 如未收到商品，请拨打电话或WhatsApp +8562055516321。
+              </p>
+            </div>
+          </div>
+
+
+          <!-- <div class="title" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false"
+            style="margin-top: 20px;">
+            ທາງເລືອກເພີ່ມເຕີມ</div>
+
+          <div class="item-list" *ngIf="parseGetTotalSale.t <= apiService.localBalance ? true : false">
+            <a *ngFor="let list of paymentOptions; let i = index" (click)="chooseLocalPaymentMethod()"
+              href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+          </div>
+
+          <div class="title" *ngIf="isPayment == true" style="margin-top: 20px;color: red;">
+            *ກໍລະນີຈ່າຍເງິນແລ້ວບໍ່ໄດ້ເຄື່ອງ (ຫຼືລໍຖ້າ 30 ວິນາທີ)</div>
+          <div class="item-list" *ngIf="isPayment == true">
+            <a *ngFor="let list of paymentCheck; let i = index" (click)="checkCallbackMMoney()"
+              href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+          </div> -->
+
+
+
+
+        </div>
+        <div *ngIf="true" class="payment-list-right">
+
+          <div class="bill-container">
+            <div *ngIf="isPayment == true" class="bill-wave-top">
+              <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+            </div>
+            <div class="bill-header">
+              <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
+                class="qr-img">
+              <div *ngIf="isPayment == false" class="loader"></div>
+
+              <div class="total">{{ parseGetTotalSale.t | number }}</div>
+              <div *ngIf="isPayment == true"
+                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;">
+                ໜ້ານີ້ຈະປິດພາຍໃນ {{
+                countdownDestroy }} ວິນາທີ </div>
+            </div>
+            <div *ngIf="isPayment == false" class="bill-body">
+
+              <div class="line"></div>
+
+              <div class="group">
+                <div class="text">SubQTTY</div>
+                <div class="value">{{ parseGetTotalSale.q | number }}</div>
+              </div>
+
+            </div>
+            <div *ngIf="isPayment == true" class="bill-body">
+
+              <div class="line"></div>
+              <div class="group">
+                <div class="text">{{ paymentText }}</div>
+                <!-- <div>{{ countdownDestroy }}</div> -->
+
+
+                <div class="value">{{ billDate | date: 'yyyy-MM-dd HH:MM:SS':'+7' }}</div>
+              </div>
+              <div class="line"></div>
+
+              <div class="group">
+                <div class="text">SubQTTY</div>
+                <div class="value">{{ parseGetTotalSale.q | number }}</div>
+              </div>
+              <div class="group">
+                <div class="text">Subtotal</div>
+                <div class="value">{{ parseGetTotalSale.t | number }}</div>
+              </div>
+
+            </div>
+            <div class="bill-footer">
+              <div class="text">Found any problem call {{contact}}</div>
+              <!-- <a href="javascript:void(0)" class="btn-item">View Orders</a>
+              <a href="javascript:void(0)" class="btn-item">Close</a> -->
+            </div>
+            <div *ngIf="isPayment == true" class="bill-wave-bottom">
+              <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

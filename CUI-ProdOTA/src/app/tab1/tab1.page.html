@@ -106,18 +106,7 @@
         <ion-icon style="color: white;" name="cart-outline"></ion-icon>
       </div>
     </a> -->
-    <ion-content>
-      <div class="card-container">
-        <div class="card" [class.flipped]="isFlipped">
-          <div class="card-face front">
-            <h2>1</h2>
-          </div>
-          <div class="card-face back">
-            <img src="https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif" alt="GIF" />
-          </div>
-        </div>
-      </div>
-    </ion-content>
+
     <a (click)="loadPaidBills()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
       <div class="text" style="color: black;">ເຄື່ອງບໍ່ທັນຕົກ </div>
       <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">
@@ -280,8 +269,9 @@
               </div>
               <ng-template #elsestock>
                 <label>
-                  <ion-icon name="pricetags-sharp" color="danger"></ion-icon>: {{sl.stock.price + 1000}} / <ion-icon
-                    name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}
+                  <ion-icon name="pricetags-sharp" color="danger"></ion-icon>:
+                  {{calculateTicketValue([{value:sl.stock.price}])}}
+                  / <ion-icon name="cube-sharp" color="danger"></ion-icon>: {{sl.stock.qtty}}
                 </label>
               </ng-template>
 

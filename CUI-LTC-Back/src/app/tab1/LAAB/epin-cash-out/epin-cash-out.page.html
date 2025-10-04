@@ -1,0 +1,79 @@
+<ion-content>
+
+  <div *ngIf="showPhonenumberPage == true" class="epin-cash-out-phonenumber-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">EPIN cash out</div>
+      <div class="sub-title">Creator phone number</div>
+
+    </div>
+    <div class="laab-card-body">
+      <div class="cash-balance">{{ apiService.cash.amount | number }}</div>
+     <div class="balance-text">{{ phonenumber }}</div>
+     <div class="number-list">
+      <div class="left">
+        <a *ngFor="let list of numberList; let i = index" (click)="processDigits(list)" href="javascript:void(0)" class="item">{{ list }}</a>
+        <div class=""></div>
+        <a (click)="processDigits('0')" href="javascript:void(0)" class="item">0</a>
+        <div class=""></div>
+      </div>
+      <div class="right">
+        <a (click)="deleteDigits()" href="javascript:void(0)" class="item"><i class="fa-solid fa-trash-can"></i> Delete</a>
+        <a (click)="next()" href="javascript:void(0)" class="item"><i class="fa-solid fa-arrow-right"></i> Next</a>
+
+      </div>
+    </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="showEPINCashoutPage == true" class="laab-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">EPIN cash out</div>
+      <div class="cash-balance">{{ apiService.cash.amount | number }}</div>
+    </div>
+    <div class="laab-card-body">
+
+    </div>
+    <div class="laab-card-footer">
+      <div class="btn-options">
+        <div class=""></div>
+        <div class=""></div>
+        <a (click)="close()" href="javascript:void(0)" class="item-left">
+          <div class="left">
+            <i class="fa-solid fa-ban" style="color: #fff;"></i>
+          </div>
+          <div class="right">
+            <div class="text">Cancel</div>
+            <div class="sub-text">cancel cashout </div>
+          </div>
+        </a>
+        <a (click)="createSMC()" href="javascript:void(0)" class="item-right">
+          <div class="left">
+            <div class="text">Create SMC</div>
+            <div class="sub-text">create smart contract</div>
+          </div>
+          <div class="right">
+            <i class="fa-solid fa-circle-check" style="color: #fff;"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

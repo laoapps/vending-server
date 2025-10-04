@@ -99,7 +99,7 @@ export class WsapiService {
               this.loginSubscription.next(data.data)
             break;
             case 'adminlogin':
-              console.log('admin login',data.data);
+              console.log('admin login',data);
               this.loginSubscription.next(data.data)
               break;
           case 'refresh':

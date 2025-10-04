@@ -1,0 +1,24 @@
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Unregistered Devices</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let device of unregisteredDevices">
+          <ion-label>
+            <h2>{{ device.tasmotaId }}</h2>
+            <p>Connection Attempts: {{ device.connectionAttempts }}</p>
+            <p>Last Connections: {{ device.lastConnections.join(', ') }}</p>
+            <p>Status: {{ device.isBanned ? 'Banned' : 'Not Banned' }}</p>
+          </ion-label>
+          <ion-button slot="end" color="danger" *ngIf="!device.isBanned" (click)="banDevice(device.id, device.tasmotaId)">Ban</ion-button>
+          <ion-button slot="end" color="success" *ngIf="device.isBanned" (click)="unbanDevice(device.id, device.tasmotaId)">Unban</ion-button>
+        </ion-item>
+        <ion-item *ngIf="unregisteredDevices.length === 0">
+          <ion-label>No unregistered devices found.</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

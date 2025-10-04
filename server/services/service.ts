@@ -4,15 +4,16 @@ import { v4 as uuid4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 import crypto, { hash } from 'crypto';
-import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel, IMachineStatus } from '../entities/system.model';
+import { EMACHINE_COMMAND, EMessage, IMachineClientID, IReqModel, IResModel, IMachineStatus, IVendingEventLog, EEntity } from '../entities/system.model';
 import moment from 'moment';
 import * as WebSocketServer from 'ws';
 import { setWsHeartbeat } from 'ws-heartbeat/server';
 import { Request, Response } from 'express';
-import { logEntity } from '../entities';
+import { dbConnection, logEntity, vendingMachineEntity } from '../entities';
 import { MachineSaleFactory } from '../entities/machinesale.entity';
 import https from 'https';
 import { hashSync } from 'bcryptjs';
+import { VendingEventLogFactory } from '../entities/vendingevents.entity';
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
@@ -268,6 +269,43 @@ export function validateTokenOnUserManager(token: string): Promise<any> {
             reject(error);
         }
     });
+}
+
+export function setVendingEvent(event: string, data: IVendingEventLog): Promise<boolean> {
+    return new Promise<boolean>(async (resolve, reject) => {
+        try {
+            redisClient.set(event, JSON.stringify(data));
+            await vendingMachineEntity.create(data); 
+            resolve(true);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function getVendingEvent(event: string): Promise<IVendingEventLog> {
+    return new Promise<any>(async (resolve, reject) => {
+        try {
+            redisClient.get(event, (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result ? JSON.parse(result) : null);
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+export function listVendingEventLogs(machineId:string,date:number,month:number,year:number, offset = 0, limit = 100): Promise<{ rows: IVendingEventLog[], count: number }> {
+    return new Promise<{ rows: IVendingEventLog[], count: number }>(async (resolve, reject) => {
+        try {
+            const r = await vendingMachineEntity.findAndCountAll({ where: { machineId,date,month,year }, order: [['createdAt', 'DESC']], limit, offset });
+            resolve(r);
+        }catch (error) {
+            reject(error);
+        }
+    })
 }
 
 

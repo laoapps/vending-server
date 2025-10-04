@@ -1,0 +1,273 @@
+ion-toolbar{
+	--background: linear-gradient(to right, #43cea2, #185a9d);
+}
+.package-card {
+	cursor: pointer;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+	&:hover {
+	  transform: translateY(-3px);
+	  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	}
+  }
+  
+  .package-img-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 10px;
+	background: #f8f8f8;
+	border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .package-img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+  }
+  
+  .package-name {
+	font-size: 1rem;
+	font-weight: 600;
+	margin-bottom: 5px;
+  }
+  
+  .package-price {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: #27ae60; // green color for price
+	margin-bottom: 5px;
+  }
+  
+  .package-condition {
+	font-size: 0.85rem;
+	color: #666;
+  
+	.condition-type {
+	  font-weight: 500;
+	  color: #444;
+	}
+  
+	.condition-value {
+	  font-weight: 600;
+	  color: #111;
+	}
+  }
+  
+  .no-data-text {
+	text-align: center;
+	color: #999;
+	font-size: 1rem;
+	margin-top: 20px;
+  }
+  
+
+
+//   ===================================
+
+
+ion-toolbar{
+	--background: linear-gradient(to right, #43cea2, #185a9d);
+}
+
+
+  .laab-card-footer{
+    // margin: 20px;
+  background: #DD3932;
+
+  }
+
+.label_name{
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  text-transform: uppercase;
+}
+
+.item-list {
+  display: flex;
+  gap: 10px;
+
+  .item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-decoration: none;
+      width: 80px;
+
+      .icon img {
+          width: 80px;
+          height: 80px;
+          background: #fff;
+          box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+          border-radius: 5px;
+          padding: 10px;
+      }
+
+      .text {
+          font-size: 16px;
+          font-weight: 300;
+          color: #fff;
+          padding-top: 10px;
+          text-align: center;
+      }
+  }
+  .item.active {
+     
+      .icon img {
+          background: #e7e7e7;
+      }
+  }
+}
+
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  background-color: #fdf6e3;
+  border-top: 2px solid #ff9800;
+  border-bottom: 2px solid #ff9800;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #444;
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: scroll-left 30s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.loader {
+  border: 5px solid #f3f3f3;        /* สีพื้นหลัง */
+  border-top: 5px solid #3498db;    /* สีหมุน */
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: spin 1s linear infinite;
+
+  /* Center */
+  margin: 100px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+
+
+
+
+
+.main-top {
+    padding: 20px;
+    width: 100%;
+    height: 180px;
+    // background: linear-gradient(var(--theme-title), #ffe6e6);
+    display: flex;
+    justify-content: space-between;
+    padding-top: 40px;
+  }
+  
+  .div-content {
+    // background: white;
+    width: 100%;
+    // border-top-left-radius: 75px;
+    // border-top-right-radius: 75px;
+    margin-top: -150px;
+    padding: 20px;
+    // padding-top: 30px;
+  }
+  
+  .div-qr-code {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  
+  .phonenumber {
+    font-size: 18px;
+    font-family: "Signika Negative", sans-serif;
+    padding: 10px;
+  }
+  
+  
+  
+  .div-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: var(--ion-color-gray);
+  
+    .div-input {
+      align-items: center;
+  
+      input {
+        margin: 5px 0px 10px;
+        height: 50px;
+        width: 300px;
+        align-items: center;
+        font-size: 18px;
+        border-radius: 5px;
+      }
+      wj-input-number {
+        margin: 5px 0px 10px;
+        height: 50px;
+        width: 300px;
+        align-items: center;
+        font-size: 18px;
+      }
+    }
+  }
+  
+  input {
+    background-color: var(--theme-white);
+  }
+  
+  input {
+    text-align: center;
+    display: block;
+    margin: 0 0 1em 0;
+    width: 90%;
+    border: 1px solid #818181;
+    padding: 5px;
+  }
+  
+  
+  
+  .name-currency{
+      margin-left: 5px;
+  }
+  
+  .color-red {
+    color: red;
+  }
+  
+  .color-blue {
+    color: black;
+  }

@@ -5,8 +5,11 @@ const config: CapacitorConfig = {
   appName: 'cui3',
   webDir: 'www',
   bundledWebRuntime: false,
-  server: {
-    allowNavigation: [],
+  "server": {
+    "hostname": "localhost",
+    "iosScheme": "https",
+    "androidScheme": "https",
+    "allowNavigation": [],
     cleartext: true
   },
   android: {

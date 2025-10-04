@@ -17,6 +17,10 @@ import { CustomloadingPageModule } from './customloading/customloading.module';
 import { AdsPageModule } from './ads/ads.module';
 import { FortunewheelPageModule } from './fortunewheel/fortunewheel.module';
 import { TestmotorPageModule } from './testmotor/testmotor.module';
+import { UserSchedulePageModule } from './smartcb/app/pages/user-schedules/user-schedules.module';
+import { AdminUnregisteredDevicesPageModule } from './smartcb/app/pages/admin-unregistered-devices/admin-unregistered-devices.module';
+import { AdminReportsPageModule } from './smartcb/app/pages/admin-reports/admin-reports.module';
+import { LoginPageModule } from './smartcb/app/auth/login/login.module';
 
 const routes: Routes = [
   // {
@@ -157,7 +161,43 @@ const routes: Routes = [
   },
   {
     path: 'close-stytem',
-    loadChildren: () => import('./close-stytem/close-stytem.module').then( m => m.CloseStytemPageModule)
+    loadChildren: () => import('./close-stytem/close-stytem.module').then(m => m.CloseStytemPageModule)
+  },
+  {
+    path: 'qr-open-stock',
+    loadChildren: () => import('./qr-open-stock/qr-open-stock.module').then( m => m.QrOpenStockPageModule)
+  },
+  {
+    path: 'smartcb',
+    loadChildren: () => import('./smartcb/app/smartcb.module').then(m => m.SmartcbModule)
+  },
+    {
+    path: 'user-schedules',
+    loadChildren: () => UserSchedulePageModule
+  },
+  {
+    path:'admin-unregistered-devices',
+    loadChildren: () => AdminUnregisteredDevicesPageModule
+  },
+  {
+    path: 'admin-reports',
+    loadChildren: () => AdminReportsPageModule
+  },
+  {
+    path:'smart-cb-login',
+    loadChildren: () => LoginPageModule
+  },
+  {
+    path: 'HM-store-vending',
+    loadChildren: () => import('./hm-store-vending/app/app.module').then(m => m.AppModule)
+  },
+  {
+    path: 'give-pop-up',
+    loadChildren: () => import('./give-pop-up/give-pop-up.module').then( m => m.GivePopUpPageModule)
+  },
+  {
+    path: 'auto-payment-top-up',
+    loadChildren: () => import('./auto-payment-top-up/auto-payment-top-up.module').then( m => m.AutoPaymentTopUpPageModule)
   }
 ];
 @NgModule({

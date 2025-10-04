@@ -36,4 +36,9 @@ export class IndexedDBService extends Dexie {
   async deleteBillProcess(transactionID: number) {
     return await this.billProcesses.delete(transactionID);
   }
+
+  async clearBillProcesses() {
+    return await this.billProcesses.clear();
+  }
+
 }

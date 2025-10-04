@@ -2,6 +2,53 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@1,800&family=Shippori+Mincho+B1:wght@800&display=swap');
 
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  perspective: 1000px; /* 3D effect */
+}
+
+.card {
+  width: 200px;
+  height: 300px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s; /* Flip animation duration */
+}
+
+.card.flipped {
+  transform: rotateY(180deg); /* Flip to back face */
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Hide back face when not visible */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border: 2px solid #333;
+  border-radius: 10px;
+}
+
+.front {
+  transform: rotateY(0deg); /* Front face */
+}
+
+.back {
+  transform: rotateY(180deg); /* Back face */
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensure GIF fits the card */
+  border-radius: 10px;
+}
 
 .repair-container {
     position: absolute;
@@ -643,6 +690,13 @@ ion-header {
     width: 88%;
 }
 
+
+
+.item-headerTopUp {
+    left: 6%;
+    width: 88%;
+}
+
 div.scrollmenu {
     display: -webkit-box;
     overflow-x: auto;
@@ -828,6 +882,16 @@ div.scrollmenu {
     }
 }
 
+
+#my-product-imgTopUp {
+    padding: 10px;
+
+    img {
+        width: 500px;
+        height: 500px;
+    }
+}
+
 .attention-grabber {
     animation: glowBlink 1.2s infinite;
     font-size: 32px;
@@ -907,3 +971,62 @@ div.scrollmenu {
 //   margin: 10px 0; /* Spacing above and below */
 //   border-radius: 2px; /* Slight rounding for smoothness */
 // }
+
+
+.menu-page {
+    --background: #f4f6f8;
+  }
+  
+  .menu-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 160px;
+    text-align: center;
+    border-radius: 16px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .menu-icon {
+    font-size: 2.5rem;
+    color: var(--ion-color-primary);
+    margin-bottom: 10px;
+  }
+  
+  ion-card-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--ion-color-dark);
+  }
+  
+  
+  ion-card {
+  border: 5px solid #ff0000; // กรอบหนาสีแดง
+  border-radius: 10px; // มุมโค้งเล็กน้อยให้ดูสวยงาม
+  overflow: hidden; // ตรวจสอบให้เนื้อหาไม่ล้นออกนอกกรอบ
+  margin: 10px; // ระยะห่างระหว่างไอเท็ม
+}
+
+ion-item-divider {
+  background-color: #ff0000; // เปลี่ยนสีหัวข้อให้เข้ากับกรอบ
+  color: white; // ตัวอักษรขาวเพื่อความชัดเจน
+  padding: 5px;
+}
+
+#my-product-imgTopUp img {
+  width: 100%; // ปรับขนาดภาพให้เต็มกรอบ
+  height: auto; // รักษาสัดส่วนภาพ
+  object-fit: cover; // ครอบคลุมพื้นที่โดยไม่บิดเบี้ยว
+}
+
+ion-label {
+  font-size: 16px; // ปรับขนาดตัวอักษรให้เหมาะสม
+}

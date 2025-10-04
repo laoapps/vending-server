@@ -10,6 +10,9 @@ import { SettingPage } from './setting/setting.page';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { VendingIndexServiceService } from './vending-index-service.service';
 import { LiveupdateService } from './liveupdate.service';
+import { CloseStytemPage } from './close-stytem/close-stytem.page';
+
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -106,7 +109,6 @@ export class AppComponent {
         this.count = 6;
         console.log('re count');
         if (this.t) {
-          // clearTimeout(this.t);
           this.t = null;
         }
       }, 1500);
@@ -126,18 +128,14 @@ export class AppComponent {
         this.t = null;
       }
     }
-    // else {
-    //   if (!this.t) {
-    //     this.t = setTimeout(() => {
-    //       this.count = 6;
-    //       console.log('re count');
-    //       if (this.t) {
-    //         clearTimeout(this.t);
-    //         this.t = null;
-    //       }
-    //     }, 1500);
-    //   }
-    // }
+  }
+
+
+  exitsApp() {
+
+    this.apiService.showModal(CloseStytemPage).then(r => {
+      r.present();
+    })
   }
   getPassword() {
     let x = '';

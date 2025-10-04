@@ -1,0 +1,48 @@
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Schedule Packages</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let pkg of schedulePackages">
+          <ion-label>
+            <h2>{{ pkg.name }}</h2>
+            <p>Price: {{ pkg.price }} LAK</p>
+            <p>Condition: {{ pkg.conditionType === 'time_duration' ? pkg.conditionValue + ' hours' : pkg.conditionValue + ' kWh' }}</p>
+          </ion-label>
+          <!-- <ion-select placeholder="Select Device" (ionChange)="applySchedulePackage($event.detail.value, pkg.id)"> -->
+          <ion-select placeholder="Select Device" >
+            <ion-select-option *ngFor="let device of devices" [value]="device.id">{{ device.name }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="schedulePackages.length === 0">
+          <ion-label>No schedule packages available.</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Your Schedules</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let schedule of schedules">
+          <ion-label>
+            <h2>Device: {{ schedule.device?.name }}</h2>
+            <p>Package: {{ schedule.package?.name }}</p>
+            <p>Condition: {{ schedule.package?.conditionType === 'time_duration' ? schedule.package?.conditionValue + ' hours' : schedule.package?.conditionValue + ' kWh' }}</p>
+            <p *ngIf="schedule.package?.conditionType === 'energy_consumption'">Energy Used: {{ schedule.energyUsed }} kWh</p>
+            <p *ngIf="schedule.package?.conditionType === 'energy_consumption'">Energy Remaining: {{ schedule.energyRemaining }} kWh</p>
+            <p>Status: {{ schedule.active ? 'Active' : 'Inactive' }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="schedules.length === 0">
+          <ion-label>No schedules applied.</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

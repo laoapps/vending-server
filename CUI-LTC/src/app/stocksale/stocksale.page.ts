@@ -30,7 +30,8 @@ export class StocksalePage implements OnInit, OnDestroy {
     // this.stock=apiService.stock;
   }
   ngOnDestroy(): void {
-    this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r => {
+    this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
+      const r = rx.data;
       console.log(r);
 
       if (r.status) {
@@ -65,20 +66,21 @@ export class StocksalePage implements OnInit, OnDestroy {
     alert('Are you going to save sale to online');
     const p = prompt('please type 12345678');
     if (p == '12345678') {
-      await this.apiService.showLoading();
+      // await this.apiService.showLoading(null, 3000);
       const x = [];
       ApiService.vendingOnSale.forEach(v => {
         const e = JSON.parse(JSON.stringify(v));
 
         x.push(e);
       })
-      this.apiService.saveSale(ApiService.vendingOnSale).subscribe(r => {
+      this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
+        const r = rx.data;
         console.log(r);
 
         if (r.status) {
 
         }
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
         this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
           r.present();
         })
@@ -89,8 +91,9 @@ export class StocksalePage implements OnInit, OnDestroy {
     alert('Are you going to recover sale from online');
     const p = prompt('please type 12345678');
     if (p == '12345678') {
-      await this.apiService.showLoading();
-      this.apiService.recoverSale().subscribe(r => {
+      // await this.apiService.showLoading(null, 3000);
+      this.apiService.recoverSale().then(rx => {
+        const r = rx.data;
         console.log(r);
         if (r.status) {
           ApiService.vendingOnSale.length = 0;
@@ -101,7 +104,7 @@ export class StocksalePage implements OnInit, OnDestroy {
 
           ApiService.vendingOnSale.push(...r.data)
         }
-        this.apiService.dismissLoading();
+        // this.apiService.dismissLoading();
         this.apiService.toast.create({ message: r.message, duration: 200 }).then(r => {
           r.present();
         })
@@ -288,7 +291,8 @@ export class StocksalePage implements OnInit, OnDestroy {
       alert('ARE YOU SURE?')
       console.log('jsonText', JSON.parse(this.jsonText));
 
-      this.apiService.saveSale(JSON.parse(this.jsonText)).subscribe(r => {
+      this.apiService.saveSale(JSON.parse(this.jsonText)).then(rx => {
+        const r = rx.data;
         console.log('R', r);
 
       });

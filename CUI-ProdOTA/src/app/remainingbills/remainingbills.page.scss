@@ -276,3 +276,41 @@ ion-infinite-scroll-content {
     min-height: 1px;
     background: #DD3932;
 }
+
+
+.row-container {
+  display: flex;
+  align-items: center; /* ให้สูงตรงกัน */
+  width: 100%;
+}
+
+.video-container {
+  width: 300px;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.image-container {
+  flex: 1; /* ขยายเต็มพื้นที่ที่เหลือ */
+  height: 300px; /* ให้สูงเท่ากับ video */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* เติมเต็มพื้นที่โดยไม่บิดรูป */
+  display: block;
+}

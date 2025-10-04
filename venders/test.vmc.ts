@@ -2,7 +2,7 @@
 
 
 import { SerialPort } from 'serialport';
-import { chk8xor } from './services/service';
+
 
 
 
@@ -12,7 +12,7 @@ import { chk8xor } from './services/service';
 // console.log(x);
 // /dev/tty      /dev/ttyS0  /dev/ttyS2  /dev/ttyS4    /dev/ttyUSB1  /dev/ttyUSB3
 // /dev/ttyFIQ0  /dev/ttyS1==> ok  /dev/ttyS3  /dev/ttyUSB0  /dev/ttyUSB2  /dev/ttyUSB4
-const path = '/dev/ttyS0';
+const path = '/dev/ttyS1';
 const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
     if (err) {
         return console.log('Error: ', err.message)
@@ -87,6 +87,14 @@ const port = new SerialPort({ path: path, baudRate: 57600 }, function (err) {
         }
         return (no+'').length===1?'0'+no:no+'';
     }
+    function chk8xor(byteArray = new Array<any>()) {
+    let checksum = 0x00
+    for (let i = 0; i < byteArray.length - 1; i++)
+        checksum ^= parseInt(byteArray[i].replace(/^#/, ''), 16)
+    const x = checksum.toString(16);
+    if (x.length == 1) return '0' + x;
+    return x;
+}
 
     const commands = [['fa', 'fb', '06', '05',getNextNo(),'01','00','00','01']]
     function checkCommandsForSubmission() {

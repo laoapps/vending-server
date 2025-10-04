@@ -60,7 +60,7 @@ export class VmcService implements ISerialService {
   private creditPending: ICreditData[] = [];
   private pendingRetry = 10;
   private T: NodeJS.Timeout | null = null;
-  portName = '/dev/ttyS0';
+  portName = '/dev/ttyS1';
   baudRate = 57600;
   parity: 'none' = 'none';
   dataBits: 8 = 8;
