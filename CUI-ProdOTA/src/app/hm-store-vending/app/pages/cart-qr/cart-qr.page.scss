@@ -279,6 +279,9 @@ ion-content{
     color: #fff;
     font-weight: bold;
     padding-top: 70px;
+    position: absolute;
+    bottom: 0;
+    height: 650px;
   }
 
 
@@ -297,36 +300,223 @@ ion-footer {
     border-top: 1px solid #e0e0e0;
   }
 
+  .label_name_show {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+  line-height: 1.6;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 20px;
+  }
+  
+  .phone-input {
+    font-size: 18px;
+    padding: 14px 8px;
+  }
+  
+  .label_name_show {
+    font-size: 16px;
+  }
+  
+  .phone-field::before,
+  .phone-field::after {
+    font-size: 24px;
+    left: -30px;
+    right: -30px;
+  }
+}
+
   .list-left{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 
-    .card {
-        width: 100%;
-      //   max-width: 420px;
-        // background: #fff;
-        border-radius: 14px;
-        padding: 10px;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      }
+.card {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffd700 100%);
+  border-radius: 20px;
+  padding: 18px 80px;
+  box-shadow: 0 20px 60px rgba(255, 107, 53, 0.6);
+  position: relative;
+  overflow: visible;
+  animation: cardBurn 1.5s ease-in-out infinite;
+  z-index: 1;
+}
 
-      .phone-field {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-radius: 10px;
-        background: #f8fafc;
-        padding: 8px 10px;
-        border: 1px solid transparent;
-        transition: 0.2s;
+// @keyframes cardBurn {
+//   0%, 100% {
+//     box-shadow: 0 20px 60px rgba(255, 107, 53, 0.6),
+//                 0 0 40px rgba(255, 215, 0, 0.4);
+//   }
+//   50% {
+//     box-shadow: 0 20px 80px rgba(255, 107, 53, 0.8),
+//                 0 0 80px rgba(255, 215, 0, 0.6);
+//   }
+// }
+
+// /* Fire effect around the card */
+// .card::before {
+//   content: '';
+//   position: absolute;
+//   top: -5px;
+//   left: -5px;
+//   right: -5px;
+//   bottom: -5px;
+//   background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #ff7f00, #ff0000);
+//   background-size: 400% 400%;
+//   border-radius: 22px;
+//   z-index: -1;
+//   animation: flameMove 2s ease infinite;
+//   filter: blur(10px);
+//   opacity: 0.8;
+// }
+
+// @keyframes flameMove {
+//   0%, 100% {
+//     background-position: 0% 50%;
+//   }
+//   50% {
+//     background-position: 100% 50%;
+//   }
+// }
+
+// /* Firework particles */
+// .card::after {
+//   content: '';
+//   position: absolute;
+//   top: 50%;
+//   left: 50%;
+//   width: 10px;
+//   height: 10px;
+//   background: transparent;
+//   z-index: 10;
+//   pointer-events: none;
+//   box-shadow: 
+//     /* Ring 1 */
+//     0px -100px 0 5px #ff0080,
+//     70px -70px 0 5px #ff4d00,
+//     100px 0px 0 5px #ffd700,
+//     70px 70px 0 5px #00ff88,
+//     0px 100px 0 5px #00d4ff,
+//     -70px 70px 0 5px #8c00ff,
+//     -100px 0px 0 5px #ff0080,
+//     -70px -70px 0 5px #ff4d00,
+//     /* Ring 2 */
+//     0px -150px 0 3px #ffff00,
+//     105px -105px 0 3px #ff6b35,
+//     150px 0px 0 3px #00ff88,
+//     105px 105px 0 3px #00d4ff,
+//     0px 150px 0 3px #8c00ff,
+//     -105px 105px 0 3px #ff0080,
+//     -150px 0px 0 3px #ffd700,
+//     -105px -105px 0 3px #ff4d00;
+//   animation: fireworks 2s ease-in-out infinite;
+// }
+
+// @keyframes fireworks {
+//   0% {
+//     transform: scale(0) rotate(0deg);
+//     opacity: 0;
+//   }
+//   50% {
+//     opacity: 1;
+//   }
+//   100% {
+//     transform: scale(1) rotate(180deg);
+//     opacity: 0;
+//   }
+// }
+
+    .phone-field {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 50px;
+      padding: 2px 2px 2px 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      transition: all 0.3s ease;
+      border: 3px solid transparent;
+      animation: pulseGlow 1.5s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        border-color: rgba(255, 215, 0, 0.5);
+        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3),
+                    0 0 30px rgba(255, 215, 0, 0.4);
       }
-    
-      .phone-field:focus-within {
-        border-color: rgba(59,130,246,0.6);
-        box-shadow: 0 6px 18px rgba(59,130,246,0.08);
-        background: #fff;
+      50% {
+        border-color: rgba(255, 107, 53, 1);
+        box-shadow: 0 10px 40px rgba(255, 107, 53, 0.6),
+                    0 0 60px rgba(255, 215, 0, 0.8);
       }
-    
+    }
+
+    .phone-field:focus-within {
+      transform: scale(1.03);
+      box-shadow: 0 15px 50px rgba(255, 107, 53, 0.8),
+                  0 0 100px rgba(255, 215, 0, 1);
+      border-color: #ff0000;
+      animation: explosionPulse 0.5s ease-in-out infinite;
+    }
+
+    @keyframes explosionPulse {
+      0%, 100% {
+        transform: scale(1.03);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    /* Floating fire particles around input */
+    .phone-field::before {
+      content: '🔥';
+      position: absolute;
+      left: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 32px;
+      animation: floatFire 1.5s ease-in-out infinite;
+    }
+
+    .phone-field::after {
+      content: '🔥';
+      position: absolute;
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 32px;
+      animation: floatFire 1.5s ease-in-out infinite 0.75s;
+    }
+
+    @keyframes floatFire {
+      0%, 100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-60px) scale(1.2);
+        opacity: 0.7;
+      }
+    }
       .country-code {
         font-weight: 600;
         font-size: 14px;
@@ -335,14 +525,22 @@ ion-footer {
         border-radius: 8px;
       }
     
-      .phone-input {
-        border: none;
-        outline: none;
-        background: transparent;
-        font-size: 16px;
-        width: 100%;
-        padding: 6px;
-      }
+.phone-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 10px 6px;
+  background: transparent;
+  color: #1a1a1a;
+  letter-spacing: 1px;
+}
+
+.phone-input::placeholder {
+  color: #bbb;
+  font-weight: 500;
+}
     
       .hint {
         margin-top: 8px;
@@ -364,7 +562,11 @@ ion-footer {
   .list-left-buttom{
     display: flex;
     flex-direction: row;
-    margin-top: 20px;
+    // margin-top: 20px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
 
     .div-qr-dowload{
         display: flex;
@@ -392,7 +594,7 @@ ion-footer {
   
   .video-container {
     width: 200px;
-    height: 200px;
+    height: 280px;
     border-radius: 12px;
     overflow: hidden;
     background: #000;
