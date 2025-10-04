@@ -66,7 +66,7 @@
 
   </div>
 
-  <div *ngIf="isFranciseMode == true"
+  <!-- <div *ngIf="isFranciseMode == true"
     [ngClass]="apiService.toggleWebviewTab == false ? 'webview-tab' : 'webview-tab hidden'">
     <a *ngFor="let list of webviewList; let i = index" (click)="selectModeFunc(list.link)" href="javascript:void(0)"
       class="item">
@@ -90,7 +90,7 @@
         <div class="name">{{ list.name }}</div>
       </div>
     </a>
-  </div>
+  </div> -->
 
 
 </ion-header>
@@ -140,7 +140,7 @@
       </div>
 
     </a>
-    <a *ngIf="isFranciseMode" (click)="openSmartCB()" href="javascript:void(0)"
+    <a *ngIf="apiService.isFranciseMode == true" (click)="openSmartCB()" href="javascript:void(0)"
       class="item-red control-menu menu-how-to active">
       <div class="text">SMARTCB</div>
       <div class="icon">
@@ -148,7 +148,7 @@
       </div>
     </a>
 
-    <a *ngIf="isFranciseMode" (click)="openHMStoreVending()" href="javascript:void(0)"
+    <a *ngIf="apiService.isFranciseMode == true" (click)="openHMStoreVending()" href="javascript:void(0)"
       class="item-green control-menu menu-how-to active">
       <div class="text">HM Store</div>
       <div class="icon">

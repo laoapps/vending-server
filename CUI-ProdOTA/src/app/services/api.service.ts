@@ -297,6 +297,9 @@ export class ApiService {
 
   allowTopUp = false;
 
+  isFranciseMode: boolean = false;
+
+
   areArraysDifferentUnordered(arr1: string[], arr2: string[]): boolean {
     if (arr1.length !== arr2.length) return true;
 
@@ -373,6 +376,7 @@ export class ApiService {
 
         this.allowTopUp = r?.data?.setting?.isTopUp ?? false;
         this.isAds = r?.data?.setting?.isAds ?? false;
+        this.isFranciseMode = rSetting?.isFranciseMode ?? false;
 
         console.log('ws alive subscription', that.cash, r);
         // console.log('message :', r?.message);

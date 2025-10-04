@@ -244,7 +244,7 @@ export class Tab1Page implements OnDestroy {
   autoShowMyOrderTimer: any = {} as any;
   autoShowMyOrdersCounter: number = 15;
 
-  isFranciseMode: boolean = localStorage.getItem('francisemode') ? true : false;
+  // isFranciseMode: boolean = localStorage.getItem('francisemode') ? true : false;
   // isFranciseMode: boolean = true;
 
 
