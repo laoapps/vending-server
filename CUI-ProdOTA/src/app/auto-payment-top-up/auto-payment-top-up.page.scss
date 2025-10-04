@@ -294,7 +294,7 @@ ion-content {
 
 
 .laab-card-footer.active {
-    height: 700px;
+    height: 850px;
 }
 .laab-card-footer {
     position: absolute;
@@ -492,25 +492,154 @@ ion-content {
 
         .bill-container {
 
-            .bill-header {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
-                margin-top: 40px;
-                color: #fff;
+         .bill-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 40px;
+    color: #fff;
 
-                .qr-img {
-                    width: 220px;
-                    height: 220px;
-                }
+    .qr-container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: float 3s ease-in-out infinite;
+    }
 
-                .total {
-                    font-size: 35px;
-                    font-weight: bold;
-                    padding-top: 15px;
-                }
-            }
+    .qr-img {
+        width: 280px;
+        height: 280px;
+        position: relative;
+        z-index: 20;
+        border-radius: 8px;
+        background: white;
+    }
+
+    .qr-frame-glow {
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border-radius: 12px;
+        z-index: 1;
+        pointer-events: none;
+        box-shadow: 
+            0 0 20px 5px rgba(255, 150, 0, 0.6),
+            0 0 40px 10px rgba(255, 100, 0, 0.4),
+            0 0 60px 15px rgba(255, 50, 0, 0.3),
+            inset 0 0 20px rgba(255, 150, 0, 0.2);
+        animation: frame-glow-pulse 2s ease-in-out infinite;
+        border: 3px solid rgba(255, 150, 0, 0.8);
+    }
+
+    .fire-aura {
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        background: radial-gradient(circle, 
+            rgba(255, 200, 0, 0.3) 0%, 
+            rgba(255, 120, 0, 0.2) 30%, 
+            rgba(255, 50, 0, 0.15) 60%, 
+            transparent 80%);
+        animation: fire-rotate 4s linear infinite, fire-flicker 1.5s ease-in-out infinite;
+        z-index: 0;
+        filter: blur(15px);
+        pointer-events: none;
+    }
+
+    .fire-aura-2 {
+        width: 260px;
+        height: 260px;
+        background: radial-gradient(circle, 
+            rgba(255, 150, 0, 0.25) 0%, 
+            rgba(255, 80, 0, 0.15) 40%, 
+            rgba(255, 0, 0, 0.1) 70%, 
+            transparent 85%);
+        animation: fire-rotate 6s linear infinite reverse, fire-pulse 2s ease-in-out infinite;
+        filter: blur(20px);
+    }
+
+    .fire-aura-3 {
+        width: 270px;
+        height: 270px;
+        background: radial-gradient(circle, 
+            rgba(255, 100, 0, 0.2) 0%, 
+            rgba(255, 50, 0, 0.12) 50%, 
+            transparent 75%);
+        animation: fire-rotate 8s linear infinite, fire-flicker 2.5s ease-in-out infinite;
+        filter: blur(25px);
+    }
+
+    .total {
+        font-size: 35px;
+        font-weight: bold;
+        padding-top: 15px;
+    }
+}
+
+@keyframes fire-rotate {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(180deg) scale(1.05);
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+@keyframes fire-flicker {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes fire-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 0.7;
+    }
+}
+
+@keyframes frame-glow-pulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 20px 5px rgba(255, 150, 0, 0.6),
+            0 0 40px 10px rgba(255, 100, 0, 0.4),
+            0 0 60px 15px rgba(255, 50, 0, 0.3),
+            inset 0 0 20px rgba(255, 150, 0, 0.2);
+        border-color: rgba(255, 150, 0, 0.8);
+    }
+    50% {
+        box-shadow: 
+            0 0 30px 8px rgba(255, 150, 0, 0.8),
+            0 0 60px 15px rgba(255, 100, 0, 0.6),
+            0 0 90px 20px rgba(255, 50, 0, 0.4),
+            inset 0 0 30px rgba(255, 150, 0, 0.4);
+        border-color: rgba(255, 200, 0, 1);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
             .bill-body {
                 display: flex;
                 flex-direction: column;
@@ -722,105 +851,348 @@ ion-content {
 
 
 .list-left {
-  // ຮັກສາຕົ້ນສະບັບ ຫຼືປັບປຸງຕາມໂຄງສ້າງ
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.label_name_show {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+  line-height: 1.6;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffd700 100%);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 20px 60px rgba(255, 107, 53, 0.6);
+  position: relative;
+  overflow: visible;
+  animation: cardBurn 1.5s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes cardBurn {
+  0%, 100% {
+    box-shadow: 0 20px 60px rgba(255, 107, 53, 0.6),
+                0 0 40px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 20px 80px rgba(255, 107, 53, 0.8),
+                0 0 80px rgba(255, 215, 0, 0.6);
+  }
+}
+
+/* Fire effect around the card */
+.card::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #ff7f00, #ff0000);
+  background-size: 400% 400%;
+  border-radius: 22px;
+  z-index: -1;
+  animation: flameMove 2s ease infinite;
+  filter: blur(10px);
+  opacity: 0.8;
+}
+
+@keyframes flameMove {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Firework particles */
+.card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: transparent;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 
+    /* Ring 1 */
+    0px -100px 0 5px #ff0080,
+    70px -70px 0 5px #ff4d00,
+    100px 0px 0 5px #ffd700,
+    70px 70px 0 5px #00ff88,
+    0px 100px 0 5px #00d4ff,
+    -70px 70px 0 5px #8c00ff,
+    -100px 0px 0 5px #ff0080,
+    -70px -70px 0 5px #ff4d00,
+    /* Ring 2 */
+    0px -150px 0 3px #ffff00,
+    105px -105px 0 3px #ff6b35,
+    150px 0px 0 3px #00ff88,
+    105px 105px 0 3px #00d4ff,
+    0px 150px 0 3px #8c00ff,
+    -105px 105px 0 3px #ff0080,
+    -150px 0px 0 3px #ffd700,
+    -105px -105px 0 3px #ff4d00;
+  animation: fireworks 2s ease-in-out infinite;
+}
+
+@keyframes fireworks {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.phone-field {
   display: flex;
-  flex-direction: column; // ປ່ຽນເປັນ column ເພື່ອໃຫ້ label ແລະ card ລົງມາຕໍ່ກັນງາມຂຶ້ນ (ຖ້າເປັນ flex-direction: row ຈະຕ້ອງປັບຄວາມກວ້າງ)
+  align-items: center;
+  background: white;
+  border-radius: 50px;
+  padding: 2px 2px 2px 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  animation: pulseGlow 1.5s ease-in-out infinite;
+  z-index: 2;
+}
 
-  .label_name_show {
-    font-size: 16px;
-    font-weight: 700;
-    color: #1f2937; // ສີເຂັ້ມ
-    margin-bottom: 12px;
-    padding: 0 5px;
+@keyframes pulseGlow {
+  0%, 100% {
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3),
+                0 0 30px rgba(255, 215, 0, 0.4);
   }
+  50% {
+    border-color: rgba(255, 107, 53, 1);
+    box-shadow: 0 10px 40px rgba(255, 107, 53, 0.6),
+                0 0 60px rgba(255, 215, 0, 0.8);
+  }
+}
 
+.phone-field:focus-within {
+  transform: scale(1.03);
+  box-shadow: 0 15px 50px rgba(255, 107, 53, 0.8),
+              0 0 100px rgba(255, 215, 0, 1);
+  border-color: #ff0000;
+  animation: explosionPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes explosionPulse {
+  0%, 100% {
+    transform: scale(1.03);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Floating fire particles around input */
+.phone-field::before {
+  content: '🔥';
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  animation: floatFire 1.5s ease-in-out infinite;
+}
+
+.phone-field::after {
+  content: '🔥';
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  animation: floatFire 1.5s ease-in-out infinite 0.75s;
+}
+
+@keyframes floatFire {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-60px) scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.country-code {
+  font-weight: 700;
+  color: #ff6b35;
+  font-size: 16px;
+  margin-right: 6px;
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.phone-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 10px 6px;
+  background: transparent;
+  color: #1a1a1a;
+  letter-spacing: 1px;
+}
+
+.phone-input::placeholder {
+  color: #bbb;
+  font-weight: 500;
+}
+
+.phone-icon {
+  background: linear-gradient(135deg, #ff0000 0%, #ff6b35 50%, #ffd700 100%);
+  color: white;
+  font-size: 24px;
+  padding: 14px;
+  border-radius: 50%;
+  min-width: 52px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: iconBlaze 1s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+}
+
+@keyframes iconBlaze {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+  }
+  50% {
+    transform: scale(1.15) rotate(5deg);
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+  }
+}
+
+/* Sparks shooting upward */
+.list-left::before {
+  content: '✨💥✨';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  animation: sparksShoot 2s ease-in-out infinite;
+  z-index: 5;
+}
+
+@keyframes sparksShoot {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100px);
+  }
+}
+
+/* Additional firework burst */
+.list-left::after {
+  content: '💥';
+  position: absolute;
+  top: 20px;
+  right: -20px;
+  font-size: 48px;
+  animation: burstEffect 3s ease-in-out infinite;
+  z-index: 5;
+}
+
+@keyframes burstEffect {
+  0%, 90% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  95% {
+    opacity: 1;
+    transform: scale(1.5) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(360deg);
+  }
+}
+
+.hint {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  color: #e53e3e;
+  font-weight: 500;
+  font-size: 14px;
+  animation: shake 0.5s ease-in-out;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
   .card {
-    width: 100%;
-    border-radius: 18px; // ມົນຂຶ້ນ
-    padding: 15px 20px; // ເພີ່ມ padding
-    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.15); // ເງົາເລິກຂຶ້ນ
-    background: linear-gradient(135deg, #ffffff, #f9f9f9); // ເພີ່ມ gradient ອ່ອນໆ
-  }
-
-  .phone-field {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-radius: 12px;
-    // ປ່ຽນພື້ນຫຼັງໃຫ້ໂດດເດັ່ນຂຶ້ນດ້ວຍສີທີ່ອ່ອນກວ່າ
-    background: #ffffff; 
-    padding: 12px 15px; // ເພີ່ມ padding
-    border: 2px solid #facc15; /* Yellow border: ສີເຫຼืองຂອງ LAABX */
-    animation: glow-laabx 2s ease-in-out infinite; /* Continuous glowing animation */
-    transition: all 0.3s ease;
-  }
-
-  // Animation ປັບປຸງໃຫ້ເບິ່ງຄື 'Breath' ຫຼື 'Pulse' ຫຼາຍຂຶ້ນ
-  @keyframes glow-laabx {
-    0% {
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.6), 0 0 0 rgba(250, 204, 21, 0); // ເລີ່ມຕົ້ນດ້ວຍແສງອ່ອນ
-      border-color: #facc15;
-    }
-    50% {
-      box-shadow: 0 0 15px rgba(250, 204, 21, 0.9), 0 0 25px rgba(250, 204, 21, 0.5); // ແສງເຫຼືອງທີ່ເຂັ້ມຂຶ້ນ
-      border-color: #eab308; // ເຂັ້ມຂຶ້ນເມື່ອສ່ອງແສງ
-    }
-    100% {
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.6), 0 0 0 rgba(250, 204, 21, 0);
-      border-color: #facc15;
-    }
-  }
-
-  .phone-field:focus-within {
-    background: #fffef2; // ເພີ່ມສີອ່ອນໆເມື່ອເນັ້ນ
-    border-color: #eab308; // ເສັ້ນຂອບຈະເຂັ້ມຂຶ້ນ
-    box-shadow: 0 0 10px rgba(234, 179, 8, 0.7); // ປິດ animation ຊົ່ວຄາວໃນຂະນະທີ່ພິມ
-    animation: none; // ປິດ animation ເມື່ອເນັ້ນ (ເພື່ອບໍ່ໃຫ້ລົບກວນການພິມ)
-  }
-
-  .country-code {
-    font-weight: 700; // ຕົວໜາ
-    font-size: 16px;
-    background: #f8fafc; // ສີພື້ນຫຼັງ
-    color: #1f2937;
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0; // ເພີ່ມເສັ້ນຂອບອ່ອນໆ
-  }
-
-  .phone-input {
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: 18px; // ໃຫຍ່ຂຶ້ນເລັກນ້ອຍ
-    width: 100%;
-    padding: 6px 0; // ປັບ padding ໃຫ້ງາມ
-    color: #1f2937;
-    font-family: monospace; // ໃຊ້ font ທີ່ເໝາະສົມກັບຕົວເລກ
-  }
-
-  .phone-input::placeholder {
-    color: #a1a1aa; // ສີເທົາ
-    font-weight: 300;
+    padding: 20px;
   }
   
-  .phone-icon {
-    font-size: 24px;
-    color: #facc15; // ໃຊ້ສີເຫຼືອງເປັນສີຫຼັກ
-    margin-left: 5px;
-    transition: transform 0.3s;
-
-    .phone-field:focus-within & {
-      // ເພີ່ມການປ່ຽນແປງເມື່ອເນັ້ນ (ເຊັ່ນ: ໝຸນ)
-      transform: scale(1.1); 
-    }
+  .phone-input {
+    font-size: 18px;
+    padding: 14px 8px;
   }
-
-  .hint {
-    margin-top: 10px;
-    color: #dc2626;
-    font-size: 14px;
-    font-weight: 500;
+  
+  .label_name_show {
+    font-size: 16px;
+  }
+  
+  .phone-field::before,
+  .phone-field::after {
+    font-size: 24px;
+    left: -30px;
+    right: -30px;
   }
 }
 

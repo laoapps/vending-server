@@ -2760,7 +2760,7 @@ export class Tab1Page implements OnDestroy {
       }
       console.log('props_data', props_data);
       const that = this;
-      this.apiService.modal.create({ component: AutoPaymentTopUpPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
+      this.apiService.modal.create({ component: AutoPaymentTopUpPage, componentProps: props_data, cssClass: 'dialog-fullscreenQR' }).then(r => {
         r.present();
         this.otherModalAreOpening = true;
         // this.apiService.allModals.push(this.apiService.modal);

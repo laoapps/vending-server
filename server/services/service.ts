@@ -31,7 +31,7 @@ console.log(`redis host`, redisHost, `redis port`, redisPort);
 
 // **** 2 ***
 
-export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort );
+export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort);
 
 
 // **** 1 ***
@@ -275,7 +275,7 @@ export function setVendingEvent(event: string, data: IVendingEventLog): Promise<
     return new Promise<boolean>(async (resolve, reject) => {
         try {
             redisClient.set(event, JSON.stringify(data));
-            await vendingMachineEntity.create(data); 
+            await vendingMachineEntity.create(data);
             resolve(true);
         } catch (error) {
             reject(error);
@@ -297,12 +297,12 @@ export function getVendingEvent(event: string): Promise<IVendingEventLog> {
         }
     });
 }
-export function listVendingEventLogs(machineId:string,date:number,month:number,year:number, offset = 0, limit = 100): Promise<{ rows: IVendingEventLog[], count: number }> {
+export function listVendingEventLogs(machineId: string, date: number, month: number, year: number, offset = 0, limit = 100): Promise<{ rows: IVendingEventLog[], count: number }> {
     return new Promise<{ rows: IVendingEventLog[], count: number }>(async (resolve, reject) => {
         try {
-            const r = await vendingMachineEntity.findAndCountAll({ where: { machineId,date,month,year }, order: [['createdAt', 'DESC']], limit, offset });
+            const r = await vendingMachineEntity.findAndCountAll({ where: { machineId, date, month, year }, order: [['createdAt', 'DESC']], limit, offset });
             resolve(r);
-        }catch (error) {
+        } catch (error) {
             reject(error);
         }
     })

@@ -81,7 +81,8 @@
                 <label class="phone-field">
                   <span class="country-code">+85620</span>
                   <input name="phone" [(ngModel)]="phone" required minlength="8" type="tel" inputmode="tel"
-                    maxlength="8" placeholder="xxxx xxxx" class="phone-input" (ngModelChange)="autoSubmit(f)" />
+                    maxlength="8" placeholder="xxxx xxxx" class="phone-input" #phoneInput
+                    (ngModelChange)="autoSubmit(f,phoneInput)" />
                   <ion-icon name="call-outline" class="phone-icon"></ion-icon>
                 </label>
 
@@ -174,9 +175,29 @@
             <div *ngIf="isPayment == true" class="bill-wave-top">
               <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
             </div>
-            <div class="bill-header">
+            <!-- <div class="bill-header">
               <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
                 class="qr-img">
+              <div *ngIf="isPayment == false" class="loader"></div>
+
+              <div class="total"
+                style="margin-top: 15px;font-size: 40px;font-weight: bold;color: black;background-color: white; padding: 8px;">
+                {{ parseGetTotalSale.t | number }}</div>
+              <div *ngIf="isPayment == true"
+                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
+                ໜ້ານີ້ຈະປິດພາຍໃນ {{
+                countdownDestroy }} ວິນາທີ </div>
+            </div> -->
+
+            <div class="bill-header">
+              <div class="qr-container" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }">
+                <div class="fire-aura"></div>
+                <div class="fire-aura fire-aura-2"></div>
+                <div class="fire-aura fire-aura-3"></div>
+                <div class="qr-frame-glow"></div>
+                <img src="" alt="" id="qr-img" class="qr-img">
+              </div>
+
               <div *ngIf="isPayment == false" class="loader"></div>
 
               <div class="total"

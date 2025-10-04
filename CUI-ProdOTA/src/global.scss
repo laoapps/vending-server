@@ -149,6 +149,16 @@ ion-item {
 	}
   }
 
+
+    .dialog-fullscreenQR {
+	align-items: center;
+	justify-content: center; 
+	&::part(content){
+	  width: 90%;
+	  height: 90%; 
+	}
+  }
+
 .form-control:focus {
     box-shadow: none;
     border-color: #DA0037;
