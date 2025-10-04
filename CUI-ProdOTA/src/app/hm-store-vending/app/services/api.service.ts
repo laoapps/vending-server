@@ -40,7 +40,7 @@ export class ApiService {
 
   loadpost_bystoreuuid(data: any): Observable<any> {
     const header = this.headerBase();
-    return this.http.post(this.url_onlinestore + 'post_3apps/selmany_bystoreuuid', data, { headers: header });
+    return this.http.post(this.url_onlinestore + 'post_3apps/selmany_bystoreuuid_visible', data, { headers: header });
   }
 
   changeQuotationsToOrder(param: any): Observable<any> {
