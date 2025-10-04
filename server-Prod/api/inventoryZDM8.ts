@@ -147,7 +147,7 @@ import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmo
 import { IProductImage } from "../models/sys.model";
 import { WarehouseFactory } from "../entities/warehouse.entity";
 import { uploadExcelMemory } from "../middlewares/upload.middleware";
-import { uploadExcelFile } from "../controllers/excel.controller";
+import { uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -3901,6 +3901,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const versionId = o.data[0]?.versionId || '';
                                 const qrPayment = o.data[0]?.qrPayment || false;
                                 const isTopUp = o.data[0]?.isTopUp || false;
+                                const isFranciseMode = o.data[0]?.isFranciseMode || false;
 
 
                                 const imgh = o.data[0]?.imgHeader;
@@ -3915,7 +3916,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode };
                                     r.data.push(a);
                                 }
                                 else {
@@ -3931,6 +3932,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.versionId = versionId;
                                     a.qrPayment = qrPayment;
                                     a.isTopUp = isTopUp;
+                                    a.isFranciseMode = isFranciseMode;
                                 }
 
                                 // r.data = [a];
@@ -4211,6 +4213,12 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
                 this.authorizeSuperAdmin, uploadExcelFile);
+
+
+            router.post(this.path + '/reportAllBilling', uploadExcelMemory.single('file'), this.checkSuperAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                this.authorizeSuperAdmin, uploadExcelFileAndCheckBillNotPaid);
 
             router.post(this.path + '/reportLogsTemp',
                 this.checkSuperAdmin,
@@ -4709,7 +4717,7 @@ export class InventoryZDM8 implements IBaseClass {
         const m = new Array<{ machine: any, status: any }>();
         for (let index = 0; index < this.wsClient.length; index++) { m.push({ machine: this.findMachineId(this.wsClient[index]['machineId']), status: await readMachineStatus(this.wsClient[index]['machineId']) }); }
         return m;
-    } 
+    }
     findOnlneMachine(machineId: string): any {
         return this.wsClient.find((v) => {
             if (machineId == v['machineId']) {

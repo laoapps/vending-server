@@ -170,6 +170,8 @@
                           [(ngModel)]="settings[p.machineId].qrPayment"></ion-checkbox> </div>
                       <div style="float: left;"> <ion-icon name="trophy-outline"></ion-icon><ion-checkbox
                           [(ngModel)]="settings[p.machineId].isTopUp"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="trophy-outline"></ion-icon><ion-checkbox
+                          [(ngModel)]="settings[p.machineId].isFranciseMode"></ion-checkbox> </div>
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 
