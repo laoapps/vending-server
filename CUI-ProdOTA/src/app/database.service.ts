@@ -35,7 +35,7 @@ export class DatabaseService {
       await this.db.execute(createTable);
       console.log('Database initialized');
     } catch (e) {
-      console.error('Error initializing database:', e);
+      console.error('Error initializing database:', JSON.stringify(e));
     }
   }
 

@@ -31,7 +31,7 @@ console.log(`redis host`, redisHost, `redis port`, redisPort);
 
 // **** 2 ***
 
-export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort );
+export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort);
 
 
 // **** 1 ***
@@ -275,7 +275,7 @@ export function setVendingEvent(event: string, data: IVendingEventLog): Promise<
     return new Promise<boolean>(async (resolve, reject) => {
         try {
             redisClient.set(event, JSON.stringify(data));
-            await vendingMachineEntity.create(data); 
+            await vendingMachineEntity.create(data);
             resolve(true);
         } catch (error) {
             reject(error);
@@ -297,12 +297,12 @@ export function getVendingEvent(event: string): Promise<IVendingEventLog> {
         }
     });
 }
-export function listVendingEventLogs(machineId:string,date:number,month:number,year:number, offset = 0, limit = 100): Promise<{ rows: IVendingEventLog[], count: number }> {
+export function listVendingEventLogs(machineId: string, date: number, month: number, year: number, offset = 0, limit = 100): Promise<{ rows: IVendingEventLog[], count: number }> {
     return new Promise<{ rows: IVendingEventLog[], count: number }>(async (resolve, reject) => {
         try {
-            const r = await vendingMachineEntity.findAndCountAll({ where: { machineId,date,month,year }, order: [['createdAt', 'DESC']], limit, offset });
+            const r = await vendingMachineEntity.findAndCountAll({ where: { machineId, date, month, year }, order: [['createdAt', 'DESC']], limit, offset });
             resolve(r);
-        }catch (error) {
+        } catch (error) {
             reject(error);
         }
     })
@@ -806,4 +806,50 @@ export function CheckMmoneyPaid(transactionID: string): Promise<{ status: number
             resolve({ status: 0, message: error })
         }
     })
+}
+
+// Store payment transaction when QR code is generated
+export async function storePaymentTransaction(machineId:string, transactionId:string) {
+    const key = `unpaid:${machineId}:${transactionId}`;
+    // Set with 10-minute TTL (300 seconds)
+    await redisClient.set(key, JSON.stringify({ machineId, transactionId, createdAt: Date.now() }), 'EX', 600);
+}
+
+// Mark payment as paid (remove from unpaid list)
+export async function markPaymentAsPaid(machineId:string, transactionId:string) {
+    const key = `unpaid:${machineId}:${transactionId}`;
+    await redisClient.del(key);
+}
+
+// Monitor and clean up unpaid transactions
+export async function monitorUnpaidPayments(machineId:string) {
+    try {
+        // Get all keys matching the unpaid pattern
+        const keys = await redisClient.keys(`unpaid:${machineId}:*`);
+
+        if (keys.length === 0) {
+            console.log('No unpaid transactions found');
+            return [];
+        }
+
+        // Get all unpaid transactions
+        const transactions = await redisClient.mget(...keys);
+        const unpaidTransactions = transactions
+            .map((data, index) => data ? { key: keys[index], ...JSON.parse(data) } : null)
+            .filter(Boolean);
+
+        // Remove all found transactions (as per requirement: remove after checking)
+        await redisClient.del(...keys);
+
+        // Log and return the transactions that were removed
+        console.log(`Removed ${keys.length} unpaid/expired transactions`);
+        return unpaidTransactions.map(t => ({
+            machineId: t.machineId,
+            transactionId: t.transactionId,
+            createdAt: t.createdAt
+        }));
+    } catch (error) {
+        console.error('Error monitoring unpaid payments:', error);
+        throw error;
+    }
 }

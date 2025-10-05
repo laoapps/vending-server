@@ -1,0 +1,65 @@
+services:
+  vender-server-service6:
+    build: . 
+    restart: always
+    container_name: vender-server-service6
+    # image: touyara/orderbillingapi:v1
+    # command: npm start
+    environment:
+      - DATABASE_URL=postgres://dbvenderserveradmin:2Grg7Dith14P@postgres:5432/dbvenderservice5
+      - DATABASE_HOST=vending-db5
+      - REDIS_HOST=redis://vending-redis-service5:6379
+      - REDIS_SERVER_HOST=vending-redis-service5
+      - REDIS_SERVER_PORT=6379
+
+      # - REDIS_HOST=host.docker.internal
+      - REDIS_LOCAL_HOST=host.docker.internal
+      - REDIS_LOCAL_PORT=6379
+      
+      # - LAAB_URL=http://host.docker.internal:30000
+      # - EPIN_URL=http://host.docker.internal:30001
+      # - TEST_CALLBACK:http://host.docker.internal:9006
+      # - USERMANAGER_HOST=http://host.docker.internal:4500
+
+      - LAAB_URL=https://laab-api.laoapps.com
+      - EPIN_URL=https://epin-api.laoapps.com
+      - TEST_CALLBACK=http://laoapps.com:9006
+      - USERMANAGER_HOST=https://nocnoc-api.laoapps.com
+
+      - DATABASE_USER=dbvenderserveradmin
+      - DATABASE_DB=dbvenderservice5
+      - DATABASE_PASSWORD=2Grg7Dith14P
+      - VENDING=true
+      - PORT=9048
+      - KIOSKLAABPORT=31224
+      - ADMIN_SECRET_KEY=sdsfdfmedfefijeidjisnnveefiefj
+
+
+      - SERVICE_NAME=ADMINVENDINGSERVICE
+      - SERVICE_BACKEND_KEY=cf4f51eb-c999-4077-b7ca-110a66d563e5
+
+      - backendKey=2d3e210c-1069-4b18-9dd7-a2ec70b57a06
+      - production=false
+      - name=SHAREHAPPINESS
+
+      - NOCNOC_SERVER=
+      - SERVER_URL=https://vending-service-api5.laoapps.com
+
+    ports:
+      - 51238:31238
+      - 9048:9048
+    volumes:
+      - .:/app
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - back-notused:/opt/app/node_modules
+    networks:
+      - venderserverservice5
+
+
+  
+volumes:
+  back-notused:
+  vending-data:
+networks:
+  venderserverservice5:

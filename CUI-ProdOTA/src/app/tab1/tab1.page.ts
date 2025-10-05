@@ -684,7 +684,8 @@ export class Tab1Page implements OnDestroy {
   }
 
   async ngOnInit() {
-
+    // this.startTestMotor();
+    // return;
 
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
@@ -3600,6 +3601,24 @@ export class Tab1Page implements OnDestroy {
 
 
 
+  }
+
+  startTestMotor(){
+        this.serial?.close();
+        this.apiService.modal.create({
+          component: TestmotorPage,
+          componentProps: { serial: this.serial }
+        }).then(r => {
+          r.present();
+          r.onDidDismiss().then(r => {
+            this.serial?.close();
+          })
+        })
+
+        if (this.t) {
+          clearTimeout(this.t);
+          this.t = null;
+        }
   }
   // openads() {
   //   this.apiService.modal

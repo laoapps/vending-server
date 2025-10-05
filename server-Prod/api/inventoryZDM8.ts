@@ -52,6 +52,9 @@ import {
     listVendingEventLogs,
     getVendingEvent,
     setVendingEvent,
+    storePaymentTransaction,
+    markPaymentAsPaid,
+    monitorUnpaidPayments,
 } from "../services/service";
 import {
     EClientCommand,
@@ -546,6 +549,15 @@ export class InventoryZDM8 implements IBaseClass {
                                 transactionID + ''
                                 // mId + '' + transactionID + ""
                             );
+                            //
+
+                            /// store payment transaction in redis
+                            await storePaymentTransaction(machineId.machineId, transactionID + '');
+
+
+
+
+
                             if (!qr.qrCode) throw new Error(EMessage.GenerateQRMMoneyFailed);
                             const bill = {
                                 uuid: uuid4(),
@@ -1476,50 +1488,93 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['machineId']?.ownerUuid || "";
+                        const ownerUuid = res.locals['machineId']?.ownerUuid+'' || "";
                         // console.log('ownerUuid :', ownerUuid);
 
-                        const machineId = res.locals['machineId']?.machineId;
+                        const machineId = res.locals['machineId']?.machineId+'' || "";
                         // console.log('machineId :', machineId);
 
-                        const entx = VendingMachineBillFactory(
-                            EEntity.vendingmachinebillpaid + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await entx.sync();
 
-                        entx
-                            .findAll({
-                                where: {
-                                    machineId, paymentstatus: EPaymentStatus.paid, createdAt: {
-                                        [Op.gte]: momenttz().tz('UTC').subtract(15, 'minutes').toDate(),
-                                        [Op.lte]: momenttz().tz('UTC').toDate(),
-                                    },
-                                },
-                                order: [['createdAt', 'DESC']],
-                            })
-                            .then((r) => {
-                                this.getBillProcess(machineId, (b) => {
-                                    console.log("getPaidBills length", r.length, b.map(v => v.bill)?.length);
-                                    console.log("getPaidBills", r.map(v => { return { t: v.transactionID, paymentstatus: v.paymentstatus } }), b.map(v => v.bill)?.length);
-                                    const resx = {} as IResModel;
-                                    resx.command = EMACHINE_COMMAND.waitingt;
-                                    resx.message = EMessage.waitingt;
-                                    resx.status = 1;
-                                    resx.data = b.filter((v) => v.ownerUuid == ownerUuid && v?.bill?.paymentstatus == EPaymentStatus.paid);
-                                    this.sendWSToMachine(machineId, resx);
-                                    res.send(
-                                        PrintSucceeded(
-                                            "getPaidBills",
-                                            resx.data, EMessage.succeeded, returnLog(req, res)
-                                        )
-                                    );
-                                });
-                                // res.send(PrintSucceeded("getPaidBills", r, EMessage.succeeded, returnLog(req, res)));
-                            })
-                            .catch((e) => {
-                                res.send(PrintError("init", e, EMessage.error, returnLog(req, res, true)));
-                            });
+                        // using database method
+                        // const entx = VendingMachineBillFactory(
+                        //     EEntity.vendingmachinebillpaid + "_" + ownerUuid,
+                        //     dbConnection
+                        // );
+                        // await entx.sync();
+
+                        // entx
+                        //     .findAll({
+                        //         where: {
+                        //             machineId, paymentstatus: EPaymentStatus.paid, createdAt: {
+                        //                 [Op.gte]: momenttz().tz('UTC').subtract(15, 'minutes').toDate(),
+                        //                 [Op.lte]: momenttz().tz('UTC').toDate(),
+                        //             },
+                        //         },
+                        //         order: [['createdAt', 'DESC']],
+                        //     })
+                        //     .then((r) => {
+                        //         console.log("getPaidBills length", r.length);
+                        //         console.log("getPaidBills", r.map(v => { return { t: v.transactionID, paymentstatus: v.paymentstatus } }));
+                        //         const resx = {} as IResModel;
+                        //         resx.command = EMACHINE_COMMAND.waitingt;
+                        //         resx.message = EMessage.waitingt;
+                        //         resx.status = 1;
+
+                        //         const rx = [];
+                        //         r.forEach(v => {
+                        //             if (v.paymentstatus == EPaymentStatus.paid) {
+                        //                 v.vendingsales.forEach(ve => {
+                        //                     rx.push({
+                        //                         ownerUuid,
+                        //                         position: ve.position,
+                        //                         bill: r,
+                        //                         transactionID: getNanoSecTime(),
+                        //                     });
+
+                        //                 })
+                        //             }
+
+
+                        //         })
+
+                        //         resx.data = rx;
+                        //         this.sendWSToMachine(machineId, resx);
+                        //         res.send(
+                        //             PrintSucceeded(
+                        //                 "getPaidBills",
+                        //                 resx.data, EMessage.succeeded, returnLog(req, res)
+                        //             )
+                        //         );
+                        //     })
+                        //     .catch((e) => {
+                        //         res.send(PrintError("init", e, EMessage.error, returnLog(req, res, true)));
+                        //     });
+
+
+                        /// using redis method
+                        this.getBillProcess(machineId, async (b) => {
+                            console.log("getPaidBills length", b.map(v => v.bill)?.length);
+                            console.log("getPaidBills", b.map(v => v.bill)?.length);
+
+                            const resx = {} as IResModel;
+                            resx.command = EMACHINE_COMMAND.waitingt;
+                            resx.message = EMessage.waitingt;
+                            resx.status = 1;
+
+                            const rx = b.filter((v) => v.ownerUuid == ownerUuid && v?.bill?.paymentstatus == EPaymentStatus.paid);
+
+                            // check unpaid payment from LapNet
+                            await monitorUnpaidPayments(machineId);
+                            resx.data =rx;
+
+                            this.sendWSToMachine(machineId, resx);
+                            res.send(
+                                PrintSucceeded(
+                                    "getPaidBills",
+                                    resx.data, EMessage.succeeded, returnLog(req, res)
+                                )
+                            );
+                        });
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("getPaidBills", error, EMessage.error, returnLog(req, res, true)));
@@ -6633,7 +6688,6 @@ export class InventoryZDM8 implements IBaseClass {
                 console.log('TransactionID', transactionID);
                 const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || "";
                 // console.log("GET transactionID by owner", ownerUuid);
-
                 // Early exit if ownerUuid is not found in production mode
                 if (!ownerUuid && this.production) {
                     console.log(EMessage.TransactionTimeOut);
@@ -6688,6 +6742,11 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
+                    
+                    // mark bill as paid
+                     await markPaymentAsPaid(bill.machineId,transactionID);
+                
+
                     // console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
 
                     // WebSocket response
