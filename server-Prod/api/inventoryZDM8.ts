@@ -4273,7 +4273,8 @@ export class InventoryZDM8 implements IBaseClass {
             router.post(this.path + '/reportAllBilling', this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
-                this.authorizeSuperAdmin, reportAllBill);
+                // this.authorizeSuperAdmin,
+                reportAllBill);
 
             router.post(this.path + '/reportLogsTemp',
                 this.checkSuperAdmin,
