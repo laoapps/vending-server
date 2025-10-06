@@ -150,7 +150,7 @@ import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmo
 import { IProductImage } from "../models/sys.model";
 import { WarehouseFactory } from "../entities/warehouse.entity";
 import { uploadExcelMemory } from "../middlewares/upload.middleware";
-import { uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
+import { reportAllBill, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1488,10 +1488,10 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkMachineIdToken.bind(this),
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['machineId']?.ownerUuid+'' || "";
+                        const ownerUuid = res.locals['machineId']?.ownerUuid + '' || "";
                         // console.log('ownerUuid :', ownerUuid);
 
-                        const machineId = res.locals['machineId']?.machineId+'' || "";
+                        const machineId = res.locals['machineId']?.machineId + '' || "";
                         // console.log('machineId :', machineId);
 
 
@@ -1565,7 +1565,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                             // check unpaid payment from LapNet
                             await monitorUnpaidPayments(machineId);
-                            resx.data =rx;
+                            resx.data = rx;
 
                             this.sendWSToMachine(machineId, resx);
                             res.send(
@@ -4270,10 +4270,10 @@ export class InventoryZDM8 implements IBaseClass {
                 this.authorizeSuperAdmin, uploadExcelFile);
 
 
-            router.post(this.path + '/reportAllBilling', uploadExcelMemory.single('file'), this.checkSuperAdmin,
+            router.post(this.path + '/reportAllBilling', this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
-                this.authorizeSuperAdmin, uploadExcelFileAndCheckBillNotPaid);
+                this.authorizeSuperAdmin, reportAllBill);
 
             router.post(this.path + '/reportLogsTemp',
                 this.checkSuperAdmin,
@@ -6742,10 +6742,10 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
-                    
+
                     // mark bill as paid
-                     await markPaymentAsPaid(bill.machineId,transactionID);
-                
+                    await markPaymentAsPaid(bill.machineId, transactionID);
+
 
                     // console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
 

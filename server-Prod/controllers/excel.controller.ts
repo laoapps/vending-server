@@ -8,6 +8,7 @@ import { dbConnection } from "../entities";
 import { Op, where } from "sequelize";
 import https from 'https';
 import axios from "axios";
+import { PrintError, PrintSucceeded } from "../services/service";
 
 
 
@@ -202,6 +203,43 @@ export const uploadExcelFileAndCheckBillNotPaid = async (req: Request, res: Resp
             message: "Failed to process Excel file",
             error: error.message
         });
+    }
+};
+
+
+
+
+export const reportAllBill = async (req: Request, res: Response) => {
+    try {
+
+        const data = req.body;
+
+        // ถ้าไม่มีไฟล์ส่งมา
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "No file uploaded. Please select an Excel file."
+            });
+        }
+        const ownerUuid = res.locals["ownerUuid"];
+        // console.log('ownerUuid :', ownerUuid);
+
+        const machineId = data.machineId;
+        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+
+
+        const runData = await getReportAllBill(machineId, fromDate.toString(), toDate.toString(), ownerUuid);
+        if (!runData) {
+            return res.send(PrintSucceeded('reportAllBilling', [], EMessage.succeeded))
+        }
+
+        return res.send(PrintSucceeded('reportAllBilling', runData, EMessage.succeeded))
+
+
+    } catch (error: any) {
+        console.error("Error reading Excel:", error);
+        return res.send(PrintError('reportAllBilling', error, EMessage.unknownError));
     }
 };
 
