@@ -140,11 +140,11 @@ POST https://hangmistore-api.laoapps.com/api/v1/authUM/register4 HTTP/1.1
 Content-Type: application/json
 
  {
-    "name": "+8562076143515",
-    "phoneNumber": "+8562076143515",
-    "username": "+8562076143515",
+    "name": "+8562052717709",
+    "phoneNumber": "+8562052717709",
+    "username": "+8562052717709",
     "password": "1234567890",
-    "googleToken": { "phoneNumber": "+8562076143515", "otp": "111111" },
-    "orderBill": [{"value":16000}],
-    "trandID": "205551632120251006111624"
+    "googleToken": { "phoneNumber": "+8562052717709", "otp": "111111" },
+    "orderBill":[{"value":16000}],
+    "trandID": "205551632120251007110743"
 }

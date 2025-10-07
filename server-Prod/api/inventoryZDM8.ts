@@ -4276,6 +4276,27 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.authorizeSuperAdmin,
                 reportAllBill);
 
+
+            router.post(this.path + '/findPhoneNumberByUUid',
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                // this.authorizeSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const uuid = req.body.uuid;
+                        if (!uuid) {
+                            return res.send(PrintError('findPhoneNumberByUUid', {}, EMessage.notfound));
+                        }
+
+                        const phone = await findPhoneNumberByUuidOnUserManager(uuid);
+                        return res.send(PrintSucceeded('findPhoneNumberByUUid', phone, EMessage.succeeded))
+
+                    } catch (error) {
+                        console.error('Error findPhoneNumberByUUid is :', JSON.stringify(error));
+                        res.send(PrintError('findPhoneNumberByUUid', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
             router.post(this.path + '/reportLogsTemp',
                 this.checkSuperAdmin,
                 this.checkAdmin,
