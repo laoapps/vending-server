@@ -213,14 +213,6 @@ export const reportAllBill = async (req: Request, res: Response) => {
     try {
 
         const data = req.body;
-
-        // ถ้าไม่มีไฟล์ส่งมา
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: "No file uploaded. Please select an Excel file."
-            });
-        }
         const ownerUuid = res.locals["ownerUuid"];
         // console.log('ownerUuid :', ownerUuid);
 
