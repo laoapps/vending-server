@@ -4270,6 +4270,12 @@ export class InventoryZDM8 implements IBaseClass {
                 this.authorizeSuperAdmin, uploadExcelFile);
 
 
+            router.post(this.path + '/reportAllBillingNotReceive', this.checkSuperAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                // this.authorizeSuperAdmin,
+                uploadExcelFileAndCheckBillNotPaid);
+
             router.post(this.path + '/reportAllBilling', this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),
