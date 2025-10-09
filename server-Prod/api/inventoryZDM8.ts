@@ -3,7 +3,7 @@ import e, { NextFunction, Request, Response, Router } from "express";
 import * as WebSocketServer from "ws";
 
 import crypto from 'crypto';
-import cryptojs from "crypto-js";
+import cryptojs, { AES } from "crypto-js";
 import * as uuid from "uuid";
 import https from 'https';
 
@@ -151,6 +151,7 @@ import { IProductImage } from "../models/sys.model";
 import { WarehouseFactory } from "../entities/warehouse.entity";
 import { uploadExcelMemory } from "../middlewares/upload.middleware";
 import { reportAllBill, reportAllBillNotPaid, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
+import { RecordBillingFactory } from "../entities/recordbilling.entity";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -4278,6 +4279,24 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkDisabled.bind(this),
                 // this.authorizeSuperAdmin,
                 reportAllBill);
+
+
+            router.post(this.path + '/reportBillHistory', this.checkSuperAdmin,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                // this.authorizeSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const ent = RecordBillingFactory(EEntity.RecordBilling, dbConnection);
+                        const resData = await ent.findAll({
+                            order: [['id', 'DESC']]
+                        });
+                        return res.send(PrintSucceeded('reportBillHistory', resData, EMessage.succeeded))
+                    } catch (error) {
+                        console.error('Error reportBillHistory is :', JSON.stringify(error));
+                        res.send(PrintError('reportBillHistory', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
 
 
             router.post(this.path + '/findPhoneNumberByUUid',
