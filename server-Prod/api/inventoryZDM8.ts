@@ -150,7 +150,7 @@ import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmo
 import { IProductImage } from "../models/sys.model";
 import { WarehouseFactory } from "../entities/warehouse.entity";
 import { uploadExcelMemory } from "../middlewares/upload.middleware";
-import { reportAllBill, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
+import { reportAllBill, reportAllBillNotPaid, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -4270,8 +4270,8 @@ export class InventoryZDM8 implements IBaseClass {
                 this.authorizeSuperAdmin, uploadExcelFile);
 
 
-            router.post(this.path + '/reportAllBillingNotReceive', this.checkSuperAdmin,
-                reportAllBill);
+            router.post(this.path + '/checkAndConfirmBillToDeliver', this.checkSuperAdmin,
+                reportAllBillNotPaid);
 
             router.post(this.path + '/reportAllBilling', this.checkSuperAdmin,
                 // this.checkToken.bind(this),

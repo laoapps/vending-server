@@ -236,6 +236,33 @@ export const reportAllBill = async (req: Request, res: Response) => {
 };
 
 
+export const reportAllBillNotPaid = async (req: Request, res: Response) => {
+    try {
+
+        const data = req.body;
+        const ownerUuid = res.locals["ownerUuid"];
+        // console.log('ownerUuid :', ownerUuid);
+
+        const machineId = data.machineId;
+        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+
+
+        const runData = await getReportAllBillNotPaid(machineId, fromDate.toString(), toDate.toString(), ownerUuid);
+        if (!runData) {
+            return res.send(PrintSucceeded('reportAllBilling', [], EMessage.succeeded))
+        }
+
+        return res.send(PrintSucceeded('reportAllBilling', runData, EMessage.succeeded))
+
+
+    } catch (error: any) {
+        console.error("Error reading Excel:", error);
+        return res.send(PrintError('reportAllBilling', error, EMessage.unknownError));
+    }
+};
+
+
 async function getReportSale(machineId: string, fromDate: string, toDate: string, ownerUuid: string) {
     let condition: any = {};
     if (machineId == 'all') {
@@ -297,6 +324,28 @@ async function getReportAllBill(machineId: string, fromDate: string, toDate: str
         return res;
     } catch (error) {
         console.log('Error getReportAllBill :', error);
+
+        return null;
+    }
+}
+
+
+async function getReportAllBillNotPaid(machineId: string, fromDate: string, toDate: string, ownerUuid: string) {
+    try {
+        let condition: any = {};
+        condition = {
+            where: {
+                paymentstatus: { [Op.in]: [EPaymentStatus.pending,] },
+                machineId: machineId,
+                createdAt: { [Op.between]: [fromDate, toDate] }
+            },
+            order: [['id', 'DESC']]
+        }
+        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+        const res = await ent.findAll(condition);
+        return res;
+    } catch (error) {
+        console.log('Error getReportAllBillNotPaid :', error);
 
         return null;
     }
