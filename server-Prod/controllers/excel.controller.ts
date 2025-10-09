@@ -3,12 +3,13 @@ import * as XLSX from "xlsx";
 import momenttz from "moment-timezone";
 import { SERVER_TIME_ZONE } from "../api/inventoryZDM8";
 import { VendingMachineBillFactory } from "../entities/vendingmachinebill.entity";
-import { EEntity, EMessage, EPaymentStatus } from "../entities/system.model";
+import { EEntity, EMessage, EPaymentStatus, EProcessBillingType, IRecordBilling } from "../entities/system.model";
 import { dbConnection } from "../entities";
 import { Op, where } from "sequelize";
 import https from 'https';
 import axios from "axios";
 import { PrintError, PrintSucceeded } from "../services/service";
+import { RecordBillingFactory } from "../entities/recordbilling.entity";
 
 
 
@@ -252,8 +253,54 @@ export const reportAllBillNotPaid = async (req: Request, res: Response) => {
         if (!runData) {
             return res.send(PrintSucceeded('reportAllBilling', [], EMessage.succeeded))
         }
+        let resultBill = [];
+        let resultNotPaid = [];
+        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
 
-        return res.send(PrintSucceeded('reportAllBilling', runData, EMessage.succeeded))
+        for (let element of runData) {
+            const transactionID = element.transactionID;
+            const resCheck = await checkQRPaidMmoneyResponse(transactionID);
+            if (resCheck.status === 1) {
+                // console.log('transaction', transactionID, '✅ Success', 'id :', element.id);
+                const billData = await ent.findByPk(element.id);
+                if (billData) {
+                    // console.log('billData :', billData.paymentstatus);
+                    billData.paymentstatus = EPaymentStatus.delivered;
+                    billData.changed("paymentstatus", true);
+                    billData.save().then(s => {
+                        resultBill.push(transactionID);
+                    }).catch(err => {
+                        console.log('Err Save :', err);
+                    });
+                }
+            } else {
+                resultNotPaid.push(transactionID);
+                // console.log('transaction', transactionID, '❌ Not Success', 'id :', element.id);
+            }
+        }
+
+
+        const recordBill = {
+            ownerUuid: ownerUuid,
+            machineId: machineId,
+            startDate: fromDate,
+            endDate: toDate,
+            processType: EProcessBillingType.pendingToDelivered,
+            result: resultBill
+        } as IRecordBilling;
+
+        // console.log('resultBill :', recordBill);
+
+        const entRecord = RecordBillingFactory(EEntity.RecordBilling, dbConnection);
+
+        await entRecord.create(recordBill);
+
+
+        return res.send(PrintSucceeded('reportAllBilling', {
+            runData: runData,
+            result: resultBill,
+            resultNotPaid: resultNotPaid,
+        }, EMessage.succeeded))
 
 
     } catch (error: any) {

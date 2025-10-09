@@ -852,6 +852,10 @@ export enum EPaymentStatus {
     error = 'error',
     timeout = 'timeout'
 }
+
+export enum EProcessBillingType {
+    pendingToDelivered = 'pendingToDelivered'
+}
 export enum EMessage {
     resetCashingSuccess = 'reset cashing success',
     notfoundmachine = 'notfoundmachine',
@@ -1115,6 +1119,19 @@ export interface ILogActivity extends IBase {
     body: any;
     error: boolean
 }
+
+
+export interface IRecordBilling extends IBase {
+    superadmin: string;
+    ownerUuid: string;
+    machineId: string;
+    startDate: Date;
+    endDate: Date;
+    processType: string;
+    result: any;
+    description: any;
+}
+
 export interface IDropLogActivity extends IBase {
     machineId: string;
     body: string;
@@ -2397,7 +2414,8 @@ export enum EEntity {
     Clientlog = "Clientlog",
     LogsTemp = "LogsTemp",
     ProductImage = "ProductImage",
-    vendingevents = "vendingevents"
+    vendingevents = "vendingevents",
+    RecordBilling = "RecordBilling"
 }
 
 export interface ISaveMachineSaleReport {
@@ -2448,17 +2466,17 @@ export enum EVendingEvent {
     dropConfirm = "dropConfirm",
 
     total_sale_today = "total_sale_today",
-    
+
     no_sale = "no_sale",
 
     machine_offline = "machine_offline",
     machine_is_online = "machine_is_online",
 
     retry_delivery = "retry_delivery",
-    
+
     restart = "restart",
     refresh = "refresh",
-    
+
 }
 
 
@@ -2466,9 +2484,9 @@ export interface IVendingEventLog extends IBase {
     machineId: string;
     event: EVendingEvent;// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
     data: any;//[{time, position, product, price,ip,data}]
-    date:number;
-    month:number;
-    year:number;
+    date: number;
+    month: number;
+    year: number;
 }
 
 export interface ILoadVendingMachineStockReport extends ILoadVendingMachineSaleBillReport { }

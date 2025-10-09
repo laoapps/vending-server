@@ -27,6 +27,7 @@ import { ClientlogFactory, ClientlogStatic } from "./clientlog.entity";
 import { LogsTempFactory, LogsTempStatic } from "./logstemp.entity";
 import { ProductImageFactory, ProductImageStatic } from "./productimage.entity";
 import { VendingEventLogFactory, VendingEventLogStatic } from "./vendingevents.entity";
+import { RecordBillingFactory, RecordBillingStatic } from "./recordbilling.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -60,6 +61,8 @@ export let subadminEntity: SubadminStatic;
 export let vendingMachineEntity: VendingEventLogStatic;
 
 
+
+export let RecordBillingEntity: RecordBillingStatic;
 
 //
 
@@ -173,6 +176,9 @@ export const initDB = async () => {
 
     ProductImageEntity = ProductImageFactory(EEntity.ProductImage, dbConnection);
     ProductImageEntity ? await ProductImageEntity.sync() : console.log('==========> ProductImageEntity is not initialized');
+
+    RecordBillingEntity = RecordBillingFactory(EEntity.RecordBilling, dbConnection);
+    RecordBillingEntity ? await RecordBillingEntity.sync() : console.log('==========> RecordBillingEntity is not initialized')
 
 
 }
