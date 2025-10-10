@@ -243,6 +243,10 @@ const routes: Routes = [
   {
     path: 'settings-modal',
     loadChildren: () => import('./settings-modal/settings-modal/settings-modal.module').then( m => m.SettingsModalPageModule)
+  },
+  {
+    path: 'billing',
+    loadChildren: () => import('./billing/billing.module').then( m => m.BillingPageModule)
   }
 ];
 @NgModule({

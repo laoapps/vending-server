@@ -150,7 +150,7 @@ import { DeleteTransactionToCheck, GetTransactionToCheck } from "../services/mmo
 import { IProductImage } from "../models/sys.model";
 import { WarehouseFactory } from "../entities/warehouse.entity";
 import { uploadExcelMemory } from "../middlewares/upload.middleware";
-import { reportAllBill, reportAllBillNotPaid, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
+import { checkQRPaidMmoneyResponse, reportAllBill, reportAllBillNotPaid, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
 
 
@@ -4297,6 +4297,27 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError('reportBillHistory', error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
+
+
+            router.post(this.path + '/checkQRTransaction',
+                async (req, res) => {
+                    try {
+                        const transactionID = req.body.transactionID;
+                        if (!transactionID) {
+                            return res.send(PrintError('checkQRTransaction', {}, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+                        const resCheck = await checkQRPaidMmoneyResponse(transactionID);
+                        if (resCheck.status === 0) {
+                            return res.send(PrintError('checkQRTransaction', resCheck.message, EMessage.error, returnLog(req, res, true)));
+                        }
+                        return res.send(PrintSucceeded('checkQRTransaction', resCheck.message, EMessage.succeeded, returnLog(req, res, true)));
+
+                    } catch (error) {
+                        console.error('Error checkQRTransaction is :', JSON.stringify(error));
+                        res.send(PrintError('checkQRTransaction', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            )
 
 
             router.post(this.path + '/findPhoneNumberByUUid',

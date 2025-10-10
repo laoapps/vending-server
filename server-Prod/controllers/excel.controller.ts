@@ -400,7 +400,7 @@ async function getReportAllBillNotPaid(machineId: string, fromDate: string, toDa
 
 
 
-function checkQRPaidMmoneyResponse(transactionID: string): Promise<{ status: number, message: any }> {
+export function checkQRPaidMmoneyResponse(transactionID: string): Promise<{ status: number, message: any }> {
     return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
 
         try {

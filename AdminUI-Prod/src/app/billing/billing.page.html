@@ -1,0 +1,4 @@
+<ion-content>
+  <ion-button (click)="fileInput.click()">เลือกไฟล์ Excel</ion-button>
+  <input type="file" accept=".xlsx,.xls" #fileInput hidden (change)="onFileSelected($event)" />
+</ion-content>
