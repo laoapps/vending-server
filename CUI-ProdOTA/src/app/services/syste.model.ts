@@ -1038,6 +1038,12 @@ export interface IBillProcess {
     bill: IVendingMachineBill;
 }
 
+export interface IBillSaveSale {
+    transactionID: number;
+    bills: any;
+    dropPositionData: any;
+}
+
 
 export interface IBillProcessLocal {
     transactionID: number;

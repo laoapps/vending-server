@@ -93,6 +93,7 @@ import { IndexdblocalService } from './indexdblocal.service';
 import { IndexerrorService } from '../indexerror.service';
 import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
 import { VideoCacheService } from '../video-cache.service';
+import { Indexsavesale } from '../indexsavesale';
 
 var REQUEST_TIME_OUT = 10000;
 
@@ -336,6 +337,7 @@ export class ApiService {
     public load: LoadingController,
     public alert: AlertController,
     private videoCacheService: VideoCacheService,
+    public indexsaveSale: Indexsavesale
 
   ) {
 
@@ -385,6 +387,19 @@ export class ApiService {
           console.log('----->clearLocalBill');
           this.IndexedDB.clearBillProcesses();
           return;
+
+        }
+
+        try {
+          const billData = await indexsaveSale.getBillProcesses();
+          if (billData) {
+            // console.log('-----> billData', billData);
+            await this.saveSale(billData[billData.length - 1].bills);
+            await indexsaveSale.deleteBillProcess(billData[billData.length - 1].transactionID);
+
+          }
+
+        } catch (errSaveSale) {
 
         }
 
@@ -923,10 +938,13 @@ export class ApiService {
         for (const item of pendingStock) {
           const vendingItem = vsales.find(v => v.position === item.position);
           if (!vendingItem) {
+            this.indexsaveSale.deleteBillProcess(pendingStock[0].transactionID)
             throw new Error(`Item at position ${item.position} not found`);
           }
           if (vendingItem.stock.qtty <= 0) {
+            this.indexsaveSale.deleteBillProcess(pendingStock[0].transactionID)
             throw new Error(`Insufficient stock for position ${item.position}`);
+
           }
         }
 
@@ -954,18 +972,16 @@ export class ApiService {
             console.log(r);
             if (r.status) {
               console.log(`save sale success`);
-              this.storage.set('saleStock', vsales, 'stock').then((rr) => {
-                resolve(r);
-              }).catch(e => {
-                reject(e)
-              });
+              resolve(r);
             } else {
               this.IndexedLogDB.addBillProcess({ errorData: `Error saveSale :${JSON.stringify(r)}` });
               this.simpleMessage(IENMessage.saveSaleFail);
-              reject(new Error('Save sale failed'));
+              throw new Error('Save sale failed');
             }
           }).catch(e => {
-            reject(e)
+            reject({ e, vsales })
+          }).finally(() => {
+            this.storage.set('saleStock', vsales, 'stock')
           });
         }
 

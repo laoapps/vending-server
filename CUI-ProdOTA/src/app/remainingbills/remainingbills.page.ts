@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { EMACHINE_COMMAND, IBillProcess, IDropPositionData, ISerialService } from '../services/syste.model';
+import { EMACHINE_COMMAND, IBillProcess, IBillSaveSale, IDropPositionData, ISerialService } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
 import { Tab1Page } from '../tab1/tab1.page';
@@ -181,7 +181,6 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         }
 
         if (!this.serial) {
-
           return reject(new Error('Serial device not initialized'));
         }
 
@@ -348,10 +347,20 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         await this.apiService.reconfirmStockAndDrop(bills, dropPositionData);
         resolve();
       } catch (error) {
-        await this.apiService.IndexedLogDB.addBillProcess({
-          errorData: `Error reconfirming stock: ${JSON.stringify(error)}`,
-        });
-        reject(error);
+        try {
+          const billData: IBillSaveSale = {
+            transactionID: Number(bills[0].transactionID),
+            bills: error?.vsales,
+            dropPositionData: dropPositionData
+          };
+          this.apiService.indexsaveSale.addBillProcess(billData);
+          await this.apiService.IndexedLogDB.addBillProcess({
+            errorData: `Error reconfirming stock: ${JSON.stringify(error)}`,
+          });
+        } catch (err) {
+
+        }
+        reject(error?.e);
       }
     });
 
