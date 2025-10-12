@@ -50,6 +50,9 @@ export class WsapiService implements OnDestroy {
   }
 
   int = null;
+  reconnect() {
+    this.connect(this.wsurl, this.machineId, this.otp);
+  }
   connect(url: string, machineId: string, otp: string): void {
     this.wsurl = url;
     this.machineId = machineId;
@@ -68,7 +71,7 @@ export class WsapiService implements OnDestroy {
       this.int = null;
     }
     this.int = setInterval(async () => {
-      if (this.webSocket.readyState !== 1) {
+      if (this.webSocket?.readyState !== 1) {
         console.log('websocket not ready');
         return;
       }

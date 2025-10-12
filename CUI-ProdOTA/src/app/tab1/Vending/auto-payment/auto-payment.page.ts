@@ -495,8 +495,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
             // this.apiService.myTab1.clearStockAfterLAABGo();
             this.close();
+            this.WSAPIService.reconnect();
             this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
-            this.apiService.IndexedLogDB.addBillProcess({ errorData: `ERR Generate QR :${JSON.stringify(response)}` })
+            this.apiService.IndexedLogDB.addBillProcess({ errorData: `ERR Generate QR :${JSON.stringify(response)}` });
             return resolve(IENMessage.success);
 
           }
