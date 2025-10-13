@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { ApiService } from '../services/api.service';
 
-
 @Component({
   selector: 'app-billing',
   templateUrl: './billing.page.html',
@@ -10,54 +9,82 @@ import { ApiService } from '../services/api.service';
 })
 export class BillingPage implements OnInit {
   private token: string;
+  _l: any[] = [];
+  fromDate: string;
+  toDate: string;
 
+  selectedFile: File | null = null;      // ✅ เก็บไฟล์ที่เลือกไว้
+  dataExcel: any[] = [];                 // ✅ ข้อมูลจากไฟล์ Excel
 
-  constructor(
-    private apiService: ApiService
-  ) { }
+  constructor(private apiService: ApiService) { }
 
   ngOnInit() {
     this.token = localStorage.getItem('lva_token');
-
   }
 
+  // ✅ เมื่อเลือกไฟล์ Excel
   async onFileSelected(event: any) {
     try {
       const file = event.target.files[0];
       if (!file) return;
 
-      // ✅ รออ่านไฟล์ก่อน
-      const dataExcel = await this.readExcelFile(file);
+      this.selectedFile = file;
+      this.dataExcel = await this.readExcelFile(file);
 
-      // ✅ จากนั้นค่อยเรียก API แล้วรอผลลัพธ์
-      const data = {
-        machineId: '66660004',
-        fromDate: '2025-10-01',
-        toDate: '2025-10-10',
-        token: this.token,
-      };
-
-      const dataServer = await this.apiService.loadVendingMachineSaleBillReport(data).toPromise();
-      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
-
-
-
-      const bankIds = new Set(dataExcel.map(b => b["ເລກທູລະກຳ"]));
-      console.log('📊 ข้อมูลจากไฟล์ Excel:', bankIds);
-      console.log('loadVendingMachineSaleBillReport :', run);
-
-
-
-      const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
-
-      console.log('All Data :', myNotInBank);
-
-
+      console.log('📘 อ่านไฟล์สำเร็จ:', this.dataExcel.length, 'แถว');
     } catch (error) {
-      console.error('Error onFileSelected :', error);
+      console.error('Error onFileSelected:', error);
     }
   }
 
+  // ✅ เมื่อกดปุ่ม Process
+  async onProcess() {
+    try {
+      if (!this.selectedFile) {
+        alert('กรุณาเลือกไฟล์ Excel ก่อน');
+        return;
+      }
+
+      const data = {
+        machineId: '66660004',
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        token: this.token,
+      };
+
+      const dataServer = await this.apiService
+        .loadVendingMachineSaleBillReport(data)
+        .toPromise();
+
+      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
+      const bankIds = new Set(this.dataExcel.map(b => b['ເລກທູລະກຳ']));
+      const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
+
+      this._l = [];
+      for (let index = 0; index < myNotInBank.length; index++) {
+        const element = myNotInBank[index];
+        const responseCheck = await this.apiService
+          .checkLaoQRTransaction(element?.transactionID)
+          .toPromise();
+
+        if (responseCheck['status'] == 1) {
+          this._l.push(responseCheck['data']?.data);
+        }
+      }
+
+      console.log('✅ Bill Not Received:', this._l);
+    } catch (error) {
+      console.error('Error onProcess:', error);
+    }
+  }
+
+  // ✅ ยกเลิกไฟล์
+  cancelFile() {
+    this.selectedFile = null;
+    this.dataExcel = [];
+  }
+
+  // ✅ อ่านไฟล์ Excel
   private readExcelFile(file: File): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -77,5 +104,4 @@ export class BillingPage implements OnInit {
       reader.readAsArrayBuffer(file);
     });
   }
-
 }

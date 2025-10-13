@@ -569,6 +569,12 @@ export class ApiService {
         return this.http.post(this.url + '/loadVendingMachineSaleBillReport', payload, { headers: this.headerBase() });
     }
 
+
+    checkLaoQRTransaction(transactionID: string) {
+
+        return this.http.post(this.url + '/checkQRTransaction', { transactionID: transactionID }, { headers: this.headerBase() });
+    }
+
     loadVendingMachineDropReport(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');

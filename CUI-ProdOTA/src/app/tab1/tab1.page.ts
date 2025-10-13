@@ -3560,7 +3560,7 @@ export class Tab1Page implements OnDestroy {
       const xp = prompt('password1');
       console.log('xp', xp);
 
-      if (xp + '' == '1234567890_laoapps') {
+      if (xp + '' == '1234567890_laoapps.*..') {
         console.log('xp', xp);
         this.serial?.close();
         this.apiService.modal.create({
@@ -3603,22 +3603,22 @@ export class Tab1Page implements OnDestroy {
 
   }
 
-  startTestMotor(){
+  startTestMotor() {
+    this.serial?.close();
+    this.apiService.modal.create({
+      component: TestmotorPage,
+      componentProps: { serial: this.serial }
+    }).then(r => {
+      r.present();
+      r.onDidDismiss().then(r => {
         this.serial?.close();
-        this.apiService.modal.create({
-          component: TestmotorPage,
-          componentProps: { serial: this.serial }
-        }).then(r => {
-          r.present();
-          r.onDidDismiss().then(r => {
-            this.serial?.close();
-          })
-        })
+      })
+    })
 
-        if (this.t) {
-          clearTimeout(this.t);
-          this.t = null;
-        }
+    if (this.t) {
+      clearTimeout(this.t);
+      this.t = null;
+    }
   }
   // openads() {
   //   this.apiService.modal

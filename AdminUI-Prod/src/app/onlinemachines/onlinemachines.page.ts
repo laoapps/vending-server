@@ -41,7 +41,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   private intervalId: NodeJS.Timeout;
   showAllSecrets: boolean = true; // Global toggle for all secrets
 
-  constructor(public apiService: ApiService) {}
+  constructor(public apiService: ApiService) { }
 
   ngOnInit() {
     this.loadData();
