@@ -13,6 +13,7 @@ import { AdvertisementPage } from '../superadmin/advertisement/advertisement.pag
 import { VersionControlPage } from '../version-control/version-control.page';
 import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
 import { SettingsModalPage } from '../settings-modal/settings-modal/settings-modal.page';
+import { BillingPage } from '../billing/billing.page';
 
 interface MachineData {
   machineId: string;
@@ -202,6 +203,20 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         component: SettingsModalPage,
         componentProps: { settings },
         cssClass: 'custom-modal',
+        backdropDismiss: true,
+      })
+      .then((modal) => modal.present());
+  }
+
+
+  showBilling(machineId: string, phoneNumber: string) {
+    console.log('machineId :', machineId);
+    localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
+    this.apiService.modal
+      .create({
+        component: BillingPage,
+        componentProps: { machineId: machineId },
+        cssClass: 'custom-modal-full',
         backdropDismiss: true,
       })
       .then((modal) => modal.present());

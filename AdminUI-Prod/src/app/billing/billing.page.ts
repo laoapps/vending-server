@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { ApiService } from '../services/api.service';
 
@@ -12,6 +12,7 @@ export class BillingPage implements OnInit {
   _l: any[] = [];
   fromDate: string;
   toDate: string;
+  @Input() machineId: string;
 
   selectedFile: File | null = null;      // ✅ เก็บไฟล์ที่เลือกไว้
   dataExcel: any[] = [];                 // ✅ ข้อมูลจากไฟล์ Excel
@@ -46,7 +47,7 @@ export class BillingPage implements OnInit {
       }
 
       const data = {
-        machineId: '66660004',
+        machineId: this.machineId,
         fromDate: this.fromDate,
         toDate: this.toDate,
         token: this.token,
@@ -103,5 +104,24 @@ export class BillingPage implements OnInit {
       reader.onerror = reject;
       reader.readAsArrayBuffer(file);
     });
+  }
+
+  async checkBillNotPaid() {
+    const body = {
+      "machineId": this.machineId,
+      "fromDate": this.fromDate,
+      "toDate": this.toDate,
+      "token": this.token
+    };
+    // console.log('checkBillNotPaid :', body);
+    this.apiService.showLoading();
+    const result = await this.apiService.checkAndConfirmBillToDeliver(body).toPromise();
+    this.apiService.dismissLoading();
+    if (result['status'] == 1) {
+      this.apiService.alertSuccess('ກວດເຄື່ອງສຳເຫຼັດ');
+    } else {
+      this.apiService.alertError('ເກີດຂໍ້ຜິດພາດໃນການກວດເຄື່ອງ')
+    }
+
   }
 }
