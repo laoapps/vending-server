@@ -254,7 +254,7 @@ export class VmcService implements ISerialService {
       // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
       // { cmd: EVMC_COMMAND._7017, params: { read: true, enable: 0 } }, // Unionpay/POS (read)
       // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
-      { cmd: EVMC_COMMAND.BILL_ACCEPT_MODE, params: { read: false, value: 1 } },     // Bill accepting mode (read)
+      // { cmd: EVMC_COMMAND.BILL_ACCEPT_MODE, params: { read: false, value: 1 } },     // Bill accepting mode (read)
       // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
       // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 200 } }, // Enable bills
       // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
@@ -262,7 +262,7 @@ export class VmcService implements ISerialService {
       { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
       { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
       // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
-      { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 } }
+      // { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 } }
     ];
     // set value slection , but the cash acceptor is flashing need to solve later
     // TODO: check if remove ENABLE_SELECTION will work for old VMC

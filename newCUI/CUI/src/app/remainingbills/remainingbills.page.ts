@@ -261,7 +261,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       }, 3000)
       this.clearTimer();
       this.r = [];
-      this.reloadDelivery(true);
+      // this.reloadDelivery(true);
       await this.apiService.soundSystemError();
     }
 
