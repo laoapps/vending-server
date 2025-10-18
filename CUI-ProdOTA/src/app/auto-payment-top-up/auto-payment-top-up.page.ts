@@ -62,7 +62,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   banner = '../../assets/topup/bannertopup.jpeg';
   
   _style = {
-    // 'background-image': 'url(' + this.banner + ')',
+    'background-image': 'url(' + this.banner + ')',
     'background-size': 'contain', // or '50%', 'auto 80%', etc.
     'background-position': 'center',
     // 'filter': 'blur(5px)'
