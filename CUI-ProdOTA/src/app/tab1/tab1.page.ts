@@ -468,7 +468,7 @@ export class Tab1Page implements OnDestroy {
     public router: Router
   ) {
 
-    this.refreshAllEveryHour();
+    // this.refreshAllEveryHour();
 
     this.autopilot = this.apiService.autopilot;
     const that = this;
@@ -761,7 +761,7 @@ export class Tab1Page implements OnDestroy {
               Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
               return this.refresh();
             }
-            if (r?.exit || !(this.serial && !this.connecting)) {
+            if (r?.exit ) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
                 App.exitApp();
@@ -901,7 +901,8 @@ export class Tab1Page implements OnDestroy {
             console.log('Update musicVolume to', this.musicVolume);
             localStorage.setItem('musicVolume', this.musicVolume.toString());
             this.apiService.musicVolume = this.musicVolume;
-            // this.apiService.reloadPage();
+      // this.refresh();
+
           }
           if (this.platform.is('android')) {
             if (r.versionId && r?.versionId !== '0.0.0') {
@@ -1120,7 +1121,8 @@ export class Tab1Page implements OnDestroy {
         console.log('checkForUpdates', res);
 
       }).catch((e) => {
-        // this.apiService.reloadPage();
+              // this.refresh();
+
         console.log('Error checkLiveUpdate', e);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checkLiveUpdate :${JSON.stringify(e)}` });
       });
@@ -1853,7 +1855,7 @@ export class Tab1Page implements OnDestroy {
         clearInterval(this.refreshAll);
         this.refreshAllCounter = 0;
         this.lastUpdate = now; // Update lastUpdate to current time
-        this.apiService.reloadPage();
+        this.refresh();
       }
     }, 1000 * 60); // Check every minutes
   }
@@ -1870,7 +1872,7 @@ export class Tab1Page implements OnDestroy {
       }, 2000);
     }
     if (this.count >= 6) {
-      this.apiService.reloadPage();
+      this.refresh();
       this.count = 0;
       if (this.t) {
         clearTimeout(this.t);
@@ -3892,7 +3894,8 @@ export class Tab1Page implements OnDestroy {
         if (ownerUuid) {
           await this.cashingService.remove(ownerUuid);
           // window.location.reload();
-          this.apiService.reloadPage();
+          this.refresh();
+
         }
 
         resolve(IENMessage.success);

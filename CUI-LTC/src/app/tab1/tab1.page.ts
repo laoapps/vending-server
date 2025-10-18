@@ -760,7 +760,7 @@ export class Tab1Page implements OnDestroy {
               Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
               return this.refresh();
             }
-            if (r?.exit || !(this.serial && !this.connecting)) {
+            if (r?.exit ) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
                 App.exitApp();
