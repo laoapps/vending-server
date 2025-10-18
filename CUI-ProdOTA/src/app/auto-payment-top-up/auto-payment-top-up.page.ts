@@ -60,8 +60,9 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
   questionIcon: string = `../../../../assets/logo/question-logo.png`;
   banner = '../../assets/topup/bannertopup.jpeg';
+  
   _style = {
-    'background-image': 'url(' + this.banner + ')',
+    // 'background-image': 'url(' + this.banner + ')',
     'background-size': 'contain', // or '50%', 'auto 80%', etc.
     'background-position': 'center',
     // 'filter': 'blur(5px)'
