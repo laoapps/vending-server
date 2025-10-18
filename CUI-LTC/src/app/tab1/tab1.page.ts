@@ -468,7 +468,7 @@ export class Tab1Page implements OnDestroy {
     public router: Router
   ) {
 
-    this.refreshAllEveryHour();
+    // this.refreshAllEveryHour();
 
     this.autopilot = this.apiService.autopilot;
     const that = this;
