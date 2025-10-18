@@ -296,13 +296,13 @@ export class Tab1Page implements OnDestroy {
     }
 
     // Set a new timeout
-    this.timeoutId = setTimeout(() => {
-      // Check if 15 minutes have passed since last call
-      if (this.lastCallTime && Date.now() - this.lastCallTime >= this.TIMEOUT_MS) {
-        console.log('No status sent for 15 minutes. Exiting app.');
-        App.exitApp();
-      }
-    }, this.TIMEOUT_MS);
+    // this.timeoutId = setTimeout(() => {
+    //   // Check if 15 minutes have passed since last call
+    //   if (this.lastCallTime && Date.now() - this.lastCallTime >= this.TIMEOUT_MS) {
+    //     console.log('No status sent for 15 minutes. Exiting app.');
+    //     App.exitApp();
+    //   }
+    // }, this.TIMEOUT_MS);
 
 
 
