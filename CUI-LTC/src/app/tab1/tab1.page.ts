@@ -717,33 +717,12 @@ export class Tab1Page implements OnDestroy {
         label: key,  // Display name
         value: ESerialPortType[key as keyof typeof ESerialPortType] // Enum value
       }));
-    try {
-      console.log('-----> 4');
-      while (this.lastUpdate == -1) {
-        await new Promise(resolve => setTimeout(resolve, 10000));
-        this.apiService.toast.create({ message: 'NO INTERNET CONNECTION RETRY in 10s', duration: 2000 }).then(r => r.present());
 
-      }
-      try {
-        await this.connect();
-      } catch (errorSerial) {
-        console.log('errorSerial', errorSerial);
-      }
-      console.log('-----> 5');
-
-      Toast.show({ text: 'READY', duration: 'long' })
-
-      this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
-      this.readyState = true;
-
-    } catch (error) {
-      Toast.show({ text: 'Error connecting to serial port ' + JSON.stringify(error || {}), duration: 'long' });
-      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error connecting to serial port :${JSON.stringify(error)}` });
-    }
 
 
     // this._processLoopCheckLaoQRPaid();
-
+    this.apiService.toast.create({ message: 'readyState', duration: 2000 }).then(r => r.present());
+    this.readyState = true;
 
     console.log('readyState ALIVE', this.readyState);
 
@@ -1068,6 +1047,24 @@ export class Tab1Page implements OnDestroy {
       })
     }
 
+    try {
+      console.log('-----> 4');
+      while (this.lastUpdate == -1) {
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        this.apiService.toast.create({ message: 'NO INTERNET CONNECTION RETRY in 10s', duration: 2000 }).then(r => r.present());
+
+      }
+      try {
+        await this.connect();
+      } catch (errorSerial) {
+        console.log('errorSerial', errorSerial);
+      }
+      console.log('-----> 5');
+      Toast.show({ text: 'READY', duration: 'long' })
+    } catch (error) {
+      Toast.show({ text: 'Error connecting to serial port ' + JSON.stringify(error || {}), duration: 'long' });
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error connecting to serial port :${JSON.stringify(error)}` });
+    }
 
   }
 
