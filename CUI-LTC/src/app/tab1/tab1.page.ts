@@ -255,7 +255,7 @@ export class Tab1Page implements OnDestroy {
 
   otherModalAreOpening: boolean = false;
 
-  lastUpdate: number = Date.now();
+  lastUpdate: number = -1;
   lastAction: number = Date.now();
 
   t: any;
@@ -719,7 +719,11 @@ export class Tab1Page implements OnDestroy {
       }));
     try {
       console.log('-----> 4');
+      while (this.lastUpdate == -1) {
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        this.apiService.toast.create({ message: 'NO INTERNET CONNECTION RETRY in 10s', duration: 2000 }).then(r => r.present());
 
+      }
       try {
         await this.connect();
       } catch (errorSerial) {
@@ -760,7 +764,7 @@ export class Tab1Page implements OnDestroy {
               Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
               return this.refresh();
             }
-            if (r?.exit ) {
+            if (r?.exit) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
                 App.exitApp();
