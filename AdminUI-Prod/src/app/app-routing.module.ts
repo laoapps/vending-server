@@ -247,6 +247,10 @@ const routes: Routes = [
   {
     path: 'billing',
     loadChildren: () => import('./billing/billing.module').then( m => m.BillingPageModule)
+  },
+  {
+    path: 'report-client',
+    loadChildren: () => import('./report-client/report-client.module').then( m => m.ReportClientPageModule)
   }
 ];
 @NgModule({

@@ -369,6 +369,11 @@ export class ApiService {
     }
 
 
+    getReportClientLogs(data: any) {
+        return this.http.post<IResModel>(this.url + '/reportClientLog', data, { headers: this.headerBase() });
+    }
+
+
 
     super_listMachine() {
         const token = localStorage.getItem('lva_token');

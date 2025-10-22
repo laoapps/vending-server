@@ -92,6 +92,13 @@
                     Logs
                   </ion-button>
                 </ion-col>
+
+                <ion-col size="4">
+                  <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
+                    <ion-icon slot="start" name="thermometer-outline"></ion-icon>
+                    Client Logs
+                  </ion-button>
+                </ion-col>
                 <ion-col size="4">
                   <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
                     <ion-icon slot="start" name="laptop-outline"></ion-icon>

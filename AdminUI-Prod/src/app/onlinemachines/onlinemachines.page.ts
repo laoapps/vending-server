@@ -14,6 +14,7 @@ import { VersionControlPage } from '../version-control/version-control.page';
 import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
 import { SettingsModalPage } from '../settings-modal/settings-modal/settings-modal.page';
 import { BillingPage } from '../billing/billing.page';
+import { ReportClientPage } from '../report-client/report-client.page';
 
 interface MachineData {
   machineId: string;
@@ -190,6 +191,19 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     this.apiService.modal
       .create({
         component: LogTempPage,
+        componentProps: { machineId },
+        cssClass: 'custom-modal',
+        backdropDismiss: true,
+      })
+      .then((modal) => modal.present());
+  }
+
+
+
+  showClientLog(machineId: string) {
+    this.apiService.modal
+      .create({
+        component: ReportClientPage,
         componentProps: { machineId },
         cssClass: 'custom-modal',
         backdropDismiss: true,

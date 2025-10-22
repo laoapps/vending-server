@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Report Client Log</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- วันที่ -->
+  <ion-item>
+    <ion-label>From Date</ion-label>
+    <ion-datetime presentation="date" [(ngModel)]="fromDate"></ion-datetime>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>To Date</ion-label>
+    <ion-datetime presentation="date" [(ngModel)]="toDate"></ion-datetime>
+  </ion-item>
+
+  <ion-button expand="block" color="success" (click)="processReport()">
+    Process
+  </ion-button>
+
+  <!-- แสดงผล -->
+  <ion-list *ngIf="logs.length > 0">
+    <ion-list-header>
+      <ion-label>Logs ({{ logs.length }})</ion-label>
+    </ion-list-header>
+
+    <ion-item *ngFor="let log of logs">
+      <ion-label>
+        <h2>{{ log.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</h2>
+        <p *ngFor="let err of log.errorLog" [ngClass]="{ 'clicked-slot': isClickedSlot([err]) }">
+          {{ err }}
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-text color="medium" *ngIf="logs.length === 0">
+    <p class="ion-text-center">No data found</p>
+  </ion-text>
+
+</ion-content>
