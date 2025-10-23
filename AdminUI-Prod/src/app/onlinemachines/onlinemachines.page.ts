@@ -182,6 +182,24 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     }
   }
 
+
+  async clearClientLogs() {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${environment.url}/clearClientLogs`, {
+        token,
+      }).then(r => {
+        this.apiService.alertSuccess('ລົບຂໍ້ມູນສຳເຫຼັດ');
+      }).catch(err => {
+        this.apiService.alertError(err);
+      });
+
+    } catch (error) {
+      console.error('Error clearLogTemp:', error);
+      alert(`Error clearLogTemp: ${error.message}`);
+    }
+  }
+
   async refreshMachine(machineId: string) {
     try {
       const token = localStorage.getItem('token');
