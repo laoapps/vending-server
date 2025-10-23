@@ -4396,6 +4396,23 @@ export class InventoryZDM8 implements IBaseClass {
 
             )
 
+
+            router.post(this.path + '/clearClientLogs',
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const q = `DELETE FROM "Clientlog" WHERE "createdAt" < NOW() - INTERVAL '72 hours';`
+                        const clientLogs = await ClientlogEntity.sequelize.query(q)
+                        return res.send(PrintSucceeded("clearLogsTemp", clientLogs, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('clearLogsTemp :', error);
+                        res.send(PrintError("clearLogsTemp", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
             router.post(this.path + '/reportLogsTempAdmin',
                 this.checkSuperAdmin,
                 this.validateSuperAdmin,
