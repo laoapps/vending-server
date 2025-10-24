@@ -237,7 +237,7 @@ export class VmcService implements ISerialService {
     this.addLogMessage(`Initializing VMC on ${this.portName} at ${this.baudRate}`);
     this.setupSerialListeners();
     await this.sycnVMC();
-    await this.setPoll(10);
+    // await this.setPoll(10);
     await this.initializeVMCCommands();
     await this.loadCreditPending();
     this.initBankNotes();
