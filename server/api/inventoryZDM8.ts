@@ -1078,9 +1078,9 @@ export class InventoryZDM8 implements IBaseClass {
                         //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
                         const hex = data + '';
                         const slot = parseInt(hex.substring(hex.length - 4, hex.length - 2), 16);
-                        // if (data.substring(10, 12) == '01') { console.log('Dispensing', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensing`, status: EClientCommand.VMC_DISPENSE })) }
-                        // if (data.substring(10, 12) == '02') { console.log('Dispensed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensed`, status: EClientCommand.VMC_DISPENSED })) }
-                        // if (data.substring(10, 12) == '03') { console.log('Drop failed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensefailed`, status: EClientCommand.VMC_DISPENSEFAILED })) }
+                        if (data.substring(10, 12) == '01') { console.log('Dispensing', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensing`, status: EClientCommand.VMC_DISPENSE })) }
+                        if (data.substring(10, 12) == '02') { console.log('Dispensed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensed`, status: EClientCommand.VMC_DISPENSED })) }
+                        if (data.substring(10, 12) == '03') { console.log('Drop failed', await dropLogEntity.create({ machineId: machineId, body: `Slot ${slot} is dispensefailed`, status: EClientCommand.VMC_DISPENSEFAILED })) }
                         res.send(
                             PrintSucceeded(
                                 d.command,
