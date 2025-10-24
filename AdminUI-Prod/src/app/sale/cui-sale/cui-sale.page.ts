@@ -6,6 +6,7 @@ import { SaleReportPage } from '../sale-report/sale-report.page';
 import { StockReportPage } from '../stock-report/stock-report.page';
 import { ReportdropPage } from 'src/app/reportdrop/reportdrop.page';
 import { IVendingMachineSale } from '../../services/syste.model';
+import { NewReportSalePage } from 'src/app/new-report-sale/new-report-sale.page';
 
 @Component({
   selector: 'app-cui-sale',
@@ -21,7 +22,7 @@ export class CuiSalePage implements OnInit {
   private cuisaleProcess: CUISaleProcess;
 
   lists: Array<IVendingMachineSale> = [];
-  isShowSaleOnly=false;
+  isShowSaleOnly = false;
   isListedByQtty = false;
   constructor(
     public apiService: ApiService
@@ -53,9 +54,9 @@ export class CuiSalePage implements OnInit {
 
         if (this.lists != undefined && this.lists.length > 0) {
           // const instock = this.lists.filter(item => item.stock.id != -1);
-          this.lists.forEach(v=>{
-            const x = this._l?.find(x=>x.stock?.name===v.stock?.name);
-            if(x) {v.stock.image = x.stock.image;v.stock.imageurl=x.stock.imageurl}
+          this.lists.forEach(v => {
+            const x = this._l?.find(x => x.stock?.name === v.stock?.name);
+            if (x) { v.stock.image = x.stock.image; v.stock.imageurl = x.stock.imageurl }
           })
         }
         resolve(IENMessage.success);
@@ -71,11 +72,11 @@ export class CuiSalePage implements OnInit {
     this.lists.sort((a, b) => {
       const aPriceValid = a.stock?.price > 0;
       const bPriceValid = b.stock?.price > 0;
-  
+
       // Prioritize items with price > 0
       if (aPriceValid && !bPriceValid) return -1;
       if (!aPriceValid && bPriceValid) return 1;
-  
+
       // If both have price > 0 or both don't, sort by qtty
       return a.stock.qtty - b.stock.qtty;
     });
@@ -83,27 +84,37 @@ export class CuiSalePage implements OnInit {
   sortByPosition(): void {
     this.lists.sort((a, b) => a.position - b.position);
   }
-  exportToExcel(){
+  exportToExcel() {
     this.apiService.exportIVendingMachineSaleToExcel(this.lists);
   }
-  showSaleSlot(){
-    if(this.isListedByQtty)this.sortByPosition();
-    this.isShowSaleOnly=true;
-    this.isListedByQtty=false;
+  showSaleSlot() {
+    if (this.isListedByQtty) this.sortByPosition();
+    this.isShowSaleOnly = true;
+    this.isListedByQtty = false;
 
   }
-  showAllSlots(){
-    if(this.isListedByQtty)this.sortByPosition();
-    this.isShowSaleOnly=false;
-    this.isListedByQtty=false;
+  showAllSlots() {
+    if (this.isListedByQtty) this.sortByPosition();
+    this.isShowSaleOnly = false;
+    this.isListedByQtty = false;
 
   }
-  listByQtty(){
-    this.isListedByQtty=true;
-    this.isShowSaleOnly=true;
+  listByQtty() {
+    this.isListedByQtty = true;
+    this.isShowSaleOnly = true;
 
     this.sortByQuantityAndPrice();
   }
+  NewSaleRport() {
+    const props = {
+      machineId: this.machineId,
+      otp: this.otp
+    }
+    this.apiService.showModal(NewReportSalePage, props).then(r => {
+      r.present();
+    });
+  }
+
   saleRport() {
     const props = {
       machineId: this.machineId,
