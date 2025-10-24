@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, PrintSucceeded, PrintError, EMessage, IlogSerial } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import { LoggingService } from './logging-service.service';
 import { DatabaseService } from './database.service';
 import cryptojs from 'crypto-js';
