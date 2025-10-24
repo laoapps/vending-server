@@ -761,7 +761,7 @@ export class Tab1Page implements OnDestroy {
               Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
               return this.refresh();
             }
-            if (r?.exit ) {
+            if (r?.exit) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
                 App.exitApp();
@@ -901,7 +901,7 @@ export class Tab1Page implements OnDestroy {
             console.log('Update musicVolume to', this.musicVolume);
             localStorage.setItem('musicVolume', this.musicVolume.toString());
             this.apiService.musicVolume = this.musicVolume;
-      // this.refresh();
+            // this.refresh();
 
           }
           if (this.platform.is('android')) {
@@ -1121,7 +1121,7 @@ export class Tab1Page implements OnDestroy {
         console.log('checkForUpdates', res);
 
       }).catch((e) => {
-              // this.refresh();
+        // this.refresh();
 
         console.log('Error checkLiveUpdate', e);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checkLiveUpdate :${JSON.stringify(e)}` });

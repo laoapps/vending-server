@@ -13,7 +13,7 @@ export enum EADH814_COMMAND {
   START_MOTOR = 'A5',
   ACKNOWLEDGE = 'A6',
   START_MOTOR_COMBINED = 'B5',
-  SET_SWAP= '35',
+  SET_SWAP = '35',
   SET_TWO_WIRE_MODE = '21'
 }
 
@@ -309,11 +309,11 @@ export class ADH814Service implements ISerialService {
           break;
         case EMACHINE_COMMAND.SET_SWAP:
           cmd = EADH814_COMMAND.SET_SWAP;
-          params?params.on=[0x01]:params.on=[0x00];
+          params ? params.on = [0x01] : params.on = [0x00];
           break;
         case EMACHINE_COMMAND.SET_TWO_WIRE_MODE:
           cmd = EADH814_COMMAND.SET_TWO_WIRE_MODE;
-          params?params.swap=[0x10, 0x00]:params.swap=[0x00, 0x00];
+          params ? params.swap = [0x10, 0x00] : params.swap = [0x00, 0x00];
           break;
         default:
           this.addLogMessage(`Unsupported command: ${command}`);
@@ -330,26 +330,28 @@ export class ADH814Service implements ISerialService {
   }
 
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative: ESerialPortType): Promise<string> {
-    try {
-      this.machineId = machineId;
-      this.otp = otp;
-      this.portName = portName || this.portName;
-      this.baudRate = baudRate || this.baudRate;
-      this.log = log;
-      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-      await this.serialService.startReadingADH814();
-      if (init === this.portName) {
-        this.initADH814();
-        await this.setupDevice();
-        this.addLogMessage(`Device setup initiated for port: ${this.portName}`);
-        return init;
+    return new Promise<string>(async (resolve, reject) => {
+      try {
+        this.machineId = machineId;
+        this.otp = otp;
+        this.portName = portName || this.portName;
+        this.baudRate = baudRate || this.baudRate;
+        this.log = log;
+        const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+        await this.serialService.startReadingADH814();
+        if (init === this.portName) {
+          this.initADH814();
+          await this.setupDevice();
+          this.addLogMessage(`Device setup initiated for port: ${this.portName}`);
+          return resolve(init);
+        }
+        this.addLogMessage(`Serial port initialization failed: ${init}`);
+        return resolve('');
+      } catch (err: any) {
+        this.addLogMessage(`Initialization failed: ${err.message}`);
+        return resolve('');
       }
-      this.addLogMessage(`Serial port initialization failed: ${init}`);
-      return '';
-    } catch (err: any) {
-      this.addLogMessage(`Initialization failed: ${err.message}`);
-      return '';
-    }
+    })
   }
 
   async setupDevice(address: number = 0x01): Promise<any> {
@@ -393,7 +395,7 @@ export class ADH814Service implements ISerialService {
       }
     });
   }
-   public async setSwap(address: number = 0x01): Promise<any> {
+  public async setSwap(address: number = 0x01): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this.command(EMACHINE_COMMAND.SET_SWAP, {
