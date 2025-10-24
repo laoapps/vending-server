@@ -13,7 +13,7 @@ export class SerialServiceService implements OnDestroy {
   private serialEventSubject = new Subject<any>();
   private listenerSubscriptions: Array<Promise<PluginListenerHandle> & PluginListenerHandle> = [];
 
-  constructor() {}
+  constructor() { }
 
   async ngOnDestroy() {
     this.initialized = false;
@@ -244,31 +244,36 @@ export class SerialServiceService implements OnDestroy {
   }
 
   async close(): Promise<void> {
-    try {
-      if (this.initialized) {
-        await SerialConnectionCapacitor?.stopReading();
-        await SerialConnectionCapacitor?.close();
-        this.initialized = false;
-        await Promise.all(this.listenerSubscriptions?.map(handle => handle?.remove()));
-        this.listenerSubscriptions = [];
-        this.serialEventSubject?.complete();
-        console.log('serial service SerialServiceService destroyed and cleaned up');
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        if (this.initialized) {
+          await SerialConnectionCapacitor?.stopReading();
+          await SerialConnectionCapacitor?.close();
+          this.initialized = false;
+          await Promise.all(this.listenerSubscriptions?.map(handle => handle?.remove()));
+          this.listenerSubscriptions = [];
+          this.serialEventSubject?.complete();
+          console.log('serial service SerialServiceService destroyed and cleaned up');
+        }
+        resolve();
+      } catch (e) {
+        console.log('serial service close error', e);
+        reject(e);
       }
-    } catch (e) {
-      console.log('serial service close error', e);
-      throw e;
-    }
+    });
   }
 
   async listPorts(): Promise<SerialPortListResult> {
-    try {
-      const result = await SerialConnectionCapacitor.listPorts();
-      console.log("Available ports:", result.ports);
-      return result;
-    } catch (err) {
-      console.log('serial service Error listing ports:', err);
-      throw err;
-    }
+    return new Promise<SerialPortListResult>(async (resolve, reject) => {
+      try {
+        const result = await SerialConnectionCapacitor.listPorts();
+        console.log("Available ports:", result.ports);
+        resolve(result);
+      } catch (err) {
+        console.log('serial service Error listing ports:', err);
+        reject(err);
+      }
+    });
   }
 
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string) {
