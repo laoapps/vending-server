@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
@@ -20,7 +19,7 @@ export class CCTALKTb74Service implements ISerialService {
   private stopBits: 1 = 1;
   machinestatus = { data: '' };
 
-  constructor(private serialService: SerialServiceService) {}
+  constructor(private serialService: SerialServiceService) { }
 
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     console.log(message);
@@ -33,14 +32,18 @@ export class CCTALKTb74Service implements ISerialService {
       this.addLogMessage(this.log, `Sending data: ${data}`);
       this.serialService.write(data);
     };
-  
+
     this.ccTalk = new CcTalkTB74(sendData);
-  
+
     this.ccTalk.on('response', (data) => {
       const [command, response] = data.details!;
       this.addLogMessage(this.log, `Response to ${command}: ${response}`);
     });
-  
+
+    this.ccTalk.on('error', (data) => {
+      this.addLogMessage(this.log, `ccTalk error: ${data.details?.join(', ')}`);
+    });
+
     this.getSerialEvents().subscribe({
       next: (event) => {
         this.addLogMessage(this.log, `Event received: ${JSON.stringify(event)}`);
@@ -53,37 +56,50 @@ export class CCTALKTb74Service implements ISerialService {
           this.addLogMessage(this.log, 'Starting setupDevice...');
           this.setupDevice().then(
             () => this.addLogMessage(this.log, 'setupDevice completed'),
-            (err) => this.addLogMessage(this.log, `Setup failed: ${err.message}`)
+            (err: Error) => this.addLogMessage(this.log, `Setup failed: ${err.message}`)
           );
         } else {
           this.addLogMessage(this.log, `Unhandled event: ${event.event}`);
         }
       },
-      error: (err) => this.addLogMessage(this.log, `Serial error: ${err.message}`)
+      error: (err: Error) => this.addLogMessage(this.log, `Serial error: ${err.message}`)
     });
-  
+
     // Manual test
     this.addLogMessage(this.log, 'Manual simplePoll test');
     this.ccTalk.simplePoll().then(
       (isAlive) => this.addLogMessage(this.log, `Device alive: ${isAlive}`),
-      (err) => this.addLogMessage(this.log, `Poll failed: ${err.message}`)
+      (err: Error) => this.addLogMessage(this.log, `Poll failed: ${err.message}`)
     );
   }
 
   private async setupDevice(): Promise<void> {
-    try {
-      this.addLogMessage(this.log, 'Starting device setup');
-  const isAlive = await this.ccTalk.simplePoll();
-  this.addLogMessage(this.log, `Simple poll result: ${isAlive}`);
-      if (!isAlive) throw new Error('Device not responding');
-      const serialNumber = await this.ccTalk.requestSerialNumber();
-      await this.ccTalk.modifyInhibitStatus(['ff', 'ff']); // Enable all channels
-      await this.ccTalk.enableAcceptance();
-      this.addLogMessage(this.log, `TB74 setup complete. Serial: ${serialNumber}`);
-    } catch (err) {
-      this.addLogMessage(this.log, `Setup error: ${(err as Error).message}`);
-      throw err; // Re-throw for upstream handling
-    }
+    return new Promise<void>((resolve, reject) => {
+      try {
+        this.addLogMessage(this.log, 'Starting device setup');
+        this.ccTalk.simplePoll()
+          .then((isAlive) => {
+            this.addLogMessage(this.log, `Simple poll result: ${isAlive}`);
+            if (!isAlive) throw new Error('Device not responding');
+            return this.ccTalk.requestSerialNumber();
+          })
+          .then((serialNumber) => {
+            this.addLogMessage(this.log, `TB74 setup complete. Serial: ${serialNumber}`);
+            return Promise.all([
+              this.ccTalk.modifyInhibitStatus(['ff', 'ff']), // Enable all channels
+              this.ccTalk.enableAcceptance()
+            ]);
+          })
+          .then(() => resolve())
+          .catch((err: Error) => {
+            this.addLogMessage(this.log, `Setup error: ${err.message}`);
+            reject(err);
+          });
+      } catch (err) {
+        this.addLogMessage(this.log, `Setup error: ${(err as Error).message}`);
+        reject(err);
+      }
+    });
   }
 
   private parseBillValue(valueCode: string): number {
@@ -94,7 +110,7 @@ export class CCTALKTb74Service implements ISerialService {
       '04': 500,  // 500 THB
       '05': 1000  // 1000 THB
     };
-    return billMap[valueCode] ?? 0; // Nullish coalescing for safer default
+    return billMap[valueCode] ?? 0;
   }
 
   initializeSerialPort(
@@ -105,7 +121,7 @@ export class CCTALKTb74Service implements ISerialService {
     otp: string,
     isNative: ESerialPortType
   ): Promise<string> {
-    return new Promise<string>(async (resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       try {
         this.log = log;
         this.machineId = machineId;
@@ -113,59 +129,70 @@ export class CCTALKTb74Service implements ISerialService {
         this.portName = portName || this.portName;
         this.baudRate = baudRate || this.baudRate;
 
-        const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-        this.serialService.startReading();
-
-        if (init === this.portName) {
-          this.serialService.startReading();
-  this.addLogMessage(this.log, 'Started reading from serial port');
-          this.initCctalk();
-          resolve(init);
-        } else {
-          reject(new Error(`Failed to initialize port: ${init}`));
-        }
+        this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative)
+          .then((init) => {
+            if (init === this.portName) {
+              this.serialService.startReading();
+              this.addLogMessage(this.log, 'Started reading from serial port');
+              this.initCctalk();
+              resolve(init);
+            } else {
+              reject(new Error(`Failed to initialize port: ${init}`));
+            }
+          })
+          .catch((err: Error) => reject(err));
       } catch (err) {
-        reject(err);
+        reject(err as Error);
       }
     });
   }
 
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
-    return new Promise<IResModel>(async (resolve, reject) => {
+    return new Promise<IResModel>((resolve, reject) => {
       try {
         switch (command) {
           case EMACHINE_COMMAND.POLL:
-            const isAlive = await this.ccTalk.simplePoll();
-            resolve(PrintSucceeded(command, { isAlive, totalValue: this.totalValue }, 'poll'));
+            this.ccTalk.simplePoll()
+              .then((isAlive) => {
+                if (!isAlive) throw new Error('Device not responding');
+                resolve(PrintSucceeded(command, { isAlive, totalValue: this.totalValue }, 'poll', transactionID));
+              })
+              .catch((err: Error) => reject(new Error(`Poll failed: ${err.message}`)));
             break;
           case EMACHINE_COMMAND.READ_EVENTS:
-            const events = await this.ccTalk.readBillEvents();
-            resolve(PrintSucceeded(command, { events, totalValue: this.totalValue }, 'read events'));
+            this.ccTalk.readBillEvents()
+              .then((events) => resolve(PrintSucceeded(command, { events, totalValue: this.totalValue }, 'read events', transactionID)))
+              .catch((err: Error) => reject(new Error(`Read events failed: ${err.message}`)));
             break;
           case EMACHINE_COMMAND.RESET:
-            await this.ccTalk.resetDevice();
-            this.totalValue = 0;
-            resolve(PrintSucceeded(command, {}, 'reset'));
+            this.ccTalk.resetDevice()
+              .then(() => {
+                this.totalValue = 0;
+                resolve(PrintSucceeded(command, {}, 'reset', transactionID));
+              })
+              .catch((err: Error) => reject(new Error(`Reset failed: ${err.message}`)));
             break;
           case EMACHINE_COMMAND.ACCEPT:
-            await this.ccTalk.acceptBill();
-            resolve(PrintSucceeded(command, {}, 'accept bill'));
+            this.ccTalk.acceptBill()
+              .then(() => resolve(PrintSucceeded(command, {}, 'accept bill', transactionID)))
+              .catch((err: Error) => reject(new Error(`Accept bill failed: ${err.message}`)));
             break;
           case EMACHINE_COMMAND.REJECT:
-            await this.ccTalk.rejectBill();
-            resolve(PrintSucceeded(command, {}, 'reject bill'));
+            this.ccTalk.rejectBill()
+              .then(() => resolve(PrintSucceeded(command, {}, 'reject bill', transactionID)))
+              .catch((err: Error) => reject(new Error(`Reject bill failed: ${err.message}`)));
             break;
           default:
             reject(new Error(`Unsupported command: ${command}`));
         }
       } catch (err) {
-        reject(err);
+        reject(err as Error);
       }
     });
   }
 
   checkSum(data?: any[]): string {
-    return data?.join('') ?? ''; // Safer handling of undefined
+    return data?.join('') ?? '';
   }
 
   getSerialEvents() {
@@ -230,10 +257,12 @@ class CcTalkTB74 {
   }
 
   public handleData(hexData: string): void {
-    console.log( `Processing raw data: ${hexData}`); // Extra log
-    this.emit('response', ['raw', hexData]); // Log raw data
+    console.log(`Processing raw data: ${hexData}`);
+    this.emit('response', ['raw', hexData]);
+
     if (hexData.length < 10) {
       this.emit('error', ['Frame too short']);
+      return;
     }
 
     const srcAddr = hexData.slice(0, 2);
@@ -246,6 +275,11 @@ class CcTalkTB74 {
 
     if (checksumReceived !== calculatedChecksum) {
       this.emit('error', ['Checksum mismatch']);
+      const command = this.pendingCommands.get(header);
+      if (command) {
+        this.pendingCommands.delete(header);
+        command.reject(new Error(`Checksum mismatch for command ${header}`));
+      }
       return;
     }
 
@@ -266,12 +300,14 @@ class CcTalkTB74 {
     if (header === "e5" && dataLength >= 1) {
       const events = this.parseBillEvents(data);
       events.forEach((event) => this.emit('billEvent', [event]));
+    } else {
+      this.emit('error', [`Unhandled response header: ${header}`]);
     }
   }
 
   private calculateChecksum(frame: string): string {
     const matches = frame.match(/.{2}/g);
-    if (!matches) return "00"; // Default checksum for empty frame
+    if (!matches) return "00";
     const sum = matches.reduce((acc: number, byte) => acc + parseInt(byte, 16), 0);
     return ((256 - (sum % 256)) % 256).toString(16).padStart(2, '0');
   }
@@ -289,42 +325,111 @@ class CcTalkTB74 {
   }
 
   public async simplePoll(): Promise<boolean> {
-    const response = await this.sendCommand("fe");
-    return response.slice(6, 8) === "00"; // ACK
+    return new Promise<boolean>(async (resolve, reject) => {
+      try {
+        const response = await this.sendCommand("fe");
+        resolve(response.slice(6, 8) === "00"); // ACK
+      } catch (err) {
+        reject(new Error(`Simple poll failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async readBillEvents(): Promise<BillEvent[]> {
-    const response = await this.sendCommand("e5");
-    return this.parseBillEvents(response.slice(8, -2));
+    return new Promise<BillEvent[]>(async (resolve, reject) => {
+      try {
+        const response = await this.sendCommand("e5");
+        resolve(this.parseBillEvents(response.slice(8, -2)));
+      } catch (err) {
+        reject(new Error(`Read bill events failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async resetDevice(): Promise<void> {
-    await this.sendCommand("e4");
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.sendCommand("e4");
+        resolve();
+      } catch (err) {
+        reject(new Error(`Reset device failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async acceptBill(): Promise<void> {
-    await this.sendCommand("aa"); // Verify with TB74 manual
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.sendCommand("aa");
+        resolve();
+      } catch (err) {
+        reject(new Error(`Accept bill failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async rejectBill(): Promise<void> {
-    await this.sendCommand("ab"); // Verify with TB74 manual
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.sendCommand("ab");
+        resolve();
+      } catch (err) {
+        reject(new Error(`Reject bill failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async requestSerialNumber(): Promise<string> {
-    const response = await this.sendCommand("f5");
-    return response.slice(8, -2);
+    return new Promise<string>(async (resolve, reject) => {
+      try {
+        const response = await this.sendCommand("f5");
+        resolve(response.slice(8, -2));
+      } catch (err) {
+        reject(new Error(`Request serial number failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async modifyInhibitStatus(inhibits: string[]): Promise<void> {
-    await this.sendCommand("e7", inhibits);
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.sendCommand("e7", inhibits);
+        resolve();
+      } catch (err) {
+        reject(new Error(`Modify inhibit status failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async enableAcceptance(): Promise<void> {
-    await this.sendCommand("e6");
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.sendCommand("e6");
+        resolve();
+      } catch (err) {
+        reject(new Error(`Enable acceptance failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public async disableAcceptance(): Promise<void> {
-    await this.sendCommand("e8");
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.sendCommand("e8");
+        resolve();
+      } catch (err) {
+        reject( new Error(`Disable acceptance failed: ${(err as Error).message}`));
+      }
+    });
+
   }
 
   public on(event: CctalkEvent, callback: ListenerCallback): void {

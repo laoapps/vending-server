@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
-import {SerialConnectionCapacitor}  from 'SerialConnectionCapacitor';
+import { SerialConnectionCapacitor } from 'SerialConnectionCapacitor';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded, PrintError, EMessage } from './services/syste.model';
 import { SerialServiceService } from './services/serialservice.service';
 import { LoggingService } from './logging-service.service';
@@ -23,7 +23,7 @@ export class ADH814Service implements ISerialService {
   constructor(
     private serialService: SerialServiceService,
     private loggingService: LoggingService
-  ) {}
+  ) { }
 
   private addLogMessage(message: string, consoleMessage?: string): void {
     addLogMessage(this.log, message, consoleMessage);
@@ -203,72 +203,80 @@ export class ADH814Service implements ISerialService {
   }
 
   async initializeSerialPort(
-  portName: string,
-  baudRate: number,
-  log: IlogSerial,
-  machineId: string,
-  otp: string,
-  isNative: ESerialPortType = ESerialPortType.Serial
-): Promise<string> {
-  return new Promise<string>(async (resolve, reject) => {
-    this.machineId = machineId;
-    this.otp = otp;
-    this.portName = portName || this.portName;
-    this.baudRate = baudRate || this.baudRate;
-    this.log = log;
+    portName: string,
+    baudRate: number,
+    log: IlogSerial,
+    machineId: string,
+    otp: string,
+    isNative: ESerialPortType = ESerialPortType.Serial
+  ): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+      this.machineId = machineId;
+      this.otp = otp;
+      this.portName = portName || this.portName;
+      this.baudRate = baudRate || this.baudRate;
+      this.log = log;
 
-    try {
-      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-      await this.serialService.startReading();
-      this.loggingService.initializeLogging();
-      this.initADH814();
+      try {
+        const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+        await this.serialService.startReading();
+        this.loggingService.initializeLogging();
+        this.initADH814();
 
-      // Verify device ID with retry
-      let retries = 0;
-      const maxRetries = 3;
-      while (retries < maxRetries) {
-        try {
-          this.addLogMessage(`Attempting ID query (attempt ${retries + 1}/${maxRetries})`);
-          const idResponse = await this.commandADH814('A1', { address: 0x01 });
-          this.addLogMessage(`Device ID response: ${JSON.stringify(idResponse)}`);
-          break;
-        } catch (err) {
-          retries++;
-          this.addLogMessage(`ID query failed: ${err.message}`);
-          if (retries === maxRetries) {
-            throw new Error(`Failed to query ID after ${maxRetries} attempts: ${err.message}`);
+        // Verify device ID with retry
+        let retries = 0;
+        const maxRetries = 3;
+        while (retries < maxRetries) {
+          try {
+            this.addLogMessage(`Attempting ID query (attempt ${retries + 1}/${maxRetries})`);
+            const idResponse = await this.commandADH814('A1', { address: 0x01 });
+            this.addLogMessage(`Device ID response: ${JSON.stringify(idResponse)}`);
+            break;
+          } catch (err) {
+            retries++;
+            this.addLogMessage(`ID query failed: ${err.message}`);
+            if (retries === maxRetries) {
+              throw new Error(`Failed to query ID after ${maxRetries} attempts: ${err.message}`);
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
-          await new Promise(resolve => setTimeout(resolve, 1000));
         }
+
+        // Set default temperature
+        await this.commandADH814('A4', { address: 0x01, mode: 0x01, lowTemp: 7 });
+        this.addLogMessage('Default temperature set successfully');
+
+        // Start polling
+        await SerialConnectionCapacitor.startPolling({ address: 0x01, interval: 300 });
+        this.addLogMessage('Polling started with interval 300ms');
+
+        if (init === this.portName) {
+          resolve(init);
+        } else {
+          reject(new Error(`Serial port initialization failed: Expected ${this.portName}, got ${init}`));
+        }
+      } catch (err) {
+        this.addLogMessage(`Initialization failed: ${err.message}`);
+        reject(err);
       }
-
-      // Set default temperature
-      await this.commandADH814('A4', { address: 0x01, mode: 0x01, lowTemp: 7 });
-      this.addLogMessage('Default temperature set successfully');
-
-      // Start polling
-      await SerialConnectionCapacitor.startPolling({ address: 0x01, interval: 300 });
-      this.addLogMessage('Polling started with interval 300ms');
-
-      if (init === this.portName) {
-        resolve(init);
-      } else {
-        reject(new Error(`Serial port initialization failed: Expected ${this.portName}, got ${init}`));
-      }
-    } catch (err) {
-      this.addLogMessage(`Initialization failed: ${err.message}`);
-      reject(err);
-    }
-  });
-}
+    });
+  }
 
   getSerialEvents() {
     return this.serialService.getSerialEvents();
   }
 
   async close(): Promise<void> {
-    await this.serialService.close();
-    this.addLogMessage('Serial connection closed');
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.serialService.close();
+        this.addLogMessage('Serial connection closed');
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+
   }
 
   async listPorts(): Promise<SerialPortListResult> {
