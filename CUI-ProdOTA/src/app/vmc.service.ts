@@ -60,7 +60,7 @@ export class VmcService implements ISerialService {
   private creditPending: ICreditData[] = [];
   private pendingRetry = 10;
   private T: NodeJS.Timeout | null = null;
-  portName = '/dev/ttyS1';
+  portName = '/dev/ttyS0';
   baudRate = 57600;
   parity: 'none' = 'none';
   dataBits: 8 = 8;
@@ -198,22 +198,27 @@ export class VmcService implements ISerialService {
 
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative = ESerialPortType.Serial): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
-      this.machineId = machineId;
-      this.otp = otp;
-      this.log = log;
-      this.portName = portName;
-      this.baudRate = baudRate;
-      this.sock.machineId = machineId;
-      this.sock.otp = otp;
-      this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
-      const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
-      await this.serialService.startReadingVMC();
+      try {
+        this.machineId = machineId;
+        this.otp = otp;
+        this.log = log;
+        this.portName = portName;
+        this.baudRate = baudRate;
+        this.sock.machineId = machineId;
+        this.sock.otp = otp;
+        this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
+        const init = await this.serialService.initializeSerialPort(this.portName, this.baudRate, this.log, isNative);
+        await this.serialService.startReadingVMC();
 
-      if (init == this.portName) {
-        this.vmcInitilize();
-        resolve(init);
+        if (init == this.portName) {
+          this.vmcInitilize();
+          resolve(init);
+        }
+        else reject(init);
+      } catch (error) {
+        reject(error);
       }
-      else reject(init);
+
     });
 
   }
@@ -222,72 +227,108 @@ export class VmcService implements ISerialService {
     return this.serialService.getSerialEvents();
   }
 
-  async close(): Promise<void> {
-    if (this.T) clearInterval(this.T);
-    this.T = null;
-    await this.serialService.close();
+  async close(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if (this.T) clearInterval(this.T);
+        this.T = null;
+        await this.serialService.close();
+        resolve(true);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
+
+
 
   public async listPorts(): Promise<SerialPortListResult> {
     return this.serialService.listPorts();
   }
 
   private async vmcInitilize(): Promise<void> {
-    this.loggingService.initializeLogging();
-    this.addLogMessage(`Initializing VMC on ${this.portName} at ${this.baudRate}`);
-    this.setupSerialListeners();
-    await this.sycnVMC();
-    // await this.setPoll(10);
-    await this.initializeVMCCommands();
-    await this.loadCreditPending();
-    this.initBankNotes();
-    // check connection and update new status setting from server
-    if (!this.offlineMode) {
-      this.startPeriodicTasks();
-    }
-
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        this.loggingService.initializeLogging();
+        this.addLogMessage(`Initializing VMC on ${this.portName} at ${this.baudRate}`);
+        this.setupSerialListeners();
+        await this.sycnVMC();
+        // await this.setPoll(10);
+        await this.initializeVMCCommands();
+        await this.loadCreditPending();
+        this.initBankNotes();
+        // check connection and update new status setting from server
+        if (!this.offlineMode) {
+          this.startPeriodicTasks();
+        }
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
+
+
 
   private async initializeVMCCommands(): Promise<void> {
-    const commands = [
-      { cmd: EVMC_COMMAND.MACHINE_STATUS, params: {} },           // Machine status
-      // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
-      // { cmd: EVMC_COMMAND._7017, params: { read: true, enable: 0 } }, // Unionpay/POS (read)
-      // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
-      { cmd: EVMC_COMMAND.BILL_ACCEPT_MODE, params: { read: false, value: 1 } },     // Bill accepting mode (read)
-      // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
-      // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 200 } }, // Enable bills
-      // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
-      // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
-      { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
-      { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
-      // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
-      { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 } }
-    ];
-    // set value slection , but the cash acceptor is flashing need to solve later
-    // TODO: check if remove ENABLE_SELECTION will work for old VMC
-    // commands.push(
-    //   { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 }} as any
-    // )
-    for (const x of commands) {
-      if (!x) continue
-      await this.serialService.writeVMC(x.cmd, x.params);
-      this.addLogMessage(`INIT ${JSON.stringify(x)}`);
-    }
-
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        const commands = [
+          { cmd: EVMC_COMMAND.MACHINE_STATUS, params: {} },           // Machine status
+          // { cmd: EVMC_COMMAND._7001, params: {} },         // Coin system setting (read)
+          // { cmd: EVMC_COMMAND._7017, params: { read: true, enable: 0 } }, // Unionpay/POS (read)
+          // { cmd: EVMC_COMMAND._7018, params: { read: true } },     // Bill value accepted (read)
+          { cmd: EVMC_COMMAND.BILL_ACCEPT_MODE, params: { read: false, value: 1 } },     // Bill accepting mode (read)
+          // { cmd: EVMC_COMMAND._7020, params: { read: true } },     // Bill low-change (read)
+          // { cmd: EVMC_COMMAND._7018, params: { read: false, value: 200 } }, // Enable bills
+          // { cmd: EVMC_COMMAND._7023, params: { read: true } },     // Credit mode (read)
+          // { cmd: EVMC_COMMAND._7023, params: { mode: 0 } }, // Set credit mode to return change
+          { cmd: EVMC_COMMAND.TEMP_CONTROLLER, params: { lowTemp: this.setting.lowTemp, highTemp: this.setting.highTemp } }, // Temp controller
+          { cmd: EVMC_COMMAND.TEMP_MODE, params: { lowTemp: this.setting.lowTemp } }, // Temp mode
+          // { cmd: EVMC_COMMAND._28, params: { mode: 0,value:'ffff' } }     // Enable bills
+          { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 } }
+        ];
+        // set value slection , but the cash acceptor is flashing need to solve later
+        // TODO: check if remove ENABLE_SELECTION will work for old VMC
+        // commands.push(
+        //   { cmd: EVMC_COMMAND.ENABLE_SELECTION, params: { selectionNumber: 0, price: 1 }} as any
+        // )
+        for (const x of commands) {
+          if (!x) continue
+          await this.serialService.writeVMC(x.cmd, x.params);
+          this.addLogMessage(`INIT ${JSON.stringify(x)}`);
+        }
+        resolve();
+      } catch (error) {
+        this.addLogMessage(`VMC Initialization failed: ${error}`, `VMC Initialization failed: ${error}`);
+        reject(error);
+      }
+    });
   }
+
+
   public setTemperature(lowTemp: number = 5, highTemp: number = 10) {
     return new Promise<void>(async (resolve, reject) => {
-      this.setting.lowTemp = lowTemp;
-      this.setting.highTemp = highTemp;
-      await this.serialService.writeVMC(EVMC_COMMAND.TEMP_CONTROLLER, { lowTemp, highTemp });
-      resolve();
+      try {
+        this.setting.lowTemp = lowTemp;
+        this.setting.highTemp = highTemp;
+        await this.serialService.writeVMC(EVMC_COMMAND.TEMP_CONTROLLER, { lowTemp, highTemp });
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+
     });
   }
   public setLights(start: number = 3, end: number = 2) {
     return new Promise<void>(async (resolve, reject) => {
-      await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start, end });
-      resolve();
+      try {
+
+        await this.serialService.writeVMC(EVMC_COMMAND.LIGHT_CONTROL, { start, end });
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
     });
   }
   public shipItem(slot = 1, dropSensor = 1) {
@@ -302,21 +343,31 @@ export class VmcService implements ISerialService {
   }
   public disableCashIn() {
     return new Promise<void>(async (resolve, reject) => {
-      this.setting.allowCashIn = false;
-      this.enable = false;
-      await this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { read: false, value: 0 });
-      // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
+      try {
+        this.setting.allowCashIn = false;
+        this.enable = false;
+        await this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { read: false, value: 0 });
+        // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: '0000' });
 
-      resolve();
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+
     });
   }
   public enableCashIn() {
     return new Promise<void>(async (resolve, reject) => {
-      this.setting.allowCashIn = true;
-      this.enable = true;
-      await this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read: false, value: 200 });
-      // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: 'ffff' });
-      resolve();
+      try {
+        this.setting.allowCashIn = true;
+        this.enable = true;
+        await this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read: false, value: 200 });
+        // this.serialService.writeVMC(EVMC_COMMAND.ENABLE, { read:false,value: 'ffff' });
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+
     });
 
   }
@@ -339,15 +390,20 @@ export class VmcService implements ISerialService {
     data[data.length - 1] = this.serialService.chk8xor(data);
     return data.join('');
   }
-  private async loadCreditPending(): Promise<void> {
-    try {
-      this.creditPending = (await this.loadCredits()) as ICreditData[];
-      this.addLogMessage(`Loaded ${this.creditPending.length} pending credits`);
-    } catch (error: any) {
-      this.creditPending = [];
-      this.addLogMessage(`Error loading credits: ${error.message}`);
-    }
+  private async loadCreditPending(): Promise<ICreditData[]> {
+    return new Promise<ICreditData[]>(async (resolve, reject) => {
+      try {
+        this.creditPending = (await this.loadCredits()) as ICreditData[];
+        this.addLogMessage(`Loaded ${this.creditPending.length} pending credits`);
+        resolve(this.creditPending);
+      } catch (error: any) {
+        this.creditPending = [];
+        this.addLogMessage(`Error loading credits: ${error.message}`);
+        reject(error);
+      }
+    });
   }
+
 
   private startPeriodicTasks(): void {
     this.T = setInterval(() => {
@@ -492,13 +548,26 @@ export class VmcService implements ISerialService {
   }
 
   private async sycnVMC(): Promise<IResModel> {
-    await this.serialService.writeVMC(EVMC_COMMAND.SYNC, {});
-    return { command: EMACHINE_COMMAND.SYNC, data: {}, message: 'Sync queued', status: 1, transactionID: -31 };
+    return new Promise<IResModel>(async (resolve, reject) => {
+      try {
+        const res = await this.serialService.writeVMC(EVMC_COMMAND.SYNC, {});
+        resolve({ command: EMACHINE_COMMAND.SYNC, data: res, message: 'Sync queued', status: 1, transactionID: -31 });
+      } catch (error) {
+        reject(PrintError(EMACHINE_COMMAND.SYNC, {}, 'Sync failed'));
+      }
+    });
+
   }
 
   private async setPoll(ms: number): Promise<IResModel> {
-    await this.serialService.writeVMC(EVMC_COMMAND.SET_POLL, { ms: ms || 10 });
-    return { command: EMACHINE_COMMAND.SET_POLL, data: { ms }, message: 'Poll set queued', status: 1, transactionID: -16 };
+    return new Promise<IResModel>(async (resolve, reject) => {
+      try {
+        await this.serialService.writeVMC(EVMC_COMMAND.SET_POLL, { ms: ms || 10 });
+        resolve({ command: EMACHINE_COMMAND.SET_POLL, data: { ms }, message: 'Poll set queued', status: 1, transactionID: -16 });
+      } catch (error) {
+        reject(PrintError(EMACHINE_COMMAND.SET_POLL, { ms }, 'Set poll failed'));
+      }
+    });
   }
 
   async loadCredits() {
