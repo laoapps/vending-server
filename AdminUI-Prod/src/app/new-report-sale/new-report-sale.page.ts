@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import axios from 'axios';
 import { AlertController } from '@ionic/angular';
+import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-new-report-sale',
@@ -8,6 +9,7 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./new-report-sale.page.scss'],
 })
 export class NewReportSalePage implements OnInit {
+  @Input() machineId: string;
   fromDate = new Date().toISOString().split('T')[0];
   toDate = new Date().toISOString().split('T')[0];
   showFromPicker = false;
@@ -34,15 +36,15 @@ export class NewReportSalePage implements OnInit {
     const body = {
       fromDate: this.fromDate,
       toDate: this.toDate,
-      machineId: '66660006',
+      machineId: this.machineId,
       token: localStorage.getItem('lva_token'),
-      shopPhonenumber: '55516321',
-      secret: 'e2f48898-3453-4214-9025-27e905b269d9',
+      shopPhonenumber: localStorage.getItem('phoneNumberLocal'),
+      secret: localStorage.getItem('secretLocal'),
     };
 
     try {
       const response = await axios.post(
-        'https://vending-service-api5.laoapps.com/zdm8/loadVendingMachineSaleBillReport',
+        `${environment.url}/loadVendingMachineSaleBillReport`,
         body
       );
 

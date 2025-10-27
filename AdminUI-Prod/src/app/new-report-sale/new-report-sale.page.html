@@ -96,8 +96,8 @@
                 <th>Sales Count</th>
                 <th>Total Value</th>
                 <th>Payment Status</th>
-                <th>Payment Reference</th>
                 <th>Actions</th>
+                <th>Payment Reference</th>
               </tr>
             </thead>
             <tbody>
@@ -123,15 +123,16 @@
                     {{ item.paymentstatus }}
                   </span>
                 </td>
-                <td class="ref-col">
-                  <span class="ref-text">{{ item.paymentref || '-' }}</span>
-                </td>
                 <td class="action-col">
                   <ion-button size="small" fill="outline" color="primary" (click)="viewDetails(item.vendingsales)">
                     <ion-icon name="eye-outline" slot="start"></ion-icon>
                     View
                   </ion-button>
                 </td>
+                <td class="ref-col">
+                  <span class="ref-text">{{ item.paymentref || '-' }}</span>
+                </td>
+
               </tr>
             </tbody>
           </table>
