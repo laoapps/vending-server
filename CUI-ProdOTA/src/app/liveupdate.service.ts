@@ -35,7 +35,7 @@ export class LiveupdateService {
         console.error('=====>Server returned error:', latestBundle.error);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: `Server returned error:: ${latestBundle.error}` });
         await this.updateAppData();
-        return undefined;
+        return new Promise((resolve) => { resolve(undefined); });
       }
 
       const bundleId = latestBundle.bundleId.trim();
@@ -46,7 +46,7 @@ export class LiveupdateService {
         console.log('=====>No new bundle available.');
         this.apiService.IndexedLogDB.addBillProcess({ errorData: 'No new bundle available.' });
         await this.updateAppData();
-        return undefined;
+        return new Promise((resolve) => { resolve(undefined); });
       }
 
       // Download bundle
@@ -61,7 +61,8 @@ export class LiveupdateService {
       const bundles = await LiveUpdate.getBundles();
       if (!bundles.bundleIds.includes(bundleId)) {
         this.apiService.IndexedLogDB.addBillProcess({ errorData: `Bundle ${bundleId} not found in available bundles` });
-        throw new Error(`Bundle ${bundleId} not found in available bundles`);
+        // throw new Error(`Bundle ${bundleId} not found in available bundles`);
+        return new Promise((resolve, reject) => { reject(new Error(`Bundle ${bundleId} not found in available bundles`)); });
       }
 
       // Set next bundle and prepare update
@@ -79,14 +80,18 @@ export class LiveupdateService {
       console.log('=====>Update completed, closing app to restart...');
       await this.showToast(`App updated to version ${bundleId}. Closing to complete restart.`);
       await this.updateAppData();
-      
-       // Exit app once to trigger full restart
-      return latestBundle;
+
+      // Exit app once to trigger full restart
+      return new Promise((resolve) => {
+        resolve(latestBundle);
+      });;
     } catch (error) {
       console.error('=====>Update process failed:', JSON.stringify(error));
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update process failed: ${JSON.stringify(error)}` });
       await this.updateAppData();
-      return undefined;
+      return new Promise((resolve, reject) => {
+        reject(error);
+      });
     }
   }
 
@@ -124,22 +129,23 @@ export class LiveupdateService {
   async isNewBundleAvailable(latestBundleId: string): Promise<boolean> {
     try {
       const { bundleIds } = await LiveUpdate.getBundles();
-      return bundleIds.length > 0 ? latestBundleId !== bundleIds[0] : true;
+      return new Promise((resolve) => { resolve(bundleIds.length > 0 ? latestBundleId !== bundleIds[0] : true) });
     } catch (error) {
       console.error('=====>Error checking bundle availability:', JSON.stringify(error));
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error checking bundle availability: ${JSON.stringify(error)}` });
-      return false;
+      return new Promise((resolve) => { resolve(false) });
     }
   }
 
   async getCurrentBundleId(): Promise<string | null> {
     try {
       const { bundleIds } = await LiveUpdate.getBundles();
-      return bundleIds.length > 0 ? bundleIds[0] : null;
+      // return bundleIds.length > 0 ? bundleIds[0] : null;
+      return new Promise((resolve) => { resolve(bundleIds.length > 0 ? bundleIds[0] : null); });
     } catch (error) {
       console.error('=====>Error getting current bundle:', JSON.stringify(error));
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error getting current bundle: ${JSON.stringify(error)}` });
-      return null;
+      return new Promise((resolve) => { resolve(null); });
     }
   }
 
@@ -205,7 +211,15 @@ export class LiveupdateService {
 
   // ตัวอย่างฟังก์ชันอ่านเวอร์ชันปัจจุบัน (ต้องมีไฟล์ src/assets/version.json)
   async getCurrentActiveBundleId(): Promise<string> {
-    const result = await this.http.get<{ version: string }>('/assets/version.json').toPromise();
-    return result.version;
+    return new Promise<string>(async (resolve, reject) => {
+      try {
+        this.http.get<{ version: string }>('/assets/version.json').subscribe(r => {
+          resolve(r.version);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+
   }
 }

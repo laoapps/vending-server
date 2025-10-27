@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IBankNote, IlogSerial, IResModel, ISerialService } from './services/syste.model';
 import { Subject } from 'rxjs';
-import * as BigInt from 'big-integer';
+import BigInt from 'big-integer';
 
 // import { randomBytes } from 'crypto-es'; // Use crypto-es for random bytes
 enum EEsspCommand {
@@ -165,7 +165,7 @@ export class EsspService implements ISerialService {
 
     return high; // Return the floor of the square root
   }
-  generatePrime(bits: number=64): BigInt.BigInteger {
+  generatePrime(bits: number = 64): BigInt.BigInteger {
     const min = BigInt(1).shiftLeft(bits - 1); // 2^(bits-1)
     const max = BigInt(1).shiftLeft(bits).minus(1); // 2^bits - 1
 
@@ -258,24 +258,32 @@ export class EsspService implements ISerialService {
   }
 
   private async flushIncompleteBuffer(): Promise<void> {
-    if (this.responseBuffer.length > 0 && this.packetCounter > 0) {
-      this.addLogMessage(this.log, `Flushing incomplete buffer: ${this.responseBuffer}`);
-      this.resetPacket();
-      const bufferCopy = this.responseBuffer;
-      this.responseBuffer = '';
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        if (this.responseBuffer.length > 0 && this.packetCounter > 0) {
+          this.addLogMessage(this.log, `Flushing incomplete buffer: ${this.responseBuffer}`);
+          this.resetPacket();
+          const bufferCopy = this.responseBuffer;
+          this.responseBuffer = '';
 
-      this.pendingCommands.forEach(async (entry, seqId) => {
-        this.addLogMessage(this.log, `Retrying command ${entry.command} due to incomplete response: ${bufferCopy}`);
-        try {
-          await this.serialService.write(entry.packet);
-          this.addLogMessage(this.log, `Resent packet: ${entry.packet}`);
-        } catch (e) {
-          this.addLogMessage(this.log, `Retry write failed: ${e.message}`);
-          this.responseSubject.error({ command: entry.command, seqId, message: 'Retry write failed' });
-          this.pendingCommands.delete(seqId);
+          this.pendingCommands.forEach(async (entry, seqId) => {
+            this.addLogMessage(this.log, `Retrying command ${entry.command} due to incomplete response: ${bufferCopy}`);
+            try {
+              await this.serialService.write(entry.packet);
+              this.addLogMessage(this.log, `Resent packet: ${entry.packet}`);
+            } catch (e) {
+              this.addLogMessage(this.log, `Retry write failed: ${e.message}`);
+              this.responseSubject.error({ command: entry.command, seqId, message: 'Retry write failed' });
+              this.pendingCommands.delete(seqId);
+            }
+          });
         }
-      });
-    }
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+
   }
 
   private resetPacket(): void {
@@ -423,31 +431,36 @@ export class EsspService implements ISerialService {
     });
   }
   private async generateKeys(): Promise<{ generator: BigInt.BigInteger; modulus: BigInt.BigInteger; hostRandom: BigInt.BigInteger; hostInter: BigInt.BigInteger }> {
-    const generator = this.generatePrime(16);
-    const modulus = this.generatePrime(16);
+    try {
+      const generator = this.generatePrime(16);
+      const modulus = this.generatePrime(16);
 
-    if (generator.eq(BigInt(0)) || modulus.eq(BigInt(0))) {
-      throw new Error('GENERATOR and MODULUS should be > 0');
+      if (generator.eq(BigInt(0)) || modulus.eq(BigInt(0))) {
+        throw new Error('GENERATOR and MODULUS should be > 0');
+      }
+
+      let gen = generator;
+      let mod = modulus;
+      if (gen.lt(mod)) {
+        [mod, gen] = [gen, mod];
+      }
+
+      const randomBuffer = new Uint8Array(2);
+      window.crypto.getRandomValues(randomBuffer);
+      const randomValue = new DataView(randomBuffer.buffer).getUint16(0, true);
+      const hostRandom = BigInt(randomValue).mod(BigInt('2147483648'));
+      const hostInter = gen.modPow(hostRandom, mod);
+
+
+      return new Promise((resolve, reject) => {
+        resolve({ generator, modulus, hostRandom, hostInter });
+      });
+    } catch (error) {
+      return new Promise((resolve, reject) => {
+        reject(error);
+      });
     }
 
-    let gen = generator;
-    let mod = modulus;
-    if (gen.lt(mod)) {
-      [mod, gen] = [gen, mod];
-    }
-
-    const randomBuffer = new Uint8Array(2);
-    window.crypto.getRandomValues(randomBuffer);
-    const randomValue = new DataView(randomBuffer.buffer).getUint16(0, true);
-    const hostRandom = BigInt(randomValue).mod(BigInt('2147483648'));
-    const hostInter = gen.modPow(hostRandom, mod);
-
-    return {
-      generator: gen,
-      modulus: mod,
-      hostRandom,
-      hostInter,
-    };
   }
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -481,16 +494,24 @@ export class EsspService implements ISerialService {
 
 
   private async retryCommand(command: EEsspCommand, params: any = {}, retries: number = 20): Promise<IResModel> {
-    for (let attempt = 1; attempt <= retries; attempt++) {
+    return new Promise<IResModel>(async (resolve, reject) => {
       try {
-        return await this.commandEssp(command, params);
-      } catch (e) {
-        this.addLogMessage(this.log, `Attempt ${attempt} failed for ${command}: ${e.message}`);
-        if (attempt === retries) throw e;
-        await this.delay(100);
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            return resolve( await this.commandEssp(command, params));
+          } catch (e) {
+            this.addLogMessage(this.log, `Attempt ${attempt} failed for ${command}: ${e.message}`);
+            if (attempt === retries) throw e;
+            await this.delay(100);
+          }
+        }
+        throw new Error(`Failed to execute ${command} after ${retries} attempts`);
+      } catch (error) {
+        reject(error);
       }
-    }
-    throw new Error(`Failed to execute ${command} after ${retries} attempts`);
+    });
+
+
   }
 
   private async commandEssp(command: EEsspCommand, params: any = {}): Promise<IResModel> {
@@ -601,7 +622,9 @@ export class EsspService implements ISerialService {
     } catch (e) {
       this.pendingCommands.delete(seqId);
       this.addLogMessage(this.log, `Write failed: ${e.message}`);
-      throw e;
+      return new Promise<IResModel>((resolve, reject) => {
+        reject(e);
+      });
     }
   }
 
@@ -636,9 +659,12 @@ export class EsspService implements ISerialService {
       this.encryptKey = new Uint8Array([...this.fixedKey, ...keyBytes.slice(-8)]);
       this.isEncrypted = true;
       this.addLogMessage(this.log, `Encryption initialized with key: ${this.toHexString(this.encryptKey)}`);
+      return new Promise((resolve, reject) => {        resolve();
+      });
     } catch (error) {
       console.error('initEncryption ' + JSON.stringify(error));
-      throw error;
+      return new Promise((resolve, reject) => {        reject(error);
+      });
     }
   }
 
@@ -771,7 +797,9 @@ export class EsspService implements ISerialService {
     if (result.status === 1) {
       this.startPolling();
     }
-    return result;
+    return new Promise<IResModel>((resolve, reject) => {
+      resolve(result);
+    });
   }
 
 

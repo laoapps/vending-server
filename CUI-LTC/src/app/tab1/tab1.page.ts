@@ -79,7 +79,7 @@ import { SerialServiceService } from '../services/serialservice.service';
 import { Toast } from '@capacitor/toast';
 import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
 import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.process';
-import * as moment from 'moment';
+import moment from 'moment';
 import { DatabaseService } from '../database.service';
 import { IBankNote, IHashBankNote } from '../vmc.service';
 import { Zdm8Service } from '../zdm8.service';

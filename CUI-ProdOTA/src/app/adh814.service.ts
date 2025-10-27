@@ -252,81 +252,84 @@ export class ADH814Service implements ISerialService {
   }
 
   async command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
-    try {
-      if (command !== EMACHINE_COMMAND.READ_EVENTS) {
-        this.addLogMessage(`Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params)}, Transaction ID: ${transactionID}`);
-      }
-      const address = params?.address || 0x01;
-      let cmd: string;
-      let data: any = {};
+    return new Promise<IResModel>(async (resolve, reject) => {
+      try {
+        if (command !== EMACHINE_COMMAND.READ_EVENTS) {
+          this.addLogMessage(`Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params)}, Transaction ID: ${transactionID}`);
+        }
+        const address = params?.address || 0x01;
+        let cmd: string;
+        let data: any = {};
 
-      switch (command) {
-        case EMACHINE_COMMAND.READ_ID:
-          cmd = EADH814_COMMAND.REQUEST_ID;
-          break;
-        case EMACHINE_COMMAND.SCAN_DOOR:
-          cmd = EADH814_COMMAND.SCAN_DOOR;
-          break;
-        case EMACHINE_COMMAND.READ_EVENTS:
-          cmd = EADH814_COMMAND.POLL_STATUS;
-          break;
-        case EMACHINE_COMMAND.SET_TEMP:
-          cmd = EADH814_COMMAND.SET_TEMP;
-          data = {
-            mode: params?.mode ?? this.COOLING_MODE,
-            tempValue: params?.lowTemp ?? this.DEFAULT_TEMPERATURE
-          };
-          if (data.mode < 0 || data.mode > 2) {
-            this.addLogMessage(`Invalid mode: ${data.mode}. Must be 0-2`);
-            return { command, data: params, status: 0, message: `Invalid mode: ${data.mode}`, transactionID };
-          }
-          if (data.tempValue < -127 || data.tempValue > 127) {
-            this.addLogMessage(`Invalid temperature value: ${data.tempValue}. Must be -127 to 127`);
-            return { command, data: params, status: 0, message: `Invalid temperature value: ${data.tempValue}`, transactionID };
-          }
-          break;
-        case EMACHINE_COMMAND.shippingcontrol:
-          cmd = EADH814_COMMAND.START_MOTOR;
-          data = { motorNumber: params?.slot ? params.slot - 1 : 0 };
-          if (data.motorNumber < 0 || data.motorNumber > 0xFE) {
-            this.addLogMessage(`Invalid motor number: ${data.motorNumber}. Must be 0-254`);
-            return { command, data: params, status: 0, message: `Invalid motor number: ${data.motorNumber}`, transactionID };
-          }
-          break;
-        case EMACHINE_COMMAND.CLEAR_RESULT:
-          cmd = EADH814_COMMAND.ACKNOWLEDGE;
-          break;
-        case EMACHINE_COMMAND.START_MOTOR_MERGED:
-          cmd = EADH814_COMMAND.START_MOTOR_COMBINED;
-          data = {
-            motorNumber1: params?.motorNumber1 ?? 0,
-            motorNumber2: params?.motorNumber2 ?? 0
-          };
-          if (data.motorNumber1 < 0 || data.motorNumber1 > 0xFE || data.motorNumber2 < 0 || data.motorNumber2 > 0xFE) {
-            this.addLogMessage(`Invalid motor numbers: ${data.motorNumber1}, ${data.motorNumber2}. Must be 0-254`);
-            return { command, data: params, status: 0, message: `Invalid motor numbers`, transactionID };
-          }
-          break;
-        case EMACHINE_COMMAND.SET_SWAP:
-          cmd = EADH814_COMMAND.SET_SWAP;
-          params ? params.on = [0x01] : params.on = [0x00];
-          break;
-        case EMACHINE_COMMAND.SET_TWO_WIRE_MODE:
-          cmd = EADH814_COMMAND.SET_TWO_WIRE_MODE;
-          params ? params.swap = [0x10, 0x00] : params.swap = [0x00, 0x00];
-          break;
-        default:
-          this.addLogMessage(`Unsupported command: ${command}`);
-          return { command, data: params, status: 0, message: `Unsupported command`, transactionID };
-      }
+        switch (command) {
+          case EMACHINE_COMMAND.READ_ID:
+            cmd = EADH814_COMMAND.REQUEST_ID;
+            break;
+          case EMACHINE_COMMAND.SCAN_DOOR:
+            cmd = EADH814_COMMAND.SCAN_DOOR;
+            break;
+          case EMACHINE_COMMAND.READ_EVENTS:
+            cmd = EADH814_COMMAND.POLL_STATUS;
+            break;
+          case EMACHINE_COMMAND.SET_TEMP:
+            cmd = EADH814_COMMAND.SET_TEMP;
+            data = {
+              mode: params?.mode ?? this.COOLING_MODE,
+              tempValue: params?.lowTemp ?? this.DEFAULT_TEMPERATURE
+            };
+            if (data.mode < 0 || data.mode > 2) {
+              this.addLogMessage(`Invalid mode: ${data.mode}. Must be 0-2`);
+              return resolve(  { command, data: params, status: 0, message: `Invalid mode: ${data.mode}`, transactionID });
+            }
+            if (data.tempValue < -127 || data.tempValue > 127) {
+              this.addLogMessage(`Invalid temperature value: ${data.tempValue}. Must be -127 to 127`);
+              return resolve(  { command, data: params, status: 0, message: `Invalid temperature value: ${data.tempValue}`, transactionID });
+            }
+            break;
+          case EMACHINE_COMMAND.shippingcontrol:
+            cmd = EADH814_COMMAND.START_MOTOR;
+            data = { motorNumber: params?.slot ? params.slot - 1 : 0 };
+            if (data.motorNumber < 0 || data.motorNumber > 0xFE) {
+              this.addLogMessage(`Invalid motor number: ${data.motorNumber}. Must be 0-254`);
+              return resolve(  { command, data: params, status: 0, message: `Invalid motor number: ${data.motorNumber}`, transactionID });
+            }
+            break;
+          case EMACHINE_COMMAND.CLEAR_RESULT:
+            cmd = EADH814_COMMAND.ACKNOWLEDGE;
+            break;
+          case EMACHINE_COMMAND.START_MOTOR_MERGED:
+            cmd = EADH814_COMMAND.START_MOTOR_COMBINED;
+            data = {
+              motorNumber1: params?.motorNumber1 ?? 0,
+              motorNumber2: params?.motorNumber2 ?? 0
+            };
+            if (data.motorNumber1 < 0 || data.motorNumber1 > 0xFE || data.motorNumber2 < 0 || data.motorNumber2 > 0xFE) {
+              this.addLogMessage(`Invalid motor numbers: ${data.motorNumber1}, ${data.motorNumber2}. Must be 0-254`);
+              return resolve(  { command, data: params, status: 0, message: `Invalid motor numbers`, transactionID });
+            }
+            break;
+          case EMACHINE_COMMAND.SET_SWAP:
+            cmd = EADH814_COMMAND.SET_SWAP;
+            params ? params.on = [0x01] : params.on = [0x00];
+            break;
+          case EMACHINE_COMMAND.SET_TWO_WIRE_MODE:
+            cmd = EADH814_COMMAND.SET_TWO_WIRE_MODE;
+            params ? params.swap = [0x10, 0x00] : params.swap = [0x00, 0x00];
+            break;
+          default:
+            this.addLogMessage(`Unsupported command: ${command}`);
+            return resolve( { command, data: params, status: 0, message: `Unsupported command`, transactionID });
+        }
 
-      const request = { command: cmd, params: { address, ...data } };
-      await this.serialService.writeADH814(JSON.stringify(request));
-      return { command, data: params, status: 1, message: 'Command sent successfully', transactionID };
-    } catch (error: any) {
-      this.addLogMessage(`Command failed: ${error.message}`);
-      return { command, data: params, status: 0, message: `Command failed: ${error.message}`, transactionID };
-    }
+        const request = { command: cmd, params: { address, ...data } };
+        await this.serialService.writeADH814(JSON.stringify(request));
+        resolve( { command, data: params, status: 1, message: 'Command sent successfully', transactionID });
+      } catch (error: any) {
+        this.addLogMessage(`Command failed: ${error.message}`);
+        reject({ command, data: params, status: 0, message: `Command failed: ${error.message}`, transactionID });
+      }
+    });
+
   }
 
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative: ESerialPortType): Promise<string> {
