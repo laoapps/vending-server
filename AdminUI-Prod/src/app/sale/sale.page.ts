@@ -212,14 +212,14 @@ export class SalePage implements OnInit {
             pos = pos.filter(v => !position.includes(v));
 
             // console.log('-----> POS :', pos);
+            if (pos.length > 3) {
+              sSave.position = pos[2];
+            }
 
-            sSave.position = pos[2];
-
-
-            console.log(`Data to Add :${JSON.stringify(sSave)}`);
+            // console.log(`Data to Add :${JSON.stringify(sSave)}`);
             this.apiService.addSale(sSave)?.subscribe(rx => {
-              console.log(`rx`, rx);
-              console.log(`rx stock`, rx.data.stock);
+              // console.log(`rx`, rx);
+              // console.log(`rx stock`, rx.data.stock);
               if (rx.status) {
                 rx.data.stock.image = r?.data?.s?.stock?.image;
                 this._l.unshift(rx.data);
