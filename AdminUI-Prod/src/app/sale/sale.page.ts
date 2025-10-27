@@ -67,6 +67,7 @@ export class SalePage implements OnInit {
         const run = await this.loadSaleListProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
         console.log(`---->`, run.data[0].readonly);
+        this._l = [];
         this._l.push(...run.data[0].lists);
         console.log('this._l', this._l);
 
@@ -156,7 +157,7 @@ export class SalePage implements OnInit {
           const sData: IVendingMachineSale = r?.data?.s as IVendingMachineSale;
 
 
-          console.log(`Data to save :${JSON.stringify(sData)}`);
+          // console.log(`Data to save :${JSON.stringify(sData)}`);
 
           this.apiService.disableSale(false, sData.id).subscribe(rx => {
             console.log('Success');
@@ -184,7 +185,7 @@ export class SalePage implements OnInit {
             qtty: 1000,
             isActive: true
           } as IStock;
-          console.log('params', params);
+          // console.log('params', params);
 
           let sSave: IVendingMachineSale = {} as IVendingMachineSale;
           sSave.isActive = true;
@@ -193,8 +194,8 @@ export class SalePage implements OnInit {
           sSave.position = sData.position;
 
 
-          this.apiService.addProduct(params)?.subscribe(rx => {
-            console.log(`----->rx data`, rx.data);
+          this.apiService.addProduct(params)?.subscribe(async rx => {
+            // console.log(`----->rx data`, rx.data);
             sSave.stock = JSON.parse(JSON.stringify(rx.data));
             if (rx.status != 1) {
               this.apiService.simpleMessage(IENMessage.addMachineFail);
@@ -204,6 +205,17 @@ export class SalePage implements OnInit {
               // this._l.unshift(rx.data);
               this.apiService.simpleMessage(IENMessage.success);
             }
+            await this.loadSaleList();
+            const position = this._l.map(v => v.position).length ? this._l.map(v => v.position) : []
+            let pos = [...new Array<number>(200).keys()];
+
+            pos = pos.filter(v => !position.includes(v));
+
+            // console.log('-----> POS :', pos);
+
+            sSave.position = pos[2];
+
+
             console.log(`Data to Add :${JSON.stringify(sSave)}`);
             this.apiService.addSale(sSave)?.subscribe(rx => {
               console.log(`rx`, rx);
