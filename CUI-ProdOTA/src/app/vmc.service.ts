@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, PrintSucceeded, PrintError, EMessage, IlogSerial, machineVMCStatus } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import { LoggingService } from './logging-service.service';
 import { DatabaseService } from './database.service';
 import cryptojs, { mode } from 'crypto-js';
@@ -55,7 +55,7 @@ export class VmcService implements ISerialService {
   private enable = true;
   private limiter = 100000;
   private balance = 0;
-  private lastUpdate = moment.now();
+  private lastUpdate = Date.now();
   private setting = { settingName: 'setting', allowCashIn: true, allowVending: true, lowTemp: 5, highTemp: 10, light: true };
   private creditPending: ICreditData[] = [];
   private pendingRetry = 10;
@@ -148,7 +148,7 @@ export class VmcService implements ISerialService {
           case EMACHINE_COMMAND.balance:
             this.balance = params?.balance || 0;
             this.limiter = params?.limiter || 100000;
-            this.lastUpdate = moment.now();
+            this.lastUpdate = Date.now();
 
             // remove this because we will handle the send function
             // if (params?.confirmCredit) {
@@ -407,7 +407,7 @@ export class VmcService implements ISerialService {
 
   private startPeriodicTasks(): void {
     this.T = setInterval(() => {
-      console.log('check last update ', moment.now(), this.lastUpdate, moment().diff(this.lastUpdate), this.setting?.allowCashIn);
+      console.log('check last update ', Date.now(), this.lastUpdate, moment().diff(this.lastUpdate), this.setting?.allowCashIn);
 
       if (moment().diff(this.lastUpdate) >= 7000 || !this.setting.allowCashIn) {
         if (!this.enable) return;
@@ -447,10 +447,10 @@ export class VmcService implements ISerialService {
   }
 
   private processVMCResponse(hex: string): void {
-    const t = Number('-21' + moment.now());
+    const t = Number('-21' + Date.now());
     if (hex.startsWith('fafb04')) {
       console.log('Dispensing status:', hex);
-      const t = Number('-21' + moment.now());
+      const t = Number('-21' + Date.now());
       //FA FB 06 05 A6 01 00 00 3C 99 ==> 3C is 60 slot sent command
       if (hex.substring(10, 12) == '01') {
         console.log('Dispensing');
@@ -474,7 +474,7 @@ export class VmcService implements ISerialService {
       if (mode === '01') { //fafb21069101 ==> 01 receive
         // banknote receive
         const value = this.getNoteValue(hex);
-        const t = Number('-21' + moment.now());
+        const t = Number('-21' + Date.now());
         // fafb2106d501 000186a0 d5 == 100000 == 1000,00
         //               // fafb21069101 000186a0 91 == 100000 == 1000,00
         //               // fafb2106c301 00030d40 aa == 200000 == 2000,00
@@ -491,7 +491,7 @@ export class VmcService implements ISerialService {
         const credit: ICreditData = {
           id: -1,
           name: 'credit',
-          data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.VMC_CREDIT_NOTE },
+          data: { raw: hex, data: hash, t: Date.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.VMC_CREDIT_NOTE },
           transactionID: t.toString(),
           description: ''
         };

@@ -64,7 +64,7 @@ export class DatabaseService {
       console.log('Executing query:', this.db);
       const result = await this.db?.query(query);
       return new Promise((resolve, reject) => {
-        resolve((result.values || []).map(item => ({
+        resolve((result?.values || []).map(item => ({
           id: item.id,
           name: item.name,
           data: JSON.parse(item.data), // Parse JSON back to object

@@ -4,7 +4,7 @@ import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ICreditD
 import { Toast } from '@capacitor/toast';
 // import {SerialConnectionCapacitor} from 'SerialConnectionCapacitor';
 import { SerialServiceService } from '../services/serialservice.service';
-import * as moment from 'moment-timezone';
+import  moment from 'moment-timezone';
 import cryptojs, { mode } from 'crypto-js';
 
 @Component({
@@ -73,31 +73,32 @@ export class TestmotorPage implements OnInit, OnDestroy {
       await this.startZDM8();
       Toast.show({ text: 'Start ZDM8' });
     }
-    else if (this.selectedDevice == 'Tp77p') {
-      await this.startPulseTP77p();
-      Toast.show({ text: 'Start Tp77p3b' });
-    }
-    else if (this.selectedDevice == 'essp') {
-      this.baudRate = 9600;
-      await this.startEssp();
-      Toast.show({ text: 'Start essp' });
-    }
-    else if (this.selectedDevice == 'cctalk') {
-      await this.startCctalk();
-      Toast.show({ text: 'Start cctalk' });
-    }
-    else if (this.selectedDevice == 'adh815') {
-      await this.startAHD815();
-      Toast.show({ text: 'Start adh815' });
-    } else if (this.selectedDevice == 'adh814') {
+    // else if (this.selectedDevice == 'Tp77p') {
+    //   await this.startPulseTP77p();
+    //   Toast.show({ text: 'Start Tp77p3b' });
+    // }
+    // else if (this.selectedDevice == 'essp') {
+    //   this.baudRate = 9600;
+    //   await this.startEssp();
+    //   Toast.show({ text: 'Start essp' });
+    // }
+    // else if (this.selectedDevice == 'cctalk') {
+    //   await this.startCctalk();
+    //   Toast.show({ text: 'Start cctalk' });
+    // }
+    // else if (this.selectedDevice == 'adh815') {
+    //   await this.startAHD815();
+    //   Toast.show({ text: 'Start adh815' });
+    // } 
+    else if (this.selectedDevice == 'adh814') {
       Toast.show({ text: 'select adh814' });
       await this.startAHD814();
       Toast.show({ text: 'Start adh814' });
     }
-    else if (this.selectedDevice == 'm102') {
-      await this.startM102();
-      Toast.show({ text: 'Start m102' });
-    }
+    // else if (this.selectedDevice == 'm102') {
+    //   await this.startM102();
+    //   Toast.show({ text: 'Start m102' });
+    // }
     else {
       Toast.show({ text: 'Please select device' })
     }
@@ -179,7 +180,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       if (mode === '01') { //fafb21069101 ==> 01 receive
         // banknote receive
         const value = this.getNoteValue(hex);
-        const t = Number('-21' + moment.now());
+        const t = Number('-21' + Date.now());
         // fafb2106d501 000186a0 d5 == 100000 == 1000,00
         //               // fafb21069101 000186a0 91 == 100000 == 1000,00
         //               // fafb2106c301 00030d40 aa == 200000 == 2000,00
@@ -196,7 +197,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
         // const credit: ICreditData = {
         //   id: -1,
         //   name: 'credit',
-        //   data: { raw: hex, data: hash, t: moment.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.CREDIT_NOTE },
+        //   data: { raw: hex, data: hash, t: Date.now(), transactionID: t.toString(), command: EMACHINE_COMMAND.CREDIT_NOTE },
         //   transactionID: t.toString(),
         //   description: ''
         // };
@@ -260,52 +261,52 @@ export class TestmotorPage implements OnInit, OnDestroy {
     }
     this.vlog.log = this.serial.log;
   }
-  async startPulseTP77p() {
-    if (this.serial) {
-      await this.serial.close();
-      this.serial = null;
-    }
-    this.serial = await this.vendingIndex.initPulseTop77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
-    if (!this.serial) {
-      Toast.show({ text: 'serial not init' });
-    }
-    this.vlog.log = this.serial.log;
-  }
-  async startEssp() {
-    console.log('startEssp');
+  // async startPulseTP77p() {
+  //   if (this.serial) {
+  //     await this.serial.close();
+  //     this.serial = null;
+  //   }
+  //   this.serial = await this.vendingIndex.initPulseTop77p(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+  //   if (!this.serial) {
+  //     Toast.show({ text: 'serial not init' });
+  //   }
+  //   this.vlog.log = this.serial.log;
+  // }
+  // async startEssp() {
+  //   console.log('startEssp');
 
-    if (this.serial) {
-      await this.serial.close();
-      this.serial = null;
-    }
-    this.serial = await this.vendingIndex.initEssp(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
-    if (!this.serial) {
-      Toast.show({ text: 'serial not init' });
-    }
-    this.vlog.log = this.serial.log;
-  }
-  async startCctalk() {
-    if (this.serial) {
-      await this.serial.close();
-      this.serial = null;
-    }
-    this.serial = await this.vendingIndex.initCctalk(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
-    if (!this.serial) {
-      Toast.show({ text: 'serial not init' });
-    }
-    this.vlog.log = this.serial.log;
-  }
-  async startAHD815() {
-    if (this.serial) {
-      await this.serial.close();
-      this.serial = null;
-    }
-    this.serial = await this.vendingIndex.initADH815(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
-    if (!this.serial) {
-      Toast.show({ text: 'serial not init' });
-    }
-    this.vlog.log = this.serial.log;
-  }
+  //   if (this.serial) {
+  //     await this.serial.close();
+  //     this.serial = null;
+  //   }
+  //   this.serial = await this.vendingIndex.initEssp(this.portName, this.baudRate, this.machineId, this.otp, this.isSerial);
+  //   if (!this.serial) {
+  //     Toast.show({ text: 'serial not init' });
+  //   }
+  //   this.vlog.log = this.serial.log;
+  // }
+  // async startCctalk() {
+  //   if (this.serial) {
+  //     await this.serial.close();
+  //     this.serial = null;
+  //   }
+  //   this.serial = await this.vendingIndex.initCctalk(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
+  //   if (!this.serial) {
+  //     Toast.show({ text: 'serial not init' });
+  //   }
+  //   this.vlog.log = this.serial.log;
+  // }
+  // async startAHD815() {
+  //   if (this.serial) {
+  //     await this.serial.close();
+  //     this.serial = null;
+  //   }
+  //   this.serial = await this.vendingIndex.initADH815(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
+  //   if (!this.serial) {
+  //     Toast.show({ text: 'serial not init' });
+  //   }
+  //   this.vlog.log = this.serial.log;
+  // }
 
   async startAHD814() {
     if (this.serial) {
@@ -321,17 +322,17 @@ export class TestmotorPage implements OnInit, OnDestroy {
     this.vlog.log = this.serial.log;
     Toast.show({ text: 'vlog.log' + JSON.stringify(this.vlog.log) });
   }
-  async startM102() {
-    if (this.serial) {
-      await this.serial.close();
-      this.serial = null;
-    }
-    this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
-    if (!this.serial) {
-      Toast.show({ text: 'serial not init' });
-    }
-    this.vlog.log = this.serial.log;
-  }
+  // async startM102() {
+  //   if (this.serial) {
+  //     await this.serial.close();
+  //     this.serial = null;
+  //   }
+  //   this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
+  //   if (!this.serial) {
+  //     Toast.show({ text: 'serial not init' });
+  //   }
+  //   this.vlog.log = this.serial.log;
+  // }
 
   scanPorts() {
     if (this.serial) {

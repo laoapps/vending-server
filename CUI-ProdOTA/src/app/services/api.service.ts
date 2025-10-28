@@ -32,7 +32,7 @@ import {
   IonicSafeString
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
-import * as  moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
@@ -409,10 +409,10 @@ export class ApiService {
 
         if (r?.message === EMessage.openstock) {
           console.log('----->OPEN STOCK');
-          if (this.myTab1.isOpenStock) {
+          if (this.myTab1?.isOpenStock) {
             this.closeModal();
           }
-          this.myTab1.manageStockByQR();
+          this.myTab1?.manageStockByQR();
 
           return;
         }
@@ -728,7 +728,7 @@ export class ApiService {
 
 
       try {
-        this.myTab1.clearStockAfterLAABGo();
+        this.myTab1?.clearStockAfterLAABGo();
         if (r) {
           if (!this.isRemainingBillsModalOpen) {
             this.dismissModal();
@@ -1793,10 +1793,12 @@ export class ApiService {
   playBackGroundMusic(path = '../../assets/background_music.mp3') {
     try {
       if (this.backgrounSound) return;
-      this.backGroundMusicElement.src = path;
-      this.backGroundMusicElement.loop = true;
-      this.backGroundMusicElement.volume = this.musicVolume / 100;
-      this.backGroundMusicElement.play();
+      if (this.backGroundMusicElement) {
+        this.backGroundMusicElement.src = path;
+        this.backGroundMusicElement.loop = true;
+        this.backGroundMusicElement.volume = this.musicVolume / 100;
+        this.backGroundMusicElement.play();
+      }
     } catch (error) {
       console.log(error);
 

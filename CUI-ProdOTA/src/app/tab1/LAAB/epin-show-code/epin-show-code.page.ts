@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import * as  moment from 'moment';
+import * as moment from 'moment-timezone';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
@@ -73,14 +73,14 @@ export class EpinShowCodePage implements OnInit {
     if (lists != undefined && Object.entries(lists).length == 0) {
       const params = {
         uuid: this.data.uuid,
-        time: moment.now()
+        time:Date.now()
       }
       lists.push(params);
       localStorage.setItem('epin_hide_list', JSON.stringify(lists));
     } else {
       const params = {
         uuid: this.data.uuid,
-        time: moment.now()
+        time: Date.now()
       }
       lists.push(params);
       localStorage.setItem('epin_hide_list', JSON.stringify(lists));
