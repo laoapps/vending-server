@@ -4,7 +4,7 @@ import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ICreditD
 import { Toast } from '@capacitor/toast';
 // import {SerialConnectionCapacitor} from 'SerialConnectionCapacitor';
 import { SerialServiceService } from '../services/serialservice.service';
-import moment from 'moment-timezone';
+import * as moment  from 'moment-timezone';
 import cryptojs, { mode } from 'crypto-js';
 
 @Component({
