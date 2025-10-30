@@ -1442,24 +1442,33 @@ export class Tab1Page implements OnDestroy {
       this.serial.getSerialEvents().subscribe(async (event) => {
         try {
           if (event?.event === 'dataReceived') {
-          const rawData = event?.data;
-          // this.addLogMessage(`Raw data: ${rawData}`);
-          console.log('ADH814 Received from device:', rawData);
-          if (rawData) {
-            const result = this.processResponseADH814(rawData);
-            if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
-              // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
+            const rawData = event?.data;
+            // this.addLogMessage(`Raw data: ${rawData}`);
+            console.log('ADH814 Received from device:', rawData);
+            if (rawData) {
+              const result = this.processResponseADH814(rawData);
+              if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
+                // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
+              }
             }
-          }
 
-        }
+          }
         } catch (error) {
           console.error('Error processing ADH814 event:', error);
         }
-        
+
       });
     }
     this.vlog.log = this.serial.log;
+  }
+  private handleFatalError() {
+    console.error('CRITICAL COMMUNICATION ERROR - EXITING APPLICATION');
+    // Replace with your actual exit method
+    if (typeof App !== 'undefined' && App.exitApp) {
+      App.exitApp();
+    } else if (typeof process !== 'undefined') {
+      process.exit(1);
+    }
   }
   private processResponseADH814(rawData: string): IResModel {
     try {
@@ -1467,6 +1476,11 @@ export class Tab1Page implements OnDestroy {
       console.log(`Raw response: ${hexData}`);
       console.log(`Raw data: ${hexData}`);
 
+      if (hexData.length > 44) {
+        console.error(`FATAL: Response too long (${hexData.length} bytes > 44). Controller error.`);
+        this.handleFatalError();
+        return { command: '', status: 0, data: {}, message: 'Response too long - hardware error', transactionID: 0 };
+      }
       if (hexData.length < 8) {
         console.log(`Invalid response: Too short (${hexData.length / 2} bytes)`);
         return { command: '', status: 0, data: {}, message: 'Invalid response: Too short', transactionID: 0 };
@@ -1494,13 +1508,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA1: // Request ID
           if (data.length !== 16) {
             (`Invalid ID response: Expected 16 data bytes, got ${data.length}`);
-            result = { command: EMACHINE_COMMAND.READ_ID, status: 0, data: {rawData}, message: 'Invalid ID response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.READ_ID, status: 0, data: { rawData }, message: 'Invalid ID response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.READ_ID,
             status: 1,
-            data: { firmwareVersion: data.map(byte => String.fromCharCode(parseInt(byte, 16))).join('').trim(),rawData },
+            data: { firmwareVersion: data.map(byte => String.fromCharCode(parseInt(byte, 16))).join('').trim(), rawData },
             message: 'ID retrieved successfully',
             transactionID: 0
           };
@@ -1509,13 +1523,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA2: // Scan Door Feedback
           if (data.length !== 18) {
             console.log(`Invalid SCAN response: Expected 18 data bytes, got ${data.length}`);
-            result = { command: EMACHINE_COMMAND.SCAN_DOOR, status: 0, data: {rawData}, message: 'Invalid SCAN response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.SCAN_DOOR, status: 0, data: { rawData }, message: 'Invalid SCAN response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.SCAN_DOOR,
             status: 1,
-            data: { doorFeedback: data.map(byte => parseInt(byte, 16),rawData) },
+            data: { doorFeedback: data.map(byte => parseInt(byte, 16), rawData) },
             message: 'Scan door feedback retrieved successfully',
             transactionID: 0
           };
@@ -1524,7 +1538,7 @@ export class Tab1Page implements OnDestroy {
         case 0xA3: // Poll Status
           if (data.length !== 9) {
             console.log(`Invalid POLL status data length: ${data.length}`);
-            result = { command: EMACHINE_COMMAND.READ_EVENTS, status: 0, data: {rawData}, message: 'Invalid POLL status data length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.READ_EVENTS, status: 0, data: { rawData }, message: 'Invalid POLL status data length', transactionID: 0 };
             break;
           }
           const statusData = data.map(byte => parseInt(byte, 16));
@@ -1564,7 +1578,7 @@ export class Tab1Page implements OnDestroy {
         case 0xA4: // Set Temperature
           if (data.length !== 3) {
 
-            result = { command: EMACHINE_COMMAND.SET_TEMP, status: 0, data: {rawData}, message: 'Invalid TEMP response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.SET_TEMP, status: 0, data: { rawData }, message: 'Invalid TEMP response length', transactionID: 0 };
             break;
           }
           result = {
@@ -1583,13 +1597,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA5: // Start Motor
           if (data.length !== 1) {
 
-            result = { command: EMACHINE_COMMAND.shippingcontrol, status: 0, data: {rawData}, message: 'Invalid RUN response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.shippingcontrol, status: 0, data: { rawData }, message: 'Invalid RUN response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.shippingcontrol,
             status: parseInt(data[0], 16) === 0 ? 1 : 0,
-            data: { executionStatus: parseInt(data[0], 16),rawData },
+            data: { executionStatus: parseInt(data[0], 16), rawData },
             message: parseInt(data[0], 16) === 0 ? 'Motor started successfully' : `Motor error: Code ${parseInt(data[0], 16)}`,
             transactionID: 0
           };
@@ -1598,13 +1612,13 @@ export class Tab1Page implements OnDestroy {
         case 0xB5: // Start Motor Combined
           if (data.length !== 1) {
 
-            result = { command: EMACHINE_COMMAND.START_MOTOR_MERGED, status: 0, data: {rawData}, message: 'Invalid RUN2 response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.START_MOTOR_MERGED, status: 0, data: { rawData }, message: 'Invalid RUN2 response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.START_MOTOR_MERGED,
             status: parseInt(data[0], 16) === 0 ? 1 : 0,
-            data: { executionStatus: parseInt(data[0], 16),rawData },
+            data: { executionStatus: parseInt(data[0], 16), rawData },
             message: parseInt(data[0], 16) === 0 ? 'Merged motor started successfully' : `Merged motor error: Code ${parseInt(data[0], 16)}`,
             transactionID: 0
           };
@@ -1613,13 +1627,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA6: // Acknowledge Result
           if (data.length !== 0) {
 
-            result = { command: EMACHINE_COMMAND.CLEAR_RESULT, status: 0, data: {rawData}, message: 'Invalid ACK response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.CLEAR_RESULT, status: 0, data: { rawData }, message: 'Invalid ACK response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.CLEAR_RESULT,
             status: 1,
-            data: { acknowledged: true,rawData },
+            data: { acknowledged: true, rawData },
             message: 'Result acknowledged successfully',
             transactionID: 0
           };
