@@ -15,6 +15,9 @@ import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
 import { SettingsModalPage } from '../settings-modal/settings-modal/settings-modal.page';
 import { BillingPage } from '../billing/billing.page';
 import { ReportClientPage } from '../report-client/report-client.page';
+import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
+import { SaleReportPage } from '../sale/sale-report/sale-report.page';
+import { StockReportPage } from '../sale/stock-report/stock-report.page';
 
 interface MachineData {
   machineId: string;
@@ -28,6 +31,7 @@ interface MachineData {
   otp: string;
   settings: any;
   showSecrets?: boolean; // Track visibility for each machine
+  ownerUuid: string;
 }
 
 @Component({
@@ -114,6 +118,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           otp: machine.otp || 'N/A',
           settings: d || {},
           showSecrets: true, // Default to showing secrets
+          ownerUuid: machine.ownerUuid
         });
       });
 
@@ -270,6 +275,62 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         backdropDismiss: true,
       })
       .then((modal) => modal.present());
+  }
+
+  showBillNotPaid(machineId: string, otp: string, ownerUuid: any) {
+    // console.log('machineId :', machineId);
+    // localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
+    // this.apiService.modal
+    //   .create({
+    //     component: BillingPage,
+    //     componentProps: { machineId: machineId },
+    //     cssClass: 'custom-modal-full',
+    //     backdropDismiss: true,
+    //   })
+    //   .then((modal) => modal.present());
+    // console.log('-----> phoneNumber :', JSON.stringify(ownerUuid));
+
+    // console.log('-----> OnlineMachine :', this.onlineMachines);
+
+
+
+    this.apiService.showModal(BillnotPaidPage, { machineId: machineId, otp: otp, ownerUuid: ownerUuid }).then(r => {
+      r.present();
+      r.onDidDismiss().then(() => {
+
+      });
+    })
+  }
+
+  showReportSale(machineId: string, otp: string) {
+    // console.log('machineId :', machineId);
+    // localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
+    // this.apiService.modal
+    //   .create({
+    //     component: BillingPage,
+    //     componentProps: { machineId: machineId },
+    //     cssClass: 'custom-modal-full',
+    //     backdropDismiss: true,
+    //   })
+    //   .then((modal) => modal.present());
+
+    const props = {
+      machineId: machineId,
+      otp: otp
+    }
+    this.apiService.showModal(SaleReportPage, props).then(r => {
+      r.present();
+    });
+  }
+
+  showReportStock(machineId: string, otp: string) {
+    const props = {
+      machineId: machineId,
+      otp: otp
+    }
+    this.apiService.showModal(StockReportPage, props).then(r => {
+      r.present();
+    });
   }
 
   manage(phoneNumber: string, i: number = 1) {

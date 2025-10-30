@@ -478,6 +478,8 @@ export class MachinePage implements OnInit {
   }
 
   billNotPaid(machineId: string, otp: string, ownerUuid: string) {
+    console.log('Owner UUID :', ownerUuid);
+
     this.apiService.showModal(BillnotPaidPage, { machineId: machineId, otp: otp, ownerUuid: ownerUuid }).then(r => {
       r.present();
       r.onDidDismiss().then(() => {

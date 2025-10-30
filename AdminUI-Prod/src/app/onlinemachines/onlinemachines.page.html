@@ -119,6 +119,25 @@
                     Billing
                   </ion-button>
                 </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="tertiary"
+                    (click)="showBillNotPaid(machine.machineId,machine.otp,machine.ownerUuid)">
+                    <ion-icon slot="start" name="bill"></ion-icon>
+                    ບິນບໍ່ທັນຈ່າຍ
+                  </ion-button>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="tertiary" (click)="showReportSale(machine.machineId,machine.otp)">
+                    <ion-icon slot="start" name="bill"></ion-icon>
+                    ລາຍງານການຂາຍ
+                  </ion-button>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-button expand="block" color="tertiary" (click)="showReportStock(machine.machineId,machine.otp)">
+                    <ion-icon slot="start" name="bill"></ion-icon>
+                    ລາຍງານ stock
+                  </ion-button>
+                </ion-col>
               </ion-row>
             </ion-grid>
           </ion-card-content>
@@ -197,6 +216,37 @@
                   Settings
                 </ion-button>
               </ion-item>
+              <ion-col size="4">
+                <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
+                  <ion-icon slot="start" name="thermometer-outline"></ion-icon>
+                  Client Logs
+                </ion-button>
+              </ion-col>
+              <ion-col size="4">
+                <ion-button expand="block" color="tertiary" (click)="showBilling(machine.machineId,machine.owner)">
+                  <ion-icon slot="start" name="bill"></ion-icon>
+                  Billing
+                </ion-button>
+              </ion-col>
+              <ion-col size="4">
+                <ion-button expand="block" color="tertiary"
+                  (click)="showBillNotPaid(machine.machineId,machine.otp,machine.ownerUuid)">
+                  <ion-icon slot="start" name="bill"></ion-icon>
+                  ບິນບໍ່ທັນຈ່າຍ
+                </ion-button>
+              </ion-col>
+              <ion-col size="4">
+                <ion-button expand="block" color="tertiary" (click)="showReportSale(machine.machineId,machine.otp)">
+                  <ion-icon slot="start" name="bill"></ion-icon>
+                  ລາຍງານການຂາຍ
+                </ion-button>
+              </ion-col>
+              <ion-col size="4">
+                <ion-button expand="block" color="tertiary" (click)="showReportStock(machine.machineId,machine.otp)">
+                  <ion-icon slot="start" name="bill"></ion-icon>
+                  ລາຍງານ stock
+                </ion-button>
+              </ion-col>
             </ion-list>
           </ion-card-content>
         </ion-card>
