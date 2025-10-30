@@ -4,6 +4,7 @@ import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, IlogSeria
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
 import { Toast } from '@capacitor/toast';
 import * as moment from 'moment-timezone';
+import { App } from '@capacitor/app';
 
 export enum EADH814_COMMAND {
   REQUEST_ID = 'A1',
@@ -254,6 +255,8 @@ export class ADH814Service implements ISerialService {
   async command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
       try {
+        if(this.serialService.initialized==false){App.exitApp(); return;}
+
         if (command !== EMACHINE_COMMAND.READ_EVENTS) {
           this.addLogMessage(`Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params)}, Transaction ID: ${transactionID}`);
         }

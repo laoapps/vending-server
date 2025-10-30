@@ -4,25 +4,18 @@ import { Toast } from '@capacitor/toast';
 import { SerialConnectionCapacitor, SerialPortListResult, SerialPortEventTypes } from 'SerialConnectionCapacitor';
 import { addLogMessage, ESerialPortType, IlogSerial } from '../services/syste.model';
 import { Subject } from 'rxjs';
+import { App } from '@capacitor/app';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SerialServiceService implements OnDestroy {
-  private initialized = false;
+export class SerialServiceService  {
+  public initialized = false;
   private serialEventSubject = new Subject<any>();
   private listenerSubscriptions: Array<Promise<PluginListenerHandle> & PluginListenerHandle> = [];
 
   constructor() {}
 
-  async ngOnDestroy() {
-    this.initialized = false;
-    await this.close();
-    await Promise.all(this.listenerSubscriptions.map(handle => handle.remove()));
-    this.listenerSubscriptions = [];
-    this.serialEventSubject.complete();
-    console.log('serial service SerialServiceService destroyed and cleaned up');
-  }
 
   async initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, isNative = ESerialPortType.Serial, dataBits = 8, stopBits = 1, parity = 'none', bufferSize = 1024, flags = 0): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
@@ -190,7 +183,7 @@ export class SerialServiceService implements OnDestroy {
           console.log(`serial service writeData ${data}`);
           resolve(x);
         } else {
-          console.log('serial service Serial port not initialized');
+          console.log('write serial service Serial port not initialized');
           reject('Serial port not initialized');
         }
       } catch (e) {
@@ -204,7 +197,7 @@ export class SerialServiceService implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (!this.initialized) {
-          console.log('serial service Serial port not initialized');
+          console.log('write serial service Serial port not initialized');
           reject('Serial port not initialized');
           return;
         }
@@ -224,7 +217,7 @@ export class SerialServiceService implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
         if (!this.initialized) {
-          console.log('serial service Serial port not initialized');
+          console.log('write serial service Serial port not initialized');
           reject('Serial port not initialized');
           return;
         }

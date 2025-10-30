@@ -462,7 +462,6 @@ export class Tab1Page implements OnDestroy {
     private cashingService: AppcachingserviceService,
     public loading: LoadingController,
     private vendingIndex: VendingIndexServiceService,
-    private serialService: SerialServiceService,
     private dbService: DatabaseService,
     // private videoCacheService: VideoCacheService,
     public router: Router
@@ -914,15 +913,15 @@ export class Tab1Page implements OnDestroy {
                 this.apiService.toast.create({ message: `Update versionId to ${r?.versionId} from version ${updateVersion} env versionId ${environment.versionId}`, duration: 3000 }).then(r => r.present());
                 this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r?.versionId}` });
 
-                setTimeout(() => {
-                  if (this.serial) {
-                    this.serial?.close();
-                    console.log('serial closed');
-                    Toast.show({ text: 'Serial closed', duration: 'long' });
-                    this.serial = null;
-                  }
-                  this.checkLiveUpdate(r?.versionId);
-                }, 15000);
+                // setTimeout(() => {
+                //   if (this.serial) {
+                //     this.serial?.close();
+                //     console.log('serial closed');
+                //     Toast.show({ text: 'Serial closed', duration: 'long' });
+                //     this.serial = null;
+                //   }
+                //   this.checkLiveUpdate(r?.versionId);
+                // }, 15000);
 
               }
 
