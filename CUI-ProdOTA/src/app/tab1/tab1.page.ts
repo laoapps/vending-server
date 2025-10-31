@@ -2178,9 +2178,17 @@ export class Tab1Page implements OnDestroy {
 
   }
   processLoadedPaidBills = false;
-  loadPaidBills() {
+  async loadPaidBills() {
     if (this.processLoadedPaidBills) return;
     this.processLoadedPaidBills = true;
+
+    const data = await this.apiService.IndexedDB.getBillProcesses() ?? [];
+    if (data.length > 0) {
+      this.showBills();
+      this.processLoadedPaidBills = false;
+      return;
+    }
+
     this.apiService.loadPaidBills().then(async re => {
       const r = re.data;
       console.log(`Load paid bills`, JSON.stringify(r || {}));
@@ -2189,10 +2197,6 @@ export class Tab1Page implements OnDestroy {
       if (!r.data.length) {
         this.showBills();
       }
-
-
-
-
       await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
     }).catch(er => {
       console.log(er);
@@ -3235,10 +3239,12 @@ export class Tab1Page implements OnDestroy {
                     this.checkActiveModal(r);
                   });
               } else {
-                Toast.show({
-                  text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
-                  duration: 'long',
-                })
+                // Toast.show({
+                //   text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
+                //   duration: 'long',
+                // })
+
+                App.exitApp();
               }
             }
           }
