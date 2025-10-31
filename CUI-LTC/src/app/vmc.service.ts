@@ -8,6 +8,7 @@ import { LoggingService } from './logging-service.service';
 import { DatabaseService } from './database.service';
 import cryptojs, { mode } from 'crypto-js';
 import { ApiService } from './services/api.service';
+import { App } from '@capacitor/app';
 // import { setTimeout } from 'timers';
 
 export enum EVMC_COMMAND {
@@ -118,6 +119,7 @@ export class VmcService implements ISerialService {
 
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
+      //  if(this.serialService.initialized==false){App.exitApp(); return;}
       try {
         switch (command) {
           case EMACHINE_COMMAND.shippingcontrol:

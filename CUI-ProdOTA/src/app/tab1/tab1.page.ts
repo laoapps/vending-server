@@ -462,7 +462,6 @@ export class Tab1Page implements OnDestroy {
     private cashingService: AppcachingserviceService,
     public loading: LoadingController,
     private vendingIndex: VendingIndexServiceService,
-    private serialService: SerialServiceService,
     private dbService: DatabaseService,
     // private videoCacheService: VideoCacheService,
     public router: Router
@@ -914,15 +913,15 @@ export class Tab1Page implements OnDestroy {
                 this.apiService.toast.create({ message: `Update versionId to ${r?.versionId} from version ${updateVersion} env versionId ${environment.versionId}`, duration: 3000 }).then(r => r.present());
                 this.apiService.IndexedLogDB.addBillProcess({ errorData: `Update versionId to ${r?.versionId}` });
 
-                setTimeout(() => {
-                  if (this.serial) {
-                    this.serial?.close();
-                    console.log('serial closed');
-                    Toast.show({ text: 'Serial closed', duration: 'long' });
-                    this.serial = null;
-                  }
-                  this.checkLiveUpdate(r?.versionId);
-                }, 15000);
+                // setTimeout(() => {
+                //   if (this.serial) {
+                //     this.serial?.close();
+                //     console.log('serial closed');
+                //     Toast.show({ text: 'Serial closed', duration: 'long' });
+                //     this.serial = null;
+                //   }
+                //   this.checkLiveUpdate(r?.versionId);
+                // }, 15000);
 
               }
 
@@ -1108,7 +1107,7 @@ export class Tab1Page implements OnDestroy {
       this.serial?.close();
       console.log('serial closed');
     }
-
+    App.exitApp();
   }
 
 
@@ -1441,21 +1440,35 @@ export class Tab1Page implements OnDestroy {
       }
 
       this.serial.getSerialEvents().subscribe(async (event) => {
-        if (event?.event === 'dataReceived') {
-          const rawData = event?.data;
-          // this.addLogMessage(`Raw data: ${rawData}`);
-          console.log('ADH814 Received from device:', rawData);
-          if (rawData) {
-            const result = this.processResponseADH814(rawData);
-            if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
-              // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
+        try {
+          if (event?.event === 'dataReceived') {
+            const rawData = event?.data;
+            // this.addLogMessage(`Raw data: ${rawData}`);
+            console.log('ADH814 Received from device:', rawData);
+            if (rawData) {
+              const result = this.processResponseADH814(rawData);
+              if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
+                // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
+              }
             }
-          }
 
+          }
+        } catch (error) {
+          console.error('Error processing ADH814 event:', error);
         }
+
       });
     }
     this.vlog.log = this.serial.log;
+  }
+  private handleFatalError() {
+    console.error('CRITICAL COMMUNICATION ERROR - EXITING APPLICATION');
+    // Replace with your actual exit method
+    if (typeof App !== 'undefined' && App.exitApp) {
+      App.exitApp();
+    } else if (typeof process !== 'undefined') {
+      process.exit(1);
+    }
   }
   private processResponseADH814(rawData: string): IResModel {
     try {
@@ -1463,6 +1476,11 @@ export class Tab1Page implements OnDestroy {
       console.log(`Raw response: ${hexData}`);
       console.log(`Raw data: ${hexData}`);
 
+      if (hexData.length > 44) {
+        console.error(`FATAL: Response too long (${hexData.length} bytes > 44). Controller error.`);
+        this.handleFatalError();
+        return { command: '', status: 0, data: {}, message: 'Response too long - hardware error', transactionID: 0 };
+      }
       if (hexData.length < 8) {
         console.log(`Invalid response: Too short (${hexData.length / 2} bytes)`);
         return { command: '', status: 0, data: {}, message: 'Invalid response: Too short', transactionID: 0 };
@@ -1490,13 +1508,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA1: // Request ID
           if (data.length !== 16) {
             (`Invalid ID response: Expected 16 data bytes, got ${data.length}`);
-            result = { command: EMACHINE_COMMAND.READ_ID, status: 0, data: {}, message: 'Invalid ID response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.READ_ID, status: 0, data: { rawData }, message: 'Invalid ID response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.READ_ID,
             status: 1,
-            data: { firmwareVersion: data.map(byte => String.fromCharCode(parseInt(byte, 16))).join('').trim() },
+            data: { firmwareVersion: data.map(byte => String.fromCharCode(parseInt(byte, 16))).join('').trim(), rawData },
             message: 'ID retrieved successfully',
             transactionID: 0
           };
@@ -1505,13 +1523,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA2: // Scan Door Feedback
           if (data.length !== 18) {
             console.log(`Invalid SCAN response: Expected 18 data bytes, got ${data.length}`);
-            result = { command: EMACHINE_COMMAND.SCAN_DOOR, status: 0, data: {}, message: 'Invalid SCAN response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.SCAN_DOOR, status: 0, data: { rawData }, message: 'Invalid SCAN response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.SCAN_DOOR,
             status: 1,
-            data: { doorFeedback: data.map(byte => parseInt(byte, 16)) },
+            data: { doorFeedback: data.map(byte => parseInt(byte, 16), rawData) },
             message: 'Scan door feedback retrieved successfully',
             transactionID: 0
           };
@@ -1520,7 +1538,7 @@ export class Tab1Page implements OnDestroy {
         case 0xA3: // Poll Status
           if (data.length !== 9) {
             console.log(`Invalid POLL status data length: ${data.length}`);
-            result = { command: EMACHINE_COMMAND.READ_EVENTS, status: 0, data: {}, message: 'Invalid POLL status data length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.READ_EVENTS, status: 0, data: { rawData }, message: 'Invalid POLL status data length', transactionID: 0 };
             break;
           }
           const statusData = data.map(byte => parseInt(byte, 16));
@@ -1536,7 +1554,8 @@ export class Tab1Page implements OnDestroy {
               maxCurrent: (statusData[3] << 8) | statusData[4],
               avgCurrent: (statusData[5] << 8) | statusData[6],
               runTime: statusData[7],
-              temperature: statusData[8] > 127 ? statusData[8] - 256 : statusData[8]
+              temperature: statusData[8] > 127 ? statusData[8] - 256 : statusData[8],
+              rawData
             },
             message: 'Poll status retrieved successfully',
             transactionID: 0
@@ -1553,13 +1572,13 @@ export class Tab1Page implements OnDestroy {
           this._machineStatus.status.temp = result.data.temperature;
           this.machinestatus.data = result.data;
           // this.sendStatus();
-          this.sendStatus(result.data.temperature, new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
+          this.sendStatus(JSON.stringify(result.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
 
           break;
         case 0xA4: // Set Temperature
           if (data.length !== 3) {
 
-            result = { command: EMACHINE_COMMAND.SET_TEMP, status: 0, data: {}, message: 'Invalid TEMP response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.SET_TEMP, status: 0, data: { rawData }, message: 'Invalid TEMP response length', transactionID: 0 };
             break;
           }
           result = {
@@ -1567,7 +1586,8 @@ export class Tab1Page implements OnDestroy {
             status: 1,
             data: {
               mode: parseInt(data[0], 16),
-              tempValue: (parseInt(data[1], 16) << 8) | parseInt(data[2], 16)
+              tempValue: (parseInt(data[1], 16) << 8) | parseInt(data[2], 16),
+              rawData
             },
             message: 'Temperature set successfully',
             transactionID: 0
@@ -1577,13 +1597,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA5: // Start Motor
           if (data.length !== 1) {
 
-            result = { command: EMACHINE_COMMAND.shippingcontrol, status: 0, data: {}, message: 'Invalid RUN response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.shippingcontrol, status: 0, data: { rawData }, message: 'Invalid RUN response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.shippingcontrol,
             status: parseInt(data[0], 16) === 0 ? 1 : 0,
-            data: { executionStatus: parseInt(data[0], 16) },
+            data: { executionStatus: parseInt(data[0], 16), rawData },
             message: parseInt(data[0], 16) === 0 ? 'Motor started successfully' : `Motor error: Code ${parseInt(data[0], 16)}`,
             transactionID: 0
           };
@@ -1592,13 +1612,13 @@ export class Tab1Page implements OnDestroy {
         case 0xB5: // Start Motor Combined
           if (data.length !== 1) {
 
-            result = { command: EMACHINE_COMMAND.START_MOTOR_MERGED, status: 0, data: {}, message: 'Invalid RUN2 response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.START_MOTOR_MERGED, status: 0, data: { rawData }, message: 'Invalid RUN2 response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.START_MOTOR_MERGED,
             status: parseInt(data[0], 16) === 0 ? 1 : 0,
-            data: { executionStatus: parseInt(data[0], 16) },
+            data: { executionStatus: parseInt(data[0], 16), rawData },
             message: parseInt(data[0], 16) === 0 ? 'Merged motor started successfully' : `Merged motor error: Code ${parseInt(data[0], 16)}`,
             transactionID: 0
           };
@@ -1607,13 +1627,13 @@ export class Tab1Page implements OnDestroy {
         case 0xA6: // Acknowledge Result
           if (data.length !== 0) {
 
-            result = { command: EMACHINE_COMMAND.CLEAR_RESULT, status: 0, data: {}, message: 'Invalid ACK response length', transactionID: 0 };
+            result = { command: EMACHINE_COMMAND.CLEAR_RESULT, status: 0, data: { rawData }, message: 'Invalid ACK response length', transactionID: 0 };
             break;
           }
           result = {
             command: EMACHINE_COMMAND.CLEAR_RESULT,
             status: 1,
-            data: { acknowledged: true },
+            data: { acknowledged: true, rawData },
             message: 'Result acknowledged successfully',
             transactionID: 0
           };

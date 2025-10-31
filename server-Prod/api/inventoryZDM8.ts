@@ -1060,7 +1060,13 @@ export class InventoryZDM8 implements IBaseClass {
                     }
 
                     else if (d.command == EClientCommand.ADH814_STATUS) {
-                        const mstatus = { temperature: data, device: 'ADH814' } as IMachineStatus;
+                        let d: any;
+                        try {
+                            d = JSON.parse(data);
+                        } catch (error) {
+                            console.log('ADH814_STATUS parse error', error);
+                        }
+                        const mstatus = { temperature: data?.temperature || data, data, device: 'ADH814' } as IMachineStatus;
                         console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
 
                         try {

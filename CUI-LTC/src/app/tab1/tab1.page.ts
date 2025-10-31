@@ -1437,7 +1437,8 @@ export class Tab1Page implements OnDestroy {
       }
 
       this.serial.getSerialEvents().subscribe(async (event) => {
-        if (event?.event === 'dataReceived') {
+        try {
+           if (event?.event === 'dataReceived') {
           const rawData = event?.data;
           // this.addLogMessage(`Raw data: ${rawData}`);
           console.log('ADH814 Received from device:', rawData);
@@ -1449,6 +1450,10 @@ export class Tab1Page implements OnDestroy {
           }
 
         }
+        } catch (error) {
+          console.log('Error processing ADH814 event', error);
+        }
+       
       });
     }
     this.vlog.log = this.serial.log;

@@ -6,6 +6,7 @@ import { SerialServiceService, } from './services/serialservice.service';
 import { IResModel, ESerialPortType, ISerialService, EZDM8_COMMAND, EMACHINE_COMMAND, IlogSerial, addLogMessage } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
 import { Buffer } from 'buffer';
+import { App } from '@capacitor/app';
 
 
 
@@ -277,6 +278,7 @@ export class Zdm8Service implements ISerialService {
   }
   command = async (command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> => {
     return new Promise<IResModel>((resolve, reject) => {
+      //  if(this.serialService.initialized==false){App.exitApp(); return;}
       switch (command) {
         case EMACHINE_COMMAND.version:
            this.commandZDM8(EZDM8_COMMAND.hwversion, params).then(resolve).catch(reject);

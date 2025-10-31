@@ -9,7 +9,7 @@ import { Subject } from 'rxjs';
   providedIn: 'root'
 })
 export class SerialServiceService implements OnDestroy {
-  private initialized = false;
+  public initialized = false;
   private serialEventSubject = new Subject<any>();
   private listenerSubscriptions: Array<Promise<PluginListenerHandle> & PluginListenerHandle> = [];
 
