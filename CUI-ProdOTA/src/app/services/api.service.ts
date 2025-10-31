@@ -102,10 +102,19 @@ var REQUEST_TIME_OUT = 10000;
 })
 export class ApiService {
   private apiUrl = environment.apiUrl;
-
+  private static instance: ApiService
 
   serialPort: ISerialService;
   toggleWebviewTab: boolean = false;
+  public static saveLogs(errorLogs: any) {
+    try {
+      ApiService.instance.IndexedLogDB.addBillProcess(errorLogs)
+    } catch (error) {
+      console.log('Error SaveLogs :', error);
+
+    }
+  }
+
 
 
   vendingGoPageSound() {
@@ -341,7 +350,7 @@ export class ApiService {
 
   ) {
 
-
+    ApiService.instance = this
 
 
 

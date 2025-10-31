@@ -14,6 +14,20 @@ import { CloseStytemPage } from './close-stytem/close-stytem.page';
 import { IdleService } from './services/idle.service';
 
 
+window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  console.error('Unhandled Promise Rejection:', event.reason);
+  try {
+    ApiService.saveLogs(`Unhandled Promise Rejection: ${JSON.stringify(event.reason)}`)
+  } catch (error) {
+
+  }
+  // Optionally show toast
+  // Toast.show({ text: 'Something went wrong!' });
+  event.preventDefault();
+});
+
+
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -23,7 +37,7 @@ export class AppComponent {
   checkOnlineStatus: IAlive;
   uT = new Date();
   now = new Date();
-  version = '21';
+  version = '23';
   count = 6;
   machineuuid = this.apiService.machineuuid;
   t: any;

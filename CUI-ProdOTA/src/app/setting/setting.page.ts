@@ -29,6 +29,7 @@ export class SettingPage implements OnInit, OnDestroy {
   contact = localStorage.getItem('contact') || '55516321';
   isRobotMuted = localStorage.getItem('isRobotMuted') ? true : false;
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
+  isTestMotor = localStorage.getItem('isTestMotor') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
   francisemode = localStorage.getItem('francisemode') ? true : false;
   qrMode = localStorage.getItem('qrMode') ? true : false;
@@ -274,7 +275,7 @@ export class SettingPage implements OnInit, OnDestroy {
       }
     });
   }
-  exit(){
+  exit() {
     App.exitApp();
   }
 

@@ -23,7 +23,7 @@ const routes: Routes = [
       // },
       {
         path: 'tab1',
-        loadChildren: () =>Tab1PageModule
+        loadChildren: () => Tab1PageModule
       },
       {
         path: 'tab2',
@@ -42,6 +42,7 @@ const routes: Routes = [
   },
   {
     path: '',
+    // redirectTo: '/tabs/tab1',
     redirectTo: '/tabs/tab1',
     pathMatch: 'full'
   }
@@ -50,4 +51,4 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forChild(routes)],
 })
-export class TabsPageRoutingModule {}
+export class TabsPageRoutingModule { }

@@ -23,7 +23,7 @@ export class IndexerrorService extends Dexie {
     } catch (error) {
       console.error('Failed to add bill process:', error);
     }
-    
+
   }
 
   // ดึงข้อมูลทั้งหมด
@@ -45,7 +45,7 @@ export class IndexerrorService extends Dexie {
     } catch (error) {
       console.error('Failed to delete bill process:', error);
     }
-    
+
   }
 
   // ลบข้อมูลทั้งหมดในตาราง billProcesses

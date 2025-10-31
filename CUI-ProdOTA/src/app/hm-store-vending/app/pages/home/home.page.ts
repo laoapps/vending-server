@@ -96,11 +96,11 @@ export class HomePage {
   async loadcategory() {
     localStorage.setItem('skip_tag', '1');
     this.m.onLoading('');
-  
+
     this.apiService.cat_selmany().subscribe(async res => {
       console.log('res', res);
       this.cat_list = res.data.rows;
-  
+
       // ສ້າງວຽກທັງໝົດເປັນ array
       const tasks = this.cat_list.map(async (element: any) => {
         const aa = await this.caching.saveCachingPhoto(
@@ -108,12 +108,12 @@ export class HomePage {
           new Date(element?.updatedAt),
           element?.id + ''
         );
-  
+
         element['pic'] = JSON.parse(aa).v.replace(
           'data:application/octet-stream',
           'data:image/jpeg'
         );
-  
+
         if (['ໝາກໄມ້', 'ຜັກ'].includes(element.name)) {
           element['category'] = 'Fruits';
         } else if (
@@ -125,13 +125,13 @@ export class HomePage {
         } else {
           element['category'] = 'Store';
         }
-  
+
         return element;
       });
-  
+
       // ລໍຖ້າໃຫ້ວຽກທັງໝົດສໍາເລັດ
       this.cat_list = await Promise.all(tasks);
-  
+
       this.m.onDismiss();
       console.log(this.cat_list);
     }, errr => {
@@ -139,7 +139,7 @@ export class HomePage {
       console.log('load tag error', errr);
     });
   }
-  
+
 
   async load_many_store() {
     this.m.onLoading('');
