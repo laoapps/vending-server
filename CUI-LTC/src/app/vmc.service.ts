@@ -119,7 +119,7 @@ export class VmcService implements ISerialService {
 
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
-      //  if(this.serialService.initialized==false){App.exitApp(); return;}
+      //  if(this.serialService.initialized==false){       this.apiService.exitApp(); return;}
       try {
         switch (command) {
           case EMACHINE_COMMAND.shippingcontrol:

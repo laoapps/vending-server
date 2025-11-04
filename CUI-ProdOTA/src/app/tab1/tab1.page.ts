@@ -698,7 +698,8 @@ export class Tab1Page implements OnDestroy {
     if (r) {
       localStorage.removeItem('restart');
       setTimeout(() => {
-        App.exitApp();
+        this.apiService.exitApp();
+
       }, 10000);
 
       return;
@@ -763,7 +764,8 @@ export class Tab1Page implements OnDestroy {
             if (r?.exit) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
-                App.exitApp();
+                this.apiService.exitApp();
+
               }, 5000);
               return;
             }
@@ -1107,7 +1109,8 @@ export class Tab1Page implements OnDestroy {
       this.serial?.close();
       console.log('serial closed');
     }
-    App.exitApp();
+    this.apiService.exitApp();
+
   }
 
 
@@ -1464,10 +1467,12 @@ export class Tab1Page implements OnDestroy {
   private handleFatalError() {
     console.error('CRITICAL COMMUNICATION ERROR - EXITING APPLICATION');
     // Replace with your actual exit method
-    if (typeof App !== 'undefined' && App.exitApp) {
-      App.exitApp();
+    if (typeof App !== 'undefined') {
+      this.apiService.exitApp();
+
     } else if (typeof process !== 'undefined') {
-      process.exit(1);
+      this.apiService.exitApp();
+
     }
   }
   private processResponseADH814(rawData: string): IResModel {
@@ -3263,8 +3268,7 @@ export class Tab1Page implements OnDestroy {
                 //   text: 'ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີ ແລ້ວກົດເຄື່ອງຕົກອີກຄັ້ງ',
                 //   duration: 'long',
                 // })
-
-                App.exitApp();
+                this.apiService.exitApp();
               }
             }
           }

@@ -79,7 +79,8 @@ export class AppComponent {
       if (result.nextBundleId) {
         console.log('New update applied, reloading app...');
         await LiveUpdate.reload(); // Reload the app to apply the update
-        // App.exitApp();
+               this.apiService.exitApp();
+
         console.log('App reloaded with the new update');
       } else {
         console.log('No update available or no change needed');

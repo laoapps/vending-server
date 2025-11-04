@@ -43,8 +43,7 @@ export class CloseStytemPage implements OnInit {
 
       setTimeout(() => {
         console.log('EXITS APP');
-
-        App.exitApp();
+        this.apiService.exitApp();
       }, 5000);
 
       if (this.t) {

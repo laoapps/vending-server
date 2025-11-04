@@ -300,7 +300,8 @@ export class Tab1Page implements OnDestroy {
     //   // Check if 15 minutes have passed since last call
     //   if (this.lastCallTime && Date.now() - this.lastCallTime >= this.TIMEOUT_MS) {
     //     console.log('No status sent for 15 minutes. Exiting app.');
-    //     App.exitApp();
+    //                     this.apiService.exitApp();
+
     //   }
     // }, this.TIMEOUT_MS);
 
@@ -698,7 +699,8 @@ export class Tab1Page implements OnDestroy {
     if (r) {
       localStorage.removeItem('restart');
       setTimeout(() => {
-        App.exitApp();
+                this.apiService.reloadPage();
+
       }, 10000);
 
       return;
@@ -746,7 +748,7 @@ export class Tab1Page implements OnDestroy {
             if (r?.exit) {
               setTimeout(() => {
                 Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
-                App.exitApp();
+                this.apiService.exitApp();
               }, 5000);
               return;
             }

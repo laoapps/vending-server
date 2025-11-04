@@ -313,7 +313,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       if (error instanceof Error && error.message === 'Serial device not initialized') {
         await this.apiService.soundSystemError();
         await this.apiService.reloadPage();
-        await App.exitApp();
+        this.apiService.exitApp();
         reject(new Error('Serial device not initialized'));
         return;
       }
