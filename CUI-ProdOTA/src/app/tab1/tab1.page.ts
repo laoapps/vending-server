@@ -683,6 +683,10 @@ export class Tab1Page implements OnDestroy {
   }
 
   async ngOnInit() {
+    if (localStorage.getItem('startTestMotor')) {
+      this.startTestMotor();
+      return;
+    }
     // this.startTestMotor();
     // return;
 
@@ -917,7 +921,7 @@ export class Tab1Page implements OnDestroy {
 
                 // setTimeout(() => {
                 //   if (this.serial) {
-                //     this.serial?.close();
+                //     await this.serial?.close();
                 //     console.log('serial closed');
                 //     Toast.show({ text: 'Serial closed', duration: 'long' });
                 //     this.serial = null;
@@ -1106,10 +1110,17 @@ export class Tab1Page implements OnDestroy {
 
     // }
     if (this.serial) {
-      this.serial?.close();
+      this.serial?.close().then(()=>{
+        this.apiService.exitApp();
+      }).catch(e=>{
+        this.apiService.toast.create({
+          message: 'Error closing serial port: ' + JSON.stringify(e),
+          duration: 3000
+        }).then(t => t.present());
+      });
       console.log('serial closed');
     }
-    this.apiService.exitApp();
+    
 
   }
 
@@ -3573,7 +3584,7 @@ export class Tab1Page implements OnDestroy {
     });
   }
 
-  openTestMotor() {
+  async openTestMotor() {
     if (!this.t) {
       this.t = setTimeout(() => {
         this.count = 7;
@@ -3596,21 +3607,23 @@ export class Tab1Page implements OnDestroy {
 
       if (xp + '' == '1234567890_laoapps.*..') {
         console.log('xp', xp);
-        this.serial?.close();
-        this.apiService.modal.create({
-          component: TestmotorPage,
-          componentProps: { serial: this.serial }
-        }).then(r => {
-          r.present();
-          r.onDidDismiss().then(r => {
-            this.serial?.close();
-          })
-        })
+        await this.serial?.close();
+        // this.apiService.modal.create({
+        //   component: TestmotorPage,
+        //   componentProps: { serial: this.serial }
+        // }).then(r => {
+        //   r.present();
+        //   r.onDidDismiss().then(r => {
+        //     this.serial?.close();
+        //   })
+        // })
 
-        if (this.t) {
-          clearTimeout(this.t);
-          this.t = null;
-        }
+        // if (this.t) {
+        //   clearTimeout(this.t);
+        //   this.t = null;
+        // }
+        localStorage.setItem('testmotormode', 'true');
+        this.apiService.reloadPage();
       } else {
         this.apiService.alertError('ບໍ່ໄດ້ແດກກູດອກ ຮາຮາ ມັນບໍ່ໄດ້ມີຫຍັງ ເຮັດມາຫຼອກເດັກຊື່ໆ');
       }
@@ -3637,15 +3650,20 @@ export class Tab1Page implements OnDestroy {
 
   }
 
-  startTestMotor() {
-    this.serial?.close();
+  async startTestMotor() {
+    await this.serial?.close();
     this.apiService.modal.create({
       component: TestmotorPage,
       componentProps: { serial: this.serial }
     }).then(r => {
       r.present();
-      r.onDidDismiss().then(r => {
-        this.serial?.close();
+      r.onDidDismiss().then(async r => {
+        await this.serial?.close();
+        localStorage.setItem('testmotormode', '');
+        this.apiService.toast.create({ message: 'ອອກຈາກໂหมดທົດສອບແລ້ວ', duration: 3000 }).then(toast => {
+          toast.present();
+        });
+        this.apiService.reloadPage();
       })
     })
 
