@@ -28,10 +28,10 @@ export class TestmotorPage implements OnInit, OnDestroy {
   // serial: ISerialService;
   open = false;
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815', 'adh814'];
-  selectedDevice = 'VMC';
+  selectedDevice = 'adh814';
 
-  portName = '/dev/ttyS3';
-  baudRate = 9600;
+  portName = '/dev/ttyS1';
+  baudRate = 38400;
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial; // Default selected value
   constructor(private vendingIndex: VendingIndexServiceService, private serialService: SerialServiceService) {

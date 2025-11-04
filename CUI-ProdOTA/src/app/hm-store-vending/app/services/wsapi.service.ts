@@ -152,34 +152,34 @@ export class WsapiService implements OnDestroy {
   }
 
   private scheduleReconnect(): void {
-    if (!this.failureStartTime) {
-      this.failureStartTime = Date.now();
-    }
-
-    const elapsedTime = Date.now() - this.failureStartTime;
-    if (elapsedTime >= this.maxFailureDuration) {
-      console.error('Connection failed for 5 minutes, exiting app');
-      try {
-        App.exitApp();
-      } catch (error) {
-        console.error('Failed to exit app', error);
-      }
-      return;
-    }
-
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('Max reconnection attempts reached');
-      return;
-    }
-
-    const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
-    console.log(`Scheduling reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
-
-    setTimeout(() => {
-      this.reconnectAttempts++;
-      this.connect(this.wsurl, this.machineId, this.otp);
-    }, delay);
+  if (!this.failureStartTime) {
+    this.failureStartTime = Date.now();
   }
+
+  const elapsedTime = Date.now() - this.failureStartTime;
+
+  // Instead of exiting, just keep going
+  if (elapsedTime >= this.maxFailureDuration) {
+    console.warn('Connection down for 5+ minutes. Continuing to retry...');
+    this.failureStartTime = null; // Reset timer
+    this.reconnectAttempts = 0;   // Optional: reset attempts
+    this.reconnectDelay = 5000;   // Optional: calm down a bit
+  }
+
+  if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+    // Don't stop — just increase delay and keep going
+    this.reconnectAttempts = 0;
+    this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
+  }
+
+  const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
+  console.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
+
+  setTimeout(() => {
+    this.reconnectAttempts++;
+    this.connect(this.wsurl, this.machineId, this.otp);
+  }, delay);
+}
 
   disconnect(): void {
     if (this.webSocket) {

@@ -275,7 +275,8 @@ export class SettingPage implements OnInit, OnDestroy {
     });
   }
   exit(){
-    App.exitApp();
+                   this.apiService.exitApp();
+
   }
 
 }

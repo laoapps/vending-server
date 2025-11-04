@@ -94,6 +94,7 @@ import { IndexerrorService } from '../indexerror.service';
 import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
 import { VideoCacheService } from '../video-cache.service';
 import { Indexsavesale } from '../indexsavesale';
+import { App } from '@capacitor/app';
 
 var REQUEST_TIME_OUT = 10000;
 
@@ -1020,6 +1021,19 @@ export class ApiService {
     setTimeout(async () => {
       window.location.reload();
     }, REQUEST_TIME_OUT);
+  }
+  async exitApp() {
+    Toast.show({ text: 'Before Reload', duration: 'long' });
+    try {
+      await this.serialPort?.close();
+    } catch (error) {
+      console.log('CLOSE FAILED', error);
+      Toast.show({ text: 'Close failed', duration: 'long' });
+    }
+
+    setTimeout(async () => {
+      App.exitApp();
+    }, 3000);
   }
 
   reconfirmStock(pendingStock: Array<{ transactionID: any, position: number }>) {
