@@ -385,9 +385,11 @@ export class ApiService {
         if (!r) return console.log('empty');
         const rSetting = r?.data?.setting;
 
-        this.allowTopUp = r?.data?.setting?.isTopUp ?? false;
-        this.isAds = r?.data?.setting?.isAds ?? false;
-        this.isFranciseMode = rSetting?.isFranciseMode ?? false;
+        const s = r?.data?.setting;
+
+        if (this.allowTopUp !== s.isTopUp) this.allowTopUp = s.isTopUp ?? false;
+        if (this.isAds !== s.isAds) this.isAds = s.isAds ?? false;
+        if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
 
         console.log('ws alive subscription', that.cash, r);
         // console.log('message :', r?.message);

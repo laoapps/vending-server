@@ -1478,6 +1478,7 @@ export class Tab1Page implements OnDestroy {
 
       if (hexData.length > 44) {
         console.error(`FATAL: Response too long (${hexData.length} bytes > 44). Controller error.`);
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: hexData + '' });
         this.handleFatalError();
         return { command: '', status: 0, data: {}, message: 'Response too long - hardware error', transactionID: 0 };
       }
@@ -1794,6 +1795,7 @@ export class Tab1Page implements OnDestroy {
 
     } else {
       this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: hex })
       console.log('Unhandled response:', hex);
     }
   }

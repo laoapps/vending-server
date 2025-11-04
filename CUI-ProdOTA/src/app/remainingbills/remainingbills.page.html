@@ -1,36 +1,4 @@
-<!-- <ion-header>
-  <ion-toolbar>
-    <ion-title>Your Bills</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content>
-  <div >
-     <ion-card *ngFor="let s of r" (click)="retryProcessBill(s.transactionID+'',s.position)" style="float:left">
-      <div *ngIf="s">
-        <ion-item>
-        <label>{{getStock(s?.position)?.name}}</label>
-      </ion-item>
-      <ion-item>
-
-        <img style="width: 50px;height:120px" [src]="findImage(getStock(s?.position)?.id)" >
-
-      </ion-item>
-      <ion-item>
-        <ion-label type="number"  >{{getStock(s?.position)?.price}}</ion-label>
-      </ion-item>
-      </div>
-      
-    </ion-card>
-  </div>
-   
-
-</ion-content> -->
-
-<ion-content>
-
-  <!-- <iframe src="https://giphy.com/embed/0eEWDd8oEj6VCgMtbG" width="150" height="150" frameBorder="0"
-    class="giphy-embed hand-click active" allowFullScreen sandbox="allow-scripts"></iframe> -->
 
   <div (click)="closeToolTip()" class="tooltip-background active">
     <span class="item">
@@ -96,7 +64,46 @@
       </div>
 
     </div>
+
+
+    <div class="marquee-container">
+      <!-- ซ้าย: GIF คงที่ -->
+      <div class="marquee-left">
+        <img src="../../assets/logo/Mee.gif" alt="payment-gif" />
+      </div>
+
+      <!-- ขวา: ข้อความเลื่อน -->
+      <div class="marquee-right">
+        <div class="marquee-content">
+          <p>
+            💳 English: Please do not close this window. If you have made a payment, it will be completed within
+            60
+            seconds.
+            📞 For support, call or WhatsApp +8562055516321 if you did not receive the product.
+          </p>
+          <p>
+            💳 Lao: ກະລຸນາຢ່າປິດຫນ້າຈໍນີ້ ຖ້າຈ່າຍເງິນແລ້ວ ຈະດຳເນີນການໃນ 60 ວິນາທີ.
+            📞 WhatsApp +8562055516321 ຖ້າບໍ່ໄດ້ຮັບສິນຄ້າ.
+          </p>
+          <p>
+            💳 Thai: กรุณาอย่าปิดหน้านี้ หากชำระเงินแล้ว ระบบจะดำเนินการใน 60 วินาที.
+            📞 โทรหรือ WhatsApp +8562055516321 หากไม่ได้รับสินค้า.
+          </p>
+          <p>
+            💳 Vietnamese: Vui lòng không đóng cửa sổ này. Nếu đã thanh toán, quá trình sẽ hoàn tất trong 60 giây.
+            📞 Gọi hoặc WhatsApp +8562055516321 nếu không nhận được sản phẩm.
+          </p>
+          <p>
+            💳 Chinese: 请不要关闭此窗口。如果您已付款，系统将在60秒内完成处理。
+            📞 如未收到商品，请拨打电话或WhatsApp +8562055516321。
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
+
+
+
 
   <!-- <audio src="../../assets/machine_sound/please_select.mp3"></audio> -->
 

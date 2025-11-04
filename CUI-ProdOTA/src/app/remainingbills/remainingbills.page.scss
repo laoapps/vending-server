@@ -314,3 +314,82 @@ ion-infinite-scroll-content {
   object-fit: cover; /* เติมเต็มพื้นที่โดยไม่บิดรูป */
   display: block;
 }
+
+
+
+
+.marquee-container {
+  display: flex; /* แบ่งซ้าย-ขวา */
+  align-items: center; /* จัดแนวกลาง */
+  width: 100%;
+  background-color: #fdf6e3;
+  border-top: 2px solid #ff9800;
+  border-bottom: 2px solid #ff9800;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #444;
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+  overflow: hidden;
+  padding: 8px 0; /* กันข้อความติดขอบ */
+}
+
+.marquee-left {
+  flex: 0 0 auto;
+  margin: 0 12px;
+}
+
+.marquee-left img {
+  height: 15em;             /* เท่ากับขนาดตัวอักษร */
+  width: 15em;              /* ทำให้เป็นสี่เหลี่ยม */
+  object-fit: contain;     /* ไม่ครอบเกิน */
+  vertical-align: middle;  /* จัดให้ตรงกลางข้อความ */
+  display: inline-block;
+  margin-right: 6px;       /* ระยะห่างเล็กน้อยจากข้อความ */
+}
+
+
+.marquee-right {
+  flex: 1 1 auto; /* กินพื้นที่ที่เหลือ */
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.marquee-content {
+  display: inline-block;
+  padding-left: 100%; /* เริ่มจากนอกจอขวา */
+  animation: scroll-left 30s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+
+
+.loader {
+  border: 5px solid #f3f3f3;        /* สีพื้นหลัง */
+  border-top: 5px solid #3498db;    /* สีหมุน */
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: spin 1s linear infinite;
+
+  /* Center */
+  margin: 100px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
