@@ -7,6 +7,12 @@
 <ion-content>
   <ion-list>
     <ion-item>
+      <ion-label>isLTC</ion-label>
+      <ion-checkbox [(ngModel)]="isLTC"></ion-checkbox>
+      <ion-button (click)="changeURL()">Save Change</ion-button>
+
+    </ion-item>
+    <ion-item>
       <ion-label>WS-URL</ion-label>
       <ion-input [(ngModel)]="wsurl"></ion-input>
     </ion-item>

@@ -31,6 +31,7 @@ export class SettingPage implements OnInit, OnDestroy {
   isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
   isTestMotor = localStorage.getItem('isTestMotor') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
+  isLTC = localStorage.getItem('isLTC') ? true : false;
   francisemode = localStorage.getItem('francisemode') ? true : false;
   qrMode = localStorage.getItem('qrMode') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
@@ -67,7 +68,27 @@ export class SettingPage implements OnInit, OnDestroy {
   pinFormatter(value: number) {
     return `${value}%`;
   }
+
+
+  changeURL() {
+
+    localStorage.setItem('isLTC', this.isLTC ? 'yes' : '');
+
+    this.wsurl = this.isLTC ? environment.wsLTC : environment.wsHM;
+    console.log('----->', this.wsurl);
+
+    this.url = this.isLTC ? environment.urlLTC : environment.urlHM;
+    console.log('----->', this.url);
+
+    this.vending_server = this.isLTC ? environment.vendingLTC : environment.vendingHM;
+    console.log('----->', this.vending_server);
+
+  }
+
   save() {
+    localStorage.setItem('isLTC', this.isLTC ? 'yes' : '');
+
+
     localStorage.setItem('wsurl', this.wsurl)
     localStorage.setItem('url', this.url)
     localStorage.setItem('vending_server', this.vending_server)
@@ -87,6 +108,8 @@ export class SettingPage implements OnInit, OnDestroy {
 
     localStorage.setItem('offlineMode', this.offlineMode + '');
     localStorage.setItem('dropSensor', this.dropSensor + '');
+
+
 
     // product fall limit
     if (this.productFallLimit > 30) this.productFallLimit = 30;
@@ -276,7 +299,7 @@ export class SettingPage implements OnInit, OnDestroy {
     });
   }
   exit() {
-                this.apiService.exitApp();
+    this.apiService.exitApp();
 
   }
 

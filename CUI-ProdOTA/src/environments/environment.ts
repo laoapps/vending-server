@@ -16,11 +16,20 @@ export const environment = {
   // vending_server: 'https://vendingserviceapi.laoapps.com',
   // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
-  url: 'https://vending-service-api5.laoapps.com/zdm8',
-  wsurl: 'wss://vending-service-api5.laoapps.com/zdm8',
-  vending_server: 'https://vending-service-api5.laoapps.com',
+  url: (localStorage.getItem('isLTC') ? true : false) ? 'https://vendingserviceapi.laoapps.com/zdm8' : 'https://vending-service-api5.laoapps.com/zdm8',
+  wsurl: (localStorage.getItem('isLTC') ? true : false) ? 'wss://vendingserviceapi.laoapps.com/zdm8' : 'wss://vending-service-api5.laoapps.com/zdm8',
+  vending_server: (localStorage.getItem('isLTC') ? true : false) ? 'https://vendingserviceapi.laoapps.com' : 'https://vending-service-api5.laoapps.com',
   filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
   apiUrl: 'https://smartcb-api.laoapps.com/api',
+
+
+  urlLTC: 'https://vendingserviceapi.laoapps.com/zdm8',
+  wsLTC: 'wss://vendingserviceapi.laoapps.com/zdm8',
+  vendingLTC: 'https://vendingserviceapi.laoapps.com',
+
+  urlHM: 'https://vending-service-api5.laoapps.com/zdm8',
+  wsHM: 'wss://vending-service-api5.laoapps.com/zdm8',
+  vendingHM: 'https://vending-service-api5.laoapps.com',
 
   versionId: '1.1.21'
 };

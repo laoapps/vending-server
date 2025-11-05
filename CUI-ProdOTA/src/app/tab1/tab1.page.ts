@@ -1110,9 +1110,9 @@ export class Tab1Page implements OnDestroy {
 
     // }
     if (this.serial) {
-      this.serial?.close().then(()=>{
+      this.serial?.close().then(() => {
         this.apiService.exitApp();
-      }).catch(e=>{
+      }).catch(e => {
         this.apiService.toast.create({
           message: 'Error closing serial port: ' + JSON.stringify(e),
           duration: 3000
@@ -1120,7 +1120,7 @@ export class Tab1Page implements OnDestroy {
       });
       console.log('serial closed');
     }
-    
+
 
   }
 

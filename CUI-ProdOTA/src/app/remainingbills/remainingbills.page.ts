@@ -2,10 +2,7 @@ import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@ang
 import { EMACHINE_COMMAND, IBillProcess, IBillSaveSale, IDropPositionData, ISerialService } from '../services/syste.model';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
-import { Tab1Page } from '../tab1/tab1.page';
-import { IENMessage } from '../models/base.model';
 import { Toast } from '@capacitor/toast';
-import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-remainingbills',
