@@ -1574,6 +1574,16 @@ export class InventoryZDM8 implements IBaseClass {
                             await monitorUnpaidPayments(machineId);
                             resx.data = rx;
 
+                            try {
+                                ClientlogEntity.create({ machineId: machineId, errorLog: resx.data }).then(r => {
+                                }).catch(e => {
+                                });
+
+                            } catch (error) {
+
+                            }
+
+
                             this.sendWSToMachine(machineId, resx);
                             res.send(
                                 PrintSucceeded(

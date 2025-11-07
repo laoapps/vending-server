@@ -19,7 +19,6 @@ export class AdsPage implements OnInit, OnDestroy {
 
   activeAdsList: any = {} as any;
   adsList: Array<any> = [
-
     // { id: 1, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howtouseepin.webm' },
     // { id: 2, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto1.webm' },
     // { id: 3, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto2.webm' },

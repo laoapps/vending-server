@@ -2222,6 +2222,7 @@ export class Tab1Page implements OnDestroy {
 
     const data = await this.apiService.IndexedDB.getBillProcesses() ?? [];
     if (data.length > 0) {
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click loadPaidBills Local ${JSON.stringify(data)}` });
       this.showBills();
       this.processLoadedPaidBills = false;
       return;
@@ -2233,14 +2234,19 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: `Load paid bills ${r?.data?.length}`, duration: 'short' });
 
       if (!r.data.length) {
+        this.apiService.IndexedLogDB.addBillProcess({ errorData: `Click loadPaidBills Server ${JSON.stringify(r.data)}` });
+
         this.showBills();
       }
       await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
     }).catch(er => {
       console.log(er);
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error Click loadPaidBills ${JSON.stringify(er)}` });
+
       Toast.show({ text: `Load paid bills error ${er.message}` });
     }).finally(() => {
       console.log('finally');
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `finally Click loadPaidBills` });
       Toast.show({ text: `Load paid bills finally`, duration: 'short' });
       this.processLoadedPaidBills = false;
     });
@@ -3267,8 +3273,10 @@ export class Tab1Page implements OnDestroy {
                   .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
                   .then((r) => {
                     this.apiService.isRemainingBillsModalOpen = true;
+                    this.apiService.IndexedLogDB.addBillProcess({ errorData: `RemainingbillsPage Open In Tab1` })
                     r.present();
                     r.onDidDismiss().then(() => {
+                      this.apiService.IndexedLogDB.addBillProcess({ errorData: `RemainingbillsPage Close In Tab1` })
                       this.apiService.isRemainingBillsModalOpen = false;
                     })
                     this.otherModalAreOpening = true;

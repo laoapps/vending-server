@@ -32,6 +32,7 @@ export class SettingPage implements OnInit, OnDestroy {
   isTestMotor = localStorage.getItem('isTestMotor') ? true : false;
   isAds = localStorage.getItem('isAds') ? true : false;
   isLTC = localStorage.getItem('isLTC') ? true : false;
+  isHMVending = localStorage.getItem('isHMVending') ? true : false;
   francisemode = localStorage.getItem('francisemode') ? true : false;
   qrMode = localStorage.getItem('qrMode') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;

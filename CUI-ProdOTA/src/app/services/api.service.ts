@@ -782,8 +782,10 @@ export class ApiService {
                 if (!this.isRemainingBillsModalOpen) {
                   this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
                     this.isRemainingBillsModalOpen = true;
+                    this.IndexedLogDB.addBillProcess({ errorData: `RemainingbillsPage Open In API Service` })
                     r.present();
                     r.onDidDismiss().then(() => {
+                      this.IndexedLogDB.addBillProcess({ errorData: `RemainingbillsPage Close In API Service` })
                       this.isRemainingBillsModalOpen = false;
                     }
                     );
