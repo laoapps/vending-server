@@ -78,6 +78,11 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   }
 
 
+  onNoDrop() {
+    this.apiService.reloadPage();
+  }
+
+
   ngAfterViewInit() {
     const player = this.videoPlayer?.nativeElement;
 

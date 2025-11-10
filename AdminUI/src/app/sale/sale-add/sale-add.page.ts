@@ -11,8 +11,8 @@ import { IVendingMachineSale } from 'src/app/services/syste.model';
   styleUrls: ['./sale-add.page.scss'],
 })
 export class SaleAddPage implements OnInit {
-  @Input()machineId='';
-  @Input()sales=new Array<IVendingMachineSale>();
+  @Input() machineId = '';
+  @Input() sales = new Array<IVendingMachineSale>();
   showImage: (p: string) => string;
   s = {} as IVendingMachineSale;
   loaded: boolean = false;
@@ -21,19 +21,19 @@ export class SaleAddPage implements OnInit {
 
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
-    this.s.max=5;
-    this.s.position=1;
+    this.s.max = 5;
+    this.s.position = 1;
   }
 
   ngOnInit() {
-    this.s.machineId=this.machineId;
-    this.s.isActive=false;
+    this.s.machineId = this.machineId;
+    this.s.isActive = false;
   }
   close() {
     this.apiService.closeModal();
   }
   save() {
-    if(this.sales.find(v=>v.position==this.s.position&&this.s.position>0))return alert('Position was duplicated');
+    if (this.sales.find(v => v.position == this.s.position && this.s.position > 0)) return alert('Position was duplicated');
 
     this.apiService.closeModal({ s: this.s })
   }
@@ -42,17 +42,17 @@ export class SaleAddPage implements OnInit {
   cancel() {
     this.imageSrc = '';
   }
-  showProductList(){
+  showProductList() {
     this.apiService.showModal(ProductlistPage).then(ro => {
       ro?.present();
       console.log('show product list');
-      
+
       ro?.onDidDismiss().then(r => {
         console.log(`after close product list`, r);
 
         if (r.data) {
           console.log(`rrrr data`, r.data);
-          this.s.stock=r.data.data;
+          this.s.stock = r.data.data;
         }
       }).catch(e => {
         console.log(e);
@@ -60,20 +60,20 @@ export class SaleAddPage implements OnInit {
       })
     })
   }
-  showPosition(){
+  showPosition() {
     console.log(`sssss`, this.sales);
-    console.log(`position`, this.sales.map(v=>v.position).length);
-    const position =this.sales.map(v=>v.position).length?this.sales.map(v=>v.position):[]
-    this.apiService.showModal(PositionlistPage,{position}).then(ro => {
+    console.log(`position`, this.sales.map(v => v.position).length);
+    const position = this.sales.map(v => v.position).length ? this.sales.map(v => v.position) : []
+    this.apiService.showModal(PositionlistPage, { position }).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         console.log(r);
 
         if (r.data) {
-          
-          this.s.position=r.data;
+
+          this.s.position = r.data;
           console.log(this.s);
-          
+
         }
       }).catch(e => {
         console.log(e);

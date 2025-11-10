@@ -237,8 +237,24 @@ const routes: Routes = [
     loadChildren: () => import('./onlinemachines/onlinemachines.module').then( m => m.OnlinemachinesPageModule)
   },
   {
-    path:'log-temp',
+    path: 'log-temp',
     loadChildren: () => import('./log-temp/log-temp.module').then( m => m.LogTempPageModule)
+  },
+  {
+    path: 'settings-modal',
+    loadChildren: () => import('./settings-modal/settings-modal/settings-modal.module').then( m => m.SettingsModalPageModule)
+  },
+  {
+    path: 'billing',
+    loadChildren: () => import('./billing/billing.module').then( m => m.BillingPageModule)
+  },
+  {
+    path: 'report-client',
+    loadChildren: () => import('./report-client/report-client.module').then( m => m.ReportClientPageModule)
+  },
+  {
+    path: 'new-report-sale',
+    loadChildren: () => import('./new-report-sale/new-report-sale.module').then( m => m.NewReportSalePageModule)
   }
 ];
 @NgModule({

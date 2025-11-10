@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-icon name="close-circle-sharp" (click)="close()"></ion-icon>
+
+    <ion-title>products</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-button (click)="new()">New</ion-button>
+  <ion-grid>
+    <ion-row>
+      <ion-col><ion-label>image</ion-label></ion-col>
+      <ion-col><ion-label>name</ion-label></ion-col>
+      <ion-col><ion-label>Price</ion-label></ion-col>
+      <ion-col><ion-label>updated</ion-label></ion-col>
+      <ion-col></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let p of _l">
+      <!-- <ion-col><ion-img class="product_image"[src]="p.image"></ion-img></ion-col> -->
+      <!-- <td><img class="display_product_image" src="{{ p.imageURL }}" alt=""></td> -->
+      <td><img class="display_product_image"
+          [src]="'https://filemanager-api.laoapps.com/api/v1/file/download/' + p.imageURL" alt=""
+          [style]="{width: '200px', height: '200px'}"></td>
+      <!-- <ion-col><ion-label>{{p.imageURL}}</ion-label></ion-col> -->
+      <ion-col><ion-label>{{p.name}}</ion-label></ion-col>
+      <ion-col><ion-label>{{p.price|number}}</ion-label></ion-col>
+      <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
+      <!-- <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p)"></ion-toggle></ion-col> -->
+
+      <ion-col><ion-button (click)="addProduct(p)">Create Product</ion-button></ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

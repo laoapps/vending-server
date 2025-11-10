@@ -168,12 +168,16 @@
                           [(ngModel)]="settings[p.machineId].versionId"></ion-input> </div>
                       <div style="float: left;"> <ion-icon name="qr-code-outline"></ion-icon><ion-checkbox
                           [(ngModel)]="settings[p.machineId].qrPayment"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="trophy-outline"></ion-icon><ion-checkbox
+                          [(ngModel)]="settings[p.machineId].isTopUp"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="briefcase-outline"></ion-icon><ion-checkbox
+                          [(ngModel)]="settings[p.machineId].isFranciseMode"></ion-checkbox> </div>
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 
                     <ion-button (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
                     <ion-button (click)="exitMachine(p.machineId)">Exit Machine</ion-button>
-
+                    <ion-button (click)="clearMachine(p.machineId)">Clear Bill</ion-button>
                     <td>
 
                     </td>

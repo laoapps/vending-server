@@ -1,0 +1,78 @@
+<ion-content class="ion-padding">
+  <ion-button expand="block" (click)="checkBillNotPaid()">
+    <ion-icon slot="start"></ion-icon>
+    ກວດບິນທີ່ຍັງບໍ່ໄດ້ຈ່າຍ
+  </ion-button>
+  <ion-card class="filter-card">
+    <ion-card-header>
+      <ion-card-title>ເລືອກຊ່ວງວັນທີ</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <div class="date-row">
+        <div class="form-group">
+          <label>ວັນທີເລີ່ມຕົ້ນ</label>
+          <input [(ngModel)]="fromDate" type="date" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>ວັນທີສິ້ນສຸດ</label>
+          <input [(ngModel)]="toDate" type="date" class="form-control" />
+        </div>
+      </div>
+
+      <!-- ✅ ปุ่มเลือก / ยกเลิกไฟล์ -->
+      <div class="file-section">
+        <ion-button expand="block" color="primary" (click)="fileInput.click()" [disabled]="selectedFile">
+          <ion-icon name="document-attach-outline" slot="start"></ion-icon>
+          ເລືອກໄຟລ໌ Excel
+        </ion-button>
+
+        <input type="file" accept=".xlsx,.xls" #fileInput hidden (change)="onFileSelected($event)" />
+
+        <div *ngIf="selectedFile" class="file-info">
+          <ion-item lines="none">
+            <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>{{ selectedFile.name }}</ion-label>
+            <ion-button fill="clear" color="danger" (click)="cancelFile()">
+              <ion-icon name="close-circle-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+
+        <ion-button expand="block" color="success" (click)="onProcess()" [disabled]="!selectedFile">
+          <ion-icon name="play-outline" slot="start"></ion-icon>
+          Process
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ✅ ตารางแสดงผล -->
+  <ion-card class="table-card" *ngIf="_l.length > 0">
+    <ion-card-header>
+      <ion-card-title>ລາຍການທຸລະກໍາ</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid class="custom-grid">
+        <ion-row class="table-header">
+          <ion-col>ເລກທຸລະກຳ</ion-col>
+          <ion-col>ຊື່ບັນຊີ</ion-col>
+          <ion-col>ມູນຄ່າເງິນ</ion-col>
+          <ion-col>ວັນທີໂອນ</ion-col>
+          <ion-col>ເລກອ້າງອີງ</ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let p of _l" class="table-row">
+          <ion-col>{{ p.billNumber }}</ion-col>
+          <ion-col>{{ p.merchantName }}</ion-col>
+          <ion-col>{{ p.txnAmount | number }} {{ p.sourceCurrency }}</ion-col>
+          <ion-col>{{ p.txnDateTime }}</ion-col>
+          <ion-col>{{ p.memo }}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

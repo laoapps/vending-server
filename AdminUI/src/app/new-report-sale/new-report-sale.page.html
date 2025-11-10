@@ -1,0 +1,169 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="stats-chart" style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+      Vending Machine Sales Report
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="container">
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="filter-card">
+        <h2 class="section-title">
+          <ion-icon name="filter-outline"></ion-icon>
+          Date Range Filter
+        </h2>
+
+        <div class="filter-grid">
+          <div class="filter-item">
+            <label>From Date</label>
+            <div class="date-input" (click)="showFromPicker = true">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span>{{ fromDate }}</span>
+            </div>
+          </div>
+
+          <div class="filter-item">
+            <label>To Date</label>
+            <div class="date-input" (click)="showToPicker = true">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span>{{ toDate }}</span>
+            </div>
+          </div>
+
+          <div class="filter-item">
+            <ion-button expand="block" color="primary" (click)="process()" class="process-btn">
+              <ion-icon name="search-outline" slot="start"></ion-icon>
+              Generate Report
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid" *ngIf="reports.length > 0">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #e3f2fd;">
+          <ion-icon name="document-text" style="color: #1976d2;"></ion-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ reports.length }}</div>
+          <div class="stat-label">Total Reports</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #e8f5e9;">
+          <ion-icon name="cash" style="color: #388e3c;"></ion-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getTotalSales() | number }} ₭</div>
+          <div class="stat-label">Total Sales</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fff3e0;">
+          <ion-icon name="cart" style="color: #f57c00;"></ion-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getTotalItems() }}</div>
+          <div class="stat-label">Total Items Sold</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-section" *ngIf="reports.length > 0">
+      <div class="table-card">
+        <div class="table-header">
+          <h2 class="section-title">
+            <ion-icon name="list-outline"></ion-icon>
+            Sales Report
+          </h2>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Created Date & Time</th>
+                <th>Sales Count</th>
+                <th>Total Value</th>
+                <th>Payment Status</th>
+                <th>Actions</th>
+                <th>Payment Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of reports; let i = index">
+                <td class="index-col">{{ i + 1 }}</td>
+                <td class="date-col">
+                  <div class="date-info">
+                    <ion-icon name="time-outline"></ion-icon>
+                    <span>{{ item.createdAt | date:'dd/MM/yyyy HH:mm:ss':'Asia/Bangkok' }}</span>
+                  </div>
+                </td>
+                <td class="count-col">
+                  <div class="count-badge">
+                    <ion-icon name="cart-outline"></ion-icon>
+                    {{ item.vendingsales.length }}
+                  </div>
+                </td>
+                <td class="value-col">
+                  <strong>{{ item.totalvalue | number }} ₭</strong>
+                </td>
+                <td class="status-col">
+                  <span class="status-badge" [ngClass]="'status-' + getStatusClass(item.paymentstatus)">
+                    {{ item.paymentstatus }}
+                  </span>
+                </td>
+                <td class="action-col">
+                  <ion-button size="small" fill="outline" color="primary" (click)="viewDetails(item.vendingsales)">
+                    <ion-icon name="eye-outline" slot="start"></ion-icon>
+                    View
+                  </ion-button>
+                </td>
+                <td class="ref-col">
+                  <span class="ref-text">{{ item.paymentref || '-' }}</span>
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="reports.length === 0">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <h3>No Data Available</h3>
+      <p>Please select a date range and click "Generate Report" to view sales data</p>
+    </div>
+  </div>
+
+  <!-- Modal Date Pickers -->
+  <ion-modal [isOpen]="showFromPicker" (didDismiss)="showFromPicker = false">
+    <ng-template>
+      <ion-content>
+        <ion-datetime [value]="fromDate" (ionChange)="onFromDateChange($event)" presentation="date"
+          show-default-buttons="true"></ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal [isOpen]="showToPicker" (didDismiss)="showToPicker = false">
+    <ng-template>
+      <ion-content>
+        <ion-datetime [value]="toDate" (ionChange)="onToDateChange($event)" presentation="date"
+          show-default-buttons="true"></ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

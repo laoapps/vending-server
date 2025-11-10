@@ -34,7 +34,7 @@
 
   <div *ngIf="display == true" class="section-table">
     <div class="btn-list">
-      <button *ngFor="let export of exportOptions" class="export-btn">
+      <button *ngFor="let export of exportOptions" class="export-btn" (click)="exportToExcel()">
         <i class="{{ export.icon }}"></i>
         <span>{{ export.text }}</span>
       </button>

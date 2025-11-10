@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IMachineClientID, IMachineStatus, IProductImage, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
+import { EClientCommand, EPaymentProvider, IAlive, IBillProcess, IClientId, IFilteredData, IMachineClientID, IMachineStatus, IProductImage, IReqModel, IResModel, IStock, IVendingMachineBill, IVendingMachineSale } from './syste.model';
 import { WsapiService } from './wsapi.service';
 import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
@@ -95,7 +95,9 @@ export class ApiService {
 
                 if (!r) return console.log('empty');
                 this.myMachineStatus.length = 0;
-                this.myMachineStatus.push(...r.data.mymstatus)
+                console.log('mstatus', r.data.mstatus);
+                const arr = Array.isArray(r.data.mstatus) ? r.data.mstatus : [r.data.mstatus];
+                this.myMachineStatus.push(...arr)
                 // console.log('ws alive subscription', r);
                 this.wsAlive.time = new Date();
                 this.wsAlive.isAlive = this.checkOnlineStatus();
@@ -367,6 +369,11 @@ export class ApiService {
     }
 
 
+    getReportClientLogs(data: any) {
+        return this.http.post<IResModel>(this.url + '/reportClientLog', data, { headers: this.headerBase() });
+    }
+
+
 
     super_listMachine() {
         const token = localStorage.getItem('lva_token');
@@ -390,6 +397,15 @@ export class ApiService {
 
         return this.http.post<IResModel>(this.url + '/exitAppMachine', { token, shopPhonenumber, secret, data }, { headers: this.headerBase() });
     }
+
+    clearAppMachine(data: any) {
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+
+        return this.http.post<IResModel>(this.url + '/clearLocalBill', { token, shopPhonenumber, secret, data, machineId: data.machineId }, { headers: this.headerBase() });
+    }
+
     resetCashing(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');
@@ -434,9 +450,10 @@ export class ApiService {
     }
     addMachine(o: IMachineClientID) {
         const token = localStorage.getItem('lva_token');
+        const secret = localStorage.getItem('secretLocal');
         const shopPhonenumber = o.shopPhonenumber;
-        delete o.shopPhonenumber;
-        return this.http.post<IResModel>(this.url + '/addMachineNew', { data: o, token, shopPhonenumber }, { headers: this.headerBase() });
+        // delete o.shopPhonenumber;
+        return this.http.post<IResModel>(this.url + '/addMachineNew', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
     reportStock() {
         const token = localStorage.getItem('lva_token');
@@ -555,6 +572,23 @@ export class ApiService {
             secret
         };
         return this.http.post(this.url + '/loadVendingMachineSaleBillReport', payload, { headers: this.headerBase() });
+    }
+
+    checkAndConfirmBillToDeliver(data: any) {
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/checkAndConfirmBillToDeliver', payload, { headers: this.headerBase() });
+    }
+
+
+    checkLaoQRTransaction(transactionID: string) {
+
+        return this.http.post(this.url + '/checkQRTransaction', { transactionID: transactionID }, { headers: this.headerBase() });
     }
 
     loadVendingMachineDropReport(data: any) {
@@ -802,7 +836,8 @@ export class ApiService {
             { header: 'Stock Name', key: 'stockName', width: 20 },
             { header: 'Stock Price', key: 'stockPrice', width: 12 },
             { header: 'Stock Quantity', key: 'stockQuantity', width: 15 },
-            { header: 'Stock Image', key: 'stockImage', width: 15 } // Column for images
+            { header: 'Stock Image', key: 'stockImage', width: 15 }, // Column for images
+            { header: 'CreateAt', key: 'created', width: 15 },
         ];
 
         // Add header row styling (optional)
@@ -819,7 +854,8 @@ export class ApiService {
                 stockName: item.stock?.name || '',
                 stockPrice: item.stock?.price ?? 0,
                 stockQuantity: item.stock?.qtty ?? 0,
-                stockImage: '' // Placeholder (images are embedded, not stored as text)
+                stockImage: '', // Placeholder (images are embedded, not stored as text)
+                created: item.createdAt ?? ''
             };
 
             // Add row to worksheet
@@ -859,6 +895,53 @@ export class ApiService {
         const buffer = await workbook.xlsx.writeBuffer();
         const dataBlob = new Blob([buffer], { type: 'application/octet-stream' });
         saveAs(dataBlob, 'VendingMachineSales.xlsx');
+    }
+
+    async exportIVendingMachineReportSaleToExcel(lists: IFilteredData[]) {
+        // 1. สร้าง workbook และ worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('VendingMachineSales');
+
+        // 2. กำหนดหัวตาราง
+        worksheet.columns = [
+            { header: 'Created At', key: 'createdAt', width: 22 },
+            { header: 'Total Value', key: 'totalvalue', width: 15 },
+            { header: 'Position', key: 'position', width: 10 },
+            { header: 'Drop At', key: 'dropAt', width: 22 },
+            { header: 'Product Name', key: 'name', width: 30 },
+            { header: 'Quantity', key: 'qtty', width: 10 },
+            { header: 'Price', key: 'price', width: 15 },
+        ];
+
+        // 3. ทำให้หัวตารางเป็นตัวหนา + จัดกลาง
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+        // 4. ใส่ข้อมูลลงตาราง
+        for (const item of lists) {
+            for (const sale of item.vendingsales) {
+                worksheet.addRow({
+                    createdAt: new Date(item.createdAt).toLocaleString(),
+                    totalvalue: item.totalvalue,
+                    position: sale.position,
+                    dropAt: new Date(sale.dropAt).toLocaleString(),
+                    name: sale.name,
+                    qtty: sale.qtty,
+                    price: sale.price
+                });
+            }
+        }
+
+        // 5. จัดแนวเซลล์ให้อ่านง่ายขึ้น
+        worksheet.columns.forEach((column) => {
+            column.alignment = { vertical: 'middle', horizontal: 'left' };
+        });
+
+        // 6. สร้าง Buffer และดาวน์โหลดไฟล์
+        const buffer = await workbook.xlsx.writeBuffer();
+        const dataBlob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        saveAs(dataBlob, `VendingMachineSales_${new Date().toISOString().slice(0, 10)}.xlsx`);
     }
 }
 

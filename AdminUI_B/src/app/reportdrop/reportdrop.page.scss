@@ -1,0 +1,153 @@
+.section-header {
+  text-align: center;
+  margin-top: 20px;
+
+  .title {
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .sub-title {
+    font-size: 14px;
+    font-weight: 300;
+    padding-top: 5px;
+  }
+}
+
+.section-filter {
+  margin: 30px 15px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  .single-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  label {
+    font-size: 14px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .form-control.full {
+    width: 100%;
+  }
+}
+
+.section-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 15px;
+
+  .item, .item-process {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 8px;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+    transition: background 0.3s;
+  }
+
+  .item {
+    background: #fff;
+    color: #A41D4F;
+    border: 1px solid #ddd;
+  }
+
+  .item.active {
+    background: #A41D4F;
+    color: white;
+  }
+
+  .item-process {
+    background: #A41D4F;
+    color: white;
+  }
+
+  .item-process:hover,
+  .item:hover {
+    background: #e6e6e6;
+  }
+
+  i {
+    margin-right: 8px;
+  }
+}
+
+.section-table {
+  margin: 25px 15px;
+
+  .btn-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    .item {
+      width: 100px;
+      text-align: center;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+      font-size: 12px;
+      color: #333;
+    }
+  }
+
+  .sum-data {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 10px;
+
+    .group {
+      flex: 1;
+      min-width: 45%;
+
+      .text {
+        font-size: 12px;
+        color: #777;
+      }
+
+      .value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #A41D4F;
+      }
+    }
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+      font-size: 14px;
+      border-collapse: collapse;
+
+      th, td {
+        padding: 8px;
+        border: 1px solid #ccc;
+      }
+
+      thead {
+        background: #f0f0f0;
+        font-weight: bold;
+      }
+    }
+  }
+}

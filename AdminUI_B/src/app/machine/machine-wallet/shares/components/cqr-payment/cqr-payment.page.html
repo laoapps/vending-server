@@ -1,0 +1,148 @@
+<ion-content>
+
+  <div class="header">
+    <div class="left">
+      <div class="section-1">
+        <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+      </div>
+      <div class="section-2">
+        <div class="main">qrpayment</div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="section-1">
+
+      </div>
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="form-transfer">
+    <div class="" *ngIf="amount != undefined && amount == 0">
+      <div class="package">
+        <div class="title">detail</div>
+    
+        <div class="group">
+  
+          <div class="item">
+            <div class="text">type</div>
+            <div class="value">{{ type }}</div>
+          </div>
+          <div class="item">
+            <div class="text">currency</div>
+            <div class="value">{{ mode }}</div>
+          </div>
+  
+          <div class="item">
+            <div class="text">coin</div>
+            <div class="value">{{ options.coinname }}</div>
+          </div>
+          <div class="item">
+          </div>
+  
+          <div class="item">
+            <div class="text">sender</div>
+            <div class="value">{{ sender }}</div>
+          </div>
+          <div class="item">
+            <div class="text">receiver</div>
+            <div class="value">{{ receiver }}</div>
+          </div>
+  
+          <div class="item" *ngIf="sendingAmount > 0">
+            <div class="text">amount</div>
+            <div class="value">{{ sendingAmount }}</div>
+          </div>
+          <div class="item" *ngIf="expire != ''">
+            <div class="text">expired</div>
+            <div class="value">{{ expire }}</div>
+          </div>
+  
+        </div>
+  
+      </div>
+  
+      <div class="form">
+        <div class="title">Set amount</div>
+        <div class="data my-2">
+          <div class="text">amount <span class="text-danger">*</span></div>
+          <div class="value mt-1">
+            <input type="text" class="form-control" [(ngModel)]="sendingAmount">
+          </div>
+        </div>
+      </div>
+    
+      <div class="money-list">
+        <a *ngFor="let money of moneyList" (click)="getMoney(money)" href="javascript:void(0)" class="item">{{ money | number }}</a>
+      </div>
+    </div>
+  
+    <div class="" *ngIf="amount != undefined && amount > 0">
+      <div class="package">
+        <div class="title">detail</div>
+    
+        <div class="group">
+  
+          <div class="item">
+            <div class="text">type</div>
+            <div class="value">{{ type }}</div>
+          </div>
+          <div class="item">
+            <div class="text">currency</div>
+            <div class="value">{{ mode }}</div>
+          </div>
+  
+          <div class="item">
+            <div class="text">coin</div>
+            <div class="value">{{ options.coinname }}</div>
+          </div>
+          <div class="item">
+          </div>
+  
+          <div class="item">
+            <div class="text">sender</div>
+            <div class="value">{{ sender }}</div>
+          </div>
+          <div class="item">
+            <div class="text">receiver</div>
+            <div class="value">{{ receiver }}</div>
+          </div>
+  
+          <div class="item">
+            <div class="text">amount</div>
+            <div class="value">{{ amount | number }} coin</div>
+          </div>
+          <div class="item" *ngIf="expire != ''">
+            <div class="text">expired</div>
+            <div class="value">{{ expire }}</div>
+          </div>
+  
+        </div>
+  
+      </div>
+    </div>
+  
+    <div class="footer">
+      <button (click)="activeFormDescription()" class="my-btn col-12">ok</button>
+    </div>
+  </div>
+
+  <div class="form-description">
+    <div class="form">
+      <div class="title">Set description</div>
+      <div class="data my-2">
+        <div class="text">description <span class="text-danger">*</span></div>
+        <div class="value mt-1">
+          <input maxlength="50" type="text" class="form-control" [(ngModel)]="description">
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <button (click)="transfer()" class="btn-confirm col-12">ok</button>
+      <button (click)="activeFormTransfer()" class="btn-back col-12">back</button>
+    </div>
+  </div>
+
+</ion-content>

@@ -1,0 +1,156 @@
+<!-- <ion-header>
+  <ion-toolbar class="custom-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()" fill="clear">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>mymachine</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="item-card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>No</td>
+            <td>Image</td>
+            <td>Machince ID</td>
+            <td>OTP</td>
+            <td>Time</td>
+            <td>Active</td>
+            <td>Action</td>
+          </tr>
+        </thead>
+        <tbody *ngFor="let p of _l; let i = index">
+          <tr>
+            <td>{{ i+1 }}</td>
+            <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
+            <td>{{p.machineId}}</td>
+            <td>{{p.otp}}</td>
+            <td>{{p.updatedAt|date:dateformat:'offsettz||420'}}</td>
+            <td><ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p.id)"></ion-toggle></td>
+            <td>
+              <button (click)="sale(p.machineId, p.otp)" class="btn btn-light border border-1"><i
+                  class="fa-solid fa-pencil"></i> Sale</button>
+            </td>
+          </tr>
+          <tr *ngIf="settings[p.machineId]">
+            <td colspan="6">
+              <div>Setting </div>
+
+              <div style="float: left;"> <ion-icon name="storefront-sharp"></ion-icon> <ion-checkbox
+                  [(ngModel)]="settings[p.machineId].allowVending"></ion-checkbox> </div>
+
+
+
+              <div style="float: left;"> <ion-icon name="volume-mute-sharp"></ion-icon> <ion-checkbox
+                  [(ngModel)]="settings[p.machineId].isMusicMuted"></ion-checkbox> </div>
+              <div style="float: left;">
+                <div style="position: relative; display: inline-block;">
+                  <ion-icon name="logo-electron" style="font-size: 24px;"></ion-icon>
+                  <ion-icon name="volume-mute-sharp"
+                    style="position: absolute; top: 0; right: 0; font-size: 15px; color: black;"></ion-icon>
+                </div>
+                <ion-checkbox [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox>
+              </div>
+            </td>
+            <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
+
+            <ion-button (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
+            <td>
+
+            </td>
+          </tr>
+          <tr>
+            <td colspan="7">
+              <ion-range [(ngModel)]="settings[p.machineId].musicVolume" min="0" max="100" aria-label="Range with pin"
+                [pin]="true" [pinFormatter]="pinFormatter"></ion-range>
+
+
+              <div>Status </div>
+              <p>temp:{{findMachine(p?.machineId)?.temperature}}</p>
+              <p>last Update:{{findMachine(p?.machineId)?.lastUpdate|date:dateformat:'offsettz||420'}}</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ion-content> -->
+
+
+
+<ion-header>
+  <ion-toolbar class="custom-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="apiService.dismissModal()" fill="clear">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>My Machine</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-card *ngFor="let p of _l; let i = index">
+      <ion-item lines="none">
+        <ion-avatar slot="start">
+          <img [src]="p.photo" alt="machine">
+        </ion-avatar>
+        <ion-label>
+          <h2>{{p.machineId}}</h2>
+          <p>OTP: {{p.otp}}</p>
+          <p>{{p.updatedAt | date:dateformat:'offsettz||420'}}</p>
+        </ion-label>
+        <!-- <ion-toggle [(ngModel)]="p.isActive" (ionChange)="disable(p.id)" slot="end"></ion-toggle> -->
+      </ion-item>
+
+      <ion-button expand="block" fill="outline" color="dark" (click)="sale(p.machineId, p.otp)">
+        <ion-icon name="pricetag-outline" slot="start"></ion-icon> Sale
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" (click)="settings[p.machineId] = !settings[p.machineId]">
+        {{ settings[p.machineId] ? 'Hide' : 'Show' }} Settings
+      </ion-button>
+
+      <div *ngIf="settings[p.machineId]" class="ion-padding">
+        <ion-item>
+          <ion-label>Allow Vending</ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="settings[p.machineId].allowVending"></ion-checkbox>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Mute Music</ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="settings[p.machineId].isMusicMuted"></ion-checkbox>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Mute Robot</ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Music Volume</ion-label>
+          <ion-range [(ngModel)]="settings[p.machineId].musicVolume" min="0" max="100" [pin]="true"
+            [pinFormatter]="pinFormatter">
+          </ion-range>
+        </ion-item>
+
+        <ion-button expand="block" (click)="updateSetting(p.machineId)">Update Setting</ion-button>
+        <ion-button expand="block" color="medium" (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
+      </div>
+
+      <ion-item lines="none">
+        <ion-label>
+          <p>Status</p>
+          <p>Temp: {{ findMachine(p?.machineId)?.temperature }}</p>
+          <p>Last Update: {{ findMachine(p?.machineId)?.lastUpdate | date:dateformat:'offsettz||420' }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-card>
+  </ion-list>
+</ion-content>

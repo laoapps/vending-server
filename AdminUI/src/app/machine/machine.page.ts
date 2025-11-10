@@ -341,6 +341,23 @@ export class MachinePage implements OnInit {
       })
     })
   }
+
+  clearMachine(m: string) {
+
+    this.apiService.clearAppMachine({ machineId: m }).subscribe(rx => {
+      console.log(rx);
+      if (!rx.status) {
+        console.log('Update setting failed restore old data');
+
+      } else {
+        console.log('update exit success !');
+
+      }
+      this.apiService.toast.create({ message: rx.message, duration: 5000 }).then(ry => {
+        ry.present();
+      })
+    })
+  }
   new() {
     this.apiService.showModal(MachineAddPage).then(ro => {
       ro?.present();
@@ -461,6 +478,8 @@ export class MachinePage implements OnInit {
   }
 
   billNotPaid(machineId: string, otp: string, ownerUuid: string) {
+    console.log('Owner UUID :', ownerUuid);
+
     this.apiService.showModal(BillnotPaidPage, { machineId: machineId, otp: otp, ownerUuid: ownerUuid }).then(r => {
       r.present();
       r.onDidDismiss().then(() => {

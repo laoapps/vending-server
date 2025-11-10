@@ -86,7 +86,7 @@
       <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="save(p)"></ion-toggle></ion-col>
       <ion-col><ion-label>{{p.stock.name}}</ion-label></ion-col>
       <ion-col><ion-label>{{p.stock.price|number}}</ion-label></ion-col>
-      <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>
+      <ion-col><ion-button (click)="editProductDetail(p.id)">edit</ion-button></ion-col>
       <ion-col><ion-button (click)="deletesale(p)">delete</ion-button></ion-col>
     </ion-row>
   </ion-grid>

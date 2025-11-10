@@ -93,3 +93,39 @@ h2 {
   font-weight: 700;
   color: #1a1a1a;
 }
+
+
+.machine-card {
+  &.online-card {
+    border-left: 4px solid var(--ion-color-success);
+  }
+  &.broken-card {
+    border-left: 4px solid var(--ion-color-danger);
+  }
+}
+
+.button-grid {
+  margin-top: 10px;
+}
+
+ion-button {
+  --border-radius: 8px;
+}
+
+.warning {
+  color: var(--ion-color-warning);
+}
+
+.offline {
+  color: var(--ion-color-danger);
+}
+
+ion-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+ion-card-title ion-button {
+  margin-left: auto;
+}

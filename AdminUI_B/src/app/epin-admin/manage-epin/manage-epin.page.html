@@ -1,0 +1,187 @@
+<!-- <ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">EPIN Management</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="epin-management-container">
+    <div class="item-card">
+      <div class="item-card-header">
+        <div class="title">Counter</div>
+        <div class="text">Control cash by counter</div>
+      </div>
+      <div class="item-card-body">
+        
+        <div class="search-group">
+          <div class="form-group">
+            <label for="">Phone number <span class="text-danger">*</span></label>
+            <div class="input-group mb-3">
+              <input (keyup)="resetList($event)" [(ngModel)]="phonenumber" type="text" placeholder="Enter phone number" class="form-control">
+              <span class="input-group-text">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+              </span>
+            </div>
+          </div>
+          <button (click)="findList()" class="btn-validate"><i class="fa-solid fa-rotate"></i> Validate</button>
+    
+        </div>
+  
+        <div *ngIf="showTable == true" class="table-responsive mt-2">
+          <table class="table table-bordered table-hover">
+            <thead class="fw-bold">
+              <tr>
+                <td>Creator</td>
+                <td>Phone number</td>
+                <td>SMC</td>
+                <td>EPIN</td>
+                <td>Cash</td>
+                <td>Time</td>
+                <td>Action</td>
+              </tr>
+            </thead>
+            <tbody *ngFor="let list of lists; let i = index">
+              <tr>
+                <td>{{ list.uuid }}</td>
+                <td>{{ list.phonenumber }}</td>
+                <td>{{ list.SMC.detail.price | number }}</td>
+                <td>{{ list.EPIN.destination }}</td>
+                <td>{{ list.counter.cash.hash }}</td>
+                <td>{{ list.createdAt }}</td>
+                <td>
+                  <a  *ngIf="list?.EPIN?.destination == ''" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Generate EPIN</a>
+                  <a (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action">
+                    <span *ngIf="list?.counter?.cash == ''">Cash Out</span>
+                    <span *ngIf="list?.counter?.cash != ''">Already cashed out</span>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+  
+          <ul class="pagination">
+            <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'" >
+                <button (click)="manageListPage(btn.page)" class="page-link" >{{btn.name}}</button>
+            </li>
+          </ul>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+
+</ion-content> -->
+
+<ion-content>
+
+  <div class="section-navbar">
+    <div class="left">
+      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="item-text">Manage EPIN</div>
+    </div>
+    <div class="right">
+
+    </div>
+  </div>
+
+  <div class="space"></div>
+
+  <div class="epin-management-container">
+
+    <div class="item-card">
+
+      <div class="item-card-header">
+        <div class="left">
+          <a (click)="refreshList()" href="javascript:void(0)" class="item"><i class="fa-solid fa-rotate"></i> Refresh</a>
+        </div>
+        <div class="right">
+          <div class="input-group box-search">
+            <span class="input-group-text">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input [(ngModel)]="phonenumber" (keyup)="resetSearchList($event)" (keyup.enter)="searchList()" type="text" class="form-control" placeholder="Search">
+          </div>
+        </div>
+      </div>
+
+      <div class="item-card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="fw-bold">
+              <tr>
+                <td>#</td>
+                <td>Phone number or Code</td>
+                <td>SMC</td>
+                <td>EPIN</td>
+                <td>Receive</td>
+                <td>Time</td>
+                <td>Action</td>
+              </tr>
+            </thead>
+            <tbody *ngFor="let list of lists; let i = index">
+              <tr>
+                <td>{{ i+1 }}</td>
+                <td>{{ list.phonenumber }}</td>
+                <td>{{ list.SMC.detail.price | number }}</td>
+                <td>{{ list.EPIN.destination }}</td>
+                <td *ngIf="list?.counter?.cash?.hash == ''">Unreceive</td>
+                <td *ngIf="list?.counter?.cash?.hash != ''">Receive</td>
+                <td>{{ list.createdAt }}</td>
+                <td>
+                  <a *ngIf="!list?.EPIN?.destination" (click)="recreateEPIN(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-qrcode"></i> Recreate EPIN</a>
+                  <a *ngIf="list?.counter?.cash?.hash == ''" (click)="counterCashout_Cash(list)" href="javascript:void(0)" class="btn-action"><i class="fa-solid fa-wallet"></i> Grap cash</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="item-card-footer">
+        <div class="left">
+          <ul class="pagination">
+            <li *ngFor="let btn of btnList; let i = index" [ngClass]="btn.active ? 'page-item active' : 'page-item'" >
+                <button (click)="manageListPage(btn.page)" class="page-link" >{{btn.name}}</button>
+            </li>
+          </ul>
+        </div>
+        <div class="right">
+
+          <div class="show-group">
+            <div class="left">Show</div>
+            <div class="right">
+              <select (change)="switchShowLimit($event)" class="form-select">
+                <option selected>{{ limit }}</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="show-group">
+            <div class="left">Status</div>
+            <div class="right">
+              <select (change)="switchShowStatus($event)" class="form-select form-select-status">
+                <option selected>Unreceive</option>
+                <option value="false">Unreceive</option>
+                <option value="true">Receive</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

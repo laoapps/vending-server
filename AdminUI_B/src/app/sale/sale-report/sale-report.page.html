@@ -1,0 +1,84 @@
+<ion-content>
+  <div class="section-header">
+    <div class="title">Reports</div>
+    <div class="sub-title">Your generated sale reports from vending machines on the platform.</div>
+  </div>
+
+  <div class="section-filter">
+    <div *ngIf="datetimeCustom == true" class="form-group">
+      <label>Date (Special)</label>
+      <input [(ngModel)]="fromDate" type="date" class="form-control full">
+    </div>
+
+    <div *ngIf="moredatetimeCustom == true" class="multi-group">
+      <div class="form-group">
+        <label>Date (From)</label>
+        <input [(ngModel)]="fromDate" type="date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Date (To)</label>
+        <input [(ngModel)]="toDate" type="date" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <div class="section-buttons">
+    <button (click)="process()" class="btn-action primary">
+      <i class="fa-solid fa-arrows-rotate"></i> Process
+    </button>
+    <button (click)="displayDateTimeCustom()" class="btn-action" [class.active]="datetimeCustom">Date/Time
+      Custom</button>
+    <button (click)="displayMoreDateTimeCustom()" class="btn-action" [class.active]="moredatetimeCustom">More
+      Date/Time</button>
+  </div>
+
+  <div *ngIf="display == true" class="section-table">
+    <div class="btn-list">
+      <button *ngFor="let export of exportOptions" class="export-btn">
+        <i class="{{ export.icon }}"></i>
+        <span>{{ export.text }}</span>
+      </button>
+    </div>
+
+    <div class="sum-data">
+      <div class="group" *ngFor="let d of [
+        {text: 'Machine', value: machineId},
+        {text: 'Date', value: currentdate},
+        {text: 'SubQTY', value: sum_qtty | number},
+        {text: 'Subtotal', value: sum_total | number}
+      ]">
+        <div class="text">{{ d.text }}</div>
+        <div class="value">{{ d.value }}</div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product</th>
+            <th>Price</th>
+            <th>QTY</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sale of saleSumerizeList; let i = index">
+            <td>{{ i+1 }}</td>
+            <td>{{ sale.stock.name }}</td>
+            <td>{{ sale.stock.price | number }}</td>
+            <td>{{ sale.stock.qtty | number }}</td>
+            <td>{{ sale.stock.total | number }}</td>
+            <td>{{ sale.paymentstatus == 'paid' ? 'ຈ່າຍແລ້ວ' : 'ເຄື່ອງຕົກແລ້ວ' }}</td>
+            <td>{{ sale.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</td>
+            <td><button (click)="view(sale)" class="btn-view">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ion-content>

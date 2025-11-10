@@ -243,9 +243,76 @@ export class BillnotPaidPage implements OnInit {
   }
 
 
+  // SendDropBill(transactionID: string, index: number) {
+  //   this.apiService?.alert.create({
+  //     header: 'Paid',
+  //     inputs: [
+  //       {
+  //         name: 'bankname',
+  //         type: 'text',
+  //         placeholder: 'ຊື່ທະນາຄານ',
+  //       },
+  //       {
+  //         name: 'textConfirm',
+  //         type: 'text',
+  //         placeholder: 'ຂໍ້ຄວາມຢືນຢັນ',
+  //       },
+  //     ],
+  //     buttons: [
+  //       {
+  //         text: 'ຍົກເລີກ',
+  //         role: 'cancel',
+  //         cssClass: 'secondary',
+  //       },
+  //       {
+  //         text: 'ຕົກລົງ',
+  //         handler: async (data) => {
+  //           if (!data.bankname || !data.textConfirm) {
+  //             console.log('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບ');
+  //             return false; // ไม่ปิด Alert
+  //           }
+  //           if (data.textConfirm != 'confirm') {
+  //             return false;
+  //           }
+  //           // console.log('Bank Name:', data.bankname);
+  //           // console.log('Text Confirm:', data.textConfirm);
+  //           this.apiService.showLoading();
+  //           const run = await this.SendDrop(transactionID, data.bankname);
+  //           if (run != EMessage.succeeded) {
+  //             this.apiService.toast.create({
+  //               message: 'ຍິງເຄື່ອງຕົກບໍ່ສໍາເລັດ',
+  //               duration: 2000
+  //             }).then(toast => toast.present());
+  //           } else {
+  //             this.apiService.toast.create({
+  //               message: 'ຍິງເຄື່ອງຕົກສໍາເລັດ',
+  //               duration: 2000
+  //             }).then(toast => toast.present());
+  //           }
+  //           this.saleSumerizeList.splice(index, 1);
+  //           this.apiService.dismissLoading();
+  //           return true;
+  //         },
+  //       },
+  //     ]
+  //   }).then(alert => {
+  //     alert.present();
+  //   });
+  // }
+
+
+
   SendDropBill(transactionID: string, index: number) {
+    let isChecked = false; // ตัวแปรเก็บสถานะ checkbox
+
     this.apiService?.alert.create({
       header: 'Paid',
+      message: `
+      <div class="custom-checkbox">
+        <ion-checkbox id="agreeCheckbox" class="problem-checkbox"></ion-checkbox>
+        <label for="agreeCheckbox">ເຄື່ອງມີປັນຫາ</label>
+      </div>
+    `,
       inputs: [
         {
           name: 'bankname',
@@ -267,17 +334,24 @@ export class BillnotPaidPage implements OnInit {
         {
           text: 'ຕົກລົງ',
           handler: async (data) => {
+            // ใช้ค่าจากตัวแปร isChecked
+            if (!isChecked) {
+              console.log('ກະລຸນາຢືນຢັນເຄື່ອງມີປັນຫາ');
+              return false;
+            }
+
             if (!data.bankname || !data.textConfirm) {
               console.log('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບ');
-              return false; // ไม่ปิด Alert
+              return false;
             }
+
             if (data.textConfirm != 'confirm') {
               return false;
             }
-            // console.log('Bank Name:', data.bankname);
-            // console.log('Text Confirm:', data.textConfirm);
+
             this.apiService.showLoading();
             const run = await this.SendDrop(transactionID, data.bankname);
+
             if (run != EMessage.succeeded) {
               this.apiService.toast.create({
                 message: 'ຍິງເຄື່ອງຕົກບໍ່ສໍາເລັດ',
@@ -289,6 +363,7 @@ export class BillnotPaidPage implements OnInit {
                 duration: 2000
               }).then(toast => toast.present());
             }
+
             this.saleSumerizeList.splice(index, 1);
             this.apiService.dismissLoading();
             return true;
@@ -297,6 +372,17 @@ export class BillnotPaidPage implements OnInit {
       ]
     }).then(alert => {
       alert.present();
+
+      // รอให้ Alert แสดงผลแล้วค่อยเพิ่ม event listener
+      setTimeout(() => {
+        const checkbox = document.querySelector('.problem-checkbox') as any;
+        if (checkbox) {
+          checkbox.addEventListener('ionChange', (event: any) => {
+            isChecked = event.detail.checked;
+            console.log('Checkbox status:', isChecked);
+          });
+        }
+      }, 100);
     });
   }
 

@@ -1,0 +1,109 @@
+.section-header {
+  padding: 20px;
+  text-align: center;
+}
+.section-header .title {
+  font-size: 24px;
+  font-weight: bold;
+}
+.section-header .sub-title {
+  font-size: 14px;
+  color: #555;
+  margin-top: 5px;
+}
+
+.section-filter {
+  padding: 0 16px;
+}
+.form-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+label {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.form-control {
+  height: 40px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.section-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 24px 16px;
+}
+.btn-process {
+  background-color: #A41D4F;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%;
+}
+.btn-process i {
+  margin-right: 8px;
+}
+.btn-filter {
+  background: #fff;
+  border: 1px solid #A41D4F;
+  color: #A41D4F;
+  padding: 10px;
+  border-radius: 25px;
+  font-size: 16px;
+  width: 100%;
+}
+.btn-filter.active {
+  background: #A41D4F;
+  color: #fff;
+}
+
+.section-table {
+  padding: 0 16px;
+}
+.btn-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+.btn-export {
+  flex: 1 1 45%;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.btn-export i {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+.table-responsive {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+.table-striped tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
