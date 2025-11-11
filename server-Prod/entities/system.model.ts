@@ -1178,6 +1178,7 @@ export interface IVendingMachineSale extends IBase, IBC {
     stock: IStock;
     position: number;
     max: number;
+    description: any;
 }
 export interface IVendingCloneMachineSale {
     cloneMachineId: string,

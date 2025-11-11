@@ -58,6 +58,9 @@ export const VendingMachineSaleFactory = (name: string, sequelize: Sequelize): V
         max: {
             type: DataTypes.INTEGER
         },
+        description: {
+            type: DataTypes.JSONB
+        }
 
     } as ModelAttributes<VendingMachineSaleModel>;
 
@@ -73,8 +76,8 @@ export const VendingMachineSaleFactory = (name: string, sequelize: Sequelize): V
         o.updatedAt = new Date();
     });
     x.beforeCreate(async (o) => {
-        if(!o.uuid)
-        o.uuid = uuid.v4();
+        if (!o.uuid)
+            o.uuid = uuid.v4();
         // o.deletedAt = undefined;
     });
     return x as unknown as VendingMachineSaleStatic;

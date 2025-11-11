@@ -56,10 +56,6 @@
       <ion-label>Mute Music</ion-label>
       <ion-checkbox [(ngModel)]="isMusicMuted"></ion-checkbox>
     </ion-item>
-    <ion-item>
-      <ion-label>Test Motor</ion-label>
-      <ion-checkbox [(ngModel)]="isTestMotor"></ion-checkbox>
-    </ion-item>
     <ion-item *ngIf="!isMusicMuted">
       <ion-label>Music volume</ion-label>
       <ion-range [(ngModel)]="musicVolume" min="0" max="100" aria-label="Range with pin" [pin]="true"
