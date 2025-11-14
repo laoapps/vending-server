@@ -1012,7 +1012,9 @@ export enum EClientCommand {
     buyLAOQR = "buyLAOQR",
     buyTopUp = "buyTopUp",
     MACHINE_STATAUS = "MACHINE_STATAUS",
-    SaveSaleAndDrop = "SaveSaleAndDrop"
+    SaveSaleAndDrop = "SaveSaleAndDrop",
+    buyLAABX = "buyLAABX"
+
 }
 export interface IMachineId {
     machineId: string;

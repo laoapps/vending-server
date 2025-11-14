@@ -1754,6 +1754,45 @@ export class ApiService {
     });
   }
 
+
+  buyLAABX(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
+
+    this.currentPaymentProvider = EPaymentProvider.laab;
+    const req = {} as IReqModel;
+    req.command = EClientCommand.buyLAABX;
+    let orderBill = [];
+    // console.log('-----> ids :', ids);
+    if (phone) {
+      for (let index = 0; index < ids.length; index++) {
+        const element = ids[index];
+        orderBill.push({ value: element.stock.price });
+      }
+    };
+
+    console.log('----->element :', orderBill);
+
+
+    req.data = {
+      ids,
+      value,
+      phone,
+      orderBill,
+      clientId: this.clientId.clientId,
+    };
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+    // console.log('req', req);
+
+    // req.data.clientId = this.clientId.clientId;
+    return axios.post<IResModel>(this.url, req, {
+      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+
+    });
+  }
+
   buyTopUpQR(ids: Array<IVendingMachineSale>, value: number) {
     this.currentPaymentProvider = EPaymentProvider.laoqr;
     const req = {} as IReqModel;

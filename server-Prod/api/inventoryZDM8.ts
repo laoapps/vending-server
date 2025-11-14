@@ -805,7 +805,7 @@ export class InventoryZDM8 implements IBaseClass {
                             // }
 
 
-                            var responseData = await this.generateBillLAABXPro(value, d?.data?.token);
+                            var responseData = await this.generateBillLAABXPro(value, d?.token);
                             if (responseData.status === 0) {
                                 return res.send(PrintError(d.command, responseData.message, EMessage.generateQRFailed, null));
                             }
