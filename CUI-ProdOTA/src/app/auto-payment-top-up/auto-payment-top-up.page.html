@@ -42,6 +42,17 @@
     <div class="laab-card-footer">
       <div class="payment-list">
         <div *ngIf="true" class="payment-list-left">
+          <div class="title">Payment Options</div>
+          <div class="item-list">
+            <a *ngFor="let list of paymentList; let i = index" (click)="choosePaymentMethod(list)"
+              href="javascript:void(0)" class="item active">
+              <div class="icon">
+                <img src="{{ list.image }}" alt="">
+              </div>
+              <div class="text">{{ list.name }}</div>
+            </a>
+
+          </div>
 
           <!-- <div class="list-left">
             <div class="label_name_show">
@@ -72,6 +83,39 @@
           </div> -->
 
 
+
+          <div class="list-left-buttom">
+            <div style="margin: 10px;">
+              <div class="label_name_show">
+                ທ່ານສາມາດ ດາວໂຫລດໄດ້ທີ່ນີ້ LAABX ໄດ້ທີ່ດ້ານລຸ່ມນີ້ເລີຍ
+              </div>
+              <div class="div-qr-dowload">
+                <div class="div-in-playstore">
+                  <div>
+                    <img class="image-playstore" src="{{pic_playstore}}" alt="">
+                  </div>
+                  <div class="div-logo-dowload">
+                    <img height="140px" width="140px" src="{{pic_qr_android}}" alt="">
+                  </div>
+                </div>
+                <div class="div-in-playstore">
+                  <div>
+                    <img class="image-playstore" src="{{pic_appstore}}" alt="">
+                  </div>
+                  <div class="div-logo-dowload">
+                    <img height="140px" width="140px" src="{{pic_qr_ios}}" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+
+            <div class="video-container">
+              <video #videoPlayer autoplay muted playsinline></video>
+            </div>
+          </div>
           <div class="list-left">
             <div class="label_name_show">
               ປ້ອນ **ເບີໂທລະສັບ** ຂອງທ່ານເພື່ອຮັບຄູ່ປ່ອງລຸ້ນ **ລາງວັນໃຫຍ່** ຈາກ LAABX!
@@ -99,45 +143,11 @@
           </div>
 
 
-          <div class="list-left-buttom">
-            <div style="margin: 10px;">
-              <div class="label_name_show">
-                ທ່ານສາມາດ ດາວໂຫລດໄດ້ທີ່ນີ້ LAABX ໄດ້ທີ່ດ້ານລຸ່ມນີ້ເລີຍ
-              </div>
-              <div class="div-qr-dowload">
-                <div class="div-in-playstore">
-                  <div>
-                    <img class="image-playstore" src="{{pic_playstore}}" alt="">
-                  </div>
-                  <div class="div-logo-dowload">
-                    <img height="140px" width="140px" src="{{pic_qr_android}}" alt="">
-                  </div>
-                </div>
-                <div class="div-in-playstore">
-                  <div>
-                    <img class="image-playstore" src="{{pic_appstore}}" alt="">
-                  </div>
-                  <div class="div-logo-dowload">
-                    <img height="140px" width="140px" src="{{pic_qr_ios}}" alt="">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="video-container">
-              <video #videoPlayer autoplay muted playsinline></video>
-            </div>
-          </div>
-
-
-
-          <div class="marquee-container" [ngStyle]="_style">
-            <!-- ซ้าย: GIF คงที่ -->
+          <!-- <div class="marquee-container" [ngStyle]="_style">
             <div class="marquee-left">
               <img src="../../assets/logo/Mee.gif" alt="payment-gif" />
             </div>
 
-            <!-- ขวา: ข้อความเลื่อน -->
             <div class="marquee-right">
               <div class="marquee-content">
                 <p class="warningText">
@@ -164,7 +174,7 @@
                 </p>
               </div>
             </div>
-          </div>
+          </div> -->
 
 
         </div>

@@ -502,6 +502,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           }
 
+          this.setLastClick();
+
           const run = response.data;
           console.log('-----> SUCCESS GENERATE:', run);
 
@@ -538,6 +540,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
               this.apiService.myTab1.clearStockAfterLAABGo();
               this.close();
+              this.checkLastGenQR();
+
               // this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321');
               return resolve(IENMessage.success);
             } else {
@@ -579,6 +583,96 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         resolve(error.message);
       }
     });
+  }
+
+
+  checkLastGenQR() {
+    try {
+      const lastClick = this.getStoredLastClick();
+      if (!lastClick) {
+        console.log('ไม่พบข้อมูล lastClick ใน localStorage');
+        return false;
+      }
+
+      const targetTime = new Date(lastClick).getTime();
+
+      if (isNaN(targetTime)) {
+        console.error('Invalid date format in storage');
+        this.clearInvalidLastClick();
+        return false;
+      }
+
+      const currentTime = new Date().getTime();
+      const timeDifferenceSeconds = (currentTime - targetTime) / 1000;
+
+      // console.log(`เวลาที่บันทึก: ${new Date(targetTime).toLocaleString('th-TH')}`);
+      // console.log(`เวลาปัจจุบัน: ${new Date(currentTime).toLocaleString('th-TH')}`);
+      // console.log(`ผ่านมาแล้ว: ${timeDifferenceSeconds.toFixed(2)} วินาที`);
+
+      const has30SecondsPassed = timeDifferenceSeconds >= 70;
+
+      if (!has30SecondsPassed) {
+        // console.log(`ผ่านมาแล้ว ${Math.floor(timeDifferenceSeconds)} วินาที (มากกว่า 70 วินาที)`);
+        this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321');
+        this.clearInvalidLastClick();
+        setTimeout(() => {
+          this.apiService?.myTab1?.loadPaidBills();
+        }, 10000);
+      }
+
+      return has30SecondsPassed;
+
+    } catch (error) {
+      console.error('Error in checkLastClick:', error);
+      this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error checkLastClick ${JSON.stringify(error)}`
+      });
+      return false;
+    }
+  }
+
+
+  // ฟังก์ชันช่วยสำหรับอ่านค่าจาก localStorage
+  private getStoredLastClick(): string | null {
+    try {
+      const stored = localStorage.getItem('lastGenQR');
+      if (!stored) return null;
+
+      // ลอง parse เป็น JSON ก่อน
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // ถ้า parse ไม่ได้ แต่มี quotes ลบออก
+        if (stored.startsWith('"') && stored.endsWith('"')) {
+          return stored.slice(1, -1);
+        }
+        return stored;
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return null;
+    }
+  }
+
+  // ลบข้อมูลที่ไม่ถูกต้อง
+  private clearInvalidLastClick() {
+    try {
+      localStorage.removeItem('lastGenQR');
+      console.log('ลบข้อมูล lastClick ที่ไม่ถูกต้องออกแล้ว');
+    } catch (error) {
+      console.error('Error clearing invalid lastClick:', error);
+    }
+  }
+
+  // ฟังก์ชันบันทึกเวลา
+  setLastClick() {
+    try {
+      const now = new Date().toISOString();
+      localStorage.setItem('lastGenQR', JSON.stringify(now));
+      console.log('บันทึกเวลาคลิกแล้ว:', now);
+    } catch (error) {
+      console.error('Error setting last click:', error);
+    }
   }
 
 

@@ -89,6 +89,7 @@ import {
     IDropPositionData,
     EVendingEvent,
     IVendingEventLog,
+    ILAABXGenerateQRRes,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import momenttz from "moment-timezone";
@@ -708,6 +709,138 @@ export class InventoryZDM8 implements IBaseClass {
 
                             ent.create(bill).then(async (r) => {
                                 redisClient.setex(qr.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
+                                redisClient.save();
+
+                                let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
+                                let trandList: Array<any>;
+                                try {
+                                    trandList = JSON.parse(result);
+                                    if (!Array.isArray(trandList)) {
+                                        console.warn('trandList is not an array, initializing as empty array');
+                                        trandList = [];
+                                    }
+                                } catch (error) {
+                                    console.error('JSON parse error:', error.message);
+                                    trandList = [];
+                                }
+
+                                if (trandList.length >= 1) {
+                                    console.log('REMOVE FIRST TRAND');
+                                    trandList.splice(0, 1);
+                                }
+
+                                trandList.push({
+                                    transactionID: bill.transactionID,
+                                    createdAt: new Date()
+                                });
+
+                                if (phoneNumber) {
+                                    redisClient.setex(r.transactionID + EMessage.TransactionPhone, 60 * 15, JSON.stringify({
+                                        phone: phoneNumber,
+                                        orderBill: d?.data?.orderBill
+                                    }));
+                                    redisClient.save();
+                                }
+
+                                redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                                const event: IVendingEventLog = {
+                                    machineId: machineId?.machineId,
+                                    event: EVendingEvent.selling,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                                    data: { data: bill, time: new Date() },//[{time, position, product, price,ip,data}
+                                    date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                                    month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                                    year: momenttz().tz(SERVER_TIME_ZONE).year()
+                                };
+                                await setVendingEvent(EVendingEvent.selling, event);
+                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
+                            });
+                        } else if (d.command == EClientCommand.buyLAABX) {
+
+
+                            const sale = d.data.ids as Array<IVendingMachineSale>;
+                            const machineId = this.findMachineIdToken(d.token);
+                            const phoneNumber = d?.data?.phone;
+
+                            if (!machineId) return res.send(PrintError(d.command, [], EMessage.tokenNotFound, null));
+                            if (!Array.isArray(sale)) throw new Error("Invalid array id");
+                            if (await this.isMachineDisabled(machineId.machineId)) return res.send(PrintError(d.command, [], EMessage.machineisdisabled, null));
+
+                            const checkIds = Array<IVendingMachineSale>();
+                            sale.forEach((v) => {
+                                v.stock.qtty = 1;
+                                const y = JSON.parse(JSON.stringify(v)) as IVendingMachineSale;
+                                y.stock.qtty = 1;
+                                y.stock.image = "";
+                                y.machineId = machineId.machineId;
+                                checkIds.push(y);
+                            });
+
+                            const value = checkIds.reduce((a, b) => a + b.stock.price * b.stock.qtty, 0);
+                            if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+
+                            const a = machineId?.data?.find(v => v.settingName == 'setting');
+                            const mId = a?.imei + '';
+                            const ownerPhone = a?.ownerPhone + '';
+                            const owner = (a?.owner + '').trim();
+
+                            if (!mId || !ownerPhone || !owner) {
+                                return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
+                            }
+
+                            // 🔁 พยายาม generate QR ไม่เกิน 3 ครั้ง
+                            // let qr;
+                            // let attempts = 0;
+                            // const maxAttempts = 3;
+                            // const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+                            // while (attempts < maxAttempts) {
+                            //     qr = await this.generateBillLaoQRPro(value, mId, owner, ownerPhone);
+                            //     if (qr?.status === 'OK') break;
+                            //     console.log('Attempt', attempts + 1, 'failed. Retrying...');
+                            //     attempts++;
+                            //     await delay(500);
+                            // }
+
+                            // if (!qr || qr.status !== 'OK') {
+                            //     return res.send(PrintError(d.command, [], EMessage.generateQRFailed, null));
+                            // }
+
+
+                            var responseData = await this.generateBillLAABXPro(value, d?.data?.token);
+                            if (responseData.status === 0) {
+                                return res.send(PrintError(d.command, responseData.message, EMessage.generateQRFailed, null));
+                            }
+                            const qr = responseData.message;
+
+                            const qrData = qr?.data?.emv;
+                            const bill = {
+                                uuid: uuid4(),
+                                clientId,
+                                qr: qrData,
+                                transactionID: qr?.requestId ?? '',
+                                machineId: machineId.machineId,
+                                hashM: "",
+                                hashP: "",
+                                paymentmethod: d.command,
+                                paymentref: qrData,
+                                paymentstatus: EPaymentStatus.pending,
+                                paymenttime: new Date(),
+                                requestpaymenttime: new Date(),
+                                totalvalue: value,
+                                vendingsales: sale,
+                                isActive: true,
+                            } as VendingMachineBillModel;
+
+                            const m = await machineClientIDEntity.findOne({
+                                where: {
+                                    machineId: machineId.machineId,
+                                },
+                            });
+                            const ownerUuid = m?.ownerUuid || "";
+                            const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
+                            await ent.sync();
+
+                            ent.create(bill).then(async (r) => {
+                                redisClient.setex(qr.data?.requestId + EMessage.BillCreatedTemp, 60 * 15, ownerUuid);
                                 redisClient.save();
 
                                 let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
@@ -6485,6 +6618,33 @@ export class InventoryZDM8 implements IBaseClass {
                 });
 
         });
+    }
+
+
+    generateBillLAABXPro(value: number, token: string): Promise<{ status: number, message: any }> {
+        return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
+            try {
+                const qr = { "callbackurl": process.env.SERVER_URL, "txnAmount": value };
+                axios
+                    .post(
+                        "https://laabx-api.laoapps.com/api/v1/laab/genlakqr",
+                        qr,
+                        { headers: { 'Content-Type': 'application/json', timeout: 10000, 'vending': true, 'token': token } }
+                    )
+                    .then((rx) => {
+                        if (rx?.data?.status == 1) {
+                            return resolve({ status: 1, message: rx?.data?.data });
+                        } else {
+                            return resolve({ status: 0, message: rx?.data })
+                        }
+                    })
+                    .catch((e) => {
+                        reject(e);
+                    });
+            } catch (error) {
+                resolve({ status: 0, message: error })
+            }
+        })
     }
 
 

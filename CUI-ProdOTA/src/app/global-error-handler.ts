@@ -16,7 +16,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     // this.showErrorToast(message);
 
     try {
-      ApiService.saveLogs(JSON.stringify(message))
+      // ApiService.saveLogs(JSON.stringify(message))
     } catch (error) {
 
     }

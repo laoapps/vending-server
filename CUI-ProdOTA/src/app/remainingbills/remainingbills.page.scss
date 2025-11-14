@@ -322,7 +322,7 @@ ion-infinite-scroll-content {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 140px;
+  height: 260px;
   background: linear-gradient(135deg, #1a0033, #2d1b4e, #3d245e);
   border-top: 5px solid #ffd700;
   box-shadow: 0 -10px 40px rgba(255, 215, 0, 0.6);
@@ -358,12 +358,12 @@ ion-infinite-scroll-content {
   z-index: 10;
 }
 .gif-box img {
-  height: 120px;
-  width: 120px;
-  border-radius: 50%;
+  height: 250px;
+  width: 250px;
+  // border-radius: 50%;
   border: 6px solid #ffd700;
   box-shadow: 0 0 30px #ffd700, inset 0 0 20px #fff;
-  animation: rotate 15s linear infinite;
+  // animation: rotate 15s linear infinite;
 }
 .sparkles {
   position: absolute;

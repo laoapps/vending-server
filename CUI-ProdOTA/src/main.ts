@@ -10,7 +10,7 @@ import { ApiService } from './app/services/api.service';
 window.onerror = (message, source, lineno, colno, error) => {
   // console.error(`Global JS Error: `,);
   try {
-    ApiService.saveLogs(JSON.stringify(`Global JS Error:' :${{ message, source, lineno, colno, error }}`))
+    // ApiService.saveLogs(JSON.stringify(`Global JS Error:' :${{ message, source, lineno, colno, error }}`))
   } catch (error) {
 
   }

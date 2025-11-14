@@ -179,7 +179,7 @@ export class LoadStockListProcess {
                 for(let i = 0; i < this.images.length; i++) {
                     const name = this.images[i].name;
                     message.message=' loading image '+name +' -- '+i+'/'+this.images.length;
-                    if (name != '' &&  name.substring(0,4) != 'data') {
+                    if (name != '' &&  name?.substring(0,4) != 'data') {
                     
                         // const url = `${this.filemanagerURL}download/${name}`;
                         const url = `${this.filemanagerURL}downloadphoto?url=${name}&w=80&h=100`;
@@ -236,8 +236,8 @@ export class LoadStockListProcess {
                     message.message='caching '+i+' name:'+list.image
                 });
 
-                const data = this.images.filter(item => item.file.substring(0,4) == 'data');
-                const nodata = this.images.filter(item => item.file.substring(0,4) != 'data');
+                const data = this.images.filter(item => item?.file?.substring(0,4) == 'data');
+                const nodata = this.images.filter(item => item?.file?.substring(0,4) != 'data');
 
                 if (nodata != undefined && nodata.length > 0)
                 {

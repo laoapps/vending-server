@@ -18,12 +18,13 @@ import { JsonPipe } from '@angular/common';
 import { NgPipesModule } from 'ngx-pipes';
 import { GlobalErrorHandler } from './global-error-handler';
 import { HttpErrorInterceptor } from './http-error.interceptor';
+import { CustomloadingPage } from './customloading/customloading.page';
 
 // today
 // import { VideoPlayer } from '@ionic-native/video-player/ngx';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, CustomloadingPage],
   imports: [BrowserModule, IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }), AppRoutingModule, HttpClientModule, QrCodeModule, JsonPipe,
     // NotifierModule,
     OrderModule,

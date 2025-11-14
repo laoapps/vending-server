@@ -80,6 +80,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   onNoDrop() {
     this.apiService.reloadPage();
+    const now = new Date().toISOString();
+    // ใช้ JSON.stringify เพื่อป้องกันปัญหา quotes
+    localStorage.setItem('lastClickCheck', JSON.stringify(now));
   }
 
 
@@ -195,6 +198,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           transactionID: transID,
           position: position
         };
+
+
 
         await this.handleBillDeletion(transactionID);
         Toast.show({ text: 'handleBillDeletion', duration: 'short' })

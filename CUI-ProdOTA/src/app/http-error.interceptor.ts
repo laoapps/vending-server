@@ -21,7 +21,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         // console.error('HTTP Error:', error);
         // this.showToast(errorMsg);
         try {
-          ApiService.saveLogs(JSON.stringify(errorMsg))
+          // ApiService.saveLogs(JSON.stringify(errorMsg))
         } catch (error) {
 
         }

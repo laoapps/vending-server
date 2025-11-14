@@ -1170,7 +1170,8 @@ export enum EClientCommand {
     VMC_DISPENSE = "VMC_DISPENSE",
     VMC_CREDIT_NOTE = "VMC_CREDIT_NOTE",
     VMC_UNKNOWN = "VMC_UNKNOWN",
-    ADH814_STATUS = "ADH814_STATUS"
+    ADH814_STATUS = "ADH814_STATUS",
+    buyLAABX = "buyLAABX"
 
 }
 export interface IVendingMachineSale extends IBase, IBC {
@@ -1384,6 +1385,13 @@ export interface ILaoQRGenerateQRRes {
     status: string;
     transactionId: string,
     requestId: string,
+    data: any
+}
+
+export interface ILAABXGenerateQRRes {
+    message?: string,
+    status: number;
+    code: string;
     data: any
 }
 

@@ -5,27 +5,28 @@ import { ModalController } from '@ionic/angular';
   selector: 'app-customloading',
   templateUrl: './customloading.page.html',
   styleUrls: ['./customloading.page.scss'],
+  standalone: false
 })
 export class CustomloadingPage implements OnInit {
-  @Input()message:any;
-  @Input()duration=120000;
-  t:any;
-  constructor(private modal:ModalController) { }
+  @Input() message: any;
+  @Input() duration = 120000;
+  t: any;
+  constructor(private modalCtrl: ModalController) { }
 
   ngOnInit() {
-    this.t=setTimeout(() => {
-      if(this.t){
+    this.t = setTimeout(() => {
+      if (this.t) {
         clearTimeout(this.t);
-        this.modal.dismiss();
+        this.modalCtrl.dismiss();
       }
-   
+
     }, this.duration);
   }
   ngOnDestroy(): void {
     //Called once, before the instance is destroyed.
     //Add 'implements OnDestroy' to the class.
-    if(this.t)
-    clearTimeout(this.t);
+    if (this.t)
+      clearTimeout(this.t);
   }
 
 }

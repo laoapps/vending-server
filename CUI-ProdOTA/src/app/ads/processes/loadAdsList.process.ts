@@ -2,7 +2,6 @@ import { IENMessage } from "src/app/models/base.model";
 import { ApiService } from "src/app/services/api.service";
 import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
 import axios from "axios";
-import { CustomloadingPage } from "src/app/customloading/customloading.page";
 
 export class LoadStockListProcess {
 
@@ -36,7 +35,6 @@ export class LoadStockListProcess {
             let message={message:'Loading stock list....'};
             try {
                 
-                (await this.apiService.showModal(CustomloadingPage,{message})).present();
 
                 console.log(`init stock list`, 1);
 
@@ -119,8 +117,8 @@ export class LoadStockListProcess {
         return new Promise<any> (async (resolve, reject) => {
             try {
 
-                this.apiService.loadVendingSale().subscribe(r => {
-                    const response: any = r;
+                this.apiService.loadVendingSale().then(r => {
+                    const response: any = r.data;
                     if (response.status != 1) return resolve(IENMessage.loadVendingSaleListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.vendingSaleListEmpty);
                     this.lists = response.data;
@@ -304,7 +302,6 @@ export class LoadStockListProcess {
 // import { ApiService } from "src/app/services/api.service";
 // import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
 // import axios from "axios";
-// import { CustomloadingPage } from "src/app/customloading/customloading.page";
 
 // export class LoadStockListProcess {
 

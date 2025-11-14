@@ -13,7 +13,6 @@ import { ReportrefillsalePageModule } from './reportrefillsale/reportrefillsale.
 import { RemainingbillsPageModule } from './remainingbills/remainingbills.module';
 import { RemainingbilllocalPageModule } from './remainingbilllocal/remainingbilllocal.module';
 import { HowtoPageModule } from './howto/howto.module';
-import { CustomloadingPageModule } from './customloading/customloading.module';
 import { AdsPageModule } from './ads/ads.module';
 import { FortunewheelPageModule } from './fortunewheel/fortunewheel.module';
 import { TestmotorPageModule } from './testmotor/testmotor.module';
@@ -144,10 +143,6 @@ const routes: Routes = [
     loadChildren: () => HowtoPageModule
   },
   {
-    path: 'customloading',
-    loadChildren: () => CustomloadingPageModule
-  },
-  {
     path: 'ads',
     loadChildren: () => AdsPageModule
   },
@@ -165,18 +160,18 @@ const routes: Routes = [
   },
   {
     path: 'qr-open-stock',
-    loadChildren: () => import('./qr-open-stock/qr-open-stock.module').then( m => m.QrOpenStockPageModule)
+    loadChildren: () => import('./qr-open-stock/qr-open-stock.module').then(m => m.QrOpenStockPageModule)
   },
   {
     path: 'smartcb',
     loadChildren: () => import('./smartcb/app/smartcb.module').then(m => m.SmartcbModule)
   },
-    {
+  {
     path: 'user-schedules',
     loadChildren: () => UserSchedulePageModule
   },
   {
-    path:'admin-unregistered-devices',
+    path: 'admin-unregistered-devices',
     loadChildren: () => AdminUnregisteredDevicesPageModule
   },
   {
@@ -184,7 +179,7 @@ const routes: Routes = [
     loadChildren: () => AdminReportsPageModule
   },
   {
-    path:'smart-cb-login',
+    path: 'smart-cb-login',
     loadChildren: () => LoginPageModule
   },
   {
@@ -193,11 +188,11 @@ const routes: Routes = [
   },
   {
     path: 'give-pop-up',
-    loadChildren: () => import('./give-pop-up/give-pop-up.module').then( m => m.GivePopUpPageModule)
+    loadChildren: () => import('./give-pop-up/give-pop-up.module').then(m => m.GivePopUpPageModule)
   },
   {
     path: 'auto-payment-top-up',
-    loadChildren: () => import('./auto-payment-top-up/auto-payment-top-up.module').then( m => m.AutoPaymentTopUpPageModule)
+    loadChildren: () => import('./auto-payment-top-up/auto-payment-top-up.module').then(m => m.AutoPaymentTopUpPageModule)
   }
 ];
 @NgModule({

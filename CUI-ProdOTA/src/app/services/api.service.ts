@@ -306,7 +306,7 @@ export class ApiService {
 
   countErrorPay: number = 0;
 
-  allowTopUp = false;
+  allowTopUp = true;
 
   isFranciseMode: boolean = false;
 
@@ -1015,6 +1015,7 @@ export class ApiService {
     Toast.show({ text: 'Before Reload', duration: 'long' });
     try {
       await this.serialPort?.close();
+      this.IndexedLogDB.addBillProcess({ errorData: 'reloadPage' })
     } catch (error) {
       console.log('CLOSE FAILED', error);
       Toast.show({ text: 'Close failed', duration: 'long' });
@@ -1028,6 +1029,7 @@ export class ApiService {
     Toast.show({ text: 'Before Reload', duration: 'long' });
     try {
       await this.serialPort?.close();
+      this.IndexedLogDB.addBillProcess({ errorData: 'exitApp' })
     } catch (error) {
       console.log('CLOSE FAILED', error);
       Toast.show({ text: 'Close failed', duration: 'long' });

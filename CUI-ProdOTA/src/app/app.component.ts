@@ -17,7 +17,7 @@ import { IdleService } from './services/idle.service';
 window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
   console.error('Unhandled Promise Rejection:', event.reason);
   try {
-    ApiService.saveLogs(`Unhandled Promise Rejection: ${JSON.stringify(event.reason)}`)
+    // ApiService.saveLogs(`Unhandled Promise Rejection: ${JSON.stringify(event.reason)}`)
   } catch (error) {
 
   }

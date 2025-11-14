@@ -542,7 +542,7 @@ export class Tab1Page implements OnDestroy {
           this.apiService.wsAlive.time = new Date();
           this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
           // this.loadSaleList();
-          this.initStock();
+          // this.initStock();
           if (this.isFirstLoad) {
 
 
@@ -687,6 +687,8 @@ export class Tab1Page implements OnDestroy {
       this.startTestMotor();
       return;
     }
+
+
     // this.startTestMotor();
     // return;
 
@@ -708,6 +710,8 @@ export class Tab1Page implements OnDestroy {
 
       return;
     }
+
+
 
     console.log('-----> 2');
 
@@ -741,7 +745,6 @@ export class Tab1Page implements OnDestroy {
       Toast.show({ text: 'Error connecting to serial port ' + JSON.stringify(error || {}), duration: 'long' });
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error connecting to serial port :${JSON.stringify(error)}` });
     }
-
 
     // this._processLoopCheckLaoQRPaid();
 
@@ -1070,9 +1073,83 @@ export class Tab1Page implements OnDestroy {
         console.log('Error init database', e);
       })
     }
-
+    this.checkLastClick();
 
   }
+
+
+  checkLastClick() {
+    try {
+      const lastClick = this.getStoredLastClick();
+      if (!lastClick) {
+        console.log('ไม่พบข้อมูล lastClick ใน localStorage');
+        return false;
+      }
+
+      const targetTime = new Date(lastClick).getTime();
+
+      if (isNaN(targetTime)) {
+        console.error('Invalid date format in storage');
+        this.clearInvalidLastClick();
+        return false;
+      }
+      setTimeout(() => {
+        this.loadPaidBills();
+        localStorage.setItem('lastClickCheck', null);
+      }, 30000);
+
+    } catch (error) {
+      console.error('Error in checkLastClick:', error);
+      this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error checkLastClick ${JSON.stringify(error)}`
+      });
+      return false;
+    }
+  }
+
+  // ฟังก์ชันช่วยสำหรับอ่านค่าจาก localStorage
+  private getStoredLastClick(): string | null {
+    try {
+      const stored = localStorage.getItem('lastClickCheck');
+      if (!stored) return null;
+
+      // ลอง parse เป็น JSON ก่อน
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // ถ้า parse ไม่ได้ แต่มี quotes ลบออก
+        if (stored.startsWith('"') && stored.endsWith('"')) {
+          return stored.slice(1, -1);
+        }
+        return stored;
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return null;
+    }
+  }
+
+  // ลบข้อมูลที่ไม่ถูกต้อง
+  private clearInvalidLastClick() {
+    try {
+      localStorage.removeItem('lastClickCheck');
+      console.log('ลบข้อมูล lastClick ที่ไม่ถูกต้องออกแล้ว');
+    } catch (error) {
+      console.error('Error clearing invalid lastClick:', error);
+    }
+  }
+
+  // ฟังก์ชันบันทึกเวลา
+  setLastClick() {
+    try {
+      const now = new Date().toISOString();
+      localStorage.setItem('lastClickCheck', JSON.stringify(now));
+      console.log('บันทึกเวลาคลิกแล้ว:', now);
+    } catch (error) {
+      console.error('Error setting last click:', error);
+    }
+  }
+
 
 
   areArraysDifferentUnordered(arr1: string[], arr2: string[]): boolean {
@@ -3632,10 +3709,10 @@ export class Tab1Page implements OnDestroy {
         //   clearTimeout(this.t);
         //   this.t = null;
         // }
-        localStorage.setItem('testmotormode', 'true');
+        localStorage.setItem('startTestMotor', 'true');
         this.apiService.reloadPage();
       } else {
-        this.apiService.alertError('ບໍ່ໄດ້ແດກກູດອກ ຮາຮາ ມັນບໍ່ໄດ້ມີຫຍັງ ເຮັດມາຫຼອກເດັກຊື່ໆ');
+        this.apiService.alertError('ສຳເຫຼັດແລ້ວ');
       }
 
     }
@@ -3669,7 +3746,7 @@ export class Tab1Page implements OnDestroy {
       r.present();
       r.onDidDismiss().then(async r => {
         await this.serial?.close();
-        localStorage.setItem('testmotormode', '');
+        localStorage.setItem('startTestMotor', '');
         this.apiService.toast.create({ message: 'ອອກຈາກໂหมดທົດສອບແລ້ວ', duration: 3000 }).then(toast => {
           toast.present();
         });

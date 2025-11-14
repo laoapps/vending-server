@@ -60,7 +60,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
   questionIcon: string = `../../../../assets/logo/question-logo.png`;
   banner = '../../assets/topup/bannertopup.jpeg';
-  
+
   _style = {
     'background-image': 'url(' + this.banner + ')',
     'background-size': 'contain', // or '50%', 'auto 80%', etc.
@@ -190,6 +190,13 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
       title: 'Lao QR (optional)',
       detail: 'Pay your orders by using Lao QR One QRCode',
       value: 'LaoQR'
+    },
+    {
+      image: `../../../../assets/logo/LAAB-logo.png`,
+      name: 'LAABX',
+      title: 'LAABX (optional)',
+      detail: 'Pay your orders by using LAABX QRCode',
+      value: 'LAABX'
     }
   ]
   paymentList: Array<any> = [...this.cashesList, ...this.bankList];
@@ -445,6 +452,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
           console.log(`response generate LaoQR`, response);
           if (response.status != 1) {
+            localStorage.setItem('lastGenQR', null);
 
             clearInterval(this.countdownDestroyTimer);
             this.countdownDestroy = 60;
@@ -458,7 +466,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
             return resolve(IENMessage.success);
 
           }
-
+          this.setLastClick();
           const run = response.data;
           console.log('-----> SUCCESS GENERATE:', run);
 
@@ -476,7 +484,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           console.log('END GENERATE LAOQR AND SUCCESS');
           // console.log('=====>RUN', run);
           // const transactionID = localStorage.getItem('transactionID');
-          console.log('QR CODE :');
+          // console.log('QR CODE :');
 
           this.countdownDestroyTimer = setInterval(async () => {
             this.countdownDestroy--;
@@ -491,7 +499,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
               this.apiService.myTab1.clearStockAfterLAABGo();
               this.close();
-              // this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321');
+              this.checkLastGenQR();
               return resolve(IENMessage.success);
             } else {
               AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
@@ -527,6 +535,95 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
         resolve(error.message);
       }
     });
+  }
+
+
+  checkLastGenQR() {
+    try {
+      const lastClick = this.getStoredLastClick();
+      if (!lastClick) {
+        console.log('ไม่พบข้อมูล lastClick ใน localStorage');
+        return false;
+      }
+
+      const targetTime = new Date(lastClick).getTime();
+
+      if (isNaN(targetTime)) {
+        console.error('Invalid date format in storage');
+        this.clearInvalidLastClick();
+        return false;
+      }
+
+      const currentTime = new Date().getTime();
+      const timeDifferenceSeconds = (currentTime - targetTime) / 1000;
+
+      // console.log(`เวลาที่บันทึก: ${new Date(targetTime).toLocaleString('th-TH')}`);
+      // console.log(`เวลาปัจจุบัน: ${new Date(currentTime).toLocaleString('th-TH')}`);
+      // console.log(`ผ่านมาแล้ว: ${timeDifferenceSeconds.toFixed(2)} วินาที`);
+
+      const has30SecondsPassed = timeDifferenceSeconds >= 70;
+
+      if (!has30SecondsPassed) {
+        // console.log(`ผ่านมาแล้ว ${Math.floor(timeDifferenceSeconds)} วินาที (มากกว่า 70 วินาที)`);
+        this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321');
+        this.clearInvalidLastClick();
+        setTimeout(() => {
+          this.apiService?.myTab1?.loadPaidBills();
+        }, 10000);
+      }
+
+      return has30SecondsPassed;
+
+    } catch (error) {
+      console.error('Error in checkLastClick:', error);
+      this.apiService.IndexedLogDB.addBillProcess({
+        errorData: `Error checkLastClick ${JSON.stringify(error)}`
+      });
+      return false;
+    }
+  }
+
+  // ฟังก์ชันช่วยสำหรับอ่านค่าจาก localStorage
+  private getStoredLastClick(): string | null {
+    try {
+      const stored = localStorage.getItem('lastGenQR');
+      if (!stored) return null;
+
+      // ลอง parse เป็น JSON ก่อน
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // ถ้า parse ไม่ได้ แต่มี quotes ลบออก
+        if (stored.startsWith('"') && stored.endsWith('"')) {
+          return stored.slice(1, -1);
+        }
+        return stored;
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return null;
+    }
+  }
+
+  // ลบข้อมูลที่ไม่ถูกต้อง
+  private clearInvalidLastClick() {
+    try {
+      localStorage.removeItem('lastGenQR');
+      console.log('ลบข้อมูล lastClick ที่ไม่ถูกต้องออกแล้ว');
+    } catch (error) {
+      console.error('Error clearing invalid lastClick:', error);
+    }
+  }
+
+  // ฟังก์ชันบันทึกเวลา
+  setLastClick() {
+    try {
+      const now = new Date().toISOString();
+      localStorage.setItem('lastGenQR', JSON.stringify(now));
+      console.log('บันทึกเวลาคลิกแล้ว:', now);
+    } catch (error) {
+      console.error('Error setting last click:', error);
+    }
   }
 
 
