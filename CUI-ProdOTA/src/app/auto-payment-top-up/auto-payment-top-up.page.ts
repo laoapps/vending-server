@@ -820,8 +820,11 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
 
           localStorage.setItem('transactionID', transactionID);
+          const dataQR = {
+            emv: run.qr
+          };
 
-          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
+          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: JSON.stringify(dataQR) }).getCanvas();
           AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
 
           // const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
