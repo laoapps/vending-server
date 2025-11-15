@@ -15,7 +15,7 @@ import { CustomloadingPage } from './customloading.page';
     IonicModule,
     CustomloadingPageRoutingModule
   ],
-  declarations: [CustomloadingPage],
+  // declarations: [CustomloadingPage],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class CustomloadingPageModule { }

@@ -140,7 +140,22 @@ export class SerialServiceService  {
       }
     });
   }
-
+ async startReadingMT102(): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if (this.initialized) {
+          await SerialConnectionCapacitor.startReadingMT102();
+          resolve('ReadingMT102 started');
+        } else {
+          console.log('serial service Serial port not initialized');
+          reject('Serial port not initialized');
+        }
+      } catch (e) {
+        console.log('serial service startReadingADH814 error', e);
+        reject(e);
+      }
+    });
+  }
   async startReadingADH814(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
@@ -204,6 +219,25 @@ export class SerialServiceService  {
         const data = JSON.stringify({ command, params });
         console.log(`serial service Writing to VMC: ${data}`);
         const x = await SerialConnectionCapacitor.writeVMC({ data });
+        console.log(`serial service Command queued: ${data}`);
+        resolve(x);
+      } catch (e) {
+        console.log('serial service writeVMC error', e);
+        reject(e);
+      }
+    });
+  }
+  async writeMT102(command: string, params: any): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if (!this.initialized) {
+          console.log('write serial service Serial port not initialized');
+          reject('Serial port not initialized');
+          return;
+        }
+        const data = JSON.stringify({ command, params });
+        console.log(`serial service Writing to MT102: ${data}`);
+        const x = await SerialConnectionCapacitor.writeMT102({ data });
         console.log(`serial service Command queued: ${data}`);
         resolve(x);
       } catch (e) {
