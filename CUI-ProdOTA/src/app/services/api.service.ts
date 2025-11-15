@@ -306,7 +306,7 @@ export class ApiService {
 
   countErrorPay: number = 0;
 
-  allowTopUp = true;
+  allowTopUp = false;
 
   isFranciseMode: boolean = false;
 

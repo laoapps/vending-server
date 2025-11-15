@@ -3337,7 +3337,7 @@ export class Tab1Page implements OnDestroy {
   showBills() {
     console.log(`here`);
     this.apiService.loadDeliveryingBillsNew().then((r) => {
-      console.log(`response showBills`, r);
+      // console.log(`response showBills`, r);
       try {
         if (r.length > 0) {
           // this.apiService.dismissModal();

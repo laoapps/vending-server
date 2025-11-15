@@ -7107,6 +7107,121 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
+
+
+    callBackConfirmLAABX(transactionID: string, bankname: string) {
+        return new Promise<IVendingMachineBill>(async (resolve, reject) => {
+            try {
+                // console.log('TransactionID', transactionID);
+                const ownerUuid = (await redisClient.get(transactionID + EMessage.BillCreatedTemp)) || "";
+                // console.log("GET transactionID by owner", ownerUuid);
+                // Early exit if ownerUuid is not found in production mode
+                if (!ownerUuid && this.production) {
+                    console.log(EMessage.TransactionTimeOut);
+                    return resolve(null); // Add return to stop execution
+                }
+                // console.log('=====>ownerUuid', ownerUuid);
+
+                const ent = VendingMachineBillFactory(
+                    EEntity.vendingmachinebill + "_" + ownerUuid,
+                    dbConnection
+                );
+                await ent.sync();
+                const bill = await ent.findOne({
+                    where: { transactionID },
+                });
+                if (!bill) {
+                    return resolve(null); // Add return to stop execution
+                }
+
+                // Early exit if payment status is not pending
+                if (bill.paymentstatus !== EPaymentStatus.pending) {
+                    return resolve(null); // Add return to stop execution
+                }
+
+
+                bill.paymentstatus = EPaymentStatus.paid;
+                bill.changed("paymentstatus", true);
+                bill.paymentref = bankname + '';
+                bill.changed("paymentref", true);
+                bill.paymenttime = new Date();
+                bill.changed("paymenttime", true);
+                bill.paymentmethod = "LAABX";
+                bill.changed("paymentmethod", true);
+
+
+                // Process bill and save
+                this.getBillProcess(bill.machineId, async (b) => {
+                    bill.vendingsales.forEach((v, i) => {
+                        v.stock.image = "";
+                        b.push({
+                            ownerUuid,
+                            position: v.position,
+                            bill: bill.toJSON(),
+                            transactionID: getNanoSecTime(),
+                        });
+                    });
+
+                    await bill.save();
+
+                    // mark bill as paid
+                    await markPaymentAsPaid(bill.machineId, transactionID);
+
+
+                    // console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
+
+                    // WebSocket response
+                    const res = {} as IResModel;
+                    res.command = EMACHINE_COMMAND.waitingt;
+                    res.message = EMessage.waitingt;
+                    res.status = 1;
+                    res.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                    this.setBillProces(bill.machineId, b);
+                    await redisClient.del(transactionID + EMessage.BillCreatedTemp);
+                    let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
+                    // let trandList: Array<any> = JSON.parse(resule);
+                    // const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+
+                    let trandList: Array<any> = [];
+                    try {
+                        const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                        if (!Array.isArray(parsedData)) {
+                            console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                            trandList = [];
+                        } else {
+                            trandList = parsedData;
+                        }
+                    } catch (error) {
+                        console.error('JSON parse error:', error.message);
+                        trandList = []; // กำหนดเป็นอาร์เรย์ว่างถ้า parse ล้มเหลว
+                    }
+
+                    // ใช้ filter หลังจากยืนยันว่า trandList เป็นอาร์เรย์
+                    const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+                    redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+
+                    await DeleteTransactionToCheck(bill.machineId)
+                    this.sendWSToMachine(bill?.machineId + "", res);
+
+                    const event: IVendingEventLog = {
+                        machineId: bill?.machineId,
+                        event: EVendingEvent.sold,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                        data: { data: bill, time: new Date() },//[{time, position, product, price,ip,data}
+                        date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                        month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                        year: momenttz().tz(SERVER_TIME_ZONE).year()
+                    };
+                    await setVendingEvent(EVendingEvent.sold, event);
+                    return resolve(bill); // Add return to stop callback execution
+                });
+
+            } catch (error) {
+                console.log(error);
+                reject(error);
+            }
+        });
+    }
+
     findCallBackConfirmLaoQR(machineId: string) {
         return new Promise<IResModel>(async (resolve, reject) => {
             try {
@@ -8464,6 +8579,30 @@ export class InventoryZDM8 implements IBaseClass {
             })
                 .catch((e) => {
                     console.log("error confirmLaoQROrder");
+                    reject(e);
+                });
+        });
+    }
+
+
+    confirmLAABXOrder(c: IMMoneyConfirm): Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }> {
+        return new Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }>((resolve, reject) => {
+            // console.log('C is :', c);
+            console.log('=====>confirmLAABXOrder  is :', c);
+
+
+            this.callBackConfirmLAABX(c.trandID, c.bankname).then((r) => {
+                if (r) {
+                    console.log('=====>confirmLAABXOrder  is not null', r);
+                    resolve({ bill: r, transactionID: c.tranid_client });
+                } else {
+                    console.log('=====>confirmLAABXOrder  is null', c);
+
+                    resolve(null);
+                }
+            })
+                .catch((e) => {
+                    console.log("error confirmLAABXOrder");
                     reject(e);
                 });
         });

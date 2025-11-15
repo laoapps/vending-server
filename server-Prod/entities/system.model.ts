@@ -1157,6 +1157,7 @@ export enum EClientCommand {
     confirmMMoney = 'confirmMMoney',
     confirmLAAB = 'confirmLAAB',
     confirmLAOQR = 'confirmLAOQR',
+    confirmLAABX = 'confirmLAABX',
     findLaoQRPaid = 'findLaoQRPaid',
     CREDIT_NOTE = "CREDIT_NOTE",
     MACHINE_STATUS = "MACHINE_STATUS",

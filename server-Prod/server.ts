@@ -194,6 +194,19 @@ CreateDatabase("")
             console.log(e);
             res.send(PrintError(d.command, e, EMessage.error));
           });
+        } else if (d.command == EClientCommand.confirmLAABX) {
+          // console.log('confirmLAOQR');
+          invZDM8.confirmLAABXOrder(c).then((r) => {
+            // console.log(r.data);
+            if (r) {
+              res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
+            } else {
+              res.send(PrintError(d.command, r, EMessage.error));
+            }
+          }).catch(e => {
+            console.log(e);
+            res.send(PrintError(d.command, e, EMessage.error));
+          });
         } else if (d.command == EClientCommand.findLaoQRPaid) {
           // console.log('findLaoQRPaid');
           invZDM8.findLaoQROrderPaid(c).then((r) => {

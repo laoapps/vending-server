@@ -349,6 +349,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
       clearInterval(this.countdownDestroyTimer);
       this.countdownDestroy = 60;
       this._processLoopDestroyLastest(this.phone);
+
       // await this.loadCountDownBillNew();
       // this.selldelivery();
     }
@@ -820,8 +821,11 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
           localStorage.setItem('transactionID', transactionID);
 
+          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
+          AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
+
           // const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
-          AutoPaymentPage.qrimgElement.src = `../../../../assets/logo/scannow.gif`;
+          // AutoPaymentPage.qrimgElement.src = `../../../../assets/logo/scannow.gif`;
           this.isPayment = true;
           // this.isLoading = false
           this.billDate = new Date();
