@@ -29,8 +29,14 @@ export class VendingIndexServiceService {
   task: ISerialService;
 
 
-  constructor(public vmc: VmcService, public zdm8: Zdm8Service, 
-     public tp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service, public m102: MT102Service, public adh815: ADH815Service,
+  constructor(
+    public vmc: VmcService, 
+    public zdm8: Zdm8Service, 
+    //  public tp773b: Tp77PulseService, 
+    //  public essp: EsspService, 
+    //  public cctalk: CCTALKTb74Service, 
+     public m102: MT102Service, 
+    //  public adh815: ADH815Service,
     public adh814: ADH814Service) {
     App.addListener('appStateChange', async ({ isActive }) => {
       if (isActive) {
