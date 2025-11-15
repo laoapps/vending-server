@@ -30,7 +30,7 @@ export class VendingIndexServiceService {
 
 
   constructor(public vmc: VmcService, public zdm8: Zdm8Service, 
-    // public tp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service, public m102: MT102Service, public adh815: ADH815Service,
+     public tp773b: Tp77PulseService, public essp: EsspService, public cctalk: CCTALKTb74Service, public m102: MT102Service, public adh815: ADH815Service,
     public adh814: ADH814Service) {
     App.addListener('appStateChange', async ({ isActive }) => {
       if (isActive) {
@@ -134,20 +134,20 @@ export class VendingIndexServiceService {
   //     return resolve(this.cctalk);
   //   });
   // }
-  // async initM102(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
-  //   return new Promise<ISerialService>(async (resolve, reject) => {
-  //     this.portName = portName;
-  //     this.baudRate = baudRate;
+  async initM102(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
+    return new Promise<ISerialService>(async (resolve, reject) => {
+      this.portName = portName;
+      this.baudRate = baudRate;
 
-  //     const x = await this.m102.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
-  //     if (x != this.portName) {
-  //       return reject(null);
-  //     }
-  //     console.log('vendingindex service  initM102 Serial port initialized');
-  //     this.task = this.m102;
-  //     return resolve(this.m102);
-  //   });
-  // }
+      const x = await this.m102.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
+      if (x != this.portName) {
+        return reject(null);
+      }
+      console.log('vendingindex service  initM102 Serial port initialized');
+      this.task = this.m102;
+      return resolve(this.m102);
+    });
+  }
   // async initADH815(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
   //   return new Promise<ISerialService>(async (resolve, reject) => {
   //     this.portName = portName;

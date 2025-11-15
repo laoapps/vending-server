@@ -95,10 +95,10 @@ export class TestmotorPage implements OnInit, OnDestroy {
       await this.startAHD814();
       Toast.show({ text: 'Start adh814' });
     }
-    // else if (this.selectedDevice == 'm102') {
-    //   await this.startM102();
-    //   Toast.show({ text: 'Start m102' });
-    // }
+    else if (this.selectedDevice == 'm102') {
+      await this.startM102();
+      Toast.show({ text: 'Start m102' });
+    }
     else {
       Toast.show({ text: 'Please select device' })
     }
@@ -322,17 +322,17 @@ export class TestmotorPage implements OnInit, OnDestroy {
     this.vlog.log = this.serial.log;
     Toast.show({ text: 'vlog.log' + JSON.stringify(this.vlog.log) });
   }
-  // async startM102() {
-  //   if (this.serial) {
-  //     await this.serial.close();
-  //     this.serial = null;
-  //   }
-  //   this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
-  //   if (!this.serial) {
-  //     Toast.show({ text: 'serial not init' });
-  //   }
-  //   this.vlog.log = this.serial.log;
-  // }
+  async startM102() {
+    if (this.serial) {
+      await this.serial.close();
+      this.serial = null;
+    }
+    this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
+    if (!this.serial) {
+      Toast.show({ text: 'serial not init' });
+    }
+    this.vlog.log = this.serial.log;
+  }
 
   scanPorts() {
     if (this.serial) {
