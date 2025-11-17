@@ -4108,6 +4108,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 const isTopUp = o.data[0]?.isTopUp || false;
                                 const isFranciseMode = o.data[0]?.isFranciseMode || false;
 
+                                const dropDelay = o.data[0]?.dropDelay || 10;
+
 
                                 const imgh = o.data[0]?.imgHeader;
                                 const imgf = o.data[0]?.imgFooter;
@@ -4121,7 +4123,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode, dropDelay: dropDelay };
                                     r.data.push(a);
                                 }
                                 else {
@@ -4138,6 +4140,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.qrPayment = qrPayment;
                                     a.isTopUp = isTopUp;
                                     a.isFranciseMode = isFranciseMode;
+                                    a.dropDelay = dropDelay;
                                 }
 
                                 // r.data = [a];
