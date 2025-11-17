@@ -172,6 +172,8 @@
                           [(ngModel)]="settings[p.machineId].isTopUp"></ion-checkbox> </div>
                       <div style="float: left;"> <ion-icon name="briefcase-outline"></ion-icon><ion-checkbox
                           [(ngModel)]="settings[p.machineId].isFranciseMode"></ion-checkbox> </div>
+                      <div style="float: left;"> <ion-icon name="time-outline"></ion-icon> <ion-input type="number"
+                          [(ngModel)]="settings[p.machineId].dropDelay"></ion-input> </div>
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 
