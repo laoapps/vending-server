@@ -44,7 +44,7 @@ import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
 import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
-import axios, { AxiosHeaders } from 'axios';
+import axios, { AxiosHeaders, AxiosResponse } from 'axios';
 // import Swal from "sweetalert2";
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
@@ -1437,14 +1437,46 @@ export class ApiService {
       r ? r.dismiss(data) : null;
     });
   }
+  // initDemo() {
+  //   return axios.get<IResModel>(
+  //     this.url + '/init?machineId=' + this.machineId.machineId,
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
   initDemo() {
-    return axios.get<IResModel>(
-      this.url + '/init?machineId=' + this.machineId.machineId,
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+    const url = `/init?machineId=${this.machineId.machineId}`;
+
+    return apiQueue.add(() => {
+      return this.apiBase.get<IResModel>(url, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
+  // loadVendingSale(isActive = 'yes') {
+  //   const req = {} as IReqModel;
+  //   req.command = EClientCommand.list;
+  //   req.data = {
+  //     clientId: this.clientId.clientId,
+  //   };
+  //   req.ip;
+  //   req.time = new Date().toString();
+  //   req.token = cryptojs
+  //     .SHA256(this.machineId.machineId + this.machineId.otp)
+  //     .toString(cryptojs.enc.Hex);
+  //   // req.data.clientId = this.clientId.clientId;
+  //   console.log(`req der`, req);
+  //   return axios.post<IResModel>(
+  //     this.url + '/machineSaleList?isActive=' + isActive,
+  //     req,
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
   loadVendingSale(isActive = 'yes') {
     const req = {} as IReqModel;
+
     req.command = EClientCommand.list;
     req.data = {
       clientId: this.clientId.clientId,
@@ -1454,20 +1486,35 @@ export class ApiService {
     req.token = cryptojs
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
-    // req.data.clientId = this.clientId.clientId;
-    console.log(`req der`, req);
-    return axios.post<IResModel>(
-      this.url + '/machineSaleList?isActive=' + isActive,
-      req,
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+
+    const url = `/machineSaleList?isActive=${isActive}`;
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
 
+
+  // loadOnlineMachine() {
+  //   return axios.get<IResModel>(this.url + '/getOnlineMachines', {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+  //   });
+  // }
+
   loadOnlineMachine() {
-    return axios.get<IResModel>(this.url + '/getOnlineMachines', {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
-    });
+    const url = `/getOnlineMachines`;
+
+    return apiQueue.add(() => {
+      return this.apiBase.get<IResModel>(url, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
   // loadDeliveryingBills() {
   //   return axios.post<IResModel>(
   //     this.url + '/getDeliveryingBills',
@@ -1484,55 +1531,133 @@ export class ApiService {
 
     return this.IndexedDB.getBillProcesses();
   }
+
+
+  // loadDeliveryingBillsManual() {
+  //   return axios.post<IResModel>(
+  //     this.url + '/getDeliveryingBills',
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
   loadDeliveryingBillsManual() {
-    return axios.post<IResModel>(
-      this.url + '/getDeliveryingBills',
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
-    // return this.IndexeLocaldDB.getBillProcesses();
-  }
-  getMMoneyUserInfo(phonenumber: string) {
-    return axios.post<IResModel>(
-      this.url + `/getMmoneyUserInfo?phonenumber=${phonenumber}`,
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
-  }
-  saveSale(data: any) {
-    return axios.post<IResModel>(
-      this.url + '/saveMachineSale',
-      {
-        data,
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+    const url = `/getDeliveryingBills`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
 
-  saveSaleAndDrop(data: any, dropPositionData: IDropPositionData) {
-    return axios.post<IResModel>(
-      this.url + '/saveMachineSaleAndDrop',
-      {
-        data,
-        dropPositionData: dropPositionData,
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+
+  // getMMoneyUserInfo(phonenumber: string) {
+  //   return axios.post<IResModel>(
+  //     this.url + `/getMmoneyUserInfo?phonenumber=${phonenumber}`,
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
+  getMMoneyUserInfo(phonenumber: string) {
+    const url = `/getMmoneyUserInfo?phonenumber=${phonenumber}`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
+  // saveSale(data: any) {
+  //   return axios.post<IResModel>(
+  //     this.url + '/saveMachineSale',
+  //     {
+  //       data,
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
+  saveSale(data: any) {
+    const url = `/saveMachineSale`;
+
+    const req = {
+      data,
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+
+  // saveSaleAndDrop(data: any, dropPositionData: IDropPositionData) {
+  //   return axios.post<IResModel>(
+  //     this.url + '/saveMachineSaleAndDrop',
+  //     {
+  //       data,
+  //       dropPositionData: dropPositionData,
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
+  saveSaleAndDrop(data: any, dropPositionData: IDropPositionData) {
+    const url = `/saveMachineSaleAndDrop`;
+
+    const req = {
+      data,
+      dropPositionData,
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+
   saveSaleAnDropWS(data: any, dropPosition: IDropPositionData) {
     const res = {
       command: 'ping',
@@ -1551,79 +1676,196 @@ export class ApiService {
     this.wsapi.send(data);
   }
 
+  // recoverSale() {
+  //   return axios.post<IResModel>(
+  //     this.url + '/readMachineSale',
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
   recoverSale() {
-    return axios.post<IResModel>(
-      this.url + '/readMachineSale',
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
-  }
-  confirmDeductStock(data: any) {
-    return axios.post<IResModel>(
-      this.url + '/confirmMachineDeductStock',
-      {
-        data,
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
-  }
-  loadPaidBills() {
-    const r = {
+    const url = `/readMachineSale`;
+
+    const req = {
       token: cryptojs
         .SHA256(this.machineId.machineId + this.machineId.otp)
         .toString(cryptojs.enc.Hex),
     };
-    console.log('loadPaidBills', JSON.stringify(r));
-    return axios.post<IResModel>(this.url + '/getPaidBills', r, {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
-    });
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
-  loadBills() {
-    return axios.post<IResModel>(this.url + '/getBills', {
+
+  // confirmDeductStock(data: any) {
+  //   return axios.post<IResModel>(
+  //     this.url + '/confirmMachineDeductStock',
+  //     {
+  //       data,
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
+  confirmDeductStock(data: any) {
+    const url = `/confirmMachineDeductStock`;
+
+    const req = {
+      data,
       token: cryptojs
         .SHA256(this.machineId.machineId + this.machineId.otp)
         .toString(cryptojs.enc.Hex),
-    }, {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
-    });
-  }
-  // if there is a new ads then remove the old ones 
-  loadAds(existIds: Array<number>) {
-    return axios.post<IResModel>(
-      this.url + '/loadAds',
-      {
-        existIds,
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
 
+  // loadPaidBills() {
+  //   const r = {
+  //     token: cryptojs
+  //       .SHA256(this.machineId.machineId + this.machineId.otp)
+  //       .toString(cryptojs.enc.Hex),
+  //   };
+  //   console.log('loadPaidBills', JSON.stringify(r));
+  //   return axios.post<IResModel>(this.url + '/getPaidBills', r, {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+  //   });
+  // }
+
+  loadPaidBills() {
+    const url = `/getPaidBills`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    console.log('loadPaidBills', JSON.stringify(req));
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+  // loadBills() {
+  //   return axios.post<IResModel>(this.url + '/getBills', {
+  //     token: cryptojs
+  //       .SHA256(this.machineId.machineId + this.machineId.otp)
+  //       .toString(cryptojs.enc.Hex),
+  //   }, {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+  //   });
+  // }
+
+  loadBills() {
+    const url = `/getBills`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+  // if there is a new ads then remove the old ones 
+  // loadAds(existIds: Array<number>) {
+  //   return axios.post<IResModel>(
+  //     this.url + '/loadAds',
+  //     {
+  //       existIds,
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
+  loadAds(existIds: Array<number>) {
+    const url = `/loadAds`;
+
+    const req = {
+      existIds,
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+
+
+
+  // confirmBillPaid(transactionList: any) {
+  //   console.log('confirmBillPaid', transactionList);
+
+  //   return axios.post<IResModel>(
+  //     this.url + '/confirmPaidBill',
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //       machineId: this.machineId.machineId,
+  //       transactionList: transactionList
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
 
   confirmBillPaid(transactionList: any) {
     console.log('confirmBillPaid', transactionList);
 
-    return axios.post<IResModel>(
-      this.url + '/confirmPaidBill',
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-        machineId: this.machineId.machineId,
-        transactionList: transactionList
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+    const url = `/confirmPaidBill`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+      machineId: this.machineId.machineId,
+      transactionList,
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
 
   giveTopupOrRegisterLaabx(body: any) {
     return axios.post(
@@ -1634,30 +1876,68 @@ export class ApiService {
   }
 
 
+  // retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
+  //   return axios.post<IResModel>(
+  //     this.url + '/retryProcessBillNew?T=' + T + '&position=' + position,
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //       ownerUuid: ownerUuid,
+  //       trandID: trandID
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
   retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
-    return axios.post<IResModel>(
-      this.url + '/retryProcessBillNew?T=' + T + '&position=' + position,
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-        ownerUuid: ownerUuid,
-        trandID: trandID
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+    const url = `/retryProcessBillNew?T=${T}&position=${position}`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+      ownerUuid,
+      trandID,
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
+  // retryProcessBill(T: string, position: number) {
+  //   return axios.post<IResModel>(
+  //     this.url + '/retryProcessBill?T=' + T + '&position=' + position,
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
+
   retryProcessBill(T: string, position: number) {
-    return axios.post<IResModel>(
-      this.url + '/retryProcessBill?T=' + T + '&position=' + position,
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+    const url = `/retryProcessBill?T=${T}&position=${position}`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
   retryProcessBillLocal(T: string, position: number) {
     const p = { command: 'process', data: { slot: position }, transactionID: T };
     return axios.post<IResModel>('http://localhost:19006/', p, {
@@ -1686,39 +1966,81 @@ export class ApiService {
   }
 
 
+  // checkPaidBill() {
+  //   const body = {
+  //     command: "findLaoQRPaid",
+  //     data: {
+  //       machineId: this.machineId.machineId
+  //     }
+  //   };
+  //   console.log('checkPaidBill', body.data);
+
+  //   return axios.post(
+  //     this.vending_server, {
+  //     token: cryptojs
+  //       .SHA256(this.machineId.machineId + this.machineId.otp)
+  //       .toString(cryptojs.enc.Hex),
+  //   }, {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT
+  //   }
+  //   );
+  // }
+
   checkPaidBill() {
     const body = {
       command: "findLaoQRPaid",
       data: {
-        machineId: this.machineId.machineId
-      }
+        machineId: this.machineId.machineId,
+      },
     };
     console.log('checkPaidBill', body.data);
 
-    return axios.post(
-      this.vending_server, {
+    const req = {
       token: cryptojs
         .SHA256(this.machineId.machineId + this.machineId.otp)
         .toString(cryptojs.enc.Hex),
-    }, {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT
-    }
-    );
+    };
+
+    return apiQueue.add(() => {
+      return this.apiServer.post(this.vending_server, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<any>>;
   }
 
+
+  // checkCallbackMmoney() {
+  //   return axios.post<IResModel>(
+  //     this.url + '/checkCallbackMMoney',
+  //     {
+  //       token: cryptojs
+  //         .SHA256(this.machineId.machineId + this.machineId.otp)
+  //         .toString(cryptojs.enc.Hex),
+  //       transactionID: localStorage.getItem('transactionID')
+  //     },
+  //     { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
+  //   );
+  // }
 
   checkCallbackMmoney() {
-    return axios.post<IResModel>(
-      this.url + '/checkCallbackMMoney',
-      {
-        token: cryptojs
-          .SHA256(this.machineId.machineId + this.machineId.otp)
-          .toString(cryptojs.enc.Hex),
-        transactionID: localStorage.getItem('transactionID')
-      },
-      { headers: this.headerBase(), timeout: REQUEST_TIME_OUT }
-    );
+    const url = `/checkCallbackMMoney`;
+
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+      transactionID: localStorage.getItem('transactionID'),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
 
 
   buyLaoQR(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
@@ -1760,11 +2082,11 @@ export class ApiService {
   }
 
 
-  buyLAABX(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
+  buyLaoQRQ(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
 
-    this.currentPaymentProvider = EPaymentProvider.laab;
+    this.currentPaymentProvider = EPaymentProvider.laoqr;
     const req = {} as IReqModel;
-    req.command = EClientCommand.buyLAABX;
+    req.command = EClientCommand.buyLAOQR;
     let orderBill = [];
     // console.log('-----> ids :', ids);
     if (phone) {
@@ -1773,9 +2095,6 @@ export class ApiService {
         orderBill.push({ value: element.stock.price });
       }
     };
-
-    console.log('----->element :', orderBill);
-
 
     req.data = {
       ids,
@@ -1789,17 +2108,114 @@ export class ApiService {
     req.token = cryptojs
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
-    // console.log('req', req);
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>('', req, { headers: this.headerBase() })
+    }) as Promise<AxiosResponse<IResModel>>;
 
-    // req.data.clientId = this.clientId.clientId;
-    return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
-
-    });
   }
+
+
+
+  // buyLAABX(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
+
+  //   this.currentPaymentProvider = EPaymentProvider.laab;
+  //   const req = {} as IReqModel;
+  //   req.command = EClientCommand.buyLAABX;
+  //   let orderBill = [];
+  //   // console.log('-----> ids :', ids);
+  //   if (phone) {
+  //     for (let index = 0; index < ids.length; index++) {
+  //       const element = ids[index];
+  //       orderBill.push({ value: element.stock.price });
+  //     }
+  //   };
+
+  //   console.log('----->element :', orderBill);
+
+
+  //   req.data = {
+  //     ids,
+  //     value,
+  //     phone,
+  //     orderBill,
+  //     clientId: this.clientId.clientId,
+  //   };
+  //   req.ip;
+  //   req.time = new Date().toString();
+  //   req.token = cryptojs
+  //     .SHA256(this.machineId.machineId + this.machineId.otp)
+  //     .toString(cryptojs.enc.Hex);
+  //   // console.log('req', req);
+
+  //   // req.data.clientId = this.clientId.clientId;
+  //   return axios.post<IResModel>(this.url, req, {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+
+  //   });
+  // }
+
+  buyLAABX(ids: Array<IVendingMachineSale>, value: number, phone?: string) {
+    this.currentPaymentProvider = EPaymentProvider.laab;
+
+    const req = {} as IReqModel;
+    req.command = EClientCommand.buyLAABX;
+
+    const orderBill = [];
+    if (phone) {
+      for (let i = 0; i < ids.length; i++) {
+        const element = ids[i];
+        orderBill.push({ value: element.stock.price });
+      }
+    }
+    console.log('----->element :', orderBill);
+
+    req.data = {
+      ids,
+      value,
+      phone,
+      orderBill,
+      clientId: this.clientId.clientId,
+    };
+    req.ip;
+    req.time = new Date().toString();
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>('', req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+
+  // buyTopUpQR(ids: Array<IVendingMachineSale>, value: number) {
+  //   this.currentPaymentProvider = EPaymentProvider.laoqr;
+  //   const req = {} as IReqModel;
+  //   req.command = EClientCommand.buyTopUp;
+  //   req.data = {
+  //     ids,
+  //     value,
+  //     clientId: this.clientId.clientId,
+  //   };
+  //   req.ip;
+  //   req.time = new Date().toString();
+  //   req.token = cryptojs
+  //     .SHA256(this.machineId.machineId + this.machineId.otp)
+  //     .toString(cryptojs.enc.Hex);
+  //   // console.log('req', req);
+
+  //   // req.data.clientId = this.clientId.clientId;
+  //   return axios.post<IResModel>(this.url, req, {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+  //   });
+  // }
 
   buyTopUpQR(ids: Array<IVendingMachineSale>, value: number) {
     this.currentPaymentProvider = EPaymentProvider.laoqr;
+
     const req = {} as IReqModel;
     req.command = EClientCommand.buyTopUp;
     req.data = {
@@ -1812,20 +2228,42 @@ export class ApiService {
     req.token = cryptojs
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
-    // console.log('req', req);
 
-    // req.data.clientId = this.clientId.clientId;
-    return axios.post<IResModel>(this.url, req, {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
-    });
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>('', req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
 
 
 
 
 
+  // getFreeProduct(position: number, id: number) {
+  //   this.currentPaymentProvider = EPaymentProvider.mmoney;
+  //   const req = {} as IReqModel;
+  //   req.data = {
+  //     position,
+  //     clientId: this.clientId.clientId,
+  //     id,
+  //   };
+  //   req.ip;
+  //   req.time = new Date().toString();
+  //   req.token = cryptojs
+  //     .SHA256(this.machineId.machineId + this.machineId.otp)
+  //     .toString(cryptojs.enc.Hex);
+  //   // req.data.clientId = this.clientId.clientId;
+  //   return axios.post<IResModel>(this.url + '/getFreeProduct', req, {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+  //   });
+  // }
+
+
   getFreeProduct(position: number, id: number) {
     this.currentPaymentProvider = EPaymentProvider.mmoney;
+
     const req = {} as IReqModel;
     req.data = {
       position,
@@ -1837,11 +2275,15 @@ export class ApiService {
     req.token = cryptojs
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
-    // req.data.clientId = this.clientId.clientId;
-    return axios.post<IResModel>(this.url + '/getFreeProduct', req, {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
-    });
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>('/getFreeProduct', req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
 
 
 
@@ -2412,6 +2854,25 @@ export class ApiService {
     this.___OrderPaidPage?.dismiss();
     this.___AutoPaymentPage?.dismiss();
   }
+  // updateStatus(data: any) {
+  //   const req = {} as IReqModel;
+  //   req.command = data.command || EClientCommand.MACHINE_STATAUS;
+  //   req.data = data.data;
+  //   req.transactionID = data.transactionID;
+  //   req.ip;
+  //   req.time = new Date().toString();
+  //   req.token = cryptojs
+  //     .SHA256(this.machineId.machineId + this.machineId.otp)
+  //     .toString(cryptojs.enc.Hex);
+  //   console.log('machine id token', this.machineId, req.token)
+  //   // req.data.clientId = this.clientId.clientId;
+  //   const url = this.url + '/updateStatus';
+  //   console.log(url + ` req der ` + JSON.stringify(req));
+  //   return axios.post<IResModel>(url, req, {
+  //     headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
+  //   });
+  // }
+
   updateStatus(data: any) {
     const req = {} as IReqModel;
     req.command = data.command || EClientCommand.MACHINE_STATAUS;
@@ -2422,14 +2883,20 @@ export class ApiService {
     req.token = cryptojs
       .SHA256(this.machineId.machineId + this.machineId.otp)
       .toString(cryptojs.enc.Hex);
-    console.log('machine id token', this.machineId, req.token)
-    // req.data.clientId = this.clientId.clientId;
-    const url = this.url + '/updateStatus';
+
+    console.log('machine id token', this.machineId, req.token);
+
+    const url = '/updateStatus';
     console.log(url + ` req der ` + JSON.stringify(req));
-    return axios.post<IResModel>(url, req, {
-      headers: this.headerBase(), timeout: REQUEST_TIME_OUT,
-    });
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
   }
+
 
 
   updateNewLocalBalance(balance: string) {
@@ -2454,5 +2921,19 @@ export class ApiService {
 
 
 
+  apiBase = axios.create({
+    baseURL: this.url,
+    timeout: 25000,    // mobile networks are slower
+    // NO httpAgent/httpsAgent needed in Capacitor/Browser
+  });
+
+  // vending_server = localStorage.getItem('vending_server') || environment.vending_server;
+
+  apiServer = axios.create({
+    baseURL: this.vending_server,
+    timeout: 25000,    // mobile networks are slower
+    // NO httpAgent/httpsAgent needed in Capacitor/Browser
+  });
 
 }
+import { apiQueue } from '../queue';

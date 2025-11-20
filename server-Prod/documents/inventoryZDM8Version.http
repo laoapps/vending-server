@@ -191,3 +191,6 @@ Content-Type: application/json
     "orderBill":[{"value":16000}],
     "trandID": "205551632120251007110743"
 }
+
+###
+GET https://tvending4.khamvong.com/testQueue

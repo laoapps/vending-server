@@ -446,7 +446,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }, 60000);
 
-        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t, phone).then(async rx => {
+        this.apiService.buyLaoQRQ(this.parseorders, this.parseGetTotalSale.t, phone).then(async rx => {
           const r = rx.data;
           clearInterval(this.countdownCheckGenQrResTimer);
           const response: any = r;

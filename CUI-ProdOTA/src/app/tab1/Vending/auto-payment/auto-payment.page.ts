@@ -479,7 +479,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
           return resolve(IENMessage.success);
         }, 60000);
 
-        this.apiService.buyLaoQR(this.parseorders, this.parseGetTotalSale.t).then(async rx => {
+
+        this.apiService.buyLaoQRQ(this.parseorders, this.parseGetTotalSale.t).then(async rx => {
           const r = rx.data;
           clearInterval(this.countdownCheckGenQrResTimer);
           // (await this.workload).dismiss();

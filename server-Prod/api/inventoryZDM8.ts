@@ -153,6 +153,7 @@ import { WarehouseFactory } from "../entities/warehouse.entity";
 import { uploadExcelMemory } from "../middlewares/upload.middleware";
 import { checkQRPaidMmoneyResponse, reportAllBill, reportAllBillNotPaid, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
+import { apiQueue } from "./queue.services";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -6624,6 +6625,48 @@ export class InventoryZDM8 implements IBaseClass {
 
         });
     }
+
+
+    generateBillLaoQRProQ(value: number, channel: string, mechantId: string, ownerPhone: string) {
+        return new Promise<ILaoQRGenerateQRRes>((resolve, reject) => {
+            // generate QR from MMoney
+
+            const qr = {
+                "requestId": "",
+                "merchantId": mechantId, //DBK :25ATP48M8RD1MKJ4W8FGLGXYC
+                "txnAmount": value,
+                // "billNumber": "LQR123213131280004925277",
+                "terminalId": ownerPhone, //Device Number ເບີຄົນຮັບເງິນ
+                "terminalLabel": "laabxserver", // Device Name
+                "mobileNo": ownerPhone, // CashIn to Wallet Number (Merchant)  ເບີຄົນຮັບເງິນ
+                "channel": `VENDING_` + channel, // Vending Machine 
+                "owner": "LAABX", // Merchant Name  LAABX
+                // "callbackurl": "https://tvending.khamvong.com"
+                "callbackurl": process.env.SERVER_URL
+            }
+            // console.log("LAOQR", qr);
+
+            apiQueue.add(() => {
+                this.api.post<IResModel>('/api/v1/laab/genmmoneyqr_vending', qr, { headers: { 'Content-Type': 'application/json', timeout: 10000 } }).then((rx) => {
+                    console.log("generateBillLaoQRPro", rx.data);
+                    if (rx.status) {
+                        resolve(rx.data.data as ILaoQRGenerateQRRes);
+                    } else {
+                        reject(new Error(rx.statusText));
+                    }
+                })
+                    .catch((e) => {
+                        reject(e);
+                    });
+            })
+        });
+    }
+
+    api = axios.create({
+        baseURL: 'https://laabx-api.laoapps.com',
+        timeout: 25000,    // mobile networks are slower
+        // NO httpAgent/httpsAgent needed in Capacitor/Browser
+    });
 
 
     generateBillLAABXPro(value: number, token: string): Promise<{ status: number, message: any }> {

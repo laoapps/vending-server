@@ -14,6 +14,7 @@ import {
   IBaseClass,
   IMMoneyConfirm,
   IReqModel,
+  IResModel,
 } from "./entities/system.model";
 import { PrintError, PrintSucceeded } from "./services/service";
 import { parse } from "url";
@@ -26,6 +27,8 @@ import dotenv from "dotenv";
 import { initBundle } from "./services/appupdate";
 import { initialize } from "./services/topup.service";
 import { createLogger, format, transports } from 'winston';
+import axios from "axios";
+import { apiQueue } from "./api/queue.services";
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
@@ -101,8 +104,30 @@ CreateDatabase("")
     app.use(helmet.hidePoweredBy());
 
 
+    const api = axios.create({
+      baseURL: 'https://vending-service-api5.laoapps.com/',
+      timeout: 25000,    // mobile networks are slower
+      // NO httpAgent/httpsAgent needed in Capacitor/Browser
+    });
+    app.get('/testQueue', (req: express.Request, res: express.Response) => {
+      try {
+        for (let index = 0; index < 1200; index++) {
+          apiQueue.add(() => {
+            api.get<IResModel>('', { headers: { 'Content-Type': 'application/json', timeout: 10000 } }).then((rx) => {
+              console.log(index, '-----> RESPONSE :', rx.data);
+            })
+              .catch((e) => {
+                console.log('----->Error RESPONSE :', e);
 
+              });
+          });
 
+        }
+        return res.send('SUCCESS');
+      } catch (error) {
+        res.send(`ERROR :${error}`)
+      }
+    })
 
 
     // const wss = new WebSocket.Server({ server });
