@@ -33,7 +33,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   timer: any = {} as any;
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
-  counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
+  // counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
+  counterLimit: number = this.apiService.dropDelay;
+
   private readonly RETRY_TIMEOUT_MS = 2000;
   private deliveryBills: DeliveryBills[] = []; // Replace `this.r` with typed property
   private readonly SUPPORTED_DEVICES = ['VMC', 'ZDM8', 'MT102', 'adh814'];

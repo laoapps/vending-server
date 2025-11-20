@@ -1,5 +1,8 @@
 import { Component, ComponentRef, Injectable, NgZone } from '@angular/core';
 // import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';
+
+
 
 import {
   EClientCommand,
@@ -267,7 +270,7 @@ export class ApiService {
 
   secret?: string;
 
-
+  dropDelay: number = 10;
 
   localBalance: number = Number(localStorage.getItem('balanceLocal') ?? 0);
 
@@ -391,6 +394,8 @@ export class ApiService {
         if (this.allowTopUp !== s.isTopUp) this.allowTopUp = s.isTopUp ?? false;
         if (this.isAds !== s.isAds) this.isAds = s.isAds ?? false;
         if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
+
+        if (this.dropDelay !== s.dropDelay) this.dropDelay = s.dropDelay ?? 10;
 
         console.log('ws alive subscription', that.cash, r);
         // console.log('message :', r?.message);
