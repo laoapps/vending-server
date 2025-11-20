@@ -1541,6 +1541,7 @@ export class Tab1Page implements OnDestroy {
               if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
                 // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
               }
+              this.sendStatus(JSON.stringify(result?.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
             }
 
           }
@@ -1573,11 +1574,11 @@ export class Tab1Page implements OnDestroy {
         console.error(`FATAL: Response too long (${hexData.length} bytes > 44). Controller error.`);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: hexData + '' });
         this.handleFatalError();
-        return { command: '', status: 0, data: {}, message: 'Response too long - hardware error', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Response too long - hardware error', transactionID: 0 };
       }
       if (hexData.length < 8) {
         console.log(`Invalid response: Too short (${hexData.length / 2} bytes)`);
-        return { command: '', status: 0, data: {}, message: 'Invalid response: Too short', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Invalid response: Too short', transactionID: 0 };
       }
 
       const address = parseInt(hexData.slice(0, 2), 16);
@@ -1590,11 +1591,11 @@ export class Tab1Page implements OnDestroy {
 
       if (command !== 0xA1 && address !== 0x00) {
         console.log(`Invalid address for command 0x${command.toString(16)}: Expected 0x00, got 0x${address.toString(16)}`);
-        return { command: '', status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Invalid address', transactionID: 0 };
       }
       if (command === 0xA1 && (address < 0x01 || address > 0x04)) {
         console.log(`Invalid address for command 0xA1: Expected 0x01-0x04, got 0x${address.toString(16)}`);
-        return { command: '', status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Invalid address', transactionID: 0 };
       }
 
       let result: IResModel;//IResModel;
@@ -1666,7 +1667,7 @@ export class Tab1Page implements OnDestroy {
           this._machineStatus.status.temp = result.data.temperature;
           this.machinestatus.data = result.data;
           // this.sendStatus();
-          this.sendStatus(JSON.stringify(result.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
+          
 
           break;
         case 0xA4: // Set Temperature
@@ -1735,7 +1736,7 @@ export class Tab1Page implements OnDestroy {
           break;
         default:
 
-          result = { command: '', status: 0, data: {}, message: 'Unsupported command', transactionID: 0 };
+          result = { command: '', status: 0, data: {rawData}, message: 'Unsupported command', transactionID: 0 };
       }
       return result;
     } catch (error: any) {
