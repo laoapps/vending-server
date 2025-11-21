@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
 import { IAlive } from './services/syste.model';
 import { DebugService } from './debug.service';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 import { Platform } from '@ionic/angular';
 import { SettingPage } from './setting/setting.page';

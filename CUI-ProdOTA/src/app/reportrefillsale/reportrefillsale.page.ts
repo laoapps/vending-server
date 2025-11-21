@@ -4,7 +4,7 @@ import { IVendingMachineSale } from '../services/syste.model';
 import { ModalController } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { ExcelService } from '../services/excel.service';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 @Component({
   selector: 'app-reportrefillsale',
   templateUrl: './reportrefillsale.page.html',

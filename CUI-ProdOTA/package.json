@@ -13,19 +13,14 @@
     "build:es5": "ng build && mkdir -p www-es5 && cp -r www/* www-es5/ && npx babel www-es5/*.js --out-dir www-es5 --source-maps && cp -r www-es5/* www/ && npx cap sync",
     "bu": "ionic build --prod && npx cap sync"
   },
-  "browserslist": {
-    "production": [
-      "last 2 Chrome versions",
-      "last 2 Firefox versions",
-      "last 2 Edge versions",
-      "last 2 Safari versions"
-    ],
-    "development": [
-      "last 1 Chrome version",
-      "last 1 Firefox version",
-      "last 1 Safari version"
-    ]
-  },
+  "browserslist": [
+    "Android >= 67",
+    "iOS >= 14",
+    "Chrome >= 67",
+    "Safari >= 14",
+    "last 2 versions",
+    "not dead"
+  ],
   "private": true,
   "dependencies": {
     "@angular/animations": "^15.2.0",
