@@ -50,7 +50,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
   close() {
     clearInterval(this.counterRefreshBalance);
     clearInterval(this.counterTimeClose);
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   initTime() {
@@ -62,7 +62,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
       if (count == 0) {
         clearInterval(this.counterTimeClose);
         this.apiService.simpleMessage(IENMessage.timeupPleaseGenerateAgain);
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
       }
       this.timeClose = count;
 
@@ -92,7 +92,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
               clearInterval(this.counterRefreshBalance);
               this.apiService.soundLaabIncreased();
               this.apiService.simpleMessage(IENMessage.laabCashinSuccess);
-              this.apiService.modal.dismiss();
+              this.apiService.modalCtrl.dismiss();
               resolve(IENMessage.success);
             }
           }
@@ -101,7 +101,7 @@ export class LaabCashinShowCodePage implements OnInit,OnDestroy {
       } catch (error) {
         clearInterval(this.counterRefreshBalance);
         this.apiService.simpleMessage(error.message);
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
         resolve(error.message);
       }
     })

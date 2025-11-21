@@ -33,7 +33,7 @@ export class HowtoPage implements OnInit {
     // }
   } 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
 

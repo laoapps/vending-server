@@ -44,7 +44,7 @@ export class StackCashoutPage implements OnInit {
         const props = {
           stackCashoutPage: this.modal
         };
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: MmoneyCashoutPage, componentProps: props })
           .then((r) => {
             r.present();
@@ -66,7 +66,7 @@ export class StackCashoutPage implements OnInit {
         const props = {
           stackCashoutPage: this.modal
         };
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: LaabCashoutPage, componentProps: props })
           .then((r) => {
             r.present();
@@ -83,7 +83,7 @@ export class StackCashoutPage implements OnInit {
   epinCashOut(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: EpinCashOutPage, componentProps: {} })
           .then((r) => {
             r.present();
@@ -96,7 +96,7 @@ export class StackCashoutPage implements OnInit {
   
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   dynamicControlMenu() {

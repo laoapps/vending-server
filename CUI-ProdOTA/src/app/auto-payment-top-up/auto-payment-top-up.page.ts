@@ -210,7 +210,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
   constructor(
     public apiService: ApiService,
-    public modal: ModalController,
+    public modalCtrl: ModalController,
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService
   ) {
@@ -338,7 +338,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
     clearInterval(this.countdownLAABDestroyTimer);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
 
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
 
 

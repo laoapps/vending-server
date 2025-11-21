@@ -129,7 +129,7 @@ export class VendingGoPage implements OnInit {
           })
             .getCanvas()
             .then((r) => {
-              this.apiService.modal
+              this.apiService.modalCtrl
                 .create({
                   component: QrpayPage,
                   componentProps: {
@@ -201,7 +201,7 @@ export class VendingGoPage implements OnInit {
         };
         console.log(`props`, props);
 
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: LaabGoPage, componentProps: props })
           .then((r) => {
             r.present();
@@ -215,7 +215,7 @@ export class VendingGoPage implements OnInit {
     });
   }
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
 }

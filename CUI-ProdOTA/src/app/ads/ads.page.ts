@@ -12,7 +12,7 @@ import { VideoCacheService } from '../video-cache.service';
 })
 export class AdsPage implements OnInit, OnDestroy {
   playList = new Array<IAdsMedia>();
-  constructor(public apiService: ApiService, public modal: ModalController, private videoCacheService: VideoCacheService) { }
+  constructor(public apiService: ApiService, public modalCtrl: ModalController, private videoCacheService: VideoCacheService) { }
   introductionMedia = { name: 'Introduction', description: 'Introduction how to use and change', type: 'video', url: '' };
 
   videoPlayer: HTMLVideoElement = {} as any;
@@ -70,7 +70,7 @@ export class AdsPage implements OnInit, OnDestroy {
 
   async playCurrentAd() {
     if (this.currentIndex >= this.adsList.length) {
-      this.modal.dismiss();
+      this.modalCtrl.dismiss();
       return;
     }
 
@@ -103,7 +103,7 @@ export class AdsPage implements OnInit, OnDestroy {
 
   exit() {
     this.clearListeners();
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
 
   // loadAds(): Promise<any> {

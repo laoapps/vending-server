@@ -86,7 +86,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
   constructor(
     public apiService: ApiService,
-    public modal: ModalController
+    public modalCtrl: ModalController
   ) {
 
     // this.generateMMoneyQRCodeProcess = new GenerateMMoneyQRCodeProcess(this.apiService);
@@ -94,7 +94,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.apiService.___OrderPaidPage = this.modal;
+    this.apiService.___OrderPaidPage = this.modalCtrl;
 
     this.methodList.push(...this.cashesList, ...this.ewalletList, ...this.bankList);
     this.loadBilling();
@@ -111,11 +111,11 @@ export class OrderPaidPage implements OnInit, OnDestroy {
       const that = this;
       if (this._T) clearTimeout(this._T)
       this._T = setTimeout(() => {
-        this.modal.dismiss();
+        this.modalCtrl.dismiss();
       }, 1000 * 1000 * 15);
       this.apiService.onStockDeduct((data) => {
         console.log('onStockDeduct', data);
-        that.modal.dismiss();
+        that.modalCtrl.dismiss();
       });
     }
   }
@@ -146,7 +146,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
         this.apiService.myTab1.clearCart();
         this.orderCartPage.dismiss();
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
         this.apiService.alertWarnning(IENMessage.timeout, IENMessage.qrcodeExpired);
       }
       console.log(`destroy in`, this.destroyCounter);
@@ -243,7 +243,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
 
   close() {
-    this.apiService.modal.dismiss({ buymore: false });
+    this.apiService.modalCtrl.dismiss({ buymore: false });
   }
 
   clearOrders(): Promise<any> {
@@ -261,7 +261,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
 
           this.apiService.myTab1.clearCart();
           this.orderCartPage.dismiss();
-          this.apiService.modal.dismiss();
+          this.apiService.modalCtrl.dismiss();
         }
 
         resolve(IENMessage.success);
@@ -276,7 +276,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
     clearInterval(this.destroyTimer);
     this.destroyCounter = 60;
     this.orderCartPage.dismiss({ buymore: true });
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
 
   setSummarizeOrder() {

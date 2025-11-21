@@ -36,7 +36,7 @@ export class MmoneyIosAndroidDownloadPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
 }

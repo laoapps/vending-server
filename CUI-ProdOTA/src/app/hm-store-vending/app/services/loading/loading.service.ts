@@ -7,7 +7,7 @@ import { AlertController, IonContent, LoadingController, ModalController, Platfo
 })
 export class LoadingService {
   constructor(public loadingCtrl: LoadingController,
-    public modal: ModalController,
+    public modalCtrl: ModalController,
     public toast: ToastController,
     public alertController: AlertController,
     public router: Router
@@ -192,7 +192,7 @@ export class LoadingService {
 
   async showModal(component: any, d: any = {}, cssClass: string = '') {
     try {
-      return await this.modal.create({
+      return await this.modalCtrl.create({
         component,
         componentProps: d,
         cssClass: cssClass || 'full-modal',
@@ -206,7 +206,7 @@ export class LoadingService {
   }
 
   closeModal(data: any = null) {
-    this.modal.getTop().then(r => {
+    this.modalCtrl.getTop().then(r => {
       r ? r.dismiss(data) : null;
     })
   }

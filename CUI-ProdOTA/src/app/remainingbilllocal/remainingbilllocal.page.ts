@@ -25,7 +25,7 @@ export class RemainingbilllocalPage implements OnInit {
   lists: Array<any> = [];
 
 
-  constructor(public apiService: ApiService, private modal: ModalController) {
+  constructor(public apiService: ApiService, private modalCtrl: ModalController) {
 
   }
 
@@ -147,7 +147,7 @@ export class RemainingbilllocalPage implements OnInit {
               if (this.r != undefined && Object.entries(this.r).length == 0) {
                 localStorage.setItem('product_fall', '0');
                 this.clearTimer();
-                this.apiService, this.modal.dismiss();
+                this.apiService, this.modalCtrl.dismiss();
                 return;
               }
 
@@ -202,7 +202,7 @@ export class RemainingbilllocalPage implements OnInit {
       if (this.r != undefined && Object.entries(this.r).length == 0) {
         localStorage.setItem('product_fall', '0');
         this.clearTimer();
-        this.apiService, this.modal.dismiss();
+        this.apiService, this.modalCtrl.dismiss();
         return;
       }
 
@@ -234,7 +234,7 @@ export class RemainingbilllocalPage implements OnInit {
   close() {
     if (this.r != undefined && Object.entries(this.r).length > 0) return;
     this.clearTimer();
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
   clearTimer() {
     clearInterval(this.timer);

@@ -32,7 +32,7 @@ export class PlayGamesPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   selectMenu(value: IVendingGameMenu): Promise<any> {

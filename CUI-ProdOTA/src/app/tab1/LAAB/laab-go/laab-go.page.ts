@@ -57,7 +57,7 @@ export class LaabGoPage implements OnInit {
         this.apiService.cash.amount = this.balance;
         this.apiService.myTab1.clearStockAfterLAABGo();
         this.vendingGoPage.dismiss();
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
         // await this.apiService.openSoundReady();
         // this.apiService.modal.dismiss();
         resolve(IENMessage.success);
@@ -70,7 +70,7 @@ export class LaabGoPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
 }

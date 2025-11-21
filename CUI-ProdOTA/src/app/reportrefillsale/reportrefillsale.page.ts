@@ -15,7 +15,7 @@ export class ReportrefillsalePage implements OnInit {
   f_sells = new Array<IVendingMachineSale>();
   url = this.apiService.url;
   byTimes = new Array<string>();
-  constructor(public storage: IonicStorageService, public modal: ModalController, public apiService: ApiService, public excelService: ExcelService) { }
+  constructor(public storage: IonicStorageService, public modalCtrl: ModalController, public apiService: ApiService, public excelService: ExcelService) { }
 
   ngOnInit() {
     const k = 'refillSaleStock';
@@ -31,7 +31,7 @@ export class ReportrefillsalePage implements OnInit {
     this.f_sells = this.sells.filter(v => v.updatedAt.toString() == t);
   }
   close() {
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
   clear() {
     const conf = confirm('Are you sure ?');

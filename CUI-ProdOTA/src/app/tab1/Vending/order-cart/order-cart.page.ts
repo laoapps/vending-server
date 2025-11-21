@@ -198,7 +198,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
         this.destroyCounter = 60;
 
         this.apiService.myTab1.clearCart();
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
         this.apiService.alertWarnning(IENMessage.timeout, IENMessage.qrcodeExpired);
       }
       console.log(`destroy in`, this.destroyCounter);
@@ -207,7 +207,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
 
   close() {
     this.apiService.countErrorPay = 0;
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   loadAutoPayment() {
@@ -254,7 +254,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
     this.loadArrowScrollSuggest();
     this.loadAutoPayment();
     if (this.orders != undefined && Object.entries(this.orders).length == 0) {
-      this.apiService.modal.dismiss();
+      this.apiService.modalCtrl.dismiss();
     }
   }
 
@@ -310,7 +310,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
             const run = await this.laabPaid();
             if (run != IENMessage.success) throw new Error(run);
             this.apiService.myTab1.clearStockAfterLAABGo();
-            this.apiService.modal.dismiss();
+            this.apiService.modalCtrl.dismiss();
 
           } else {
 
@@ -349,7 +349,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
           this.autoPaymentCounter = 15;
 
           this.apiService.myTab1.clearCart();
-          this.apiService.modal.dismiss();
+          this.apiService.modalCtrl.dismiss();
         }
 
         resolve(IENMessage.success);

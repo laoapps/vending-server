@@ -201,11 +201,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   constructor(
     public apiService: ApiService,
-    public modal: ModalController,
+    public modalCtrl: ModalController,
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService
   ) {
-    this.apiService.___AutoPaymentPage = this.modal;
+    this.apiService.___AutoPaymentPage = this.modalCtrl;
 
     this.loadVendingWalletCoinBalanceProcess = new LoadVendingWalletCoinBalanceProcess(this.apiService, this.vendingAPIService);
     this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
@@ -335,7 +335,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownLAABDestroyTimer);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
 
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
 
 

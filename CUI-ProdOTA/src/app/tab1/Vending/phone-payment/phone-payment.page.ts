@@ -197,7 +197,7 @@ export class PhonePaymentPage implements OnInit {
       try {
         
         this.apiService.simpleMessage(IENMessage.phonePaymentSuccess);
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
 
       } catch (error) {
         this.apiService.simpleMessage(error.message);
@@ -207,6 +207,6 @@ export class PhonePaymentPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 }

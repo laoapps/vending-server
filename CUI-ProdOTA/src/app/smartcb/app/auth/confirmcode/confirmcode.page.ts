@@ -24,7 +24,7 @@ export class ConfirmcodePage implements OnInit {
   @Input() otp: any;
 
 
-  constructor(private modal:ModalController,
+  constructor(private modalCtrl:ModalController,
     private alt:AlertController,
   ) {
 
@@ -118,11 +118,11 @@ export class ConfirmcodePage implements OnInit {
 
   dismiss() {
     if(this.Code){
-      this.modal.dismiss({
+      this.modalCtrl.dismiss({
         'code': this.Code
       });
     }else{
-      this.modal.dismiss({
+      this.modalCtrl.dismiss({
         'code': this.otp
       });
     }
@@ -130,7 +130,7 @@ export class ConfirmcodePage implements OnInit {
 
   backToSignUp() {
 
-    this.modal.dismiss({
+    this.modalCtrl.dismiss({
       'dismiss': true
     });
     

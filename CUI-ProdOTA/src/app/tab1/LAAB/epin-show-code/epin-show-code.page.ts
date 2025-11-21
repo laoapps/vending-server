@@ -32,7 +32,7 @@ export class EpinShowCodePage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   confirmHide(): Promise<any> {
@@ -86,7 +86,7 @@ export class EpinShowCodePage implements OnInit {
       localStorage.setItem('epin_hide_list', JSON.stringify(lists));
     }
 
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
 }

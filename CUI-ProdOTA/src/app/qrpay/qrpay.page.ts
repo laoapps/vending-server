@@ -16,7 +16,7 @@ export class QrpayPage implements OnInit, OnDestroy {
   @Input() ref: string;
   contact = localStorage.getItem('contact') || '55516321';
   _T: any
-  constructor(public apiService: ApiService, public modal: ModalController) { }
+  constructor(public apiService: ApiService, public modalCtrl: ModalController) { }
   ngOnDestroy(): void {
     if (this._T) clearTimeout(this._T)
     this._T = null;
@@ -26,11 +26,11 @@ export class QrpayPage implements OnInit, OnDestroy {
     const that = this;
     if (this._T) clearTimeout(this._T)
     this._T = setTimeout(() => {
-      this.modal.dismiss();
+      this.modalCtrl.dismiss();
     }, 1000 * 60 * 15);
     this.apiService.onStockDeduct((data) => {
       console.log('onStockDeduct', data);
-      that.modal.dismiss();
+      that.modalCtrl.dismiss();
     })
   }
   // refresh() {
@@ -56,7 +56,7 @@ export class QrpayPage implements OnInit, OnDestroy {
       const pb = r as Array<IBillProcess>;
       if (pb.length)
         this.apiService.showModal(RemainingbillsPage, { r: pb }, true);
-      this.modal.dismiss();
+      this.modalCtrl.dismiss();
     }).catch(e => {
       this.apiService.toast.create({ message: e, duration: 5000 }).then(r => {
         r.present();
@@ -64,7 +64,7 @@ export class QrpayPage implements OnInit, OnDestroy {
     })
   }
   close() {
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
 
 }

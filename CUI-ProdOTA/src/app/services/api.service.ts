@@ -290,8 +290,7 @@ export class ApiService {
     // public http: HttpClient,
     public wsapi: WsapiService,
     public toast: ToastController,
-    public modal: ModalController,
-    public modals: ModalController,
+    public modalCtrl: ModalController,
     // public notifyService: NotifierService,
     public storage: IonicStorageService,
     public IndexedDB: IndexedDBService,
@@ -1066,8 +1065,8 @@ export class ApiService {
   }
 }
   public dismissModal(data: any = null) {
-    this.modal.getTop().then((r) => {
-      r ? this.modal.dismiss({ data }) : null;
+    this.modalCtrl.getTop().then((r) => {
+      r ? this.modalCtrl.dismiss({ data }) : null;
     });
   }
 
@@ -1369,7 +1368,7 @@ export class ApiService {
       // }
       // x += '}';
       // const data = JSON.parse(x);
-      return await this.modal.create({
+      return await this.modalCtrl.create({
         component,
         componentProps: d,
         cssClass: cssClass || 'dialog-fullscreen',
@@ -1383,7 +1382,7 @@ export class ApiService {
     }
   }
   closeModal(data: any = null) {
-    this.modal.getTop().then((r) => {
+    this.modalCtrl.getTop().then((r) => {
       r ? r.dismiss(data) : null;
     });
   }

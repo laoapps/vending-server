@@ -79,6 +79,6 @@ export class HangmiStoreSegmentPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 }

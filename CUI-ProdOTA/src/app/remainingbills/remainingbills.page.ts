@@ -44,7 +44,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   url = this.apiService.url;
   lists: Array<any> = [];
 
-  constructor(public apiService: ApiService, private modal: ModalController) {
+  constructor(public apiService: ApiService, private modalCtrl: ModalController) {
 
   }
 
@@ -285,7 +285,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           this.apiService.pb = [];
           localStorage.setItem('product_fall', '0');
           this.clearTimer();
-          this.modal.dismiss();
+          this.modalCtrl.dismiss();
           Toast.show({ text: 'All bills processed 0', duration: 'short' });
           return resolve();
         }
@@ -398,7 +398,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   close() {
     if (this.r != undefined && Object.entries(this.r).length > 0) return;
     this.clearTimer();
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
   clearTimer() {
     if (this.timer)

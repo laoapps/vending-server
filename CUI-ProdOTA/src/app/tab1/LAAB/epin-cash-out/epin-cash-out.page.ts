@@ -90,7 +90,7 @@ export class EpinCashOutPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   createSMC(): Promise<any> {
@@ -137,9 +137,9 @@ export class EpinCashOutPage implements OnInit {
             qrImage: r,
             code: run.data[0].detail.items[0].code[0] 
           }
-          this.apiService.modal.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
+          this.apiService.modalCtrl.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
             r.present();
-            this.apiService.modal.dismiss();
+            this.apiService.modalCtrl.dismiss();
             resolve(IENMessage.success);
           });
         });
@@ -159,7 +159,7 @@ export class EpinCashOutPage implements OnInit {
         const props = {
           machineId: localStorage.getItem('machineId')
         }
-        this.apiService.modal.create({ component: SmcListPage, componentProps: props }).then(r => {
+        this.apiService.modalCtrl.create({ component: SmcListPage, componentProps: props }).then(r => {
           r.present();
           resolve(IENMessage.success);
         });

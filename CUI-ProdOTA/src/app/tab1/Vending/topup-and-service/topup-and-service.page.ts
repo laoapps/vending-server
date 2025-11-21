@@ -29,7 +29,7 @@ export class TopupAndServicePage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   selectMenu(value: ITopupServiceMenu): Promise<any> {
@@ -78,7 +78,7 @@ export class TopupAndServicePage implements OnInit {
 
   initPhonePayment() {
     const props: any = {};
-    this.apiService.modal.create({ component: PhonePaymentPage, componentProps: props }).then(r => {
+    this.apiService.modalCtrl.create({ component: PhonePaymentPage, componentProps: props }).then(r => {
       r.present();
     });
   }

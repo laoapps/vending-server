@@ -53,7 +53,7 @@ export class HowToPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   loadAutoPlayState() {

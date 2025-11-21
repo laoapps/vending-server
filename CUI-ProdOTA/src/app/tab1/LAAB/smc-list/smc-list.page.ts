@@ -146,7 +146,7 @@ export class SmcListPage implements OnInit {
   }
 
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
   createEPIN(data: any): Promise<any> {
@@ -191,7 +191,7 @@ export class SmcListPage implements OnInit {
             qrImage: r,
             code: findsave[0].detail.items[0].code[0]
           }
-          this.apiService.modal.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
+          this.apiService.modalCtrl.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
             r.present();
             resolve(IENMessage.success);
           });

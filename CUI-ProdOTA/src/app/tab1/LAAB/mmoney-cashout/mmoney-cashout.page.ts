@@ -136,7 +136,7 @@ export class MmoneyCashoutPage implements OnInit {
         this.apiService.alertSuccess(`MMoney account ${this.phonenumber} receive about ${moneyFormat}`);
         // this.apiService.cash.amount = Number(this.apiService.cash.amount);
         this.stackCashoutPage.dismiss();
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);
         resolve(IENMessage.success);
 
@@ -152,14 +152,14 @@ export class MmoneyCashoutPage implements OnInit {
         // });
         this.apiService.alertError('Cash out from vending between MMoney fail');
         this.stackCashoutPage.dismiss();
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
         // this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
     });
   }
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 
 }

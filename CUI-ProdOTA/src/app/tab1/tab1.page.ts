@@ -802,7 +802,7 @@ export class Tab1Page implements OnDestroy {
           if (this.allowVending !== r.allowVending) {
             this.allowVending = r.allowVending;
 
-            const currentRoute = await this.apiService.modal.getTop();
+            const currentRoute = await this.apiService.modalCtrl.getTop();
 
             if (this.allowVending) {
               await this.apiService.toast.create({
@@ -2552,7 +2552,7 @@ export class Tab1Page implements OnDestroy {
             })
               .getCanvas()
               .then((r) => {
-                this.apiService.modal
+                this.apiService.modalCtrl
                   .create({
                     component: QrpayPage,
                     componentProps: {
@@ -2677,7 +2677,7 @@ export class Tab1Page implements OnDestroy {
           })
             .getCanvas()
             .then((r) => {
-              this.apiService.modal
+              this.apiService.modalCtrl
                 .create({
                   component: QrpayPage,
                   componentProps: {
@@ -2876,7 +2876,7 @@ export class Tab1Page implements OnDestroy {
       }
       console.log('props_data', props_data);
       const that = this;
-      this.apiService.modal.create({ component: AutoPaymentPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
+      this.apiService.modalCtrl.create({ component: AutoPaymentPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
         r.present();
         console.log('props_data', r);
 
@@ -2921,7 +2921,7 @@ export class Tab1Page implements OnDestroy {
       }
       console.log('props_data', props_data);
       const that = this;
-      this.apiService.modal.create({ component: AutoPaymentTopUpPage, componentProps: props_data, cssClass: 'dialog-fullscreenQR' }).then(r => {
+      this.apiService.modalCtrl.create({ component: AutoPaymentTopUpPage, componentProps: props_data, cssClass: 'dialog-fullscreenQR' }).then(r => {
         r.present();
         this.otherModalAreOpening = true;
         // this.apiService.allModals.push(this.apiService.modal);
@@ -3228,7 +3228,7 @@ export class Tab1Page implements OnDestroy {
         };
         console.log(`props`, props);
 
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: LaabGoPage, componentProps: props })
           .then((r) => {
             r.present();
@@ -3252,7 +3252,7 @@ export class Tab1Page implements OnDestroy {
   epinCashOut(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: EpinCashOutPage, componentProps: {} })
           .then((r) => {
             r.present();
@@ -3305,7 +3305,7 @@ export class Tab1Page implements OnDestroy {
           const props = {
             qrImage: r,
           };
-          this.apiService.modal
+          this.apiService.modalCtrl
             .create({
               component: LaabCashinShowCodePage,
               componentProps: props,
@@ -3345,7 +3345,7 @@ export class Tab1Page implements OnDestroy {
           throw new Error(IENMessage.thereIsNotBalance);
 
         const props = {};
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: LaabCashoutPage, componentProps: props })
           .then((r) => {
             r.present();
@@ -3461,7 +3461,7 @@ export class Tab1Page implements OnDestroy {
           throw new Error(IENMessage.thereIsNotBalance);
 
         // ##here
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({ component: StackCashoutPage })
           .then((r) => {
             r.present();
@@ -3492,7 +3492,7 @@ export class Tab1Page implements OnDestroy {
       links: [android_link, ios_link],
     };
 
-    this.apiService.modal
+    this.apiService.modalCtrl
       .create({
         component: MmoneyIosAndroidDownloadPage,
         componentProps: props,
@@ -3560,7 +3560,7 @@ export class Tab1Page implements OnDestroy {
   public openTopupAndServicePage(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({
             component: TopupAndServicePage,
             cssClass: 'dialog-fullscreen',
@@ -3583,7 +3583,7 @@ export class Tab1Page implements OnDestroy {
   public openGameServices(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        this.apiService.modal
+        this.apiService.modalCtrl
           .create({
             component: PlayGamesPage,
             cssClass: 'dialog-fullscreen',
@@ -3655,7 +3655,7 @@ export class Tab1Page implements OnDestroy {
       machineId: this.machineId,
       orders: this.orders,
     };
-    this.apiService.modal
+    this.apiService.modalCtrl
       .create({ component: VendingGoPage, componentProps: props })
       .then((r) => {
         r.present();
@@ -3670,7 +3670,7 @@ export class Tab1Page implements OnDestroy {
       });
   }
   openHowToPage() {
-    this.apiService.modal
+    this.apiService.modalCtrl
       .create({
         component: HowToPage,
         componentProps: {},
@@ -3770,7 +3770,7 @@ export class Tab1Page implements OnDestroy {
 
   async startTestMotor() {
     await this.serial?.close();
-    this.apiService.modal.create({
+    this.apiService.modalCtrl.create({
       component: TestmotorPage,
       componentProps: { serial: this.serial }
     }).then(r => {
@@ -3820,7 +3820,7 @@ export class Tab1Page implements OnDestroy {
     const props = {
 
     }
-    this.apiService.modal
+    this.apiService.modalCtrl
       .create({
         component: component,
         componentProps: props,

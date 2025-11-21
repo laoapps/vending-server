@@ -157,7 +157,7 @@ export class SettingPage implements OnInit, OnDestroy {
   }
 
   openSettingControlMenu() {
-    this.apiService.modal.create({ component: SettingControlMenuPage, cssClass: 'dialog-fullscreen' }).then(r => {
+    this.apiService.modalCtrl.create({ component: SettingControlMenuPage, cssClass: 'dialog-fullscreen' }).then(r => {
       r.present();
     });
   }

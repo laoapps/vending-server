@@ -98,7 +98,7 @@ export class LaabCashoutPage implements OnInit {
         this.apiService.alertSuccess(`LAAB account ${this.phonenumber} receive about ${moneyFormat}`);
         this.apiService.cash.amount = 0;
         this.stackCashoutPage.dismiss();
-        this.apiService.modal.dismiss();
+        this.apiService.modalCtrl.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);
         resolve(IENMessage.success);
 
@@ -121,6 +121,6 @@ export class LaabCashoutPage implements OnInit {
     });
   }
   close() {
-    this.apiService.modal.dismiss();
+    this.apiService.modalCtrl.dismiss();
   }
 }

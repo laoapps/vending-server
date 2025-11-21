@@ -19,7 +19,7 @@ export class ReportbillsPage implements OnInit {
   totalSale = 0;
   sumSale = new Array<{ name: string, price: number, qtty: number, total: number, image: string, id: number }>();
   show = 1;
-  constructor(public storage: IonicStorageService, public modal: ModalController, public apiService: ApiService, public excelService: ExcelService) { }
+  constructor(public storage: IonicStorageService, public modalCtrl: ModalController, public apiService: ApiService, public excelService: ExcelService) { }
 
   ngOnInit() {
     this.url=this.apiService.url;
@@ -53,7 +53,7 @@ export class ReportbillsPage implements OnInit {
   //   this.f_sells = this.bills.filter(v => v.bill.updatedAt.toString() == t);
   // }
   close() {
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
   clear() {
     const conf = confirm('Are you sure ?');
