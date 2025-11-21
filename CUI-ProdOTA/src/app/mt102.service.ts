@@ -20,19 +20,78 @@ export class MT102Service implements ISerialService {
   private totalValue = 0;
   machinestatus = { data: '' };
   private serialEventsSubscription: Subscription | null = null;
+  private pollingIntervalMs = 2000; // Poll every 2 seconds (adjust as needed)
+  private pollingSubscription: Subscription | null = null;
+  private consecutiveTimeouts = 0;
+  private maxConsecutiveTimeouts = 3;
 
-  
-  constructor(private serialService: SerialServiceService) {}
+  private temperaturePollingIntervalMs = 10000; // Every 10 seconds
+  private temperaturePollingSubscription: Subscription | null = null;
+
+  constructor(private serialService: SerialServiceService) { }
 
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
   }
+  public startTemperaturePolling(): void {
+    if (this.temperaturePollingSubscription) {
+      return;
+    }
 
+    this.temperaturePollingSubscription = interval(this.temperaturePollingIntervalMs).subscribe(async () => {
+      try {
+        await this.serialService.writeMT102(
+          '07',
+          { address: this.m102.getSlaveAddress() }
+        );
+      } catch (error) {
+        this.addLogMessage(this.log, `Temperature polling error: ${error.message}`);
+      }
+    });
+    this.addLogMessage(this.log, 'Temperature polling started');
+  }
+  public startPolling(): void {
+    if (this.pollingSubscription) {
+      this.addLogMessage(this.log, 'Polling already active');
+      return;
+    }
+
+    this.pollingSubscription = interval(this.pollingIntervalMs).subscribe(async () => {
+      try {
+        await this.serialService.writeMT102(
+          '03',
+          { address: this.m102.getSlaveAddress() }
+        );
+
+        // Reset timeout counter on successful send
+        this.consecutiveTimeouts = 0;
+
+      } catch (error) {
+        this.addLogMessage(this.log, `Polling error: ${error.message}`);
+        this.consecutiveTimeouts++;
+
+        // Stop polling if too many consecutive errors
+        if (this.consecutiveTimeouts >= this.maxConsecutiveTimeouts) {
+          this.addLogMessage(this.log, 'Too many polling errors, stopping polling');
+          this.stopPolling();
+        }
+      }
+    });
+    this.addLogMessage(this.log, 'Status polling started');
+  }
+
+  public stopPolling(): void {
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+      this.pollingSubscription = null;
+      this.addLogMessage(this.log, 'Status polling stopped');
+    }
+  }
   private setupListeners(): void {
     if (this.serialEventsSubscription) {
       this.serialEventsSubscription.unsubscribe();
     }
-    
+
     this.serialEventsSubscription = this.getSerialEvents().subscribe((event) => {
       if (event.event === 'dataReceived') {
         const hexData = event.data;
@@ -57,53 +116,83 @@ export class MT102Service implements ISerialService {
       } else if (event.event === 'readError') {
         this.addLogMessage(this.log, `Read error: ${event.error}`);
       }
+      if (event.event === 'motorExecutionCompleted') {
+        const motorIndex = event.motorIndex;
+        const statusDetails = event.statusDetails;
+        this.addLogMessage(this.log, `Motor ${motorIndex} completed: ${JSON.stringify(statusDetails)}`);
+
+        // Update your UI or trigger next action
+        this.onMotorCompletion(motorIndex, statusDetails);
+      }
     });
 
     // Setup M102 protocol listeners
     this.m102.on('SERIAL_NUMBER', ({ details }) => {
       this.addLogMessage(this.log, `Serial Number: ${this.formatHexArray(details)}`);
     });
-    
+
     this.m102.on('MOTOR_POLL', ({ details }) => {
-      const status = {
-        executionStatus: details![0],
-        runningMotor: details![1],
-        executionResult: details![2],
-        peakCurrent: (details![3] << 8) | details![4],
-        averageCurrent: (details![5] << 8) | details![6],
-        runningTime: (details![7] << 8) | details![8],
-        lightCurtainState: details![9]
-      };
-      this.machinestatus.data = JSON.stringify(status);
-      this.addLogMessage(this.log, `Motor Poll: ${JSON.stringify(status)}`);
+      if (details && details.length >= 10) {
+        const status = {
+          executionStatus: details[0], // 0=Idle, 1=Execute, 2=Executed
+          runningMotor: details[1], // 0-59
+          executionResult: details[2], // 0=Success, 1=Overcurrent, etc.
+          peakCurrent: (details[3] << 8) | details[4], // mA
+          averageCurrent: (details[5] << 8) | details[6], // mA
+          runningTime: (details[7] << 8) | details[8], // ms
+          lightCurtainState: details[9] // 0=no drop, 1-200=ms
+        };
+
+        this.machinestatus.data = JSON.stringify(status);
+        this.addLogMessage(this.log, `Motor Poll Status: ${JSON.stringify(status)}`);
+
+        // Check if motor is running and update UI accordingly
+        if (status.executionStatus === 1) {
+          this.addLogMessage(this.log, `Motor ${status.runningMotor} is running`);
+        } else if (status.executionStatus === 2) {
+          this.addLogMessage(this.log, `Motor ${status.runningMotor} completed`);
+        }
+      }
     });
-    
+
     this.m102.on('MOTOR_RUN', ({ details }) => {
       const result = details?.[0] === 0 ? 'Success' : `Error ${details?.[0]}`;
       this.addLogMessage(this.log, `Motor Run Result: ${result}`);
       if (details?.[0] === 0) this.totalValue++;
     });
-    
+
     this.m102.on('TEMPERATURE', ({ details }) => {
       const temp = (details![0] << 8) | details![1];
       this.addLogMessage(this.log, `Temperature: ${temp / 10} °C`);
     });
-    
+
     this.m102.on('SWITCH_OUTPUT', ({ details }) => {
       this.addLogMessage(this.log, `Switch Output: Index ${details![0]}, Result ${details![1]}`);
     });
-    
+
     this.m102.on('SWITCH_INPUT', ({ details }) => {
       this.addLogMessage(this.log, `Switch Input (0-7): ${this.formatHexArray(details.slice(0, 8))}`);
     });
-    
+
     this.m102.on('ADDRESS_SET', ({ details }) => {
       this.addLogMessage(this.log, `Address Set: ${details![0]}`);
     });
-    
+
     this.m102.on('ERROR', ({ details }) => {
       this.addLogMessage(this.log, `Protocol Error: Code ${details?.[0]}`);
     });
+  }
+  private onMotorCompletion(motorIndex: number, statusDetails: any): void {
+    // Handle motor completion - update UI, play sound, etc.
+    this.addLogMessage(this.log, `Motor ${motorIndex} finished running`);
+
+    // You can check execution result
+    const executionResult = statusDetails.executionResult;
+    if (executionResult === 0) {
+      this.addLogMessage(this.log, `Motor ${motorIndex} completed successfully`);
+    } else {
+      this.addLogMessage(this.log, `Motor ${motorIndex} failed with error: ${executionResult}`);
+    }
   }
 
   private handleParsedMT102Response(response: any): void {
@@ -170,9 +259,9 @@ export class MT102Service implements ISerialService {
         const serialNumberPacket = this.m102.getSerialNumber();
         const result = await this.serialService.writeMT102(
           '01',
-           { address: this.m102.getSlaveAddress() }
+          { address: this.m102.getSlaveAddress() }
         );
-        
+
         this.addLogMessage(this.log, 'MT102 setup command sent');
         resolve();
       } catch (err) {
@@ -204,15 +293,16 @@ export class MT102Service implements ISerialService {
           this.baudRate,
           this.log
         );
-        
+
         if (init !== this.portName) {
           this.addLogMessage(this.log, `Serial port mismatch: Expected ${this.portName}, got ${init}`);
           reject(new Error(`Serial port mismatch: Expected ${this.portName}, got ${init}`));
           return;
         }
-        
+
         this.initM102();
         await this.serialService.startReadingMT102();
+        this.startPolling();
         this.addLogMessage(this.log, `Serial port initialized: ${this.portName}`);
         resolve(init);
       } catch (error) {
@@ -232,15 +322,16 @@ export class MT102Service implements ISerialService {
       for (let attempt = 1; attempt <= retries; attempt++) {
         try {
           let m102Command: string;
-          const { 
-            motorIndex = 0, 
-            motorType = 3, 
-            lightCurtainMode = 0, 
-            overcurrent = 100, 
-            undercurrent = 50, 
-            timeout = 70,
+          const {
+            slot = 0,
+            motorType = 3,
+            lightCurtainMode = 0,
+            overcurrent = 0,
+            undercurrent = 0,
+            timeout = 0,
             switchIndex = 0,
-            newAddress = 1
+            newAddress = 1,
+            motorIndex = 0
           } = params || {};
 
           switch (command) {
@@ -248,18 +339,28 @@ export class MT102Service implements ISerialService {
               m102Command = this.m102.motorPoll();
               break;
             case EMACHINE_COMMAND.shippingcontrol:
-              m102Command = this.m102.motorRun(motorIndex, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
+              m102Command = this.m102.motorRun(slot, motorType, lightCurtainMode, overcurrent, undercurrent, timeout);
               break;
             case EMACHINE_COMMAND.READ_TEMP:
               m102Command = this.m102.readTemp();
               break;
             case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
+              // Validate switch index
+              if (switchIndex < 0 || switchIndex > 7) {
+                reject(new Error('Switch index must be 0-7'));
+                return;
+              }
               m102Command = this.m102.writeDO(switchIndex, 0);
               break;
             case EMACHINE_COMMAND.READ_SWITCH_INPUT:
               m102Command = this.m102.readDI();
               break;
             case EMACHINE_COMMAND.SET_ADDRESS:
+              // Validate address
+              if (newAddress < 1 || newAddress > 8) {
+                reject(new Error('New address must be 1-8'));
+                return;
+              }
               m102Command = this.m102.setAddress(newAddress);
               break;
             case EMACHINE_COMMAND.RESET:
@@ -269,6 +370,11 @@ export class MT102Service implements ISerialService {
               resolve(PrintSucceeded(command, {}, 'no events tracked'));
               return;
             case EMACHINE_COMMAND.MOTOR_SCAN:
+              // Validate motor index
+              if (motorIndex < 0 || motorIndex > 99) {
+                reject(new Error('Motor index must be 0-99'));
+                return;
+              }
               m102Command = this.m102.motorScan(motorIndex);
               break;
             default:
@@ -276,21 +382,46 @@ export class MT102Service implements ISerialService {
               return;
           }
 
-          this.addLogMessage(this.log, `Sending command (Attempt ${attempt}): ${command}`);
+          this.addLogMessage(this.log, `Sending command (Attempt ${attempt}): ${command} with slot: ${slot}`);
+
+          // Build command parameters based on command type
+          let commandParams: any = { address: this.m102.getSlaveAddress() };
+
+          switch (command) {
+            case EMACHINE_COMMAND.shippingcontrol:
+              commandParams = {
+                ...commandParams,
+                motorIndex: slot,  // Change from "slot" to "motorIndex"
+                motorType: motorType,
+                lightCurtainMode: lightCurtainMode,
+                overcurrentThreshold: overcurrent,
+                undercurrentThreshold: undercurrent,
+                timeout: timeout
+              };
+              break;
+            case EMACHINE_COMMAND.READ_SWITCH_OUTPUT:
+              commandParams = { ...commandParams, doIndex: switchIndex, operation: 0 };
+              break;
+            case EMACHINE_COMMAND.SET_ADDRESS:
+              commandParams = { ...commandParams, newAddress: newAddress };
+              break;
+            case EMACHINE_COMMAND.MOTOR_SCAN:
+              commandParams = { ...commandParams, motorIndex: motorIndex };
+              break;
+            // For other commands, just use the address
+          }
+
           await this.serialService.writeMT102(
             this.getCommandHex(command),
-            { 
-              address: this.m102.getSlaveAddress(),
-              ...params 
-            }
+            commandParams
           );
 
           // Wait a bit for response
           await new Promise(resolve => setTimeout(resolve, 100));
-          
+
           resolve(PrintSucceeded(command, params, 'Command sent successfully'));
           return;
-         
+
         } catch (error) {
           this.addLogMessage(this.log, `Attempt ${attempt} failed: ${error.message}`);
           if (attempt === retries) {
@@ -329,16 +460,16 @@ export class MT102Service implements ISerialService {
     return new Promise(async (resolve, reject) => {
       try {
 
-        
+
         if (this.serialEventsSubscription) {
           this.serialEventsSubscription.unsubscribe();
           this.serialEventsSubscription = null;
         }
-        
+
         if (this.m102) {
           this.m102.listeners.clear();
         }
-        
+
         await this.serialService.close();
         this.addLogMessage(this.log, 'MT102 service closed');
         resolve();
@@ -405,19 +536,19 @@ class M102Protocol {
     const packet = new Uint8Array(20);
     packet[0] = address;
     packet[1] = instruction;
-    
+
     // Pad data to 16 bytes with zeros
     const paddedData = [...data];
     while (paddedData.length < 16) {
       paddedData.push(0);
     }
-    
+
     packet.set(paddedData.slice(0, 16), 2);
 
     // Calculate CRC on first 18 bytes
     const crcData = packet.slice(0, 18);
     const crc = this.calculateCrc16(crcData);
-    
+
     // CRC bytes - low byte first, then high byte
     packet[18] = crc & 0xFF;
     packet[19] = (crc >> 8) & 0xFF;
@@ -432,9 +563,9 @@ class M102Protocol {
         this.emit('ERROR', [1]); // INVALID_LENGTH
         return { instruction: 0, data: [] };
       }
-      
+
       const packet = new Uint8Array(matches.map(byte => parseInt(byte, 16)));
-      
+
       if (packet[0] !== this.hostAddress) {
         this.emit('ERROR', [2]); // INVALID_HOST_ADDRESS
         return { instruction: 0, data: [] };
@@ -451,7 +582,7 @@ class M102Protocol {
       const instruction = packet[1];
       const data = Array.from(packet.slice(2, 18));
       this.processResponse(instruction, data);
-      
+
       return { instruction, data };
     } catch (error) {
       this.emit('ERROR', [5]); // PARSE_ERROR
@@ -513,25 +644,25 @@ class M102Protocol {
     }
   }
 
-  public getSerialNumber(): string { 
-    return this.buildPacket(0x01); 
+  public getSerialNumber(): string {
+    return this.buildPacket(0x01);
   }
-  
-  public motorPoll(): string { 
-    return this.buildPacket(0x03); 
+
+  public motorPoll(): string {
+    return this.buildPacket(0x03);
   }
-  
+
   public motorScan(motorIndex: number): string {
     const index = Math.max(0, Math.min(99, motorIndex || 0));
     return this.buildPacket(0x04, [index]);
   }
-  
+
   public motorRun(
-    motorIndex: number, 
-    motorType: number, 
-    lightCurtainMode: number, 
-    overcurrentThreshold: number, 
-    undercurrentThreshold: number, 
+    motorIndex: number,
+    motorType: number,
+    lightCurtainMode: number,
+    overcurrentThreshold: number,
+    undercurrentThreshold: number,
     timeout: number
   ): string {
     const params = [
@@ -544,11 +675,11 @@ class M102Protocol {
     ];
     return this.buildPacket(0x05, params);
   }
-  
-  public readTemp(): string { 
-    return this.buildPacket(0x07); 
+
+  public readTemp(): string {
+    return this.buildPacket(0x07);
   }
-  
+
   public writeDO(doIndex: number, operation: number): string {
     const params = [
       Math.max(0, Math.min(7, doIndex || 0)),
@@ -556,11 +687,11 @@ class M102Protocol {
     ];
     return this.buildPacket(0x08, params);
   }
-  
-  public readDI(): string { 
-    return this.buildPacket(0x09, [0]); 
+
+  public readDI(): string {
+    return this.buildPacket(0x09, [0]);
   }
-  
+
   public setAddress(newAddress: number): string {
     const address = Math.max(1, Math.min(8, newAddress || 1));
     return this.buildPacket(0xFF, [address], 255);
