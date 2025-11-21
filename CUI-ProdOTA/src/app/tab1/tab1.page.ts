@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   NgZone,
   OnDestroy,
   OnInit,
@@ -93,12 +94,14 @@ import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 import { Router } from '@angular/router';
 import { AutoPaymentTopUpPage } from '../auto-payment-top-up/auto-payment-top-up.page';
 import { interval, Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page implements OnDestroy {
+  private router = inject(Router);  // <-- Add this line instead of constructor parameter
   readyState = false;
   contact = localStorage.getItem('contact') || '55516321';
   menus = [];
@@ -464,7 +467,7 @@ export class Tab1Page implements OnDestroy {
     private vendingIndex: VendingIndexServiceService,
     private dbService: DatabaseService,
     // private videoCacheService: VideoCacheService,
-    public router: Router
+    // public router: Router
   ) {
 
     // this.refreshAllEveryHour();
@@ -511,7 +514,7 @@ export class Tab1Page implements OnDestroy {
 
 
     platform.ready().then(() => {
-      // this.loadBrightness();
+      this.loadBrightness();
       // this.autoCheckAppVersion();
 
       // this.toggleTabServicesSegment();
@@ -911,6 +914,9 @@ export class Tab1Page implements OnDestroy {
             this.apiService.musicVolume = this.musicVolume;
             // this.refresh();
 
+          }
+          if(r?.brightness){
+            this.setBrightness(r?.brightness||1);
           }
           if (this.platform.is('android')) {
             if (r.versionId && r?.versionId !== '0.0.0') {
@@ -2068,7 +2074,7 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        const run = await ScreenBrightness.setBrightness({ brightness: 0.0 });
+        const run = await ScreenBrightness.setBrightness({ brightness: 1 });
         this.apiService.alertSuccess(`--> run ${run}`)
 
         // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
@@ -2082,6 +2088,27 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
+  setBrightness(level=1): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if(level < 0 || level > 1) level = 1 ;
+        if(level == null || level == undefined) level = 1 ;
+        if(isNaN(level)) level = 1 ;
+        if(level==(await ScreenBrightness.getBrightness())?.brightness){
+          resolve(IENMessage.success);
+          return;
+        }
+        const run = await ScreenBrightness.setBrightness({ brightness: level });
+        this.apiService.alertSuccess(`--> set brightness ${run}`)
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+
 
   loadStock(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {

@@ -15,7 +15,7 @@ import { IonicStorageModule, Storage } from '@ionic/storage-angular';
 import { OrderModule } from 'ngx-order-pipe';
 
 import { JsonPipe } from '@angular/common';
-import { NgPipesModule } from 'ngx-pipes';
+
 import { GlobalErrorHandler } from './global-error-handler';
 import { HttpErrorInterceptor } from './http-error.interceptor';
 import { CustomloadingPage } from './customloading/customloading.page';
@@ -28,7 +28,7 @@ import { CustomloadingPage } from './customloading/customloading.page';
   imports: [BrowserModule, IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }), AppRoutingModule, HttpClientModule, QrCodeModule, JsonPipe,
     // NotifierModule,
     OrderModule,
-    NgPipesModule,
+
     IonicStorageModule.forRoot(),
   ],
   providers: [

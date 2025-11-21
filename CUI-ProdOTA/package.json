@@ -16,7 +16,7 @@
   "browserslist": {
     "production": [
       "last 2 Chrome versions",
-      "last 2 Firefox versions", 
+      "last 2 Firefox versions",
       "last 2 Edge versions",
       "last 2 Safari versions"
     ],
@@ -81,7 +81,6 @@
     "ng-qrcode": "^8.0.1",
     "ngx-mqtt": "^17.0.0",
     "ngx-order-pipe": "^3.0.0",
-    "ngx-pipes": "^3.2.2",
     "p-queue": "^8.1.1",
     "p-retry": "^6.2.1",
     "qrcode-with-logos": "^1.1.1",
