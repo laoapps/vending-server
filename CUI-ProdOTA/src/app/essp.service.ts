@@ -2,9 +2,27 @@ import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IBankNote, IlogSerial, IResModel, ISerialService } from './services/syste.model';
 import { Subject } from 'rxjs';
-import BigInt from 'big-integer';
 
-// import { randomBytes } from 'crypto-es'; // Use crypto-es for random bytes
+// BigInt polyfill for older browsers
+declare global {
+  interface BigInt {
+    toJSON(): string;
+  }
+}
+
+// Simple BigInt polyfill for environments that don't support it
+if (typeof BigInt === 'undefined') {
+  (window as any).BigInt = function(value: any) {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      return parseInt(value, 10);
+    }
+    return 0;
+  };
+}
+
 enum EEsspCommand {
   Sync = 'SYNC',
   SetChannelInhibits = 'SET_CHANNEL_INHIBITS',
@@ -23,11 +41,13 @@ enum EEsspCommand {
   UnitData = 'UNIT_DATA',
   ChannelValueRequest = 'CHANNEL_VALUE_REQUEST'
 }
+
 interface IEventInfo {
   name: EsspEvent;
   description: string;
   data: any;
 }
+
 enum EsspEvent {
   JAM_RECOVERY = 'JAM_RECOVERY',
   DISABLED = 'DISABLED',
@@ -89,7 +109,7 @@ export class EsspService implements ISerialService {
   private generator = BigInt(0);
   private modulus = BigInt(0);
   private hostInter = BigInt(0);
-  respTimeOut = 3000; // 30s for slower responses
+  respTimeOut = 3000;
 
   private pendingCommands: Map<number, { command: EEsspCommand; packet: string }> = new Map();
   private responseBuffer: string = '';
@@ -116,73 +136,58 @@ export class EsspService implements ISerialService {
       }
     });
     this.getEvents().subscribe(async (event) => {
-      // GET THE CREDIT_NOTE here 
-
-      // if(event.name== EsspEvent.CREDIT_NOTE){
-      //   await this.disable();
-      //   setTimeout(async()=>{
-      //     await this.enable();
-      //   },10000)
-      // }
       console.log('COMMING DATA: ' + `name: ${event.name}, data: ${event.data}, description: ${event.description}`);
     })
   }
-  isPrime(n: BigInt.BigInteger): boolean {
-    if (n.lesserOrEquals(BigInt(1))) return false;
-    if (n.equals(BigInt(2))) return true;
-    if (n.mod(BigInt(2)).equals(BigInt(0))) return false;
 
-    const sqrt = this.sqrtBigInt(n);
-    for (let i = BigInt(3); i.lesserOrEquals(sqrt); i = i.plus(2)) {
-      if (n.mod(i).equals(BigInt(0))) return false;
+  // Simplified prime check using number instead of BigInt
+  isPrime(n: number): boolean {
+    if (n <= 1) return false;
+    if (n === 2) return true;
+    if (n % 2 === 0) return false;
+
+    const sqrt = Math.sqrt(n);
+    for (let i = 3; i <= sqrt; i += 2) {
+      if (n % i === 0) return false;
     }
     return true;
   }
-  sqrtBigInt(n: BigInt.BigInteger): BigInt.BigInteger {
-    if (n.lesser(BigInt(0))) {
-      throw new Error('Square root of negative number is not supported');
-    }
-    if (n.equals(BigInt(0))) {
-      return BigInt(0);
-    }
 
-    let low = BigInt(1);
-    let high = n;
-    let mid: BigInt.BigInteger;
-
-    while (low.lesserOrEquals(high)) {
-      mid = low.plus(high).divide(BigInt(2));
-      const square = mid.times(mid);
-
-      if (square.equals(n)) {
-        return mid;
-      } else if (square.lesser(n)) {
-        low = mid.plus(1);
-      } else {
-        high = mid.minus(1);
-      }
-    }
-
-    return high; // Return the floor of the square root
-  }
-  generatePrime(bits: number = 64): BigInt.BigInteger {
-    const min = BigInt(1).shiftLeft(bits - 1); // 2^(bits-1)
-    const max = BigInt(1).shiftLeft(bits).minus(1); // 2^bits - 1
+  // Generate prime number using regular numbers (for smaller values)
+  generatePrime(bits: number = 16): number {
+    const min = Math.pow(2, bits - 1);
+    const max = Math.pow(2, bits) - 1;
 
     while (true) {
-      const randomBuffer = new Uint8Array(Math.ceil(bits / 8));
+      const randomBuffer = new Uint8Array(2);
       window.crypto.getRandomValues(randomBuffer);
-      let num = BigInt(0);
-      for (let i = 0; i < randomBuffer.length; i++) {
-        num = num.shiftLeft(8).plus(randomBuffer[i]);
-      }
-      num = num.mod(max.minus(min)).plus(min); // Fit within range
+      let num = (randomBuffer[0] << 8) | randomBuffer[1];
+      num = num % (max - min) + min;
+
+      // Ensure it's odd
+      if (num % 2 === 0) num++;
 
       if (this.isPrime(num)) return num;
-      num = num.plus(2); // Try next odd number
-      if (num.greater(max)) num = min.plus(1); // Reset to min+1 if exceeds max
+      num += 2;
+      if (num > max) num = min + 1;
     }
   }
+
+  // Simple modular exponentiation for numbers
+  modExp(base: number, exponent: number, modulus: number): number {
+    if (modulus === 1) return 0;
+    let result = 1;
+    base = base % modulus;
+    while (exponent > 0) {
+      if (exponent % 2 === 1) {
+        result = (result * base) % modulus;
+      }
+      exponent = Math.floor(exponent / 2);
+      base = (base * base) % modulus;
+    }
+    return result;
+  }
+
   private processBuffer(): void {
     const STX = 0x7F;
     while (this.responseBuffer.length >= 2) {
@@ -237,7 +242,7 @@ export class EsspService implements ISerialService {
               processed = true;
               this.addLogMessage(this.log, `Remaining buffer: ${this.responseBuffer}`);
               break;
-            } catch (e) {
+            } catch (e: any) {
               this.addLogMessage(this.log, `Failed to parse packet: ${packetHex}, Error: ${e.message}`);
               this.resetPacket();
               this.responseBuffer = this.responseBuffer.substring(ndx + 1);
@@ -271,7 +276,7 @@ export class EsspService implements ISerialService {
             try {
               await this.serialService.write(entry.packet);
               this.addLogMessage(this.log, `Resent packet: ${entry.packet}`);
-            } catch (e) {
+            } catch (e: any) {
               this.addLogMessage(this.log, `Retry write failed: ${e.message}`);
               this.responseSubject.error({ command: entry.command, seqId, message: 'Retry write failed' });
               this.pendingCommands.delete(seqId);
@@ -283,7 +288,6 @@ export class EsspService implements ISerialService {
         reject(error);
       }
     });
-
   }
 
   private resetPacket(): void {
@@ -336,7 +340,7 @@ export class EsspService implements ISerialService {
         } else {
           reject(new Error(`Initialization failed: ${init}`));
         }
-      } catch (err) {
+      } catch (err: any) {
         reject(new Error(`Initialization failed: ${err.message}`));
       }
     });
@@ -345,6 +349,7 @@ export class EsspService implements ISerialService {
   getResponses() {
     return this.responseSubject.asObservable();
   }
+
   getEvents() {
     return this.eventSubject.asObservable();
   }
@@ -362,7 +367,6 @@ export class EsspService implements ISerialService {
     this.addLogMessage(this.log, 'Polling stopped');
   }
 
-  // [Updated] close method
   close(): Promise<void> {
     this.stopPolling();
     if (this.bufferTimeout) {
@@ -390,27 +394,28 @@ export class EsspService implements ISerialService {
 
           results.push(await this.retryCommand(EEsspCommand.Sync, {}));
           this.addLogMessage(this.log, 'SYNC completed');
-          // await this.delay(100);
+          
           results.push(await this.retryCommand(EEsspCommand.HostProtocolVersion, { version: 6 }));
           this.addLogMessage(this.log, 'HostProtocolVersion completed');
-          // await this.delay(100);
+          
           await this.initEncryption();
           this.addLogMessage(this.log, 'Encryption completed');
+          
           results.push(await this.retryCommand(EEsspCommand.GetSerialNumber, {}));
           this.addLogMessage(this.log, 'GetSerialNumber completed');
-          // await this.delay(100);
+          
           results.push(await this.retryCommand(EEsspCommand.Reset, {}));
           this.addLogMessage(this.log, 'Reset completed');
-          // await this.delay(500);
+          
           results.push(await this.retryCommand(EEsspCommand.DisplayOn, {}));
           this.addLogMessage(this.log, 'DisplayOn completed');
-          // await this.delay(100);
+          
           results.push(await this.retryCommand(EEsspCommand.Enable, {}));
           this.addLogMessage(this.log, 'Enable completed');
-          // await this.delay(100);
+          
           results.push(await this.retryCommand(EEsspCommand.SetupRequest, {}));
           this.addLogMessage(this.log, 'SetupRequest completed');
-          // await this.delay(100);
+          
           results.push(await this.retryCommand(EEsspCommand.SetChannelInhibits, { channels: this.channels }));
           this.addLogMessage(this.log, 'SetChannelInhibits completed');
 
@@ -418,11 +423,11 @@ export class EsspService implements ISerialService {
           this.addLogMessage(this.log, `Initialization completed: ${JSON.stringify(results)}`);
           resolve(results[0]);
           return;
-        } catch (error) {
+        } catch (error: any) {
           retries--;
-          this.addLogMessage(this.log, `Init attempt ${6 - retries} failed: ${error.message}, retries left: ${retries}`);
+          this.addLogMessage(this.log, `Init attempt ${20 - retries} failed: ${error.message}, retries left: ${retries}`);
           if (retries === 0) {
-            reject(new Error(`Initialization failed after 5 retries: ${error.message}`));
+            reject(new Error(`Initialization failed after 20 retries: ${error.message}`));
           } else {
             await this.delay(1000);
           }
@@ -430,38 +435,34 @@ export class EsspService implements ISerialService {
       }
     });
   }
-  private async generateKeys(): Promise<{ generator: BigInt.BigInteger; modulus: BigInt.BigInteger; hostRandom: BigInt.BigInteger; hostInter: BigInt.BigInteger }> {
+
+  private async generateKeys(): Promise<{ generator: number; modulus: number; hostRandom: number; hostInter: number }> {
     try {
       const generator = this.generatePrime(16);
       const modulus = this.generatePrime(16);
 
-      if (generator.eq(BigInt(0)) || modulus.eq(BigInt(0))) {
+      if (generator === 0 || modulus === 0) {
         throw new Error('GENERATOR and MODULUS should be > 0');
       }
 
       let gen = generator;
       let mod = modulus;
-      if (gen.lt(mod)) {
+      if (gen < mod) {
         [mod, gen] = [gen, mod];
       }
 
       const randomBuffer = new Uint8Array(2);
       window.crypto.getRandomValues(randomBuffer);
       const randomValue = new DataView(randomBuffer.buffer).getUint16(0, true);
-      const hostRandom = BigInt(randomValue).mod(BigInt('2147483648'));
-      const hostInter = gen.modPow(hostRandom, mod);
+      const hostRandom = randomValue % 2147483648;
+      const hostInter = this.modExp(gen, hostRandom, mod);
 
-
-      return new Promise((resolve, reject) => {
-        resolve({ generator, modulus, hostRandom, hostInter });
-      });
+      return { generator, modulus, hostRandom, hostInter };
     } catch (error) {
-      return new Promise((resolve, reject) => {
-        reject(error);
-      });
+      throw error;
     }
-
   }
+
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -479,8 +480,8 @@ export class EsspService implements ISerialService {
     crc &= 0xFFFF;
 
     const crcBytes = new Uint8Array(2);
-    crcBytes[0] = crc & 0xFF;         // LSB
-    crcBytes[1] = (crc >> 8) & 0xFF;  // MSB
+    crcBytes[0] = crc & 0xFF;
+    crcBytes[1] = (crc >> 8) & 0xFF;
     return crcBytes;
   }
 
@@ -492,14 +493,15 @@ export class EsspService implements ISerialService {
     return new Uint8Array(hex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
   }
 
-
   private async retryCommand(command: EEsspCommand, params: any = {}, retries: number = 20): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
       try {
         for (let attempt = 1; attempt <= retries; attempt++) {
           try {
-            return resolve( await this.commandEssp(command, params));
-          } catch (e) {
+            const result = await this.commandEssp(command, params);
+            resolve(result);
+            return;
+          } catch (e: any) {
             this.addLogMessage(this.log, `Attempt ${attempt} failed for ${command}: ${e.message}`);
             if (attempt === retries) throw e;
             await this.delay(100);
@@ -510,8 +512,6 @@ export class EsspService implements ISerialService {
         reject(error);
       }
     });
-
-
   }
 
   private async commandEssp(command: EEsspCommand, params: any = {}): Promise<IResModel> {
@@ -570,7 +570,7 @@ export class EsspService implements ISerialService {
       case EEsspCommand.SetModulus:
       case EEsspCommand.RequestKeyExchange:
         cmdByte = command === EEsspCommand.SetGenerator ? 0x4A : command === EEsspCommand.SetModulus ? 0x4B : 0x4C;
-        const keyBytes = this.numberToBytes(params.value || BigInt(0));
+        const keyBytes = this.numberToBytes(params.value || 0);
         data = new Uint8Array([seqId, keyBytes.length + 1, cmdByte, ...keyBytes]);
         break;
       default:
@@ -601,7 +601,7 @@ export class EsspService implements ISerialService {
               this.pendingCommands.delete(seqId);
               let responseData = res.response.data.length > 0 ? res.response.data : ['OK'];
               if (command === EEsspCommand.GetSerialNumber && res.response.data.length > 0) {
-                responseData = [this.bytesToNumber(res.response.data).toJSNumber()];
+                responseData = [this.bytesToNumber(res.response.data)];
               }
               resolve({
                 command,
@@ -619,61 +619,54 @@ export class EsspService implements ISerialService {
           }
         });
       });
-    } catch (e) {
+    } catch (e: any) {
       this.pendingCommands.delete(seqId);
       this.addLogMessage(this.log, `Write failed: ${e.message}`);
-      return new Promise<IResModel>((resolve, reject) => {
-        reject(e);
-      });
+      throw e;
     }
   }
 
   private async initEncryption(): Promise<void> {
     try {
       const newKeys = await this.generateKeys();
-      // Assign keys directly to properties (similar to Node.js this.keys)
-      this.generator = newKeys.generator;
-      this.modulus = newKeys.modulus;
-      this.hostInter = newKeys.hostInter;
-      this.encryptKey = null; // Reset encryptKey
-      this.sequenceCount = 0; // Reset sequenceCount (like eCount)
-
-
+      // Convert to BigInt for compatibility with existing code structure
+      this.generator = BigInt(newKeys.generator);
+      this.modulus = BigInt(newKeys.modulus);
+      this.hostInter = BigInt(newKeys.hostInter);
+      this.encryptKey = undefined;
+      this.sequenceCount = 0;
 
       const commands = [
-        { command: EEsspCommand.SetGenerator, args: { value: this.generator } },
-        { command: EEsspCommand.SetModulus, args: { value: this.modulus } },
-        { command: EEsspCommand.RequestKeyExchange, args: { value: this.hostInter } },
+        { command: EEsspCommand.SetGenerator, args: { value: newKeys.generator } },
+        { command: EEsspCommand.SetModulus, args: { value: newKeys.modulus } },
+        { command: EEsspCommand.RequestKeyExchange, args: { value: newKeys.hostInter } },
       ];
+      
       let result: IResModel;
       for (const { command, args } of commands) {
         result = await this.commandEssp(command, args);
-        if (!result || result.status !== 1) { // Check status instead of success
+        if (!result || result.status !== 1) {
           throw result;
         }
       }
 
-      const slaveInterKey = this.bytesToNumber(result.data.slice(1));
-      const sharedKey = slaveInterKey.modPow(newKeys.hostRandom, this.modulus);
+      // For encryption key generation, use the number-based approach
+      const slaveInterKey = this.bytesToNumber((result as IResModel).data.slice(1));
+      const sharedKey = this.modExp(slaveInterKey, newKeys.hostRandom, newKeys.modulus);
       const keyBytes = this.numberToBytes(sharedKey, 8);
       this.encryptKey = new Uint8Array([...this.fixedKey, ...keyBytes.slice(-8)]);
       this.isEncrypted = true;
       this.addLogMessage(this.log, `Encryption initialized with key: ${this.toHexString(this.encryptKey)}`);
-      return new Promise((resolve, reject) => {        resolve();
-      });
     } catch (error) {
       console.error('initEncryption ' + JSON.stringify(error));
-      return new Promise((resolve, reject) => {        reject(error);
-      });
+      throw error;
     }
   }
 
-  private numberToBytes(num: BigInt.BigInteger, byteLength: number = 8): Uint8Array {
+  private numberToBytes(num: number, byteLength: number = 8): Uint8Array {
     const bytes = new Uint8Array(byteLength);
-    let value = num;
     for (let i = 0; i < byteLength; i++) {
-      bytes[i] = Number(value.and(0xFF));
-      value = value.shiftRight(8);
+      bytes[i] = (num >> (i * 8)) & 0xFF;
     }
     return bytes;
   }
@@ -707,46 +700,98 @@ export class EsspService implements ISerialService {
     return { seqId, command, data };
   }
 
-  private bytesToNumber(bytes: number[]): BigInt.BigInteger {
-    let result = BigInt(0);
+  private bytesToNumber(bytes: number[]): number {
+    let result = 0;
     for (let i = bytes.length - 1; i >= 0; i--) {
-      result = result.shiftLeft(8).add(bytes[i]);
+      result = (result << 8) + bytes[i];
     }
     return result;
   }
-
-
 
   command(command: EMACHINE_COMMAND, params: any): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
       switch (command) {
         case EMACHINE_COMMAND.INIT:
-          return resolve(await this.initializeSerialPort(
-            params.portName,
-            params.baudRate,
-            params.log,
-            params.machineId,
-            params.otp,
-            params.isNative
-          ).then(port => ({ command, data: port, message: 'Initialized', status: 1 })));
+          try {
+            const port = await this.initializeSerialPort(
+              params.portName,
+              params.baudRate,
+              params.log,
+              params.machineId,
+              params.otp,
+              params.isNative
+            );
+            resolve({ command, data: port, message: 'Initialized', status: 1 });
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.CLOSE:
-          return resolve({ command, data: await this.close(), message: '', status: -1 });
+          try {
+            await this.close();
+            resolve({ command, data: 'Closed', message: '', status: -1 });
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.LISTPORTS:
-          return resolve({ command, data: await this.listPorts(), message: '', status: -1 });
+          try {
+            const ports = await this.listPorts();
+            resolve({ command, data: ports, message: '', status: -1 });
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.SETCHANNELINHIBITS:
-          return resolve(await this.setChannelInhibits(params.channels));
+          try {
+            const result = await this.setChannelInhibits(params.channels);
+            resolve(result);
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.ENABLE:
-          return resolve(await this.enable());
+          try {
+            const result = await this.enable();
+            resolve(result);
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.DISABLE:
-          return resolve(await this.disable());
+          try {
+            const result = await this.disable();
+            resolve(result);
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.RESET:
-          return resolve(await this.reset());
+          try {
+            const result = await this.reset();
+            resolve(result);
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.GETSERIALNUMBER:
-          return resolve(await this.getSerialNumber());
+          try {
+            const result = await this.getSerialNumber();
+            resolve(result);
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         case EMACHINE_COMMAND.SETUPREQUEST:
-          return resolve(await this.setupRequest());
+          try {
+            const result = await this.setupRequest();
+            resolve(result);
+          } catch (error: any) {
+            reject({ command, message: error.message, status: 0 });
+          }
+          break;
         default:
-          return reject({ command, message: 'Command not found', status: 0 });
+          reject({ command, message: 'Command not found', status: 0 });
       }
     });
   }
@@ -785,24 +830,18 @@ export class EsspService implements ISerialService {
     return await this.retryCommand(EEsspCommand.SetupRequest, {});
   }
 
-  // [Updated] disable method
   async disable(): Promise<IResModel> {
     this.stopPolling();
     return await this.retryCommand(EEsspCommand.Disable, {});
   }
 
-  // [Updated] enable method
   async enable(): Promise<IResModel> {
     const result = await this.retryCommand(EEsspCommand.Enable, {});
     if (result.status === 1) {
       this.startPolling();
     }
-    return new Promise<IResModel>((resolve, reject) => {
-      resolve(result);
-    });
+    return result;
   }
-
-
 
   private addLogMessage(log: IlogSerial, message: string): void {
     addLogMessage(log, message);
@@ -811,12 +850,12 @@ export class EsspService implements ISerialService {
   public setChannels(channels = [1, 1, 1, 1, 1, 1, 1]) {
     this.channels = channels;
   }
+
   private convertBytesToInt32(bytes: number[]): number {
     if (bytes.length < 4) throw new Error('Insufficient bytes for Int32 conversion');
-    // Big-endian: [MSB, ..., LSB]
     return (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
   }
-  // Helper for unit type
+
   private getUnitType(type: number): string {
     const unitTypes: { [key: number]: string } = {
       0: "Banknote validator",
@@ -835,19 +874,23 @@ export class EsspService implements ISerialService {
   private decodeEvents(command: number, seqId: number, data: number[]): IEventInfo {
     console.log('seqId ' + seqId + ' command ' + command + ' status ' + command);
     const response = this.responseMap[command];
-    let decoded = {} as IEventInfo
-    decoded = response ? { name: response.name as EsspEvent, description: response.description, data } as IEventInfo : { name: 'UNKNOWN' as EsspEvent, description: command.toString(16), data } as IEventInfo;
+    let decoded: IEventInfo = response ? 
+      { name: response.name as EsspEvent, description: response.description, data } : 
+      { name: EsspEvent.UNKNOWN, description: command.toString(16), data };
 
-    if (command === 0xF0) { // OK response
+    if (command === 0xF0) {
       if (data.length === 0) {
-        decoded = { name: response.name as EsspEvent, description: response.description, data }; // Simple OK
+        decoded = { name: response?.name as EsspEvent || EsspEvent.OK, description: response?.description || 'OK', data };
       } else if (data.length >= 4 && this.pendingCommands.get(seqId)?.command === EEsspCommand.GetSerialNumber) {
         const serialNumber = this.convertBytesToInt32(data.slice(0, 4));
-        decoded = { name: response.name as EsspEvent, description: serialNumber + '', data };
-      } else if (data.length > 0) { // Poll events
+        decoded = { name: response?.name as EsspEvent || EsspEvent.OK, description: serialNumber.toString(), data };
+      } else if (data.length > 0) {
         const eventCode = data[0];
         const eventInfo = this.responseMap[eventCode];
-        decoded = eventInfo ? { name: eventInfo.name as EsspEvent, description: eventInfo.description, data } as IEventInfo : { name: 'UNKNOWN' as EsspEvent, description: eventCode.toString(16), data } as IEventInfo;;
+        decoded = eventInfo ? 
+          { name: eventInfo.name as EsspEvent, description: eventInfo.description, data } : 
+          { name: EsspEvent.UNKNOWN, description: eventCode.toString(16), data };
+        
         if (data.length > 1) {
           switch (eventCode) {
             case 238: // CREDIT_NOTE
@@ -866,15 +909,18 @@ export class EsspService implements ISerialService {
           }
         }
       }
-    } else if (data.length > 0) { // Non-OK events (unlikely for POLL, but kept for robustness)
+    } else if (data.length > 0) {
       const eventCode = data[0];
       const eventInfo = this.responseMap[eventCode];
-      decoded = eventInfo ? { name: eventInfo.name as EsspEvent, description: eventInfo.description, data } as IEventInfo : { name: 'UNKNOWN' as EsspEvent, description: eventCode.toString(16), data } as IEventInfo;
+      decoded = eventInfo ? 
+        { name: eventInfo.name as EsspEvent, description: eventInfo.description, data } : 
+        { name: EsspEvent.UNKNOWN, description: eventCode.toString(16), data };
     }
 
-    this.addLogMessage(this.log, `Decoded event: ${decoded}`);
+    this.addLogMessage(this.log, `Decoded event: ${JSON.stringify(decoded)}`);
     return decoded;
   }
+
   private startPolling(): void {
     if (this.tCounter) clearInterval(this.tCounter);
     this.isPolling = true;
@@ -890,16 +936,15 @@ export class EsspService implements ISerialService {
         this.addLogMessage(this.log, `Poll result: ${JSON.stringify(result)}`);
         retryCount = 0;
         lastResponseTime = Date.now();
-      } catch (error) {
+      } catch (error: any) {
         retryCount++;
         this.addLogMessage(this.log, `Polling failed (attempt ${retryCount}/${maxRetries}): ${error.message}`);
         if (retryCount >= maxRetries) {
           this.stopPolling();
           console.log(`Polling failed after ${maxRetries} retries: ${error.message}`);
           this.eventSubject.error(new Error(`Polling failed after ${maxRetries} retries: ${error.message}`));
-          // throw new Error(`Polling failed after ${maxRetries} retries: ${error.message}`);
         }
-        if (Date.now() - lastResponseTime > 10000) { // 10s silence
+        if (Date.now() - lastResponseTime > 10000) {
           this.addLogMessage(this.log, 'No response from device for 10s, restarting polling...');
           this.stopPolling();
           this.startPolling();
@@ -907,8 +952,8 @@ export class EsspService implements ISerialService {
       }
     }, 300);
   }
+
   private readonly responseMap: { [key: number]: { name: string; description: string } } = {
-    // Status Codes (240-250)
     240: { name: "OK", description: "Returned when a command from the host is understood and has been, or is in the process of, being executed." },
     241: { name: "SLAVE_RESET", description: "The device has undergone a power reset." },
     242: { name: "COMMAND_NOT_KNOWN", description: "Returned when an invalid command is received by a peripheral." },
@@ -919,7 +964,6 @@ export class EsspService implements ISerialService {
     248: { name: "FAIL", description: "Command failure" },
     250: { name: "KEY_NOT_SET", description: "The slave is in encrypted communication mode but the encryption keys have not been negotiated." },
 
-    // Event Codes (176-239)
     176: { name: "JAM_RECOVERY", description: "The SMART Payout unit is in the process of recovering from a detected jam." },
     177: { name: "ERROR_DURING_PAYOUT", description: "Returned if an error is detected whilst moving a note inside the SMART Payout unit." },
     179: { name: "SMART_EMPTYING", description: "The device is in the process of carrying out its Smart Empty command from the host." },
@@ -971,7 +1015,7 @@ export class EsspService implements ISerialService {
     238: { name: "CREDIT_NOTE", description: "A note has passed through the device, past the point of possible recovery and the host can safely issue its credit amount." },
     239: { name: "READ_NOTE", description: "A note is in the process of being scanned by the device (byte value 0) or a valid note has been scanned and is in escrow (byte value gives the channel number)." },
   };
-  // Reject code map from your second document
+
   private readonly rejectCodeMap: { [key: number]: { name: string; description: string } } = {
     0: { name: "NOTE_ACCEPTED", description: "The banknote has been accepted. No reject has occurred." },
     1: { name: "LENGTH_FAIL", description: "A validation fail: The banknote has been read but its length registers over the max length parameter." },

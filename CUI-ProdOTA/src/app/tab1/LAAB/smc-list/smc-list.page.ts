@@ -6,7 +6,7 @@ import { IENMessage } from 'src/app/models/base.model';
 import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
 import * as QRCode from 'qrcode';
 import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
-import * as moment from 'moment-timezone';
+import dayjs from 'dayjs';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -97,9 +97,9 @@ export class SmcListPage implements OnInit {
         const c = this.lists.filter(v => !this.hiddenList.find(vx => vx.uuid == v.uuid));
         console.log(`c`, c);
         this.lists =
-          this.lists.filter(v => this.hiddenList.find(vx => vx.uuid == v.uuid && moment().diff
+          this.lists.filter(v => this.hiddenList.find(vx => vx.uuid == v.uuid && dayjs().diff
             (
-              moment(vx.time), 'seconds'
+              dayjs(vx.time), 'seconds'
             )
             >
             24 * 60 * 60));

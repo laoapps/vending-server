@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, ICreditData, PrintSucceeded, PrintError, EMessage, IlogSerial, machineVMCStatus } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
-import * as moment from 'moment-timezone';
+import dayjs from 'dayjs';
 import { LoggingService } from './logging-service.service';
 import { DatabaseService } from './database.service';
 import cryptojs, { mode } from 'crypto-js';
@@ -409,9 +409,9 @@ export class VmcService implements ISerialService {
 
   private startPeriodicTasks(): void {
     this.T = setInterval(() => {
-      console.log('check last update ', Date.now(), this.lastUpdate, moment().diff(this.lastUpdate), this.setting?.allowCashIn);
+      console.log('check last update ', Date.now(), this.lastUpdate, dayjs().diff(this.lastUpdate), this.setting?.allowCashIn);
 
-      if (moment().diff(this.lastUpdate) >= 7000 || !this.setting.allowCashIn) {
+      if (dayjs().diff(this.lastUpdate) >= 7000 || !this.setting.allowCashIn) {
         if (!this.enable) return;
         this.enable = false;
         // this.serialService.writeVMC(EVMC_COMMAND.DISABLE, { enable: false });

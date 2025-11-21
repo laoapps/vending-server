@@ -35,7 +35,7 @@ import {
   IonicSafeString
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
-import * as moment from 'moment-timezone';
+import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
@@ -1107,8 +1107,8 @@ export class ApiService {
   public checkOnlineStatus() {
     if (this.wsAlive) {
       return (
-        moment().get('milliseconds') -
-        moment(this.wsAlive.time).get('milliseconds') <
+        dayjs().get('milliseconds') -
+        dayjs(this.wsAlive.time).get('milliseconds') <
         10 * 1000
       );
     } else {
