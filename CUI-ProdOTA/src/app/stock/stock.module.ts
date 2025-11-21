@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { StockPageRoutingModule } from './stock-routing.module';
 
 import { StockPage } from './stock.page';
-import {FilterByPipe} from 'ngx-pipes';
+// import {FilterByPipe} from 'ngx-pipes';
 @NgModule({
   imports: [
     CommonModule,
@@ -16,6 +16,8 @@ import {FilterByPipe} from 'ngx-pipes';
     StockPageRoutingModule,
   ],
   declarations: [StockPage],
-  providers:[FilterByPipe]
+  providers:[
+    // FilterByPipe
+  ]
 })
 export class StockPageModule {}

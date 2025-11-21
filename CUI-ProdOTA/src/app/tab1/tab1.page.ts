@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   NgZone,
   OnDestroy,
   OnInit,
@@ -79,7 +80,7 @@ import { SerialServiceService } from '../services/serialservice.service';
 import { Toast } from '@capacitor/toast';
 import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
 import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.process';
-import * as moment from 'moment-timezone';
+import dayjs from 'dayjs';
 import { DatabaseService } from '../database.service';
 import { IBankNote, IHashBankNote } from '../vmc.service';
 import { Zdm8Service } from '../zdm8.service';
@@ -93,12 +94,14 @@ import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 import { Router } from '@angular/router';
 import { AutoPaymentTopUpPage } from '../auto-payment-top-up/auto-payment-top-up.page';
 import { interval, Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page implements OnDestroy {
+  private router = inject(Router);  // <-- Add this line instead of constructor parameter
   readyState = false;
   contact = localStorage.getItem('contact') || '55516321';
   menus = [];
@@ -464,7 +467,7 @@ export class Tab1Page implements OnDestroy {
     private vendingIndex: VendingIndexServiceService,
     private dbService: DatabaseService,
     // private videoCacheService: VideoCacheService,
-    public router: Router
+    // public router: Router
   ) {
 
     // this.refreshAllEveryHour();
@@ -511,7 +514,7 @@ export class Tab1Page implements OnDestroy {
 
 
     platform.ready().then(() => {
-      // this.loadBrightness();
+      this.loadBrightness();
       // this.autoCheckAppVersion();
 
       // this.toggleTabServicesSegment();
@@ -914,6 +917,9 @@ export class Tab1Page implements OnDestroy {
             this.apiService.musicVolume = this.musicVolume;
             // this.refresh();
 
+          }
+          if(r?.brightness){
+            this.setBrightness(r?.brightness||1);
           }
           if (this.platform.is('android')) {
             if (r.versionId && r?.versionId !== '0.0.0') {
@@ -1544,6 +1550,7 @@ export class Tab1Page implements OnDestroy {
               if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
                 // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
               }
+              this.sendStatus(JSON.stringify(result?.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
             }
 
           }
@@ -1576,11 +1583,11 @@ export class Tab1Page implements OnDestroy {
         console.error(`FATAL: Response too long (${hexData.length} bytes > 44). Controller error.`);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: hexData + '' });
         this.handleFatalError();
-        return { command: '', status: 0, data: {}, message: 'Response too long - hardware error', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Response too long - hardware error', transactionID: 0 };
       }
       if (hexData.length < 8) {
         console.log(`Invalid response: Too short (${hexData.length / 2} bytes)`);
-        return { command: '', status: 0, data: {}, message: 'Invalid response: Too short', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Invalid response: Too short', transactionID: 0 };
       }
 
       const address = parseInt(hexData.slice(0, 2), 16);
@@ -1593,11 +1600,11 @@ export class Tab1Page implements OnDestroy {
 
       if (command !== 0xA1 && address !== 0x00) {
         console.log(`Invalid address for command 0x${command.toString(16)}: Expected 0x00, got 0x${address.toString(16)}`);
-        return { command: '', status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Invalid address', transactionID: 0 };
       }
       if (command === 0xA1 && (address < 0x01 || address > 0x04)) {
         console.log(`Invalid address for command 0xA1: Expected 0x01-0x04, got 0x${address.toString(16)}`);
-        return { command: '', status: 0, data: {}, message: 'Invalid address', transactionID: 0 };
+        return { command: '', status: 0, data: {rawData}, message: 'Invalid address', transactionID: 0 };
       }
 
       let result: IResModel;//IResModel;
@@ -1669,7 +1676,7 @@ export class Tab1Page implements OnDestroy {
           this._machineStatus.status.temp = result.data.temperature;
           this.machinestatus.data = result.data;
           // this.sendStatus();
-          this.sendStatus(JSON.stringify(result.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
+          
 
           break;
         case 0xA4: // Set Temperature
@@ -1738,7 +1745,7 @@ export class Tab1Page implements OnDestroy {
           break;
         default:
 
-          result = { command: '', status: 0, data: {}, message: 'Unsupported command', transactionID: 0 };
+          result = { command: '', status: 0, data: {rawData}, message: 'Unsupported command', transactionID: 0 };
       }
       return result;
     } catch (error: any) {
@@ -2087,10 +2094,15 @@ export class Tab1Page implements OnDestroy {
   setBrightness(level=1): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if(level<0||level>1) level=1;
-       
+        if(level < 0 || level > 1) level = 1 ;
+        if(level == null || level == undefined) level = 1 ;
+        if(isNaN(level)) level = 1 ;
+        if(level==(await ScreenBrightness.getBrightness())?.brightness){
+          resolve(IENMessage.success);
+          return;
+        }
         const run = await ScreenBrightness.setBrightness({ brightness: level });
-        this.apiService.alertSuccess(`--> setBrightness ${run}`)
+        this.apiService.alertSuccess(`--> set brightness ${run}`)
 
         resolve(IENMessage.success);
 

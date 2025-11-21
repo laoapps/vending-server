@@ -4,7 +4,7 @@ import { IonicStorageService } from '../ionic-storage.service';
 import { ModalController } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { ExcelService } from '../services/excel.service';
-import * as moment from 'moment-timezone';
+import dayjs from 'dayjs';
 @Component({
   selector: 'app-reportbills',
   templateUrl: './reportbills.page.html',
@@ -15,13 +15,14 @@ export class ReportbillsPage implements OnInit {
   byTimes = new Array<string>();
   f_sells = new Array<IBillProcess>();
   today_bills = new Array<IBillProcess>();
-  url = this.apiService.url;
+  url = '';
   totalSale = 0;
   sumSale = new Array<{ name: string, price: number, qtty: number, total: number, image: string, id: number }>();
   show = 1;
   constructor(public storage: IonicStorageService, public modal: ModalController, public apiService: ApiService, public excelService: ExcelService) { }
 
   ngOnInit() {
+    this.url=this.apiService.url;
     this.storage.get('bill_', 'bills').then(rx => {
       const b = rx.v as Array<IBillProcess>;
       const bll = b ? b : [];
@@ -32,7 +33,7 @@ export class ReportbillsPage implements OnInit {
     })
   }
   todayBills(v: Array<IBillProcess>) {
-    this.today_bills = this.bills.filter(v => moment(v.bill.paymenttime).diff(new Date(), 'days') == 0);
+    this.today_bills = this.bills.filter(v => dayjs(v.bill.paymenttime).diff(new Date(), 'days') == 0);
   }
   summarize(v: Array<IStock>) {
     this.sumSale = new Array<{ name: string, price: number, qtty: number, total: number, image: string, id: number }>();

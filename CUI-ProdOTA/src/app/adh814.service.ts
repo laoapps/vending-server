@@ -3,7 +3,7 @@ import { SerialServiceService } from './services/serialservice.service';
 import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, IlogSerial } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
 import { Toast } from '@capacitor/toast';
-import * as moment from 'moment-timezone';
+import dayjs from 'dayjs';
 import { App } from '@capacitor/app';
 
 export enum EADH814_COMMAND {

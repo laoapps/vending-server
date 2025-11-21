@@ -1,6 +1,4 @@
-import { Component, ComponentRef, Injectable, NgZone } from '@angular/core';
-// import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { ScreenBrightness } from '@capacitor-community/screen-brightness';
+import { Injectable } from '@angular/core';
 
 
 
@@ -8,12 +6,10 @@ import {
   EClientCommand,
   EMessage,
   EPaymentProvider,
-  ESerialPortType,
   IAlive,
   IBillProcess,
   IClientId,
   IDropPositionData,
-  IlogSerial,
   IMachineClientID,
   IMachineId,
   IReqModel,
@@ -30,71 +26,25 @@ import {
   AlertController,
   LoadingController,
   ModalController,
-  ModalOptions,
   ToastController,
-  IonicSafeString
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
-import * as moment from 'moment-timezone';
+import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
 // import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Tab1Page } from '../tab1/tab1.page';
 import { IENMessage } from '../models/base.model';
-import { IMachineStatus, hex2dec } from './service';
 import { ControlMenuService } from './control-menu.service';
 import axios, { AxiosHeaders, AxiosResponse } from 'axios';
 // import Swal from "sweetalert2";
-import { BehaviorSubject, Observable } from 'rxjs';
-import { EpinCashOutPageModule } from '../tab1/LAAB/epin-cash-out/epin-cash-out.module';
-import { EpinShowCodePageModule } from '../tab1/LAAB/epin-show-code/epin-show-code.module';
-import { LaabCashinShowCodePageModule } from '../tab1/LAAB/laab-cashin-show-code/laab-cashin-show-code.module';
-import { LaabCashoutPageModule } from '../tab1/LAAB/laab-cashout/laab-cashout.module';
-import { LaabGoPageModule } from '../tab1/LAAB/laab-go/laab-go.module';
-import { MmoneyCashoutPageModule } from '../tab1/LAAB/mmoney-cashout/mmoney-cashout.module';
-import { SmcListPageModule } from '../tab1/LAAB/smc-list/smc-list.module';
-import { StackCashoutPageModule } from '../tab1/LAAB/stack-cashout/stack-cashout.module';
-import { TopupServicePageModule } from '../tab1/LAAB/topup-service/topup-service.module';
-import { MmoneyIosAndroidDownloadPageModule } from '../tab1/MMoney/mmoney-ios-android-download/mmoney-ios-android-download.module';
-import { HowToPageModule } from '../tab1/Vending/how-to/how-to.module';
-import { OrderCartPageModule } from '../tab1/Vending/order-cart/order-cart.module';
-import { OrderPaidPageModule } from '../tab1/Vending/order-paid/order-paid.module';
-import { PhonePaymentPageModule } from '../tab1/Vending/phone-payment/phone-payment.module';
-import { PlayGamesPageModule } from '../tab1/Vending/play-games/play-games.module';
-import { TopupAndServicePageModule } from '../tab1/Vending/topup-and-service/topup-and-service.module';
-import { VendingGoPageModule } from '../tab1/Vending/vending-go/vending-go.module';
-import { HangmiFoodSegmentPageModule } from '../tab1/VendingSegment/hangmi-food-segment/hangmi-food-segment.module';
-import { HangmiStoreSegmentPageModule } from '../tab1/VendingSegment/hangmi-store-segment/hangmi-store-segment.module';
-import { TopupAndServiceSegmentPageModule } from '../tab1/VendingSegment/topup-and-service-segment/topup-and-service-segment.module';
-import { EpinCashOutPage } from '../tab1/LAAB/epin-cash-out/epin-cash-out.page';
-import { EpinShowCodePage } from '../tab1/LAAB/epin-show-code/epin-show-code.page';
-import { LaabCashinShowCodePage } from '../tab1/LAAB/laab-cashin-show-code/laab-cashin-show-code.page';
-import { LaabCashoutPage } from '../tab1/LAAB/laab-cashout/laab-cashout.page';
-import { LaabGoPage } from '../tab1/LAAB/laab-go/laab-go.page';
-import { MmoneyCashoutPage } from '../tab1/LAAB/mmoney-cashout/mmoney-cashout.page';
-import { SmcListPage } from '../tab1/LAAB/smc-list/smc-list.page';
-import { StackCashoutPage } from '../tab1/LAAB/stack-cashout/stack-cashout.page';
-import { TopupServicePage } from '../tab1/LAAB/topup-service/topup-service.page';
-import { MmoneyIosAndroidDownloadPage } from '../tab1/MMoney/mmoney-ios-android-download/mmoney-ios-android-download.page';
-import { HowToPage } from '../tab1/Vending/how-to/how-to.page';
-import { OrderCartPage } from '../tab1/Vending/order-cart/order-cart.page';
-import { OrderPaidPage } from '../tab1/Vending/order-paid/order-paid.page';
-import { PhonePaymentPage } from '../tab1/Vending/phone-payment/phone-payment.page';
-import { PlayGamesPage } from '../tab1/Vending/play-games/play-games.page';
-import { TopupAndServicePage } from '../tab1/Vending/topup-and-service/topup-and-service.page';
-import { VendingGoPage } from '../tab1/Vending/vending-go/vending-go.page';
-import { HangmiFoodSegmentPage } from '../tab1/VendingSegment/hangmi-food-segment/hangmi-food-segment.page';
-import { HangmiStoreSegmentPage } from '../tab1/VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
-import { TopupAndServiceSegmentPage } from '../tab1/VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
+import { BehaviorSubject } from 'rxjs';
 import { IndexedDBService } from './indededdb.service';
-import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
 import { Toast } from '@capacitor/toast';
-import { VendingIndexServiceService } from '../vending-index-service.service';
 import { IndexdblocalService } from './indexdblocal.service';
 import { IndexerrorService } from '../indexerror.service';
-import { GivePopUpPage } from '../give-pop-up/give-pop-up.page';
 import { VideoCacheService } from '../video-cache.service';
 import { Indexsavesale } from '../indexsavesale';
 import { App } from '@capacitor/app';
@@ -1107,8 +1057,8 @@ export class ApiService {
   public checkOnlineStatus() {
     if (this.wsAlive) {
       return (
-        moment().get('milliseconds') -
-        moment(this.wsAlive.time).get('milliseconds') <
+        dayjs().get('milliseconds') -
+        dayjs(this.wsAlive.time).get('milliseconds') <
         10 * 1000
       );
     } else {
