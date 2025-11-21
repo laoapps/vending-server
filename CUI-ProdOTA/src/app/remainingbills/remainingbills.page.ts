@@ -221,11 +221,10 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         };
 
 
-
-        await this.handleBillDeletion(transactionID);
-        Toast.show({ text: 'handleBillDeletion', duration: 'short' })
         await this.handleSerialCommand(transactionID, position, transID);
         Toast.show({ text: 'handleSerialCommand', duration: 'short' })
+        await this.handleBillDeletion(transactionID);
+        Toast.show({ text: 'handleBillDeletion', duration: 'short' })
         this.reconfirmStockAndDrop([{ transactionID, position }], dropPositionData);
         Toast.show({ text: 'reconfirmStockAndDrop', duration: 'short' })
         this.handleRetryAndUpdate(human);
