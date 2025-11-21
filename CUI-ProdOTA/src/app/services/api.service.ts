@@ -1454,6 +1454,8 @@ export class ApiService {
   //   });
   // }
 
+
+  
   loadOnlineMachine() {
     const url = `/getOnlineMachines`;
 
