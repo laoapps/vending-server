@@ -14,12 +14,12 @@
     "bu": "ionic build --prod && npx cap sync"
   },
   "browserslist": [
-    "defaults",
+    "Android >= 67",
+    "iOS >= 14",
+    "Chrome >= 67",
+    "Safari >= 14",
     "last 2 versions",
-    "not dead",
-    "not ie <= 11",
-    "chrome >= 49",
-    "android >= 4.4"
+    "not dead"
   ],
   "private": true,
   "dependencies": {
@@ -52,13 +52,10 @@
     "@ionic/angular-server": "^7.8.0",
     "@ionic/storage": "^3.0.6",
     "@ionic/storage-angular": "^4.0.0",
-    "@types/big-integer": "^0.0.30",
     "@types/cryptojs": "^3.1.33",
     "@types/semver": "^7.5.8",
     "angularx-qrcode": "^20.0.0",
     "axios": "^1.8.0",
-    "big-integer": "^1.6.52",
-    "bigint-crypto-utils": "^3.3.0",
     "bootstrap": "^4.6.0",
     "buffer": "^6.0.3",
     "capacitor-video-player": "^5.0.1",

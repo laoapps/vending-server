@@ -776,6 +776,9 @@ export class Tab1Page implements OnDestroy {
               }, 5000);
               return;
             }
+            if(r?.brightness){
+              this.setBrightness(r?.brightness);
+            }
           } catch (err) {
             this.apiService.IndexedLogDB.addBillProcess({ errorData: `Err refresh or exit app is :${JSON.stringify(err)}` })
           }
@@ -2067,7 +2070,7 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        const run = await ScreenBrightness.setBrightness({ brightness: 0.0 });
+        const run = await ScreenBrightness.setBrightness({ brightness: 1 });
         this.apiService.alertSuccess(`--> run ${run}`)
 
         // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
@@ -2081,6 +2084,22 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
+  setBrightness(level=1): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        if(level<0||level>1) level=1;
+       
+        const run = await ScreenBrightness.setBrightness({ brightness: level });
+        this.apiService.alertSuccess(`--> setBrightness ${run}`)
+
+        resolve(IENMessage.success);
+
+      } catch (error) {
+        resolve(error.message);
+      }
+    });
+  }
+
 
   loadStock(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
