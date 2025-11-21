@@ -779,6 +779,9 @@ export class Tab1Page implements OnDestroy {
               }, 5000);
               return;
             }
+            if(r?.brightness){
+              this.setBrightness(r?.brightness);
+            }
           } catch (err) {
             this.apiService.IndexedLogDB.addBillProcess({ errorData: `Err refresh or exit app is :${JSON.stringify(err)}` })
           }
