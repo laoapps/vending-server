@@ -31,8 +31,11 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   currentIndex = 0;
 
+  isAllowClick = false;
+
   timer: any = {} as any;
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
+  countClick = 10;
   // counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
   counterLimit: number = this.apiService.dropDelay;
 
@@ -81,10 +84,18 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
   onNoDrop() {
-    this.apiService.reloadPage();
-    const now = new Date().toISOString();
-    // ใช้ JSON.stringify เพื่อป้องกันปัญหา quotes
-    localStorage.setItem('lastClickCheck', JSON.stringify(now));
+    if (this.countClick < 1) {
+      if (this.counter < 3) {
+        this.apiService.reloadFaildPage();
+        const now = new Date().toISOString();
+        localStorage.setItem('lastClickCheck', JSON.stringify(now));
+        const tooltip = document.querySelector('.tooltip-background');
+        if (tooltip) {
+          tooltip.classList.remove('active');
+        }
+      }
+    }
+
   }
 
 
@@ -115,6 +126,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
       this.timer = setInterval(() => {
         this.counter--;
+        if (this.countClick > 0) {
+          this.countClick--;
+        }
         localStorage.setItem('product_fall', this.counter.toString());
         if (this.counter == 0) {
           if (this.r != undefined && Object.entries(this.r).length == 1) {
@@ -137,6 +151,11 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           console.log(`can not click der`, this.canclick);
         }
         console.log(this.counter);
+        if (this.countClick < 1) {
+          if (this.counter < 3) {
+            this.isAllowClick = true;
+          }
+        }
       }, 1000);
 
     }
@@ -411,7 +430,10 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
     this.clearTimer();
   }
   reload() {
-    this.apiService.reloadPage();
+    // this.apiService.reloadPage();
+    this.apiService.reloadFaildPage();
+    const now = new Date().toISOString();
+    localStorage.setItem('lastClickCheck', JSON.stringify(now));
   }
 
 }

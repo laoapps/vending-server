@@ -979,6 +979,23 @@ export class ApiService {
       window.location.reload();
     }, REQUEST_TIME_OUT);
   }
+
+  async reloadFaildPage() {
+    Toast.show({ text: 'Before Reload', duration: 'long' });
+    try {
+      await this.serialPort?.close();
+      this.IndexedLogDB.addBillProcess({ errorData: 'reloadPage' })
+    } catch (error) {
+      console.log('CLOSE FAILED', error);
+      Toast.show({ text: 'Close failed', duration: 'long' });
+    }
+
+    setTimeout(async () => {
+      window.location.reload();
+    }, 1000);
+  }
+
+
   async exitApp() {
     Toast.show({ text: 'Before Reload', duration: 'long' });
     try {
@@ -1054,16 +1071,16 @@ export class ApiService {
     this.eventEmitter.emit('deductOrderUpdate', position);
   }
   public checkOnlineStatus() {
-  if (this.wsAlive) {
-    return (
-      dayjs().unix() * 1000 -                 // current time in ms
-      dayjs(this.wsAlive.time).unix() * 1000   // stored time in ms
-      < 10 * 1000
-    );
-  } else {
-    return false;
+    if (this.wsAlive) {
+      return (
+        dayjs().unix() * 1000 -                 // current time in ms
+        dayjs(this.wsAlive.time).unix() * 1000   // stored time in ms
+        < 10 * 1000
+      );
+    } else {
+      return false;
+    }
   }
-}
   public dismissModal(data: any = null) {
     this.modalCtrl.getTop().then((r) => {
       r ? this.modalCtrl.dismiss({ data }) : null;

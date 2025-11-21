@@ -1,16 +1,37 @@
 <ion-content>
 
-  <div (click)="closeToolTip()" class="tooltip-background active">
-    <span class="item">
-      <div class="title"><i class="fa-solid fa-ticket"></i> ຖ້າເຄື່ອງບໍ່ຕົກພາຍໃນ 10ວິນາທີ ໂທ 55516321</div>
-      <div class="sub-title">
-        <p>If you do not receive the product, please call 55516321. <br> 如果您没有收到商品，请致电 55516321。<br> Nếu
-          bạn không nhận được hàng, vui lòng gọi 55516321.</p>
+  <div class="tooltip-background active">
+    <span class="item" (click)="$event.stopPropagation()">
+      <div class="gif-box">
+        <img src="../../assets/logo/Mee.gif" alt="Mee" />
       </div>
-      <div class="control">
-        <div class=""></div>
-        <div class="right">
-          <a (click)="closeToolTip()" href="javascript:void(0)" class="btn-close-here">Close Here</a>
+      <div class="content-container">
+        <div class="title"><i class="fa-solid fa-ticket"></i> ຖ້າເຄື່ອງບໍ່ຕົກພາຍໃນ 10ວິນາທີ ⚡
+          ກົດປຸ່ມສີແດງດ້ານລຸ່ມນີ້ທັນທີ
+          ຫຼືໂທ 55516321</div>
+        <div class="title"><i class="fa-solid fa-ticket"></i> If your machine does not drop within 10 seconds ⚡
+          Press the red button below immediately
+          or call 55516321
+          ຫຼືໂທ 55516321</div>
+        <div class="title"><i class="fa-solid fa-ticket"></i> 如果机器在 10 秒内没有出货 ⚡
+          请立即点击下面的红色按钮
+          或致电 55516321
+          ຫຼືໂທ 55516321</div>
+        <div class="title"><i class="fa-solid fa-ticket"></i> Nếu máy không nhả hàng trong vòng 10 giây ⚡
+          Hãy nhấn nút đỏ bên dưới ngay lập tức
+          hoặc gọi 55516321</div>
+        <div *ngIf="isAllowClick" class="control">
+          <div class=""></div>
+          <div class="right">
+            <div class="mega-button">
+              <button class="btn-jackpot" (click)="onNoDrop()">
+                <span class="fire">🔥</span>
+                <span class="text">ເລີ່ມໃໝ່</span>
+                <span class="slot">🎰</span>
+                <div class="shine"></div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </span>
@@ -66,20 +87,16 @@
     </div>
 
 
-    <div class="marquee-pro">
-      <!-- พื้นหลังไฟวิบวับ -->
+    <!-- <div class="marquee-pro">
       <div class="glow-bg"></div>
       <div class="glow-bg glow-2"></div>
 
-      <!-- GIF ซ้าย (มีแสงระยิบระยับ) -->
       <div class="gif-box">
         <img src="../../assets/logo/Mee.gif" alt="Mee" />
         <div class="sparkles">✨ ✨ ✨</div>
       </div>
 
-      <!-- เนื้อหาขวา -->
       <div class="content-right">
-        <!-- ข้อความเลื่อน 2 ชั้น (เร็ว-ช้า) -->
         <div class="marquee-track fast">
           <span>
             ⚡ ຖ້າສິນຄ້າບໍ່ຕົກ? ⚡ ກົດປຸ່ມສີແດງດ້ານລຸ່ມນີ້ທັນທີ
@@ -93,7 +110,6 @@
           <span>  💖  </span>
         </div>
 
-        <!-- ปุ่มสุดอลังการ -->
         <div class="mega-button">
           <button class="btn-jackpot" (click)="onNoDrop()">
             <span class="fire">🔥</span>
@@ -103,7 +119,7 @@
           </button>
         </div>
       </div>
-    </div>
+    </div> -->
 
   </div>
 

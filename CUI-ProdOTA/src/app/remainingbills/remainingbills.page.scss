@@ -21,26 +21,34 @@ ion-content {
     display: flex;
     flex-direction: column;
 
-
     .item {
         position: relative;
-        margin-top: 530px;
-        margin-left: 30px;
+        margin-top: 80%;
         color: #333;
         background: rgb(255,255,255);
         background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 0%, rgba(203,203,203,1) 100%, rgba(0,0,0,1) 100%);
-
         border-radius: 5px;
         padding: 10px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row; /* เปลี่ยนเป็น row เพื่อให้เรียงแนวนอน */
+        align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+        gap: 20px; /* ระยะห่างระหว่างวิดีโอและเนื้อหา */
 
-        width: 380px;
+        .gif-box {
+            flex-shrink: 0; /* ป้องกันการหดตัวของวิดีโอ */
+        }
+
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1; /* ให้เนื้อหาใช้พื้นที่ที่เหลือทั้งหมด */
+        }
 
         .title {
-            font-size: 18px;
+            font-size: 23px;
             font-weight: bold;
             color: #333;
+            margin-bottom: 10px;
 
             i {
                 color: #DD3932;
@@ -50,22 +58,25 @@ ion-content {
             font-size: 14px;
             font-weight: 300;
             color: #333;
+            margin-bottom: 15px;
         }
 
         .control {
             display: flex;
             justify-content: space-between;
-            margin-top: 25px;
+            margin-top: 0; /* ลบ margin-top เดิม */
 
             .right {
-
+                .mega-button {
+                    margin: 0; /* ลบ margin เดิม */
+                    padding-right: 0; /* ลบ padding เดิม */
+                }
+                
                 .btn-close-here {
                     text-decoration: none;
                     color: #fff;
-    
                     background: rgb(255,255,255);
                     background: linear-gradient(288deg, rgba(255,255,255,1) 0%, rgba(255,205,141,1) 0%, rgba(255,129,124,1) 100%, rgba(255,255,255,1) 100%);
-    
                     box-shadow: 0px 2px 5px rgba(0,0,0,.2);
                     border-radius: 5px;
                     height: 40px;
@@ -358,8 +369,8 @@ ion-infinite-scroll-content {
   z-index: 10;
 }
 .gif-box img {
-  height: 250px;
-  width: 250px;
+  height: 300px;
+  width: 300px;
   // border-radius: 50%;
   border: 6px solid #ffd700;
   box-shadow: 0 0 30px #ffd700, inset 0 0 20px #fff;

@@ -779,7 +779,7 @@ export class Tab1Page implements OnDestroy {
               }, 5000);
               return;
             }
-            if(r?.brightness){
+            if (r?.brightness) {
               this.setBrightness(r?.brightness);
             }
           } catch (err) {
@@ -918,8 +918,8 @@ export class Tab1Page implements OnDestroy {
             // this.refresh();
 
           }
-          if(r?.brightness){
-            this.setBrightness(r?.brightness||1);
+          if (r?.brightness) {
+            this.setBrightness(r?.brightness || 1);
           }
           if (this.platform.is('android')) {
             if (r.versionId && r?.versionId !== '0.0.0') {
@@ -1583,11 +1583,11 @@ export class Tab1Page implements OnDestroy {
         console.error(`FATAL: Response too long (${hexData.length} bytes > 44). Controller error.`);
         this.apiService.IndexedLogDB.addBillProcess({ errorData: hexData + '' });
         this.handleFatalError();
-        return { command: '', status: 0, data: {rawData}, message: 'Response too long - hardware error', transactionID: 0 };
+        return { command: '', status: 0, data: { rawData }, message: 'Response too long - hardware error', transactionID: 0 };
       }
       if (hexData.length < 8) {
         console.log(`Invalid response: Too short (${hexData.length / 2} bytes)`);
-        return { command: '', status: 0, data: {rawData}, message: 'Invalid response: Too short', transactionID: 0 };
+        return { command: '', status: 0, data: { rawData }, message: 'Invalid response: Too short', transactionID: 0 };
       }
 
       const address = parseInt(hexData.slice(0, 2), 16);
@@ -1600,11 +1600,11 @@ export class Tab1Page implements OnDestroy {
 
       if (command !== 0xA1 && address !== 0x00) {
         console.log(`Invalid address for command 0x${command.toString(16)}: Expected 0x00, got 0x${address.toString(16)}`);
-        return { command: '', status: 0, data: {rawData}, message: 'Invalid address', transactionID: 0 };
+        return { command: '', status: 0, data: { rawData }, message: 'Invalid address', transactionID: 0 };
       }
       if (command === 0xA1 && (address < 0x01 || address > 0x04)) {
         console.log(`Invalid address for command 0xA1: Expected 0x01-0x04, got 0x${address.toString(16)}`);
-        return { command: '', status: 0, data: {rawData}, message: 'Invalid address', transactionID: 0 };
+        return { command: '', status: 0, data: { rawData }, message: 'Invalid address', transactionID: 0 };
       }
 
       let result: IResModel;//IResModel;
@@ -1676,7 +1676,7 @@ export class Tab1Page implements OnDestroy {
           this._machineStatus.status.temp = result.data.temperature;
           this.machinestatus.data = result.data;
           // this.sendStatus();
-          
+
 
           break;
         case 0xA4: // Set Temperature
@@ -1745,7 +1745,7 @@ export class Tab1Page implements OnDestroy {
           break;
         default:
 
-          result = { command: '', status: 0, data: {rawData}, message: 'Unsupported command', transactionID: 0 };
+          result = { command: '', status: 0, data: { rawData }, message: 'Unsupported command', transactionID: 0 };
       }
       return result;
     } catch (error: any) {
@@ -2091,13 +2091,13 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
-  setBrightness(level=1): Promise<any> {
+  setBrightness(level = 1): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if(level < 0 || level > 1) level = 1 ;
-        if(level == null || level == undefined) level = 1 ;
-        if(isNaN(level)) level = 1 ;
-        if(level==(await ScreenBrightness.getBrightness())?.brightness){
+        if (level < 0 || level > 1) level = 1;
+        if (level == null || level == undefined) level = 1;
+        if (isNaN(level)) level = 1;
+        if (level == (await ScreenBrightness.getBrightness())?.brightness) {
           resolve(IENMessage.success);
           return;
         }
