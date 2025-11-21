@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({

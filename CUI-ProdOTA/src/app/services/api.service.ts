@@ -29,7 +29,7 @@ import {
   ToastController,
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
@@ -1055,16 +1055,16 @@ export class ApiService {
     this.eventEmitter.emit('deductOrderUpdate', position);
   }
   public checkOnlineStatus() {
-    if (this.wsAlive) {
-      return (
-        dayjs().get('milliseconds') -
-        dayjs(this.wsAlive.time).get('milliseconds') <
-        10 * 1000
-      );
-    } else {
-      return false;
-    }
+  if (this.wsAlive) {
+    return (
+      dayjs().unix() * 1000 -                 // current time in ms
+      dayjs(this.wsAlive.time).unix() * 1000   // stored time in ms
+      < 10 * 1000
+    );
+  } else {
+    return false;
   }
+}
   public dismissModal(data: any = null) {
     this.modal.getTop().then((r) => {
       r ? this.modal.dismiss({ data }) : null;

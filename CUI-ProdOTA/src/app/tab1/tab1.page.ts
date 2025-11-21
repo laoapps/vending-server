@@ -80,7 +80,7 @@ import { SerialServiceService } from '../services/serialservice.service';
 import { Toast } from '@capacitor/toast';
 import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
 import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.process';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { DatabaseService } from '../database.service';
 import { IBankNote, IHashBankNote } from '../vmc.service';
 import { Zdm8Service } from '../zdm8.service';

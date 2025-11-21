@@ -9,21 +9,22 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es5",
-    "module": "commonjs",
+    "target": "es2017",
+    "module": "es2020",
     "lib": [
-      "es5",
-      "dom"
+      "es2017",
+      "dom",
+      "es2020"
     ],
     "useDefineForClassFields": false,
-    "allowSyntheticDefaultImports":true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "skipLibCheck": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true,
-    "allowSyntheticDefaultImports":true
+    "strictTemplates": true
   }
 }
