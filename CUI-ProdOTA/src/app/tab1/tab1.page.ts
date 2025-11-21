@@ -2078,7 +2078,7 @@ export class Tab1Page implements OnDestroy {
       try {
 
         const run = await ScreenBrightness.setBrightness({ brightness: 1 });
-        this.apiService.alertSuccess(`--> run ${run}`)
+        this.apiService.toast.create({ message: `--> set brightness ${run}`, duration: 2000 }).then(r => r.present());
 
         // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
         const brightness = await ScreenBrightness.getBrightness();
