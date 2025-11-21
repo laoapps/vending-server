@@ -20,8 +20,7 @@ export class MT102Service implements ISerialService {
   private totalValue = 0;
   machinestatus = { data: '' };
   private serialEventsSubscription: Subscription | null = null;
-  private pollingSubscription: Subscription | null = null;
-  private pollingIntervalMs = 200;
+
   
   constructor(private serialService: SerialServiceService) {}
 
@@ -183,30 +182,6 @@ export class MT102Service implements ISerialService {
     });
   }
 
-  public startPolling(): void {
-    if (this.pollingSubscription) {
-      this.addLogMessage(this.log, 'Polling already active');
-      return;
-    }
-
-    this.pollingSubscription = interval(this.pollingIntervalMs).subscribe(async () => {
-      try {
-        const result = await this.command(EMACHINE_COMMAND.POLL, {}, Date.now());
-        this.addLogMessage(this.log, `Poll completed`);
-      } catch (error) {
-        this.addLogMessage(this.log, `Polling error: ${error.message}`);
-      }
-    });
-    this.addLogMessage(this.log, 'Polling started');
-  }
-
-  public stopPolling(): void {
-    if (this.pollingSubscription) {
-      this.pollingSubscription.unsubscribe();
-      this.pollingSubscription = null;
-      this.addLogMessage(this.log, 'Polling stopped');
-    }
-  }
 
   initializeSerialPort(
     portName: string,
@@ -353,7 +328,7 @@ export class MT102Service implements ISerialService {
   public close(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       try {
-        this.stopPolling();
+
         
         if (this.serialEventsSubscription) {
           this.serialEventsSubscription.unsubscribe();
