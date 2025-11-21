@@ -29,7 +29,7 @@ import {
   ToastController,
 } from '@ionic/angular';
 // import { NotifierService } from 'angular-notifier';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { IonicStorageService } from '../ionic-storage.service';
 import { EventEmitter } from 'events';
@@ -1455,7 +1455,7 @@ export class ApiService {
   // }
 
 
-  
+
   loadOnlineMachine() {
     const url = `/getOnlineMachines`;
 

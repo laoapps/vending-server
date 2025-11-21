@@ -4,7 +4,7 @@ import { IonicStorageService } from '../ionic-storage.service';
 import { ModalController } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { ExcelService } from '../services/excel.service';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 @Component({
   selector: 'app-reportbills',
   templateUrl: './reportbills.page.html',
