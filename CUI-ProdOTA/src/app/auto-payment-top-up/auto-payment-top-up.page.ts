@@ -275,11 +275,11 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           this.isOpenPhonePad = true;
         });
         r?.onDidDismiss().then(rD => {
-          console.log('---->PHONEPAD', rD)
+          // console.log('---->PHONEPAD', rD?.data?.data?.phonenumber)
           this.isOpenPhonePad = false;
-          if (rD?.data?.phonenumber) {
-            console.log('-----> PHONE', rD?.data?.phonenumber);
-            this.phone = rD.data?.phonenumber;
+          if (rD?.data?.data?.phonenumber) {
+            // console.log('-----> PHONE', rD?.data?.phonenumber);
+            this.phone = rD?.data?.data?.phonenumber;
             clearInterval(this.countdownDestroyTimer);
             this.countdownDestroy = 60;
             this._processLoopDestroyLastest(this.phone);
