@@ -94,6 +94,7 @@ import { QrOpenStockPage } from '../qr-open-stock/qr-open-stock.page';
 import { Router } from '@angular/router';
 import { AutoPaymentTopUpPage } from '../auto-payment-top-up/auto-payment-top-up.page';
 import { interval, Subscription } from 'rxjs';
+import { CustomNumberPadPage } from '../custom-number-pad/custom-number-pad.page';
 
 @Component({
   selector: 'app-tab1',
@@ -685,10 +686,20 @@ export class Tab1Page implements OnDestroy {
     return ticketValue;
   }
 
+  openTestKeyboad() {
+
+  }
+
   async ngOnInit() {
     if (localStorage.getItem('startTestMotor')) {
       this.startTestMotor();
       return;
+    }
+
+    try {
+      await ScreenBrightness.setBrightness({ brightness: 1 });
+    } catch (error) {
+      console.error('Failed to set brightness', error);
     }
 
 
@@ -2935,6 +2946,7 @@ export class Tab1Page implements OnDestroy {
           }
           // await this._processLoopCheckLaoQRPaid();
 
+          console.log('-----> CLOSE AUTO TOPUP');
 
 
         });

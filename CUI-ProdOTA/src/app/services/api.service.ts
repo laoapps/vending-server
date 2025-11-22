@@ -259,9 +259,11 @@ export class ApiService {
 
   countErrorPay: number = 0;
 
-  allowTopUp = false;
+  allowTopUp = true;
 
   isFranciseMode: boolean = false;
+
+  brightnessValue: number = 1;
 
 
   areArraysDifferentUnordered(arr1: string[], arr2: string[]): boolean {
@@ -345,6 +347,14 @@ export class ApiService {
         if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
 
         if (this.dropDelay !== s.dropDelay) this.dropDelay = s.dropDelay ?? 10;
+        if (this.brightnessValue != s.brightness) {
+          this.brightnessValue = s.brightness ?? 1;
+          try {
+            await ScreenBrightness.setBrightness({ brightness: this.brightnessValue });
+          } catch (errB) {
+            console.error('Failed to set brightness', errB);
+          }
+        }
 
         console.log('ws alive subscription', that.cash, r);
         // console.log('message :', r?.message);
@@ -369,6 +379,13 @@ export class ApiService {
 
         }
 
+
+        try {
+          await ScreenBrightness.setBrightness({ brightness: 1 });
+        } catch (error) {
+          console.error('Failed to set brightness', error);
+        }
+
         this.secret = r?.data?.secret ?? null;
         console.log('-----> SECRET :', this.secret);
 
@@ -389,7 +406,7 @@ export class ApiService {
             const result = this.getReplacements(this.adsList ?? [], rSetting.adsList ?? []);
             this.adsList = rSetting.adsList;
             localStorage.setItem('adsList', JSON.stringify(this.adsList));
-            console.log('Update adsList to', this.adsList);
+            // console.log('Update adsList to', this.adsList);
 
             console.log('result', result);
             if (result.remove.length > 0) {
@@ -397,7 +414,7 @@ export class ApiService {
               for (let index = 0; index < result.remove.length; index++) {
                 const element = result.remove[index];
                 await this.videoCacheService.deleteCachedVideo(element);
-                console.log('remove ads', element);
+                // console.log('remove ads', element);
 
               }
             }
@@ -406,7 +423,7 @@ export class ApiService {
               for (let index = 0; index < result.add.length; index++) {
                 const element = result.add[index];
                 await this.videoCacheService.getCachedVideoBase64(element);
-                console.log('add ads', element);
+                // console.log('add ads', element);
               }
             }
 
@@ -2775,6 +2792,13 @@ export class ApiService {
     return s.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   }
 
+  public async dismissAllModals(data: any = null) {
+    let topModal = await this.modalCtrl.getTop();
+    while (topModal) {
+      await topModal.dismiss(data);
+      topModal = await this.modalCtrl.getTop();
+    }
+  }
   closeAllModal() {
     // OrderCartPage.static_apiService.dismiss();
     // OrderPaidPage.static_apiService.dismiss();
@@ -2905,3 +2929,4 @@ export class ApiService {
 
 }
 import { apiQueue } from '../queue';
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';

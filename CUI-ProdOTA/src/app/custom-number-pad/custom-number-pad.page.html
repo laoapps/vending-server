@@ -1,0 +1,38 @@
+<ion-content>
+
+  <div class="epin-cash-out-phonenumber-card">
+    <div class="laab-card-options">
+      <div class="left"></div>
+      <div class="right">
+        <a (click)="close()" href="javascript:void(0)" class="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i> Close
+        </a>
+      </div>
+    </div>
+    <div class="laab-card-header">
+      <div class="title">ປ້ອນເບີໂທລະສັບເພື່ອຮັບເງິນຄືນ</div>
+
+    </div>
+    <div class="laab-card-body">
+      <div class="balance-text">{{ phonenumber }}</div>
+      <div class="number-list">
+        <div class="left">
+          <a *ngFor="let list of numberList; let i = index" (click)="processDigits(list)" href="javascript:void(0)"
+            class="item">{{ list }}</a>
+          <div class=""></div>
+          <a (click)="processDigits('0')" href="javascript:void(0)" class="item">0</a>
+          <div class=""></div>
+        </div>
+        <div class="right">
+          <a (click)="deleteDigits()" href="javascript:void(0)" class="item"><i class="fa-solid fa-trash-can"></i>
+            ລົບ</a>
+          <a (click)="next()" href="javascript:void(0)" class="item"><i class="fa-solid fa-arrow-right"></i> ບັນທືກ</a>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+</ion-content>

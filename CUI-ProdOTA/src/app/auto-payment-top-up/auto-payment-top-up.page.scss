@@ -1162,3 +1162,25 @@ ion-content {
     display: block;
     border-radius: 12px;
   }
+
+
+  .fake-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.phone-display {
+  flex: 1;
+  font-size: 16px;
+  color: #333;
+}
+
+.phone-display:empty::before {
+  content: "xxxx xxxx";
+  color: #aaa;
+}

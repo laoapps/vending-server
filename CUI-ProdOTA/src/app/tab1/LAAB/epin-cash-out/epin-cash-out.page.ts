@@ -7,7 +7,6 @@ import { EpinShowCodePage } from '../epin-show-code/epin-show-code.page';
 import { SmcListPage } from '../smc-list/smc-list.page';
 import * as QRCode from 'qrcode';
 import { CreateEPINProcess } from '../../LAAB_processes/createEPIN.process';
-import { MMoneyCashOutValidationProcess } from '../../LAAB_processes/mmoneyCashoutValidation.process';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -20,7 +19,7 @@ export class EpinCashOutPage implements OnInit {
 
   private createSMCProcess: CreateSMCProcess;
   private createEPINProcess: CreateEPINProcess;
-  
+
   showPhonenumberPage: boolean = true;
   showEPINCashoutPage: boolean = false;
 
@@ -32,7 +31,7 @@ export class EpinCashOutPage implements OnInit {
     public apiService: ApiService,
     public vendingAPIService: VendingAPIService,
     public modal: ModalController
-  ) { 
+  ) {
     this.apiService.___EpinCashOutPage = this.modal;
 
     this.createSMCProcess = new CreateSMCProcess(this.apiService, this.vendingAPIService);
@@ -40,13 +39,13 @@ export class EpinCashOutPage implements OnInit {
   }
 
   ngOnInit() {
-    this.apiService.autopilot.auto=0;
+    this.apiService.autopilot.auto = 0;
     this.loadNumberList();
     this.apiService.epinCashOutPageSound();
-   
+
   }
   loadNumberList(): void {
-    for(let i = 1; i < 10; i++) {
+    for (let i = 1; i < 10; i++) {
       this.numberList.push(i.toString());
     }
     this.phonenumber = this.placeholder;
@@ -71,15 +70,15 @@ export class EpinCashOutPage implements OnInit {
   }
 
   next(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
+
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.invalidPhonenumber);
 
         this.showPhonenumberPage = false;
         this.showEPINCashoutPage = true;
 
-      
+
         resolve(IENMessage.success);
 
       } catch (error) {
@@ -94,9 +93,9 @@ export class EpinCashOutPage implements OnInit {
   }
 
   createSMC(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-       console.log(`--->`, this.phonenumber);
+        console.log(`--->`, this.phonenumber);
         if (this.apiService.cash.amount == 0) throw new Error(IENMessage.thereIsNotBalance);
 
         let params: any = {
@@ -135,7 +134,7 @@ export class EpinCashOutPage implements OnInit {
         QRCode.toDataURL(JSON.stringify(model)).then(async r => {
           const props = {
             qrImage: r,
-            code: run.data[0].detail.items[0].code[0] 
+            code: run.data[0].detail.items[0].code[0]
           }
           this.apiService.modalCtrl.create({ component: EpinShowCodePage, componentProps: props }).then(r => {
             r.present();
@@ -153,9 +152,9 @@ export class EpinCashOutPage implements OnInit {
   }
 
   smcList(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-        
+
         const props = {
           machineId: localStorage.getItem('machineId')
         }
@@ -171,5 +170,5 @@ export class EpinCashOutPage implements OnInit {
     });
   }
 
-  
+
 }

@@ -193,6 +193,14 @@ const routes: Routes = [
   {
     path: 'auto-payment-top-up',
     loadChildren: () => import('./auto-payment-top-up/auto-payment-top-up.module').then(m => m.AutoPaymentTopUpPageModule)
+  },
+  {
+    path: 'custom-number-pad',
+    loadChildren: () => import('./custom-number-pad/custom-number-pad.module').then(m => m.CustomNumberPadPageModule)
+  },
+  {
+    path: 'custom-number-pad',
+    loadChildren: () => import('./custom-number-pad/custom-number-pad.module').then(m => m.CustomNumberPadPageModule)
   }
 ];
 @NgModule({

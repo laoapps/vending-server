@@ -140,14 +140,24 @@ ion-item {
 // 	--width: 100%; 
 //   }
 
-  .dialog-fullscreen {
+.dialog-fullscreen {
 	align-items: center;
 	justify-content: center; 
 	&::part(content){
 	  width: 90%;
 	  height: 80%; 
 	}
-  }
+}
+
+
+.dialog-showNumber {
+	align-items: center;
+	justify-content: center; 
+	&::part(content){
+	  width: 50%;
+	  height: 30%; 
+	}
+}
 
 
     .dialog-fullscreenQR {

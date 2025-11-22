@@ -121,25 +121,32 @@
               ປ້ອນ **ເບີໂທລະສັບ** ຂອງທ່ານເພື່ອຮັບຄູ່ປ່ອງລຸ້ນ **ລາງວັນໃຫຍ່** ຈາກ LAABX!
             </div>
             <div class="card">
-              <form #f="ngForm">
-                <label class="phone-field">
-                  <span class="country-code">+85620</span>
-                  <input name="phone" [(ngModel)]="phone" required minlength="8" type="tel" inputmode="tel"
-                    maxlength="8" placeholder="xxxx xxxx" class="phone-input" #phoneInput
-                    (ngModelChange)="autoSubmit(f,phoneInput)" />
-                  <ion-icon name="call-outline" class="phone-icon"></ion-icon>
-                </label>
+              <div class="phone-field fake-input" (click)="openCustomNumpad()">
+                <span class="country-code">+85620</span>
 
-                <div class="hint" *ngIf="f.submitted && !f.form.valid">
-                  <div *ngIf="f.controls['phone']?.errors?.['required']">
-                    ກະລຸນາປ້ອນເບີໂທຂອງທ່ານ.
-                  </div>
-                  <div *ngIf="f.controls['phone']?.errors?.['minlength']">
-                    ເບີໂທລະສັບຕ້ອງມີ 8 ຕົວເລກຫຼັກ (ລວມ 20).
-                  </div>
-                </div>
-              </form>
+                <span class="phone-display">
+                  {{ phone || 'xxxx xxxx' }}
+                </span>
+
+                <ion-icon name="call-outline" class="phone-icon"></ion-icon>
+              </div>
             </div>
+
+            <!-- 
+            <div class="card">
+              <div class="phone-field fake-input" (click)="openCustomNumpad()">
+                <span class="country-code">+85620</span>
+
+                <span class="phone-display">
+                  {{ phone || 'xxxx xxxx' }}
+                </span>
+
+                <ion-icon name="call-outline" class="phone-icon"></ion-icon>
+              </div>
+            </div> -->
+
+
+
           </div>
 
 

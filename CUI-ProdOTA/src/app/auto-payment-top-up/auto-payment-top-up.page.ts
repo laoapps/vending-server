@@ -13,6 +13,7 @@ import { ModalController } from '@ionic/angular';
 import * as cryptojs from 'crypto-js';
 import qrlogo from 'qrcode-with-logos';
 import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
+import { CustomNumberPadPage } from '../custom-number-pad/custom-number-pad.page';
 
 @Component({
   selector: 'app-auto-payment-top-up',
@@ -96,6 +97,8 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   countdownLAABDestroyTimer: any = {} as any;
   countdownCheckLaoQRPaid: number = 90;
   countdownCheckLaoQRPaidTimer: any = {} as any;
+
+  isOpenPhonePad: boolean = false;
 
 
   isEnableCheckCallback: boolean = true;
@@ -210,7 +213,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
   constructor(
     public apiService: ApiService,
-    public modalCtrl: ModalController,
+
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService
   ) {
@@ -261,6 +264,31 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
     await this.loadCountDownBillNew();
 
 
+  }
+
+
+
+  openCustomNumpad() {
+    try {
+      this.apiService.showModal(CustomNumberPadPage, {}, false, 'dialog-showNumber').then(r => {
+        r?.present().then(rP => {
+          this.isOpenPhonePad = true;
+        });
+        r?.onDidDismiss().then(rD => {
+          console.log('---->PHONEPAD', rD)
+          this.isOpenPhonePad = false;
+          if (rD?.data?.phonenumber) {
+            console.log('-----> PHONE', rD?.data?.phonenumber);
+            this.phone = rD.data?.phonenumber;
+            clearInterval(this.countdownDestroyTimer);
+            this.countdownDestroy = 60;
+            this._processLoopDestroyLastest(this.phone);
+          }
+        })
+      });
+    } catch (error) {
+      this.isOpenPhonePad = false;
+    }
   }
 
   enableClickMethod() {
@@ -337,8 +365,17 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownLAABDestroyTimer);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
+    console.log('----->isOpenPhonePad :', this.isOpenPhonePad,);
 
-    this.modalCtrl.dismiss();
+    // if (this.isOpenPhonePad) {
+    //   this.apiService.closeModal();
+    // } else {
+
+    // }
+
+    this.apiService.dismissAllModals();
+
+
   }
 
 
@@ -423,6 +460,8 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   private _processLoopDestroyLastest(phone?: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
+        console.log('-----> START GEN QR');
+
 
         let cls: string = `countdownDestroy`;
 
@@ -440,7 +479,9 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           this.countdownDestroy = 60;
           if (AutoPaymentPage.message) AutoPaymentPage.message.close();
           AutoPaymentPage.message = undefined;
-
+          if (this.isOpenPhonePad) {
+            this.apiService.closeModal();
+          }
           this.close();
           this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
           return resolve(IENMessage.success);
@@ -460,7 +501,9 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
             this.countdownDestroy = 60;
             if (AutoPaymentPage.message) AutoPaymentPage.message.close();
             AutoPaymentPage.message = undefined;
-
+            if (this.isOpenPhonePad) {
+              this.apiService.closeModal();
+            }
             this.close();
             this.WSAPIService.reconnect();
             this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
@@ -500,6 +543,11 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
               AutoPaymentPage.message = undefined;
 
               this.apiService.myTab1.clearStockAfterLAABGo();
+              if (this.isOpenPhonePad) {
+                console.log('-----> DISMISS MODEL');
+                this.apiService.dismissModal();
+
+              }
               this.close();
               this.checkLastGenQR();
               return resolve(IENMessage.success);
@@ -522,6 +570,9 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           AutoPaymentPage.message = undefined;
 
           // this.apiService.myTab1.clearStockAfterLAABGo();
+          if (this.isOpenPhonePad) {
+            this.apiService.closeModal();
+          }
           this.close();
           this.apiService.IndexedLogDB.addBillProcess({ errorData: `ERROR Generate QR :${JSON.stringify(error)}` })
           this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
