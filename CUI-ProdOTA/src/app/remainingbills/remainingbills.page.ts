@@ -211,7 +211,6 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         }
 
         if (!this.SUPPORTED_DEVICES.includes(localStorage.getItem('device') || 'VMC')) {
-
           return reject(new Error('Unsupported device protocol'));
         }
         const dropPositionData: IDropPositionData = {
