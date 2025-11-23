@@ -69,7 +69,7 @@ import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hang
 import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { PlayGamesPage } from './Vending/play-games/play-games.page';
 import { OrderCartPage } from './Vending/order-cart/order-cart.page';
-import { ScreenBrightness } from '@capacitor-community/screen-brightness';
+// import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 var host = window.location.protocol + '//' + window.location.host;
 // import { CapacitorUpdater } from '@capgo/capacitor-updater'
@@ -515,7 +515,7 @@ export class Tab1Page implements OnDestroy {
 
 
     platform.ready().then(() => {
-      this.loadBrightness();
+      // this.loadBrightness();
       // this.autoCheckAppVersion();
 
       // this.toggleTabServicesSegment();
@@ -2088,12 +2088,12 @@ export class Tab1Page implements OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        const run = await ScreenBrightness.setBrightness({ brightness: 1 });
-        this.apiService.toast.create({ message: `--> set brightness ${run}`, duration: 2000 }).then(r => r.present());
+        // const run = await ScreenBrightness.setBrightness({ brightness: 1 });
+        // this.apiService.toast.create({ message: `--> set brightness ${run}`, duration: 2000 }).then(r => r.present());
 
         // const {brightness: currentBrightness} = await ScreenBrightness.getBrightness();
-        const brightness = await ScreenBrightness.getBrightness();
-        this.apiService.alertSuccess(`--> bright ${brightness}`)
+        // const brightness = await ScreenBrightness.getBrightness();
+        // this.apiService.alertSuccess(`--> bright ${brightness}`)
 
         resolve(IENMessage.success);
 
@@ -2108,12 +2108,12 @@ export class Tab1Page implements OnDestroy {
         if (level < 0 || level > 1) level = 1;
         if (level == null || level == undefined) level = 1;
         if (isNaN(level)) level = 1;
-        if (level == (await ScreenBrightness.getBrightness())?.brightness) {
-          resolve(IENMessage.success);
-          return;
-        }
-        const run = await ScreenBrightness.setBrightness({ brightness: level });
-        this.apiService.alertSuccess(`--> set brightness ${run}`)
+        // if (level == (await ScreenBrightness.getBrightness())?.brightness) {
+        //   resolve(IENMessage.success);
+        //   return;
+        // }
+        // const run = await ScreenBrightness.setBrightness({ brightness: level });
+        // this.apiService.alertSuccess(`--> set brightness ${run}`)
 
         resolve(IENMessage.success);
 
