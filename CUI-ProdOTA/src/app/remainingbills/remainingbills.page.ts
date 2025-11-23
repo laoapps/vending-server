@@ -188,6 +188,27 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   // processing: boolean = false;
 
+  private getSerialLast(): string | null {
+    try {
+      const stored = localStorage.getItem('lastSerial');
+      if (!stored) return null;
+
+      try {
+        return JSON.parse(stored);
+      } catch {
+        if (stored.startsWith('"') && stored.endsWith('"')) {
+          return stored.slice(1, -1);
+        }
+        return stored;
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return null;
+    }
+  }
+
+
+
   async retryProcessBillNew(params: BillProcessParams): Promise<void> {
     return new Promise(async (resolve, reject) => {
       let err = null;
@@ -218,6 +239,30 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
           transactionID: transID,
           position: position
         };
+
+
+        const lastClick = this.getSerialLast();
+        if (!lastClick) {
+          this.apiService.exitApp();
+          return;
+        }
+
+        const targetTime = new Date(lastClick).getTime();
+
+        if (isNaN(targetTime)) {
+          this.apiService.exitApp();
+          return;
+        }
+
+        const currentTime = new Date().getTime();
+        const timeDifferenceSeconds = (currentTime - targetTime) / 1000;
+
+        const has30SecondsPassed = timeDifferenceSeconds >= 30;
+
+        if (!has30SecondsPassed) {
+          this.apiService.exitApp();
+          return;
+        }
 
 
         await this.handleSerialCommand(transactionID, position, transID);

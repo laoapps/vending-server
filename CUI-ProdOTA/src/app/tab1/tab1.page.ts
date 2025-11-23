@@ -1561,7 +1561,11 @@ export class Tab1Page implements OnDestroy {
               if (result && result.command !== EMACHINE_COMMAND.READ_EVENTS) {
                 // this.addLogMessage(`Processed response: ${JSON.stringify(result || {})}`);
               }
+
               this.sendStatus(JSON.stringify(result?.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
+              if (result?.status == 1) {
+                this.setLastSerial();
+              }
             }
 
           }
@@ -1572,6 +1576,15 @@ export class Tab1Page implements OnDestroy {
       });
     }
     this.vlog.log = this.serial.log;
+  }
+  setLastSerial() {
+    try {
+      const now = new Date().toISOString();
+      localStorage.setItem('lastSerial', JSON.stringify(now));
+      // console.log('บันทึกเวลาคลิกแล้ว:', now);
+    } catch (error) {
+      // console.error('Error setting last click:', error);
+    }
   }
   private handleFatalError() {
     console.error('CRITICAL COMMUNICATION ERROR - EXITING APPLICATION');
