@@ -696,11 +696,11 @@ export class Tab1Page implements OnDestroy {
       return;
     }
 
-    try {
-      await ScreenBrightness.setBrightness({ brightness: 1 });
-    } catch (error) {
-      console.error('Failed to set brightness', error);
-    }
+    // try {
+    //   await ScreenBrightness.setBrightness({ brightness: 1 });
+    // } catch (error) {
+    //   console.error('Failed to set brightness', error);
+    // }
 
 
     // this.startTestMotor();

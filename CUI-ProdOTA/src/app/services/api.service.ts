@@ -347,14 +347,14 @@ export class ApiService {
         if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
 
         if (this.dropDelay !== s.dropDelay) this.dropDelay = s.dropDelay ?? 10;
-        if (this.brightnessValue != s.brightness) {
-          this.brightnessValue = s.brightness ?? 1;
-          try {
-            await ScreenBrightness.setBrightness({ brightness: this.brightnessValue });
-          } catch (errB) {
-            console.error('Failed to set brightness', errB);
-          }
-        }
+        // if (this.brightnessValue != s.brightness) {
+        //   this.brightnessValue = s.brightness ?? 1;
+        //   try {
+        //     await ScreenBrightness.setBrightness({ brightness: this.brightnessValue });
+        //   } catch (errB) {
+        //     console.error('Failed to set brightness', errB);
+        //   }
+        // }
 
         console.log('ws alive subscription', that.cash, r);
         // console.log('message :', r?.message);
