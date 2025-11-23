@@ -429,9 +429,9 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   }
   reload() {
     // this.apiService.reloadPage();
-    this.apiService.reloadFaildPage();
-    const now = new Date().toISOString();
-    localStorage.setItem('lastClickCheck', JSON.stringify(now));
+    // this.apiService.reloadFaildPage();
+    // const now = new Date().toISOString();
+    // localStorage.setItem('lastClickCheck', JSON.stringify(now));
   }
 
 }

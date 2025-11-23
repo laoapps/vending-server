@@ -2002,21 +2002,21 @@ export class Tab1Page implements OnDestroy {
     this.apiService.reloadPage();
   }
   forceReload() {
-    this.count++;
-    if (!this.t) {
-      this.t = setTimeout(() => {
-        this.count = 0;
-        this.t = null;
-      }, 2000);
-    }
-    if (this.count >= 6) {
-      this.refresh();
-      this.count = 0;
-      if (this.t) {
-        clearTimeout(this.t);
-        this.t = null;
-      }
-    }
+    // this.count++;
+    // if (!this.t) {
+    //   this.t = setTimeout(() => {
+    //     this.count = 0;
+    //     this.t = null;
+    //   }, 2000);
+    // }
+    // if (this.count >= 6) {
+    //   this.refresh();
+    //   this.count = 0;
+    //   if (this.t) {
+    //     clearTimeout(this.t);
+    //     this.t = null;
+    //   }
+    // }
   }
   initStock() {
     // if (this.vendingOnSale?.length) return;
