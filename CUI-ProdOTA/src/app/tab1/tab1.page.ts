@@ -1580,8 +1580,7 @@ export class Tab1Page implements OnDestroy {
   }
   setLastSerial() {
     try {
-      const now = new Date().toISOString();
-      localStorage.setItem('lastSerial', JSON.stringify(now));
+      localStorage.setItem('lastSerial', Date.now().toString());
       // console.log('บันทึกเวลาคลิกแล้ว:', now);
     } catch (error) {
       // console.error('Error setting last click:', error);

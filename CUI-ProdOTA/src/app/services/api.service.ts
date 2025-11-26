@@ -274,6 +274,32 @@ export class ApiService {
 
     return !sorted1.every((val, idx) => val === sorted2[idx]);
   }
+  setLastSerialAction() {
+    localStorage.setItem('lastAction', Date.now().toString());
+    // or simply: localStorage.setItem('lastAction', Date.now() + '');
+    console.log('Set last action time to now');
+  }
+  checkLastSerialAction(t = 60) {
+    try {
+      const lastAction = localStorage.getItem('lastAction');
+
+      // If never set before, consider as idle
+      if (!lastAction) {
+        return true; // no previous action → treat as idle
+      }
+
+      const lastTime = parseInt(lastAction, 10);
+      const now = Date.now();
+      const secondsSinceLastAction = (now - lastTime) / 1000;
+
+      // Return true if more than t seconds have passed (user is idle)
+      console.log(`Seconds since last action: ${secondsSinceLastAction}`,' last action '+lastAction,'now '+now);
+      return secondsSinceLastAction > t;
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return false;
+    }
+  }
 
   getReplacements(a1: string[], a2: string[]) {
     a1 = Array.isArray(a1) ? a1 : [];
