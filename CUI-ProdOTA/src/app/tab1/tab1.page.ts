@@ -1563,6 +1563,7 @@ export class Tab1Page implements OnDestroy {
               }
 
               this.sendStatus(JSON.stringify(result?.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
+              console.log('ADH814 Processed response:', result);
               if (result?.status == 1) {
                 this.setLastSerial();
               }
