@@ -279,7 +279,7 @@ export class ApiService {
     // or simply: localStorage.setItem('lastAction', Date.now() + '');
     console.log('Set last action time to now');
   }
-  checkLastSerialAction(t = 60) {
+  checkOverLastSerialAction(t = 60) {
     try {
       const lastAction = localStorage.getItem('lastAction');
 

@@ -3395,8 +3395,8 @@ export class Tab1Page implements OnDestroy {
             if (!this.apiService.isRemainingBillsModalOpen) {
               if (this.serial) {
                 if (localStorage.getItem('device') != 'ZDM8') {
-                  const lastClick = this.apiService.checkLastSerialAction();
-                  if (!lastClick) {
+                  const lastClick = this.apiService.checkOverLastSerialAction();
+                  if (lastClick) {
                     this.apiService.exitApp();
                     return;
                   }
