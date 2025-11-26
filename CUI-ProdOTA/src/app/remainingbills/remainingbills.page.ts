@@ -229,7 +229,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
         if (localStorage.getItem('device') != 'ZDM8') {
-          const lastClick = this.apiService.checkOverLastSerialAction;
+          const lastClick = this.apiService.checkOverLastSerialAction();
           if (lastClick) {
             this.apiService.exitApp();
             return;
