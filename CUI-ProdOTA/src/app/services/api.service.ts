@@ -259,7 +259,7 @@ export class ApiService {
 
   countErrorPay: number = 0;
 
-  allowTopUp = true;
+  allowTopUp = false;
 
   isFranciseMode: boolean = false;
 
@@ -380,11 +380,11 @@ export class ApiService {
         }
 
 
-        try {
-          await ScreenBrightness.setBrightness({ brightness: 1 });
-        } catch (error) {
-          console.error('Failed to set brightness', error);
-        }
+        // try {
+        //   await ScreenBrightness.setBrightness({ brightness: 1 });
+        // } catch (error) {
+        //   console.error('Failed to set brightness', error);
+        // }
 
         this.secret = r?.data?.secret ?? null;
         console.log('-----> SECRET :', this.secret);

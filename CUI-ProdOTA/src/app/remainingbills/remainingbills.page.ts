@@ -241,27 +241,33 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         };
 
 
-        const lastClick = this.getSerialLast();
-        if (!lastClick) {
-          this.apiService.exitApp();
-          return;
-        }
 
-        const targetTime = new Date(lastClick).getTime();
 
-        if (isNaN(targetTime)) {
-          this.apiService.exitApp();
-          return;
-        }
 
-        const currentTime = new Date().getTime();
-        const timeDifferenceSeconds = (currentTime - targetTime) / 1000;
 
-        const has30SecondsPassed = timeDifferenceSeconds >= 30;
+        if (localStorage.getItem('device') != 'ZDM8') {
+          const lastClick = this.getSerialLast();
+          if (!lastClick) {
+            this.apiService.exitApp();
+            return;
+          }
 
-        if (!has30SecondsPassed) {
-          this.apiService.exitApp();
-          return;
+          const targetTime = new Date(lastClick).getTime();
+
+          if (isNaN(targetTime)) {
+            this.apiService.exitApp();
+            return;
+          }
+
+          const currentTime = new Date().getTime();
+          const timeDifferenceSeconds = (currentTime - targetTime) / 1000;
+
+          const has30SecondsPassed = timeDifferenceSeconds >= 30;
+
+          if (!has30SecondsPassed) {
+            this.apiService.exitApp();
+            return;
+          }
         }
 
 

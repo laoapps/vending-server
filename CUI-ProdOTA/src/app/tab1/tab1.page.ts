@@ -3389,6 +3389,24 @@ export class Tab1Page implements OnDestroy {
     });
   }
 
+  private getSerialLast(): string | null {
+    try {
+      const stored = localStorage.getItem('lastSerial');
+      if (!stored) return null;
+
+      try {
+        return JSON.parse(stored);
+      } catch {
+        if (stored.startsWith('"') && stored.endsWith('"')) {
+          return stored.slice(1, -1);
+        }
+        return stored;
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return null;
+    }
+  }
 
   showBills() {
     console.log(`here`);
@@ -3402,6 +3420,30 @@ export class Tab1Page implements OnDestroy {
             this.apiService.isDropStock = true;
             if (!this.apiService.isRemainingBillsModalOpen) {
               if (this.serial) {
+                if (localStorage.getItem('device') != 'ZDM8') {
+                  const lastClick = this.getSerialLast();
+                  if (!lastClick) {
+                    // this.apiService.exitApp();
+                    return;
+                  }
+
+                  const targetTime = new Date(lastClick).getTime();
+
+                  if (isNaN(targetTime)) {
+                    // this.apiService.exitApp();
+                    return;
+                  }
+
+                  const currentTime = new Date().getTime();
+                  const timeDifferenceSeconds = (currentTime - targetTime) / 1000;
+
+                  const has30SecondsPassed = timeDifferenceSeconds >= 30;
+
+                  if (!has30SecondsPassed) {
+                    // this.apiService.exitApp();
+                    return;
+                  }
+                }
                 this.apiService
                   .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
                   .then((r) => {

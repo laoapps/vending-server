@@ -18,14 +18,14 @@ export class ProductsPage implements OnInit {
 
   private loadProductListProcess: LoadProductListProcess;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
-// https://filemanager-api.laoapps.com/api/v1/file/download/
+  // https://filemanager-api.laoapps.com/api/v1/file/download/
   _l = new Array<IStock>();
   constructor(
-    public apiService: ApiService, 
+    public apiService: ApiService,
     private filemanagerAPIService: FilemanagerApiService,
     private cashingService: AppcachingserviceService,
-    
-    ) { 
+
+  ) {
     this.loadProductListProcess = new LoadProductListProcess(this.apiService, this.cashingService);
 
   }
@@ -45,9 +45,9 @@ export class ProductsPage implements OnInit {
   }
 
   loadProduct(): Promise<any> {
-    return new Promise<any> (async (resolve, reject) => {
+    return new Promise<any>(async (resolve, reject) => {
       try {
-      //  await this.cashingService.clear();
+        //  await this.cashingService.clear();
         const params = {
           ownerUuid: this.apiService.ownerUuid,
           filemanagerURL: this.filemanagerURL
@@ -83,7 +83,7 @@ export class ProductsPage implements OnInit {
           this.filemanagerAPIService.writeFile(formfile).subscribe(r_writeFile => {
             console.log(`write file fail`, r_writeFile);
             console.log(`write file fail`, r_writeFile.data[0].info.fileUrl);
-            
+
             if (r_writeFile.status != 1) {
               this.filemanagerAPIService.cancelWriteFile({ uuid: fileuuid }).subscribe(r_cancelWriteFile => {
                 if (r_cancelWriteFile.status != 1) {
@@ -120,12 +120,12 @@ export class ProductsPage implements OnInit {
       });
     });
   }
-  delete(id:number){
-   if(! confirm('Are you sure?'))return;
+  delete(id: number) {
+    if (!confirm('Are you sure?')) return;
     const s = this._l.find(v => v.id == id);
     if (!s) return alert('Not found')
 
-    this.apiService.deleteProduct( id).subscribe(rx => {
+    this.apiService.deleteProduct(id).subscribe(rx => {
       console.log(rx);
       if (rx.status) {
         this._l.find((v, i) => {
